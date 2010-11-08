@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -129,7 +130,7 @@ public abstract class EJBProblemFinder {
                             break;
                         }
                         
-                        if (tree.getKind() == Tree.Kind.CLASS){
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
                             long startTime = Calendar.getInstance().getTimeInMillis();
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);

@@ -44,6 +44,7 @@ package org.netbeans.editor.ext.html.parser.spi;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 
 /**
  * Usefull for providing an html source code version for templating languages typically
@@ -69,9 +70,9 @@ public interface HtmlSourceVersionController {
      *
      * The argument can be null if no version is detected.
      *
-     * @param source The html source code
+     * @param analyzerResult The html source code
      *
      */
-    public HtmlVersion getSourceCodeVersion(HtmlSource source, HtmlVersion detectedVersion);
+    public HtmlVersion getSourceCodeVersion(SyntaxAnalyzerResult analyzerResult, HtmlVersion detectedVersion);
 
 }

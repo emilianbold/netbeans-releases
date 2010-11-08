@@ -126,7 +126,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             t = tree.getLeaf();
         }
 
-        if (t.getKind() == Tree.Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
             if (pos == null) {
                 //#121084 hotfix
@@ -147,7 +147,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 end = pos[1];
             }
         } else if (t.getKind() == Tree.Kind.NEW_CLASS) {
-            ExpressionTree ident = ((NewClassTree)t).getIdentifier();
+            Tree ident = ((NewClassTree)t).getIdentifier();
+            if (ident.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                ident = ((ParameterizedTypeTree)ident).getType();
+            }
             if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
                 int[] pos = treeUtils.findNameSpan((MemberSelectTree) ident);
                 if (pos == null) {
@@ -286,7 +289,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {
             Tree tree = tp.getLeaf();
-            if (tree.getKind() == Tree.Kind.CLASS || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT) {
                 return tp;
             } 
             tp = tp.getParentPath();

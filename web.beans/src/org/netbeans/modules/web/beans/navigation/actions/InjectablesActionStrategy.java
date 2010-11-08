@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -69,7 +68,6 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        System.out.println("######## "+id);
         return id == InspectActionId.INJECTABLES ;
     }
 
@@ -103,7 +101,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
      */
     @Override
     public void invokeModelAction( final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] subject,
             JTextComponent component, FileObject fileObject )
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, 
@@ -128,17 +126,16 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
                 .getCompilationController();
         final InjectablesModel uiModel = new InjectablesModel(result, controller, 
                 metaModel );
-        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
-                    handleVar , uiModel , name );
+                    subject , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showInjectablesDialog(metaModel, 
-                            null , handleVar ,uiModel , name );
+                            null , subject ,uiModel , name );
                 }
             });
         }

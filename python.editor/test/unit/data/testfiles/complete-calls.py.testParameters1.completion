@@ -1,4 +1,0 @@
-Code completion result for source line:
-functionfoo(foo|, bar)
-(QueryType=COMPLETION, NameKind=PREFIX)
-CALL       functionfoo(param1, ...)                   

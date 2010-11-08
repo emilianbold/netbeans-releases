@@ -38,6 +38,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -51,6 +52,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
@@ -112,6 +114,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private Set<VariableElement> variablesWithAllowedRemap = Collections.emptySet();
     private State bindState = State.empty();
     private boolean allowVariablesRemap = false;
+    private boolean nocheckOnAllowVariablesRemap = false;
     private AtomicBoolean cancel;
     private static final String CLASS = "class"; //NOI18N
 
@@ -178,6 +181,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     }
 
     public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, AtomicBoolean cancel) {
+        return isDuplicate(info, one, second, fullElementVerify, inVariables, fillInVariables, null, cancel);
+    }
+
+    public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, Set<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
         if (one.getLeaf().getKind() != second.getLeaf().getKind()) {
             return false;
         }
@@ -208,6 +215,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
 
         f.allowGoDeeper = false;
+        f.variablesWithAllowedRemap = variablesWithAllowedRemap != null ? new HashSet<VariableElement>(variablesWithAllowedRemap) : Collections.<VariableElement>emptySet();
+        f.allowVariablesRemap = variablesWithAllowedRemap != null;
+        f.nocheckOnAllowVariablesRemap = variablesWithAllowedRemap != null;
 
         return f.scan(second, one);
     }
@@ -366,7 +376,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 TreePath currentPath = new TreePath(getCurrentPath(), node);
                 TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(ident) : null;//info.getTrees().getTypeMirror(p);
 
-                boolean bind = true;
+                boolean bind;
 
                 if (designed != null && designed.getKind() != TypeKind.ERROR) {
                     TypeMirror real = info.getTrees().getTypeMirror(currentPath);
@@ -375,6 +385,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                         bind = info.getTypes().isAssignable(real, designed);
                     else
                         bind = false;
+                } else {
+                    bind = designed == null;
                 }
 
                 if (bind) {
@@ -418,7 +430,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 TypeMirror currType = info.getTrees().getTypeMirror(currPath);
                 TypeMirror pType = ((VariableElement) remappable).asType();
 
-                if (currType != null && pType != null && isSameTypeForVariableRemap(currType, pType)) {
+                if (currType != null && pType != null && (nocheckOnAllowVariablesRemap || isSameTypeForVariableRemap(currType, pType))) {
                     bindState.variablesRemapToTrees.put(remappable, currPath);
                     return true;
                 }
@@ -707,6 +719,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return true;
         }
 
+        if (patternOffset >= pattern.size()) {
+            return false;
+        }
+        
         if (Utilities.isMultistatementWildcardTree(pattern.get(patternOffset))) {
             if (patternOffset + 1 == pattern.size()) {
                 List<TreePath> tps = new LinkedList<TreePath>();
@@ -789,9 +805,54 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return scan(node.getBlock(), ef.getBlock(), p);
     }
 
-//    public Boolean visitClass(ClassTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitClass(ClassTree node, TreePath p) {
+        if (p == null)
+            return super.visitClass(node, p);
+
+        ClassTree t = (ClassTree) p.getLeaf();
+
+        String name = t.getSimpleName().toString();
+
+        if (!name.isEmpty()) {
+            if (!scan(node.getModifiers(), t.getModifiers(), p))
+                return false;
+
+            if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+                String existingName = bindState.variables2Names.get(name);
+                String currentName = node.getSimpleName().toString();
+
+                if (existingName != null) {
+                    if (!existingName.equals(name)) {
+                        return false;
+                    }
+                } else {
+                    //XXX: putting the variable into both variables and variable2Names.
+                    //variables is needed by the declarative hints to support conditions like
+                    //referencedIn($variable, $statements$):
+                    //causes problems in JavaFix, see visitIdentifier there.
+                    bindState.variables.put(name, getCurrentPath());
+                    bindState.variables2Names.put(name, currentName);
+                }
+            } else {
+                if (!node.getSimpleName().contentEquals(name))
+                    return false;
+            }
+
+            if (!checkLists(node.getTypeParameters(), t.getTypeParameters(), p))
+                return false;
+
+            if (!scan(node.getExtendsClause(), t.getExtendsClause(), p))
+                return false;
+
+            if (!checkLists(node.getImplementsClause(), t.getImplementsClause(), p))
+                return false;
+        } else {
+            if (node.getSimpleName().length() != 0)
+                return false;
+        }
+
+        return checkLists(Utilities.filterHidden(getCurrentPath(), node.getMembers()), Utilities.filterHidden(p, t.getMembers()), p);
+    }
 
     public Boolean visitConditionalExpression(ConditionalExpressionTree node, TreePath p) {
         if (p == null) {
@@ -963,10 +1024,59 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return nodeValue.equals(ltValue);
     }
 
-//    public Boolean visitMethod(MethodTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitMethod(MethodTree node, TreePath p) {
+        if (p == null)
+            return super.visitMethod(node, p);
 
+        MethodTree t = (MethodTree) p.getLeaf();
+
+        if (!scan(node.getModifiers(), t.getModifiers(), p))
+            return false;
+
+        if (!checkLists(node.getTypeParameters(), t.getTypeParameters(), p))
+            return false;
+
+        if (!scan(node.getReturnType(), t.getReturnType(), p))
+            return false;
+
+        String name = t.getName().toString();
+
+        if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+            String existingName = bindState.variables2Names.get(name);
+            String currentName = node.getName().toString();
+
+            if (existingName != null) {
+                if (!existingName.equals(name)) {
+                    return false;
+                }
+            } else {
+                //XXX: putting the variable into both variables and variable2Names.
+                //variables is needed by the declarative hints to support conditions like
+                //referencedIn($variable, $statements$):
+                //causes problems in JavaFix, see visitIdentifier there.
+                bindState.variables.put(name, getCurrentPath());
+                bindState.variables2Names.put(name, currentName);
+            }
+        } else {
+            if (!node.getName().contentEquals(name))
+                return false;
+        }
+
+        if (!checkLists(node.getParameters(), t.getParameters(), p))
+            return false;
+
+        if (!checkLists(node.getThrows(), t.getThrows(), p))
+            return false;
+
+        if (!checkLists(node.getReceiverAnnotations(), t.getReceiverAnnotations(), p))
+            return false;
+
+        if (!scan(node.getBody(), t.getBody(), p))
+            return false;
+
+        return scan(node.getDefaultValue(), t.getDefaultValue(), p);
+    }
+    
     public Boolean visitModifiers(ModifiersTree node, TreePath p) {
         if (p == null)
             return super.visitModifiers(node, p);
@@ -1127,6 +1237,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         TryTree at = (TryTree) p.getLeaf();
 
+        if (!checkLists(node.getResources(), at.getResources(), p)) {
+            return false;
+        }
+        
         if (!scan(node.getBlock(), at.getBlock(), p)) {
             return false;
         }

@@ -52,6 +52,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -75,6 +76,7 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSCli
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -184,7 +186,16 @@ public final class AppClientProject implements Project, FileChangeListener {
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
     
+    // set to true when project customizer is being closed and changes persisted
+    private final ThreadLocal<Boolean> projectPropertiesSave;
+    
     public AppClientProject(AntProjectHelper helper) throws IOException {
+        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
@@ -214,6 +225,10 @@ public final class AppClientProject implements Project, FileChangeListener {
             getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
+    }
+    
+    public void setProjectPropertiesSave(boolean value) {
+        this.projectPropertiesSave.set(value);
     }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -462,8 +477,8 @@ public final class AppClientProject implements Project, FileChangeListener {
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
-                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
-                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
+                                Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -504,70 +519,35 @@ public final class AppClientProject implements Project, FileChangeListener {
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
         
-    /**
-     * Refreshes the build-impl.xml script. If it was modified by the user, it 
-     * displays a confirmation dialog.
-     *
-     * @param askUserIfFlags only display the dialog if the state of the build script
-     * contains these flags (along with {@link GeneratedFilesHelper#FLAG_MODIFIED}, 
-     * which is always checked)
-     * @param askInCurrentThread if false, asks in another thread
-     */
-    private void refreshBuildImplXml(int askUserIfFlags, boolean askInCurrentThread) {
-        askUserIfFlags |= GeneratedFilesHelper.FLAG_MODIFIED;
-        int flags = genFilesHelper.getBuildScriptState(
-            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            AppClientProject.class.getResource("resources/build-impl.xsl")); // NOI18N
-        if ((flags & askUserIfFlags) == askUserIfFlags) {
-            Runnable run = new Runnable () {
-                public void run () {
-                    JButton updateOption = new JButton (NbBundle.getMessage(AppClientProject.class, "CTL_Regenerate"));
-                    if (DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor (NbBundle.getMessage(AppClientProject.class,"TXT_BuildImplRegenerate"),
-                            NbBundle.getMessage(AppClientProject.class,"TXT_BuildImplRegenerateTitle"),
-                            NotifyDescriptor.DEFAULT_OPTION,
-                            NotifyDescriptor.WARNING_MESSAGE,
-                            new Object[] {
-                                updateOption,
-                                NotifyDescriptor.CANCEL_OPTION
-                            },
-                            updateOption)) == updateOption) {
-                        try {
-                            genFilesHelper.generateBuildScriptFromStylesheet(
-                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                AppClientProject.class.getResource("resources/build-impl.xsl")); // NOI18N
-                        } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
-                        } catch (IllegalStateException e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
-                }
-            };
-            if (askInCurrentThread) {
-                run.run();
-            } else {
-                RequestProcessor.getDefault().post(run);
-            }
-        } else {
-            try {
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    AppClientProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                    false);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-    
     // Private innerclasses ----------------------------------------------------
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
         
+        @Override
         protected void projectXmlSaved() throws IOException {
-            refreshBuildImplXml(0, false);
+            int state = genFilesHelper.getBuildScriptState(
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                AppClientProject.class.getResource("resources/build-impl.xsl"));
+            final Boolean projectPropertiesSave = AppClientProject.this.projectPropertiesSave.get();
+            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
+                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
+                    GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
+                try {
+                    Util.backupBuildImplFile(updateHelper);
+                    genFilesHelper.generateBuildScriptFromStylesheet(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            AppClientProject.class.getResource("resources/build-impl.xsl"));
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                } catch (IllegalStateException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } else {
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                                  AppClientProject.class.getResource("resources/build-impl.xsl"),
+                                                  false);
+            }
             
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
@@ -618,7 +598,20 @@ public final class AppClientProject implements Project, FileChangeListener {
                 
                 // Check up on build scripts.
                 
-                refreshBuildImplXml( GeneratedFilesHelper.FLAG_OLD_PROJECT_XML, true);
+                int flags = genFilesHelper.getBuildScriptState(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    AppClientProject.class.getResource("resources/build-impl.xsl"));
+                if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
+                    && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
+                        Util.backupBuildImplFile(updateHelper);
+                        genFilesHelper.generateBuildScriptFromStylesheet(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            AppClientProject.class.getResource("resources/build-impl.xsl"));
+                } else {
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        AppClientProject.class.getResource("resources/build-impl.xsl"), true);
+                }
                 
                 genFilesHelper.refreshBuildScript(
                     getBuildXmlName(),

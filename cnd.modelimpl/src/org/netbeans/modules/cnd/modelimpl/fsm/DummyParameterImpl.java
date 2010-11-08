@@ -55,12 +55,24 @@ import java.io.IOException;
  * Implements CsmParameter
  * @author Vladimir Kvashin
  */
-public class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
+public final class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    public DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
-        super(file, startOffset, endOffset, null, name, scope, false, false, false);
+    private DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
+        super(file, startOffset, endOffset, null, name, scope, false, false);
     }
 
+    public static DummyParameterImpl create(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
+        DummyParameterImpl dummyParameterImpl = new DummyParameterImpl(file, startOffset, endOffset, name, scope);
+        postObjectCreateRegistration(false, dummyParameterImpl);
+        return dummyParameterImpl;
+    }
+
+    @Override
+    protected boolean registerInProject() {
+        return false;
+    }
+    
+    @Override
     public boolean isVarArgs() {
         return false;
     }

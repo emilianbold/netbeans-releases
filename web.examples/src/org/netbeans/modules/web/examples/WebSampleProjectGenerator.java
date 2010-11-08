@@ -44,13 +44,21 @@
 
 package org.netbeans.modules.web.examples;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -75,6 +83,14 @@ public class WebSampleProjectGenerator {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";    //NOI18N
     public static final String JSPC_CLASSPATH = "jspc.classpath";
 
+    private static final List<Set<String>> EQUIVALENT_SERVERS = new ArrayList<Set<String>>();
+    static {
+        Set<String> gf = new LinkedHashSet<String>();
+        gf.add("gfv3ee6"); // NOI18N
+        gf.add("gfv3ee6wc"); // NOI18N
+        EQUIVALENT_SERVERS.add(gf);
+    }
+
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
         assert template != null && projectLocation != null && name != null;
         FileObject prjLoc = createProjectFolder(projectLocation);
@@ -97,6 +113,8 @@ public class WebSampleProjectGenerator {
                     }
                     saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
                 }
+
+                configureServer(prjLoc);
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
@@ -104,6 +122,46 @@ public class WebSampleProjectGenerator {
             prjLoc.refresh(false);
         }
         return prjLoc;
+    }
+
+    public static void configureServer(FileObject prjLoc) throws IOException {
+        FileObject projProps = prjLoc.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        if (projProps == null || !projProps.canRead() || !projProps.canWrite()) {
+            return;
+        }
+        InputStream is = new BufferedInputStream(projProps.getInputStream());
+        Properties props = new Properties();
+        try {
+            props.load(is);
+        } finally {
+            is.close();
+        }
+
+        boolean changed = false;
+        String server = props.getProperty("j2ee.server.type"); // NOI18N
+        if (Deployment.getDefault().getInstancesOfServer(server).length == 0) {
+            for (Set<String> servers : EQUIVALENT_SERVERS) {
+                if (servers.contains(server)) {
+                    for (String serverCandidate : servers) {
+                        if (!serverCandidate.equals(server)
+                                && Deployment.getDefault().getInstancesOfServer(serverCandidate).length > 0) {
+                            props.setProperty("j2ee.server.type", serverCandidate); // NOI18N
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (changed) {
+            OutputStream os = new BufferedOutputStream(projProps.getOutputStream());
+            try {
+                props.store(os, null);
+            } finally {
+                os.close();
+            }
+        }
     }
     
     private static FileObject createProjectFolder(File projectFolder) throws IOException {

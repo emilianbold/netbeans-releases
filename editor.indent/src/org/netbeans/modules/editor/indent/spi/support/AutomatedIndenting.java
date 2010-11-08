@@ -108,7 +108,7 @@ public final class AutomatedIndenting {
      *  &lt;folder name="text"&gt;
      *   &lt;folder name="x-java"&gt;
      *    &lt;file name="org-something-AutoIndenter.instance"&gt;
-     *     &lt;attr name="instanceOf" stringvalue="org.netbeans.spi.editor.typinghooks.TypedTextInterceptor"/&gt;
+     *     &lt;attr name="instanceOf" stringvalue="org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory"/&gt;
      *     &lt;attr name="instanceCreate"
      *              methodvalue="org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting.createHotCharsIndenter"/&gt;
      *     &lt;attr name="regex1" stringvalue="\s*else"/&gt;

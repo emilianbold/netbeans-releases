@@ -41,12 +41,13 @@
  */
 package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.remote.api.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 

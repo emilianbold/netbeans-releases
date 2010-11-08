@@ -194,6 +194,12 @@ public final class CreateMethodFix implements Fix {
                 while (typeIt.hasNext() && nameIt.hasNext()) {
                     TypeMirrorHandle tmh = typeIt.next();
                     TypeMirror tm = tmh.resolve(working);
+                    
+                    if (tm == null) {
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve argument type."); // NOI18N
+                        return;
+                    }
+
                     String argName;
 
                     Element elem = working.getTypes().asElement(tm);

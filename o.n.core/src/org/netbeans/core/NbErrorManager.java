@@ -68,6 +68,11 @@ import org.netbeans.core.startup.TopLogging;
  */
 @org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class)
 public final class NbErrorManager extends Handler {
+
+    public NbErrorManager() {
+        // Try to avoid a ClassCircularityError by preloading Exc.class:
+        new Exc(null, null, null, null);
+    }
     
     static Exc createExc(Throwable t, Level severity, LogRecord add) {
         LogRecord[] ann = findAnnotations(t, add);

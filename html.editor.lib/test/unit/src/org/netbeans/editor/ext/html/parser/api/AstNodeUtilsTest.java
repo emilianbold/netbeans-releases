@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +69,13 @@ public class AstNodeUtilsTest extends TestBase {
 
     public AstNodeUtilsTest(String testName) {
         super(testName);
+    }
+
+    
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
     }
 
     public static Test suite() {

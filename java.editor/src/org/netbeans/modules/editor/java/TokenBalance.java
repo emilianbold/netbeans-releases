@@ -43,7 +43,9 @@
  */
 package org.netbeans.modules.editor.java;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -176,33 +178,39 @@ class TokenBalance implements TokenHierarchyListener {
                 pair.balance = 0;
             }
             // Clear balances first
-            TokenSequence<T> ts = hi.tokenSequence(language);
+            TokenSequence<?> ts = hi.tokenSequence();
             if (ts != null) {
-                processTokenSequence(ts, ts.tokenCount(), +1);
+                processTokenSequence(ts, ts.tokenCount(), true, +1);
             }
 
         }
 
-        public void processTokenSequence(TokenSequence<T> ts, int tokenCount, int diff) {
+        public void processTokenSequence(TokenSequence<?> ts, int tokenCount, boolean checkEmbedded, int diff) {
             while (--tokenCount >= 0) {
                 boolean moved = ts.moveNext();
                 assert (moved);
-                T id = ts.token().id();
-                TokenIdPair pair = id2Pair.get(id);
-                if (pair != null) {
-                    pair.updateBalance(id, diff);
+                if (ts.language() == language) {
+                    T id = (T)ts.token().id();
+                    TokenIdPair pair = id2Pair.get(id);
+                    if (pair != null) {
+                        pair.updateBalance(id, diff);
+                    }
+                }
+                if (checkEmbedded) {
+                    TokenSequence<?> embeddedTS = ts.embedded();
+                    if (embeddedTS != null)
+                        processTokenSequence(embeddedTS, embeddedTS.tokenCount(), true, diff);
                 }
             }
         }
 
         public void handleEvent(TokenHierarchyEvent evt) {
-            TokenChange<T> tokenChange = evt.tokenChange(language);
-            if (tokenChange != null) {
+            for (TokenChange<T> tokenChange : collectTokenChanges(evt.tokenChange(), new ArrayList<TokenChange<T>>())) {
                 if (tokenChange.removedTokenCount() > 0) {
-                    processTokenSequence(tokenChange.removedTokenSequence(), tokenChange.removedTokenCount(), -1);
+                    processTokenSequence(tokenChange.removedTokenSequence(), tokenChange.removedTokenCount(), false, -1);
                 }
                 if (tokenChange.addedTokenCount() > 0) {
-                    processTokenSequence(tokenChange.currentTokenSequence(), tokenChange.addedTokenCount(), +1);
+                    processTokenSequence(tokenChange.currentTokenSequence(), tokenChange.addedTokenCount(), false, +1);
                 }
             }
         }
@@ -212,6 +220,14 @@ class TokenBalance implements TokenHierarchyListener {
             return (pair.left == left) ? pair.balance : Integer.MAX_VALUE;
         }
 
+        private List<TokenChange<T>> collectTokenChanges(TokenChange<?> change, List<TokenChange<T>> changes) {
+            if (change.language() == language)
+                changes.add((TokenChange<T>)change);
+            for (int i = 0; i < change.embeddedChangeCount(); i++) {
+                collectTokenChanges(change.embeddedChange(i), changes);
+            }
+            return changes;
+        }
     } 
 
     private static final class TokenIdPair<T extends TokenId> {

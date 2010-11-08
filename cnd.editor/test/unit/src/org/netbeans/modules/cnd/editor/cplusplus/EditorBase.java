@@ -147,21 +147,22 @@ public class EditorBase extends BaseDocumentUnitTestCase {
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Reformat f = Reformat.get(getDocument());
-        f.lock();
-        try {
-            getDocument().atomicLock();
-            try {
-                f.reformat(0, getDocument().getLength());
-            } finally {
-                getDocument().atomicUnlock();
+        final Reformat f = Reformat.get(getDocument());
+        getDocument().runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                f.lock();
+                try {
+                    f.reformat(0, getDocument().getLength());
+                } catch (BadLocationException e) {
+                    e.printStackTrace(getLog());
+                    fail(e.getMessage());
+                } finally {
+                    f.unlock();
+                }
             }
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
-        } finally {
-            f.unlock();
-        }
+        });
     }
 
     // ------- help methods -------------

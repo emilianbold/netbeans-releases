@@ -34,6 +34,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -109,7 +110,7 @@ public class ClassExplorer
             TreePath tPath=new TreePath(compilationUnit);
             for (Tree typeDecl : typeDecls)
             {
-                if (typeDecl.getKind() == Tree.Kind.CLASS)
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
                 {
                     TypeElement elem=(TypeElement)trees.getElement(new TreePath(tPath,typeDecl));
                     result.add(elem);

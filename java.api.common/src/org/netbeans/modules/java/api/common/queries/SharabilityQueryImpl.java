@@ -72,12 +72,12 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
     private final List<String> additionalSourceRoots;
     private SharabilityQueryImplementation delegate;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public SharabilityQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots,
             SourceRoots testRoots, String... additionalSourceRoots) {
         assert helper != null;
         assert evaluator != null;
         assert srcRoots != null;
-        assert testRoots != null;
 
         this.helper = helper;
         this.evaluator = evaluator;
@@ -89,11 +89,15 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
             this.additionalSourceRoots = Collections.<String>emptyList();
         }
         this.srcRoots.addPropertyChangeListener(this);
-        this.testRoots.addPropertyChangeListener(this);
+        if (this.testRoots != null) {
+            this.testRoots.addPropertyChangeListener(this);
+        }
     }
 
+    @Override
     public int getSharability(final File file) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            @Override
             public Integer run() {
                 synchronized (SharabilityQueryImpl.this) {
                     if (delegate == null) {
@@ -105,6 +109,7 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
         });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
             synchronized (this) {
@@ -115,7 +120,7 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
 
     private SharabilityQueryImplementation createDelegate() {
         String[] srcProps = srcRoots.getRootProperties();
-        String[] testProps = testRoots.getRootProperties();
+        String[] testProps = testRoots == null ? new String[0] : testRoots.getRootProperties();
         String[] buildDirectories = new String[] {"${dist.dir}", "${build.dir}"}; // NOI18N
 
         int size = srcProps.length;

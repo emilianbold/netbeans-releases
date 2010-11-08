@@ -64,10 +64,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         this.executionEnvironment = executionEnvironment;
     }
     
+    @Override
     public boolean startup(Map<String, String> env2add) {
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
         if (files != null && files.length > 0) {
-            return mapper.checkRemotePath(files[0].getAbsolutePath(), true);
+            return mapper.checkRemotePaths(files, true);
         }
         return true;
     }

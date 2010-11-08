@@ -68,7 +68,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
     
-    public StatementBase(AST ast, CsmFile file, CsmScope scope) {
+    protected StatementBase(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
         this.ast = ast;
         if( scope != null ) {
@@ -76,6 +76,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         }
     }
     
+    @Override
     public CsmScope getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
@@ -86,7 +87,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         return scope;
     }
     
-    protected void setScope(CsmScope scope) {
+    protected final void setScope(CsmScope scope) {
 	// within bodies scope is a statement - it is not Identifiable
         if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);

@@ -46,7 +46,13 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
+@ActionID(id = "org.netbeans.modules.projectimport.eclipse.core.ResynchronizeEclipseAction", category = "Project")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_SynchronizeMenuItem")
+@ActionReference(position = 200, path = "Menu/File/Import")
 public class ResynchronizeEclipseAction implements ActionListener {
     
     public void actionPerformed(ActionEvent e) {

@@ -52,6 +52,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -59,6 +62,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -100,6 +104,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -1089,7 +1094,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 } else {
                     builder.append(getName());
                 }
-                builder.append("::${cursor}"); //NOI18N
+                boolean includeDoubleColumn = true;
+                if (EditorRegistry.lastFocusedComponent() != null) {
+                    Document doc = EditorRegistry.lastFocusedComponent().getDocument();
+                    int caret = EditorRegistry.lastFocusedComponent().getCaretPosition();
+                    try {
+                        if (caret+2 < doc.getLength() && "::".equals(doc.getText(caret, 2))) { //NOI18N
+                            includeDoubleColumn = false;
+                        }
+                    } catch (BadLocationException ex) {
+                        // do nothing
+                    }
+                }
+                
+                if (includeDoubleColumn) {
+                    builder.append("::");
+                }
+                builder.append("${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
             } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
@@ -1240,6 +1261,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
 
+    static class TagItem extends KeywordItem {
+        private int sortKey;
+
+        public TagItem(String tag, int sortKey, CompletionRequest request) {
+            super(tag, request);
+            this.sortKey = sortKey;
+        }
+
+        @Override
+        public String getSortText() {
+            return "" + sortKey + getName();
+        }
+    }
 
 
     public static class CompletionRequest {

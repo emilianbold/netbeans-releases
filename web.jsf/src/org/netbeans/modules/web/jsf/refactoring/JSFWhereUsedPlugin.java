@@ -52,6 +52,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -106,7 +107,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
             
             if (element instanceof TreePathHandle) {
                 treePathHandle = (TreePathHandle)element;
-                if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+                if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                     WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                     if (webModule != null){
                         CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());

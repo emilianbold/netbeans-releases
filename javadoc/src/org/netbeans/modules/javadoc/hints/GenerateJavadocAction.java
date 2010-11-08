@@ -52,16 +52,19 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -69,6 +72,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * The action supposed to fix an empty javadoc block.
@@ -98,18 +102,44 @@ public final class GenerateJavadocAction extends TextAction {
             // unsupported document
             return;
         }
-        try {
-            Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
-            
-            if (desc != null) {
-                // add javadoc content
-                generate(doc, desc, jtc);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (SourceUtils.isScanInProgress()) {
+                        //wait 1ms
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        //still scanning? -> exit!
+                        if (SourceUtils.isScanInProgress()) {
+                            return;
+                        }
+
+                    }
+                    final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
+                    if (desc != null) {
+                        // add javadoc content
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    generate(doc, desc, jtc);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        });
         
     }
     
@@ -118,7 +148,7 @@ public final class GenerateJavadocAction extends TextAction {
         if (js == null) {
             return null;
         }
-        
+
         final Descriptor desc = new Descriptor();
         FileObject file = js.getFileObjects().iterator().next();
         SourceVersion sv = Analyzer.resolveSourceVersion(file);
@@ -155,7 +185,7 @@ public final class GenerateJavadocAction extends TextAction {
                 Kind kind = leaf.getKind();
                 SourcePositions positions = javac.getTrees().getSourcePositions();
                 
-                while (kind != Kind.CLASS && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
+                while (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
                     tp = tp.getParentPath();
                     if (tp == null) {
                         leaf = null;

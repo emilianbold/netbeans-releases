@@ -166,7 +166,12 @@ public class ElementNode extends AbstractNode {
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
             FileObject fo = ui.getFileObject();
-            openAction = new OpenAction(description.getElementHandle(), fo, description.getPosition());
+            try {
+                openAction = new OpenAction(description.getElementHandle(), fo,
+                        description.getPosition());
+            } catch (UnsupportedOperationException uo) {
+                return null; // root node does not have element handle
+            }
         }
         return openAction;
     }

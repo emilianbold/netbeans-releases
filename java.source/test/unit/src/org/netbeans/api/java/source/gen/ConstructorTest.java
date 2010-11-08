@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.Task;
@@ -96,7 +97,7 @@ public class ConstructorTest extends GeneratorTest {
                 ClassTree topLevel = (ClassTree) cut.getTypeDecls().iterator().next();
                 for (Tree member : topLevel.getMembers()) {
                     // for the first inner class in top level
-                    if (CLASS == member.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(member.getKind())) {
 
                         ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
 

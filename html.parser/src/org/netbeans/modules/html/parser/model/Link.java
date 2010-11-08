@@ -49,28 +49,38 @@ import java.util.logging.Logger;
 public class Link {
 
     private String name;
-    private URL url;
+    private String link;
 
-    public Link(String name, String url) {
+    public Link(String name, String link) {
         this.name = name;
-        try {
-            this.url = new URL(url);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Link.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        this.link = link;
     }
 
     public String getName() {
         return name;
     }
 
-    public URL getUrl() {
-        return url;
+    public String getLink() {
+        return link;
+    }
+
+    public URL getUrl(String baseURL) {
+        try {
+            StringBuilder fullLink = new StringBuilder(baseURL);
+            if (fullLink.charAt(fullLink.length() - 1) != '/') {
+                fullLink.append('/');
+            }
+            fullLink.append(link);
+            return new URL(fullLink.toString());
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Link.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
     
     @Override
     public String toString() {
-        return "Link{" + "name=" + name + ", url=" + url + '}';
+        return "Link{" + "name=" + name + ", link=" + link + '}';//NOI18N
     }
 
     @Override
@@ -85,7 +95,7 @@ public class Link {
         if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }
-        if ((this.url == null) ? (other.url != null) : !this.url.equals(other.url)) {
+        if ((this.link == null) ? (other.link != null) : !this.link.equals(other.link)) {
             return false;
         }
         return true;
@@ -95,7 +105,7 @@ public class Link {
     public int hashCode() {
         int hash = 3;
         hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 53 * hash + (this.url != null ? this.url.hashCode() : 0);
+        hash = 53 * hash + (this.link != null ? this.link.hashCode() : 0);
         return hash;
     }
 }

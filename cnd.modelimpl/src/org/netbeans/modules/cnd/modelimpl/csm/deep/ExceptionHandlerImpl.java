@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Common ancestor for all ... statements
  * @author Vladimir Kvashin
  */
-public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmExceptionHandler {
+public final class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmExceptionHandler {
     
     private ParameterImpl parameter;
     private final boolean globalHandler;
@@ -68,17 +68,23 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         super(ast, file, scope);
         this.globalHandler = global;
     }
+
+    public static ExceptionHandlerImpl create(AST ast,  CsmFile file, CsmScope scope, boolean global) {
+        return new ExceptionHandlerImpl(ast, file, scope, global);
+    }
     
     @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.CATCH;
     }
     
+    @Override
     public boolean isCatchAll() {
 	CsmParameter aParameter = getParameter();
         return aParameter == null || aParameter.isVarArgs();
     }
     
+    @Override
     public CsmParameter getParameter() {
         if( parameter == null ) {
             AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARAMETER_DECLARATION);

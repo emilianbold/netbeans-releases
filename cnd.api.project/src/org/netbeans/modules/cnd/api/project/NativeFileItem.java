@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.api.project;
 
 import java.util.List;
 import java.io.File;
+import org.openide.filesystems.FileObject;
 
 public interface NativeFileItem {
     public enum Language {
@@ -53,10 +54,10 @@ public interface NativeFileItem {
     }
     
     public enum LanguageFlavor {
-    	GENERIC,
-        SUN_C, GNU_C,
-        SUN_CPP, GNU_CPP,
-        SUN_FORTRAN_77, SUN_FORTRAN_90, SUN_FORTRAN_95, GNU_FORTRAN
+    	UNKNOWN,
+        C, C89, C99,
+        CPP,
+        F77, F90, F95
     }
     
     /**
@@ -69,7 +70,14 @@ public interface NativeFileItem {
      * Returns the file associated with this file item.
      * @return the file associated with this file item. There is no guarantee that the file actually exists.
      */
+    // XXX:FileObject conversion: remove
     public File getFile();
+
+    /**
+     * Returns the file object associated with this file item.
+     * @return the file associated with this file item. There is no guarantee that the file actually exists.
+     */
+    public FileObject getFileObject();
 
     /**
      * Returns a list <String> of compiler defined include paths used when compiling this file item.
@@ -108,8 +116,8 @@ public interface NativeFileItem {
     public Language getLanguage();
     
     /**
-     * Returns the language flavor of the file or GENERIC if unknown.
-     * @return the language flavor (or GENERIC) of the file
+     * Returns the language flavor of the file or UNKNOWN if unknown.
+     * @return the language flavor (or UNKNOWN) of the file
      */
     public LanguageFlavor getLanguageFlavor();
     

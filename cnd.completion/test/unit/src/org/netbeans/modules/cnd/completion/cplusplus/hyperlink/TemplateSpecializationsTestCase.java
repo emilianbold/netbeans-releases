@@ -116,6 +116,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug186388.cpp", 14, 22, "bug186388.cpp", 9, 4);
     }
 
+    public void testBug190668() throws Exception {
+        // Bug 190668 - [code model] Lack of support for template specializations
+        performTest("bug190668.cpp", 16, 6, "bug190668.cpp", 11, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

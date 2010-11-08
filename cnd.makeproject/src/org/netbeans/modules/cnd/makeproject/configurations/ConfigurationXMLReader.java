@@ -108,8 +108,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             displayErrorDialog();
             return null;
         }
-        String path = FileUtil.toFile(projectDirectory).getPath();
-        final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
+        final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected @Override void runImpl() {
@@ -134,7 +133,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         return configurationDescriptor;
     }
 
-    public ConfigurationDescriptor _read(String relativeOffset,
+    private ConfigurationDescriptor _read(String relativeOffset,
             String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
 
         boolean success;

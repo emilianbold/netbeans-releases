@@ -75,7 +75,8 @@ import org.openide.util.NbBundle;
  * TODO: javadoc selection
  *
  * @author Miloslav Metelka, Jan Pokorsky
- */
+ * @deprecated use {@link CslActions#createSelectCodeElementAction(java.lang.String, boolean)  } instead.
+*/
 public final class SelectCodeElementAction extends BaseAction {
     public static final String selectNextElementAction = "select-element-next"; //NOI18N
     public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N

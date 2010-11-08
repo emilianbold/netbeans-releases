@@ -57,10 +57,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
@@ -68,7 +64,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
  */
 public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
-    private Kenai instance;
+//    private Kenai instance;
     private TaskRepositoryManager trm;
     private BugzillaRepositoryConnector brc;
 
@@ -76,176 +72,176 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         super(arg0);
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        try {
-            System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-            System.setProperty("kenai.com.url","https://testkenai.com");
-            instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
-//            instance = KenaiManager.getDefault().getKenai("https://testkenai.com");
-            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-            String username = br.readLine();
-            String password = br.readLine();
-            br.close();
-            instance.login(username, password.toCharArray());
-
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
-
-        trm.addRepositoryConnector(brc);
-
-        WebUtil.init();
-    }
-    
-//    public void testGetRepositoryFromName () throws Throwable {
-//        KenaiProject prj = instance.getProject("golden-project-1");
-//        assertNotNull(prj);
-//
-//        KenaiSupportImpl support = new KenaiSupportImpl();
-//        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
-//        assertNotNull(repo);
-//
-//        trm.addRepository(repo.getTaskRepository());
-//        TestUtil.validate(brc, repo.getTaskRepository());
+//    @Override
+//    protected Level logLevel() {
+//        return Level.ALL;
 //    }
+//
+//    @Override
+//    protected void setUp() throws Exception {
+//        try {
+//            System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+//            System.setProperty("kenai.com.url","https://testkenai.com");
+////            instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
+////            instance = KenaiManager.getDefault().getKenai("https://testkenai.com");
+//            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+//            String username = br.readLine();
+//            String password = br.readLine();
+//            br.close();
+////            instance.login(username, password.toCharArray());
+//
+//        } catch (Exception ex) {
+//            throw new RuntimeException(ex);
+//        }
+//
+//        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+//        try {
+//            bcp.start(null);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        trm = new TaskRepositoryManager();
+//        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
+//
+//        trm.addRepositoryConnector(brc);
+//
+//        WebUtil.init();
+//    }
+    
+////    public void testGetRepositoryFromName () throws Throwable {
+////        KenaiProject prj = instance.getProject("golden-project-1");
+////        assertNotNull(prj);
+////
+////        KenaiSupportImpl support = new KenaiSupportImpl();
+////        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+////        assertNotNull(repo);
+////
+////        trm.addRepository(repo.getTaskRepository());
+////        TestUtil.validate(brc, repo.getTaskRepository());
+////    }
+//
+////    public void testGetRepositoryFromUrl () throws Throwable {
+////        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn");
+////        assertNotNull(prj);
+////
+////        KenaiSupportImpl support = new KenaiSupportImpl();
+////        KenaiRepository repo = (KenaiRepository) support.createRepository(prj);
+////        assertNotNull(repo);
+////
+////        String product = (String) getFieldValue(repo, "product");
+////        assertEquals("golden-project-1", product);
+////
+////        String urlParam = (String) getFieldValue(repo, "urlParam");
+////        assertEquals("product=golden-project-1", urlParam);
+////
+////        String host = (String) getFieldValue(repo, "host");
+////        assertEquals("testkenai.com", host);
+////
+////        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
+////
+////        trm.addRepository(repo.getTaskRepository());
+////        TestUtil.validate(brc, repo.getTaskRepository());
+////    }
 
-//    public void testGetRepositoryFromUrl () throws Throwable {
-//        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn");
-//        assertNotNull(prj);
-//
-//        KenaiSupportImpl support = new KenaiSupportImpl();
-//        KenaiRepository repo = (KenaiRepository) support.createRepository(prj);
+//    public void testCreateRepositoryFromLocation () throws Throwable {
+//        KenaiRepository repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject");
 //        assertNotNull(repo);
-//
-//        String product = (String) getFieldValue(repo, "product");
-//        assertEquals("golden-project-1", product);
-//
-//        String urlParam = (String) getFieldValue(repo, "urlParam");
-//        assertEquals("product=golden-project-1", urlParam);
-//
-//        String host = (String) getFieldValue(repo, "host");
-//        assertEquals("testkenai.com", host);
-//
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
 //        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
 //
-//        trm.addRepository(repo.getTaskRepository());
-//        TestUtil.validate(brc, repo.getTaskRepository());
+//        repo = createRepository("https://testkenai.com/bugzilla/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/bgzll/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com/bgzll", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("kekskenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://kekskenai.com/bgzll", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com:8080/bugzilla/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com:8080/bugzilla", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com:8080/buglist.cgi?product=someproject");
+//        assertNotNull(repo);
+//        assertTrue(KenaiUtil.isKenai(repo));
+//        assertEquals("someproject", getFieldValue(repo, "product"));
+//        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
+//        assertEquals("testkenai.com", getFieldValue(repo, "host"));
+//        assertEquals("https://testkenai.com:8080", repo.getTaskRepository().getUrl());
+//
+//        repo = createRepository("http://testkenai.com/bugzilla/cece.cgi?product=someproject");
+//        assertNull(repo);
+//
+//        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?produ=someproject");
+//        assertNull(repo);
+//
+//        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?productik=someproject");
+//        assertNull(repo);
+//
 //    }
 
-    public void testCreateRepositoryFromLocation () throws Throwable {
-        KenaiRepository repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("https://testkenai.com/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/bgzll/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com/bgzll", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("kekskenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://kekskenai.com/bgzll", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com:8080/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com:8080/bugzilla", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com:8080/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testkenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://testkenai.com:8080", repo.getTaskRepository().getUrl());
-
-        repo = createRepository("http://testkenai.com/bugzilla/cece.cgi?product=someproject");
-        assertNull(repo);
-
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?produ=someproject");
-        assertNull(repo);
-
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?productik=someproject");
-        assertNull(repo);
-
-    }
-
-    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", KenaiProject.class, String.class, String.class);
-        m.setAccessible(true);
-        return (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
-    }
+//    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+//        KenaiSupportImpl support = new KenaiSupportImpl();
+//        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", KenaiProject.class, String.class, String.class);
+//        m.setAccessible(true);
+//        return (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
+//    }
 
 
     private Object getFieldValue(Object obj, String name) throws NoSuchFieldException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -253,9 +249,9 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         f.setAccessible(true);
         return f.get(obj);
     }
-
-    private KenaiProject getKenaiProject() throws KenaiException {
-        return instance.getProject("koliba");
-    }
+//
+//    private KenaiProject getKenaiProject() throws KenaiException {
+//        return instance.getProject("koliba");
+//    }
 
 }

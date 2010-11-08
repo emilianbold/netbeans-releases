@@ -1769,9 +1769,14 @@ widthcheck:  {
                             needed |= getMenuShortcutKeyMask();
 
                             if (isMac()) {
-                                if (!usableKeyOnMac(i, needed)) {
+                                if (!usableKeyOnMac(i, macAlt ? needed | KeyEvent.CTRL_MASK : needed)) {
                                     needed &= ~getMenuShortcutKeyMask();
-                                    needed |= KeyEvent.CTRL_MASK;
+                                    if (macAlt) {
+                                        // CTRL will be added by the "if (macAlt) .." branch bellow
+                                        needed |= KeyEvent.ALT_MASK;
+                                    } else {
+                                        needed |= KeyEvent.CTRL_MASK;
+                                    }
                                 }
                             }
                         }
@@ -1811,11 +1816,15 @@ widthcheck:  {
         //them, so CTRL should not be remapped for these
         if (isOnlyMeta) {
             return (key != KeyEvent.VK_H) && (key != KeyEvent.VK_SPACE) && (key != KeyEvent.VK_TAB);
-        } else if ((key == KeyEvent.VK_D) && isMeta && isAlt) {
-            return false;
-        } else {
-            return true;
         }
+        if ((key == KeyEvent.VK_D) && isMeta && isAlt) {
+            return false;
+        }
+        if (key == KeyEvent.VK_SPACE && isMeta && ((mask & KeyEvent.CTRL_MASK) != 0)) {
+            // http://lists.apple.com/archives/java-dev/2010/Aug/msg00002.html
+            return false;
+        }
+        return true;
     }
 
     private static final int getMenuShortcutKeyMask() {

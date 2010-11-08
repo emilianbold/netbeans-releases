@@ -57,39 +57,43 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private static final RequestProcessor RP = new RequestProcessor(DiscoveryWizardIterator.class.getName(), 1);
     private DiscoveryWizardDescriptor wizard;
-    private WizardDescriptor.Panel[] panels ;
-    private WizardDescriptor.Panel[] simple ;
+    private WizardDescriptor.Panel<WizardDescriptor>[] panels ;
+    private WizardDescriptor.Panel<WizardDescriptor>[] simple ;
     private int index = 0;
     private boolean doClean = true;
     /** Creates a new instance of DiscoveryWizardIterator */
-    public DiscoveryWizardIterator(WizardDescriptor.Panel[] panels, WizardDescriptor.Panel[] simple) {
+    public DiscoveryWizardIterator(WizardDescriptor.Panel<WizardDescriptor>[] panels, WizardDescriptor.Panel<WizardDescriptor>[] simple) {
         this.panels = panels;
         this.simple = simple;
     }
     
     @Override
-    public Set instantiate() throws IOException {
+    public Set<?> instantiate() throws IOException {
         doClean = false;
         RP.post(new Runnable(){
             @Override
             public void run() {
-                if (wizard.isSimpleMode()){
-                    new DiscoveryExtension().canApply(wizard);
-                }
-                DiscoveryProjectGenerator generator;
                 try {
-                    generator = new DiscoveryProjectGenerator(wizard);
-                    generator.makeProject();
-                } catch (IOException ex) {
+                    if (wizard.isSimpleMode()){
+                        new DiscoveryExtension().canApply(wizard);
+                    }
+                    DiscoveryProjectGenerator generator;
+                    try {
+                        generator = new DiscoveryProjectGenerator(wizard);
+                        generator.makeProject();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    wizard.clean();
+                    wizard = null;
+                    panels = null;
+                    simple = null;
+                } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                wizard.clean();
-                wizard = null;
-                panels = null;
-                simple = null;
             }
         });
         return null;
@@ -112,7 +116,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     @Override
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         if (wizard.isSimpleMode()){
             return simple[index];
         } else {

@@ -61,7 +61,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
 import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
-import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;

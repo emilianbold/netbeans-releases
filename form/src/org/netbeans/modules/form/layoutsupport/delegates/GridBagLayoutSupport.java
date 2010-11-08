@@ -62,7 +62,7 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormPropertyContext;
 import org.netbeans.modules.form.RADVisualContainer;
-import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesigner;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesignerWindow;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
 
@@ -88,7 +88,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     }
 
     private boolean isGridDesignerEnabled() {
-        return Boolean.getBoolean("netbeans.modules.form.griddesigner"); // NOI18N
+        return !Boolean.getBoolean("netbeans.modules.form.oldgriddesigner"); // NOI18N
     }
     
     /** Returns a class of customizer for GridBagLayout.
@@ -96,7 +96,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      */
     @Override
     public Class getCustomizerClass() {
-        return isGridDesignerEnabled() ? GridDesigner.class : GridBagCustomizer.Window.class;
+        return isGridDesignerEnabled() ? GridDesignerWindow.class : GridBagCustomizer.Window.class;
     }
 
     /** Creates an instance of customizer for GridBagLayout.
@@ -105,7 +105,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     @Override
     public Component getSupportCustomizer() {
         if (isGridDesignerEnabled()) {
-            GridDesigner designer = new GridDesigner();
+            GridDesignerWindow designer = new GridDesignerWindow();
             RADVisualContainer container = ((LayoutSupportManager)getLayoutContext()).getMetaContainer();
             designer.setObject(container);
             return designer;            

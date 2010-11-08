@@ -48,8 +48,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.settings.ShellSettings;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -213,7 +213,7 @@ public class ShellExecSupport extends ExecutionSupport {
 
         // If no shell command set, read first line in script and use if set here
         if (shellCommand == null || shellCommand.length() == 0) {
-            String fullFileName = FileUtil.toFile(fo).getPath();
+            String fullFileName = CndFileUtils.toFile(fo).getPath();
             try {
                 BufferedReader in = new BufferedReader(new FileReader(fullFileName));
                 if (in != null) {

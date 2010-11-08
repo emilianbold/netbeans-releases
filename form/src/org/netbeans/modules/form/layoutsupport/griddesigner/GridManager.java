@@ -165,8 +165,12 @@ public interface GridManager {
      *
      * Several modification methods are followed by a single invocation
      * of this method in a typical use-case.
+     * 
+     * @param includingSubcontainers determines whether it is sufficient
+     * to update the layout of the managed container or whether
+     * also subcontainers should be updated.
      */
-    void updateLayout();
+    void updateLayout(boolean includingSubcontainers);
 
     /**
      * Returns designer actions for the specified context

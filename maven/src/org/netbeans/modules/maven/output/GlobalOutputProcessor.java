@@ -42,11 +42,16 @@
 package org.netbeans.modules.maven.output;
 
 import java.awt.Color;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.options.MavenOptionController;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -59,6 +64,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
     /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
+    private static final Pattern HELP = Pattern.compile("\\[Help \\d+\\] (https?://.+)"); // NOI18N
     
     /** Creates a new instance of GlobalOutputProcessor */
     public GlobalOutputProcessor() {
@@ -88,6 +94,20 @@ public class GlobalOutputProcessor implements OutputProcessor {
                 public void outputLineCleared(OutputEvent ev) {}
             });
             return;
+        }
+        final Matcher m = HELP.matcher(line);
+        if (m.matches()) {
+            visitor.setOutputListener(new OutputListener() {
+                public @Override void outputLineAction(OutputEvent ev) {
+                    try {
+                        URLDisplayer.getDefault().showURLExternal(new URL(m.group(1)));
+                    } catch (MalformedURLException x) {
+                        Exceptions.printStackTrace(x);
+                    }
+                }
+                public @Override void outputLineSelected(OutputEvent ev) {}
+                public @Override void outputLineCleared(OutputEvent ev) {}
+            });
         }
     }
 

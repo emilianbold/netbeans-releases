@@ -138,6 +138,7 @@
                 <friend>com.sun.tools.dlight.mysql</friend>
                 <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>org.netbeans.modules.dlight.xml</friend>
+                 <friend>com.sun.tools.dlight.txtrace</friend>
                 <package>org.netbeans.modules.dlight.dtrace.collector</package>
             </friend-packages>
         </data>

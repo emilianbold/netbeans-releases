@@ -57,6 +57,7 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -191,7 +192,7 @@ public final class GoToOppositeAction implements TestLocator {
                 TreePath parent = treePath.getParentPath();
                 while (parent != null) {
                     Tree.Kind parentKind = parent.getLeaf().getKind();
-                    if ((parentKind == Tree.Kind.CLASS)
+                    if ((TreeUtilities.CLASS_TREE_KINDS.contains(parentKind))
                             || (parentKind == Tree.Kind.COMPILATION_UNIT)) {
                         break;
                     }

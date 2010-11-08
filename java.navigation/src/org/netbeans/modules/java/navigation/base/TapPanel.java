@@ -62,6 +62,7 @@ import java.lang.ref.*;
 public final class TapPanel extends javax.swing.JPanel {
     public static final int UP = 0;
     public static final int DOWN = 2;
+    public static final String EXPANDED_PROPERTY = "TapPanel.expanded";
 
     public static final String PROP_ORIENTATION = "orientation"; //NOI18N
     private int orientation = UP;
@@ -184,6 +185,7 @@ public final class TapPanel extends javax.swing.JPanel {
             if ( isDisplayable () ) {
                 revalidate();
             }
+            firePropertyChange(EXPANDED_PROPERTY, !expanded, expanded);
         }
     }
 

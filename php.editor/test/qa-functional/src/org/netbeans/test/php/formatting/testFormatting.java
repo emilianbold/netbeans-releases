@@ -106,7 +106,9 @@ public class testFormatting extends formatting {
                 + "?>");
 
         String sTextOriginal = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         String sTextFormatted = eoPHP.getText();
@@ -138,7 +140,9 @@ public class testFormatting extends formatting {
                 + "function testFunction($a, $b, $c) {}"
                 + "\n?>");
         String sTextOriginal = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         String sTextFormatted = eoPHP.getText();
@@ -190,9 +194,9 @@ public class testFormatting extends formatting {
     public void Check_formatting_options_count() throws InterruptedException {
         
         startTest();
-        if (getPlatform() == 4096) 
-            fail("Not implemented for MAC OS X yet!");
-        JDialogOperator window = selectPHPFromEditorOptions(0);
+        
+            JDialogOperator window = selectPHPFromEditorOptions(0, getPlatform());
+//        JDialogOperator window = selectPHPFromEditorOptions(0);
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 2);
@@ -220,7 +224,9 @@ public class testFormatting extends formatting {
 
         EditorOperator eoPHP = new EditorOperator("EmptyPHPWebPage.php");
         String sTextOriginal = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         String sTextFormatted = eoPHP.getText();
@@ -240,7 +246,9 @@ public class testFormatting extends formatting {
         eoPHP.setCaretPosition(0);
         eoPHP.insert("                          ");
         String sTextChanged = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         String sTextFormatted = eoPHP.getText();
@@ -272,7 +280,9 @@ public class testFormatting extends formatting {
 
         EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
         String sTextOriginal = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         String sTextFormatted = eoPHP.getText();
@@ -292,7 +302,9 @@ public class testFormatting extends formatting {
         eoPHP.setCaretPosition(0);
         eoPHP.insert("                          ");
         String sTextChanged = eoPHP.getText();
+        Sleep(1000);
         eoPHP.clickForPopup();
+        Sleep(1000);
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");

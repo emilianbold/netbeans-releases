@@ -55,6 +55,7 @@ import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.DialogDisplayer;
@@ -267,6 +268,11 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
     private static final class PackageFilterNode extends FilterNode {
         
+        private static final String PUBLIC_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/publicBadge.gif";    //NOI18N
+        private static final String PRIVATE_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/privateBadge.gif";  //NOI18N
+        private static Image unlockBadge;
+        private static Image lockBadge;
+        
         public PackageFilterNode (final Node origNode) {
             super (origNode, new PackageFilterChildren (origNode));
         }
@@ -280,8 +286,49 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
                     NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
             }
-        }                
+        }
         
+        @Override
+        public Image getIcon (int type) {
+            return accessibility(super.getIcon(type));
+        }
+
+        @Override
+        public Image getOpenedIcon (int type) {
+            return accessibility(super.getOpenedIcon(type)); 
+        }
+        
+        private Image accessibility(final Image icon) {
+            if (icon == null) {
+                return icon;
+            }
+            final DataObject dobj = getLookup().lookup(DataObject.class);
+            if (dobj == null) {
+                return icon;
+            }
+            final FileObject fo = dobj.getPrimaryFile();
+            if (fo == null) {
+                return icon;
+            }
+            final Boolean pub = AccessibilityQuery.isPubliclyAccessible(fo);
+            if (pub == Boolean.TRUE) {
+                synchronized (PackageFilterNode.class) {
+                    if (unlockBadge == null) {
+                        unlockBadge = ImageUtilities.loadImage(PUBLIC_PACKAGE_BADGE); 
+                    }
+                }
+                return ImageUtilities.mergeImages(icon, unlockBadge, 0, 0);
+            } else if (pub == Boolean.FALSE) {
+                synchronized (PackageFilterNode.class) {
+                    if (lockBadge == null) {
+                        lockBadge = ImageUtilities.loadImage(PRIVATE_PACKAGE_BADGE);
+                    }
+                }
+                return ImageUtilities.mergeImages(icon, lockBadge, 0, 0);
+            } else {
+                return icon;
+            }
+        }
     }
     
 }

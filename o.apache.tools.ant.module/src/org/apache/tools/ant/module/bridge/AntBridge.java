@@ -119,6 +119,9 @@ public final class AntBridge {
             this.bridge = bridge;
             this.customDefs = customDefs;
             this.customDefClassLoaders = customDefClassLoaders;
+            if (mainClassLoader instanceof MainClassLoader) {
+                ((MainClassLoader) mainClassLoader).antInstance = this;
+            }
         }
     }
     private static Reference<AntInstance> antInstance = null;
@@ -614,6 +617,8 @@ public final class AntBridge {
      * Necessary in order to be able to load the intended Ant distro from a unit test.
      */
     private static final class MainClassLoader extends AllPermissionURLClassLoader {
+
+        AntInstance antInstance; // forces AI + MCL to either be collected together, or not at all
         
         public MainClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);

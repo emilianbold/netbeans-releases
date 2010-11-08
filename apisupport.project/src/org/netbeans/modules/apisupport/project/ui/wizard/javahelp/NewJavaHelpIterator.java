@@ -53,6 +53,7 @@ import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -135,20 +136,24 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                         null,
                         // Pick an arbitrary place to put it. Can always be moved elsewhere if anyone cares:
                         Collections.<String,Object>singletonMap("position", 3000 + new Random().nextInt(1000)))); // NOI18N
+
+                boolean isMaven = !(getProject() instanceof NbModuleProject); // XXX clumsy...
                 
                 //copying templates
                 for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {
                     FileObject template = CreatedModifiedFiles.getTemplate(TEMPLATE_RESOURCES[i]);
-                    String filePath = "javahelp/" + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
+                    String filePath = (isMaven ? "src/main/javahelp/" : "javahelp/") + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
                     files.add(files.createFileWithSubstitutions(filePath, template, tokens));
                 }
-                
-                // edit some properties
-                Map<String,String> props = new HashMap<String,String>();
-                // Default for javahelp.base (org/netbeans/modules/foo/docs) is correct.
-                // For <checkhelpset> (currently nb.org modules only, but may be bundled in harness some day):
-                props.put("javahelp.hs", basename + TEMPLATE_SUFFIX_HS); // NOI18N
-                files.add(files.propertiesModification("nbproject/project.properties", props)); // NOI18N
+
+                if (!isMaven) {
+                    // edit some properties
+                    Map<String,String> props = new HashMap<String,String>();
+                    // Default for javahelp.base (org/netbeans/modules/foo/docs) is correct.
+                    // For <checkhelpset> (currently nb.org modules only, but may be bundled in harness some day):
+                    props.put("javahelp.hs", basename + TEMPLATE_SUFFIX_HS); // NOI18N
+                    files.add(files.propertiesModification("nbproject/project.properties", props)); // NOI18N
+                }
                 files.add(files.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "org.netbeans.api.javahelp.Help")); // NOI18N
             }
             return files;

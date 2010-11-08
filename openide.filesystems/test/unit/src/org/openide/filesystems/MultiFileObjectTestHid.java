@@ -64,6 +64,24 @@ public class MultiFileObjectTestHid extends TestBaseHid {
     protected String[] getResources (String testName) {
         return resources;
     }
+    
+    public void testNoDisplayNameNeededForGetAttribute() {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setReadOnly(true);
+        final int[] cnt = new int[1];
+        FileSystem mfs = new MultiFileSystem (new FileSystem[] {lfs, this.testedFS}) {
+            @Override
+            public String getDisplayName() {
+                cnt[0]++;
+                return super.getDisplayName();
+            }
+        };
+        String resource = "/fold20/fold23.txt";
+        
+        FileObject fo = mfs.findResource(resource);                
+        assertNull(fo.getAttribute("not-there"));
+        assertEquals("No call to getDisplayName", 0, cnt[0]);
+    }
 
     /** #18820*/
     public void testDeleteMask() throws IOException {

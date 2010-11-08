@@ -35,6 +35,7 @@ import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -67,7 +68,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new CompilationUnitTest("testNewCompilationUnit"));
 //        suite.addTest(new CompilationUnitTest("test77010"));
 //        suite.addTest(new CompilationUnitTest("test117607_1"));
-//        suite.addTest(new CompilationUnitTest("test117607_2"));
+//        suite.addTest(new CompilationUnitTest("test157760"));
         return suite;
     }
 
@@ -542,6 +543,133 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         assertEquals(res, golden);
     }
      
+     public void test157760a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, "package foo; public @interface YY {}");
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden =
+            "@YY\n" +
+            "package zoo;\n\n" +
+            "import foo.YY;\n";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement yyAnnotation = workingCopy.getElements().getTypeElement("foo.YY");
+                assertNotNull(yyAnnotation);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        Collections.singletonList(make.Annotation(make.QualIdent(yyAnnotation), Collections.<ExpressionTree>emptyList())),
+                        sourceRoot,
+                        "zoo/package-info.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                workingCopy.rewrite(null, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/package-info.java"));
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test157760b() throws Exception {
+        testFile = new File(getWorkDir(), "package-info.java");
+        TestUtilities.copyStringToFile(testFile, "@AA\n@BB\n@CC\npackage foo;");
+
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden = "@EE\n@CC\n@DD\npackage foo;";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree nue = make.addPackageAnnotation(workingCopy.getCompilationUnit(), make.Annotation(make.Identifier("DD"), Collections.<ExpressionTree>emptyList()));
+                nue = make.insertPackageAnnotation(nue, 0, make.Annotation(make.Identifier("EE"), Collections.<ExpressionTree>emptyList()));
+                nue = make.removePackageAnnotation(nue, 1);
+                nue = make.removePackageAnnotation(nue, workingCopy.getCompilationUnit().getPackageAnnotations().get(1));
+                workingCopy.rewrite(workingCopy.getCompilationUnit(), nue);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test157760c() throws Exception {
+        testFile = new File(getWorkDir(), "package-info.java");
+        TestUtilities.copyStringToFile(testFile, "/*\n a\n */\npackage foo;");
+
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden = "/*\n a\n */\n@AA\npackage foo;";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree nue = make.addPackageAnnotation(workingCopy.getCompilationUnit(), make.Annotation(make.Identifier("AA"), Collections.<ExpressionTree>emptyList()));
+                workingCopy.rewrite(workingCopy.getCompilationUnit(), nue);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

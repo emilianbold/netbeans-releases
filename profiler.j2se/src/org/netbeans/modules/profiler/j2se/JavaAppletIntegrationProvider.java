@@ -51,6 +51,7 @@ import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvide
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -64,29 +65,28 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
 
     // -----
     // I18N String constants
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2se.Bundle"); // NOI18N
-    private static final String APPLET_WORKDIR_WINDOWS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_AppletWorkDirWindowsMessage"); // NOI18N
-    private static final String APPLET_WORKDIR_UNIXES_MESSAGE = messages.getString("JavaAppletIntegrationProvider_AppletWorkDirUnixesMessage"); // NOI18N
-    private static final String OPERA_REMOTE_ATTACH_WARNING_MESSAGE = messages.getString("JavaAppletIntegrationProvider_OperaRemoteAttachWarningMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_WINDOWS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteStep4WindowsMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_UNIXES_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteStep4UnixesMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STOP_APPLET_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteStopAppletMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_RESTORE_SETTINGS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualRemoteRestoreSettingsMessage"); // NOI18N
-    private static final String OPERA_DIRECT_ATTACH_WARNING_MESSAGE = messages.getString("JavaAppletIntegrationProvider_OperaDirectAttachWarningMessage"); // NOI18N
-    private static final String MANUAL_LOCAL_STEP1_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualLocalStep1Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_UNIXES_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MAC_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep2MacMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStep3Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STOP_APPLET_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectStopAppletMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_RESTORE_SETTINGS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_WINDOWS_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDynamicStep2WindowsMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_UNIXES_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDynamicStep2UnixesMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP3_MESSAGE = messages.getString("JavaAppletIntegrationProvider_ManualDynamicStep3Message"); // NOI18N
-    private static final String APPLET_TITLE = messages.getString("JavaAppletIntegrationProvider_Title");
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String APPLET_WORKDIR_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_AppletWorkDirWindowsMessage"); // NOI18N
+    private static final String APPLET_WORKDIR_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_AppletWorkDirUnixesMessage"); // NOI18N
+    private static final String OPERA_REMOTE_ATTACH_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_OperaRemoteAttachWarningMessage"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep4WindowsMessage"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep4UnixesMessage"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP5_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
+    private static final String MANUAL_REMOTE_STOP_APPLET_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStopAppletMessage"); // NOI18N
+    private static final String MANUAL_REMOTE_RESTORE_SETTINGS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteRestoreSettingsMessage"); // NOI18N
+    private static final String OPERA_DIRECT_ATTACH_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_OperaDirectAttachWarningMessage"); // NOI18N
+    private static final String MANUAL_LOCAL_STEP1_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualLocalStep1Message"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MAC_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2MacMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep3Message"); // NOI18N
+    private static final String MANUAL_DIRECT_STOP_APPLET_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStopAppletMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_RESTORE_SETTINGS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep2WindowsMessage"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep2UnixesMessage"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep3Message"); // NOI18N
+    private static final String APPLET_TITLE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_Title");
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 

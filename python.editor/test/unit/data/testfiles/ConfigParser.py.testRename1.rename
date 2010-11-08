@@ -1,3 +1,0 @@
-107:     def __init__(self, |>msg<|=''):
-108:         self.message = |>msg<|
-109:         Exception.__init__(self, |>msg<|)

@@ -229,10 +229,18 @@ final class ResultWindow extends TopComponent {
                 tabPane.setComponentAt(i, newView);
                 tabPane.setSelectedComponent(newView);
                 tabPane.validate();
+                copyFilterMask(oldView, newView);
                 continue;
             }
         }
     }
+    
+    private void copyFilterMask(JSplitPane oldView, JSplitPane newView) {
+        StatisticsPanel oldSP = (StatisticsPanel)oldView.getLeftComponent();
+        StatisticsPanel newSP = (StatisticsPanel)newView.getLeftComponent();
+        newSP.copyFilterMask(oldSP);
+    }
+    
     /**
      */
     private boolean isActivated() {

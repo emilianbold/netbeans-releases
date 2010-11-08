@@ -748,6 +748,33 @@ public class CopyFinderTest extends NbTestCase {
         performTest("package test; import java.util.*; public class Test { public void test() { |List| l1; |java.util.List| l2;} }");
     }
     
+    public void testUnresolvableNonMatchingConstraint() throws Exception {
+        performVariablesTest("package test; public class Test { private Object a; {System.err.println(a);} }",
+                             "System.err.println($v{does.not.Exist}",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true);
+    }
+
+    public void testIndexOutOfBoundsInMultiList() throws Exception {
+        performVariablesTest("package test;" +
+                             "public class Test {" +
+                             "    public void test() {" +
+                             "        int i = 0;" +
+                             "        int j = 0;" +
+                             "        i++;" +
+                             "        j++;" +
+                             "    }" +
+                             "}",
+                             "{$type $i = $init; $stms$; $i++;}",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             false);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

@@ -1,3 +1,0 @@
-def |>MARK_OCCURRENCES:myfunc<|(funcparam):
-    x = |>MARK_OCCURRENCES:myf^unc<|
-    |>MARK_OCCURRENCES:myfunc<|(5)

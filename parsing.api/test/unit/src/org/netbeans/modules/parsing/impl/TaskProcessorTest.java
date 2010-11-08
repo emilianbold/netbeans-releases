@@ -89,12 +89,12 @@ public class TaskProcessorTest extends NbTestCase {
         FileUtil.setMIMEType("foo", "text/foo");
         final FileObject foo = wd.createData("file.foo");
         final LogRecord[] warning = new LogRecord[1];
-        final String msgPrefix = "ParserManager.parse called in AWT event thread by: ";
+        final String msgTemplate = "ParserManager.parse called in AWT event thread by: {0}";  //NOI18N
 
         MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory());
         Logger.getLogger(TaskProcessor.class.getName()).addHandler(new Handler() {
             public @Override void publish(LogRecord record) {
-                if (record.getMessage().startsWith(msgPrefix)) {
+                if (record.getMessage().startsWith(msgTemplate)) {
                     warning[0] = record;
                 }
             }
@@ -118,8 +118,8 @@ public class TaskProcessorTest extends NbTestCase {
         });
 
         assertNotNull("No warning when calling ParserManager.parse from AWT", warning[0]);
-        assertEquals("Suspiciosly wrong warning message (is the caller identified correctly?)",
-                msgPrefix + stackTraceUserTask.caller, warning[0].getMessage());
+        assertEquals("Wrong message", msgTemplate, warning[0].getMessage());
+        assertEquals("Suspiciosly wrong warning message (is the caller identified correctly?)", stackTraceUserTask.caller, warning[0].getParameters()[0]);
     }
 
     private static final class FooParserFactory extends ParserFactory {

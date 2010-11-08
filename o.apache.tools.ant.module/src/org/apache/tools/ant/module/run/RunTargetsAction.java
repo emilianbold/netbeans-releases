@@ -62,6 +62,10 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -76,6 +80,11 @@ import org.openide.util.actions.SystemAction;
  * Distinction made between the main target, other documented targets, and other
  * undocumented targets.
  */
+@ActionID(id = "org.apache.tools.ant.module.nodes.RunTargetsAction", category = "Build")
+@ActionRegistration(displayName = "#LBL_run_targets_action")
+@ActionReferences(value = {
+    @ActionReference(position = 900, path = "Editors/text/x-ant+xml/Popup"),
+    @ActionReference(position = 200, path = "Loaders/text/x-ant+xml/Actions")})
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
     @Override

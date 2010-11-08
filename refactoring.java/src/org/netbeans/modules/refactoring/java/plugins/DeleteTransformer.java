@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
@@ -78,7 +79,7 @@ public class DeleteTransformer extends RefactoringVisitor {
         if (elementToFind.equals(el)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             Tree newOne = null;
-            if (parent.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind())) {
                 newOne = make.removeClassMember((ClassTree) parent, tree);
             } else if (parent.getKind() == Tree.Kind.COMPILATION_UNIT) {
                 newOne = make.removeCompUnitTypeDecl((CompilationUnitTree) parent, tree);

@@ -1,0 +1,12 @@
+<!--
+-//SolarisNativeSupport//DTD debugoptions 1.0//EN
+nbrescurr:/com/sun/forte/st/ipe/resources/debugoptions-1_0.dtd
+Document type declaration for a Debugging Options.
+-->
+<!ELEMENT DebugOptions (option?)>
+
+<!ELEMENT option EMPTY>
+<!ATTLIST option 
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED>
+

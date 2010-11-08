@@ -49,6 +49,8 @@ import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,6 +63,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /** JaxWsAddOperation.java
@@ -69,13 +73,18 @@ import org.openide.util.NbBundle;
  * @author mkuchtiak
  */
 public class JaxWsAddOperation implements AddOperationCookie {
-    private FileObject implClassFo;
     private Service service;
+    private DataObject dataObject;
     
     /** Creates a new instance of JaxWsAddOperation */
     public JaxWsAddOperation(FileObject implClassFo) {
-        this.implClassFo=implClassFo;
-        service = getService();
+        try {
+            dataObject = DataObject.find( implClassFo );
+        }
+        catch(DataObjectNotFoundException ex){
+            ErrorManager.getDefault().notify(ex);
+        }
+        service = getService( implClassFo );
     }
     
     public void addOperation() {
@@ -84,9 +93,10 @@ public class JaxWsAddOperation implements AddOperationCookie {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    String className = _RetoucheUtil.getMainClassName(implClassFo);
+                    FileObject primaryFile = dataObject.getPrimaryFile();
+                    String className = _RetoucheUtil.getMainClassName(primaryFile);
                     if (className != null) {
-                        strategy.addMethod(implClassFo, className);
+                        strategy.addMethod(primaryFile, className);
                     }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -104,15 +114,15 @@ public class JaxWsAddOperation implements AddOperationCookie {
         return service != null;
     }
   
-    private Service getService(){
-        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(implClassFo);
+    private Service getService( FileObject fileObject){
+        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(fileObject);
         if (jaxWsSupport!=null) {
             List services = jaxWsSupport.getServices();
             for (int i=0;i<services.size();i++) {
                 Service serv = (Service)services.get(i);
                 if (serv.getWsdlUrl()==null) {
                     String implClass = serv.getImplementationClass();
-                    if (implClass.equals(getPackageName(implClassFo))) {
+                    if (implClass.equals(getPackageName(fileObject))) {
                         return serv;
                     }
                 }

@@ -43,8 +43,6 @@
  */
 package org.netbeans.test.php.cc;
 
-import java.awt.RenderingHints.Key;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -113,7 +111,7 @@ public class testCCPhpDoc extends cc {
                 "<?php\n"
                 + "/**\n"
                 + " *\n"
-                + " * @global <type> $GLOBALS['_myvar']\n"
+                + " * @global type $GLOBALS['_myvar']\n"
                 + " * @name _myvar \n"
                 + " */\n"
                 + "$GLOBALS['_myvar'] = 6;\n"
@@ -174,7 +172,7 @@ public class testCCPhpDoc extends cc {
                 + "class babyclass extends myclass {\n"
                 + "/**\n"
                 + " *\n"
-                + " * @var <type> \n"
+                + " * @var type \n"
                 + " */\n"
                 + "var $secondvar = 42;\n"
                 + "var $thirdvar;\n"
@@ -208,12 +206,12 @@ public class testCCPhpDoc extends cc {
                 + "class babyclass extends myclass {\n"
                 + "/**\n"
                 + " *\n"
-                + " * @var <type> \n"
+                + " * @var type \n"
                 + " */\n"
                 + "var $secondvar = 42;\n"
                 + "/**\n"
                 + " *\n"
-                + " * @var <type> \n"
+                + " * @var type \n"
                 + " */\n"
                 + "var $thirdvar;\n"
                 + "function babyclass() {\n"
@@ -274,10 +272,10 @@ public class testCCPhpDoc extends cc {
         String idealText = "<?php\n"
                 + "/**\n"
                 + " *\n"
-                + " * @global <type> $_myvar\n"
+                + " * @global type $_myvar\n"
                 + " * @staticvar int $staticvar\n"
-                + " * @param <type> $param1\n"
-                + " * @param <type> $param2\n"
+                + " * @param type $param1\n"
+                + " * @param type $param2\n"
                 + " * @return int \n"
                 + " */\n"
                 + "function firstFunc($param1, $param2 = 'optional') {\n"

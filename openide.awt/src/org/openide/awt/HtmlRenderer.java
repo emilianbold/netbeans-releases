@@ -1208,7 +1208,7 @@ public final class HtmlRenderer {
 
             s = new String(ch, colorPos, end - colorPos);
         } else {
-            s = new String(ch, colorPos, 6);
+            s = new String(ch, colorPos, Math.min(ch.length-colorPos, 6));
         }
 
         Color result = null;

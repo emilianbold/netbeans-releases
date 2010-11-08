@@ -47,7 +47,6 @@ package org.netbeans.modules.java.j2seproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -90,10 +89,6 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         return Level.INFO;
         // we are only interested in a single logger, so we set its level in setUp(),
         // as returning Level.FINEST here would log from all loggers
-    }
-
-    public PrintStream getLog() {
-        return System.err;
     }
 
     protected @Override int timeOut() {

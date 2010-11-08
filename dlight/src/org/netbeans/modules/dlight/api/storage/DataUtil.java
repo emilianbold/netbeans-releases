@@ -52,6 +52,30 @@ public final class DataUtil {
     }
 
     /**
+     * Tries to convert given object to array of integers.
+     * <code>Number</code> subclasses are converted using <code>intValue()</code> method.
+     * <code>String</code>s are parsed with <code>Integer.parseInt()</code>.
+     * string can have multiple integers divided by space
+     *
+     * @param obj  converted object
+     * @return coversion result
+     */
+    public static int[] toInts(Object obj) {
+        if (obj instanceof Number) {
+            return new int[] {((Number)obj).intValue()};
+        } else if (obj instanceof String) {
+            String[] split = ((String)obj).split(" "); // NOI18N
+            int out[] = new int[split.length];
+            for (int i = 0; i < split.length; i++) {
+                String string = split[i];
+                out[i] = toInt(string);
+            }
+            return out;
+        }
+        return new int[0];
+    }
+    
+    /**
      * Shortcut for {@link #toInt(java.lang.Object, int)}
      * with <code>defaultValue = 0</code>.
      * 

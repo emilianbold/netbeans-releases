@@ -65,7 +65,7 @@ public class HelperUtility {
     private final HashMap<ExecutionEnvironment, String> cache = new HashMap<ExecutionEnvironment, String>();
     private final String pattern;
 
-    protected HelperUtility(String searchPattern) {
+    public HelperUtility(String searchPattern) {
         pattern = searchPattern;
     }
 

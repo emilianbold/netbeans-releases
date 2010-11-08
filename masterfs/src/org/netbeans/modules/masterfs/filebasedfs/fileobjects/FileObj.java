@@ -100,10 +100,11 @@ public class FileObj extends BaseFileObj {
             throw new IOException(f.getAbsolutePath());
         }
         
+        final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
+
         if (extensions != null) {
             extensions.beforeChange(mfo);
-        }        
-        final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
+        }
         
         FileOutputStream retVal = null;
         try {

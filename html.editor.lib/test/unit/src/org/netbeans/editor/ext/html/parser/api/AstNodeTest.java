@@ -41,6 +41,8 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -56,6 +58,13 @@ public class AstNodeTest extends TestBase {
         super(testName);
     }
 
+
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+    
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AstNodeTest(""));
@@ -89,6 +98,20 @@ public class AstNodeTest extends TestBase {
         assertEquals("xmlns", attr.namespacePrefix());
 
 
+    }
+
+    public void testRemoveChildren_Issue_191276() {
+        AstNode node = new AstNode("div", AstNode.NodeType.OPEN_TAG, 0, 3, false);
+        AstNode node2 = new AstNode("div", AstNode.NodeType.OPEN_TAG, 3, 6, true);
+        AstNode node3 = new AstNode("div", AstNode.NodeType.OPEN_TAG, 6, 9, true);
+
+        node.addChild(node2);
+        node.addChild(node3);
+
+        List<AstNode> children = node.children();
+
+        //we can directly remove the children w/o java.util.ConcurrentModificationException
+        node.removeChildren(children);
     }
 
 }

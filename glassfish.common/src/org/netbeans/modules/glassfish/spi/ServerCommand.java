@@ -215,7 +215,7 @@ public abstract class ServerCommand {
             if(message != null && message.contains("please wait")) {
                 retry = true;
             } else {
-                serverMessage = message;
+                serverMessage = null != message ? message.replaceAll("%%%EOL%%%", "\n") : "";
             }
             Logger.getLogger("glassfish").log(Level.WARNING, message);
         }

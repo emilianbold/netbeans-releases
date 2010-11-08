@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -73,6 +72,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -146,6 +147,9 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
+    public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
+    public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
+
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
@@ -173,16 +177,18 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
+    private /*final*/ RemoteProject.Mode remoteMode;
+    private ExecutionEnvironment remoteFileSystemHost;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
-        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         this.kind = new MakeProjectType();
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
-        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
@@ -198,6 +204,31 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             projectType = new Integer(typeTxt).intValue();
         }
 
+        remoteMode = RemoteProject.DEFAULT_MODE;
+        NodeList remoteModeNodeList = data.getElementsByTagName(REMOTE_MODE);
+        if (remoteModeNodeList.getLength() == 1) {
+            remoteModeNodeList = remoteModeNodeList.item(0).getChildNodes();
+            String t = remoteModeNodeList.item(0).getNodeValue();
+            RemoteProject.Mode mode = RemoteProject.Mode.valueOf(t);
+            CndUtils.assertNotNull(mode, "can not restore remote mode " + t); //NOI18N
+            if (mode != null) {
+                remoteMode = mode;
+            }
+        } else if(remoteModeNodeList.getLength() > 0) {
+            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
+        }
+
+        remoteFileSystemHost = ExecutionEnvironmentFactory.getLocal();
+        NodeList remoteFSHostNodeList = data.getElementsByTagName(REMOTE_FILESYSTEM_HOST);
+        if (remoteFSHostNodeList.getLength() == 1) {
+            remoteFSHostNodeList = remoteFSHostNodeList.item(0).getChildNodes();
+            String hostID = remoteFSHostNodeList.item(0).getNodeValue();
+            // XXX:fullRemote: separate user from host!
+            remoteFileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
+        } else if(remoteFSHostNodeList.getLength() > 0) {
+            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
+        }
+
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
@@ -206,7 +237,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
-        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
     }
 
     private void readProjectExtension(Element data, String key, Set<String> set) {
@@ -218,6 +249,22 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
+    }
+
+    /*package*/ void setRemoteMode(RemoteProject.Mode mode) {
+        remoteMode = mode;
+    }
+
+    public RemoteProject.Mode getRemoteMode() {
+        return remoteMode;
+    }
+
+    public ExecutionEnvironment getRemoteFileSystemHost() {
+        return remoteFileSystemHost;
+    }
+
+    /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
+        this.remoteFileSystemHost = remoteFileSystemHost;
     }
 
     @Override
@@ -267,7 +314,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
-                    new AntProjectHelperProvider(),
+                    helper,
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
                     new NativeProjectProvider(this, projectDescriptorProvider),
@@ -493,13 +540,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     // Package private methods -------------------------------------------------
-    private final class AntProjectHelperProvider {
-
-        AntProjectHelper getAntProjectHelper() {
-            return helper;
-        }
-    }
-
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         private static final String[] RECOMMENDED_TYPES = new String[]{
@@ -725,7 +765,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             for (String loc : subProjectLocations) {
                 String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
-                    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(location));
                     Project project = ProjectManager.getDefault().findProject(fo);
                     if (project != null) {
                         subProjects.add(project);
@@ -928,12 +968,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     void setDeleted(){
-        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         isDeleted.set(true);
     }
 
     private synchronized void onProjectClosed(){
-        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         save();
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().closed();
@@ -1042,10 +1082,40 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     private class RemoteProjectImpl implements RemoteProject {
+        
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
+        }
+
+        @Override
+        public ExecutionEnvironment getSourceFileSystemHost() {
+            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                return remoteFileSystemHost;
+            } else {
+                return ExecutionEnvironmentFactory.getLocal();
+            }
+        }
+
+        @Override
+        public Mode getRemoteMode() {
+            return remoteMode;
+        }
+
+        @Override
+        public RemoteSyncFactory getSyncFactory() {
+            // TODO:fullRemote: think over, should mode be checked here?
+            // Probably noit sice fixed factory is set to configurations in the cae of full remote
+            switch (remoteMode) {
+                case LOCAL_SOURCES:
+                    return getActiveConfiguration().getRemoteSyncFactory();
+                case REMOTE_SOURCES:
+                    return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+                default:
+                    CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
+                    return getActiveConfiguration().getRemoteSyncFactory();
+            }
         }
     }
     

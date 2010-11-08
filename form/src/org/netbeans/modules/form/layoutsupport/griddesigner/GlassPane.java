@@ -220,7 +220,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 int oldColumns = info.getColumnCount();
                 int oldRows = info.getRowCount();
                 GridUtils.removePaddingComponents(gridManager);
-                gridManager.updateLayout();
+                gridManager.updateLayout(false);
                 GridUtils.revalidateGrid(gridManager);
                 int newColumns = info.getColumnCount();
                 int newRows = info.getRowCount();
@@ -1033,12 +1033,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     // Column selection
                     int column = findColumnHeader(point);
                     if (column != -1) {
-                        selectedColumns.flip(column);
+//                        selectedColumns.flip(column);
                     }
                     // Row selection
                     int row = findRowHeader(point);
                     if (row != -1) {
-                        selectedRows.flip(row);
+//                        selectedRows.flip(row);
                     }
                 } else {
                     // Resizing (start)

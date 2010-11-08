@@ -131,7 +131,7 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             return;
         }
         LOG.log(Level.FINE, "EQ stuck in {0}", eq);
-        LOG.log(Level.WARNING, null, new EQStuck(eq));
+        LOG.log(Level.INFO, null, new EQStuck(eq));
         eq.stop();
     }
     private static class EQStuck extends Throwable {

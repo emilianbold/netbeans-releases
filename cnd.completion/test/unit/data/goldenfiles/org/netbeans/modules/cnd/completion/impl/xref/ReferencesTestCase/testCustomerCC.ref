@@ -20,7 +20,7 @@
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
+    FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
 ==============================================================
 'string', tokenID=identifier, offset=2153 [44:26/2153-44:32/2159]
 --OWNER:
@@ -74,7 +74,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetDiscount() const  [49:1/2242-51:2/2300] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    FUNCTION GetDiscount() const  [53:9/2319-53:33/2343] ReferencesTestCase/customer.h
+    FUNCTION_DEFINITION GetDiscount() const  [49:1/2242-51:2/2300] ReferencesTestCase/customer.cc
 ==============================================================
 'discount', tokenID=identifier, offset=2289 [50:12/2289-50:20/2297]
 --OWNER:
@@ -98,7 +98,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetName() const  [53:1/2302-55:2/2355] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    FUNCTION GetName() const  [52:9/2287-52:32/2310] ReferencesTestCase/customer.h
+    FUNCTION_DEFINITION GetName() const  [53:1/2302-55:2/2355] ReferencesTestCase/customer.cc
 ==============================================================
 'name', tokenID=identifier, offset=2348 [54:12/2348-54:16/2352]
 --OWNER:

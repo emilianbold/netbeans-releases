@@ -53,7 +53,18 @@ import java.util.*;
  * @author David Kaspar
  */
 public class DocumentSupport {
-    
+
+    /**
+     * Gathers all components the main tree of components in a specific document.
+     * @param document the document
+     * @return the list of components
+     */
+    public static Iterable<DesignComponent> gatherAllComponents(DesignDocument document) {
+        ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
+        gatherAllComponents(list, document.getRootComponent());
+        return list;
+    }
+
     /**
      * Gathers all components in main tree of components in a specific document.
      * It returns a list of components that are or inherits a specific type-id using DescriptorRegistry.isInHierarchy method.
@@ -80,6 +91,13 @@ public class DocumentSupport {
             gatherAllComponentsContainingPresenterClass(list, rootComponent, presenterClass);
         return list;
     }
+
+    private static void gatherAllComponents(List<DesignComponent> list, DesignComponent component) {
+        list.add (component);
+        for (DesignComponent child : component.getComponents())
+            gatherAllComponents(list, child);
+    }
+
     
     private static <T extends Presenter> void gatherAllComponentsContainingPresenterClass(ArrayList<DesignComponent> list, DesignComponent component, Class<T> presenterClass) {
         if (component.getPresenter(presenterClass) != null)

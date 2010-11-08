@@ -301,7 +301,7 @@ public class ProxyClassLoader extends ClassLoader {
             } catch (NoClassDefFoundError e) {
                 // #145503: we can make a guess as to what triggered this error (since the JRE does not inform you).
                 // XXX Exceptions.attachMessage does not seem to work here
-                throw (NoClassDefFoundError) new NoClassDefFoundError(e.getMessage() + " while loading " + pkg + name +
+                throw (NoClassDefFoundError) new NoClassDefFoundError(e.getMessage() + " while loading " + name +
                         "; see http://wiki.netbeans.org/DevFaqTroubleshootClassNotFound").initCause(e); // NOI18N
             }
             if (LOG_LOADING && !name.startsWith("java.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
@@ -341,6 +341,10 @@ public class ProxyClassLoader extends ClassLoader {
      */
     @Override
     public final URL getResource(String name) {
+        return getResourceImpl(name);
+    }
+    
+    URL getResourceImpl(String name) {
         URL url = null;
         name = stripInitialSlash(name);
 
@@ -400,7 +404,11 @@ public class ProxyClassLoader extends ClassLoader {
     }
     
     @Override
-    public final synchronized Enumeration<URL> getResources(String name) throws IOException {
+    public final Enumeration<URL> getResources(String name) throws IOException {
+        return getResourcesImpl(name);
+    }
+    
+    synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         final String path = name.substring(0, slashIdx + 1);

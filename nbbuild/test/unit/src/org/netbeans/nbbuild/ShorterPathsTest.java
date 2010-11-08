@@ -50,24 +50,17 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.Properties;
-import org.netbeans.junit.*;
 
 /**
  *
  * @author pzajac
  */
-public class ShorterPathsTest extends NbTestCase {
+public class ShorterPathsTest extends TestBase {
     
     public ShorterPathsTest(java.lang.String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-    }
-    
     public void testShorterPaths () throws Exception {
       // create test
       File wd = getWorkDir(); 
@@ -85,7 +78,7 @@ public class ShorterPathsTest extends NbTestCase {
       ps.close();
       
       
-      PublicPackagesInProjectizedXMLTest.execute ("ShorterPathsTest.xml", new String[] {"-verbose",  
+      execute ("ShorterPathsTest.xml", new String[] {"-verbose",  
                                                                                         "-Dtest.ext.lib=" + extlib.getPath(),
                                                                                         "-Dtest.modules.dir=" + modules.getPath(),
                                                                                         "-Dextra.test.libs.dir=" + extraLibsDir.getPath(),

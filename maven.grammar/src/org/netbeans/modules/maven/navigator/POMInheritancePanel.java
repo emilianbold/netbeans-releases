@@ -45,18 +45,18 @@ package org.netbeans.modules.maven.navigator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.openide.actions.EditAction;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -67,15 +67,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -123,7 +121,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             if (file != null) {
                 try {
                     List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
-                    final Children ch = new PomChildren(lin);
+                    final Children ch = Children.create(new PomChildren(lin), false);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(false);
@@ -225,47 +223,46 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         return an;
     }
     
-    private static class PomChildren extends Children.Keys<List<Model>> {
+    private static class PomChildren extends ChildFactory<Model> {
 
-        public PomChildren(List<Model> lineage) {
-            setKeys(new List[] {lineage});
+        private final List<Model> lineage;
+
+        PomChildren(List<Model> lineage) {
+            this.lineage = lineage;
+        }
+
+        protected @Override boolean createKeys(List<Model> toPopulate) {
+            toPopulate.addAll(lineage);
+            return true;
         }
         
-        @Override
-        protected Node[] createNodes(List<Model> key) {
-            Iterator<Model> it = key.listIterator();
-            List<POMNode> nds = new ArrayList<POMNode>();
-            String parentVersion = null;
-            while (it.hasNext()) {
-                Model mdl = it.next();
-                File fl = mdl.getPomFile();
-                if (fl != null) {
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
-                    InstanceContent ic = new InstanceContent();
-                    if (fo != null) {
-                        try {
-                            DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                            if (dobj != null) {
-                                ic.add(dobj);
-                                EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                                if (ec != null) {
-                                    ic.add(ec);
-                                }
-                            }
-                        } catch (DataObjectNotFoundException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-
-                    nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
-                    if (mdl.getVersion() != null) {
-                        parentVersion = mdl.getVersion();
+        protected @Override Node createNodeForKey(Model mdl) {
+            File fl = mdl.getPomFile();
+            String version = mdl.getVersion();
+            if (version == null && mdl.getParent() != null) {
+                version = mdl.getParent().getVersion();
+            }
+            if (fl == null && version != null) {
+                ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+                DefaultArtifactHandler handler = new DefaultArtifactHandler();
+                handler.setExtension("pom");
+                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
+            }
+            if (fl != null) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
+                DataObject dobj = null;
+                if (fo != null) {
+                    try {
+                        dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
+                return new POMNode(fl, mdl, dobj, version);
+            } else {
+                return null;
             }
-            return nds.toArray(new Node[0]);
         }
-        
     }
 
     
@@ -273,18 +270,16 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
-        private POMNode(File key, Model mdl, Lookup lkp, String parentVersion) {
-            super( Children.LEAF, lkp);
-            String version = mdl.getVersion();
-            if (version == null) {
-                version = parentVersion;
-            }
+        private final DataObject dobj;
+        private POMNode(File key, Model mdl, DataObject dobj, String version) {
+            super(Children.LEAF);
             setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "TITLE_PomNode", mdl.getArtifactId(), version));
-            if (key.getName().endsWith("pom")) { //NOI18N
+            if (!dobj.getPrimaryFile().canWrite()) {
                 //coming from repository
                 readonly = true;
             }
             setShortDescription(key.getAbsolutePath());
+            this.dobj = dobj;
         }
 
         @Override
@@ -296,7 +291,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
 
         @Override
         public Action getPreferredAction() {
-            return EditAction.get(EditAction.class);
+            return new MyEditAction();
         }
 
         @Override
@@ -321,15 +316,17 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             
             public MyEditAction() {
                 putValue(NAME, NbBundle.getMessage(POMInheritancePanel.class, "ACTION_Edit"));
-                setEnabled(true);
+                setEnabled(dobj != null);
             }
             
-            public void actionPerformed(ActionEvent e) {
-                EditCookie ec = POMNode.this.getLookup().lookup(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
+            public @Override void actionPerformed(ActionEvent e) {
+                if (dobj != null) {
+                    EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                    if (ec != null) {
+                        ec.edit();
+                    }
                 }
             }
         }
     }
-}
+    }

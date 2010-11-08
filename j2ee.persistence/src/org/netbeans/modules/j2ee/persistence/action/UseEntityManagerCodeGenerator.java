@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -57,6 +58,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -84,7 +86,7 @@ public class UseEntityManagerCodeGenerator implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            path = path != null ? getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
             if (component == null || controller == null || path == null)
                 return ret;
             try {
@@ -179,7 +181,7 @@ public class UseEntityManagerCodeGenerator implements CodeGenerator {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }
 
-    public static TreePath getPathElementOfKind(EnumSet<Tree.Kind> kinds, TreePath path) {
+    public static TreePath getPathElementOfKind(Set<Tree.Kind> kinds, TreePath path) {
         while (path != null) {
             if (kinds.contains(path.getLeaf().getKind()))
                 return path;

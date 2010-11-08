@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +60,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
@@ -71,7 +73,6 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -88,9 +89,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private Pattern outDirPattern;
     String outputDir;
     String runningTestClass;
-    private Pattern testNamePattern = Pattern.compile(".*\\((.*)\\).*<<< (?:FAILURE)?(?:ERROR)?!\\s*"); //NOI18N
     
-    private Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private RunConfig config;
     
     public JUnitOutputListenerProvider(Project project, RunConfig config) {
@@ -103,13 +103,13 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
 
-    public String[] getRegisteredOutputSequences() {
+    public @Override String[] getRegisteredOutputSequences() {
         return new String[] {
             "mojo-execute#surefire:test" //NOI18N
         };
     }
 
-    public void processLine(String line, OutputVisitor visitor) {
+    public @Override void processLine(String line, OutputVisitor visitor) {
         if (session == null) {
             return;
         }
@@ -135,7 +135,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
     }
 
-    public void sequenceStart(String sequenceId, OutputVisitor visitor) {
+    public @Override void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
             TestSession.SessionType type = TestSession.SessionType.TEST;
             String action = config.getActionName();
@@ -148,26 +148,26 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
                     new JUnitTestRunnerNodeFactory(session, prj));
             session.setRerunHandler(new RerunHandler() {
-                public void rerun() {
+                public @Override void rerun() {
                     RunUtils.executeMaven(config);
                 }
-                public void rerun(Set<Testcase> tests) {
+                public @Override void rerun(Set<Testcase> tests) {
                     //not implemented yet
                 }
-                public boolean enabled(RerunType type) {
+                public @Override boolean enabled(RerunType type) {
                     //TODO debug doesn't property update debug port in runconfig..
                     return RerunType.ALL.equals(type) && fType.equals(TestSession.SessionType.TEST);
                 }
-                public void addChangeListener(ChangeListener listener) {
+                public @Override void addChangeListener(ChangeListener listener) {
                 }
-                public void removeChangeListener(ChangeListener listener) {
+                public @Override void removeChangeListener(ChangeListener listener) {
                 }
             });
             Manager.getInstance().testStarted(session);
         }
     }
 
-    public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
+    public @Override void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
             return;
         }
@@ -217,7 +217,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
 
 
-    public void sequenceFail(String sequenceId, OutputVisitor visitor) {
+    public @Override void sequenceFail(String sequenceId, OutputVisitor visitor) {
         sequenceEnd(sequenceId, visitor);
     }
 
@@ -278,8 +278,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
-        } catch (Exception exc) {
-            ErrorManager.getDefault().notify(exc);
+        } catch (JDOMException x) {
+            LOG.log(Level.INFO, "parsing " + report, x);
+        } catch (Exception x) {
+            LOG.log(Level.WARNING, "parsing " + report, x);
         }
     }
 

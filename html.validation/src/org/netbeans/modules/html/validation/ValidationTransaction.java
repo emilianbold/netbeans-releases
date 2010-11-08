@@ -23,8 +23,10 @@
 package org.netbeans.modules.html.validation;
 
 import java.net.URL;
+import java.util.ArrayList;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
@@ -204,8 +206,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private ProblemsHandler problemsHandler = new ProblemsHandler();
     private LinesMapper linesMapper = new LinesMapper();
 
-    public static synchronized ValidationTransaction getInstance() {
-        return new ValidationTransaction();
+    private HtmlVersion version;
+
+    public static synchronized ValidationTransaction create(HtmlVersion version) {
+        return new ValidationTransaction(version);
     }
 
     private static void  initializeLocalEntities_HACK() {
@@ -434,12 +438,24 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return false;
     }
 
-    public ValidationTransaction() {
+    public ValidationTransaction(HtmlVersion version) {
+        this.version = version;
         initialize();
     }
 
     public List<ProblemDescription> getFoundProblems() {
         return problemsHandler.getProblems();
+    }
+
+    /** return a list of problems with the given severity and higher (more severe issues) */
+    public List<ProblemDescription> getFoundProblems(int ofThisTypeAndMoreSevere) {
+        List<ProblemDescription> filtered = new ArrayList<ProblemDescription>();
+        for(ProblemDescription pd : getFoundProblems()) {
+            if(pd.getType() >= ofThisTypeAndMoreSevere) {
+                filtered.add(pd);
+            }
+        }
+        return filtered;
     }
 
     public long getValidationTime() {
@@ -451,7 +467,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         
         codeToValidate = code;
         document = null; //represents an URI where the document can be loaded
-        setup();
+        parser = htmlVersion2ParserMode(version);
 //        charsetOverride = "UTF-8";
         filteredNamespaces = Collections.emptySet();
         int lineOffset = 0;
@@ -469,22 +485,28 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     public boolean isSuccess() {
-        return getFoundProblems().isEmpty();
+        return getFoundProblems(ProblemDescription.WARNING).isEmpty();
 
     }
 
-    public void setup() {
-        //no need for this, using the validatorByDoctype(int) instead        
-//        schemaUrls = "http://s.validator.nu/html5/html5full.rnc "
-//                + "http://s.validator.nu/html5/assertions.sch "
-//                + "http://c.validator.nu/all/";
-
-        parser = ParserMode.HTML; //html5
-//        parser = ParserMode.HTML401_STRICT;
-//        parser = ParserMode.HTML401_TRANSITIONAL;
-
-        laxType = false;
-
+    private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
+        if(version.isXhtml()) {
+            return ParserMode.XML_NO_EXTERNAL_ENTITIES;
+        } else {
+            switch(version) {
+                case HTML41_STRICT:
+                    return ParserMode.HTML401_STRICT;
+                case HTML41_TRANSATIONAL:
+                    return ParserMode.HTML401_TRANSITIONAL;
+                case HTML41_FRAMESET:
+                    return ParserMode.AUTO; //???
+                case HTML5:
+                    return ParserMode.HTML;
+                default:
+                    return ParserMode.AUTO;
+            }
+        }
+        
     }
 
     private boolean isHtmlUnsafePreset() {
@@ -539,7 +561,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             setAllowRnc(false);
 
             loadDocAndSetupParser();
-            setErrorProfile();
+            if(htmlParser != null) {
+                setErrorProfile();
+            }
 
             reader.setErrorHandler(errorHandler);
             contentType = documentInput.getType();
@@ -579,6 +603,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 }
                 xmlParser.setErrorHandler(errorHandler.getExactErrorHandler());
                 xmlParser.lockErrorHandler();
+                xmlParser.setCharacterHandler(linesMapper);
             } else {
                 throw new RuntimeException("Bug. Unreachable.");
             }
@@ -907,13 +932,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             errorHandler.setSpec(html5spec);
         }
         Schema sch = resolveSchema(url, jingPropertyMap);
-        Validator validator = sch.createValidator(jingPropertyMap);
-        if (validator.getContentHandler() instanceof XmlPiChecker) {
-            lexicalHandler = (LexicalHandler) validator.getContentHandler();
+        Validator validatorInstance = sch.createValidator(jingPropertyMap);
+        if (validatorInstance.getContentHandler() instanceof XmlPiChecker) {
+            lexicalHandler = (LexicalHandler) validatorInstance.getContentHandler();
         }
 
         loadedValidatorUrls.put(url, v);
-        return validator;
+        return validatorInstance;
     }
 
     public Schema resolveSchema(String url, PropertyMap options)
@@ -957,7 +982,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private static Schema schemaByUrl(String url, EntityResolver resolver,
             PropertyMap pMap) throws SAXException, IOException,
             IncorrectSchemaException {
-        LOGGER.fine("Will load schema: " + url);
+        LOGGER.fine(String.format("Will load schema: %s", url));
         long a = System.currentTimeMillis();
         TypedInputSource schemaInput;
         try {
@@ -979,7 +1004,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         long c = System.currentTimeMillis();
 
         Schema sch = sr.createSchema(schemaInput, pMap);
-        LOGGER.log(Level.FINE, "Schema created in " + (System.currentTimeMillis() - c) + " ms.");
+        LOGGER.log(Level.FINE, String.format("Schema created in %s ms.", (System.currentTimeMillis() - c)));
         return sch;
     }
 

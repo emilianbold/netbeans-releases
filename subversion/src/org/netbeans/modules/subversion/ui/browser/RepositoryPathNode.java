@@ -266,7 +266,7 @@ public class RepositoryPathNode extends AbstractNode {
 
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_LIST);
+            setKeys(Collections.emptyList());
             super.removeNotify();
         }
 
@@ -350,7 +350,7 @@ public class RepositoryPathNode extends AbstractNode {
 
                     } catch (SVNClientException ex) {
                         Collection entries = getPreviousNodeEntries();
-                        if(entries.size() == 0) {
+                        if(entries.isEmpty()) {
                             setKeys(Collections.singleton(errorNode(ex)));
                         }
                         return;
@@ -441,13 +441,14 @@ public class RepositoryPathNode extends AbstractNode {
     private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
     private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");
 
-    private class RevisionProperty extends NodeProperty {
+    private class RevisionProperty extends NodeProperty<String> {
         public RevisionProperty() {
             super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return entry.getLastChangedRevision();
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            SVNRevision r = entry.getLastChangedRevision();
+            return r != null ? r.toString() : "";
         }
     }
 

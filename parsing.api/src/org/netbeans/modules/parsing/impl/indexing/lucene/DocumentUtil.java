@@ -42,15 +42,8 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.document.SetBasedFieldSelector;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -75,23 +68,4 @@ public class DocumentUtil {
         assert relativePath != null;
         return new Term (FIELD_SOURCE_NAME, relativePath);
     }
-
-    // when fields == null load all fields
-    static FieldSelector selector (String... fieldNames) {
-        if (fieldNames != null && fieldNames.length > 0) {
-            final Set<String> fields = new HashSet<String>(Arrays.asList(fieldNames));
-            fields.add(FIELD_SOURCE_NAME);
-            final FieldSelector selector = new SetBasedFieldSelector(fields,
-                    Collections.<String>emptySet());
-            return selector;
-        } else {
-            return ALL;
-        }
-    }
-
-    private static final FieldSelector ALL = new FieldSelector() {
-        public FieldSelectorResult accept(String arg0) {
-            return FieldSelectorResult.LOAD;
-        }
-    };
 }

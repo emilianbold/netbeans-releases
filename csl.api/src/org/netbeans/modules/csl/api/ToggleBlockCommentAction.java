@@ -66,6 +66,9 @@ import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.openide.util.Exceptions;
 
+/**
+ * @deprecated use {@link CslActions#createToggleBlockCommentAction() } instead.
+ */
 public class ToggleBlockCommentAction extends BaseAction {
 
     // -J-Dorg.netbeans.modules.csl.api.ToggleBlockCommentAction.level=FINE

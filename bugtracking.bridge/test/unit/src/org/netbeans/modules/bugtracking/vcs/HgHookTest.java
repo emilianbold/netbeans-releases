@@ -62,6 +62,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
@@ -92,9 +93,9 @@ public class HgHookTest extends NbTestCase {
     public void testPanel() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(true);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
 
         HookPanel panel = getPanel(hook, getContext());
         assertTrue(panel.pushRadioButton.isVisible());
@@ -105,9 +106,9 @@ public class HgHookTest extends NbTestCase {
         assertTrue(panel.commitRadioButton.isSelected());
         assertFalse(panel.pushRadioButton.isSelected());
 
-        VCSHooksConfig.getInstance().setHgLink(false);
-        VCSHooksConfig.getInstance().setHgResolve(false);
-        VCSHooksConfig.getInstance().setHgAfterCommit(false);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(false);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(false);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(false);
 
         panel = getPanel(hook, getContext());
 
@@ -120,7 +121,7 @@ public class HgHookTest extends NbTestCase {
     public void testBeforeCommitNoLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(false);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(false);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -133,7 +134,7 @@ public class HgHookTest extends NbTestCase {
     public void testBeforeCommitWithLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(true);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(true);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -149,9 +150,9 @@ public class HgHookTest extends NbTestCase {
     public void testAfterCommitLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(false);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(true);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(false);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -166,9 +167,9 @@ public class HgHookTest extends NbTestCase {
     public void testAfterCommitResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(false);
-        VCSHooksConfig.getInstance().setHgResolve(true);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(false);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -182,9 +183,9 @@ public class HgHookTest extends NbTestCase {
     public void testAfterCommitLinkResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
+        VCSHooksConfig.getInstance(HookType.HG).setLink(true);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -199,9 +200,9 @@ public class HgHookTest extends NbTestCase {
     public void testAfterCommitLinkResolveAfterPush() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HgHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(false); // PUSH!
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
+        VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(false); // PUSH!
+        VCSHooksConfig.getInstance(HookType.HG).setLink(true);
+        VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
 
         String changeset = "#" + System.currentTimeMillis();
         String msg = "msg";
@@ -212,7 +213,7 @@ public class HgHookTest extends NbTestCase {
         assertNull(HookIssue.getInstance().comment);
         assertFalse(HookIssue.getInstance().closed);
 
-        PushOperation a = VCSHooksConfig.getInstance().popHGPushAction(changeset);
+        PushOperation a = VCSHooksConfig.getInstance(HookType.HG).popPushAction(changeset);
         assertNotNull(a);
         assertNotNull(a.getIssueID());
         assertEquals(HookIssue.getInstance().getID(), a.getIssueID());
@@ -284,146 +285,4 @@ public class HgHookTest extends NbTestCase {
         panel.enableFields(); // emulate event
     }
 
-    private static class HookIssue extends Issue {
-        static HookIssue instance;
-
-        private boolean closed;
-        private String comment;
-
-        private HookIssue() {
-            super(null);
-        }
-
-        static HookIssue getInstance() {
-            if(instance == null) {
-                instance = new HookIssue();
-            }
-            return instance;
-        }
-
-        void reset() {
-            comment = null;
-            closed = false;
-        }
-        @Override
-        public String getDisplayName() {
-            return "HookIssue";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "HookIssue";
-        }
-
-        @Override
-        public String getID() {
-            return "1";
-        }
-
-        @Override
-        public String getSummary() {
-            return "HookIssue";
-        }
-
-        @Override
-        public boolean isNew() {
-            return false;
-        }
-
-        @Override
-        public boolean refresh() {
-            return true;
-        }
-
-        @Override
-        public void addComment(String comment, boolean closeAsFixed) {
-            this.comment = comment;
-            closed = closeAsFixed;
-        }
-
-        @Override
-        public void attachPatch(File file, String description) {
-            // do nothing
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
-
-    private class HookRepository extends Repository {
-
-        @Override
-        public Image getIcon() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getID() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue getIssue(String id) {
-            return HookIssue.instance;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query[] getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue[] simpleSearch(String criteria) {
-            return new Issue[] {HookIssue.instance};
-        }
-
-        @Override
-        public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
 }

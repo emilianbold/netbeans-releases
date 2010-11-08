@@ -85,7 +85,7 @@ public final class ClassMemberFilters {
     private boolean naturalSort = false;
     
     //issue #132883 workaround
-    boolean disableFiltering = false;
+    public boolean disableFiltering = false;
     
     /** Creates a new instance of ClassMemberFilters */
     ClassMemberFilters( ClassMemberPanelUI ui ) {

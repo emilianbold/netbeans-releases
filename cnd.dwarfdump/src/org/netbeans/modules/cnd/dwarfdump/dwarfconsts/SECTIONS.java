@@ -53,6 +53,7 @@ public interface SECTIONS {
     String DEBUG_INFO = ".debug_info"; // NOI18N
     String DEBUG_STR = ".debug_str"; // NOI18N
     String DYN_STR = ".dynstr"; // NOI18N
+    String DYNAMIC = ".dynamic"; // NOI18N
     String DEBUG_LINE = ".debug_line"; // NOI18N
     String DEBUG_MACINFO = ".debug_macinfo"; // NOI18N
     String DEBUG_ABBREV = ".debug_abbrev"; // NOI18N

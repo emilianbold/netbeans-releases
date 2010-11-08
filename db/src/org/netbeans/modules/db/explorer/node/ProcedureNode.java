@@ -53,6 +53,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.DatabaseModule;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.metadata.model.api.Action;
@@ -72,9 +73,12 @@ import org.openide.util.NbBundle;
  * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNode extends BaseNode {
-    private static final String ICONBASE_P = "org/netbeans/modules/db/resources/procedure.png";
-    private static final String ICONBASE_F = "org/netbeans/modules/db/resources/function.png";
-    private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
+    private static final String ICON_VALID_P = "org/netbeans/modules/db/resources/procedure.png";
+    private static final String ICON_VALID_F = "org/netbeans/modules/db/resources/function.png";
+    private static final String ICON_VALID_T = "org/netbeans/modules/db/resources/trigger.png";
+    private static final String ICON_INVALID_P = "org/netbeans/modules/db/resources/procedure-invalid.png";
+    private static final String ICON_INVALID_F = "org/netbeans/modules/db/resources/function-invalid.png";
+    private static final String ICON_INVALID_T = "org/netbeans/modules/db/resources/trigger-invalid.png";
     private static final String FOLDER = "Procedure"; //NOI18N
     
     private static final String DELIMITER = "@@"; // NOI18N
@@ -87,13 +91,13 @@ public class ProcedureNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureNode instance
      */
-    public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+    public static ProcedureNode create(NodeDataLookup dataLookup, ProcedureNodeProvider provider, String schema) {
         DatabaseConnection conn = dataLookup.lookup(DatabaseConnection.class);
         ProcedureNode node;
-        if (conn != null && "MySQL".equalsIgnoreCase(conn.getDriverName())) { // NOI18N
-            node = new MySQL(dataLookup, provider);
-        } else if (conn != null && conn.getDriverName() != null && conn.getDriverName().startsWith("Oracle")) { // NOI18N
-            node = new Oracle(dataLookup, provider);
+        if (conn != null && DatabaseModule.IDENTIFIER_MYSQL.equalsIgnoreCase(conn.getDriverName())) {
+            node = new MySQL(dataLookup, provider, schema);
+        } else if (conn != null && conn.getDriverName() != null && conn.getDriverName().startsWith(DatabaseModule.IDENTIFIER_ORACLE)) {
+            node = new Oracle(dataLookup, provider, schema);
         } else {
             node = new ProcedureNode(dataLookup, provider);
         }
@@ -158,19 +162,19 @@ public class ProcedureNode extends BaseNode {
         return getName();
     }
     
-    public Type getType() {
+    protected Type getType() {
         return this.type;
     }
 
     @Override
     public String getIconBase() {
-        switch (type) {
+        switch (getType()) {
             case Function:
-                return ICONBASE_F;
+                return ICON_VALID_F;
             case Procedure:
-                return ICONBASE_P;
+                return ICON_VALID_P;
             case Trigger:
-                return ICONBASE_T;
+                return ICON_VALID_T;
             default:
                 return null;
         }
@@ -178,7 +182,7 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        switch (type) {
+        switch (getType()) {
             case Function:
                 return NbBundle.getMessage (ProcedureNode.class, "ND_Function"); //NOI18N
             case Procedure:
@@ -250,11 +254,15 @@ public class ProcedureNode extends BaseNode {
     
     public static class MySQL extends ProcedureNode {
         private final DatabaseConnection connection;
+        private final ProcedureNodeProvider provider;
+        private final String schema;
         
         @SuppressWarnings("unchecked")
-        private MySQL(NodeDataLookup lookup, NodeProvider provider) {
+        private MySQL(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
-            connection = getLookup().lookup(DatabaseConnection.class);
+            this.connection = getLookup().lookup(DatabaseConnection.class);
+            this.provider = provider;
+            this.schema = schema;
         }
 
         @Override
@@ -336,12 +344,76 @@ public class ProcedureNode extends BaseNode {
     
     public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
-        
+        private final MetadataElementHandle<Procedure> procedureHandle;
+        private final ProcedureNodeProvider provider;
+        private final String schema;
+
         @SuppressWarnings("unchecked")
-        private Oracle(NodeDataLookup lookup, NodeProvider provider) {
+        private Oracle(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
+            procedureHandle = getLookup().lookup(MetadataElementHandle.class);
+            this.provider = provider;
+            this.schema = schema;
         }
+
+        @Override
+        protected void initialize() {
+            super.initialize();
+            updateProcedureProperties();
+        }
+        
+        private void updateProcedureProperties() {
+            PropertySupport.Name ps = new PropertySupport.Name(this);
+            addProperty(ps);
+            
+            switch (provider.getType(getName())) {
+                case Function:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
+                    break;
+                case Procedure:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredProcedure")); // NOI18N
+                    break;
+                case Trigger:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
+                    break;
+                default:
+                    assert false : "Unknown type " + provider.getType(getName());
+            }
+        }
+
+        @Override
+        public Type getType() {
+            return provider.getType(getName());
+        }
+
+        @Override
+        public String getShortDescription() {
+            switch (provider.getType(getName())) {
+                case Function:
+                    return provider.getStatus(getName()) ? NbBundle.getMessage (ProcedureNode.class, "ND_Function") : NbBundle.getMessage (ProcedureNode.class, "ND_Function_Invalid"); //NOI18N
+                case Procedure:
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Procedure") : NbBundle.getMessage (ProcedureNode.class, "ND_Procedure_Invalid"); //NOI18N
+                case Trigger:
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Trigger") : NbBundle.getMessage (ProcedureNode.class, "ND_Trigger_Invalid"); //NOI18N;
+                default:
+                    return null;
+            }
+        }
+
+    @Override
+    public String getIconBase() {
+        switch (getType()) {
+            case Function:
+                return provider.getStatus(getName())  ? ICON_VALID_F : ICON_INVALID_F;
+            case Procedure:
+                return provider.getStatus(getName())  ? ICON_VALID_P : ICON_INVALID_P;
+            case Trigger:
+                return provider.getStatus(getName())  ? ICON_VALID_T : ICON_INVALID_T;
+            default:
+                return null;
+        }
+    }
 
         @Override
         public boolean isViewSourceSupported() {
@@ -379,7 +451,7 @@ public class ProcedureNode extends BaseNode {
             try {
                 Statement stat = connection.getConnection().createStatement();
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT, OWNER FROM sys.dba_source WHERE name = '" + getName() + "'" // NOI18N
+                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + schema.toUpperCase() + "'" // NOI18N
                         + " ORDER BY LINE"; // NOI18N
                 ResultSet rs = stat.executeQuery(q);
                 while(rs.next()) {
@@ -389,7 +461,7 @@ public class ProcedureNode extends BaseNode {
             } catch (SQLException ex) {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
-            if (connection.getSchema().equalsIgnoreCase(owner)) {
+            if (schema.equalsIgnoreCase(owner)) {
                 return sb.toString();
             } else {
                 return fqn(sb.toString(), owner);

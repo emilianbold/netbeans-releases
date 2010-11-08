@@ -44,8 +44,10 @@ package org.netbeans.modules.spring.webmvc.editor;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
+import javax.lang.model.element.Name;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -112,14 +114,9 @@ public class AddBeanPanel {
                     if (doc != null) {
                         ExpressionTree packageTree = cc.getCompilationUnit().getPackageName();
                         if (packageTree != null) {
-                            className[0] = packageTree.accept(new TreePathScanner<String, Void>(){
-
-                                @Override
-                                public String visitIdentifier(IdentifierTree node, Void p) {
-                                    return node.getName().toString();
-                                }
-
-                            }, null)+".";
+                            TreePath path = cc.getTrees().getPath(cc.getCompilationUnit(), packageTree);
+                            Name qualifiedName = cc.getElements().getPackageOf(cc.getTrees().getElement(path)).getQualifiedName();
+                            className[0] = qualifiedName.toString() + ".";
                         }
                         String cls = new ClassScanner().scan(cc.getCompilationUnit(), null);
                         if (className[0] == null) {

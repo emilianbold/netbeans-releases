@@ -51,7 +51,6 @@ made subject to such option by the copyright holder.
   <property file="${nb_all}/nbbuild/site.build.properties"/>
   <property file="${user.home}/.nbbuild.properties"/>
 
-  <property name="dist.base" value="http://www.netbeans.org/download/nbms/alpha/dev/1.16"/>
   <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
   <property name="build.sysclasspath" value="ignore"/>
 

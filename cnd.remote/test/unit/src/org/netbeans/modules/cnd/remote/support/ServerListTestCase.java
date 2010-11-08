@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ import junit.framework.Test;
 import org.junit.AfterClass;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;

@@ -42,32 +42,22 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/**
- * Panel just asking for basic info.
- * @author mkleint
- */
-public class ChooseWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+public class ChooseWizardPanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
     private WizardDescriptor wizardDescriptor;
     private ChooseArchetypePanel component;
     
-    /** Creates a new instance of templateWizardPanel */
     public ChooseWizardPanel() {
     }
     
-    public Component getComponent() {
+    public @Override ChooseArchetypePanel getComponent() {
         if (component == null) {
             component = new ChooseArchetypePanel(this);
             component.setName(NbBundle.getMessage(ChooseWizardPanel.class, "LBL_CreateProjectStep"));
@@ -75,54 +65,40 @@ public class ChooseWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
     
-    public HelpCtx getHelp() {
+    public @Override HelpCtx getHelp() {
         return new HelpCtx(ChooseWizardPanel.class);
     }
     
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+    public @Override boolean isValid() {
+        return getComponent().valid(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+    private final ChangeSupport cs = new ChangeSupport(this);
+    public @Override void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
     }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    public @Override void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
     protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
-        }
+        cs.fireChange();
     }
     
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+    public @Override void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
     }
     
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    public @Override void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
     
     public boolean isFinishPanel() {
         return true;
     }
     
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
+    public @Override void validate() throws WizardValidationException {
+        getComponent().validate(wizardDescriptor);
     }
     
 }

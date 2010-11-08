@@ -46,12 +46,12 @@
 package org.netbeans.modules.palette;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -62,13 +62,10 @@ import org.openide.windows.WindowManager;
  *
  * @author S Aubrecht
  */
-public class ShowPaletteAction extends AbstractAction {
-
-    public ShowPaletteAction() {
-        putValue(NAME, Utils.getBundleString("CTL_PaletteAction") );
-        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/palette/resources/palette.png", false)); // NOI18N
-    }
-
+@ActionID(id = "org.netbeans.modules.palette.ShowPaletteAction", category = "Window")
+@ActionRegistration(displayName = "#CTL_PaletteAction", iconBase = "org/netbeans/modules/palette/resources/palette.png")
+@ActionReference(position = 600, name = "ShowPaletteAction", path = "Menu/Window")
+public class ShowPaletteAction implements ActionListener {
 
     /** Opens component palette. */
     public void actionPerformed(ActionEvent evt) {

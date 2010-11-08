@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
 import javax.swing.InputMap;
@@ -75,6 +76,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
@@ -350,6 +352,13 @@ public class Utilities {
     */
     public static int getPositionAbove(JTextComponent c, int offset, int x)
     throws BadLocationException {
+        if (BaseKit.LINEWRAP_ENABLED) {
+            // Ignore returned bias
+            offset = c.getUI().getNextVisualPositionFrom(c,
+                              offset, Bias.Forward, SwingConstants.NORTH, null);
+            return offset;
+        }
+        
         int rowStart = getRowStart(c, offset);
         int endInit = c.getUI().getNextVisualPositionFrom(c,
                               rowStart, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
@@ -429,6 +438,13 @@ public class Utilities {
     */
     public static int getPositionBelow(JTextComponent c, int offset, int x)
     throws BadLocationException {
+        if (BaseKit.LINEWRAP_ENABLED) {
+            // Ignore returned bias
+            offset = c.getUI().getNextVisualPositionFrom(c,
+                              offset, Bias.Forward, SwingConstants.SOUTH, null);
+            return offset;
+        }
+        
 	int startInit = getRowEnd(c, offset) + 1;
 
         Rectangle2D r = modelToView(c, startInit);

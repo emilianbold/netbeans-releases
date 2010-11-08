@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -120,6 +120,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         super.refresh();
     }
 
+    @Override
     protected void initialize() {
         setupNames();
     }
@@ -131,6 +132,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Column column = columnHandle.resolve(metaData);
                             if (column != null) {
@@ -148,7 +150,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                     if (pkey != null) {
                                         Collection<Column> columns = pkey.getColumns();
                                         for (Column c : columns) {
-                                            if (c.getName().equals(column.getName())) {
+                                            if (c.getName() != null && c.getName().equals(column.getName())) {
                                                 found = true;
                                                 icon = PRIMARY;
                                                 description = TOOLTIP_PRIMARY;
@@ -211,18 +213,22 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         }
     }
 
+    @Override
     public String getColumnName() {
         return getColumnName(connection, columnHandle);
     }
 
+    @Override
     public String getSchemaName() {
         return getSchemaName(connection, columnHandle);
     }
 
+    @Override
     public String getCatalogName() {
         return getCatalogName(connection, columnHandle);
     }
 
+    @Override
     public String getParentName() {
         return getParentName(connection, columnHandle);
     }
@@ -235,6 +241,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         Column column = columnHandle.resolve(metaData);
                         if (column != null) {
@@ -307,6 +314,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.COLUMN_FLAVOR) {
+            @Override
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createColumnData(connection.getDatabaseConnection(),
                         connection.findJDBCDriver(), getParentName(), getName());
@@ -331,6 +339,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
                         if (column != null) {
@@ -353,6 +362,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
                         if (column != null) {
@@ -375,6 +385,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
                         if (column != null) {
@@ -397,6 +408,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
                         if (column != null) {

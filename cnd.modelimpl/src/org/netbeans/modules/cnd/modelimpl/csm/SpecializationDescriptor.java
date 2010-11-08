@@ -81,6 +81,10 @@ public class SpecializationDescriptor {
         this.specializationParams = new ArrayList<CsmSpecializationParameter>(specializationParams);
     }
 
+    public static SpecializationDescriptor create(List<CsmSpecializationParameter> specializationParams, boolean global) {
+        return new SpecializationDescriptor(specializationParams, global);
+    }
+
     public List<CsmSpecializationParameter> getSpecializationParameters() {
         if (specializationParams != null) {
             return new ArrayList<CsmSpecializationParameter>(specializationParams);
@@ -94,7 +98,7 @@ public class SpecializationDescriptor {
         }
         AST start = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         if(start != null) {
-            return new SpecializationDescriptor(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
+            return SpecializationDescriptor.create(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
         }
         return null;
     }

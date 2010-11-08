@@ -92,10 +92,12 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
+    @Override
     public void accept(CsmScope csmScope, Visitor visitor) {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
 
+    @Override
     public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         FileReferencesContext fileReferencesContext = new FileReferencesContext(csmScope);
         try {
@@ -198,7 +200,6 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private boolean inMacro = false;
 
         public static ExpandedReferencesProcessor create(BaseDocument doc, CsmFile file, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
-            boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
             boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
             Collection<CsmOffsetable> deadBlocks;
             if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
@@ -206,7 +207,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             } else {
                 deadBlocks = Collections.<CsmOffsetable>emptyList();
             }
-            ReferencesProcessor rp = new ReferencesProcessor(file, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks, fileReferncesContext);
+            ReferencesProcessor rp = new ReferencesProcessor(file, doc, skipPreprocDirectives, deadBlocks, fileReferncesContext);
             // disabling experimental macro context
 //            CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, file, rp, -1, CsmFileInfoQuery.getDefault().getMacroUsages(file));
 //            if (etp instanceof CsmExpandedTokenProcessor) {
@@ -260,7 +261,6 @@ public final class FileReferencesImpl extends CsmFileReferences  {
     private static final class ReferencesProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {
         /*package*/ final List<CsmReferenceContext> references = new ArrayList<CsmReferenceContext>();
         private final Collection<CsmOffsetable> deadBlocks;
-        private final boolean needAfterDereferenceUsages;
         private final boolean skipPreprocDirectives;
         private final CsmFile csmFile;
         private final BaseDocument doc;
@@ -272,10 +272,9 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private boolean skipReferences = false;
 
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
-                boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
+                boolean skipPreprocDirectives,
                 Collection<CsmOffsetable> deadBlocks, FileReferencesContext fileReferncesContext) {
             this.deadBlocks = deadBlocks;
-            this.needAfterDereferenceUsages = needAfterDereferenceUsages;
             this.skipPreprocDirectives = skipPreprocDirectives;
             this.csmFile = csmFile;
             this.doc = doc;
@@ -285,7 +284,6 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
         private ReferencesProcessor(ReferencesProcessor p) {
             this.deadBlocks = p.deadBlocks;
-            this.needAfterDereferenceUsages = p.needAfterDereferenceUsages;
             this.skipPreprocDirectives = p.skipPreprocDirectives;
             this.csmFile = p.csmFile;
             this.doc = p.doc;
@@ -319,8 +317,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                     case IDENTIFIER:
                     case PREPROCESSOR_IDENTIFIER:
                     case THIS: {
-                        skip = !needAfterDereferenceUsages && derefToken != null;
-                        if (!skip && !deadBlocks.isEmpty()) {
+                        if (!deadBlocks.isEmpty()) {
                             skip = isInDeadBlock(tokenOffset, deadBlocks);
                         }
                         // do not use CsmReferenceKind.AFTER_DEREFERENCE_USAGE, because it could be fun definition like

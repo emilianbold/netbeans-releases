@@ -75,4 +75,9 @@ public abstract class APIAccessor {
     public abstract boolean isCommit(RefactoringSession session);
     public abstract RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) ;
     public abstract boolean hasPluginsWithProgress(AbstractRefactoring refactoring);
+    public abstract boolean hasChangesInGuardedBlocks(RefactoringSession session);
+    public abstract boolean hasChangesInReadOnlyFiles(RefactoringSession session);
+
+
+
 }

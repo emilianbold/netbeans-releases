@@ -524,7 +524,7 @@ public final class KenaiProject {
     }
 
     /**
-     * Reloads project from kenai.com server
+     * Reloads project from kenai server
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     private void refresh() throws KenaiException {

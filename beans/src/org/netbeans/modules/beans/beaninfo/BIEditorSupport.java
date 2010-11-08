@@ -588,6 +588,7 @@ final class BIEditorSupport extends DataEditorSupport
         
         public BeanInfoElement(DataObject dataObject) {
             this.dataObject = dataObject;
+            setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
         }
 
         /**

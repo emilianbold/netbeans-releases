@@ -47,17 +47,19 @@ package org.netbeans.modules.cnd.apt.utils;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class TokenBasedTokenStream implements TokenStream {
-    private Token token;
+public final class TokenBasedTokenStream implements TokenStream, APTTokenStream {
+    private APTToken token;
     private boolean first;
     
     /** Creates a new instance of TokenBasedTokenStream */
-    public TokenBasedTokenStream(Token token) {
+    public TokenBasedTokenStream(APTToken token) {
         if (token == null) {
             throw new NullPointerException("not possible to create token stream for null token"); // NOI18N
         }
@@ -65,8 +67,9 @@ public class TokenBasedTokenStream implements TokenStream {
         this.first = true;
     }
 
-    public Token nextToken() throws TokenStreamException {
-        Token ret;
+    @Override
+    public APTToken nextToken() {
+        APTToken ret;
         if (first) {
             ret = token;
             first = false;

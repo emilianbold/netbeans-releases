@@ -179,7 +179,7 @@ public class VarDocHint extends AbstractRule {
         }
 
         private String getTypeTemplate() {
-            return "<type>";//NOI18N
+            return "type";//NOI18N
         }
 
         private int getOffset(BaseDocument doc) throws BadLocationException {

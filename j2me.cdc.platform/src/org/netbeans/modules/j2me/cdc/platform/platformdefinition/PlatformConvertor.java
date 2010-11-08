@@ -684,7 +684,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
         private String getMandatoryValue(org.xml.sax.Attributes attrs, String name) throws SAXException {
             String val = attrs.getValue(name);
-            if (val == null || val.length()<1) throw new SAXException("Missing " + name); //NOI18N
+            if (val == null) throw new SAXException("Missing " + name); //NOI18N
             return val;
         }
         

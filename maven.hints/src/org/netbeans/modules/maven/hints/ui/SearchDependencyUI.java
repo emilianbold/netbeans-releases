@@ -58,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
 import org.netbeans.modules.maven.hints.ui.nodes.ArtifactNode;
 import org.netbeans.modules.maven.hints.ui.nodes.VersionNode;
@@ -210,8 +211,27 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                     
                     queryRequest = new QueryRequest(search[0], null, observer);
                 
-                    RepositoryQueries.findVersionsByClass(queryRequest);
-                    
+                    try {
+                        RepositoryQueries.findVersionsByClass(queryRequest);
+                    } catch (BooleanQuery.TooManyClauses exc) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                resultsRootNode.setOneChild(getTooGeneralNode());
+                            }
+                        });
+                    } catch (OutOfMemoryError oome) {
+                        // running into OOME may still happen in Lucene despite the fact that
+                        // we are trying hard to prevent it in NexusRepositoryIndexerImpl
+                        // (see #190265)
+                        // in the bad circumstances theoretically any thread may encounter OOME
+                        // but most probably this thread will be it
+                        // trying to indicate the condition to the user here
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                resultsRootNode.setOneChild(getTooGeneralNode());
+                            }
+                        });
+                    }
                     //the actual lucene query takes much longer than our queue
                     // timeout, we should not start new tasks until this one is
                     //finished.. and this one should either finish with correct data
@@ -373,7 +393,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
     }
 
-    private static Node noResultsNode, searchingNode;
+    private static Node noResultsNode, searchingNode, tooGeneralNode;
     
     private static Node getSearchingNode() {
         if (searchingNode == null) {
@@ -421,6 +441,30 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         return new FilterNode (noResultsNode, Children.LEAF);
     }
 
+    private static Node getTooGeneralNode() {
+        if (tooGeneralNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/hints/empty.png"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Too General"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_TooGeneral")); //NOI18N
+
+            tooGeneralNode = nd;
+        }
+
+        return new FilterNode (tooGeneralNode, Children.LEAF);
+    }
+    
     @Override
     public void update(Observable o, Object arg) {
 

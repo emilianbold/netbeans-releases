@@ -44,7 +44,8 @@
 
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -57,22 +58,23 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.util.UserQuestionException;
 
 /**
  * implementation of references resolver
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.class, position = 1000)
 public class ReferenceResolverImpl extends CsmReferenceResolver {
     
     public ReferenceResolverImpl() {
     }    
 
+    @Override
     public boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
         return kinds.equals(CsmReferenceKind.ALL) || kinds.contains(ref.getKind());
     }
     
+    @Override
     public CsmReference findReference(CsmFile file, int offset) {
         assert file != null;
         BaseDocument doc = ReferencesSupport.getDocument(file);
@@ -103,17 +105,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
             if (pane != null) {
                 //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());
                 int offset = pane.getSelectionStart();
-                StyledDocument doc = null;
-                try {
-                    try {
-                        doc = cookie.openDocument();
-                    } catch (UserQuestionException ex) {
-                        ex.confirmed();
-                        doc = cookie.openDocument();
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
+                StyledDocument doc = CsmUtilities.openDocument(cookie);
                 return findReferenceInDoc(doc, offset);
             }
         }
@@ -138,5 +130,10 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     @Override
     public Scope fastCheckScope(CsmReference ref) {
         return ReferencesSupport.fastCheckScope(ref);
-    }    
+    }
+
+    @Override
+    public Collection<CsmReference> getReferences(CsmFile file) {
+        return Collections.<CsmReference>emptyList();
+    }
 }

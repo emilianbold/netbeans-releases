@@ -545,10 +545,6 @@ public class Mercurial {
         return OutputLogger.getLogger(repositoryRoot);
     }
 
-    public Boolean isRefreshScheduled(File file) {
-        return mercurialInterceptor.isRefreshScheduled(file);
-    }
-
     /**
      *
      * @return registered hyperlink providers

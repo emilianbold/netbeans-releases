@@ -68,7 +68,6 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.modules.editor.lib2.view.EditorView;
-import org.netbeans.modules.editor.lib2.view.TextLayoutView;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 
 /**
@@ -77,7 +76,7 @@ import org.netbeans.modules.editor.lib2.view.ViewUtils;
  * @author Miloslav Metelka
  */
 
-public class FoldView extends EditorView implements TextLayoutView {
+public class FoldView extends EditorView {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsView.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldView.class.getName());
@@ -96,6 +95,8 @@ public class FoldView extends EditorView implements TextLayoutView {
     private final JTextComponent textComponent; // 32 + 4 = 36 bytes
 
     private final Fold fold; // 36 + 4 = 40 bytes
+    
+    private TextLayout collapsedTextLayout;
 
     public FoldView(JTextComponent textComponent, Fold fold) {
         super(null);
@@ -136,11 +137,6 @@ public class FoldView extends EditorView implements TextLayoutView {
     }
 
     @Override
-    public boolean setLength(int length, int modOffset, int modLength) {
-        return false; // Recreate upon modification
-    }
-
-    @Override
     public int getStartOffset() {
         EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
@@ -162,22 +158,16 @@ public class FoldView extends EditorView implements TextLayoutView {
         return null;
     }
 
-    @Override
-    public TextLayout createTextLayout() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        FontRenderContext frc = parent.getFontRenderContext();
-        if (frc == null) {
-            return null;
-        }
-        Font font = textComponent.getFont();
-        String text = fold.getDescription();
-        TextLayout textLayout = new TextLayout(text, font, frc);
-        return textLayout;
-    }
-
     private TextLayout getTextLayout() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getTextLayout(this) : null;
+        if (collapsedTextLayout == null) {
+            EditorView.Parent parent = (EditorView.Parent) getParent();
+            FontRenderContext frc = parent.getFontRenderContext();
+            assert (frc != null) : "Null FontRenderContext"; // NOI18N
+            Font font = textComponent.getFont();
+            String text = fold.getDescription();
+            collapsedTextLayout = new TextLayout(text, font, frc);
+        }
+        return collapsedTextLayout;
     }
 
     @Override
@@ -212,33 +202,27 @@ public class FoldView extends EditorView implements TextLayoutView {
     @Override
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
         int startOffset = getStartOffset();
+        int retOffset = -1;
         switch (direction) {
-            case NORTH:
             case WEST:
                 if (offset == -1) {
-                    offset = Math.max(0, startOffset + fold.getDescription().length() - 1);
+                    retOffset = startOffset;
                 } else {
-                    if (fold.isCollapsed ())
-                        offset = getStartOffset ();
-                    else
-                        offset--;
-                }
-                break;
-            case SOUTH:
-            case EAST:
-                if (offset == -1) {
-                    offset = startOffset;
-                } else {
-                    Document doc = getDocument();
-                    if (doc != null) {
-                        if (fold.isCollapsed ())
-                            offset = getEndOffset ();
-                        else
-                            offset++;
-                    }
+                    retOffset = -1;
                 }
                 break;
 
+            case EAST:
+                if (offset == -1) {
+                    retOffset = startOffset;
+                } else {
+                    retOffset = -1;
+                }
+                break;
+
+            case NORTH:
+            case SOUTH:
+                break;
             default:
                 throw new IllegalArgumentException("Bad direction: " + direction);
         }

@@ -242,7 +242,12 @@ public final class MIMEExtensions {
         }
 
         public MIMEExtensions get(String mimeType) {
-            return mime2ext.get(mimeType);
+            MIMEExtensions out = mime2ext.get(mimeType);
+            if (out == null) {
+                out = new MIMEExtensions(mimeType, "DEFAULT " + mimeType); // NOI18N
+                mime2ext.put(mimeType, out);
+            }
+            return out;
         }
 
         public List<MIMEExtensions> getOrderedExtensions() {

@@ -20,7 +20,7 @@ if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
     rm -rf $NB_ALL
-    hg clone $WORKSPACE $NB_ALL
+    hg clone -r $NB_BRANCH $WORKSPACE $NB_ALL
 fi
 
 #if [ $ML_BUILD == 1 ]; then

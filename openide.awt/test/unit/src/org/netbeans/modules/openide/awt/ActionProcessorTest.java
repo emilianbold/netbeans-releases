@@ -41,6 +41,7 @@ package org.netbeans.modules.openide.awt;
 
 import java.awt.Component;
 import javax.swing.JMenuItem;
+import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import java.io.IOException;
 import org.openide.util.test.AnnotationProcessorTestUtils;
@@ -510,7 +511,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
     @ActionID(category="eager", id="direct.two")
     @ActionRegistration(displayName="Direct Action")
-    @ActionReference(path="Shortcuts", name="C-F2")
+    @ActionReference(path="Shortcuts", name="C-F2 D-A")
     public static class Direct2 extends AbstractAction implements Presenter.Toolbar {
         static int cnt;
         public Direct2() {
@@ -542,6 +543,37 @@ public class ActionProcessorTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
+    @ActionID(category="eager", id="direct.four")
+    @ActionRegistration(displayName="Direct Action")
+    public static class Direct4 extends AbstractAction implements ContextAwareAction {
+        static int cnt;
+        public Direct4() {
+            cnt++;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return this;
+        }
+    }
+    @ActionID(category="eager", id="direct.five")
+    @ActionRegistration(displayName="Direct Action")
+    public static ContextAwareAction direct5() {return new Direct5();}
+    private static class Direct5 extends AbstractAction implements ContextAwareAction {
+        static int cnt;
+        public Direct5() {
+            cnt++;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return this;
+        }
+    }
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
         assertNotNull("Instance found", fo);
@@ -562,6 +594,20 @@ public class ActionProcessorTest extends NbTestCase {
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Action created", obj);
         assertEquals("Direct class is created", Direct3.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsContextAwareAction() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-four.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct4.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsContextAwareActionByMethod() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-five.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct5.class, obj.getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {
@@ -723,7 +769,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
     
     public void testReferenceWithoutPosition() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Shortcuts/C-F2.shadow");
+        FileObject fo = FileUtil.getConfigFile("Shortcuts/C-F2 D-A.shadow");
         assertNotNull(fo);
         assertEquals("Actions/eager/direct-two.instance", fo.getAttribute("originalFile"));
         assertEquals(null, fo.getAttribute("position"));

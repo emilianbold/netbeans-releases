@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -189,24 +190,24 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NoBaseFolder")));
         }
         Set<String> set = getObjectFiles(root);
         if (set.isEmpty()) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutablesInFolder", root)));
         }
         int i = 0;
         for(String obj : set){
             i++;
             DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
             if (applicable.isApplicable()) {
-                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
+                return new ApplicableImpl(true, null, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
             }
             if (i > 25) {
-                return ApplicableImpl.NotApplicable;
+                return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutableWithDebugInformation", root)));
             }
         }
-        return ApplicableImpl.NotApplicable;
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutableWithDebugInformation", root)));
     }
     
     @Override
@@ -234,17 +235,20 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         if (progress != null) {
                             progress.start();
                         }
-                        Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
-                        if (progress != null) {
-                            progress.start(set.size());
-                        }
-                        if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
-                        } else {
-                            myFileProperties = new ArrayList<SourceFileProperties>();
-                        }
-                        if (progress != null) {
-                            progress.done();
+                        try {
+                            Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                            if (progress != null) {
+                                progress.start(set.size());
+                            }
+                            if (set.size() > 0) {
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
+                            } else {
+                                myFileProperties = new ArrayList<SourceFileProperties>();
+                            }
+                        } finally {
+                            if (progress != null) {
+                                progress.done();
+                            }
                         }
                     }
                     return myFileProperties;
@@ -358,16 +362,18 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        gatherSubFolders(ff[i], set);
                     }
-                    gatherSubFolders(ff[i], set);
                 }
             }
         }

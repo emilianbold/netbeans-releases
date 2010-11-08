@@ -55,6 +55,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -79,7 +80,10 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
         URI wsdlURL = null;
         if (wsdlFileName != null) {  //fromWsdl
 
-            File urlFile = new File(support.getLocalWsdlFolderForService(service.getName(), false) + "/" + wsdlFileName);
+            FileObject fileObject = support.getLocalWsdlFolderForService(
+                    service.getName(), false) ;
+            File dir = FileUtil.toFile(fileObject);
+            File urlFile = new File( dir,  wsdlFileName);
             wsdlURL = urlFile.toURI();
         } else {  
             try {

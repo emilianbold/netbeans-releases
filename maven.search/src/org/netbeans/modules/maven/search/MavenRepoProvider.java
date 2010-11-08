@@ -46,57 +46,93 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.prefs.Preferences;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 public class MavenRepoProvider implements SearchProvider {
 
-    private static final String NOT_SHOW_AGAIN = "notShowAgain";
-    private static final String SEARCH_ENABLED = "searchEnabled";
-
-    private static final SearchSetup sSetup = new SearchSetup();
+    private static final RequestProcessor RP = new RequestProcessor(MavenRepoProvider.class.getName(), 10);
 
     /**
      * Method is called by infrastructure when search operation was requested.
      * Implementors should evaluate given request and fill response object with
-     * apropriate results
+     * appropriate results
      *
      * @param request Search request object that contains information what to search for
      * @param response Search response object that stores search results. Note that it's important to react to return value of SearchResponse.addResult(...) method and stop computation if false value is returned.
      */
+    @Override
     public void evaluate(final SearchRequest request, final SearchResponse response) {
+        
         List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
-        Preferences prefs = NbPreferences.forModule(MavenRepoProvider.class);
-        if (loadedRepos.size() == 0 && !prefs.getBoolean(SEARCH_ENABLED, false)) {
-            if (!prefs.getBoolean(NOT_SHOW_AGAIN, false)) {
-                response.addResult(sSetup, NbBundle.getMessage(MavenRepoProvider.class, "LBL_SearchSetup"),
-                        NbBundle.getMessage(MavenRepoProvider.class, "TIP_SearchSetup"), null);
-            }
+        if (loadedRepos.isEmpty()) {
             return;
         }
 
-        List<NBVersionInfo> infos = null;
+        List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
+        final List<NBVersionInfo> tempInfos = new ArrayList<NBVersionInfo>();
+        Observer observer = new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (null == o || !(o instanceof QueryRequest)) {
+                    return;
+                }
+                synchronized (tempInfos) {
+                    tempInfos.addAll(((QueryRequest) o).getResults());
+                }
+            }
+        };
+        final QueryRequest queryRequest = new QueryRequest(getQuery(request), loadedRepos.toArray(new RepositoryInfo[]{}), observer);
+        final RequestProcessor.Task searchTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    RepositoryQueries.find(queryRequest);
+                } catch (BooleanQuery.TooManyClauses exc) {
+                    // query too general, just ignore it
+                    synchronized (tempInfos) {
+                        tempInfos.clear();
+                    }
+                } catch (OutOfMemoryError oome) {
+                    // running into OOME may still happen in Lucene despite the fact that
+                    // we are trying hard to prevent it in NexusRepositoryIndexerImpl
+                    // (see #190265)
+                    // in the bad circumstances theoretically any thread may encounter OOME
+                    // but most probably this thread will be it
+                    synchronized (tempInfos) {
+                        tempInfos.clear();
+                    }
+                }
+            }
+        });
         try {
-            infos = RepositoryQueries.find(getQuery(request));
-        } catch (BooleanQuery.TooManyClauses e) {
-            // query too general, just ignore it
-            return;
+            // wait maximum 5 seconds for the repository search to complete
+            // after the timeout tempInfos should contain at least partial results
+            // we are not waiting longer, repository index download may be running on the background
+            // because NexusRepositoryIndexerImpl.getLoaded() might have returned also repos
+            // which are not available for the search yet
+            searchTask.waitFinished(5000);
+        } catch (InterruptedException ex) {
         }
+        queryRequest.deleteObserver(observer);
+        synchronized (tempInfos) {
+            infos.addAll(tempInfos);
+        }
+        searchTask.cancel();
+
         Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
         for (NBVersionInfo nbvi : infos) {
             String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N
@@ -124,10 +160,10 @@ public class MavenRepoProvider implements SearchProvider {
         List<String> fields = new ArrayList<String>();
         fields.add(QueryField.FIELD_GROUPID);
         fields.add(QueryField.FIELD_ARTIFACTID);
-        fields.add(QueryField.FIELD_VERSION);
+//        fields.add(QueryField.FIELD_VERSION);
         fields.add(QueryField.FIELD_NAME);
         fields.add(QueryField.FIELD_DESCRIPTION);
-        fields.add(QueryField.FIELD_CLASSES);
+//        fields.add(QueryField.FIELD_CLASSES);
 
         for (String one : splits) {
             for (String fld : fields) {
@@ -169,26 +205,4 @@ public class MavenRepoProvider implements SearchProvider {
         }
 
     }
-
-    private static class SearchSetup implements Runnable {
-
-        public void run() {
-            SearchSetupPanel ssPanel = new SearchSetupPanel();
-            DialogDescriptor dd = new DialogDescriptor(ssPanel,
-                    NbBundle.getBundle(MavenRepoProvider.class).getString("TIT_SearchSetup"));
-            dd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (ret == DialogDescriptor.YES_OPTION || ssPanel.isNotAgainChecked()) {
-                Preferences prefs = NbPreferences.forModule(MavenRepoProvider.class);
-                if (ret == DialogDescriptor.YES_OPTION) {
-                    prefs.putBoolean(SEARCH_ENABLED, true);
-                }
-                if (ssPanel.isNotAgainChecked()) {
-                    prefs.putBoolean(NOT_SHOW_AGAIN, true);
-                }
-            }
-        }
-
-    }
-
 }

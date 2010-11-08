@@ -197,7 +197,7 @@ public class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind() == PHPDocTag.Type.PARAM) {
-                    String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
+                    String parts[] = tag.getValue().trim().split("\\s+", 3); //NOI18N
 
                     if (parts.length > 1) {
                         String[] typeNames = parts[0].split("\\|", 2);
@@ -222,7 +222,7 @@ public class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind() == tagType) {
-                    String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
+                    String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {
                         String type = parts[0].split("\\;", 2)[0];

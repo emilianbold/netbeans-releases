@@ -92,30 +92,30 @@ public class FileName implements FileNaming {
         return this;
     }
 
-    public final boolean isRoot() {
+    public @Override final boolean isRoot() {
         return (getParent() == null);
     }
 
 
-    public File getFile() {
+    public @Override File getFile() {
         final FileNaming myParent = this.getParent();
         return (myParent != null) ? new File(myParent.getFile(), getName()) : new File(getName());
     }
 
 
-    public final String getName() {
+    public @Override final String getName() {
         return currentName.toString();
     }
 
-    public FileNaming getParent() {
+    public @Override FileNaming getParent() {
         return parent;
     }
 
-    public final Integer getId() {
+    public final @Override Integer getId() {
         return id;
     }
 
-    public final boolean equals(final Object obj) {
+    public final @Override boolean equals(final Object obj) {
         if (obj instanceof FileName ) {
             FileName fn = (FileName)obj;
             if (obj.hashCode() != hashCode()) {
@@ -133,19 +133,19 @@ public class FileName implements FileNaming {
     }
 
 
-    public final String toString() {
+    public final @Override String toString() {
         return getFile().getAbsolutePath();
     }
 
-    public final int hashCode() {
+    public final @Override int hashCode() {
         return id.intValue();
     }
 
-    public boolean isFile() {
+    public @Override boolean isFile() {
         return true;
     }
 
-    public boolean isDirectory() {
+    public @Override boolean isDirectory() {
         return !isFile();
     }
 

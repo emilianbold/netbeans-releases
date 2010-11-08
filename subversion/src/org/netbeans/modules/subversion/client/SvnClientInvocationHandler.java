@@ -86,6 +86,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "getSvnUrl",                                                    //NOI18N
         "addNotifyListener",                                            //NOI18N
         "getIgnoredPatterns",                                           //NOI18N
+        "getStatus",                                                    //NOI18N
         "removeNotifyListener"                                          //NOI18N
     }));
     

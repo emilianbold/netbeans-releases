@@ -10,10 +10,13 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  *
  * @author mato
  */
+@MimeLocation(subfolderName="testLookupTwo")
 public class TestLookupObjectTwo {
     
     /** Creates a new instance of TestLookupObject */

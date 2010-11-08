@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.parser</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -63,20 +72,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-            </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/commons-logging-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-1.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/commons-logging-api-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-api-1.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/htmlparser.jar</runtime-relative-path>
-                <binary-origin>external/htmlparser.jar</binary-origin>
-            </class-path-extension>
+            <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/io-xml-util.jar</runtime-relative-path>
                 <binary-origin>external/io-xml-util.jar</binary-origin>
@@ -86,20 +82,28 @@
                 <binary-origin>external/js.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/icu4j-4_0.jar</runtime-relative-path>
-                <binary-origin>external/icu4j-4_0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.15.jar</runtime-relative-path>
                 <binary-origin>external/log4j-1.2.15.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/commons-logging-1.1.1.jar</runtime-relative-path>
+                <binary-origin>external/commons-logging-1.1.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hs-aelfred2.jar</runtime-relative-path>
+                <binary-origin>external/hs-aelfred2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/commons-logging-api-1.1.1.jar</runtime-relative-path>
+                <binary-origin>external/commons-logging-api-1.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/iri.jar</runtime-relative-path>
                 <binary-origin>external/iri.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/hs-aelfred2.jar</runtime-relative-path>
-                <binary-origin>external/hs-aelfred2.jar</binary-origin>
+                <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/saxon9B.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jing.jar</runtime-relative-path>
@@ -110,16 +114,16 @@
                 <binary-origin>external/validator.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/htmlparser.jar</runtime-relative-path>
-                <binary-origin>external/htmlparser.jar</binary-origin>
+                <runtime-relative-path>ext/html5-datatypes.jar</runtime-relative-path>
+                <binary-origin>external/html5-datatypes.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/non-schema.jar</runtime-relative-path>
                 <binary-origin>external/non-schema.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/html5-datatypes.jar</runtime-relative-path>
-                <binary-origin>external/html5-datatypes.jar</binary-origin>
+                <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
+                <binary-origin>external/saxon9B.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

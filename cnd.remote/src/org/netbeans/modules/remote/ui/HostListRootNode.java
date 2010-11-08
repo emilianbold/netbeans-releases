@@ -60,6 +60,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -71,6 +72,8 @@ public final class HostListRootNode extends AbstractNode {
     public static final String NODE_NAME = "remote"; // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/remote/ui/servers.png"; // NOI18N
 
+    private final AddHostAction addHostAction;
+
     @ServicesTabNodeRegistration(name=NODE_NAME, displayName="#LBL_HostRootNode", iconResource=ICON_BASE, position=800)
     public static HostListRootNode getDefault() {
         return new HostListRootNode();
@@ -81,17 +84,21 @@ public final class HostListRootNode extends AbstractNode {
         setName(NODE_NAME);
         setDisplayName(NbBundle.getMessage(HostListRootNode.class, "LBL_HostRootNode"));
         setIconBaseWithExtension(ICON_BASE);
+        addHostAction = new AddHostAction();
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { new AddHostAction() };
+        return new Action[] { addHostAction };
     }
 
-    private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener {
+    private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener, Runnable {
+
+        private final RequestProcessor.Task refreshTask;
 
         public HostChildren() {
             ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
+            refreshTask = new RequestProcessor("Refreshing Host List", 1).create(this); // NOI18N
         }
 
         @Override
@@ -112,11 +119,16 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            refreshTask.schedule(0);
+        }
+
+        @Override
+        public void run() {
             this.refresh(true);
         }
     }
 
-    private static class AddHostAction extends AbstractAction {
+    private static class AddHostAction extends AbstractAction implements Runnable {
 
         public AddHostAction() {
             super(NbBundle.getMessage(HostListRootNode.class, "AddHostMenuItem"));
@@ -124,6 +136,20 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(this);
+        }
+
+        @Override
+        public void run() {
+            setEnabled(false);
+            try {
+                work();
+            } finally {
+                setEnabled(true);
+            }
+        }
+
+        private void work() {
             ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
             ServerRecord newServerRecord = CreateHostWizardIterator.invokeMe(cacheManager);
             if (newServerRecord != null) {

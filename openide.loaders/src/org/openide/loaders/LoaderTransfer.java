@@ -49,6 +49,7 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.datatransfer.*;
@@ -201,7 +202,7 @@ public abstract class LoaderTransfer {
             if (t.isDataFlavorSupported (ExTransferable.multiFlavor)) {
                 MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
                 int count = mto.getCount ();
-                DataObject[] datas = new DataObject[count];
+                ArrayList<DataObject> datas = new ArrayList<DataObject>(1);
                 boolean ok = true;
                 for (int i = 0; i < count; i++) {
                     DataObject d = getDataObject (mto.getTransferableAt (i), action);
@@ -209,10 +210,12 @@ public abstract class LoaderTransfer {
                         ok = false;
                         break;
                     } else {
-                        datas[i] = d;
+                        if (!datas.contains(d)) {
+                            datas.add(d);
+                        }
                     }
                 }
-                if (ok && count > 0) return datas;
+                if (ok && !datas.isEmpty()) return datas.toArray(new DataObject[]{});
             } else {
                 DataObject d = getDataObject (t, action);
                 if (d != null) return new DataObject[] { d };

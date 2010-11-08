@@ -97,6 +97,7 @@ class SwitcherTableModel extends AbstractTableModel {
             if (nOfItems % maxRowsPerCol > 0) {
                 nOfColumns++;
             }
+            nOfColumns = Math.max( nOfColumns, 1 );
             int nOfRows = nOfItems / nOfColumns;
             if (nOfItems % nOfColumns > 0) {
                 nOfRows++;

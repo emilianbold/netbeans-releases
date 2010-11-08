@@ -67,6 +67,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -172,7 +173,7 @@ final class JavadocCompletionUtils {
         Kind kind = leaf.getKind();
         SourcePositions positions = javac.getTrees().getSourcePositions();
 
-        while (kind != Kind.CLASS && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
+        while (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
             tp = tp.getParentPath();
             if (tp == null) {
                 leaf = null;

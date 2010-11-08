@@ -48,6 +48,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
 
@@ -155,13 +157,12 @@ public final class SignalSupport {
 
     public int sigqueue(int pid, int signo, int value) {
         try {
-            String path = sigqueueHelperUtility.getPath(exEnv);
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
-            npb.setExecutable(path);
-            npb.setArguments(String.valueOf(pid), String.valueOf(signo), String.valueOf(value));
-            return npb.call().waitFor();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            ExitStatus status = ProcessUtils.execute(exEnv,
+                    sigqueueHelperUtility.getPath(exEnv),
+                    String.valueOf(pid),
+                    String.valueOf(signo),
+                    String.valueOf(value));
+            return status.exitCode;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

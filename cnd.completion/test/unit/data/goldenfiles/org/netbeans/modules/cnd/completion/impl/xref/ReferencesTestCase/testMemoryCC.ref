@@ -20,7 +20,7 @@
 --OWNER:
     FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    FUNCTION Memory(int,int,int)  [51:5/2308-51:68/2371] ReferencesTestCase/memory.h
+    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
 ==============================================================
 'type', tokenID=identifier, offset=2145 [44:20/2145-44:24/2149]
 --OWNER:
@@ -80,7 +80,7 @@
 --OWNER:
     FUNCTION_DEFINITION ComputeSupportMetric()  [56:1/2483-71:2/2803] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    FUNCTION ComputeSupportMetric()  [56:5/2482-56:33/2510] ReferencesTestCase/memory.h
+    FUNCTION_DEFINITION ComputeSupportMetric()  [56:1/2483-71:2/2803] ReferencesTestCase/memory.cc
 ==============================================================
 'metric', tokenID=identifier, offset=2535 [58:9/2535-58:15/2541]
 --OWNER:
@@ -146,7 +146,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetType() const  [73:1/2809-87:2/3146] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    FUNCTION GetType() const  [52:5/2376-52:41/2412] ReferencesTestCase/memory.h
+    FUNCTION_DEFINITION GetType() const  [73:1/2809-87:2/3146] ReferencesTestCase/memory.cc
 ==============================================================
 'GetTypeID', tokenID=identifier, offset=2859 [74:13/2859-74:22/2868]
 --OWNER:
@@ -182,7 +182,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategory() const  [89:1/3148-102:2/3462] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    FUNCTION GetCategory() const  [53:5/2417-53:45/2457] ReferencesTestCase/memory.h
+    FUNCTION_DEFINITION GetCategory() const  [89:1/3148-102:2/3462] ReferencesTestCase/memory.cc
 ==============================================================
 'GetCategoryID', tokenID=identifier, offset=3202 [90:13/3202-90:26/3215]
 --OWNER:

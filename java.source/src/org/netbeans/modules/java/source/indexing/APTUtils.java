@@ -53,6 +53,7 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -204,7 +205,13 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        verifyAttributes(root, false);
+        try {
+            if (verifyAttributes(root, true)) {
+                IndexingManager.getDefault().refreshIndex(root.getURL(), Collections.<URL>emptyList(), false);
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
@@ -212,7 +219,13 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
         }
-        verifyAttributes(root, false);
+        try {
+            if (verifyAttributes(root, true)) {
+                IndexingManager.getDefault().refreshIndex(root.getURL(), Collections.<URL>emptyList(), false);
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {
@@ -270,24 +283,26 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return result;
     }
 
-    boolean verifyAttributes(FileObject fo, boolean allFilesIndexing) {
+    boolean verifyAttributes(FileObject fo, boolean checkOnly) {
         if (fo == null)
             return false;
         try {
             URL url = fo.getURL();
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString()) && !allFilesIndexing) {
-                JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(url, null);
-                return true;
-            }
-            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN) ? Boolean.TRUE.toString() : null) && !allFilesIndexing) {
+            boolean apEnabledOnScan = aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN);
+            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, apEnabledOnScan ? Boolean.TRUE.toString() : null, checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to change in annotation processing options"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(url, null);
                 return true;
             }
-            if (JavaIndex.ensureAttributeValue(url, ANNOTATION_PROCESSORS, encodeToStirng(aptOptions.annotationProcessorsToRun())) && !allFilesIndexing) {
+            if (!apEnabledOnScan) {
+                //no need to check further:
+                return false;
+            }
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString(), checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
+                return true;
+            }
+            if (JavaIndex.ensureAttributeValue(url, ANNOTATION_PROCESSORS, encodeToStirng(aptOptions.annotationProcessorsToRun()), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to change in annotation processors"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(url, null);
                 return true;
             }
         } catch (IOException ioe) {

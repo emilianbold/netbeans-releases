@@ -1068,7 +1068,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                             && (m.getEnclosingElement() == field.getEnclosingElement()
                                 || isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()));
                 case COMPILATION_UNIT:
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case NEW_CLASS:
                     return false;
                 }
@@ -1099,7 +1102,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     return currentGetter != null && m == currentGetter.resolve(workingCopy)
                             || currentSetter != null && m == currentSetter.resolve(workingCopy);
                 case COMPILATION_UNIT:
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case NEW_CLASS:
                     return false;
                 }

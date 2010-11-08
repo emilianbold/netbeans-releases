@@ -62,12 +62,19 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> implements CsmInitializerListContainer {
 
-    private final List<CsmExpression> initializers;
+    private List<CsmExpression> initializers;
     
-    public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, file, scope, register, register);
-        
-        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
+    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, scope, nameHolder, global);
+    }
+
+    public static ConstructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, nameHolder, register);
+        res.initializers = AstRenderer.renderConstructorInitializersList(ast, res, res.getContainingFile());
+        postObjectCreateRegistration(register, res);
+        nameHolder.addReference(file, res);
+        return res;
     }
     
     @Override
@@ -75,6 +82,7 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
         return NoType.instance();
     }
 
+    @Override
     public Collection<CsmExpression> getInitializerList() {
         if(initializers != null) {
             return initializers;

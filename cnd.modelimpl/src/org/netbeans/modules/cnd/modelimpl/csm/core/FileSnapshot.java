@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.PrintWriter;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -163,5 +164,9 @@ public class FileSnapshot implements CsmFile {
     @Override
     public boolean isValid() {
         return true;
+    }
+
+    public void dumpInfo(PrintWriter printOut) {
+        printOut.printf("Snapshot %s\n", this.absPath);// NOI18N 
     }
 }

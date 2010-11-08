@@ -87,7 +87,6 @@ public class BeanRunConfig implements RunConfig {
     private FileObject selectedFO;
     private MavenProject mp;
     private RunConfig preexecution;
-    private String preactionname;
     private ReactorStyle reactor = ReactorStyle.NONE;
     
     /** Creates a new instance of BeanRunConfig */
@@ -358,17 +357,8 @@ public class BeanRunConfig implements RunConfig {
         return preexecution;
     }
 
-    public void setPreExecution(RunConfig config) {
+    public @Override void setPreExecution(RunConfig config) {
         preexecution = config;
-    }
-
-    public void setPreExecutionActionName(String preactionname) {
-        this.preactionname = preactionname;
-    }
-
-    public String getPreExecutionActionName() {
-        //not worth inheriting I guess.
-        return preactionname;
     }
 
     public ReactorStyle getReactorStyle() {

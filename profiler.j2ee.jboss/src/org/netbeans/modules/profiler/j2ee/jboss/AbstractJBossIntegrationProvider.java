@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -69,28 +70,27 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // <editor-fold defaultstate="collapsed" desc="Resource strings">
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.jboss.Bundle"); // NOI18N
-    private static final String PROFILED_JBOSS_CONSOLE_STRING = messages.getString("JBossIntegrationProvider_ProfiledJbossConsoleString"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = messages.getString("JBossIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String PATH_TO_JVM_DIR_TEXT = messages.getString("JBossIntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MSG = messages.getString("JBossIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = messages.getString("JBossIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = messages.getString("JBossIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = messages.getString("JBossIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MSG = messages.getString("JBossIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = messages.getString("JBossIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = messages.getString("JBossIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MSG = messages.getString("JBossIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP4_MSG = messages.getString("JBossIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = messages.getString("JBossIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP2_MSG = messages.getString("JBossIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = messages.getString("JBossIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("JBossIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String PROFILED_JBOSS_CONSOLE_STRING = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ProfiledJbossConsoleString"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
+    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_PathToJvmDirText"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_DynamicWarningMessage"); // NOI18N  
                                                                                                                                 // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Constants">

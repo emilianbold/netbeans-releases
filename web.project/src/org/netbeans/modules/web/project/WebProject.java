@@ -231,7 +231,10 @@ public final class WebProject implements Project {
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     private AntBuildExtender buildExtender;
-            
+
+    // set to true when project customizer is being closed and changes persisted
+    private final ThreadLocal<Boolean> projectPropertiesSave;
+    
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
         private String propertyName;
@@ -355,6 +358,12 @@ public final class WebProject implements Project {
     };
     
     WebProject(final AntProjectHelper helper) throws IOException {
+        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
         this.helper = helper;
         aux = helper.createAuxiliaryConfiguration();
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
@@ -390,6 +399,10 @@ public final class WebProject implements Project {
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
     }
 
+    public void setProjectPropertiesSave(boolean value) {
+        this.projectPropertiesSave.set(value);
+    }
+    
     public ClassPathModifier getClassPathModifier() {
         return cpMod;
     }
@@ -714,16 +727,21 @@ public final class WebProject implements Project {
 
                 if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                    String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                    Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
-                            Util.getJ2eePlatformClasspathEntries(WebProject.this), root);
-                    ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                }
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                try {
-                    ProjectManager.getDefault().saveProject(WebProject.this);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+                            Util.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
+                    if (roots != null) {
+                        projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                    } else {
+                        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                    }
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                    try {
+                        ProjectManager.getDefault().saveProject(WebProject.this);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
                 return null;
             }
@@ -764,35 +782,23 @@ public final class WebProject implements Project {
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
-            int flags = genFilesHelper.getBuildScriptState(
+            int state = genFilesHelper.getBuildScriptState(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                 WebProject.class.getResource("resources/build-impl.xsl"));
-            if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        JButton updateOption = new JButton(NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
-                        if (DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor(NbBundle.getMessage(WebProject.class, "TXT_BuildImplRegenerate"),
-                                NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerateTitle"),
-                                NotifyDescriptor.DEFAULT_OPTION,
-                                NotifyDescriptor.WARNING_MESSAGE,
-                                new Object[] {
-                            updateOption,
-                            NotifyDescriptor.CANCEL_OPTION
-                        },
-                                updateOption)) == updateOption) {
-                            try {
-                                genFilesHelper.generateBuildScriptFromStylesheet(
-                                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                        WebProject.class.getResource("resources/build-impl.xsl"));
-                            } catch (IOException e) {
-                                Exceptions.printStackTrace(e);
-                            } catch (IllegalStateException e) {
-                                Exceptions.printStackTrace(e);
-                            }
-                        }
-                    }
-                });
+            final Boolean projectPropertiesSave = WebProject.this.projectPropertiesSave.get();
+            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
+                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
+                    GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
+                try {
+                    Util.backupBuildImplFile(updateHelper);
+                    genFilesHelper.generateBuildScriptFromStylesheet(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            WebProject.class.getResource("resources/build-impl.xsl"));
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                } catch (IllegalStateException e) {
+                    Exceptions.printStackTrace(e);
+                }
             } else {
                 genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
@@ -868,21 +874,10 @@ public final class WebProject implements Project {
                         WebProject.class.getResource("resources/build-impl.xsl"));
                     if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
                         && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
-                        JButton updateOption = new JButton (NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
-                        if (DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor (NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerate"),
-                                NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerateTitle"),
-                                NotifyDescriptor.DEFAULT_OPTION,
-                                NotifyDescriptor.WARNING_MESSAGE,
-                                new Object[] {
-                                    updateOption,
-                                    NotifyDescriptor.CANCEL_OPTION
-                                },
-                                updateOption)) == updateOption) {
+                            Util.backupBuildImplFile(updateHelper);
                             genFilesHelper.generateBuildScriptFromStylesheet(
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                 WebProject.class.getResource("resources/build-impl.xsl"));
-                        }
                     } else {
                         genFilesHelper.refreshBuildScript(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
@@ -1584,6 +1579,18 @@ public final class WebProject implements Project {
                 FileObject fo = fe.getFile();
                 handleCopyFileToDestDir(fo);
 
+                FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+                if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                        && "persistence.xml".equals(fe.getName() + "." + fe.getExt())) { // NOI18N
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
+                            + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                    return;
+                }
+
                 FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
@@ -1635,6 +1642,17 @@ public final class WebProject implements Project {
 
                 FileObject fo = fe.getFile();
 
+                FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+                if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                        && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                    return;
+                }
+
                 FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
@@ -1661,7 +1679,7 @@ public final class WebProject implements Project {
         }
 
         private boolean isSynchronizationAppropriate(String filePath) {
-            if (filePath.startsWith("WEB-INF/classes")) { // NOI18N
+            if (filePath.startsWith("WEB-INF/classes") && !filePath.startsWith("WEB-INF/classes/META-INF")) { // NOI18N
                 return false;
             }
             if (filePath.startsWith("WEB-INF/src")) { // NOI18N
@@ -1715,15 +1733,24 @@ public final class WebProject implements Project {
                 return;
             }
 
+            FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+            if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                    && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
+                handleCopyFileToDestDir("WEB-INF/classes/META-INF", persistenceXmlDir, fo); // NOI18N
+                return;
+            }
+
             FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
             FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
             if (webInf != null && FileUtil.isParentOf(webInf, fo)
                     && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
                 handleCopyFileToDestDir("WEB-INF", webInf, fo); // NOI18N
+                return;
             }
             if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                 handleCopyFileToDestDir(null, docBase, fo);
+                return;
             }
         }
 

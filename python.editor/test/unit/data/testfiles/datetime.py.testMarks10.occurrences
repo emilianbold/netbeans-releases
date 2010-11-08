@@ -1,6 +1,0 @@
-    def __init__(|>MARK_OCCURRENCES:self<|, year, month, day, hour=0, minute=0, second=0,
-                |>MARK_OCCURRENCES:self<|.ordinal = _ymd2ord(year, month, 1) + (day - 1)
-                year, month, day = _ord2ymd(|>MARK_OCCURRENCES:self<|.ordinal)
-        |>MARK_OCCURRENCES:sel^f<|.year, |>MARK_OCCURRENCES:self<|.month, |>MARK_OCCURRENCES:self<|.day = year, month, day
-        |>MARK_OCCURRENCES:self<|.hour, |>MARK_OCCURRENCES:self<|.minute, |>MARK_OCCURRENCES:self<|.second = hour, minute, second
-        |>MARK_OCCURRENCES:self<|.microsecond = microsecond

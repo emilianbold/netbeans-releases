@@ -1,4 +1,0 @@
-    ^"foo"
-    -----
-HINT:Assign expression to a variable
-FIX:Assign expression to a variable

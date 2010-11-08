@@ -53,7 +53,6 @@ import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -102,7 +101,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Jan Stola
  */
-public class GridDesigner extends JPanel implements Customizer {
+public class GridDesigner extends JPanel {
     /** Color of the selection. */
     public static final Color SELECTION_COLOR = FormLoaderSettings.getInstance().getSelectionBorderColor();
     /** Image of the resizing handle. */
@@ -123,7 +122,7 @@ public class GridDesigner extends JPanel implements Customizer {
      * 
      * @param metaContainer designer container.
      */
-    private void setDesignedContainer(RADVisualContainer metaContainer) {
+    public void setDesignedContainer(RADVisualContainer metaContainer) {
         removeAll();
         FormModel formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
@@ -301,17 +300,6 @@ public class GridDesigner extends JPanel implements Customizer {
         button.setToolTipText(text);
         button.setFocusPainted(false);
         return button;
-    }
-
-    /**
-     * Implementation of {@code Customizer} interface (sets the object
-     * to customize).
-     * 
-     * @param bean bean to customize.
-     */
-    @Override
-    public void setObject(Object bean) {
-        setDesignedContainer((RADVisualContainer)bean);
     }
 
     /** Selected meta-components. */

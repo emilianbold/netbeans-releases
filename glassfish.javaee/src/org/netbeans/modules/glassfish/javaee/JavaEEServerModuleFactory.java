@@ -131,8 +131,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     }
 
                 if(ip == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO,
-                            "Unable to create/locate J2EE InstanceProperties for " + url);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, "Unable to create/locate J2EE InstanceProperties for {0}", url);
                 }
             }
 
@@ -317,6 +316,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String SERVER_LIBRARY_TYPE = "serverlibrary"; // NOI18N
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
+    private static final String JAVA_EE_6_31_LIB = "Java-EE-GlassFish-3.1"; // NOI18N
     private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
 
     private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
@@ -353,6 +353,22 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
 
+        File jerseyGFServer = ServerUtilities.getJarName(installRoot, JERSEY_GF_SERVER + ServerUtilities.GFV3_VERSION_MATCHER);
+        boolean isGFV31 =  jerseyGFServer != null;
+
+        String[] JERSEY_LIBS = (isGFV31 ? JAXRS_LIBRARIES_31 : JAXRS_LIBRARIES);
+        for (String entry : JERSEY_LIBS) {
+            f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+            if ((f != null) && (f.exists())) {
+                try {
+                    libraryList.add(FileUtil.getArchiveRoot(f.toURI().toURL()));
+                } catch (MalformedURLException ex) {
+                }
+            }
+        }
+        if (isGFV31) {
+            name = JAVA_EE_6_31_LIB;
+        }
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
@@ -378,7 +394,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     libPath = libPath.substring(5);
                 }
                 if (!new File(libPath.replace("!/", "")).exists()) {
-                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating {0}", name);
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
@@ -416,7 +432,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     libPath = libPath.substring(5);
                 }
                 if (!new File(libPath.replace("!/", "")).exists()) {
-                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating {0}", name);
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
@@ -458,10 +474,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
                 if (null != ltp) {
                     lib = lmgr.createLibrary(libType, name, contents);
-                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library " + name);
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
                 } else {
                     lmgr.addPropertyChangeListener(new InitializeLibrary(lmgr, libType, name, contents));
-                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "schedule to create library " + name);
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "schedule to create library {0}", name);
                 }
             } catch (IOException ex) {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
@@ -505,7 +521,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
                         if (null != ltp) {
                             lmgr.createLibrary(libType, name, content);
-                            Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library " + name);
+                            Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
                             removeFromListenerList(pcl);
                         }
                     } catch (IOException ex) {

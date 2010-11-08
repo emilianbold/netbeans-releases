@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -51,6 +52,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
@@ -66,6 +69,8 @@ import org.openide.util.Parameters;
 public final class CachingArchiveClassLoader extends ClassLoader {
 
     private static final int INI_SIZE = 16384;
+    
+    private static final Logger LOG = Logger.getLogger(CachingArchiveClassLoader.class.getName());
 
     private final Archive[] archives;
     private byte[] buffer;
@@ -85,6 +90,8 @@ public final class CachingArchiveClassLoader extends ClassLoader {
             try {
                 final int len = readJavaFileObject(file);
                 return defineClass(name, buffer, 0, len);
+            } catch (FileNotFoundException fnf) {
+                LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

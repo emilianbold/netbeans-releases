@@ -67,16 +67,21 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private final CsmCompoundStatement body;
     private int parseCount;
 
-    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        super(ast, file, scope, false, global);
+    protected FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, scope, nameHolder, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl) file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
         }
-        if (register) {
-            registerInProject();
-        }
+    }
+
+    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(ast, file, scope, nameHolder, register);
+        postObjectCreateRegistration(register, functionDefinitionImpl);
+        nameHolder.addReference(file, functionDefinitionImpl);
+        return functionDefinitionImpl;
     }
 
     @Override
@@ -154,70 +159,71 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        Collection<? extends CsmDeclaration> defs = getContainingFile().getProject().findDeclarations(uname);
-        if (defs.isEmpty()) {
+        Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
+        if (prjDecls.isEmpty()) {
             uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-            defs = getContainingFile().getProject().findDeclarations(uname);
+            prjDecls = getContainingFile().getProject().findDeclarations(uname);
         }
-        CsmDeclaration def = null;
-        if (defs.isEmpty()) {
+        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
+        if (prjDecls.isEmpty()) {
             CsmObject owner = findOwner(parent);
             if(owner == null) {
                 owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
             }
-            if (owner instanceof CsmClass) {
+            if (CsmKindUtilities.isClass(owner)) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
-                if (def == null && isOperator()) {
-                    def = fixCastOperator((CsmClass)owner);
+                decls = findByNameAndParamsNumber(it, getName(), getParameters().size());
+                if (decls.isEmpty() && isOperator()) {
+                    CsmDeclaration cast = fixCastOperator((CsmClass)owner);
+                    if (cast != null) {
+                        decls.add(cast);
+                    }
                 }
-            } else if (owner instanceof CsmNamespace) {
+            } else if (CsmKindUtilities.isNamespace(owner)) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
+                decls = findByNameAndParamsNumber(it, getName(), getParameters().size());
             }
         } else {
-            def = findByNameAndParamsNumber(defs.iterator(), getName(), getParameters().size());
+            decls = findByNameAndParamsNumber(prjDecls.iterator(), getName(), getParameters().size());
         }
-        return (CsmFunction) def;
+        CsmFunction decl = chooseDeclaration(decls);
+        return decl;
     }
 
-    private CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
-        CsmFunction out = null;
-        CsmFunction best = null;
-        CsmFunction best2 = null;
-        for (Iterator it = declarations; it.hasNext();) {
-            Object o = it.next();
-            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
+    private Collection<CsmDeclaration> findByNameAndParamsNumber(Iterator<? extends CsmObject> declarations, CharSequence name, int paramsNumber) {
+        Collection<CsmDeclaration> out = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> best = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> otherVisible = new ArrayList<CsmDeclaration>(1);
+        for (Iterator<? extends CsmObject> it = declarations; it.hasNext();) {
+            CsmObject o = it.next();
+            if (CsmKindUtilities.isFunction(o)) {
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
                     if (decl.getParameters().size() == paramsNumber) {
-                        out = decl;
                         if (!FunctionImplEx.isFakeFunction(decl)) {
                             if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
-                                best = decl;
-                                break;
+                                best.add(decl);
+                                continue;
                             }
                         }
+                        out.add(decl);
                     } else {
                         if (!FunctionImplEx.isFakeFunction(decl)) {
                             if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
-                                best2 = decl;
+                                otherVisible.add(decl);
                             }
-                            if (out == null) {
-                                out = decl;
-                            }
+                            out.add(decl);
                         }
                     }
                 }
             }
         }
-        if (best != null) {
-            return best;
-        }
-        if (best2 != null) {
-            return best2;
+        if (!best.isEmpty()) {
+            out = best;
+        } else if (!otherVisible.isEmpty()) {
+            out = otherVisible;
         }
         return out;
     }

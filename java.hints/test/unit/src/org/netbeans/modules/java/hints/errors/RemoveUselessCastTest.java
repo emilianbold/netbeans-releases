@@ -43,14 +43,18 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class RemoveUselessCastTest extends HintsTestBase {
+public class RemoveUselessCastTest extends ErrorHintsTestBase {
     
     public RemoveUselessCastTest(String name) {
         super(name);
@@ -58,26 +62,78 @@ public class RemoveUselessCastTest extends HintsTestBase {
     
     @Override
     protected void setUp() throws Exception {
-        super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
+        super.setUp();
         CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
         CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_CAST, true);
     }
     
+    public void testRedundantCast1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = |(String) get(String.class);\n" +
+                       "    }\n" +
+                       "    public <T> T get(Class<T> c) {\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = get(String.class);\n" +
+                       "    }\n" +
+                       "    public <T> T get(Class<T> c) {\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testRedundantCastRemoveParentheses1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = |(String) (\"a\" + \"b\");\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = \"a\" + \"b\";\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testRedundantCastRemoveParentheses2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        Integer b = new Integer(18);\n" +
+                       "        int a = (|(Integer) b).intValue();\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        Integer b = new Integer(18);\n" +
+                       "        int a = b.intValue();\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
-    protected boolean createCaches() {
-        return false;
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new RemoveUselessCast().run(info, null, pos, path, null);
     }
-    
+
     @Override
-    protected String testDataExtension() {
-        return "org/netbeans/test/java/hints/RemoveUselessCastTest/";
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return "FixImpl";
     }
-    
-    //XXX: fails because of a bug in code generator:
-    public void XtestRedundantCast1() throws Exception {
-        performTest("RedundantCast1", "Remove redundant cast", 9, 13);
-    }
-    
-    public void testEmpty() {}
-    
+
 }

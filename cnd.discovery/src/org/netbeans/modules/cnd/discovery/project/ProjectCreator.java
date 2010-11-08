@@ -183,7 +183,7 @@ public class ProjectCreator {
      */
     public AntProjectHelper createProject(String name, String displayName, 
             Set<String> folders, Set<String> libs) throws IOException {
-        File dirF = new File(projectFolder);
+        File dirF = CndFileUtils.createLocalFile(projectFolder);
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -292,12 +292,12 @@ public class ProjectCreator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk
-        MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
+        MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
         projectDescriptor.setState(State.READY);
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();
-        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null);
+        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null, false);
         rootFolder = projectDescriptor.getLogicalFolders();
         //projectDescriptor.addSourceRootRaw(workingDir);
         projectDescriptor.addSourceRootRaw(CndPathUtilitities.toRelativePath(baseDir, workingDir));
@@ -386,8 +386,8 @@ public class ProjectCreator {
     //create project directory
     //return FileObject created with specified File dir
     /*package-local*/ static FileObject createProjectDir(File dir) throws IOException {
-        FileObject dirFO = FileUtil.toFileObject(dir);
-        if (dirFO == null && !dir.exists()) {
+        FileObject dirFO = CndFileUtils.toFileObject(dir);
+        if ((dirFO == null || !dirFO.isValid()) && !dir.exists()) { // File SIC! - always local
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem(dir);
             if (!dir.mkdirs()) {
@@ -395,8 +395,9 @@ public class ProjectCreator {
             }
             refreshFileSystem(dir);
         }
-        dirFO = FileUtil.toFileObject(dir);
+        dirFO = CndFileUtils.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }
@@ -407,8 +408,9 @@ public class ProjectCreator {
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
+        FileObject dirFO = CndFileUtils.toFileObject(rootF);
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        assert dirFO.isValid() : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
     }
 

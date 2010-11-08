@@ -50,30 +50,25 @@ import java.io.IOException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.netbeans.junit.NbTestCase;
 
 /** Is generation of Jnlp files correct?
  *
  * @author Jaroslav Tulach
  */
-public class MakeMasterJNLPTest extends NbTestCase {
+public class MakeMasterJNLPTest extends TestBase {
     public MakeMasterJNLPTest (String name) {
         super (name);
-    }
-    
-    protected void setUp() throws Exception {
-        clearWorkDir();
     }
     
     public void testOSGiModule() throws Exception {
         int cnt = 3;
         Manifest m;
 
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("Bundle-SymbolicName", "org.my.module");
         File simpleJar = generateJar (new String[0], m);
 
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.second.module/3");
         File secondJar = generateJar (new String[0], m);
 
@@ -82,7 +77,7 @@ public class MakeMasterJNLPTest extends NbTestCase {
 
         File output = new File(parent, "output");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -98,7 +93,7 @@ public class MakeMasterJNLPTest extends NbTestCase {
             "</project>"
         );
         while (cnt-- > 0) {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+            execute (f, new String[] { "-verbose" });
         }
 
         assertTrue ("Output exists", output.exists ());
@@ -113,10 +108,10 @@ public class MakeMasterJNLPTest extends NbTestCase {
         assertEquals("The res2 file: "+ files[1], "org-second-module.ref", files[1]);
 
         File r1 = new File(output, "org-my-module.ref");
-        String res1 = ModuleDependenciesTest.readFile (r1);
+        String res1 = readFile (r1);
 
         File r2 = new File(output, "org-second-module.ref");
-        String res2 = ModuleDependenciesTest.readFile (r2);
+        String res2 = readFile (r2);
 
         assertExt(res1, "org.my.module");
         assertExt(res2, "org.second.module");
@@ -132,11 +127,11 @@ public class MakeMasterJNLPTest extends NbTestCase {
     private void doGenerateReferenceFiles(int cnt) throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar (new String[0], m);
 
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.second.module/3");
         File secondJar = generateJar (new String[0], m);
         
@@ -145,7 +140,7 @@ public class MakeMasterJNLPTest extends NbTestCase {
         
         File output = new File(parent, "output");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -161,7 +156,7 @@ public class MakeMasterJNLPTest extends NbTestCase {
             "</project>"
         );
         while (cnt-- > 0) {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+            execute (f, new String[] { "-verbose" });
         }
         
         assertTrue ("Output exists", output.exists ());
@@ -176,10 +171,10 @@ public class MakeMasterJNLPTest extends NbTestCase {
         assertEquals("The res2 file: "+ files[1], "org-second-module.ref", files[1]);
         
         File r1 = new File(output, "org-my-module.ref");
-        String res1 = ModuleDependenciesTest.readFile (r1);
+        String res1 = readFile (r1);
 
         File r2 = new File(output, "org-second-module.ref");
-        String res2 = ModuleDependenciesTest.readFile (r2);
+        String res2 = readFile (r2);
         
         assertExt(res1, "org.my.module");
         assertExt(res2, "org.second.module");
@@ -208,11 +203,13 @@ public class MakeMasterJNLPTest extends NbTestCase {
         assertEquals("Just one dash cnb", -1, res.indexOf(dashcnb, dcnb + 1));
     }
 
-    private final File createNewJarFile () throws IOException {
+    private File createNewJarFile() throws IOException {
         int i = 0;
         for (;;) {
             File f = new File (this.getWorkDir(), i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists()) {
+                return f;
+            }
         }
     }
     
