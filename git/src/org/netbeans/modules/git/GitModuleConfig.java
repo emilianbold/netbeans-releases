@@ -60,8 +60,8 @@ public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    private static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
-    private static final String PROP_LAST_USED_MODE = "lastUsedMode"; //NOI18N
+    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";                           // NOI18N
+    private static final String PROP_LAST_USED_MODE     = "lastUsedMode"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -145,4 +145,13 @@ public final class GitModuleConfig {
     public void setLastUsedModificationContext (Mode mode) {
         getPreferences().put(PROP_LAST_USED_MODE, mode.name());
     }    
+    
+    public boolean getAutoOpenOutput() {
+        return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);
+    }
+
+    public void setAutoOpenOutput(boolean value) {
+        throw new UnsupportedOperationException("Not supported yet.");           
+    }    
+    
 }
