@@ -40,57 +40,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.api.javahelp;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.nodes.Node;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.PACKAGE)
 /**
- *
- * @author ondra
+ * Registers a help set.
+ * A help set reference according to {@code -//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN} is created.
+ * If the help set specifies a search view, the search indexer will also be run;
+ * all {@code *.html} and {@code *.htm} in the package containing the help set, and its subpackages, will be indexed.
+ * @since org.netbeans.modules.javahelp/1 2.20
  */
-public class GitTableModel<T extends StatusNode> extends NodeTableModel {
+public @interface HelpSetRegistration {
 
-    private T[] nodes;
+    /**
+     * Relative location of a help set file.
+     * Typically matches: {@code -//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN}
+     */
+    String helpSet();
 
-    public GitTableModel (T[] nodes) {
-        this.nodes = nodes;
-    }
+    /**
+     * Whether the help set should be merged into the master help set.
+     */
+    boolean merge() default true;
 
-    @Override
-    public final void setNodes (Node[] nodes) {
-        throw new IllegalStateException("Do not call this method");
-    }
+    /**
+     * Position of help set reference.
+     */
+    int position() default Integer.MAX_VALUE;
 
-    public final void setNodes (T[] nodes) {
-        this.nodes = nodes;
-        super.setNodes(nodes);
-    }
+    /**
+     * Helpset-relative HTML filenames to exclude from indexing.
+     */
+    String[] excludes() default {"credits.html"};
 
-    public T getNode (int idx) {
-        return nodes[idx];
-    }
-
-    public Collection<T> getNodes () {
-        return new HashSet<T>(Arrays.asList(nodes));
-    }
-
-    public void remove (List<T> toRemove) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
-        newNodes.removeAll(toRemove);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
-        super.setNodes(nodes);
-    }
-
-    public void add (List<T> toAdd) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
-        newNodes.addAll(toAdd);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
-        super.setNodes(nodes);
-    }
 }

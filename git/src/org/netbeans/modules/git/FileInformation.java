@@ -143,7 +143,6 @@ public class FileInformation extends VCSFileInformation {
     }
 
     /**
-     * TODO more complex logic needed.
      * Gets integer status that can be used in comparators. The more important the status is for the user,
      * the lower value it has. Conflict is 0, unknown status is 100.
      *

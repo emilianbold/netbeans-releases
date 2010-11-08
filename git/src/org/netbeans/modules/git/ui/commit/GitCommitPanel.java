@@ -92,9 +92,18 @@ import org.openide.util.TaskListener;
  * @author Tomas Stupka
  */
 public class GitCommitPanel extends VCSCommitPanel {
-    public static final String FILTER_HEAD_VS_INDEX = "HEAD_VS_INDEX";
-    public static final String FILTER_HEAD_VS_WORKING = "HEAD_VS_WORKING";
 
+    static final GitCommitFilter FILTER_HEAD_VS_WORKING = new GitCommitFilter(
+                "HEAD_VS_WORKING", 
+                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png")),
+                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsWorking.toolTipText"),
+                true); 
+    static final GitCommitFilter FILTER_HEAD_VS_INDEX = new GitCommitFilter(
+                "HEAD_VS_INDEX", 
+                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png")),
+                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsIndex.toolTipText"),
+                false);
+    
     private final Collection<GitHook> hooks;
     private final File[] roots;
     private final File repository;
@@ -122,18 +131,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     
     private static List<VCSCommitFilter> createFilters() {
         List<VCSCommitFilter> filters = new LinkedList<VCSCommitFilter>();
-        filters.add(
-            new GitCommitFilter(
-                FILTER_HEAD_VS_WORKING, 
-                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png")),
-                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsWorking.toolTipText"),
-                true));            
-        filters.add(
-            new GitCommitFilter(
-                FILTER_HEAD_VS_INDEX, 
-                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png")),
-                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsIndex.toolTipText"),
-                false));
+        filters.add(FILTER_HEAD_VS_WORKING);            
+        filters.add(FILTER_HEAD_VS_INDEX);
         return filters;
     }
     
@@ -246,11 +245,11 @@ public class GitCommitPanel extends VCSCommitPanel {
         }, 1000);
     }
     
-    private EnumSet<Status> getAcceptedStatus() {
+    EnumSet<Status> getAcceptedStatus() {
         VCSCommitFilter f = getSelectedFilter();
-        if(f.getID().equals(FILTER_HEAD_VS_INDEX)) {
+        if(f == FILTER_HEAD_VS_INDEX) {
             return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
-        } else if(f.getID().equals(FILTER_HEAD_VS_WORKING)) {
+        } else if(f == FILTER_HEAD_VS_WORKING) {
             return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;                
         }         
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        

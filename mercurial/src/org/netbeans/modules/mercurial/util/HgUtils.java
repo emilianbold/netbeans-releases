@@ -993,61 +993,7 @@ itor tabs #66700).
             }
         }
         return sortedRoots == null ? Collections.<File, Set<File>>emptyMap() : sortedRoots;
-    }
-
-   /**
-     * Returns File object for Project Directory
-     *
-     * @param VCSContext
-     * @return File object of Project Directory
-     */
-    public static File getProjectFile(VCSContext context){
-        return getProjectFile(getProject(context));
-    }
-
-    public static Project getProject(VCSContext context){
-        if (context == null) return null;
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-
-        for (File file : files) {
-            /* We may be committing a LocallyDeleted file */
-            if (!file.exists()) file = file.getParentFile();
-            FileObject fo = FileUtil.toFileObject(file);
-            if(fo == null) {
-                Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No FileObject for {0}", file); // NOI18N
-            } else {
-                Project p = FileOwnerQuery.getOwner(fo);
-                if (p != null) {
-                    return p;
-                } else {
-                    Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}", file); // NOI18N
-                }
-            }
-        }
-        return null;
-    }
-    
-    public static File getProjectFile(Project project){
-        if (project == null) return null;
-
-        FileObject fo = project.getProjectDirectory();
-        return  FileUtil.toFile(fo);
-    }
-
-    public static File[] getProjectRootFiles(Project project){
-        if (project == null) return null;
-        Set<File> set = new HashSet<File>();
-
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        for (int j = 0; j < sourceGroups.length; j++) {
-            SourceGroup sourceGroup = sourceGroups[j];
-            FileObject srcRootFo = sourceGroup.getRootFolder();
-            File rootFile = FileUtil.toFile(srcRootFo);
-            set.add(rootFile);
-        }
-        return set.toArray(new File[set.size()]);
-    }
+    }   
 
     /**
      * Checks file location to see if it is part of mercurial metdata
@@ -1086,9 +1032,9 @@ itor tabs #66700).
      */
     public static void forceStatusRefreshProject(VCSContext context) {
         // XXX and what if there is more then one project in the ctx?!
-        Project project = getProject(context);
+        Project project = Utils.getProject(context);
         if (project == null) return;
-        File[] files = getProjectRootFiles(project);
+        File[] files = Utils.getProjectRootFiles(project);
         for (int j = 0; j < files.length; j++) {
             forceStatusRefresh(files[j]);
         }

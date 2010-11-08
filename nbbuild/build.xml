@@ -88,7 +88,6 @@ made subject to such option by the copyright holder.
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
-            <include name="apisupport.harness/external/binaries-list"/>
             <include name="javahelp/external/binaries-list"/>
         </manifest>
     </downloadbinaries>
@@ -97,19 +96,12 @@ made subject to such option by the copyright holder.
     <path id="bootstrap-cp">
      <pathelement location="${ant.core.lib}"/>
      <fileset dir="..">
-        <!-- For JavaHelp indexing: -->
-        <include name="apisupport.harness/external/jsearch*.jar"/>
-        <!-- For JavaHelp link checking: -->
-        <include name="javahelp/external/jh*.jar"/>
+        <!-- For JavaHelp indexing and link checking: -->
+        <include name="javahelp/external/jhall*.jar"/>
       </fileset>
     </path>
-    <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.6" target="1.6">
       <classpath refid="bootstrap-cp"/>
-      <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
-      <exclude name="**/CheckHelpSetsBin.java" unless="have.javahelp"/>
-      <exclude name="**/ModifiedHTMLIndexerKit.java" unless="have.javahelp"/>
-      <exclude name="**/ModifiedIndexer.java" unless="have.javahelp"/>
       <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
     <jar jarfile="nbantext.jar">

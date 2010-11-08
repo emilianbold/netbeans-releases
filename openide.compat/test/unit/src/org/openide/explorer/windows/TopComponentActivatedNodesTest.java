@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.windows;
+package org.openide.explorer.windows;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,6 +62,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 
 

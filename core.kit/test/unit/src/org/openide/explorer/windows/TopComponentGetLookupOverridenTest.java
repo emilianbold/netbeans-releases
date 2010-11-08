@@ -42,26 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.windows;
+package org.openide.explorer.windows;
 
-import java.awt.KeyboardFocusManager;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 
-import junit.framework.*;
 
-import org.netbeans.junit.*;
 import org.openide.explorer.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 
 

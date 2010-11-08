@@ -146,6 +146,8 @@ public interface GitClient {
     /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
+     * XXX init what???
+     * XXX no monitor???
      */
     public void init () throws GitException;
 

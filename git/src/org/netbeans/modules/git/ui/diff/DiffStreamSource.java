@@ -113,7 +113,7 @@ class DiffStreamSource extends StreamSource {
         try {
             init();
         } catch (IOException e) {
-            return null; // XXX use error manager HACK null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
+            return null;
         }
         return mimeType;
     }
