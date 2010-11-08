@@ -110,11 +110,11 @@ made subject to such option by the copyright holder.
         <folder name="lookups">
             <folder name="NetBeans">
                 <file name="DTD_JavaHelp_Help_Set_Reference_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.javahelp.HelpSetProcessor"/>
                 </file>
                 <file name="DTD_Help_Context_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.javahelp.HelpCtxProcessor"/>
                 </file>
             </folder>
