@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -99,6 +100,12 @@ public class OutputLogger {
             writable = true;
             if (!openWindows.contains(log)) {
                 writable = false;
+                writable = GitModuleConfig.getDefault().getAutoOpenOutput();
+                openWindows.add(log);
+                if (!writable) {
+                    // close it again
+                    log.closeInputOutput();
+                }
             }
         }
         if (log.isClosed()) {
