@@ -264,7 +264,7 @@ public class CommitAction extends SingleRepositoryAction {
 //                            return;
 //                        } else {
 //                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
-//                            refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
+//                            refreshFiles = new HashSet<File>(Git.getInstance().getSeenRoots(repository));
 //                            commitAfterMerge = true;
 //                        }
 //                    } else {
