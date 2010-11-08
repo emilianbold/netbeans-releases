@@ -391,7 +391,13 @@ public class TopComponentGetLookupTest extends NbTestCase {
             public Def(Component c) {
                 this.c = c;
             }
+            @Override
             public Component getFocusOwner() {
+                return null;
+            }
+
+            @Override
+            public Component getPermanentFocusOwner() {
                 return c;
             }
         }
@@ -424,19 +430,11 @@ public class TopComponentGetLookupTest extends NbTestCase {
             assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
             assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
 
-            assertEquals ("Should be focused now", 
-                panel, 
-                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner()
-            );
             assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
 
             JTextField f = new JTextField ();
             f.getActionMap ().put ("focusedRegistration", act3);
             KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (f));
-            assertEquals ("f should be focused now", 
-                f, 
-                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner()
-            );
             assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
         } finally {
             KeyboardFocusManager.setCurrentKeyboardFocusManager (prev);
