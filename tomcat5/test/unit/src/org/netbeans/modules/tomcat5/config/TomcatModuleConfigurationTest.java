@@ -88,19 +88,26 @@ public class TomcatModuleConfigurationTest extends TestBase {
     final String SIMPLE_CONTEXT_XML_DATA = "<Context path='/testweb'>\n" +
                                            "</Context>";
     
+    private DatabaseConnection dbCon;
     public TomcatModuleConfigurationTest(java.lang.String testName) {
         super (testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        registerConnection();
-    }
-    
-    private void registerConnection() throws Exception {
         JDBCDriver driver = JDBCDriver.create(DRIVER_NAME, DRIVER_DISPLAY_NAME, DRIVER_CLASS, new URL[]{});
-        DatabaseConnection dbCon = DatabaseConnection.create(driver, DB_URL, USER, SCHEMA, PASSWORD, true);
+        dbCon = DatabaseConnection.create(driver, DB_URL, USER, SCHEMA, PASSWORD, true);
         ConnectionManager.getDefault().addConnection(dbCon);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (dbCon != null) {
+            ConnectionManager.getDefault().removeConnection(dbCon);
+        }
+        dbCon = null;
     }
     
     public void testCreateDatasource50() throws Exception {
