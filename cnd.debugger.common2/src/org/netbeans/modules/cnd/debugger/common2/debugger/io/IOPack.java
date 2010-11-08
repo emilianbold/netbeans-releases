@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.windows.InputOutput;
 
 public class IOPack {
@@ -60,9 +61,9 @@ public class IOPack {
 	return console;
     }
 
-    public boolean connectPio(Executor executor) {
+    public boolean connectPio(Executor executor, RunProfile runProfile) {
         if (io != null) {
-            return executor.startIO(io);
+            return executor.startIO(io, runProfile);
         }
         return false;
     }
