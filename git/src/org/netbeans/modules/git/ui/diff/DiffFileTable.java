@@ -82,8 +82,6 @@ import org.openide.util.actions.SystemAction;
  */
 class DiffFileTable extends VCSStatusTable<DiffNode> {
 
-    // TODO Merge with StatusTable
-
     /**
      * editor cookies belonging to the files being diffed.
      * The array may contain {@code null}s if {@code EditorCookie}s

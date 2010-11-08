@@ -424,7 +424,6 @@ public class FileStatusCache {
 
     /**
      * TODO: go through the logic once more, it seems very very complex
-     * TODO: handle initial scan, not implemented either
      * Fast version of {@link #getStatus(java.io.File)}.
      * @param file
      * @param seenInUI false value means the file/folder is not visible in UI and thus cannot trigger initial git status scan
