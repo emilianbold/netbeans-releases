@@ -47,43 +47,27 @@ made subject to such option by the copyright holder.
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-        <title>Connect to Database Dialog Box</title>
+        <title>New Connection Wizard: Choose Database Schema</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <style type="text/css">
 <!--
 .style1 {color: #FF0000}
-.style2 {color: #000000; }
 -->
         </style>
 </head>
 
     <body>
-        <h2>Connect to Database Dialog Box</h2>
+        <h2>New Connection Wizard: Choose Database Schemas</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>This dialog box enables you to supply the user name and password to open an
-        existing database connection.
-        You open this dialog box by right-clicking the database connection
-        node in the Services window and choosing Connect.</p>
-
-        <p>To open an existing database connection, you need to supply the following details:</p>
-        <ul>
-            <li><b>User Name.</b> Type user name for the database.</li>
-            <li><b>Password.</b> Type the password for the database.</li>
-          <li><b>Remember Password</b>. Select this if you want the IDE to remember your password. 
-            <p >If selected, you will not be prompted for the user name and password on subsequent connections to the database
-            and the Remember Password property is set to True.</p> 
-            <p >To set the Remember Password property to False, right-click the database connection node
-            in the Services window and choose Properties. Modify the Remember Password property. Note that you can do this only when the connection you are modifying is in the disconnected state. When the connection is enabled, you cannot change this property. </p>
-          </li>
-        </ul>
-
-
-
+        <p>This dialog box is displayed only if the database to which you want to connect contains existing schemas. </p>
+        <p>In this dialog box, select the database schema you want to use for your connection. The Database Explorer displays only tables that use the selected schema.</p>
         <dl>
                 <dt><a name="seealso">See Also</a></dt>
-                <dd><a href="connectdb.html">Connecting to a Database</a></dd>
-                <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>
-        </dl>
+                <dd><a href="csh_newconnectdb.html">New Connection Wizard: Customize Connection Dialog Box</a></dd>
+                <dd><a href="csh_driver.html">Adding a JDBC Driver</a></dd>
+				 <dd><a href="connectdb.html">Connecting to a Database</a></dd>
+				
+    </dl>
 
         <hr>
 
@@ -91,6 +75,7 @@ made subject to such option by the copyright holder.
         <table border="0" cellpadding="50">
             <tr><td>&nbsp;</td></tr>
         </table>
+
     </body>
 
 </html>
