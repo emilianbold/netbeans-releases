@@ -166,15 +166,28 @@ public final class EditorContextDispatcher {
         refreshProcessor = new RequestProcessor("Refresh Editor Context", 1);   // NOI18N
         
         resFileObject = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
-        resFileObject.addLookupListener(new EditorLookupListener(FileObject.class));
-        resFileObject.allItems();
+        EditorLookupListener ell = new EditorLookupListener(FileObject.class);
+        resFileObject.addLookupListener(ell);
+        ell.lookupChanged(false); // To initialize data
         
         resEditorCookie = Utilities.actionsGlobalContext().lookupResult(EditorCookie.class);
         editorLookupListener = new EditorLookupListener(EditorCookie.class);
         resEditorCookie.addLookupListener(editorLookupListener);
-        resEditorCookie.allItems();
+        editorLookupListener.lookupChanged(false); // To initialize data
 
         tcListener = new EditorLookupListener(TopComponent.class);
+        SwingUtilities.invokeLater(new Runnable() {
+            // getOpenedPanes() MUST be called on AWT.
+            public void run() {
+                synchronized (tcListener) {
+                    // To initialize data:
+                    ((EditorLookupListener) tcListener).updateCurrentOpenedPane(
+                            TopComponent.getRegistry().getActivated(),
+                            currentEditorCookie.get(),
+                            false);
+                }
+            }
+        });
         TopComponent.getRegistry ().addPropertyChangeListener (WeakListeners.propertyChange(
                 tcListener, TopComponent.getRegistry()));
     }
@@ -526,6 +539,10 @@ public final class EditorContextDispatcher {
         }
         
         public void resultChanged(LookupEvent ev) {
+            lookupChanged(true);
+        }
+
+        private void lookupChanged(final boolean doFire) {
             //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type);
             if (type == FileObject.class) {
                 Collection<? extends FileObject> fos = resFileObject.allInstances();
@@ -551,7 +568,7 @@ public final class EditorContextDispatcher {
                         mostRecentFileRef = new WeakReference(newFile);
                     }*/
                 }
-                if (oldFile != newFile) {
+                if (doFire && oldFile != newFile) {
                     refreshProcessor.post(new EventFirer(PROP_FILE, oldFile, newFile));
                 }
             } else if (type == EditorCookie.class) {
@@ -582,10 +599,10 @@ public final class EditorContextDispatcher {
                     SwingUtilities.invokeLater(new Runnable() {
                         // getOpenedPanes() MUST be called on AWT.
                         public void run() {
-                            updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), newEditor);
+                            updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), newEditor, doFire);
                         }
                     });
-                } else if (oldEditor != newEditor) {
+                } else if (doFire && oldEditor != newEditor) {
                     //  newEditor == null
                     refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, null));
                 }
@@ -603,7 +620,7 @@ public final class EditorContextDispatcher {
             if (type == TopComponent.class) {
                 if (propertyName.equals(TopComponent.Registry.PROP_ACTIVATED)) {
                     TopComponent newComponnet = (TopComponent) evt.getNewValue();
-                    updateCurrentOpenedPane(newComponnet, null);
+                    updateCurrentOpenedPane(newComponnet, null, true);
                 }
             }
             if (evt.getSource() instanceof EditorCookie.Observable) {
@@ -611,13 +628,14 @@ public final class EditorContextDispatcher {
                 SwingUtilities.invokeLater(new Runnable() {
                     // getOpenedPanes() MUST be called on AWT.
                     public void run() {
-                        updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), source);
+                        updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), source, true);
                     }
                 });
             }
         }
 
-        private void updateCurrentOpenedPane(TopComponent activeComponent, Object source) {
+        private void updateCurrentOpenedPane(TopComponent activeComponent, Object source,
+                                             boolean doFire) {
             JEditorPane oldEditor = null;
             JEditorPane newEditor = null;
             String MIMEType = null;
@@ -665,7 +683,7 @@ public final class EditorContextDispatcher {
                     //System.err.println("\nCurrent Opened Pane = "+currentOpenedPane+", currentFile = "+currentFile+"\n");
                 }
             }
-            if (oldEditor != newEditor) {
+            if (doFire && oldEditor != newEditor) {
                 refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
             }
         }
