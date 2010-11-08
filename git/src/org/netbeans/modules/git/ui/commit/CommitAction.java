@@ -159,8 +159,7 @@ public class CommitAction extends SingleRepositoryAction {
             // XXX
             // canceled by user, do nothing
         } */catch (GitException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            Git.LOG.log(Level.WARNING, message, ex);
         } finally {
             refreshFS(commitCandidates);
             Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);
