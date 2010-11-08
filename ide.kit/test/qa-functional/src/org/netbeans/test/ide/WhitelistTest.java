@@ -49,13 +49,16 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import junit.framework.Test;
-//import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Whitelist test
@@ -180,9 +183,14 @@ public class WhitelistTest extends JellyTestCase {
 
     public void openProject(String projectPath) throws Exception {
         File path=new File(getDataDir()+"/../../../../test/qa-functional/data").getCanonicalFile();
-        File projectsDir = new File(path, projectPath);
-        Object prj = ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
+        final File pp = new File(path, projectPath);
+        FileObject projectsDir = FileUtil.toFileObject(pp);
+        assertNotNull("Can find fileObject: " + pp, projectsDir);
+        Project p = ProjectManager.getDefault().findProject(projectsDir);
+        assertNotNull("Project for " + projectsDir + " found", p);
+        OpenProjects.getDefault().open(new Project[] { p }, false);
+        List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
+        assertTrue("My project is open: " + arr, arr.contains(p));
         waitParsingFinished();
     }
 
