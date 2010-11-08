@@ -157,4 +157,28 @@ public final class RefactoringElement {
     public void openInEditor() {
         impl.openInEditor();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RefactoringElement other = (RefactoringElement) obj;
+        if (this.impl != other.impl && (this.impl == null || !this.impl.equals(other.impl))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (this.impl != null ? this.impl.hashCode() : 0);
+        return hash;
+    }
+
+
 }
