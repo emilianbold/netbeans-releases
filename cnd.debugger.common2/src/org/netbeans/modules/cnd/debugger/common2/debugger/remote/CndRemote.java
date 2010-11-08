@@ -139,11 +139,6 @@ public class CndRemote {
      * See IZ 147560.
      */
     public static void validate(String name, final Runnable continuation) {
-
-	if (DebuggerManager.isStandalone() && !Executor.CND_EXEC) {
-	    continuation.run();
-	    return;
-	}
 	if (name != null && name.equals("localhost")) { // NOI18N
 	    continuation.run();
 	    return;
