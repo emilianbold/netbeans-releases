@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.windows;
+package org.openide.explorer.windows;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -63,6 +63,7 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  * Check the behaviour of TopComponent's lookup.

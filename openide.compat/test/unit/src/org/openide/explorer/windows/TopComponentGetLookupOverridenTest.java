@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.windows;
+package org.openide.explorer.windows;
 
 import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
@@ -62,6 +62,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 
 
