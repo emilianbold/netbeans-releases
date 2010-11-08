@@ -56,7 +56,6 @@ import java.util.Map;
 
 import org.openide.ErrorManager;
 
-import org.openide.util.Utilities;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.windows.InputOutput;
@@ -64,6 +63,7 @@ import org.openide.windows.InputOutput;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 /**
  * A combination process/process factory object.
@@ -151,7 +151,7 @@ public abstract class Executor {
     public abstract List<String> getCmdOutputLines();
 
 
-    public abstract boolean startIO(InputOutput io);
+    public abstract boolean startIO(InputOutput io, RunProfile runProfile);
 
     protected void destroyEngine() {
 	destroyedByHand = true;

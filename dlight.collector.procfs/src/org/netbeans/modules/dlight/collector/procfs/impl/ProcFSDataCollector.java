@@ -86,6 +86,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
+import org.openide.util.Exceptions;
 
 public class ProcFSDataCollector
         extends IndicatorDataProvider<ProcFSDCConfiguration>
@@ -233,6 +234,16 @@ public class ProcFSDataCollector
         if (mainLoop != null) {
             mainLoop.cancel();
             mainLoop = null;
+
+            try {
+                if (insertMSAStatement != null) {
+                    insertMSAStatement.close();
+                    insertMSAStatement = null;
+                }
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
         }
     }
 

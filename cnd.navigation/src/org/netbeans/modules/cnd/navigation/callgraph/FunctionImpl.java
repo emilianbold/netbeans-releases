@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
@@ -156,7 +157,13 @@ public class FunctionImpl implements Function {
     }
 
     private String createHtmlDisplayName() {
-        String displayName = function.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        String displayName;
+        if (CallGraphPreferences.isShowParameters()) {
+            displayName = function.getSignature().toString();
+        } else {
+            displayName = function.getName().toString();
+        }
+        displayName = displayName.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
         if (scopeName == null) {
             scopeName = "";
         }
@@ -184,7 +191,8 @@ public class FunctionImpl implements Function {
 
     @Override
     public String getDescription() {
-        return scopeName+function.getSignature().toString();
+        String scope = getScopeName();
+        return scope+function.getSignature().toString();
     }
 
     @Override

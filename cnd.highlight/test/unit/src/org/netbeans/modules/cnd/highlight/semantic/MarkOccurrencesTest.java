@@ -138,6 +138,38 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 94, 22);
     }
 
+    public void testAddSymbolZeroParams() throws Exception {
+        performTest(SOURCE, 107, 15);
+        clearWorkDir();
+        performTest(SOURCE, 116, 25);
+        clearWorkDir();
+        performTest(SOURCE, 139, 35);
+    }
+    
+    public void testAddSymbolOneParam() throws Exception {
+        performTest(SOURCE, 108, 15);
+        clearWorkDir();
+        performTest(SOURCE, 121, 25);
+        clearWorkDir();
+        performTest(SOURCE, 138, 35);
+    }
+    
+    public void testAddSymbolTwoParams() throws Exception {
+        performTest(SOURCE, 109, 15);
+        clearWorkDir();
+        performTest(SOURCE, 126, 25);
+        clearWorkDir();
+        performTest(SOURCE, 141, 35);
+    }
+    
+    public void testAddSymbolMoreParams() throws Exception {
+        performTest(SOURCE, 111, 15);
+        clearWorkDir();
+        performTest(SOURCE, 132, 25);
+        clearWorkDir();
+        performTest(SOURCE, 140, 35);
+    }
+    
     @Override
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;

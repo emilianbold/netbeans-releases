@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,38 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.api;
+package org.netbeans.modules.cnd.callgraph.api.ui;
 
-import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CallModel {
-    /**
-     * 
-     * @param function
-     * @return list of all function definitions that has call of function
-     */
-    List<Call> getCallers(Function declaration);
-    
-    /**
-     * 
-     * @param definition
-     * @return list of all called functions from definition
-     */
-    List<Call> getCallees(Function definition);
+public final class CallGraphPreferences {
+    private static final Preferences preferences = NbPreferences.forModule(CallGraphPanel.class);
 
-    Function getRoot();
+    public static boolean isShowOverriding() {
+        return preferences.getBoolean(CallGraphPanel.IS_SHOW_OVERRIDING, false);
+    }
 
-    void setRoot(Function newRoot);
-    
-    String getName();
+    public static boolean isShowParameters() {
+        return preferences.getBoolean(CallGraphPanel.IS_SHOW_PARAMETERS, false);
+    }
 }

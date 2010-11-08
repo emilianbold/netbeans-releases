@@ -68,6 +68,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -81,6 +82,8 @@ import org.openide.windows.InputOutput;
     private int pid = -1;
     private String slaveName;
     private final ExecutionEnvironment exEnv;
+    private Pty pty = null;
+    private DebuggerExternalTerminal terminal;
 
     public ExecutorCND(String name, Host host) {
 	super(name, host);
@@ -240,6 +243,9 @@ import org.openide.windows.InputOutput;
                 Exceptions.printStackTrace(ex);
             }
         }
+        if (terminal != null) {
+            terminal.finish();
+        }
     }
 
     @Override
@@ -297,17 +303,28 @@ import org.openide.windows.InputOutput;
 	reaper.start();
     }
 
-    private Pty pty = null;
-
-    public synchronized boolean startIO(InputOutput io) {
-        try {
-            pty = PtySupport.allocate(exEnv);
-        } catch (IOException ex) {
-            slaveName = "";
-            return false;
+    public synchronized boolean startIO(InputOutput io, RunProfile runProfile) {
+        int consoleType = runProfile.getConsoleType().getValue();
+        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+            consoleType = RunProfile.getDefaultConsoleType();
         }
-        PtySupport.connect(io, pty);
-        slaveName = pty.getSlaveName();
+        if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            String termPath = runProfile.getTerminalPath();
+            if (termPath != null) {
+                terminal = new DebuggerExternalTerminal(termPath);
+                slaveName = terminal.getTty();
+                return slaveName != null;
+            }
+        } else {
+            try {
+                pty = PtySupport.allocate(exEnv);
+            } catch (IOException ex) {
+                slaveName = "";
+                return false;
+            }
+            PtySupport.connect(io, pty);
+            slaveName = pty.getSlaveName();
+        }
         return true;
     }
 
