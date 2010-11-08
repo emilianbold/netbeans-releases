@@ -220,6 +220,12 @@ public class HtmlCompletionQuery extends UserTask {
         Snapshot snapshot = parserResult.getSnapshot();
         String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
+        
+        //in some cases the embedded offset cannot be mapped, then we can do very less
+        if(astOffset == -1) {
+            return null;
+        }
+
         lowerCase = usesLowerCase(parserResult, astOffset);
         HtmlVersion version = parserResult.getHtmlVersion();
         isXHtml = version.isXhtml();

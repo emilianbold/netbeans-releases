@@ -285,7 +285,9 @@ public class TypeFactory {
                                     // TODO: maybe we need to filter out some more tokens
                                     if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
-                                            || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_struct
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_class
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_union) {
                                         CsmType t = AstRenderer.renderType(namePart, file);
                                         type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
                                     }

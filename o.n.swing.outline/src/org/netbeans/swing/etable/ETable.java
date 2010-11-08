@@ -1280,9 +1280,6 @@ public class ETable extends JTable {
         }
         //System.err.println("  => convert: modelColumn = "+modelColumn+", start = "+start+", end = "+end);
         if (start == end) {
-            if (modelColumn != TableModelEvent.ALL_COLUMNS) {
-                modelColumn = convertColumnIndexToView(modelColumn);
-            }
             final TableModelEvent tme = new TableModelEvent(
                     (TableModel)e.getSource(),
                     start, end, modelColumn);
