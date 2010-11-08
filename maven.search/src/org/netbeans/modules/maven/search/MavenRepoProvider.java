@@ -131,6 +131,7 @@ public class MavenRepoProvider implements SearchProvider {
         synchronized (tempInfos) {
             infos.addAll(tempInfos);
         }
+        searchTask.cancel();
 
         Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
         for (NBVersionInfo nbvi : infos) {
