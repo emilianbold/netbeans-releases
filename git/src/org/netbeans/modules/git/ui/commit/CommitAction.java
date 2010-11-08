@@ -70,8 +70,7 @@ import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -106,7 +105,7 @@ public class CommitAction extends SingleRepositoryAction {
                         @Override
                         public void perform() {
                             try {
-                                performCommit(panel.getParameters().getCommitMessage(), commitFiles, getClient(), this, panel.getHooks());
+                                performCommit(panel.getParameters().getCommitMessage(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
                             } catch (GitException ex) {
                                 LOG.log(Level.WARNING, null, ex);
                                 return;
@@ -122,6 +121,7 @@ public class CommitAction extends SingleRepositoryAction {
     private static void performCommit(
             String message, 
             Map<VCSFileNode, VCSCommitOptions> commitFiles,
+            VCSCommitFilter filter,
             GitClient client, 
             GitProgressSupport support, 
             Collection<GitHook> hooks) 
@@ -131,7 +131,7 @@ public class CommitAction extends SingleRepositoryAction {
         List<File> deleteCandidates = new LinkedList<File>();
         List<File> commitCandidates = new LinkedList<File>();
         
-        populateCandidates(commitFiles, addCandidates, deleteCandidates, commitCandidates, support);
+        populateCandidates(filter, commitFiles, addCandidates, deleteCandidates, commitCandidates, support);
         
         if (support.isCanceled()) {
             return;
@@ -169,6 +169,7 @@ public class CommitAction extends SingleRepositoryAction {
     }
 
     private static void populateCandidates(
+            VCSCommitFilter filter,
             Map<VCSFileNode, VCSCommitOptions> commitFiles, 
             List<File> addCandidates,
             List<File> deleteCandidates,
@@ -188,7 +189,7 @@ public class CommitAction extends SingleRepositoryAction {
              
             VCSCommitOptions option = commitFiles.get(node);
             File file = node.getFile();
-            if (option != VCSCommitOptions.EXCLUDE) {
+            if (option != VCSCommitOptions.EXCLUDE && filter == GitCommitPanel.FILTER_HEAD_VS_WORKING) {
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||
                     info.containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) 
                 {
