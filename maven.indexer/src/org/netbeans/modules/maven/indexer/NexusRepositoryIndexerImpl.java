@@ -189,7 +189,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private Lookup lookup;
 
     private static final int MAX_RESULT_COUNT = 512;
-    private static final int MAX_MAX_CLAUSE = 2048;
 
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {
@@ -368,6 +367,21 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
+        
+        int MAX_MAX_CLAUSE = 2048;  // conservative maximum for too general queries, like "c:*class*"
+        
+        Query q = fsr.getQuery();
+        if (q instanceof BooleanQuery) {
+            BooleanClause[] c = ((BooleanQuery)q).getClauses();
+            if (c.length==1) {
+                Query q1 = c[0].getQuery();
+                if (q1 instanceof PrefixQuery && "u".equals(((PrefixQuery)q1).getPrefix().field())) {
+                    // increase for queries like "+u:org.netbeans.modules|*" to succeed
+                    MAX_MAX_CLAUSE = 8196;
+                }
+            }
+        }
+        
         FlatSearchResponse response = null;
         int oldMax = BooleanQuery.getMaxClauseCount();
         try {
