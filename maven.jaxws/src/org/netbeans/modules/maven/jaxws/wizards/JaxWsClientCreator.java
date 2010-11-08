@@ -144,6 +144,7 @@ public class JaxWsClientCreator implements ClientCreator {
                     prefs.put(MavenWebService.CLIENT_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
                 }
 
+                final String wsdlLocation = wsdlUrl;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         if (!isJaxWsLibrary) {
@@ -161,7 +162,8 @@ public class JaxWsClientCreator implements ClientCreator {
                                     MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
                                     MavenModelUtils.addJaxWSPlugin(model);
                         
-                        MavenModelUtils.addWsimportExecution(plugin, clientName, relativePath);
+                        MavenModelUtils.addWsimportExecution(plugin, clientName, 
+                                relativePath,wsdlLocation);
                         if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
