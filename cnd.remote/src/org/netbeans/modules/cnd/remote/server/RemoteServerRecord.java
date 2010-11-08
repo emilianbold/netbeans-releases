@@ -175,8 +175,10 @@ public class RemoteServerRecord implements ServerRecord {
         Object ostate = state;
         state = State.INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
-        if (rss.needsSetupOrUpdate()) {
-            rss.setup();
+        if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
+            if (rss.needsSetupOrUpdate()) {
+                rss.setup();
+            }
         }
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();
@@ -495,7 +497,7 @@ public class RemoteServerRecord implements ServerRecord {
                 if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) ) {
                     cachedOsFamily = osFamily;
                     cachedCpuFamily = cpuFamily;
-                    if (!syncFactory.isApplicable(executionEnvironment)) {
+                    if (executionEnvironment.isRemote() && !syncFactory.isApplicable(executionEnvironment)) {
                         for (RemoteSyncFactory newFactory : RemoteSyncFactory.getFactories()) {
                             if (newFactory.isApplicable(executionEnvironment)) {
                                 RemoteUtil.LOGGER.log(Level.WARNING, "Inapplicable factory for {0} : {1}; changing to {2}",

@@ -62,15 +62,16 @@ import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -86,7 +87,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -320,12 +320,9 @@ public final class TopLogging {
         } else {
             StringBuilder sb = new StringBuilder("loaded by "); // NOI18N
             if (l instanceof URLClassLoader) {
-                sb.append("URLClassLoader "); // NOI18N
-                String pref = "";
+                sb.append("URLClassLoader"); // NOI18N
                 for (URL u : ((URLClassLoader)l).getURLs()) {
-                    sb.append(pref);
-                    sb.append(u.toExternalForm());
-                    pref = File.pathSeparator;
+                    sb.append(' ').append(u);
                 }
             } else {
                 sb.append(l);
@@ -468,6 +465,8 @@ public final class TopLogging {
         TopSecurityManager.exit(exit);
     }
 
+    private static final Map<Throwable,Integer> catchIndex = Collections.synchronizedMap(new WeakHashMap<Throwable,Integer>()); // #190623
+
     /** Non closing handler.
      */
     private static final class NonClose extends Handler
@@ -503,6 +502,17 @@ public final class TopLogging {
                         break;
                     } catch (InterruptedException ex) {
                         // OK, ignore and try again
+                    }
+                }
+            }
+            Throwable t = record.getThrown();
+            if (t != null) {
+                StackTraceElement[] tStack = t.getStackTrace();
+                StackTraceElement[] hereStack = new Throwable().getStackTrace();
+                for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
+                    if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
+                        catchIndex.put(t, tStack.length - i);
+                        break;
                     }
                 }
             }
@@ -568,23 +578,13 @@ public final class TopLogging {
      * @param pw the destination
      */
     public static void printStackTrace(Throwable t, PrintWriter pw) {
-        // First try to find where the throwable was caught.
-        StackTraceElement[] tStack = t.getStackTrace();
-        StackTraceElement[] hereStack = new Throwable().getStackTrace();
-        int idx = -1;
-        for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
-            if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
-                idx = tStack.length - i;
-                break;
-            }
-        }
-        doPrintStackTrace(pw, t, null, idx);
+        doPrintStackTrace(pw, t, null);
     }
 
     /**
      * #91541: show stack traces in a more natural order.
      */
-    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher, int caughtIndex) {
+    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher) {
         //if (t != null) {t.printStackTrace(pw);return;}//XxX
         try {
             if (t.getClass().getMethod("printStackTrace", PrintWriter.class).getDeclaringClass() != Throwable.class) { // NOI18N
@@ -599,7 +599,7 @@ public final class TopLogging {
         }
         Throwable lower = t.getCause();
         if (lower != null) {
-            doPrintStackTrace(pw, lower, t, -1);
+            doPrintStackTrace(pw, lower, t);
             pw.print("Caused: "); // NOI18N
         }
         String summary = t.toString();
@@ -622,8 +622,9 @@ public final class TopLogging {
                 end--;
             }
         }
+        Integer caughtIndex = catchIndex.get(t);
         for (int i = 0; i < end; i++) {
-            if (i == caughtIndex) {
+            if (caughtIndex != null && i == caughtIndex) {
                 // Translate following tab -> space since formatting is bad in
                 // Output Window (#8104) and some mail agents screw it up etc.
                 pw.print("[catch] at "); // NOI18N

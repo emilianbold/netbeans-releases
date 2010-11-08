@@ -112,7 +112,7 @@ import com.sun.source.util.TreePath;
  * @author ads
  *
  */
-class WebBeansActionHelper {
+public class WebBeansActionHelper {
     
     static final String FIRE = "fire";                          // NOI18N
     
@@ -364,53 +364,56 @@ class WebBeansActionHelper {
     }
     
     static void showInjectablesDialog( MetadataModel<WebBeansModel> metamodel,
-            WebBeansModel model, ElementHandle<VariableElement> variable, 
+            WebBeansModel model, Object[] subject, 
             InjectablesModel uiModel , String name ) 
     {
+        subject[2] = InspectActionId.INJECTABLES;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
                 "TITLE_Injectables" , name );//NOI18N
         dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(variable, metamodel, model,
+        dialog.setContentPane( new InjectablesPanel(subject, metamodel, model,
                 uiModel ));
         dialog.setVisible( true );
     }
     
     static void showEventsDialog( MetadataModel<WebBeansModel> metaModel , 
-            WebBeansModel model,ElementHandle<ExecutableElement> method, 
+            WebBeansModel model,Object[] subject, 
             EventsModel uiModel , String name ) 
     {
+        subject[2] = InspectActionId.EVENTS;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectEventsAtCaretAction.class,
                 "TITLE_Events" , name );//NOI18N
         dialog.setTitle( title );
-        dialog.setContentPane( new EventsPanel(method, metaModel, 
+        dialog.setContentPane( new EventsPanel(subject, metaModel, 
                 model ,uiModel ));
         dialog.setVisible( true );
     }
     
     static void showObserversDialog( List<ExecutableElement> methods , 
             MetadataModel<WebBeansModel> metaModel , WebBeansModel model,
-            ElementHandle<VariableElement> variable, ObserversModel uiModel ,
+            Object[] subject, ObserversModel uiModel ,
             String name ) 
     {
+        subject[2] = InspectActionId.OBSERVERS;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectObserversAtCaretAction.class,
                 "TITLE_Observers" , name );//NOI18N
         dialog.setTitle( title );
-        dialog.setContentPane( new ObserversPanel(variable, metaModel, 
+        dialog.setContentPane( new ObserversPanel(subject, metaModel, 
                 model ,uiModel ));
         dialog.setVisible( true );
         
     }
     
-    static VariableElement findVariable( final WebBeansModel model,
+    public static VariableElement findVariable( final WebBeansModel model,
             final Object[] variablePath )
     {
         if ( variablePath[0] == null ){

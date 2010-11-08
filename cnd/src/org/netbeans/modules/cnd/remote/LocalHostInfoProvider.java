@@ -106,14 +106,17 @@ import org.openide.util.Utilities;
 
     private static class LocalPathMap extends PathMap {
 
-        public boolean checkRemotePath(String path, boolean fixMissingPath) {
+        @Override
+        public boolean checkRemotePaths(File[] localPaths, boolean fixMissingPath) {
             return false;
         }
 
+        @Override
         public String getLocalPath(String rpath,boolean useDefault) {
             return rpath;
         }
 
+        @Override
         public String getRemotePath(String lpath,boolean useDefault) {
             return lpath;
         }

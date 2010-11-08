@@ -230,6 +230,7 @@ public final class RemoteClient implements Cancellable {
         assert filesToUpload.length > 0 : "At least one file to upload must be specified";
 
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+        baseLocalDir = FileUtil.normalizeFile(baseLocalDir);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {

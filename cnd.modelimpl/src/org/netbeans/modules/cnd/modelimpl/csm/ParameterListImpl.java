@@ -78,6 +78,7 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
         }
     }
     
+    @Override
     public final Collection<K> getParameters() {
         return _getParameters();
     }

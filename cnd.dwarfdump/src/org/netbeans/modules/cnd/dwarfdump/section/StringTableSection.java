@@ -55,6 +55,8 @@ import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -90,6 +92,20 @@ public class StringTableSection extends ElfSection {
     
     public byte[] getStringTable() {
         return stringtable;
+    }
+
+    public List<String> getStrings() {
+        List<String> res = new ArrayList<String>();
+        if (stringtable == null) {
+            return res;
+        }
+        int offset = 0;
+        while (offset < stringtable.length) {
+            String string = getString(offset);
+            res.add(string);
+            offset += string.length() + 1;
+        }
+        return res;
     }
     
     public String getString(long offset) {

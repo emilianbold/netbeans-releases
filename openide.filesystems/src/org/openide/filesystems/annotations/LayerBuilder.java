@@ -119,6 +119,11 @@ public final class LayerBuilder {
 
     void close() {
         for (File f : unwrittenFiles) {
+            if (f.getPath().startsWith("dummy/")) {
+                // ActionProcessor calls instanceFile purely to check for LayerGenerationException.
+                // Better would be to factor out the type-checking into its own set of utility methods.
+                continue;
+            }
             processingEnv.getMessager().printMessage(Kind.WARNING, "layer file " + f.getPath() + " was never written");
         }
         unwrittenFiles.clear();
@@ -510,7 +515,7 @@ public final class LayerBuilder {
          */
         public File bundlevalue(String attr, String label) throws LayerGenerationException {
             String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)";
-            Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S+)").matcher(label);
+            Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S*)").matcher(label);
             if (m.matches()) {
                 String bundle = m.group(1);
                 String key = m.group(2);

@@ -98,6 +98,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     Framework getFramework() {
         return framework;
     }
+    @Override
+    protected ClassLoader findFrameworkClassLoader() {
+        Framework f = framework;
+        if (f != null) {
+            return f.getClass().getClassLoader();
+        }
+        return getClass().getClassLoader();
+    }
 
     @Override
     protected void prepare(Lookup lkp, Collection<? extends Module> preregister) {
@@ -226,6 +234,16 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
+                    Object exported = b.getHeaders().get("Export-Package");
+                    if (exported instanceof String) {
+                        for (String p : exported.toString().split(",")) { // NOI18N
+                            int semic = p.indexOf(';');
+                            if (semic >= 0) {
+                                p = p.substring(0, semic);
+                            }
+                            pkgs.add(p);
+                        }
+                    }
                 } finally {
                     SELF_QUERY.set(false);
                 }
@@ -235,12 +253,20 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 pkgs.addAll(Arrays.asList(knownPkgs));
             }
             pcl.append(new ClassLoader[]{ l });
-            LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
-            b.start();
+            if (isRealBundle(b)) { 
+                LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
+                b.start();
+            } else {
+                LOG.log(Level.FINE, "Not starting fragment {0}", m.getCodeNameBase());
+            }
             return pkgs;
         } catch (BundleException ex) {
             throw new IOException("Cannot start " + jar, ex);
         }
+    }
+
+    private static boolean isRealBundle(Bundle b) {
+        return b.getHeaders().get("Fragment-Host") == null; // NOI18N
     }
 
     @Override
@@ -249,9 +275,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         Bundle b = nl.bundle;
         try {
             assert b != null;
-            assert b.getState() == Bundle.ACTIVE : "Wrong state: " + b.getState() + " for " + m.getCodeNameBase();
-            LOG.log(Level.FINE, "Stopping bundle {0}", m.getCodeNameBase());
-            b.stop();
+            if (isRealBundle(b)) {
+                assert b.getState() == Bundle.ACTIVE : "Wrong state: " + b.getState() + " for " + m.getCodeNameBase();
+                LOG.log(Level.FINE, "Stopping bundle {0}", m.getCodeNameBase());
+                b.stop();
+            } else {
+                LOG.log(Level.FINE, "Not stopping fragment {0}", m.getCodeNameBase());
+            }
         } catch (BundleException ex) {
             throw new IllegalStateException(ex);
         }

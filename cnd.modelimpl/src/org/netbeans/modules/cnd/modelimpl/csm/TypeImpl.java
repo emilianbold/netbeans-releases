@@ -599,7 +599,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getManager().getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -630,7 +630,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                                 instantiationParams.add(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                instantiationParams.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(namePart, getContainingFile(), null),
+                                instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
                                         getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                             }
                         }

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.gotodeclaration.symbol;
 
-import java.io.File;
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -56,9 +55,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -128,7 +127,7 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
     @Override
     public FileObject getFileObject() {
-        return FileUtil.toFileObject(new File(absPath.toString()));
+        return CndFileUtils.toFileObject(absPath);
     }
 
     @Override

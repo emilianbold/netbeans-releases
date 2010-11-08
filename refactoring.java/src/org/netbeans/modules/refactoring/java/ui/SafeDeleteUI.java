@@ -67,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -144,7 +145,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
 //        }
         NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
         if (folder != null) {
-            return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDelPkg", folder); // NOI18N
+            return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDelPkg", folder.getFolder().getNameExt().replace('/', '.')); // NOI18N
         }
         
         return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N
@@ -196,18 +197,32 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     }
 
     public void doRefactoringBypass() throws IOException {
-        // #172199
-        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                for (FileObject file:getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
-                    DataObject.find(file).delete();
-                }
-                NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
-                if (f!=null) {
-                    deletePackage(f.getFolder());
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    // #172199
+                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+
+                        @Override
+                        public void run() throws IOException {
+                            for (FileObject file : getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
+                                DataObject.find(file).delete();
+                            }
+                            NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+                            if (f != null) {
+                                deletePackage(f.getFolder());
+                            }
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
+            
         });
+
     }
     
     private void deletePackage(FileObject source) {

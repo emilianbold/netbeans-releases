@@ -50,14 +50,15 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vita Stejskal
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder<GlyphGutterActionsProvider>, InstanceProvider<GlyphGutterActionsProvider> {
+@MimeLocation(subfolderName=GlyphGutterActionsProvider.GLYPH_GUTTER_ACTIONS_FOLDER_NAME, instanceProviderClass=GlyphGutterActionsProvider.class)
+public final class GlyphGutterActionsProvider extends ActionsList implements InstanceProvider<GlyphGutterActionsProvider> {
 
     public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N
     
@@ -73,18 +74,6 @@ public final class GlyphGutterActionsProvider extends ActionsList implements Cla
 
     private GlyphGutterActionsProvider(List<FileObject> keys) {
         super(keys, false, false);
-    }
-    
-    public Class<GlyphGutterActionsProvider> getClazz() {
-        return GlyphGutterActionsProvider.class;
-    }
-
-    public String getLayerFolderName(){
-        return GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<GlyphGutterActionsProvider> getInstanceProvider() {
-        return new GlyphGutterActionsProvider();
     }
     
     public GlyphGutterActionsProvider createInstance(List<FileObject> fileObjectList) {

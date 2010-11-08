@@ -260,13 +260,13 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
 
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(str)) {
-            return getOrCreateResourceSourceGroup(false);
+            return getOrCreateResourceSourceGroup(false, false);
         }
 //        logger.warn("unknown source type=" + str);
         return new SourceGroup[0];
     }
 
-    private SourceGroup[] getOrCreateResourceSourceGroup(boolean test) {
+    private SourceGroup[] getOrCreateResourceSourceGroup(boolean test, boolean create) {
         URI[] uris = project.getResources(test);
         if (uris.length > 0) {
             List<URI> virtuals = new ArrayList<URI>();
@@ -280,7 +280,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                         NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
                 }
             }
-            if (existing.size() == 0) {
+            if (create && existing.isEmpty()) {
                 File root = new File(virtuals.get(0));
                 FileObject fo=null;
                 try {
@@ -428,7 +428,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         File folder = null;
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type)) {
             boolean main = JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint);
-            SourceGroup[] grps =  getOrCreateResourceSourceGroup(!main);
+            SourceGroup[] grps = getOrCreateResourceSourceGroup(!main, true);
             if (grps.length > 0) {
                 return grps[0];
             }

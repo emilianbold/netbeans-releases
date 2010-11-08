@@ -44,12 +44,12 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,9 +71,10 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -163,40 +164,43 @@ public class LogReader {
                     progress.start(100);
                 }
                 int nFoundFiles = 0;
-                while(true){
-                    if (isStoped.get()) {
-                        break;
-                    }
-                    String line = in.readLine();
-                    if (line == null){
-                        break;
-                    }
-                    read += line.length()+1;
-                    line = line.trim();
-                    while (line.endsWith("\\")) { // NOI18N
-                        String oneMoreLine = in.readLine();
-                        if (oneMoreLine == null) {
+                try {
+                    while(true){
+                        if (isStoped.get()) {
                             break;
                         }
-                        line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
-                    }
-                    line = trimBackApostropheCalls(line, pkgConfig);
+                        String line = in.readLine();
+                        if (line == null){
+                            break;
+                        }
+                        read += line.length()+1;
+                        line = line.trim();
+                        while (line.endsWith("\\")) { // NOI18N
+                            String oneMoreLine = in.readLine();
+                            if (oneMoreLine == null) {
+                                break;
+                            }
+                            line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
+                        }
+                        line = trimBackApostropheCalls(line, pkgConfig);
 
-                    String[] cmds = pattern.split(line);
-                    for (int i = 0; i < cmds.length; i++) {
-                        if (parseLine(cmds[i])){
-                            nFoundFiles++;
+                        String[] cmds = pattern.split(line);
+                        for (int i = 0; i < cmds.length; i++) {
+                            if (parseLine(cmds[i])){
+                                nFoundFiles++;
+                            }
+                        }
+                        if (read*100/length > done && done < 100){
+                            done++;
+                            if (progress != null) {
+                                progress.increment(null);
+                            }
                         }
                     }
-                    if (read*100/length > done && done < 100){
-                        done++;
-                        if (progress != null) {
-                            progress.increment(null);
-                        }
+                } finally {
+                    if (progress != null) {
+                        progress.done();
                     }
-                }
-                if (progress != null) {
-                    progress.done();
                 }
                 if (TRACE) {
                     System.out.println("Files found: " + nFoundFiles); //NOI18N
@@ -212,6 +216,12 @@ public class LogReader {
     public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
         if (result == null) {
             run(progress, isStoped);
+            if (subFolders != null) {
+                subFolders.clear();
+                subFolders = null;
+                findBase.clear();
+                findBase = null;
+            }
         }
         return result;
     }
@@ -339,6 +349,11 @@ public class LogReader {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(workDir);
                 return true;
+            } else {
+                String netFile = fixNetHost(workDir);
+                if (netFile != null) {
+                    setWorkingDir(netFile);
+                }
             }
         }
         String dir = workingDir + File.separator + workDir;
@@ -368,6 +383,23 @@ public class LogReader {
         return false;
     }
 
+    private String fixNetHost(String dir) {
+        if (root.startsWith("/net/")) { // NOI18N
+            int i = root.indexOf('/', 5);
+            if (i > 0) {
+                String localPath = root.substring(i);
+                String prefix = root.substring(0,i);
+                if (dir.startsWith(localPath)) {
+                    String netFile = prefix + dir;
+                    if (new File(netFile).exists()) {
+                        return netFile;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     /*package-local*/ enum CompilerType {
         CPP, C, FORTRAN, UNKNOWN;
     };
@@ -379,6 +411,20 @@ public class LogReader {
 
         LineInfo(String line) {
             compileLine = line;
+        }
+
+        ItemProperties.LanguageKind getLanguage() {
+            switch (compilerType) {
+                case C:
+                    return ItemProperties.LanguageKind.C;
+                case CPP:
+                    return ItemProperties.LanguageKind.CPP;
+                case FORTRAN:
+                    return ItemProperties.LanguageKind.Fortran;
+                case UNKNOWN:
+                default:
+                    return ItemProperties.LanguageKind.Unknown;
+            }
         }
     }
 
@@ -541,15 +587,7 @@ public class LogReader {
 
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           ItemProperties.LanguageKind lang = ItemProperties.LanguageKind.Unknown;
-           if (li.compilerType == CompilerType.CPP) {
-               lang = ItemProperties.LanguageKind.CPP;
-           } else if (li.compilerType == CompilerType.C) {
-               lang = ItemProperties.LanguageKind.C;
-           } else if (li.compilerType == CompilerType.FORTRAN) {
-               lang = ItemProperties.LanguageKind.Fortran;
-           }
-           gatherLine(li.compileLine, line.startsWith("+"), lang, li.compiler); // NOI18N
+           gatherLine(li);
            return true;
        }
        return false;
@@ -640,10 +678,12 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(String line, boolean isScriptOutput, ItemProperties.LanguageKind lang, String compiler) {
+    private boolean gatherLine(LineInfo li) {
+        String line = li.compileLine;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
+        List<String> languageArtifacts = new ArrayList<String>();
+        String what = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
         if (what == null){
             return false;
         }
@@ -673,37 +713,32 @@ public class LogReader {
         File f = new File(file);
         if (f.exists() && f.isFile()) {
             if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(lang, compiler, workingDir, what, userIncludesCached, userMacrosCached));
+            result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
         if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(lang, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached));
                 return true;
             }
         }
         if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
         if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
-            try {
-                String[] out = new String[1];
-                boolean areThereOnlyOne = findFiles(new File(root), what, out);
-                if (out[0] == null) {
-                    if (TRACE) {System.err.println("** And there is no such file under root");}
+            List<String> res = findFiles(what);
+            if (res == null || res.isEmpty()) {
+                if (TRACE) {System.err.println("** And there is no such file under root");}
+            } else {
+                if (res.size() == 1) {
+                    result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros));
+                    if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
+                    // kinda adventure but it works
+                    setGuessWorkingDir(res.get(0));
+                    return true;
                 } else {
-                    if (areThereOnlyOne) {
-                        result.add(new CommandLineSource(lang, compiler, out[0], what, userIncludes, userMacros));
-                        if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
-                        // kinda adventure but it works
-                        setGuessWorkingDir(out[0]);
-                        return true;
-                    } else {
-                        if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
-                    }
+                    if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
                 }
-            } catch (IOException ex) {
-                if (TRACE) {Exceptions.printStackTrace(ex);}
             }
             if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
             return false;
@@ -711,7 +746,7 @@ public class LogReader {
         return false;
     }
 
-    private static class CommandLineSource implements SourceFileProperties {
+    static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
         private String sourceName;
@@ -724,10 +759,26 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(ItemProperties.LanguageKind lang, String compiler, String compilePath, String sourcePath,
+        CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
-            language = lang;
-            this.compiler = compiler;
+            language = li.getLanguage();
+            if (languageArtifacts.contains("c")) { // NOI18N
+                language = ItemProperties.LanguageKind.C;
+            } else if (languageArtifacts.contains("c++")) { // NOI18N
+                language = ItemProperties.LanguageKind.CPP;
+            } else {
+                String mime =MIMESupport.getKnownMIMETypeByExtension(sourcePath);
+                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                        language = ItemProperties.LanguageKind.CPP;
+                    }
+                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                        language = ItemProperties.LanguageKind.C;
+                    }
+                }
+            }
+            this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N
@@ -791,6 +842,11 @@ public class LogReader {
         public String getCompilerName() {
             return compiler;
         }
+
+        @Override
+        public LanguageStandard getLanguageStandard() {
+            return LanguageStandard.Unknown;
+        }
     }
 
     // java -cp main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
@@ -815,31 +871,140 @@ public class LogReader {
         System.err.println();
     }
 
-    private static boolean findFiles(File file, String relativePath, String[] out) throws IOException {
-        File f = new File(file.getAbsolutePath() + File.separator + relativePath);
-        //System.err.println("# " + file.getAbsolutePath());
-        if (f.exists() && f.isFile()) {
-            if (out[0] != null && !new File(out[0] + File.separator + relativePath).getCanonicalPath().equals(f.getCanonicalPath()) ) {
-                return false;
-            }
-            out[0] = file.getAbsolutePath();
+    private List<String> getFiles(String name){
+        getSubfolders();
+        return findBase.get(name);
+    }
+
+    private List<String> findFiles(String relativePath) {
+        relativePath = relativePath.replace('\\', '/');
+        int i = relativePath.lastIndexOf('/');
+        String name;
+        String relativeFolder = null;
+        if (i > 0) {
+            name = relativePath.substring(i+1);
+            relativeFolder = relativePath.substring(0,i);
+        } else {
+            name = relativePath;
         }
-        File[] ff = file.listFiles(dirFilter);
-        if (ff != null) {
-            for (File subs : ff) {
-                if (!findFiles(subs, relativePath, out)) {
-                    return false;
+        String subFolder = null;
+        if (relativeFolder != null) {
+            int j = relativeFolder.lastIndexOf("../"); // NOI18N
+            if (j >= 0) {
+                subFolder = relativePath.substring(j+2);
+            }
+        }
+        List<String> files = getFiles(name);
+        if (files != null) {
+            List<String> res = new ArrayList<String>(files.size());
+            for(String s : files) {
+                if (relativeFolder == null) {
+                    res.add(s);
+                } else {
+                    if (subFolder == null) {
+                        String path = s;
+                        if (path.endsWith(relativeFolder)) {
+                            path = path.substring(0,path.length()-relativeFolder.length()-1);
+                            res.add(path);
+                        }
+                    } else {
+                        for(String sub : getSubfolders()) {
+                            String pathCandidate = normalizeFile(sub + "/" + relativePath); // NOI18N
+                            int j = pathCandidate.lastIndexOf('/');
+                            if (j > 0) {
+                                 pathCandidate = pathCandidate.substring(0,j);
+                                if (subFolders.contains(pathCandidate)){
+                                    res.add(sub);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+        return null;
+    }
+
+    private String normalizeFile(String path) {
+        path = path.replace("/./", "/"); // NOI18N
+        while (true) {
+            int i = path.indexOf("/../"); // NOI18N
+            if (i < 0) {
+                break;
+            }
+            int prev = -1;
+            for (int j = i - 1; j >= 0; j--) {
+                if (path.charAt(j) == '/') {
+                    prev = j;
+                    break;
+                }
+            }
+            if (prev == -1) {
+                break;
+            }
+            path = path.substring(0, prev)+path.substring(i+3);
+        }
+        return path;
+    }
+
+    private Set<String> getSubfolders(){
+        if (subFolders == null){
+            subFolders = new HashSet<String>();
+            File f = new File(root);
+            gatherSubFolders(f);
+            findBase = new HashMap<String,List<String>>();
+            initSearchMap();
+        }
+        return subFolders;
+    }
+    private HashSet<String> subFolders;
+    private Map<String,List<String>> findBase;
+
+    private void gatherSubFolders(File d){
+        if (d.exists() && d.isDirectory() && d.canRead()){
+            if (DiscoveryUtils.ignoreFolder(d)){
+                return;
+            }
+            String path = d.getAbsolutePath().replace('\\', '/');
+            if (!subFolders.contains(path)){
+                subFolders.add(path);
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        }
+                        gatherSubFolders(ff[i]);
+                    }
                 }
             }
         }
-        return true;
     }
 
-    private final static FileFilter dirFilter = new FileFilter() {
-
-        @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && !DiscoveryUtils.ignoreFolder(pathname);
+    private void initSearchMap(){
+        for (String it : subFolders){
+            File d = new File(it);
+            if (d.exists() && d.isDirectory() && d.canRead()){
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    if (ff[i].isFile()) {
+                        List<String> l = findBase.get(ff[i].getName());
+                        if (l==null){
+                            l = new ArrayList<String>();
+                            findBase.put(ff[i].getName(),l);
+                        }
+                        l.add(d.getAbsolutePath().replace('\\', '/'));
+                    }
+                }
             }
-        };
+        }
+    }
+
 }

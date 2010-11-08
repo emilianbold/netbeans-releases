@@ -258,6 +258,12 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
 
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
+
+    public void testFinalClassProtectedMethod175818() throws Exception {
+        String  code = "package test; public final class AbstractFoo {protected void me|th(Pack p) {}} class Pack {}";
+
+        performAnalysisTest("test/Test.java", code);
+    }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);

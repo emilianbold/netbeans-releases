@@ -1,6 +1,6 @@
-4:4-4:6:error:cannot find symbol
-  symbol:constructor TestShortErrorsMethodInvocation2()
-  location:class javahints.TestShortErrorsMethodInvocation2
-5:4-5:6:error:cannot find symbol
-  symbol:constructor TestShortErrorsMethodInvocation2()
-  location:class javahints.TestShortErrorsMethodInvocation2
+4:4-4:6:error:constructor TestShortErrorsMethodInvocation2 in enum javahints.TestShortErrorsMethodInvocation2 cannot be applied to given types
+  required:java.lang.String
+  found:no arguments
+5:4-5:6:error:constructor TestShortErrorsMethodInvocation2 in enum javahints.TestShortErrorsMethodInvocation2 cannot be applied to given types
+  required:java.lang.String
+  found:no arguments

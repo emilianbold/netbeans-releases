@@ -45,21 +45,15 @@ package org.netbeans.modules.maven.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.ReportSet;
-import org.apache.maven.model.Repository;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
@@ -81,14 +75,14 @@ public class PluginPropertyUtils {
     private PluginPropertyUtils() {
     }
 
-    private static List<String> LIFECYCLE_PLUGINS = Arrays.asList(new String[]{
+    private static List<String> LIFECYCLE_PLUGINS = Arrays.asList(
                 Constants.PLUGIN_COMPILER,
                 Constants.PLUGIN_SUREFIRE,
                 Constants.PLUGIN_EAR,
                 Constants.PLUGIN_JAR,
                 Constants.PLUGIN_WAR,
                 Constants.PLUGIN_RESOURCES
-            });
+            );
     
     
     /**
@@ -114,13 +108,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) || 
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
 
@@ -141,8 +133,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkConfiguration(eval, plug.getConfiguration(), property);
@@ -172,18 +163,14 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
     }
 
+    @SuppressWarnings("deprecation")
     private static String getReportPluginPropertyImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String property, String report) {
         String toRet = null;
-        if (prj.getReportPlugins() == null) {
-            return toRet;
-        }
-        for (Object obj : prj.getReportPlugins()) {
-            ReportPlugin plug = (ReportPlugin)obj;
+        for (ReportPlugin plug : prj.getReportPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
-                    for (Object obj2 : plug.getReportSets()) {
-                        ReportSet exe = (ReportSet)obj2;
+                    for (ReportSet exe : plug.getReportSets()) {
                         if (exe.getReports().contains(report)) {
                             toRet = checkConfiguration(eval, exe.getConfiguration(), property);
                             if (toRet != null) {
@@ -211,8 +198,7 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 toRet = plug.getVersion();
@@ -223,8 +209,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = plug.getVersion();
@@ -238,8 +223,8 @@ public class PluginPropertyUtils {
 
     
     private static String checkConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String property) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(property);
             if (source != null) {
                 try {
@@ -280,13 +265,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) ||
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
 
@@ -307,8 +290,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
@@ -340,18 +322,14 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
+    @SuppressWarnings("deprecation")
     private static String[] getReportPluginPropertyListImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
         String[] toRet = null;
-        if (prj.getReportPlugins() == null) {
-            return toRet;
-        }
-        for (Object obj : prj.getReportPlugins()) {
-            ReportPlugin plug = (ReportPlugin)obj;
+        for (ReportPlugin plug : prj.getReportPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
-                    for (Object obj2 : plug.getReportSets()) {
-                        ReportSet exe = (ReportSet)obj2;
+                    for (ReportSet exe : plug.getReportSets()) {
                         if (exe.getReports().contains(goal)) {
                             toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
                             if (toRet != null) {
@@ -367,8 +345,7 @@ public class PluginPropertyUtils {
         }
         if (toRet == null) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
@@ -382,8 +359,8 @@ public class PluginPropertyUtils {
 
 
     private static String[] checkListConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String multiproperty, String singleproperty) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(multiproperty);
             if (source != null) {
                 List<String> toRet = new ArrayList<String>();
@@ -421,13 +398,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) ||
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
                             toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
@@ -447,8 +422,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
@@ -461,8 +435,8 @@ public class PluginPropertyUtils {
     }
     
     private static Properties checkPropertiesConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String propertyParameter) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(propertyParameter);
             if (source != null) {
                 Properties toRet = new Properties();
@@ -498,157 +472,6 @@ public class PluginPropertyUtils {
             }
         }
         return null;
-    }
-
-    
-    /**
-     * @deprecated use ModelUtils version
-     * @param mdl 
-     * @param groupId 
-     * @param artifactId 
-     * @param add true == add to model, always returns a non-null value then.
-     * @return 
-     */
-    public @Deprecated static Dependency checkModelDependency(Model mdl, String groupId, String artifactId, boolean add) {
-        List deps = mdl.getDependencies();
-        Dependency ret = null;
-        Dependency managed = null;
-        if (deps != null) {
-            Iterator it = deps.iterator();
-            while (it.hasNext()) {
-                Dependency d = (Dependency)it.next();
-                if (groupId.equalsIgnoreCase(d.getGroupId()) && artifactId.equalsIgnoreCase(d.getArtifactId())) {
-                    ret = d;
-                    break;
-                }
-            }
-        }
-        if (ret == null || ret.getVersion() == null) {
-            //check dependency management section as well..
-            DependencyManagement mng = mdl.getDependencyManagement();
-            if (mng != null) {
-                deps = mng.getDependencies();
-                if (deps != null) {
-                    Iterator it = deps.iterator();
-                    while (it.hasNext()) {
-                        Dependency d = (Dependency)it.next();
-                        if (groupId.equalsIgnoreCase(d.getGroupId()) && artifactId.equalsIgnoreCase(d.getArtifactId())) {
-                            managed = d;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (add && ret == null) {
-            ret = new Dependency();
-            ret.setGroupId(groupId);
-            ret.setArtifactId(artifactId);
-            mdl.addDependency(ret);
-        }
-        // if managed dependency section is present, return that one for editing..
-        return managed == null ? ret : managed;
-    }
-
-    /**
-     * @deprecated use ModelUtils version
-     * @param mdl
-     * @param groupid
-     * @param artifactid
-     * @return
-     */
-    public @Deprecated static boolean hasModelDependency(Model mdl, String groupid, String artifactid) {
-        return checkModelDependency(mdl, groupid, artifactid, false) != null;
-    }
-
-    /**
-     * 
-     * @deprecated use ModelUtils version
-     * @param mdl 
-     * @param url of the repository 
-     * @param add true == add to model, will not add if the repo is in project but not in model (eg. central repo)
-     * @return 
-     */
-    public @Deprecated static Repository checkModelRepository(MavenProject project, Model mdl, String url, boolean add) {
-        if (url.contains("http://repo1.maven.org/maven2")) { //NOI18N
-            return null;
-        }
-        for (Object rr : mdl.getRepositories()) {
-            Repository r = (Repository)rr;
-            if (url.equals(r.getUrl())) {
-                //already in model..either in pom.xml or added in this session.
-                return null;
-            }
-        }
-        List reps = project.getRepositories();
-        Repository prjret = null;
-        Repository ret = null;
-        if (reps != null) {
-            Iterator it = reps.iterator();
-            while (it.hasNext()) {
-                Repository re = (Repository)it.next();
-                if (url.equals(re.getUrl())) {
-                    prjret = re;
-                    break;
-                }
-            }
-        }
-        //now find the correct instance in model
-        if (prjret != null) {
-            reps = mdl.getRepositories();
-            if (reps != null) {
-                Iterator it = reps.iterator();
-                while (it.hasNext()) {
-                    Repository re = (Repository)it.next();
-                    if (re.getId().equals(prjret.getId())) {
-                        ret = re;
-                        break;
-                    }
-                }
-            }
-        }
-        if (add && ret == null && prjret == null) {
-            ret = new Repository();
-            ret.setUrl(url);
-            ret.setId(url);
-            mdl.addRepository(ret);
-        }
-        return ret;
-    }
-
-    /**
-     * @deprecated use ModelUtils version
-     * @param project
-     * @param mdl
-     * @param url
-     * @return
-     */
-    public @Deprecated static boolean hasModelRepository(MavenProject project, Model mdl, String url) {
-        return checkModelRepository(project, mdl, url, false) != null;
-    }
-
-    
-    private static final String CONFIGURATION_EL = "configuration";//NOI18N
-    
-    /**
-     * update the source level of project to given value.
-     * @deprecated use ModelUtils version
-     * @param handle handle which models are to be updated
-     * @param sourceLevel the sourcelevel to set
-     */
-    public @Deprecated static void checkSourceLevel(ModelHandle handle, String sourceLevel) {
-        ModelUtils.checkSourceLevel(handle, sourceLevel);
-    }
-    
-    /**
-     * update the encoding of project to given value.
-     * 
-     * @deprecated use ModelUtils version
-     * @param handle handle which models are to be updated
-     * @param enc encoding to use
-     */
-    public @Deprecated static void checkEncoding(ModelHandle handle, String enc) {
-        ModelUtils.checkEncoding(handle, enc);
     }
 
     private static NBPluginParameterExpressionEvaluator createEvaluator(NbMavenProjectImpl prj) {

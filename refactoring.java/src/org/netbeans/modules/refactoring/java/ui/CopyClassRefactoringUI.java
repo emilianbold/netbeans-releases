@@ -42,7 +42,6 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.java.ui;
-import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -64,6 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -159,13 +159,23 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         return !panel.isUpdateReferences();
     }
     public void doRefactoringBypass() throws IOException {
-        //Transferable t = paste.paste();
-        FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
-        FileObject target = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
-        if (source!=null) {
-            DataObject sourceDo = DataObject.find(source);
-            DataFolder targetFolder = DataFolder.findFolder(target);
-            sourceDo.copy(targetFolder).rename(panel.getNewName());
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    //Transferable t = paste.paste();
+                    FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
+                    FileObject target = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
+                    if (source != null) {
+                        DataObject sourceDo = DataObject.find(source);
+                        DataFolder targetFolder = DataFolder.findFolder(target);
+                        sourceDo.copy(targetFolder).rename(panel.getNewName());
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 }

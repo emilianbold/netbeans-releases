@@ -468,7 +468,8 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         add(fillerPanel, gridBagConstraints);
 
-        prefixLabel.setText("Prefix:");
+        prefixLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("A11Y_Prefix_mnem").charAt(0));
+        prefixLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Prefix")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;

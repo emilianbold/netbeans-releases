@@ -220,30 +220,40 @@ public class PHPNewLineIndenter {
                         } else {
                             if (ts.token().id() == PHPTokenId.PHP_TOKEN){
                                 char ch = ts.token().text().charAt(0);
+                                boolean continualIndent = false;
                                 boolean indent = false;
                                 switch (ch) {
                                     case ')' :
                                         bracketBalance++; break;
                                     case '(':
                                         if (bracketBalance == 0) {
-                                            indent = true;
+                                            continualIndent = true;
                                         }
                                         bracketBalance--;
                                         break;
                                     case ',':
+                                        continualIndent = true;
+                                        break;
+                                    case ':':
                                         indent = true;
+                                        break;
                                 }
-                                if (indent) {
+                                if (continualIndent || indent) {
                                     ts.move(offset);
                                     ts.moveNext();
                                     int startExpression = findStartTokenOfExpression(ts);
                                     if (startExpression != -1) {
-                                        int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
-                                        if (offsetArrayDeclaration > -1) {
-                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
+                                        if (continualIndent) {
+                                            int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
+                                            if (offsetArrayDeclaration > -1) {
+                                                newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
+                                            }
+                                            else {
+                                                newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                            }
                                         }
-                                        else {
-                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                        if (indent) {
+                                            newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
                                         }
                                     }
                                     break;
@@ -454,6 +464,7 @@ public class PHPNewLineIndenter {
                 }
             } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
 		start = ts.offset();
+                break;
 	    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                 curlyBalance --;
                 if (curlyBalance == -1 && ts.moveNext()) {

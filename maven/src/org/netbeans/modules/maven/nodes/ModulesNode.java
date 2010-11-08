@@ -131,7 +131,7 @@ public class ModulesNode extends AbstractNode {
                                        @Override
                                        public void propertyChange(PropertyChangeEvent evt) {
                                            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                                               refresh(true);
+                                               refresh(false);
                                            }
                                        }
                                    };

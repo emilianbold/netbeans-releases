@@ -174,7 +174,11 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
                     tooltip.append(nd.getArtifact().getVersion());
                     tooltip.append("</td>");
                     tooltip.append("<td>");
-                    tooltip.append(nd.getParent().getArtifact().getArtifactId());
+                    DependencyNode parent = nd.getParent();
+                    assert parent != null;
+                    Artifact artifact = parent.getArtifact();
+                    assert artifact != null;
+                    tooltip.append(artifact.getArtifactId());
                     tooltip.append("</td></tr>");
                 }
             }

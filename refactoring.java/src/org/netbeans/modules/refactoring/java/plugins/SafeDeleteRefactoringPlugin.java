@@ -116,9 +116,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
                 try {
                     javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), cancelRequest);
-
                 } catch (IOException ioException) {
-                    ErrorManager.getDefault().notify(ioException);
+                    ErrorManager.getDefault().notify(cancelRequest?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
                 }
             }
             
@@ -135,6 +134,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         Problem problemFromWhereUsed = null;
         for (RefactoringElement refacElem : inner.getRefactoringElements()) {
             ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
+            if (files.contains(refacElem.getParentFile())) {
+                continue;
+            }
             if (!isPendingDelete(elem, refactoredObjects)) {
                 problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
                 break;

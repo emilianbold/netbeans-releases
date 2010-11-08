@@ -157,7 +157,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     private boolean recursive;
     private String[] existingProperties;
     private String[] illegalProperties = new String[0];
-    private Set<String> recursiveProperties = Collections.EMPTY_SET;
+    private Set<String> recursiveProperties = Collections.emptySet();
     private SvnProperties propValueChangeListener;
     private boolean interactionInitialized;
 

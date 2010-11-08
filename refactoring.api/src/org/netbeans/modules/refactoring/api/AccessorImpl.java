@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.api;
 
 import java.util.Collection;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
+import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -75,8 +76,18 @@ final class AccessorImpl extends APIAccessor {
     public boolean isCommit(RefactoringSession session) {
         return session.realcommit;
     }
-    
+
     public RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) {
         return el.impl;
+    }
+
+    @Override
+    public boolean hasChangesInGuardedBlocks(RefactoringSession session) {
+        return SPIAccessor.DEFAULT.hasChangesInGuardedBlocks(session.getElementsBag());
+    }
+
+    @Override
+    public boolean hasChangesInReadOnlyFiles(RefactoringSession session) {
+        return SPIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session.getElementsBag());
     }
 }

@@ -110,7 +110,9 @@ public class EdgeWidget extends ConnectionWidget {
             }
         } else {
             if (!isConflict && includedConflictType == ArtifactGraphNode.NO_CONFLICT) {
-                removeChild(versionW);
+                if (versionW.getParentWidget() == this) {
+                    removeChild(versionW);
+                } // else already removed??
             }
         }
     }

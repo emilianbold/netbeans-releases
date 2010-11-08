@@ -94,6 +94,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.Token;
@@ -476,7 +477,7 @@ public class GoToSupport {
             TreePath enclTreePath = info.getTrees().getPath(encl);
             Tree enclTree = enclTreePath != null ? enclTreePath.getLeaf() : null;
             
-            if (enclTree != null && enclTree.getKind() == Tree.Kind.CLASS && enclTreePath.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+            if (enclTree != null && TreeUtilities.CLASS_TREE_KINDS.contains(enclTree.getKind()) && enclTreePath.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
                 
                 if (nct.getClassBody() != null) {
@@ -550,7 +551,7 @@ public class GoToSupport {
         List<? extends Tree> decls = javac.getCompilationUnit().getTypeDecls();
         if (!decls.isEmpty()) {
             Tree clazz = decls.get(0);
-            if (clazz.getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(clazz.getKind())) {
                 clazzPath = new TreePath(cutPath, clazz);
                 Element clazzElm = trees.getElement(clazzPath);
                 if (isError(clazzElm)) {
@@ -579,7 +580,10 @@ public class GoToSupport {
     private static boolean isCaretInsideDeclarationName(CompilationInfo info, Tree t, TreePath path, int caret) {
         try {
             switch (t.getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case METHOD:
                 case VARIABLE:
                     int[] span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());

@@ -56,6 +56,11 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="400"/>
                         </file>
                     </folder>
+                    <folder name="jar-subtargets">
+                        <file name="sign-jar" url="sign-jar">
+                            <attr name="position" intvalue="1050"/>
+                        </file>
+                    </folder>
                     <folder name="clean-subtargets">
                         <file name="clean-j9" url="clean-j9">
                             <attr name="position" intvalue="1000"/>

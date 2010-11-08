@@ -373,7 +373,10 @@ implements PropertyChangeListener {
         Tree tree = path.getLeaf();
         switch (tree.getKind()) {
             case BLOCK:
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
             case COMPILATION_UNIT:
             case IMPORT:
             case MODIFIERS:

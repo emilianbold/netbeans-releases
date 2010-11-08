@@ -45,10 +45,13 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  *
  * @author Martin Roskanin
  */
+@MimeLocation(subfolderName="testLookup")
 public class TestLookupObject {
 
     /** Creates a new instance of TestLookupObject */

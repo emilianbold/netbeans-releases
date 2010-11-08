@@ -72,7 +72,10 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
     protected void doActionPerformed(ActionEvent e) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-
+        if(projectDescriptor == null) {
+            return;
+        }
+        
         Folder root = projectDescriptor.getLogicalFolders();
         Folder testRootFolder = null;
         for (Folder folder : root.getFolders()) {

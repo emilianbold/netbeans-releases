@@ -486,7 +486,7 @@ public class FormatVisitor extends DefaultVisitor {
 	wrap = node.getIfFalse() != null ? true : false;
 	if (wrap) {
 	    while (ts.moveNext()
-		    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))) {
+                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))) {
 		addFormatToken(formatTokens);
 	    }
 	    int start = ts.offset();
@@ -635,6 +635,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getBody());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
@@ -791,6 +795,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(body);
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    isCurly = false;
@@ -897,8 +905,14 @@ public class FormatVisitor extends DefaultVisitor {
             ts.movePrevious();
             addFormatToken(formatTokens);
             super.visit(program);
+            FormatToken lastToken = formatTokens.size() > 0 
+                    ? formatTokens.get(formatTokens.size() - 1)
+                    : null;
             while (ts.moveNext()) {
-                addFormatToken(formatTokens);
+                if (lastToken == null || lastToken.isWhitespace() || lastToken.getOffset() > ts.offset()) {
+                    addFormatToken(formatTokens);
+                    lastToken = formatTokens.get(formatTokens.size() - 1);
+                }
             }
             path.removeFirst();
         }
@@ -987,6 +1001,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getBody());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT);
@@ -1354,17 +1372,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private void addEndOfUnbreakableSequence(int endOffset) {
+        boolean wasLastLineComment = false;
 	while (ts.moveNext()
 		&& ((ts.token().id() == PHPTokenId.WHITESPACE
 		&& countOfNewLines(ts.token().text()) == 0)
 		|| isComment(ts.token()))) {
-	    addFormatToken(formatTokens);
-	    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
+            if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
 		    && !"//".equals(ts.token().text().toString())) {
+                addFormatToken(formatTokens);
+                wasLastLineComment = true;
 		break;
 	    }
+	    addFormatToken(formatTokens);
+	    
 	}
-	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+	if (wasLastLineComment) {
 	    FormatToken last = formatTokens.remove(formatTokens.size() - 1);
 	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
 	    formatTokens.add(last);

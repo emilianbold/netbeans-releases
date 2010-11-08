@@ -66,4 +66,6 @@ public interface HtmlTag {
 
     public Collection<HtmlTag> getChildren();
 
+    public HelpItem getHelp();
+    
 }

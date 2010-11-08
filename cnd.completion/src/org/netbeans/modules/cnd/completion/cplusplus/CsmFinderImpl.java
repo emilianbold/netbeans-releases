@@ -110,6 +110,7 @@ public class CsmFinderImpl implements CsmFinder {
         this.caseSensitive = caseSensitive;
     }
 
+    @Override
     public CsmFile getCsmFile() {
         return this.csmFile;
     }
@@ -160,6 +161,7 @@ public class CsmFinderImpl implements CsmFinder {
         return null;
     }
 
+    @Override
     public CsmNamespace getExactNamespace(String namespaceName) {
 
         // System.out.println ("getExactNamespace: " + packageName); //NOI18N
@@ -176,6 +178,7 @@ public class CsmFinderImpl implements CsmFinder {
 //        return null;
     }
 
+    @Override
     public CsmClassifier getExactClassifier(String classFullName) {
         // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
 //        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
@@ -236,6 +239,7 @@ public class CsmFinderImpl implements CsmFinder {
         return ret;
     }
 
+    @Override
     public List<CsmNamespace> findNestedNamespaces(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
 
         // System.out.println("findNamespaces: " + name); //NOI18N
@@ -251,6 +255,7 @@ public class CsmFinderImpl implements CsmFinder {
      *   of the element or not.
      * @return list of the matching elements
      */
+    @Override
     public List<CsmObject> findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst) {
         List<CsmObject> ret = new ArrayList<CsmObject>();
 
@@ -320,6 +325,7 @@ public class CsmFinderImpl implements CsmFinder {
         return res;
     }
 
+    @Override
     public List<CsmObject> findStaticNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {
         List<CsmObject> ret = new ArrayList<CsmObject>();
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -409,6 +415,7 @@ public class CsmFinderImpl implements CsmFinder {
      *   of the class or not.
      * @return list of the matching classes
      */
+    @Override
     public List<CsmClassifier> findClasses(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
         // System.out.println("findClasses: " + (nmsp == null ? "null" : nmsp.getName ()) + " " + name); //NOI18N
 
@@ -451,6 +458,7 @@ public class CsmFinderImpl implements CsmFinder {
      *   added or not. This should be false when searching for 'this.'
      * @return list of the matching fields
      */
+    @Override
     public List<CsmField> findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean sort) {
         // get class variables visible in this method
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -468,6 +476,7 @@ public class CsmFinderImpl implements CsmFinder {
      *   added or not. This should be false when searching for 'this.'
      * @return list of the matching fields
      */
+    @Override
     public List<CsmEnumerator> findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean sort) {
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
         List<CsmEnumerator> classEnumerators = contResolver.getEnumerators(classifier, contextDeclaration, name, exactMatch, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier);
@@ -485,6 +494,7 @@ public class CsmFinderImpl implements CsmFinder {
      *   added or not. This should be false when searching for 'this.'
      * @return list of the matching methods
      */
+    @Override
     public List<CsmMethod> findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean sort) {
         CsmClass clazz = classifier;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -496,6 +506,7 @@ public class CsmFinderImpl implements CsmFinder {
         return classMethods;
     }
 
+    @Override
     public List<CsmClassifier> findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectParentClasses, boolean sort) {
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -503,6 +514,7 @@ public class CsmFinderImpl implements CsmFinder {
         return classClassifiers;
     }
 
+    @Override
     public List<CsmLabel> findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch, boolean sort) {
         List<CsmLabel> out = new ArrayList<CsmLabel>();
         if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
@@ -519,6 +531,7 @@ public class CsmFinderImpl implements CsmFinder {
         return out;
     }
 
+    @Override
     public List<CsmClass> findBaseClasses(CsmOffsetableDeclaration contextDeclaration, CsmClassifier c, String name, boolean exactMatch, boolean sort) {
         CsmFile contextFile = getCsmFile();
         if (contextFile == null && contextDeclaration != null) {

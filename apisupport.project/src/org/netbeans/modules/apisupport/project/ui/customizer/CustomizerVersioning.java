@@ -58,11 +58,8 @@ import javax.swing.JCheckBox;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.DependencyListModel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -131,11 +128,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
     }
     
     private void attachListeners() {
-        implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                updateAppendImpl();
-            }
-        });
         friendsList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -151,6 +143,11 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
+                checkValidity();
+            }
+        });
+        specificationVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
         });
@@ -171,13 +168,13 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         return valid;
     }
     
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     protected void checkValidity() {
         exportOnlyToFriend.setSelected(getFriendModel().getSize() > 0);
         // check major release version
         if (!checkMajorReleaseVersion()) {
             category.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
             category.setValid(false);
-            // XXX check also specificationVerValue
         } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().size() < 1) {
             category.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
             category.setValid(false);
@@ -185,8 +182,18 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
             category.setErrorMessage(getMessage("MSG_integer_impl_version_recommended"));
             category.setValid(true);
         } else {
-            category.setErrorMessage(null);
-            category.setValid(true);
+            boolean ok = true;
+            String text = specificationVerValue.getText();
+            if (text != null && !text.isEmpty() && !text.matches(/* nb-module-project3.xsd#specificationVersionType */"(0|[1-9][0-9]*)([.](0|[1-9][0-9]*))*")) {
+                ok = false;
+            }
+            if (ok) {
+                category.setErrorMessage(null);
+                category.setValid(true);
+            } else {
+                category.setErrorMessage(getMessage("MSG_invalid_spec_version"));
+                category.setValid(false);
+            }
         }
     }
     

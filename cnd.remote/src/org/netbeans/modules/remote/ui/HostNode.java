@@ -119,11 +119,11 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     @Override
     public Image getIcon(int type) {
-        Image main = ImageUtilities.loadImage("org/netbeans/modules/remote/ui/single_server.png"); // NOI18N
-        Image connection = ImageUtilities.loadImage("org/netbeans/modules/remote/ui/" + //NOI18N
-                (isConnected() ? "connected.png" : "disconnected.png")); //NOI18N
-        Image merged = ImageUtilities.mergeImages(main, connection, 0, 8);
-        return merged;
+        if (isConnected()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/connected_host.png"); //NOI18N
+        } else {
+            return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected_host.png"); //NOI18N
+        }
     }
 
     private boolean isConnected() {

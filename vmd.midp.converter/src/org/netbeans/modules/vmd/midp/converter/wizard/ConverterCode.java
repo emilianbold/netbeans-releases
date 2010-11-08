@@ -50,6 +50,7 @@ import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.vmd.api.codegen.JavaCodeGenerator;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -260,7 +261,7 @@ public class ConverterCode {
 
     static ClassTree findMainClass (CompilationController controller) {
         for (Tree decl : controller.getCompilationUnit ().getTypeDecls ()) {
-            if (decl.getKind () == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(decl.getKind ())) {
                 ClassTree ct = (ClassTree) decl;
                 if (ct.getModifiers ().getFlags ().contains (Modifier.PUBLIC))
                     return ct;

@@ -66,6 +66,8 @@ public interface RunConfig {
 
     RunConfig getPreExecution();
 
+    void setPreExecution(RunConfig config);
+
     RunConfig.ReactorStyle getReactorStyle();
 
 //    void setPreExecution(RunConfig config);

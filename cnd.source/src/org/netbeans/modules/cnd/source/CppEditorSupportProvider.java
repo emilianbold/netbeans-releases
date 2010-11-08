@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.source;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
 
@@ -52,6 +55,7 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  */
 public final class CppEditorSupportProvider extends CndCookieProvider {
     static final CppEditorSupportFactory staticFactory = new CppEditorSupportFactory();
+    static final CppSaveAsFactory saveAsStaticFactory = new CppSaveAsFactory();
 
     @Override
     public void addLookup(DataObject dao, InstanceContent ic) {
@@ -83,4 +87,38 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
             return id(obj);
         }
     }
+
+    private static class CppSaveAsFactory implements Convertor<SourceDataObject, SaveAsCapable> {
+        public CppSaveAsFactory() {
+        }
+
+        @Override
+        public SaveAsCapable convert(final SourceDataObject obj) {
+            return new SaveAsCapable() {
+                @Override
+                public void saveAs( FileObject folder, String fileName ) throws IOException {
+                    CppEditorSupport ces = obj.getLookup().lookup(CppEditorSupport.class);
+                    if (ces != null) {
+                        ces.saveAs(folder, fileName);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public Class<? extends SaveAsCapable> type(SourceDataObject obj) {
+            return SaveAsCapable.class;
+        }
+
+        @Override
+        public String id(SourceDataObject obj) {
+            return "CndSaveAsCapable"+obj.getPrimaryFile().getPath(); // NOI18N
+        }
+
+        @Override
+        public String displayName(SourceDataObject obj) {
+            return id(obj);
+        }
+    }
+    
 }

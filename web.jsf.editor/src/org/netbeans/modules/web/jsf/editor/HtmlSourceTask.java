@@ -142,15 +142,17 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             //when lexing the html code
             Map<String, Collection<String>> cssClassTagAttrMap = new HashMap<String, Collection<String>>();
             FaceletsLibraryDescriptor descr = sup.getFaceletsLibraryDescriptor(HTML_FACELETS_LIB_NS);
-            for (Tag tag : descr.getTags().values()) {
-                //hacking datatable's attributes embedding - waiting for Tomasz' tag metadata API
-                if("dataTable".equals(tag.getName())) { //NOI18N
-                    cssClassTagAttrMap.put(prefix + ":" + tag.getName(),
-                            Arrays.asList(new String[]{STYLE_CLASS_ATTR_NAME, 
-                            "headerClass", "footerClass", "rowClasses", "columnClasses", "captionClass"})); //NOI18N
-                } else {
-                    if (tag.getAttribute(STYLE_CLASS_ATTR_NAME) != null) {
-                        cssClassTagAttrMap.put(prefix + ":" + tag.getName(), Collections.singletonList(STYLE_CLASS_ATTR_NAME));
+            if (descr != null) {
+                for (Tag tag : descr.getTags().values()) {
+                    //hacking datatable's attributes embedding - waiting for Tomasz' tag metadata API
+                    if ("dataTable".equals(tag.getName())) { //NOI18N
+                        cssClassTagAttrMap.put(prefix + ":" + tag.getName(),
+                                Arrays.asList(new String[]{STYLE_CLASS_ATTR_NAME,
+                                    "headerClass", "footerClass", "rowClasses", "columnClasses", "captionClass"})); //NOI18N
+                    } else {
+                        if (tag.getAttribute(STYLE_CLASS_ATTR_NAME) != null) {
+                            cssClassTagAttrMap.put(prefix + ":" + tag.getName(), Collections.singletonList(STYLE_CLASS_ATTR_NAME));
+                        }
                     }
                 }
             }

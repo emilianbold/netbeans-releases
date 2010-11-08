@@ -43,10 +43,8 @@ package org.netbeans.modules.cnd.modelimpl.fsm.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -87,16 +85,16 @@ public class DataRenderer {
     public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (object instanceof FortranParserEx.ProgramData) {
             FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
-            return new ProgramImpl(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
+            return ProgramImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
         }
         if (object instanceof FortranParserEx.SubroutineData) {
             FortranParserEx.SubroutineData data = (FortranParserEx.SubroutineData) object;
-            return new SubroutineImpl(data.name, file, data.startOffset, data.endOffset, null, currentNamespace,
+            return SubroutineImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace,
                     renderDummyParameters(data));
         }
         if (object instanceof FortranParserEx.ModuleData) {
             FortranParserEx.ModuleData data = (FortranParserEx.ModuleData) object;
-            final ModuleImpl module = new ModuleImpl(file, data.startOffset, data.endOffset, data.name);
+            final ModuleImpl module = ModuleImpl.create(file, data.startOffset, data.endOffset, data.name);
             for (Object obj : data.members) {
                 CsmOffsetableDeclaration decl = render(obj, currentNamespace, file);
                 module.addDeclaration(decl);
@@ -110,10 +108,10 @@ public class DataRenderer {
         if (data.args != null) {
             List<CsmParameter> list = new ArrayList<CsmParameter>();
             for (String string : data.args) {
-                list.add(new DummyParameterImpl(file, data.startOffset, data.endOffset, string, null));
+                list.add(DummyParameterImpl.create(file, data.startOffset, data.endOffset, string, null));
 
             }
-            return new DummyParametersListImpl(file, data.startOffset, data.endOffset, list);
+            return DummyParametersListImpl.create(file, data.startOffset, data.endOffset, list);
         }
         return null;
     }

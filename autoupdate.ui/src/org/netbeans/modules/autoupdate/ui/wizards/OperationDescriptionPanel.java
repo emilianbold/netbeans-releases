@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.EventQueue;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle;
@@ -65,6 +66,7 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
     private static String ACD_TEXT_HTML;
     /** Creates new form OperationDescriptionPanel */
     public OperationDescriptionPanel (String primary, String primaryU, String depending, String dependingU, boolean hasRequired) {
+        assert EventQueue.isDispatchThread();
         this.tpPrimaryTitleText = primary;
         this.tpPrimaryPluginsText = primaryU;
         this.tpDependingTitleText = depending;

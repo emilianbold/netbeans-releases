@@ -168,6 +168,8 @@ public class IncludeErrorProvider extends CsmErrorProvider {
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
+        Thread currentThread = Thread.currentThread();
+        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
         for(CsmInclude incl : CsmFileInfoQuery.getDefault().getBrokenIncludes(file)) {
             if (request.isCancelled()) {
                 break;

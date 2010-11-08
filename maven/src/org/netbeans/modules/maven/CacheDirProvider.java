@@ -44,6 +44,7 @@ package org.netbeans.modules.maven;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,27 +61,10 @@ public class CacheDirProvider implements CacheDirectoryProvider {
         project = prj;
     }
 
-    public FileObject getCacheDirectory() throws IOException {
+    @SuppressWarnings("RV_ABSOLUTE_VALUE_OF_HASHCODE") // for compatibility, use this decimal scheme
+    public @Override FileObject getCacheDirectory() throws IOException {
         int code = Math.abs(project.getProjectDirectory().getPath().hashCode());
-        File cacheDir = new File(getCacheRoot(), "" + code);
-        if (!cacheDir.exists()) {
-            cacheDir.mkdir();
-        }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(cacheDir));
-        if (fo != null) {
-            return fo;
-        }
-        throw new IOException("Cannot create a cache directory for project at " + cacheDir); //NOI18N
-    }
-
-    private File getCacheRoot() {
-        String userdir = System.getProperty("netbeans.user"); //NOI18N
-        File file = new File(userdir);
-        File root = new File(file, "var" + File.separator + "cache" + File.separator + "mavencachedirs"); //NOI18N
-        if (!root.exists()) {
-            root.mkdirs();
-        }
-        return root;
+        return FileUtil.createFolder(FileUtil.createFolder(new File(System.getProperty("netbeans.user"))), "var/cache/mavencachedirs/" + code); // NOI18N
     }
 
 }

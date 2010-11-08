@@ -90,6 +90,8 @@ public class JBPluginUtils {
     
     public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
 
+    public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
     private static final Version DOM4J_SERVER = new Version("4.0.4"); // NOI18N
@@ -168,15 +170,26 @@ public class JBPluginUtils {
                     "lib", // NOI18N
                     "conf/jboss-service.xml", // NOI18N
                     "conf/bootstrap.xml", // NOI18N
-                   "deploy/jmx-invoker-service.xml"   // NOI18N
-// In JBoss 5.0, these commonn jar files have been moved  to <JBoss_home>/common/lib.
-//                    "lib/jboss-javaee.jar", // NOI18N
-//                    "lib/jboss.jar", // NOI18N
-//                    "lib/jbosssx.jar", // NOI18N
-//                    "lib/jmx-adaptor-plugin.jar", // NOI18N
-//                    "lib/jnpserver.jar", // NOI18N
-//                    "lib/log4j.jar", // NOI18N
-                    ); 
+                    "deploy/jmx-invoker-service.xml"   // NOI18N
+                    );
+        }
+        return domainRequirements5x;
+    }
+
+    private static List<String> domainRequirements6x;
+
+    private static synchronized List<String> getDomainRequirements6x() {
+        if (domainRequirements5x == null) {
+            domainRequirements5x = new ArrayList<String>(11);
+            Collections.addAll(domainRequirements5x,
+                    "conf", // NOI18N
+                    "deploy", // NOI18N
+                    "deployers", // NOI18N
+                    "lib", // NOI18N
+                    "conf/jboss-service.xml", // NOI18N
+                    "conf/bootstrap.xml", // NOI18N
+                    "deploy/hdscanner-jboss-beans.xml"   // NOI18N
+                    );
         }
         return domainRequirements5x;
     }
@@ -216,22 +229,23 @@ public class JBPluginUtils {
         return serverAlterRequirements4x;
     }
 
-    private static List<String> serverRequirements5x;
+    private static List<String> serverRequirements5And6x;
 
-    private static synchronized List<String> getServerRequirements5x() {
-        if (serverRequirements5x == null) {
-            serverRequirements5x = new ArrayList<String>(6);
-            Collections.addAll(serverRequirements5x,
+    private static synchronized List<String> getServerRequirements5And6x() {
+        if (serverRequirements5And6x == null) {
+            serverRequirements5And6x = new ArrayList<String>(6);
+            Collections.addAll(serverRequirements5And6x,
                     "bin", // NOI18N
                     "client", // NOI18N
                     "lib", // NOI18N
                     "server", // NOI18N
                     "common/lib", // NOI18N
                     "lib/dom4j.jar", // NOI18N
+                    "lib/jboss-dependency.jar", // NOI18N
                     "lib/jboss-common-core.jar", // NOI18N
-                    "lib/endorsed/resolver.jar"); // NOI18N
+                    "lib/endorsed"); // NOI18N
         }
-        return serverRequirements5x;
+        return serverRequirements5And6x;
     }
 
     //------------  getting exists servers---------------------------
@@ -300,15 +314,23 @@ public class JBPluginUtils {
         return isGoodJBInstanceLocation(candidate, getDomainRequirements5x());
     }
 
+    private static boolean isGoodJBInstanceLocation6x(File serverDir, File candidate){
+        return isGoodJBInstanceLocation(candidate, getDomainRequirements6x());
+    }
+
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){
         Version version = getServerVersion(serverDir);
-        if (version == null || (!"4".equals(version.getMajorNumber()) && !"5".equals(version.getMajorNumber()))) { // NOI18N
+        if (version == null || (!"4".equals(version.getMajorNumber())
+                && !"5".equals(version.getMajorNumber()) // NOI18N
+                && !"6".equals(version.getMajorNumber()))) { // NOI18N
             return JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)
-                    || JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate);
+                    || JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)
+                    || JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate);
         }
 
         return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation4x(serverDir, candidate)) // NOI18N
-                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)); // NOI18N
+                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation5x(serverDir, candidate)) // NOI18N
+                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation6x(serverDir, candidate)); // NOI18N
     }
 
     private static boolean isGoodJBServerLocation(File candidate, List<String> requirements){
@@ -342,18 +364,26 @@ public class JBPluginUtils {
     }
 
     private static boolean isGoodJBServerLocation5x(File candidate){
-        return isGoodJBServerLocation(candidate, getServerRequirements5x());
+        return isGoodJBServerLocation(candidate, getServerRequirements5And6x());
+    }
+
+    private static boolean isGoodJBServerLocation6x(File candidate){
+        return isGoodJBServerLocation(candidate, getServerRequirements5And6x());
     }
 
     public static boolean isGoodJBServerLocation(File candidate) {
         Version version = getServerVersion(candidate);
-        if (version == null || (!"4".equals(version.getMajorNumber()) && !"5".equals(version.getMajorNumber()))) { // NOI18N
+        if (version == null || (!"4".equals(version.getMajorNumber())
+                && !"5".equals(version.getMajorNumber())
+                && !"6".equals(version.getMajorNumber()))) { // NOI18N
             return JBPluginUtils.isGoodJBServerLocation4x(candidate)
-                    || JBPluginUtils.isGoodJBServerLocation5x(candidate);
+                    || JBPluginUtils.isGoodJBServerLocation5x(candidate)
+                    || JBPluginUtils.isGoodJBServerLocation6x(candidate);
         }
 
         return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation4x(candidate)) // NOI18n
-                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)); // NOI18N
+                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)) // NOI18N
+                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation6x(candidate)); // NOI18N
     }
 
     public static boolean isJB4(JBDeploymentManager dm) {
@@ -439,17 +469,27 @@ public class JBPluginUtils {
                 Node child = children.item(i);
                 if (child.getNodeName().equals("Service")) {  // NOI18N
                     NodeList nl = child.getChildNodes();
-                    for (int j = 0; j < nl.getLength(); j++){
+                    for (int j = 0; j < nl.getLength(); j++) {
                         Node ch = nl.item(j);
 
                         if (ch.getNodeName().equals("Connector")) {  // NOI18N
-                            return ch.getAttributes().getNamedItem("port").getNodeValue();
+                            String port = ch.getAttributes().getNamedItem("port").getNodeValue();
+                            if (port.startsWith("$")) {
+                                // FIXME check properties somehow
+                                return defaultPort;
+                            }
+                            try {
+                                Integer.parseInt(port);
+                                return port;
+                            } catch (NumberFormatException ex) {
+                                return defaultPort;
+                            }
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, null, e);
             // it is ok
             // it optional functionality so we don't need to look at any exception
         }

@@ -130,10 +130,14 @@ public final class ContextUtil {
                 message += parent + " valid=" + parent.isValid() + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
                 parent = parent.getParent();
             }
-            try {
-                fs = parent.getFileSystem();
-            } catch (FileStateInvalidException ex) {
+            if (parent == null) {
                 fs = null;
+            } else {
+                try {
+                    fs = parent.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    fs = null;
+                }
             }
             message += parent + " valid=" + parent.isValid() + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
             throw new IllegalArgumentException(message);

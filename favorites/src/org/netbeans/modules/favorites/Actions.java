@@ -44,12 +44,14 @@
 
 package org.netbeans.modules.favorites;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,9 +61,11 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.favorites.api.Favorites;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -69,10 +73,13 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -87,16 +94,32 @@ public final class Actions extends Object {
     private static File currentDir = null;
 
     private static final Logger LOG = Logger.getLogger(Actions.class.getName());
+    static final RequestProcessor RP = new RequestProcessor("Favorites Actions", 1); //NOI18N
 
     private Actions () {
         // noinstances
     }
     
+    @ActionID(id = "org.netbeans.modules.favorites.View", category = "Window")
+    @ActionRegistration(displayName = "#ACT_View", iconBase = "org/netbeans/modules/favorites/resources/actionView.png")
+    @ActionReference(position = 350, name = "ViewFavoritesTabAction", path = "Menu/Window")
     public static Action view () { return View.getDefault(); }
-    public static Action add () { return Add.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Add", category = "Window")
+    @ActionRegistration(displayName = "#ACT_Add")
+    @ActionReference(position = 300, path = "UI/ToolActions/Files")
+    public static ContextAwareAction add() { return Add.getDefault(); }
+
     public static Action addOnFavoritesNode () { return AddOnFavoritesNode.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Remove", category = "Window")
+    @ActionRegistration(displayName = "#ACT_Remove")
     public static Action remove () { return Remove.getDefault(); }
-    public static Action select () { return Select.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Select", category = "Window/SelectDocumentNode")
+    @ActionRegistration(displayName = "#ACT_Select_Main_Menu")
+    @ActionReference(position = 2800, name = "org-netbeans-modules-favorites-SelectInFavorites", path = "Menu/GoTo")
+    public static ContextAwareAction select () { return Select.getDefault(); }
     
     /**
      * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
@@ -118,12 +141,14 @@ public final class Actions extends Object {
             return VIEW;
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt) {
             final TopComponent projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(View.class);
         }
@@ -136,7 +161,7 @@ public final class Actions extends Object {
     private static class Select extends NodeAction {
         private static final Select SELECT = new Select ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault () {
             return SELECT;
         }
         
@@ -145,13 +170,18 @@ public final class Actions extends Object {
             putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         }
         
-        protected void performAction(Node[] activatedNodes) {
-            Tab proj = Tab.findDefault();
-            proj.open();
-            proj.requestActive();
-            proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
+        @Override
+        protected void performAction(final Node[] activatedNodes) {
+            final Tab proj = Tab.findDefault();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
+                }
+            });
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             if (activatedNodes.length != 1) {
                 return false;
@@ -164,6 +194,7 @@ public final class Actions extends Object {
             /*return Tab.findDefault().containsNode(dobj);*/
           }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
         }
@@ -173,6 +204,7 @@ public final class Actions extends Object {
             return "org/netbeans/modules/favorites/resources/actionView.png"; // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
@@ -200,6 +232,7 @@ public final class Actions extends Object {
         
         /** Enabled only if the current project is ProjectDataObject.
         */
+        @Override
         public boolean enable (Node[] arr) {
             if ((arr == null) || (arr.length == 0)) return false;
 
@@ -217,6 +250,7 @@ public final class Actions extends Object {
         * presented as an item in a menu.
         * @return the name of the action
         */
+        @Override
         public String getName() {
             return NbBundle.getMessage (
                     Actions.class, "ACT_Remove"); // NOI18N
@@ -225,6 +259,7 @@ public final class Actions extends Object {
         /** Help context where to find more about the action.
         * @return the help context for this action
         */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Remove.class);
         }
@@ -234,6 +269,7 @@ public final class Actions extends Object {
         *
         * @param arr gives array of actually activated nodes.
         */
+        @Override
         protected void performAction (Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 DataObject shad = arr[i].getCookie(DataObject.class);
@@ -267,7 +303,7 @@ public final class Actions extends Object {
         //  static final long serialVersionUID = -5280204757097896304L;
         private static final Add ADD = new Add ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault() {
             return ADD;
         }
         
@@ -277,6 +313,7 @@ public final class Actions extends Object {
         
         /** Enabled only if the current project is ProjectDataObject.
         */
+        @Override
         public boolean enable (Node[] arr) {
             if ((arr == null) || (arr.length == 0)) return false;
             if (arr.length == 1 && arr[0] instanceof FavoritesNode) return true;
@@ -295,6 +332,7 @@ public final class Actions extends Object {
         * presented as an item in a menu.
         * @return the name of the action
         */
+        @Override
         public String getName() {
             return NbBundle.getMessage (
                     Actions.class, "ACT_Add"); // NOI18N
@@ -303,6 +341,7 @@ public final class Actions extends Object {
         /** Help context where to find more about the action.
         * @return the help context for this action
         */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Add.class);
         }
@@ -312,10 +351,10 @@ public final class Actions extends Object {
         *
         * @param activatedNodes gives array of actually activated nodes.
         */
+        @Override
         protected void performAction (final Node[] activatedNodes) {
-            List<DataObject> toShadows;
-
             try {
+                final List<DataObject> toShadows;
                 if (activatedNodes.length == 1 && activatedNodes[0] instanceof FavoritesNode) {
                     // show JFileChooser
                     FileObject fo = chooseFileObject();
@@ -329,7 +368,12 @@ public final class Actions extends Object {
                             toShadows.add(obj);
                     }
                 }
-                addToFavorites(toShadows);
+                RP.post(new Runnable () {
+                    @Override
+                    public void run() {
+                        addToFavorites(toShadows);
+                    }
+                });
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, null, e);
             }
@@ -397,6 +441,7 @@ public final class Actions extends Object {
                 }
                 if (setSelected) {
                     SwingUtilities.invokeLater(new Runnable () {
+                        @Override
                         public void run() {
                             try {
                                 projectsTab.getExplorerManager().setExploredContextAndSelection(toSelect[0],toSelect);
@@ -413,18 +458,41 @@ public final class Actions extends Object {
             DataObject createdDO = null;
             for (DataObject obj : dos) {
                 try {
-                    if (createdDO == null) {
-                        // Select only first node in array added to favorites
-                        createdDO = obj.createShadow(favourities);
-                        listAdd.add(createdDO);
+                    DataShadow added = findShadow(favourities, obj);
+                    if (added != null) {
+                        if (createdDO == null) {
+                            createdDO = added;
+                        }
                     } else {
-                        listAdd.add(obj.createShadow(favourities));
+                        if (createdDO == null) {
+                            // Select only first node in array added to favorites
+                            createdDO = obj.createShadow(favourities);
+                            listAdd.add(createdDO);
+                        } else {
+                            listAdd.add(obj.createShadow(favourities));
+                        }
                     }
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 }
             }
             return createdDO;
+        }
+
+        private static DataShadow findShadow (DataFolder f, DataObject dobj) {
+            FileObject fo = dobj.getPrimaryFile();
+            if (fo != null) {
+                DataObject [] arr = f.getChildren();
+                for (int i = 0; i < arr.length; i++) {
+                    if (arr[i] instanceof DataShadow) {
+                        DataShadow obj = (DataShadow) arr[i];
+                        if (fo.equals(obj.getOriginal().getPrimaryFile())) {
+                            return obj;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List<? extends DataObject> listAdd) {
@@ -448,10 +516,7 @@ public final class Actions extends Object {
                     listDest.addAll(listAdd);
                     listDest.add(root);
                 } else {
-                    //Root not found. It should not happen because root is defined in layer
-                    for (int i = 0; i < children.length; i++) {
-                        listDest.add(children[i]);
-                    }
+                    listDest.addAll(Arrays.asList(children));
                     listDest.addAll(listAdd);
                 }
                 //Set desired order
@@ -470,13 +535,19 @@ public final class Actions extends Object {
         }
 
         static void addToFavorites(List<DataObject> toShadows) {
+            assert !EventQueue.isDispatchThread();
             final DataFolder f = FavoritesNode.getFolder();
             final DataObject[] arr = f.getChildren();
             final List<DataObject> listAdd = new ArrayList<DataObject>();
-            DataObject createdDO = createShadows(f, toShadows, listAdd);
+            final DataObject toSelect = createShadows(f, toShadows, listAdd);
             //This is done to set desired order of nodes in view
             reorderAfterAddition(f, arr, listAdd);
-            selectAfterAddition(createdDO);
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run () {
+                    selectAfterAddition(toSelect);
+                }
+            });
         }
 
         static boolean isAllowed(DataObject dataObject) {
@@ -488,10 +559,6 @@ public final class Actions extends Object {
             if (fo != null) {
                 //#63459: Do not enable action on internal object/URL.
                 if (URLMapper.findURL(fo, URLMapper.EXTERNAL) == null) {
-                    return false;
-                }
-                //Allow to link only once
-                if (Favorites.getDefault().isInFavorites(fo)) {
                     return false;
                 }
                 //Check if it is root.
@@ -525,7 +592,7 @@ public final class Actions extends Object {
         
         private static final AddOnFavoritesNode ADD_ON_FAVORITES_NODE = new AddOnFavoritesNode ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault () {
             return ADD_ON_FAVORITES_NODE;
         }
         

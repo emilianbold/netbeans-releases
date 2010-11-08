@@ -85,8 +85,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         assert evaluator != null;
         assert srcRoots != null;
         assert binaryProperties != null && binaryProperties.length > 0;
-        assert testBinaryProperties != null && testBinaryProperties.length > 0;
-
+        assert testRoots == null ? testBinaryProperties == null : (testBinaryProperties != null && testBinaryProperties.length > 0);
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = srcRoots;
@@ -95,6 +94,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         this.testBinaryProperties = testBinaryProperties;
     }
 
+    @Override
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         if (FileUtil.getArchiveFile(binaryRoot) != null) {
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
@@ -112,10 +112,12 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
             }
         }
         if (src == null) {
-            for (String property : testBinaryProperties) {
-                if (hasSources(binaryRoot, property)) {
-                    src = testRoots;
-                    break;
+            if (testBinaryProperties != null) {
+                for (String property : testBinaryProperties) {
+                    if (hasSources(binaryRoot, property)) {
+                        src = testRoots;
+                        break;
+                    }
                 }
             }
         }
@@ -154,12 +156,14 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         private SourceRoots sourceRoots;
         private final boolean gensrc;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public Result(SourceRoots sourceRoots, boolean gensrc) {
             this.sourceRoots = sourceRoots;
             this.sourceRoots.addPropertyChangeListener(this);
             this.gensrc = gensrc;
         }
 
+        @Override
         public FileObject[] getRoots() {
             if (gensrc) { // #105645
                 String buildGeneratedDirS = evaluator.getProperty("build.generated.sources.dir"); // NOI18N
@@ -184,14 +188,17 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
             return this.sourceRoots.getRoots(); // no need to cache it, SourceRoots does
         }
 
+        @Override
         public void addChangeListener (ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener (ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
                 changeSupport.fireChange();

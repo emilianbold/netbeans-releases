@@ -68,7 +68,6 @@ import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.netbeans.modules.profiler.ui.stp.DefaultSettingsConfigurator;
 import org.netbeans.modules.profiler.ui.stp.SelectProfilingTask;
 import org.netbeans.modules.profiler.utils.IDEUtils;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -79,7 +78,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -88,16 +86,23 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 
 /**
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+                        projectTypes={
+                            @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
+                            @ProjectType(id="org-netbeans-modules-j2ee-earproject"), 
+                            @ProjectType(id="org-netbeans-modules-web-project")
+                        }
+)
 public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -154,83 +159,14 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
-    // I18N String constants
-    private static final String MODIFY_BUILDSCRIPT_CAPTION = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_ModifyBuildScriptCaption"); // NOI18N
-    private static final String MODIFY_BUILDSCRIPT_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_ModifyBuildScriptMsg"); // NOI18N
-    private static final String REGENERATE_BUILDSCRIPT_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                                 "J2EEProjectTypeProfiler_RegenerateBuildScriptMsg"); // NOI18N
-    private static final String CANNOT_FIND_BUILDSCRIPT_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                                  "J2EEProjectTypeProfiler_CannotFindBuildScriptMsg"); // NOI18N
-    private static final String CANNOT_BACKUP_BUILDSCRIPT_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                                    "J2EEProjectTypeProfiler_CannotBackupBuildScriptMsg"); // NOI18N
-    private static final String MODIFY_BUILDSCRIPT_MANUALLY_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                                      "J2EEProjectTypeProfiler_ModifyBuildScriptManuallyMsg"); // NOI18N
+    // I18N String constants                                                                                     "J2EEProjectTypeProfiler_ModifyBuildScriptManuallyMsg"); // NOI18N
     private static final String PROFILING_NOT_SUPPORTED_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                                   "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg"); // NOI18N
     private static final String SKIP_BUTTON_NAME = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                        "J2EEProjectTypeProfiler_SkipButtonName"); // NOI18N
     private static final String NO_SERVER_FOUND_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                          "J2EEProjectTypeProfiler_NoServerFoundMsg"); // NOI18N
-    private static final String PROJECT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                       "J2EEProjectTypeProfiler_ProjectCategory"); // NOI18N
-    private static final String WEB_CONTAINER_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_WebContainerCategory"); // NOI18N
-    private static final String SOAP_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPCategory"); // NOI18N
-
-    private static final String SOAP_PROTOCOL_PARSING_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPProtocolParsingCategory"); // NOI18N
-
-    private static final String SOAP_SERIALIZATION_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPSerialization"); // NOI18N
-
-    private static final String SOAP_ENDPOINT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPEndpointCategory"); // NOI18N
-
-    private static final String SOAP_REPLY_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPReplyCategory"); // NOI18N
-
-    private static final String LIFECYCLE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                         "J2EEProjectTypeProfiler_LifecycleCategory"); // NOI18N
-    private static final String EXECUTIVE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                         "J2EEProjectTypeProfiler_ExecutiveCategory"); // NOI18N
-    private static final String JSP_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                   "J2EEProjectTypeProfiler_JspCategory"); // NOI18N
-    private static final String TAGS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                    "J2EEProjectTypeProfiler_TagsCategory"); // NOI18N
-    private static final String SERVLETS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                        "J2EEProjectTypeProfiler_ServletsCategory"); // NOI18N
-    private static final String FILTERS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                       "J2EEProjectTypeProfiler_FiltersCategory"); // NOI18N
-    private static final String LISTENERS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                         "J2EEProjectTypeProfiler_ListenersCategory"); // NOI18N
-    private static final String EJB_CONTAINER_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_EjbContainerCategory"); // NOI18N
-    private static final String POOLING_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                       "J2EEProjectTypeProfiler_PoolingCategory"); // NOI18N
-    private static final String CONTAINER_CALLBACKS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                                   "J2EEProjectTypeProfiler_ContainerCallbacksCategory"); // NOI18N
-    private static final String PERSISTENCE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                           "J2EEProjectTypeProfiler_PersistenceCategory"); // NOI18N
-    private static final String JDBC_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                    "J2EEProjectTypeProfiler_JdbcCategory"); // NOI18N
-    private static final String CONNECTION_MGMT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                               "J2EEProjectTypeProfiler_ConnectionMgmtCategory"); // NOI18N
-    private static final String STATEMENTS_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                          "J2EEProjectTypeProfiler_StatementsCategory"); // NOI18N
-    private static final String JPA_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                   "J2EEProjectTypeProfiler_JpaCategory"); // NOI18N
-    private static final String HIBERNATE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                         "J2EEProjectTypeProfiler_HibernateCategory"); // NOI18N
-                                                                                                                       // -----
+                                                                          "J2EEProjectTypeProfiler_NoServerFoundMsg"); // NOI18N                                                                                                                       // -----
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.j2ee"); // NOI18N
-    private static final String J2EE_WEBPROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/web-project/1"; // NOI18N
-    private static final String J2EE_WEBPROJECT_NAMESPACE_4x = "http://www.netbeans.org/ns/web-project/2"; // NOI18N
-    private static final String J2EE_WEBPROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/web-project/3"; // NOI18N
-    private static final String J2EE_WEBPROJECT_NAMESPACE_50 = "http://www.netbeans.org/ns/web-project/3"; // NOI18N // same as for NB 41
-    private static final String J2EE_EJBJARPROJECT_NAMESPACE_50 = "http://www.netbeans.org/ns/j2ee-ejbjarproject/3"; // NOI18N
-    private static final String J2EE_EARPROJECT_NAMESPACE_50 = "http://www.netbeans.org/ns/j2ee-earproject/2"; // NOI18N
-    private static final String STANDARD_IMPORT_STRING = "<import file=\"nbproject/build-impl.xml\"/>"; // NOI18N
-    private static final String PROFILER_IMPORT_STRING = "<import file=\"nbproject/profiler-build-impl.xml\"/>"; // NOI18N
-    private static final String PROFILE_VERSION_ATTRIBUTE = "version"; // NOI18N
-    private static final String VERSION_NUMBER = "0.4"; // NOI18N
 
     // not very clean, consider implementing differently!
     // stores last generated agent ID
@@ -261,30 +197,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static boolean isEjbProject(final Project project) {
-        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        Element e = aux.getConfigurationFragment("data", J2EE_EJBJARPROJECT_NAMESPACE_50, true); // NOI18N // is EJB Project in NB50?
-
-        if (e == null) {
-            return false; // not EJB Project
-        }
-
-        return true;
-    }
-
-    public static boolean isEnterpriseAppProject(final Project project) {
-        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        Element e = aux.getConfigurationFragment("data", J2EE_EARPROJECT_NAMESPACE_50, true); // NOI18N // is Enterprise App Project in NB50?
-
-        if (e == null) {
-            return false; // not Enterprise App Project
-        }
-
-        return true;
-    }
-
     public static int getLastAgentID() {
         return lastAgentID;
     }
@@ -304,39 +216,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
-    public static boolean isSupportedProject(final Project project) {
-        return isWebProject(project) || isEjbProject(project) || isEnterpriseAppProject(project);
-    }
-
-    public static boolean isWebProject(final Project project) {
-        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        Element e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_50, true); // NOI18N // is Web Project in NB50?
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_40, true); // NOI18N // is Web Project in NB40?
-        }
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_4x, true); // NOI18N // is Web Project in NB4x?
-        }
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_41, true); // NOI18N // is Web Project in NB41?
-        }
-
-        if (e == null) {
-            return false; // not Web Project
-        }
-
-        return true;
-    }
-
-//    public boolean isFileObjectSupported(final Project project, final FileObject fo) {
-//        return ((WebProjectUtils.isJSP(fo) && WebProjectUtils.isWebDocumentSource(fo, project)) // jsp from /web directory
-//               || (WebProjectUtils.isHttpServlet(fo) && WebProjectUtils.isWebJavaSource(fo, project)
-//                  && WebProjectUtils.isMappedServlet(fo, project, true))); // mapped servlet from /src directory
-//    }
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
                                         final FileObject profiledClass) {
@@ -353,7 +232,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public boolean isProfilingSupported(final Project project) {
-        return isSupportedProject(project);
+        return true;
     }
 
     public JavaPlatform getProjectJavaPlatform(Project project) {
@@ -392,36 +271,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
         return loadGenConfig;
     }
-
-//    public ClientUtils.SourceCodeSelection[] getDefaultRootMethods(Project project, FileObject profiledClassFile,
-//                                                                   boolean profileUnderlyingFramework,
-//                                                                   String[][] projectPackagesDescr) {
-//        if (profileUnderlyingFramework) {
-//            return new ClientUtils.SourceCodeSelection[0]; // Server doesn't know its main method
-//        } else {
-//            // Profile Project or Profile Single
-//            if (profiledClassFile == null) {
-//                // Profile Project, extract root methods from the project
-//                Set<ClientUtils.SourceCodeSelection> roots = new HashSet<ClientUtils.SourceCodeSelection>(Arrays.asList(ProjectUtilities
-//                                                                                                                        .getProjectDefaultRoots(project,
-//                                                                                                                                                projectPackagesDescr)));
-//                ClientUtils.SourceCodeSelection[] jsps = WebProjectUtils.getJSPRootMethods(project, true); // TODO: needs to be computed also for subprojects!
-//                roots.addAll(Arrays.asList(jsps));
-//
-//                return roots.toArray(new ClientUtils.SourceCodeSelection[roots.size()]);
-//            } else {
-//                // Profile Single, provide correct root methods
-//                if (WebProjectUtils.isJSP(profiledClassFile)) {
-//                    // TODO: create list of jsp-specific methods (execute & all used Beans)
-//                    return ProjectUtilities.getProjectDefaultRoots(project, projectPackagesDescr);
-//                } else {
-//                    String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-//
-//                    return new ClientUtils.SourceCodeSelection[] { new ClientUtils.SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
-//                }
-//            }
-//        }
-//    }
 
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
         if (configurator == null) {
@@ -629,32 +478,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getLastAgentPort();
     }
 
-//    public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
-//                                                               String[][] projectPackagesDescr) {
-//        SimpleFilter retValue;
-//
-//        retValue = super.computePredefinedInstrumentationFilter(project, predefinedInstrFilter, projectPackagesDescr);
-//
-//        boolean recurse = predefinedInstrFilter == ProjectUtilities.FILTER_PROJECT_SUBPROJECTS_ONLY;
-//        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(project, recurse); // TODO: needs to be computed also for subprojects!
-//
-//        if (jspMethods != null) {
-//            StringBuffer buffer = new StringBuffer(jspMethods.length * 30);
-//
-//            if (retValue != null) {
-//                buffer.append(retValue.getFilterValue()).append(' '); // NOI18N
-//            }
-//
-//            for (int i = 0; i < jspMethods.length; i++) {
-//                buffer.append(jspMethods[i].getClassName()).append(' '); // NOI18N
-//            }
-//
-//            retValue.setFilterValue(buffer.toString().trim());
-//        }
-//
-//        return retValue;
-//    }
-
     public void setupProjectSessionSettings(final Project project, final SessionSettings ss) {
         // settings required for code fragment profiling
         final PropertyEvaluator pp = getProjectProperties(project);
@@ -817,118 +640,4 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             }
         }
     }
-
-//    private void setupMarks(final Project project) {
-//        MarkerMethodBuilder builder = project.getLookup().lookup(MarkerMethodBuilder.class);
-//        marker = builder.buildMarker(project);
-//        ClassMarker cMarker = new ClassMarker();
-//        MethodMarker mMarker = new MethodMarker();
-//        PackageMarker pMarker = new PackageMarker();
-//
-//        String[] lcMethodNames = new String[] { "init", "destroy" }; // NOI18N
-//        HierarchicalMark webMark = new HierarchicalMark("WEB", WEB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-//        HierarchicalMark webLifecycleMark = new HierarchicalMark("WEB/LIFECYCLE", LIFECYCLE_CATEGORY, webMark); // NOI18N
-//        HierarchicalMark webExecMark = new HierarchicalMark("WEB/EXECUTION", EXECUTIVE_CATEGORY, webMark); // NOI18N
-//        HierarchicalMark jspExecMark = new HierarchicalMark("WEB/EXECUTION/JSP", JSP_CATEGORY, webExecMark); // NOI18N
-//        HierarchicalMark jspTagExecMark = new HierarchicalMark("WEB/EXECUTION/TAG", TAGS_CATEGORY, webExecMark); // NOI18N
-//        HierarchicalMark servletExecMark = new HierarchicalMark("WEB/EXECUTION/SERVLET", SERVLETS_CATEGORY, webExecMark); // NOI18N
-//        HierarchicalMark filterExecMark = new HierarchicalMark("WEB/EXECUTION/FILTER", FILTERS_CATEGORY, webExecMark); // NOI18N
-//        HierarchicalMark webListenerMark = new HierarchicalMark("WEB/LISTENER", LISTENERS_CATEGORY, webMark); // NOI18N
-//        HierarchicalMark ejbMark = new HierarchicalMark("EJB", EJB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-//        HierarchicalMark ejbPoolMark = new HierarchicalMark("EJB/POOL/CALLBACK", POOLING_CATEGORY, ejbMark); // NOI18N
-//        HierarchicalMark ejbLifecycleMark = new HierarchicalMark("EJB/LIFECYCLE/CALLBACK", CONTAINER_CALLBACKS_CATEGORY, ejbMark); // NOI18N
-//        HierarchicalMark ejbPersistenceMark = new HierarchicalMark("EJB/PERSISTENCE/CALLBACK", PERSISTENCE_CATEGORY, ejbMark); // NOI18N
-//        HierarchicalMark ejbExecutionMarks = new HierarchicalMark("EJB/EXECUTION", EXECUTIVE_CATEGORY, ejbMark); // NOI18N
-//        HierarchicalMark dbMark = new HierarchicalMark("DB", PERSISTENCE_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-//        HierarchicalMark jdbcMark = new HierarchicalMark("DB/JDBC", JDBC_CATEGORY, dbMark); // NOI18N
-//        HierarchicalMark dbConnectionMark = new HierarchicalMark("DB/CONN", CONNECTION_MGMT_CATEGORY, jdbcMark); // NOI18N
-//        HierarchicalMark dbStatementsMark = new HierarchicalMark("DB/EXEC", STATEMENTS_CATEGORY, jdbcMark); // NOI18N
-//        HierarchicalMark jpaMark = new HierarchicalMark("DB/JPA", JPA_CATEGORY, dbMark); // NOI18N
-//        HierarchicalMark hibernateMark = new HierarchicalMark("DB/HIB", HIBERNATE_CATEGORY, dbMark); // NOI18N
-//        HierarchicalMark soapMark = new HierarchicalMark("SOAP", SOAP_CATEGORY, getMarkHierarchyRoot()); //NOI18N
-//        HierarchicalMark soapParsingMark = new HierarchicalMark("SOAP/PARSING", SOAP_PROTOCOL_PARSING_CATEGORY, soapMark); // NOI18N
-//        HierarchicalMark soapSerializationMark = new HierarchicalMark("SOAP/SERIALIZATION", SOAP_SERIALIZATION_CATEGORY, soapMark); // NOI18N
-//        HierarchicalMark soapEndpointMark = new HierarchicalMark("SOAP/ENDPOINT", SOAP_ENDPOINT_CATEGORY, soapMark); // NOI18N
-//        HierarchicalMark soapReplyMark = new HierarchicalMark("SOAP/REPLY", SOAP_REPLY_CATEGORY, soapMark); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, true, webLifecycleMark, project); // NOI18N
-//        addInterfaceMarkers(mMarker, new String[] { "javax.servlet.ServletConfig", // NOI18N
-//            "javax.servlet.FilterConfig" }, // NOI18N
-//                            webLifecycleMark, project);
-//
-//        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, true, webLifecycleMark, project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.servlet.ServletInputStream", webListenerMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.ServletOutputStream", webListenerMark, project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, false, filterExecMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, false, servletExecMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.FilterChain", filterExecMark, project); // NOI18N
-//
-//        addJspMarker(mMarker, jspExecMark, project);
-//
-//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.Tag", jspTagExecMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.TagSupport", jspTagExecMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.BodyTagSupport", jspTagExecMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.SimpleTagSupport", jspTagExecMark, project); // NOI18N
-//
-//        addInterfaceMarkers(mMarker,
-//                            new String[] {
-//                                "javax.servlet.http.HttpSessionListener", // NOI18N
-//        "javax.servlet.http.HttpSessionAttributeListener", // NOI18N
-//        "javax.servlet.http.HttpSessionActivationListener", // NOI18N
-//        "javax.servlet.ServletContextListener", // NOI18N
-//        "javax.servlet.ServletContextAttributeListener", // NOI18N
-//        "javax.servlet.ServletRequestListener", // NOI18N
-//        "javax.servlet.ServletRequestAttributeListener"
-//                            }, // NOI18N
-//                            webListenerMark, project);
-//
-//        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
-//                           project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
-//                           project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbRemove", "setSessionContext" }, true,
-//                           ejbLifecycleMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean",
-//                           new String[] { "ejbRemove", "setEntityContext", "unsetEntityContext" }, true, ejbLifecycleMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.ejb.MessageDrivenBean", new String[] { "ejbRemove", "setMessageDrivenContext" }, true,
-//                           ejbLifecycleMark, project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbLoad", "ejbStore" }, true, ejbPersistenceMark,
-//                           project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "java.sql.DriverManager", new String[] { "getConnection" }, true, dbConnectionMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "java.sql.Connection", dbConnectionMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "java.sql.DataSource", dbConnectionMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "java.sql.Statement", dbStatementsMark, project); // NOI18N
-//
-//        addInterfaceMarker(mMarker, "javax.persistence.EntityManager", jpaMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.persistence.Query", jpaMark, project); // NOI18N
-//
-//        addInterfaceMarkers(mMarker,
-//                            new String[] {
-//                                "org.hibernate.impl.SessionImpl", // NOI18N
-//        "org.hibernate.impl.AbstractQueryImpl", // NOI18N
-//        "org.hibernate.impl.FetchingScrollableResultsImpl", // NOI18N
-//        "org.hibernate.impl.FilterImpl", // NOI18N
-//        "org.hibernate.impl.CriteriaImpl", // NOI18N
-//        "org.hibernate.impl.IteratorImpl", // NOI18N
-//        "org.hibernate.impl.QueryImpl", // NOI18N
-//        "org.hibernate.impl.ScrollableResultsImpl", // NOI18N
-//        "org.hibernate.impl.SessionFactoryImpl", // NOI18N
-//        "org.hibernate.impl.SessionFactoryObjectFactory", // NOI18N
-//        "org.hibernate.impl.SQLQueryImpl", // NOI18N
-//        "org.hibernate.impl.StatelessSessionImpl" // NOI18N
-//                            }, hibernateMark, project);
-//
-//        pMarker.addPackageMark("org.hibernate.impl", hibernateMark); // NOI18N
-//
-//        marker = new CompositeMarker();
-//        ((CompositeMarker) marker).addMarker(mMarker);
-//        ((CompositeMarker) marker).addMarker(pMarker);
-//
-//        MethodNameFormatterFactory.getDefault().registerFormatter(jspExecMark, new JSPNameFormatter());
-//    }
 }

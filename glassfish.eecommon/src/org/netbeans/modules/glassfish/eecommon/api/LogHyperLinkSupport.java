@@ -384,13 +384,11 @@ public class LogHyperLinkSupport {
                         path = className.replace('.', '/') + ".java"; // NOI18N
                         accessible = globalPathReg.findResource(path) != null;
                         if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N
-                            if (context != null) {
-                                String contextPath = context.equals("/")
-                                        ? "/_" // hande ROOT context
-                                        : context;
-                                path = appServerInstallDir + contextPath + "/" + path;
-                                accessible = new File(path).exists();
-                            }
+                            String contextPath = context.equals("/")
+                                    ? "/_" // hande ROOT context
+                                    : context;
+                            path = appServerInstallDir + contextPath + "/" + path;
+                            accessible = new File(path).exists();
                         }
                     }
                 }

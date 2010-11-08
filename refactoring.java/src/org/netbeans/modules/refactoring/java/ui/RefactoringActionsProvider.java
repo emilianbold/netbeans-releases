@@ -70,6 +70,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -126,13 +127,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         selectedElement = TreePathHandle.create(info.getTrees().getPath(selected), info);
                     } 
                     if (selected.getKind() == ElementKind.PACKAGE) {
-                        NonRecursiveFolder folder = new NonRecursiveFolder() {
-                            @Override
-                            public FileObject getFolder() {
-                                return info.getFileObject().getParent();
-                            }
-                        };
-                        return wrap(new RenameRefactoringUI(folder));
+                        final FileObject pkg = info.getClasspathInfo().getClassPath(PathKind.SOURCE).findResource(selected.toString().replace('.','/'));
+                        if (pkg!=null) {
+                            NonRecursiveFolder folder = new NonRecursiveFolder() {
+
+                                @Override
+                                public FileObject getFolder() {
+                                    return pkg;
+                                }
+                            };
+                            return wrap(new RenameRefactoringUI(folder));
+                        } else {
+                            return wrap(new RenameRefactoringUI(selectedElement, info));
+                        }
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
                         if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
@@ -549,7 +556,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    return drop!=null;
+                    if (drop==null) {
+                        return false;
+                    } else {
+                        //Ctrl-X
+                        if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RetoucheUtils.isClasspathRoot(dob.getPrimaryFile())) {
+                            return false;
+                        }
+                    }
                 }
                 if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;

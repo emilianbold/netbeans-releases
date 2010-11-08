@@ -62,7 +62,6 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenBuffer;
-import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -71,7 +70,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.parser.generated.EvaluatorParser;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -95,6 +94,18 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     public Object eval(String expr) {
+        return eval(expr, (Resolver)null);
+    }
+
+    public Object eval(String expr, CsmInstantiation inst) {
+        return eval(expr, inst, null);
+    }
+    
+    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, mapping, null);
+    }
+
+    public Object eval(String expr, Resolver resolver) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -106,7 +117,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(level + 1));
+            parser.setVariableProvider(new VariableProvider(level + 1, resolver));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -114,15 +125,15 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         return result;
     }
 
-    public Object eval(String expr, CsmInstantiation inst) {
+    public Object eval(String expr, CsmInstantiation inst, Resolver resolver) {
         if(CsmKindUtilities.isOffsetableDeclaration(inst)) {
-            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst));
+            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst), resolver);
         } else {
-            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst));
+            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst), resolver);
         }
     }
 
-    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, Resolver resolver) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -134,7 +145,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1));
+            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1, resolver));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {

@@ -74,6 +74,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -480,8 +481,14 @@ public final class SharableLibrariesUtils {
                     }
                     volumes.put(volume, newurls);
                 }
-                
-                man.createURILibrary(library.getType(), library.getName(), volumes);
+                if (man.getLibrary(library.getName())!=null) {
+                  DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(SharableLibrariesUtils.class, "ERR_LibraryExists", library.getDisplayName()),
+                    NotifyDescriptor.WARNING_MESSAGE));
+                } else {
+                    man.createURILibrary(library.getType(), library.getName(), volumes);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

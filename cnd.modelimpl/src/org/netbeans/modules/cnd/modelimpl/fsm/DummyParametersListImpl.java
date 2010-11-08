@@ -54,10 +54,15 @@ import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
+public final class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
 
-    public DummyParametersListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    private DummyParametersListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
         super(file, start, end, parameters);
+    }
+
+    public static DummyParametersListImpl create(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+        DummyParametersListImpl dummyParametersListImpl = new DummyParametersListImpl(file, start, end, parameters);
+        return dummyParametersListImpl;
     }
 
     @Override

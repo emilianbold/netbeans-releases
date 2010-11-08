@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +98,6 @@ public final class PathRegistry implements Runnable {
     private Map<URL, WeakValue> unknownRoots;
     private long timeStamp;             //Lamport event ordering
     private volatile Runnable debugCallBack;
-    private volatile boolean useLibraries = true;
     private Collection<URL>  sourcePaths;
     private Collection<URL> libraryPath;
     private Collection<URL> binaryLibraryPath;
@@ -620,8 +620,8 @@ public final class PathRegistry implements Runnable {
                     assert !newSR.containsKey(binRoot);
                     newSR.put(binRoot,sr);
                     LOGGER.log(Level.FINE, "{0}: preferSources={1}", new Object[] { binRoot, sr.preferSources() }); //NOI18N
-                    final List<URL> cacheURLs = new ArrayList<URL> ();
-                    Collection<URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
+                    final Set<URL> cacheURLs = new LinkedHashSet<URL> (); //LinkedSet to protect against wrong SFBQ but keep ordering
+                    final Collection<? extends URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
                     if (srcRoots.isEmpty()) {
                         binaryLibraryResult.add(binRoot);
                     } else {
@@ -630,7 +630,7 @@ public final class PathRegistry implements Runnable {
                     }
                     translatedRoots.put(binRoot, cacheURLs.toArray(new URL[cacheURLs.size()]));
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("T: " + binRoot + " -> " + cacheURLs); //NOI18N
+                        LOGGER.log(Level.FINE, "T: {0} -> {1}", new Object[]{binRoot, cacheURLs}); //NOI18N
                     }
 
                     if (isNewSR) {
@@ -657,7 +657,7 @@ public final class PathRegistry implements Runnable {
                 newCps, newSR, translatedRoots, request.unknownRoots, pathIdsResult, pathIdToRootsResult);
     }
 
-    private static Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
+    private static Collection <? extends URL> getSources (final SourceForBinaryQuery.Result2 sr, final Collection<? super URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
         assert sr != null;
         if (sr.preferSources()) {
             final FileObject[] roots = sr.getRoots();
@@ -705,7 +705,7 @@ public final class PathRegistry implements Runnable {
         LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
     }
 
-    private static void updateTranslatedPathIds(Collection<URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
+    private static void updateTranslatedPathIds(Collection<? extends URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
         Set<String> sids = new HashSet<String>();
         Set<String> mimeTypes = new HashSet<String>();
         for(String blid : tcp.getPathIds().getBlids()) {
@@ -957,8 +957,8 @@ public final class PathRegistry implements Runnable {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("pathsAdded: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
-                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                    LOGGER.log(Level.FINE, "pathsAdded: {0}, paths= {1}", new Object[]{event.getId(), event.getChangedPaths()}); //NOI18N
+                    LOGGER.log(Level.FINE, "''{0}'' -> ''{1}''", new Object[]{pathId, pk}); //NOI18N
                 }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_ADDED, pk, pathId, event.getChangedPaths());
@@ -969,8 +969,8 @@ public final class PathRegistry implements Runnable {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("pathsRemoved: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
-                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                    LOGGER.log(Level.FINE, "pathsRemoved: {0}, paths={1}", new Object[]{event.getId(), event.getChangedPaths()}); //NOI18N
+                    LOGGER.log(Level.FINE, "''{0}'' -> ''{1}''", new Object[]{pathId, pk}); //NOI18N
                 }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_REMOVED, pk, pathId, event.getChangedPaths());
@@ -1006,7 +1006,7 @@ public final class PathRegistry implements Runnable {
 
             public @Override void stateChanged (final ChangeEvent event) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("stateChanged: " + event); //NOI18N
+                    LOGGER.log(Level.FINE, "stateChanged: {0}", event); //NOI18N
                 }
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY_LIBRARY, null, null);
             }

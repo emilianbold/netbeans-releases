@@ -282,7 +282,7 @@ public abstract class CsmVirtualInfoQuery {
             cls = method.getContainingClass();
             if (cls != null){
                 for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
-                    CsmClass c = (CsmClass) ref.getOwner();
+                    CsmClass c = (CsmClass) ref.getReferencedObject();
                     if (c != null) {
                         for(CsmMember m : c.getMembers()){
                             if (CsmKindUtilities.isMethod(m)) {

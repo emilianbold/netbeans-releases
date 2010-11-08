@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -113,7 +114,7 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
 
     public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
-        String version = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_J2EE_VERSION, true);
+        String version = project.getLookup().lookup(AuxiliaryProperties.class).get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }

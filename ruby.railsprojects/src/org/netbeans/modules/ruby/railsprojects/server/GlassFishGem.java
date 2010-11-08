@@ -64,8 +64,9 @@ import org.openide.util.Parameters;
  * 
  * @author Peter Williams
  * @author Erno Mononen
+ * @author David Calavera
  */
-class GlassFishGem implements RubyServer, ServerInstanceImplementation {
+class GlassFishGem extends JRubyServerBase {
 
     static final String GEM_NAME = "glassfish";
     /**
@@ -76,227 +77,31 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
         Pattern.compile(".*Press Ctrl\\+C to stop\\..*", Pattern.DOTALL),
         Pattern.compile(".*[0-9] milliseconds.*", Pattern.DOTALL)
     };
-    
-    private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
-    private final RubyPlatform platform;
-    private final String version;
-    private final String location;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
-    private Node node;
+
+    private static final String LABEL = "LBL_GlassFish";
 
     GlassFishGem(RubyPlatform platform, GemInfo gemInfo) {
-        Parameters.notNull("platform", platform); //NOI18N
-        this.platform = platform;
-        this.version = gemInfo.getVersion();
-        this.location = getGemFolder(gemInfo.getSpecFile());
+        super(platform, gemInfo);
     }
 
-    private String getGemFolder(File specFile) {
-        String gemFolderName = specFile.getName();
-        if(gemFolderName.endsWith(".gemspec")) {
-            gemFolderName = gemFolderName.substring(0, gemFolderName.length() - 8);
-        }
-        
-        return new File(specFile.getParentFile().getParentFile(),
-                "gems" + File.separatorChar + gemFolderName).getAbsolutePath();
-    }
-
-    private Node getNode() {
-        if (this.node == null) {
-            this.node = new RubyServerNode(this);
-        }
-        return node;
-    }
-    
-    // RubyServer  methods
-    public String getNodeName() {
-        return NbBundle.getMessage(GlassFishGem.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
-    }
-    
-    public String getLocation() {
-        return location;
-    }
-
-    public List<String> getStartupParams(RailsVersion version) {
-        return Collections.emptyList();
-    }
-
-    public String getScriptPrefix() {
-        return "-S";
-    }
-
+    @Override
     public String getServerPath(RailsVersion version) {
         // glassfish_rails is deprecated in 0.9.4 and newer
         return compareVersion("0.9.4") >= 0 ? "glassfish" : "glassfish_rails";
     }
 
-    public boolean isStartupMsg(String outputLine) {
-        for (Pattern each : PATTERNS) {
-            if (each.matcher(outputLine).matches()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<RailsApplication> getApplications() {
-        return Collections.unmodifiableList(applications);
-    }
-
-    public boolean addApplication(RailsApplication application) {
-        boolean result = applications.add(application);
-        changeSupport.fireChange();
-        return result;
-    }
-
-    public boolean removeApplication(int port) {
-        boolean result = false;
-        for (RailsApplication app : applications) {
-            if (app.getPort() == port) {
-                result = applications.remove(app);
-                changeSupport.fireChange();
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    public int compareVersion(String targetVersion) {
-        int [] sv = extractVersion(version);
-        int [] tv = extractVersion(targetVersion);
-        for(int i = 0; i < 3; i++) {
-            if(sv[i] < tv[i]) {
-                return -1;
-            } else if(sv[i] > tv[i]) {
-                return 1;
-            }
-        }
-        return 0;
-    }
-
-    private int [] extractVersion(String vs) {
-        int [] v = new int [] { 0, 0, 0 };
-        String [] parts = vs.split("\\.");
-        for(int i = 0; i < 3 && i < parts.length; i++) {
-            v[i] = Integer.valueOf(parts[i]);
-        }
-        return v;
-    }
-
-    // ServerInstanceImplementation methods
-    public String getServerDisplayName() {
-        return getNodeName();
-    }
-
-    public Node getFullNode() {
-        return getNode();
-    }
-
-    public Node getBasicNode() {
-        return getNode();
-    }
-
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isRemovable() {
-        return false;
-    }
-
-    // RubyInstance methods 
-    public String getServerUri() {
-        return "GLASSFISH";
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(GlassFishGem.class, "LBL_GlassFish", version);
-    }
-
-    public ServerState getServerState() {
-        // TODO: currently handled in Rails project
-        return null;
-    }
-
-    public Future<OperationState> startServer(RubyPlatform platform) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Future<OperationState> stopServer() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Future<OperationState> deploy(String applicationName, File applicationDir) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Future<OperationState> stop(String applicationName) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Future<OperationState> runApplication(RubyPlatform platform, String applicationName, File applicationDir) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public boolean isPlatformSupported(RubyPlatform platform) {
-        return this.platform.equals(platform);
-    }
-
-    public String getContextRoot(String applicationName) {
-        return ""; // NOI18N
-    }
-
-    public int getRailsPort() {
-        return 3000;
-    }
-    
-    public String getServerCommand(RubyPlatform platform, String classpath, 
-            File applicationDir, int httpPort, boolean debug) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final GlassFishGem other = (GlassFishGem) obj;
-        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
-            return false;
-        }
-        if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
-            return false;
-        }
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
-            return false;
-        }
-        return true;
+    protected String getLabel() {
+        return LABEL;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 47 * hash + (this.platform != null ? this.platform.hashCode() : 0);
-        hash = 47 * hash + (this.version != null ? this.version.hashCode() : 0);
-        return hash;
+    protected Pattern[] getPatterns() {
+        return PATTERNS;
     }
 
+    @Override
+    protected String getGemName() {
+        return GEM_NAME;
+    }
 }

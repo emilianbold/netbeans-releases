@@ -179,9 +179,8 @@ import org.openide.util.NbBundle;
 
         setLayout(new java.awt.GridBagLayout());
 
-        lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
-        lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbBaseDirectory, org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -201,10 +200,9 @@ import org.openide.util.NbBundle;
         add(tfName, gridBagConstraints);
         tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
-        lbFamily.setText(bundle.getString("AddCompilerSetPanel.lbFamily.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbFamily, bundle.getString("AddCompilerSetPanel.lbFamily.text")); // NOI18N
         lbFamily.setToolTipText(bundle.getString("AddCompilerSetPanel.lbFamily.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -226,9 +224,8 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 16);
         add(cbFamily, gridBagConstraints);
 
-        lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
         lbName.setLabelFor(tfName);
-        lbName.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbName, org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

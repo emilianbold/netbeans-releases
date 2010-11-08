@@ -139,6 +139,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     private volatile HotSpotFunctionsFilter filter;
     private volatile TimeIntervalDataFilter timeIntervalDataFilter;
 
+    @Override
     public void attachTo(final ServiceInfoDataStorage serviceInfoStorage) {
         if (serviceInfoStorage == null) {
             throw new NullPointerException();
@@ -155,6 +156,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         nonSSSourceInfoCache.clear();
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         boolean hasTimeIntervalFilter = false;
         for (DataFilter f : newSet) {
@@ -183,6 +185,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
+    @Override
     public ThreadDumpProvider getThreadDumpProvider() {
         return null;
     }
@@ -196,23 +199,28 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
     public SSStackDataProvider() {
     }
 
+    @Override
     public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLERS, path, aggregate);
     }
 
+    @Override
     public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLEES, path, aggregate);
     }
 
+    @Override
     public List<FunctionCall> getCallStack(int stackId) {
         //throw new UnsupportedOperationException("Not supported yet.");
         return Collections.emptyList();
     }
 
+    @Override
     public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getFunctionCalls(columns, orderBy, limit));
     }
 
+    @Override
     public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path, List<Column> columns, List<Column> orderBy) {
         List<FunctionCallWithMetric> fpath = FunctionCallTreeTableNode.getFunctionCalls(path);
         List<FunctionCallWithMetric> callers = getCallers(fpath, columns, orderBy, false);
@@ -220,10 +228,12 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(callers);
     }
 
+    @Override
     public FunctionCallTreeTableNode getValueAt(int row) {
         return null;
     }
 
+    @Override
     public String getTableValueAt(Column column, int row) {
         return null;
     }
@@ -265,6 +275,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         return result;
     }
 
+    @Override
     public List<FunctionCallWithMetric> getHotSpotFunctions(
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
@@ -277,10 +288,12 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         return Collections.emptyList();
     }
 
+    @Override
     public List<? extends Deadlock> getDeadlocks() {
         return storage.getDeadlocks();
     }
 
+    @Override
     public List<? extends Datarace> getDataraces() {
         return storage.getDataraces();
     }
@@ -296,10 +309,12 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         return null;
     }
 
+    @Override
     public List<FunctionMetric> getMetricsList() {
         return metricsList;
     }
 
+    @Override
     public void attachTo(DataStorage storage) {
         if (storage instanceof PerfanDataStorage) {
             this.storage = (PerfanDataStorage) storage;
@@ -313,6 +328,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
+    @Override
     public SourceFileInfo getSourceFileInfo(final FunctionCall functionCall) {
         if (sourceFileInfoSupport == null) {
             return null;
@@ -340,9 +356,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                                 functionCall.getFunction().getQuilifiedName(),
                                 (int) functionCall.getOffset(), -1, serviceInfo);
                         if (result != null && result.isSourceKnown()) {
-                            log.finest("SourceLineInfo data from " + // NOI18N
-                                    provider.getClass().getSimpleName() + ": " + // NOI18N
-                                    result.toString());
+                            log.log(Level.FINEST, "SourceLineInfo data from {0}: {1}", 
+                                    new Object[]{provider.getClass().getSimpleName(), 
+                                    result.toString()});
                             break;
                         }
                     }
@@ -477,9 +493,10 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             df.setDecimalFormatSymbols(symbols);
         }
 
+        @Override
         public List<FunctionCallWithMetric> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
             if (log.isLoggable(Level.FINEST)) {
-                log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                log.log(Level.FINEST, "Started to fetch Hot Spot Functions @ {0}", Thread.currentThread()); // NOI18N
             }
 
             Metrics metrics = taskArguments.metrics;
@@ -489,7 +506,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             try {
                 er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
             } catch (InterruptedException ex) {
-                log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                log.log(Level.FINEST, "Fetching Interrupted! Hot Spot Functions @ {0}", Thread.currentThread()); // NOI18N
                 return null;
             }
 
@@ -638,7 +655,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                     }
 
                 } catch (InterruptedException ex) {
-                    log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                    log.log(Level.FINEST, "Fetching Interrupted! Hot Spot Functions @ {0}", Thread.currentThread()); // NOI18N
                 }
 
                 omp_limit = omp_er_result == null || omp_er_result.length == 0 ? 0 : omp_er_result.length;

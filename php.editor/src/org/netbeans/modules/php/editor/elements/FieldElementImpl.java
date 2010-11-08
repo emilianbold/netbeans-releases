@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpClass.Field;
 import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -152,9 +153,12 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
     static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
         Parameters.notNull("field", field);
         Parameters.notNull("elementQuery", elementQuery);
-        FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(), 
-                PhpModifiers.NO_FLAGS, null, elementQuery,
-                Collections.<TypeResolver>singleton(new TypeResolverImpl(field.getType().getFullyQualifiedName())));
+        final PhpClass fldType = field.getType();
+        final Set<TypeResolver> typeResolvers = fldType != null
+                ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName()))
+                : Collections.<TypeResolver>emptySet();
+        FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
+                PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers);
         retval.fileObject = field.getFile();
         return retval;
     }

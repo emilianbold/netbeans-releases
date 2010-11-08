@@ -54,8 +54,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -101,7 +101,7 @@ public class OverrideAnnotationsTest extends ProjectBasedTestCase {
         assertNotNull(testSourceFile);
         StyledDocument doc = (StyledDocument) getBaseDocument(testSourceFile);
         assertNotNull(doc);
-        FileObject fo = FileUtil.toFileObject(testSourceFile);
+        FileObject fo = CndFileUtils.toFileObject(testSourceFile);
         assertNotNull(fo);
         DataObject dao = DataObject.find(fo);
         assertNotNull(dao);

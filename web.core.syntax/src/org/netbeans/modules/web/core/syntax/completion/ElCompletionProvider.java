@@ -58,8 +58,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
-import org.netbeans.modules.web.core.syntax.completion.ELFunctions.Function;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions.Function;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions;
 import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
@@ -251,7 +252,7 @@ public class ElCompletionProvider implements CompletionProvider {
                                     }
                                 }
                             }
-                            List<Function> functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
+                            List<Function> functions = ELFunctions.getFunctions(sup.getFileObject(), elExpr.getReplace());
                             Iterator<Function> iter = functions.iterator();
                             while (iter.hasNext()) {
                                 Function fun = iter.next();

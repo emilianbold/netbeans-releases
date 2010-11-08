@@ -384,7 +384,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
                 return format.format(new Date(millis));
             } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
+                Jira.LOG.log(Level.WARNING, null, nfex); // should not happen
             }
         }
         return ""; // NOI18N
@@ -554,7 +554,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public void resolve(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": resolve issue " + getKey() + ": " + resolution.getName());    //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: resolve issue {1}: {2}", new Object[]{getClass().getName(), getKey(), resolution.getName()});    //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -579,7 +579,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     void reopen(String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": reopening issue" + getKey()); //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: reopening issue{1}", new Object[]{getClass().getName(), getKey()}); //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -588,7 +588,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": reopening issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+                Jira.LOG.log(Level.FINEST, "{0}: reopening issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
             }
             if (JiraUtils.isReopenOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -613,7 +613,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public void close(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": close issue " + getKey() + ": " + resolution.getName());    //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: close issue {1}: {2}", new Object[]{getClass().getName(), getKey(), resolution.getName()});    //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -648,7 +648,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public void startProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: starting issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -657,7 +657,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+                Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
             }
             if (JiraUtils.isStartProgressOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -679,7 +679,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public void stopProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: starting issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -688,7 +688,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+                Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
             }
             if (JiraUtils.isStopProgressOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -714,7 +714,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel().toLowerCase();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": setOperation: operation " + operationLabel + "(" + entry.getValue().getOperationId() + ") is available");
+                Jira.LOG.log(Level.FINEST, "{0}: setOperation: operation {1}({2}) is available", new Object[]{getClass().getName(), operationLabel, entry.getValue().getOperationId()});
             }
             if (entry.getValue().getOperationId().equals(operationId)) {
                 operation = entry.getValue();
@@ -777,13 +777,24 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": adding comment to issue: " + getKey());    //NOI18N
-        }
+            Jira.LOG.log(Level.FINE, "{0}: adding comment to issue: {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
+        }        
         if(comment == null && !close) {
+            // nothing to do => so don't even refresh
             return;
         }
         refresh();
-
+        
+        // check if not already resolved
+        if(close && getResolution() != null) {
+            close = false; // already resolved 
+        }
+        if(comment == null && !close) {
+            // so there is nothing to do 
+            // if already closed and no comment set
+            return;
+        }
+        
         // resolved attrs
         if(close) {
             try {
@@ -808,7 +819,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public void addComment(String comment) {
         if(comment != null) {
             if (Jira.LOG.isLoggable(Level.FINE)) {
-                Jira.LOG.fine(getClass().getName() + ": adding comment to issue " + getKey());    //NOI18N
+                Jira.LOG.log(Level.FINE, "{0}: adding comment to issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
             }
             TaskAttribute ta = taskData.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
@@ -838,11 +849,11 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             public void execute() throws CoreException, IOException {
 //                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
-                    Jira.LOG.finer("adding an attachment: issue: " + getKey());
+                    Jira.LOG.log(Level.FINER, "adding an attachment: issue: {0}", getKey());
                 }
                 IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment upload task", getKey());
                 if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canPostContent(repository.getTaskRepository(), task)) {
-                    Jira.LOG.warning("adding an attachment: cannot post content: issue: " + getKey());
+                    Jira.LOG.log(Level.WARNING, "adding an attachment: cannot post content: issue: {0}", getKey());
                     return;
                 }
                 Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
@@ -875,15 +886,15 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> seenAtributes = getSeenAttributes();
-            assert seenAtributes != null;
+            Map<String, String> attr = getSeenAttributes();
+            assert attr != null;
             for (IssueField f : IssueField.values()) {
                 switch(f) {
                     case MODIFICATION :
                         continue;
                 }
                 String value = getFieldValue(f);
-                String seenValue = seenAtributes.get(f.key);
+                String seenValue = attr.get(f.key);
                 if(seenValue == null) {
                     seenValue = "";                                             // NOI18N
                 }
@@ -906,7 +917,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
 //                            break;
                         case COMMENT_COUNT :
                             String value = getFieldValue(changedField);
-                            String seenValue = seenAtributes.get(changedField.key);
+                            String seenValue = attr.get(changedField.key);
                             if(seenValue == null || seenValue.trim().equals("")) {
                                 seenValue = "0";
                             }
@@ -1162,7 +1173,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     private String toString(List<String> l) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < l.size(); i++) {
             sb.append(l.get(i));
             if(i < l.size() -1) {
@@ -1219,7 +1230,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": resolving issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+                Jira.LOG.log(Level.FINEST, "{0}: resolving issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
             }
             if (JiraUtils.isResolveOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -1275,14 +1286,14 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         final RepositoryResponse[] rr = new RepositoryResponse[1];
         if (Jira.LOG.isLoggable(Level.FINEST)) {
-            Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
+            Jira.LOG.log(Level.FINEST, "submitAndRefresh: id: {0}, new: {1}", new Object[]{getID(), wasNew});
         }
         JiraCommand submitCmd = new JiraCommand() {
             @Override
             public void execute() throws CoreException {
                 // submit
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
-                    Jira.LOG.finest("submitAndRefresh, submitCmd: id: " + getID() + ", new: " + wasNew);
+                    Jira.LOG.log(Level.FINEST, "submitAndRefresh, submitCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
                 }
                 Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
                 rr[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), taskData,
@@ -1299,7 +1310,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             @Override
             public void execute() throws CoreException {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
-                    Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
+                    Jira.LOG.log(Level.FINEST, "submitAndRefresh, refreshCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
                 }
                 if (!wasNew) {
                     refresh();
@@ -1552,12 +1563,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 @Override
                 public void execute() throws CoreException, IOException {
                     if (Jira.LOG.isLoggable(Level.FINER)) {
-                        Jira.LOG.finer("getAttachmentData: id: " + Attachment.this.getId() + ", issue: " + getKey());
+                        Jira.LOG.log(Level.FINER, "getAttachmentData: id: {0}, issue: {1}", new Object[]{Attachment.this.getId(), getKey()});
                     }
                     try {
                         IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment download task", getKey());
                         if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canGetContent(repository.getTaskRepository(), task)) {
-                            Jira.LOG.warning("getAttachmentData: cannot get content: id: " + Attachment.this.getId() + ", issue: " + getKey());
+                            Jira.LOG.log(Level.WARNING, "getAttachmentData: cannot get content: id: {0}, issue: {1}", new Object[]{Attachment.this.getId(), getKey()});
                             return;
                         }
                         InputStream is = Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().getContent(repository.getTaskRepository(),

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,7 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -100,16 +101,20 @@ final class CreatedModifiedFilesProvider  {
     
     
     private static String getPackagePlusBundle(Project project) {
-        NbModuleProject nbproj = project.getLookup().lookup(NbModuleProject.class);
-        assert nbproj != null : "this template works only with default netbeans modules.";
-        ManifestManager mm = ManifestManager.getInstance(nbproj.getManifest(), false);
-        
-        String bundle = mm.getLocalizingBundle().replace('/', '.');
-        if (bundle.endsWith(".properties")) { // NOI18N
-            bundle = bundle.substring(0, bundle.length() - 11);
+        NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
+        if (mod != null) {
+            FileObject mf = mod.getManifestFile();
+            if (mf != null) {
+                File mff = FileUtil.toFile(mf);
+                if (mff != null) {
+                    String bundle = ManifestManager.getInstance(mff, false).getLocalizingBundle().replace('/', '.');
+                    if (bundle.endsWith(".properties")) { // NOI18N
+                        return bundle.substring(0, bundle.length() - 11);
+                    }
+                }
+            }
         }
-        
-        return bundle;
+        return null;
     }
     
     static String getLibraryDescriptorEntryPath(String libraryName) {
@@ -124,7 +129,10 @@ final class CreatedModifiedFilesProvider  {
         Map<String, String> retval = new HashMap<String, String>();
         Library library = data.getLibrary();
         retval.put("NAME",data.getLibraryName());//NOI18N
-        retval.put("BUNDLE",getPackagePlusBundle(project).replace('/','.'));//NOI18N
+        String packagePlusBundle = getPackagePlusBundle(project);
+        if (packagePlusBundle != null) {
+            retval.put("BUNDLE", packagePlusBundle.replace('/', '.'));//NOI18N
+        }
         retval.put("CLASSPATH",getTokenSubstitution(library.getContent(VOLUME_CLASS), fileSupport, data, "libs/")); // NOI18N
         retval.put("SRC",getTokenSubstitution(library.getContent(VOLUME_SRC), fileSupport, data, "sources/")); // NOI18N
         retval.put("JAVADOC",getTokenSubstitution(library.getContent(VOLUME_JAVADOC), fileSupport, data, "docs/")); // NOI18N
@@ -133,12 +141,19 @@ final class CreatedModifiedFilesProvider  {
     
     private static String getTokenSubstitution(List<URL> urls, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
+        final NbModuleProvider nbmp = data.getModuleInfo();
+        fileSupport.add(new CreatedModifiedFiles.AbstractOperation(data.getProject()) {
+            // XXX abstract this into a standard operation; should also add pom.xml as a modified file when a Maven project
+            public @Override void run() throws IOException {
+                nbmp.getReleaseDirectory();
+            }
+        });
         StringBuilder sb = new StringBuilder();
         for (URL originalURL : urls) {
             String archiveName;
-            archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
+            archiveName = addArchiveToCopy(fileSupport, data, originalURL, nbmp.getReleaseDirectoryPath() + '/' + pathPrefix);
             if (archiveName != null) {
-                String codeNameBase = data.getModuleInfo().getCodeNameBase();
+                String codeNameBase = nbmp.getCodeNameBase();
                 String urlToString = transformURL(codeNameBase, pathPrefix, archiveName);//NOI18N
                 sb.append("\n        <resource>"); // NOI18N
                 sb.append(urlToString);

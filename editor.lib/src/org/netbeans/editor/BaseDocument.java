@@ -48,7 +48,6 @@ import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Hashtable;
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Map;
@@ -69,6 +68,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -93,7 +93,6 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
@@ -108,7 +107,6 @@ import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -132,6 +130,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + ".listener");
+
+    // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
+    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + ".EDT");
 
     /**
      * Mime type of the document. This property can be used for determining
@@ -716,6 +717,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Inserts string into document */
     public @Override void insertString(int offset, String text, AttributeSet a)
     throws BadLocationException {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
+                        offset + ", text=" + org.netbeans.lib.editor.util.CharSequenceUtilities.debugText(text)); // NOI18N
+            }
+        }
+        
         if (text == null || text.length() == 0) {
             return;
         }
@@ -881,6 +889,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Removes portion of a document */
     public @Override void remove(int offset, int len) throws BadLocationException {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
+                        offset + ", len=" + len); // NOI18N
+            }
+        }
+
         if (len > 0) {
             if (offset < 0) {
                 throw new BadLocationException("Wrong remove position " + offset, offset); // NOI18N
@@ -1853,7 +1868,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     public final void breakAtomicLock() {
         if (atomicEdits != null && atomicEdits.size() > 0) {
             atomicEdits.end();
-            atomicEdits.undo();
+            if (atomicEdits.canUndo()) {
+                atomicEdits.undo();
+            } else {
+                LOG.log(Level.WARNING,
+                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
+                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
+                        new CannotUndoException());
+            }
             atomicEdits = null;
         }
     }

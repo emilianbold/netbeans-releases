@@ -123,24 +123,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
                 if (dot != (-1))
                     name = name.substring(0, dot);
                 
-                StringTokenizer tok = new StringTokenizer(name, "_");
-                
-                String language = "";
-                String country  = "";
-                String variant  = "";
-                
-                if (tok.hasMoreTokens()) {
-                    language = tok.nextToken();
-                    
-                    if (tok.hasMoreTokens()) {
-                        country = tok.nextToken();
-                        
-                        if (tok.hasMoreTokens())
-                            variant = tok.nextToken();
-                    }
-                }
-                
-                locales.add(new Locale(language, country, variant));
+                locales.add(Utilities.name2Locale(name));
             }
         }
         return locales.toArray(new Locale[locales.size()]);

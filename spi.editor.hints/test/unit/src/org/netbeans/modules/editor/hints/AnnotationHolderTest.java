@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,6 @@ package org.netbeans.modules.editor.hints;
 
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -59,13 +58,10 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.hints.AnnotationHolder.Attacher;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.LifecycleManager;
@@ -119,7 +115,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 3, 5, 6}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 3, 5, 6}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer2() throws Exception {
@@ -129,7 +125,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer3() throws Exception {
@@ -139,7 +135,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
 
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer4() throws Exception {
@@ -149,7 +145,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers1() throws Exception {
@@ -159,7 +155,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 3, 5, 7}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {1, 3, 5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testComputeHighlightsTwoLayers2() throws Exception {
@@ -169,7 +165,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers3() throws Exception {
@@ -179,7 +175,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {3, 5, /*6*/5, 7}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {3, 5, /*6*/5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testComputeHighlightsTwoLayers4() throws Exception {
@@ -189,7 +185,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5}, new AttributeSet[] {COLORINGS.get(WARNING), COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5}, new AttributeSet[] {AnnotationHolder.getColoring(WARNING, doc), AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers5() throws Exception {
@@ -199,7 +195,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5, /*6*/5, 7}, new AttributeSet[] {COLORINGS.get(WARNING), COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5, /*6*/5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(WARNING, doc), AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testNullSpan() throws Exception {
@@ -223,17 +219,17 @@ public class AnnotationHolderTest extends NbTestCase {
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 0)), errors);
         
-        assertHighlights("", bag, new int[] {47 - 30, 50 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {47 - 30, 50 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
         
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 1)), errors);
         
-        assertHighlights("", bag, new int[] {53 - 30, 60 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {53 - 30, 60 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
         
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 2)), errors);
         
-        assertHighlights("", bag, new int[] {65 - 30, 72 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {65 - 30, 72 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeSeverity() throws Exception {
@@ -278,30 +274,46 @@ public class AnnotationHolderTest extends NbTestCase {
     }
     
     public void testTypeIntoLine() throws Exception {
-        performTypingTest(25, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(25, "a", new int[0]);
     }
     
     public void testTypeOnLineStart() throws Exception {
-        performTypingTest(21, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewline() throws Exception {
-        performTypingTest(21, "a\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\n", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewlines() throws Exception {
-        performTypingTest(21, "a\na\na\na\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\na\na\na\n", new int[0]);
     }
     
     public void testTypeNewline() throws Exception {
-        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0], new AttributeSet[0]);
+        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0]);
+    }
+
+    public void testType190393a() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(5, "x", new int[] {8, 9}, new int[] {9, 10});
+    }
+
+    public void testType190393b() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(4, 1, "", new int[] {8, 9}, new int[] {7, 8});
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
-        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans, highlightValues);
+    private void performTypingTest(int index, String insertWhat, int[] highlightSpans) throws Exception {
+        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans);
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
+    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
+        performTypingTest(index, 0, insertWhat, errorSpan, highlightSpans);
+    }
+
+    private void performTypingTest(int index, int remove, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
         ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, errorSpan[0], errorSpan[1]);
         
         ec.open();
@@ -315,10 +327,11 @@ public class AnnotationHolderTest extends NbTestCase {
         AnnotationHolder.getInstance(file).attacher = new AttacherImpl();
         
         AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1));
-        
+
+        doc.remove(index, remove);
         doc.insertString(index, insertWhat, null);
 
-        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, highlightValues);
+        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, null);
         
         LifecycleManager.getDefault().saveAll();
         
@@ -332,9 +345,13 @@ public class AnnotationHolderTest extends NbTestCase {
         while (hs.moveNext()) {
             assertEquals(message, spans[2 * index], hs.getStartOffset());
             assertEquals(message, spans[2 * index + 1], hs.getEndOffset());
-            assertEquals(message, values[index], hs.getAttributes());
+            if (values != null) {
+                assertEquals(message, values[index], hs.getAttributes());
+            }
             index++;
         }
+
+        assertEquals(2 * index, spans.length);
     }
     
     @Override 

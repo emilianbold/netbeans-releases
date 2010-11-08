@@ -128,7 +128,7 @@ public class TutorialTest extends GeneratorTest {
                 // add the Externalizable interface to their declaration.
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         // Now, there are several way how to create interface
                         // identifier which we wants to add to the class declaration.
@@ -229,7 +229,7 @@ public class TutorialTest extends GeneratorTest {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         
                         // Create the method. This is done again through the
@@ -319,7 +319,7 @@ public class TutorialTest extends GeneratorTest {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         
                         // create the copy of the annotation list:

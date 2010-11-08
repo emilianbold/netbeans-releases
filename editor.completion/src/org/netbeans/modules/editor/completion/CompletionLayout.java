@@ -363,6 +363,7 @@ public final class CompletionLayout {
                 }
             }
             // Set the new data
+            getPreferredSize();
             completionScrollPane.setData(data, title, selectedIndex);
             setAnchorOffset(anchorOffset);
 

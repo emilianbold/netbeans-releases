@@ -186,7 +186,7 @@ public final class RecentViewListAction extends AbstractAction
      * not pointing to anything by returning null
      */
     public static String getStringRep4Unixes() {
-        if (Utilities.isUnix()) {
+        if (Utilities.isUnix() && !Utilities.isMac()) {
             return "Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"; //NOI18N
         }
         return null;

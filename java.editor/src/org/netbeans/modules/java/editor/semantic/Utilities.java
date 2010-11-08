@@ -71,6 +71,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -358,7 +359,7 @@ public class Utilities {
     
     public static int findBodyStart(final Tree cltree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
         Kind kind = cltree.getKind();
-        if (kind != Kind.CLASS && kind != Kind.METHOD)
+        if (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD)
             throw new IllegalArgumentException("Unsupported kind: "+ kind);
         final int[] result = new int[1];
         

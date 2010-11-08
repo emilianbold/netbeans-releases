@@ -751,6 +751,17 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             // JBoss type
             contextRoot = project.getProjectDirectory().getName();
         }
+        
+        /*
+         * Fix for BZ#190164 -  NullPointerException at 
+         * org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v3.GlassFishV3JaxWsStack$1.getServiceUri
+         * 
+         * It could happen at least with wrong sun-web.xml file . So 
+         * this check is really needed. 
+         */
+        if ( contextRoot == null ){
+            contextRoot = "";
+        }
 
         return new ServerContextInfo(hostName, portNumber, contextRoot);
     }

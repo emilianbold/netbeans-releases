@@ -106,7 +106,7 @@ public class LHTestCase extends NbTestCase {
         
 
         if (file.isFile()) {
-            File storeFile = store.getStoreFile(file, ts);
+            File storeFile = store.getStoreFile(file, ts, false);
             if (!storeFile.exists()) {
                 fail("store file doesn't exist for file");
             }
@@ -201,7 +201,7 @@ public class LHTestCase extends NbTestCase {
         }
     }
     
-    static void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
+    static void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
         if(data != null) {
             write(file, data.getBytes());
         } else {
@@ -209,10 +209,13 @@ public class LHTestCase extends NbTestCase {
         }
         store.fileCreate(file, ts);        
     }
-    
-    static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
-        write(file, data.getBytes());        
-        store.fileChange(file, ts);        
+
+    static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
+        // this isn't like a real-life change on a file where the file gets stored before a change.
+        // what we do here is that we write something into the file and then invoke store.filechange(file)
+        // to get the files contents stored...
+        write(file, data.getBytes());
+        store.fileChange(file, true, ts);        
     }
     
     static String read(InputStream is, int length) throws Exception {        
@@ -232,6 +235,10 @@ public class LHTestCase extends NbTestCase {
     }
     
     static void write(File file, byte[] data) throws Exception {
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
         BufferedOutputStream bos  = null;
         try {
             bos = new BufferedOutputStream(new FileOutputStream(file));

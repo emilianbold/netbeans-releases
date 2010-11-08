@@ -1,7 +1,7 @@
 <?php
 
 class Test {
-    /*FORMAT_START*/private /*FORMAT_END*/
+    /*FORMAT_START*/private ^/*FORMAT_END*/
     function __construct() {
 
     }

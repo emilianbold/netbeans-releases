@@ -83,7 +83,7 @@ public class CsmExpressionEvaluator {
     /** Static method to obtain the provider.
      * @return the provider
      */
-    private static synchronized CsmExpressionEvaluatorProvider getProvider() {
+    public static synchronized CsmExpressionEvaluatorProvider getProvider() {
         if (defaultProvider != null) {
             return defaultProvider;
         }

@@ -52,6 +52,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.*;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 }
 
 options {
@@ -145,6 +147,55 @@ options {
         return val;
     }
     
+    private long charToLong(CharSequence str) {
+        long val;
+        int len = str.length();
+        if (len <= 2) {
+            // empty '' or incorrect char
+            val = 0;
+        } else if (len == 3) {
+            val = str.charAt(1);
+        } else if (len == 4 && str.charAt(1) == '\\') {
+            switch (str.charAt(2)) {
+                case 'b':
+                    val = '\b';
+                    break;
+                case 'f':
+                    val = '\f';
+                    break;
+                case 'n':
+                    val = '\n';
+                    break;
+                case 'r':
+                    val = '\r';
+                    break;
+                case 't':
+                    val = '\t';
+                    break;
+//                case '"':
+//                    val = '\"';
+//                    break;
+//                case '\'':
+//                    val = '\'';
+//                    break;
+//                case '\\':
+//                    val = '\\';
+//                    break;
+                default:
+                    // what to do with '\e'; '\v'; '\?'; ?
+                    // for other like '\'' '\\' '\"' use symbol as is
+                    val = str.charAt(2);
+                    break;
+            }
+        } else {
+            // for now just use the first char as well
+            APTUtils.LOG.log(Level.INFO, "use fallback when convert character [%s] to long\n", str); // NOI18N
+            val = str.charAt(1);
+        }
+        APTUtils.LOG.log(Level.FINE, "convert char [%s] to long %d\n", new Object[] { str, val}); // NOI18N
+        return val;
+    }
+
     private long evalID(Token id) {
         // each not expanded ID in expression is '0' by specification
         return 0;
@@ -211,7 +262,7 @@ constant returns [long r] {r=0;}
             | x:HEXADECIMALINT {r=toLong(x.
                 getText());}
             | b:BINARYINT {r=binaryToLong(b.getText());}
-            | c: CHAR_LITERAL { r=c.getText().charAt(1); }
+            | c: CHAR_LITERAL {r=charToLong(c.getText());; }
 //          | f1: FLOATONE {r=Integer.parseInt(f1.getText());}
 //          | f2: FLOATTWO {r=Integer.parseInt(f2.getText());}
 	;

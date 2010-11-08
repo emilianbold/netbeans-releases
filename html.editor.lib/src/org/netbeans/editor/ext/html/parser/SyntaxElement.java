@@ -47,6 +47,7 @@ package org.netbeans.editor.ext.html.parser;
 
 
 import java.util.*;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 
 /**
  * Represents a semantic element of html code.
@@ -68,6 +69,8 @@ public abstract class SyntaxElement {
             new String[]{"comment","declaration","error","text","tag","endtag","entity reference"}; //NOI18N
 
     private CharSequence source;
+
+    private List<ProblemDescription> problems;
     
     private int offset;
     private int length;
@@ -93,6 +96,24 @@ public abstract class SyntaxElement {
     
     public CharSequence text() {
         return source.subSequence(offset(), offset() + length());
+    }
+
+    public List<ProblemDescription> getProblems() {
+        return problems;
+    }
+
+    synchronized void addProblem(ProblemDescription problem) {
+        assert problem != null;
+        if(problems == null) {
+            problems = Collections.singletonList(problem); //save some memory for just one problem per element
+        } else {
+            if(problems.size() == 1) {
+                ProblemDescription existing = problems.get(0);
+                problems = new ArrayList<ProblemDescription>();
+                problems.add(existing);
+            }
+            problems.add(problem);
+        }
     }
 
     @Override

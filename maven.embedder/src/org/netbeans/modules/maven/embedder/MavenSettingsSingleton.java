@@ -46,13 +46,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.apache.maven.profiles.ProfilesRoot;
-import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -114,35 +110,6 @@ public class MavenSettingsSingleton {
             sets = new Settings();
         }
         return sets;
-    }
-
-    /**
-     * @deprecated use the XAM-based model for editing the profiles file,
-     * see org.netbeans.modules.maven.profile package
-     *
-     * @param projectDir
-     * @return
-     */
-    public @Deprecated static ProfilesRoot createProfilesModel(FileObject projectDir) {
-        FileObject profiles = projectDir.getFileObject("profiles.xml");
-        ProfilesRoot prof = null;
-        if (profiles != null) {
-            InputStreamReader read = null;
-            try {
-                read = new InputStreamReader(profiles.getInputStream());
-                prof = new ProfilesXpp3Reader().read(read);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (XmlPullParserException ex) {
-                ex.printStackTrace();
-            } finally {
-                IOUtil.close(read);
-            }
-        } 
-        if (prof == null) {
-            prof = new ProfilesRoot();
-        }
-        return prof;
     }
     
 }

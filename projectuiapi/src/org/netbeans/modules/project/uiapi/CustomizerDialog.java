@@ -47,6 +47,7 @@ package org.netbeans.modules.project.uiapi;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -163,18 +164,32 @@ public class CustomizerDialog {
         int dialogWidth = prefs.getInt(CUSTOMIZER_DIALOG_WIDTH, 0);
         int dialogHeight = prefs.getInt(CUSTOMIZER_DIALOG_HEIGHT, 0);
         if ((dialogWidth != 0) && (dialogHeight != 0)) {
+
+            GraphicsConfiguration gf = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration();
+            Rectangle gbounds = gf.getBounds();
+
             //Check bounds if saved size is bigger than size of current display, dialog should use the same display
             //as main window
-            int maxWidth = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().width;
+            int maxWidth = gbounds.width;
             if (dialogWidth > maxWidth) {
                 dialogWidth = maxWidth * 3 / 4;
             }
-            int maxHeight = WindowManager.getDefault().getMainWindow().getGraphicsConfiguration().getBounds().height;
+            int maxHeight = gbounds.height;
             if (dialogHeight > maxHeight) {
                 dialogHeight = maxHeight * 3 / 4;
             }
 
+            int minx = gbounds.x;
+            int maxx = minx + gbounds.width;
+            int miny = gbounds.y;
+            int maxy = miny + gbounds.height;
+
             dialog.setBounds(dialogX, dialogY, dialogWidth, dialogHeight);
+
+            // #187608: make sure the dialog remains in some visible area of the screen
+            if (dialogX < minx || dialogX > maxx || dialogY < miny || dialogY > maxy) {
+                dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+            }
         }
 
         dialog.addWindowListener(new WindowAdapter() {

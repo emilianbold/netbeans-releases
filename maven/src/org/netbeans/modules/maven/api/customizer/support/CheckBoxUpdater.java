@@ -74,7 +74,7 @@ public abstract class CheckBoxUpdater implements ItemListener, AncestorListener 
             inherited = false;
             component.setFont(component.getFont().deriveFont(Font.BOLD));
 
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
         } else {
             component.setToolTipText(NbBundle.getMessage(CheckBoxUpdater.class, "MSG_Value_Inherited")); //NOI18N
             inherited = true;
@@ -103,7 +103,7 @@ public abstract class CheckBoxUpdater implements ItemListener, AncestorListener 
     private void setCheckBoxValue(Boolean value, boolean defValue, JCheckBox component) {
         if (value != null) {
             component.setSelected(value.booleanValue());
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
             inherited = false;
             component.setFont(component.getFont().deriveFont(Font.BOLD));
         } else {

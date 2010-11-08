@@ -48,7 +48,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.io.File;
 import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -265,6 +266,63 @@ public class Dwarf {
         return result;
     }
 
+    /**
+     * If project was relocated method tries to find source path of file against binary file.
+     * Method return best name that consist from binary prefix + common path + source suffix.
+     * Example.
+     * Binary path /net/server/home/user/projects/application/dist/Debug/GNU-MacOSX/main
+     * Source path /home/user/projects/application/main.cc
+     * method returns /net/server/ + home/user/projects/application/ + main.cc
+     * @param path
+     * @return
+     */
+    public static String fileFinder(String binaryPath, String path){
+        binaryPath = binaryPath.replace('\\', '/'); //NOI18N
+        if (binaryPath.startsWith("/")) { //NOI18N
+            binaryPath = binaryPath.substring(1);
+        }
+        path = path.replace('\\', '/'); //NOI18N
+        if (path.startsWith("/")) { //NOI18N
+            path = path.substring(1);
+        }
+        String[] splitReal = binaryPath.split("/"); //NOI18N
+        String[] splitVirtual = path.split("/"); //NOI18N
+        for(int i = 0; i < splitReal.length; i++) {
+            int startReal = -1;
+            int startVirtual = -1;
+            int len = -1;
+            for(int j = 0; j < splitVirtual.length; j++) {
+                if (splitReal[i].equals(splitVirtual[j])) {
+                    startReal = i;
+                    startVirtual = j;
+                    len = 1;
+                    while(true) {
+                        if (startReal+len < splitReal.length && startVirtual+len < splitVirtual.length) {
+                            if (splitReal[startReal+len].equals(splitVirtual[startVirtual+len])) {
+                                len++;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    if (len > 1) {
+                        StringBuilder buf = new StringBuilder();
+                        for(int k = 0; k < startReal+len; k++) {
+                            buf.append('/').append(splitReal[k]); //NOI18N
+                        }
+                        for(int k = startVirtual+len; k < splitVirtual.length; k++) {
+                            buf.append('/').append(splitVirtual[k]); //NOI18N
+                        }
+                        return buf.toString();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private class MacArchiveIterator implements Iterator<CompilationUnit>{
         private List<String> objectFiles;
         private int archiveIndex = 0;
@@ -312,6 +370,12 @@ public class Dwarf {
                 }
                 if (archiveIndex < objectFiles.size()) {
                     String member = objectFiles.get(archiveIndex);
+                    if(!new File(member).exists()) {
+                        String fileFinder = fileFinder(Dwarf.this.fileName, member);
+                        if (fileFinder != null && new File(fileFinder).exists()) {
+                            member = fileFinder;
+                        }
+                    }
                     archiveIndex++;
                     currentDwarf = new Dwarf(member);
                     toDispose.add(currentDwarf.magic);
@@ -319,6 +383,7 @@ public class Dwarf {
                     if (!currentList.hasNext()) {
                         continue;
                     }
+                    break;
                 } else {
                     currentList = null;
                     return;
@@ -374,17 +439,25 @@ public class Dwarf {
                     reader.seek(shiftIvArchive);
                     byte[] bytes = new byte[8];
                     reader.readFully(bytes);
-                    if (FileMagic.isElfMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
-                    } else if (FileMagic.isCoffMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
-                    } else if (FileMagic.isMachoMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                    try {
+                        if (FileMagic.isElfMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
+                        } else if (FileMagic.isCoffMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
+                        } else if (FileMagic.isMachoMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                        }
+                    } catch (Exception e) {
+                        if (TraceDwarf.TRACED) {
+                            e.printStackTrace();
+                        }
+                        continue;
                     }
                     currentIterator = iteratorFileCompilationUnits();
                     if (!currentIterator.hasNext()) {
                         continue;
                     }
+                    break;
                 } else {
                     currentIterator = null;
                     return;

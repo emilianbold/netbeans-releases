@@ -110,6 +110,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -511,7 +512,7 @@ public class SourceUtils {
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
-            return cim.readLock(new ClassIndexManager.ExceptionAction<FileObject>() {
+            return IndexManager.readAccess(new IndexManager.Action<FileObject>() {
 
                 public FileObject run() throws IOException, InterruptedException {
                     for (FileObject fo : fos) {

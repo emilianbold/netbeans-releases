@@ -51,6 +51,7 @@ import java.io.*;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
 
 
 import javax.swing.border.LineBorder;
@@ -222,7 +223,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
     /**
     * @param args the command line arguments
     */
-    public static void main (String args[]) {
+    public static void main (String... args) {
         if (args.length > 0) {
             cli (args);
         }
@@ -471,7 +472,9 @@ public class UpdaterFrame extends javax.swing.JPanel {
             if (args[i] == null) {
                 continue;
             }
-            if (isOption (args[i], "nosplash")) { // NOI18N
+            if (isOption (args[i], "noexit")) { // NOI18N
+                UpdaterFrame.fromIDE = true;
+            } else if (isOption (args[i], "nosplash")) { // NOI18N
                 UpdaterFrame.noSplash = true;
             } else if (isOption (args[i], "locale")) { // NOI18N
                 args[i] = null;
@@ -504,7 +507,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
                 try {
                     Localization.setBranding(branding);
                 } catch (IllegalArgumentException iae) {
-                    iae.printStackTrace();
+                    XMLUtil.LOG.log(Level.WARNING, "Cannot change branding", iae);
                     return 1;
                 }
             }

@@ -45,13 +45,20 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,8 +66,10 @@ import org.openide.filesystems.FileObject;
  */
 public class RemotePlainFile extends RemoteFileObjectBase {
 
+    private FileLock lock;
+
     public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            FileObject parent, String remotePath, File cache) {
+            RemoteDirectory parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);
     }
 
@@ -113,5 +122,76 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         FileNotFoundException ex = new FileNotFoundException(cache.getAbsolutePath());
         ex.initCause(cause);
         throw ex;
+    }
+
+    @Override
+    public RemoteDirectory getParent() {
+        return (RemoteDirectory) super.getParent();
+    }        
+
+    @Override
+    public FileLock lock() throws IOException {
+        synchronized (this) {
+            if (lock == null) {
+                lock = new FileLock();
+            }
+        }
+        return lock;
+    }
+
+//    @Override
+//    public boolean isLocked() {
+//        return super.isLocked();
+//    }
+
+    @Override
+    public boolean canWrite() {
+        try {
+            return getParent().canWrite(getNameExt());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+    }
+
+    @Override
+    public OutputStream getOutputStream(FileLock lock) throws IOException {
+        if (!isValid()) {
+            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+        }
+        if (isFolder()) {
+            throw new IOException(getPath());
+        }
+        return new DelegateOutputStream();
+    }
+
+    private class DelegateOutputStream extends OutputStream {
+
+        FileOutputStream delegate;
+
+        public DelegateOutputStream() throws IOException {
+            delegate = new FileOutputStream(cache);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            delegate.write(b, off, len);
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            delegate.write(b);
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
+            WritingQueue.getInstance(execEnv).add(cache, remotePath, -1, null);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            delegate.flush();
+        }
     }
 }

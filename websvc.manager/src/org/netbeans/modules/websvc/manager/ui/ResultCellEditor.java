@@ -55,14 +55,12 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JTextField;
 
-import org.netbeans.modules.websvc.manager.swing.outline.NodeRowModel;
-import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
-
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
 import java.awt.Dialog;
+import org.netbeans.swing.outline.OutlineModel;
 
 /**
  *
@@ -91,8 +89,9 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
 
     public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
         saveValue = value;
-        NodeRowModel rowModel = ((OutlineModel)table.getModel()).getRowNodeModel();
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)rowModel.getNodeForRow(row);
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)table.getModel().
+                getValueAt(row, 0);
+        
         /**
          * Now depending on the type, create a component to edit/display the type.
          */

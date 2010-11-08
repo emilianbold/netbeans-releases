@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.makefile.MakefileElement;
 import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
 import org.netbeans.modules.cnd.api.makefile.MakefileRule;
 import org.netbeans.modules.cnd.api.makefile.MakefileSupport;
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;

@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -145,7 +146,7 @@ public class Installer extends ModuleInstall {
                 try {
                     assert importFrom != null && importFrom.exists () : importFrom + " exists.";
                     ClusterUpdateProvider.attachCluster (importFrom);
-                    Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits ();
+                    Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                     UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
                     PluginImporter importer = new PluginImporter (units);
                     LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());

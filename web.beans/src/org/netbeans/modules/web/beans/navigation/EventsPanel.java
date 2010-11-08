@@ -61,11 +61,11 @@ public class EventsPanel extends InjectablesPanel {
 
     private static final long serialVersionUID = -965978443984786734L;
 
-    public EventsPanel( ElementHandle<? extends Element> method, 
+    public EventsPanel( Object[] subject, 
             MetadataModel<WebBeansModel> metaModel , WebBeansModel model , 
             EventsModel uiModel )
     {
-        super(method, metaModel, model, uiModel);
+        super(subject, metaModel, model, uiModel);
         initLabels();
     }
     
@@ -73,11 +73,9 @@ public class EventsPanel extends InjectablesPanel {
      * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getSubjectElement(org.netbeans.api.java.source.ElementHandle, org.netbeans.modules.web.beans.api.model.WebBeansModel)
      */
     @Override
-    protected Element getSubjectElement(
-            ElementHandle<? extends Element> context, WebBeansModel model )
+    protected Element getSubjectElement( Element context, WebBeansModel model )
     {
-        Element resolved = context.resolve( model.getCompilationController());
-        ExecutableElement method = (ExecutableElement)resolved;
+        ExecutableElement method = (ExecutableElement)context;
         return model.getObserverParameter( method );
     }
 

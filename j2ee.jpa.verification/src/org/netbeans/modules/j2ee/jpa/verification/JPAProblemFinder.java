@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
@@ -138,7 +139,7 @@ public abstract class JPAProblemFinder {
                             break;
                         }
                         
-                        if (tree.getKind() == Tree.Kind.CLASS){
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
                             
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);

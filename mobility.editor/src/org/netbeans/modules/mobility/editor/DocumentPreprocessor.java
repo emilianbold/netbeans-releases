@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -86,6 +84,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -107,8 +106,15 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
 
     /** Timer which countdowns the auto-reparsing of configuration blocks. */
-    Timer timer = new Timer();
-    TimerTask timerTask = null;
+    final RequestProcessor.Task timerTask = RequestProcessor.getDefault().create(new Runnable() {
+        @Override
+        public void run() {
+            JTextComponent component = EditorRegistry.focusedComponent();
+            if (component != null) {
+                DocumentPreprocessor.updateBlockChain((NbEditorDocument) component.getDocument());
+            }
+        }
+    });
 
     public DocumentPreprocessor(){
 
@@ -167,21 +173,7 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
     /** Restart the timer which starts the parser after the specified delay.*/
     void restartTimer() {
-        if (timerTask!=null) {  // initialize timer
-            timerTask.cancel();
-        }
-
-        timerTask = new TimerTask(){
-            @Override
-            public void run() {
-                JTextComponent component = EditorRegistry.focusedComponent();
-                if (component != null) {
-                    DocumentPreprocessor.updateBlockChain((NbEditorDocument) component.getDocument());
-                }
-            }
-        };
-
-       timer.schedule(timerTask, 200);
+       timerTask.schedule(200);
     }
 
     final public static void updateBlockChain(final NbEditorDocument doc) {

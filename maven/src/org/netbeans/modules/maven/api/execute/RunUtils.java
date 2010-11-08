@@ -96,7 +96,12 @@ public final class RunUtils {
      * @return true if compile on save is allowed for running the application.
      */
     public static boolean hasApplicationCompileOnSaveEnabled(Project prj) {
-        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        AuxiliaryProperties auxprops = prj.getLookup().lookup(AuxiliaryProperties.class);
+        if (auxprops == null) {
+            // Cannot use ProjectUtils.getPreferences due to compatibility.
+            return false;
+        }
+        String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
         return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
     }
 
@@ -119,7 +124,12 @@ public final class RunUtils {
      * @return true if compile on save is allowed for running tests.
      */
     public static boolean hasTestCompileOnSaveEnabled(Project prj) {
-        String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+        AuxiliaryProperties auxprops = prj.getLookup().lookup(AuxiliaryProperties.class);
+        if (auxprops == null) {
+            // Cannot use ProjectUtils.getPreferences due to compatibility.
+            return true;
+        }
+        String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
         //COS for tests is the default value.
         return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
     }

@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
@@ -703,7 +704,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                         CompilationUnitTree cu = wc.getCompilationUnit();
                         ClassTree clazz = null;
                         for (Tree typeDecl : cu.getTypeDecls()) {
-                            if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                                 ClassTree candidate = (ClassTree) typeDecl;
                                 if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                     clazz = candidate;
@@ -847,7 +848,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     CompilationUnitTree cu = wc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                 clazz = candidate;

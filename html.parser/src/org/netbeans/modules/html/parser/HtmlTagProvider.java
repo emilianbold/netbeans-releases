@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
@@ -55,6 +57,7 @@ import org.netbeans.modules.html.parser.model.Attribute;
 import org.netbeans.modules.html.parser.model.ContentType;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.ElementDescriptorRules;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -105,18 +108,7 @@ public class HtmlTagProvider {
         }
 
         private HtmlTagType findType() {
-            if (isPureHtmlTag()) {
-                //descriptor is available only for html tags
-                return HtmlTagType.HTML;
-            } else {
-                if (ElementDescriptorRules.MATHML_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.MATHML;
-                } else if (ElementDescriptorRules.SVG_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.SVG;
-                } else {
-                    return HtmlTagType.UNKNOWN;
-                }
-            }
+            return isPureHtmlTag() ? descriptor.getTagType() : HtmlTagType.UNKNOWN;
         }
 
         private Map<String, HtmlTagAttribute> wrap(Collection<Attribute> attrNames) {
@@ -163,7 +155,7 @@ public class HtmlTagProvider {
 
         @Override
         public String toString() {
-            return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());
+            return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());//NOI18N
         }
 
         public Collection<HtmlTagAttribute> getAttributes() {
@@ -208,7 +200,26 @@ public class HtmlTagProvider {
             }
             return children;
         }
+
+        public HelpItem getHelp() {
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>");
+            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
+            header.append(" '");//NOI18N
+            header.append(descriptor.getName());
+            header.append("'</h2>");//NOI18N
+
+            return isPureHtmlTag() && descriptor.getHelpLink() != null
+                    ? new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(descriptor.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString())
+                    : null;
+
+        }
+
     }
+
 
     private static class HtmlTagAttributeAdapter implements HtmlTagAttribute {
 
@@ -232,6 +243,20 @@ public class HtmlTagProvider {
 
         public Collection<String> getPossibleValues() {
             return Collections.emptyList();
+        }
+
+        public HelpItem getHelp() {
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>");//NOI18N
+            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
+            header.append(" '");//NOI18N
+            header.append(attr.getName());
+            header.append("'</h2>");//NOI18N
+
+            return new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(attr.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString());
         }
     }
 }

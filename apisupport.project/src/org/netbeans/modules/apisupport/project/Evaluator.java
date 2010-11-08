@@ -418,6 +418,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         defaults.put("src.dir", "src"); // NOI18N
         defaults.put("build.dir", "build"); // NOI18N
         defaults.put("build.classes.dir", "${build.dir}/classes"); // NOI18N
+        defaults.put("release.dir", "release"); // NOI18N
         defaults.put(SingleModuleProperties.JAVAC_SOURCE, "1.4"); // NOI18N
         if (type == NbModuleProvider.NETBEANS_ORG) {
             defaults.put("test.user.dir", "${nb_all}/nbbuild/testuserdir"); // NOI18N

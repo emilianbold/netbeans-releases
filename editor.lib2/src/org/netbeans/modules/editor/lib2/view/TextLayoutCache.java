@@ -44,16 +44,14 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.font.TextLayout;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 
 /**
- * Cache for text layouts of most used lines (paragraph views) from all text components.
- * <br/>
- * The cache is small
+ * Cache containing paragraph-view references of lines where text layouts
+ * are actively held.
  * 
  * @author Miloslav Metelka
  */
@@ -65,8 +63,10 @@ public final class TextLayoutCache {
 
     /**
      * Cache text layouts for the following count of paragraph views.
+     * These should be both visible lines and possibly lines where model-to-view
+     * translations are being done.
      */
-    private static final int MAX_SIZE = 100;
+    private static final int MAX_SIZE = 200;
 
     private final Map<ParagraphView, Entry> paragraph2entry = new HashMap<ParagraphView, Entry>();
 
@@ -84,11 +84,23 @@ public final class TextLayoutCache {
     }
 
     /**
-     * Clear the whole cache in case of changes of e.g. font-render-context etc.
+     * Clear the whole cache in case of global changes (e.g. font-render-context etc.)
+     * when all children are released (no release of individual entries performed). 
+     *
      */
     synchronized void clear() {
         paragraph2entry.clear();
         head = tail = null;
+    }
+    
+    synchronized int size() {
+        return paragraph2entry.size();
+    }
+
+    synchronized boolean contains(ParagraphView paragraphView) {
+        assert (paragraphView != null);
+        Entry entry = paragraph2entry.get(paragraphView);
+        return (entry != null);
     }
 
     /**
@@ -98,8 +110,8 @@ public final class TextLayoutCache {
      * @param childView non-null view which is a child of paragraph view.
      * @return text layout or null if it could not be created.
      */
-    synchronized TextLayout get(ParagraphView paragraphView, TextLayoutView childView) {
-        assert (paragraphView != null && childView != null);
+    synchronized void activate(ParagraphView paragraphView) {
+        assert (paragraphView != null);
         Entry entry = paragraph2entry.get(paragraphView);
         if (entry == null) {
             entry = new Entry(paragraphView);
@@ -115,55 +127,12 @@ public final class TextLayoutCache {
             removeChainEntry(entry);
             addChainEntryFirst(entry);
         }
-        TextLayout textLayout = entry.view2layout.get(childView);
-        if (textLayout == null) {
-            textLayout = childView.createTextLayout();
-            if (textLayout != null) {
-                entry.view2layout.put(childView, textLayout);
-            } else {
-                entry.view2layout.remove(childView);
-            }
-        }
-        return textLayout;
     }
 
-    /**
-     * Allow to either clear or refresh already cached text layout explicitly for the particular view
-     * in case of modification/removal of the view. If the given paragraphView is currently not cached
-     * the method does nothing.
-     *
-     * @param paragraphView non-null paragraph view.
-     * @param childView non-null child view for which the layout is being modified.
-     * @param textLayout layout or null to modify/clear the cached layout.
-     */
-    synchronized void put(ParagraphView paragraphView, TextLayoutView childView, TextLayout textLayout) {
-        Entry entry = paragraph2entry.get(paragraphView);
-        if (entry == null) {
-            return;
-        }
-        if (textLayout != null) {
-            entry.view2layout.put(childView, textLayout);
-        } else {
-            entry.view2layout.remove(childView);
-        }
-    }
-
-    synchronized void removeParagraph(ParagraphView paragraphView) {
+    synchronized void remove(ParagraphView paragraphView) {
         Entry entry = paragraph2entry.remove(paragraphView);
         if (entry != null) {
             removeChainEntry(entry);
-        }
-    }
-
-    synchronized void remove(ParagraphView paragraphView, int childIndex, int childCount) {
-        Entry entry = paragraph2entry.get(paragraphView);
-        if (entry != null) {
-            for (int i = 0; i < childCount; i++) {
-                EditorView childView = paragraphView.getEditorView(childIndex + i);
-                if (childView instanceof TextLayoutView) {
-                    entry.view2layout.remove((TextLayoutView)childView);
-                }
-            }
         }
     }
 
@@ -194,13 +163,12 @@ public final class TextLayoutCache {
             tail = entry.previous;
         }
         entry.previous = entry.next = null;
+        entry.release();
     }
 
     private static final class Entry {
 
         final ParagraphView paragraphView;
-
-        final Map<TextLayoutView, TextLayout> view2layout;
 
         Entry previous;
 
@@ -210,7 +178,10 @@ public final class TextLayoutCache {
             this.paragraphView = paragraphView;
             int viewCount = paragraphView.getViewCount();
             assert (viewCount > 0);
-            view2layout = new HashMap<TextLayoutView, TextLayout>((int)(viewCount / 0.6 + 1), 0.6f);
+        }
+
+        void release() {
+            paragraphView.releaseTextLayouts();
         }
 
     }

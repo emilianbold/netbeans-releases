@@ -122,7 +122,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
         }
         List<Pattern> toRet = new ArrayList<Pattern>();
         String[] params = PluginPropertyUtils.getPluginPropertyList(project, 
-                "org.codehaus.mojo", "nbm-maven-plugin", //NOI18N
+                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, //NOI18N
                 "publicPackages", "publicPackage", "manifest"); //NOI18N
         if (params != null) {
             toRet = preparePublicPackagesPatterns(params);

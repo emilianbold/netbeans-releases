@@ -238,19 +238,21 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
     }
     
-    private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider<?> ppcp) {
-        ProjectConfigurationProvider<?> lpcp = pcp;
-        if (ppcp != null) {
-            lpcp = ppcp;
-        } 
-        LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
-        if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
-            try {
-                setActiveConfiguration(lpcp, cfg);
-            } catch (IOException x) {
-                LOGGER.log(Level.WARNING, null, x);
+    private synchronized void activeConfigurationSelected(final ProjectConfiguration cfg, final ProjectConfigurationProvider<?> ppcp) {
+        final ProjectConfigurationProvider<?> lpcp = (ppcp != null) ? ppcp : pcp;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
+                if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
+                    try {
+                        setActiveConfiguration(lpcp, cfg);
+                    } catch (IOException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
+                }
             }
-        }
+        });
     }
     
     public @Override HelpCtx getHelpCtx() {

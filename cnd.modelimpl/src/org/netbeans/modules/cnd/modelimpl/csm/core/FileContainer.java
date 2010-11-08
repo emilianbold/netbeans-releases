@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Parameters;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -221,6 +222,20 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
+    public void markAsParsingPreprocStates(File file) {
+        FileEntry f = getFileEntry(file, false, false);
+        if (f == null) {
+            return;
+        }
+        synchronized (f) {
+            f.markAsParsingPreprocStates();
+        }
+        if (TRACE_PP_STATE_OUT) {
+            CharSequence path = getFileKey(file, false);
+            System.err.println("\nmarkAsParsingPreprocStates for file" + path + "\n");
+        }
+    }
+    
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
         FileEntry f = getFileEntry(file, false, false);
         if (f == null){
@@ -302,6 +317,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
+        Parameters.notNull("null file", file); //NOI18N
         CndUtils.assertNormalized(file);
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
@@ -825,6 +841,37 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
         
+        @SuppressWarnings("unchecked")
+        public synchronized void markAsParsingPreprocStates() {
+            incrementModCount();
+            if (data != null) {
+                if (data instanceof PreprocessorStatePair) {
+                    data = createMarkedAsParsingState((PreprocessorStatePair) data);
+                } else {
+                    Collection<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>();
+                    for (PreprocessorStatePair pair : (Collection<PreprocessorStatePair>) data) {
+                        newData.add(createMarkedAsParsingState(pair));
+                    }
+                    data = newData;
+                }
+            }
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("invalidateStates:\n" + toString()).printStackTrace(System.err); //NOI18N
+            }
+        }
+        
+        private static PreprocessorStatePair createMarkedAsParsingState(PreprocessorStatePair pair) {
+            if (pair == null) {
+                return pair;
+            } else {
+                if (pair.state == null) {
+                    return pair;
+                } else {
+                    return new PreprocessorStatePair(pair.state, FilePreprocessorConditionState.PARSING);
+                }
+            }
+        }
+        
         private static PreprocessorStatePair createInvalidState(PreprocessorStatePair pair) {
             if (pair == null) {
                 return pair;
@@ -832,7 +879,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 if (pair.state == null) {
                     return pair;
                 } else {
-                    return new PreprocessorStatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), FilePreprocessorConditionState.PARSING);
+                    return new PreprocessorStatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), pair.pcState);
                 }
             }
         }

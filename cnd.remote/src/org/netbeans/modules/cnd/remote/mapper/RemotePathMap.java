@@ -47,8 +47,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -72,10 +74,22 @@ import org.openide.util.Utilities;
  */
 public abstract class RemotePathMap extends PathMap {
 
-    private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> pmtable =
+    private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> fixedPathMaps =
             new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
 
+    private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> customPathMaps =
+            new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
+
+
     public static RemotePathMap getPathMap(ExecutionEnvironment env) {
+        return getPathMap(env, ServerList.get(env).getSyncFactory().isPathMappingCustomizable());
+    }
+
+    public static RemotePathMap getPathMap(ExecutionEnvironment env, boolean customizable) {
+
+        Map<ExecutionEnvironment, Map<String, RemotePathMap>> pmtable =
+                customizable ? customPathMaps : fixedPathMaps;
+
         String syncID = getEnvSyncID(env);
         Map<String, RemotePathMap> pathmaps = pmtable.get(env);
         RemotePathMap pathmap = null;
@@ -86,8 +100,7 @@ public abstract class RemotePathMap extends PathMap {
             }
         }
         pathmap = pathmaps.get(syncID);
-        if (pathmap == null) {
-            boolean customizable = ServerList.get(env).getSyncFactory().isPathMappingCustomizable();
+        if (pathmap == null) {            
             synchronized (pmtable) {
                 pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);
                 pathmap.init();
@@ -96,12 +109,6 @@ public abstract class RemotePathMap extends PathMap {
         }
         return pathmap;
     }
-
-    public static boolean isReady(ExecutionEnvironment execEnv) {
-        return pmtable.get(execEnv) != null;
-    }
-
-    //
 
     protected final HashMap<String, String> map = new HashMap<String, String>();
     protected final ExecutionEnvironment execEnv;
@@ -120,7 +127,7 @@ public abstract class RemotePathMap extends PathMap {
                 String pmap = System.getProperty("cnd.remote.pmap");
                 if (pmap != null) {
                     String line;
-                    File file = new File(pmap);
+                    File file = CndFileUtils.createLocalFile(pmap);
 
                     if (file.exists() && file.canRead()) {
                         try {
@@ -162,6 +169,7 @@ public abstract class RemotePathMap extends PathMap {
     public abstract void init();
     
     // PathMap
+    @Override
     public String getRemotePath(String lpath, boolean useDefault) {
         CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
@@ -188,6 +196,7 @@ public abstract class RemotePathMap extends PathMap {
         }
     }
 
+    @Override
     public String getLocalPath(String rpath, boolean useDefault) {
         CndUtils.assertNotNull(rpath, "remote path should not be null"); // nOI18N
         if (rpath == null) {
@@ -208,15 +217,36 @@ public abstract class RemotePathMap extends PathMap {
         return null;
     }
 
-    /**
-     * See if a path is local or remote. The main use of this call is to verify a project's
-     * Development Host setting. If the project's sources are local then you should not be
-     * able to set a remote development host.
-     * 
-     * @param lpath The local path to check
-     * @return true if path is remote, false otherwise
-     */
-    public boolean checkRemotePath(String lpath, boolean fixMissingPaths) {
+    @Override
+    public boolean checkRemotePaths(File[] localPaths, boolean fixMissingPaths) {
+        List<String> invalidLocalPaths = new ArrayList<String>();
+        for (File file : localPaths) {
+            String lPath = file.getAbsolutePath();
+            if (!checkRemotePath(lPath)) {
+                invalidLocalPaths.add(lPath);
+            }
+        }
+        if (invalidLocalPaths.isEmpty()) {
+            return true;
+        } else if (fixMissingPaths) {
+            if (EditPathMapDialog.showMe(execEnv, invalidLocalPaths)) {
+                // EditPathMapDialog doesn't perform check
+                for (String lPath : invalidLocalPaths) {
+                    if (!checkRemotePath(lPath)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    private boolean checkRemotePath(String lpath) {
         CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
             return false;
@@ -237,7 +267,7 @@ public abstract class RemotePathMap extends PathMap {
 
         try {
             // check if local path is mirrored by remote path
-            if (validateMapping(execEnv, lpath, new File(lpath))) {
+            if (validateMapping(execEnv, lpath, CndFileUtils.createLocalFile(lpath))) {
                 synchronized (map) {
                     map.put(lpath, lpath);
                 }
@@ -246,13 +276,7 @@ public abstract class RemotePathMap extends PathMap {
         } catch (InterruptedException ex) {
             return false;
         }
-
-        if (fixMissingPaths) {
-            return EditPathMapDialog.showMe(execEnv, lpath) && checkRemotePath(lpath, false);
-        } else {
-            return false;
-        }
-
+        return false;
     }
 
     public void addMapping(String localParent, String remoteParent) {

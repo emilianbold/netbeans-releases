@@ -44,6 +44,8 @@
 
 package org.netbeans.spi.editor.fold;
 
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  * This factory interface allows to produce {@link FoldManager}
  * instance for the given fold.
@@ -73,6 +75,7 @@ package org.netbeans.spi.editor.fold;
  * @version 1.00
  */
 
+@MimeLocation(subfolderName="FoldManager")
 public interface FoldManagerFactory {
     
     /**

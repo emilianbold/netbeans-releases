@@ -340,7 +340,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 
                 <file name="Language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.api.script.MakefileTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
@@ -403,7 +403,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.script.lexer.ShTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.api.script.ShTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
@@ -427,7 +427,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.script.lexer.BatTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.api.script.BatTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 

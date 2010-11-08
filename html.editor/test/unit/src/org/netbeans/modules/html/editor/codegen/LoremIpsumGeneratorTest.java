@@ -66,106 +66,37 @@ public class LoremIpsumGeneratorTest extends TestBase {
         paragraphs.add("two");
     }
 
-    public void testMinimalDoc() throws Exception {
+    public void testInsertAtNonEmptyLine() throws Exception {
         String originalText = "<html><head></head><body>text</body></html>";
         doc.insertString(0, originalText, null);
         int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "    ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n<p>\n    one\n</p>\n"
-                + "<p>\n    two\n</p>\n"
-                + "text</body></html>", new String(doc.getChars(0, doc.getLength())));
+        LoremIpsumGenerator.insertLoremIpsumText(doc, paragraphs, "<p>", insertPosition);
+        assertEquals("<html><head></head><body>\n"
+                + "        <p>\n"
+                + "            one\n"
+                + "        </p>\n"
+                + "        <p>\n"
+                + "            two\n"
+                + "        </p>\n"
+                + "        text</body></html>", new String(doc.getChars(0, doc.getLength())));
     }
-
-    public void testMinimalDoc_DifferentTag() throws Exception {
-        String originalText = "<html><head></head><body>text</body></html>";
+    
+    public void testInsertAtEmptyLine() throws Exception {
+        String originalText = "<html><head></head><body>\ntext\n</body></html>";
         doc.insertString(0, originalText, null);
         int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<div>", "    ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n<div>\n    one\n</div>\n"
-                + "<div>\n    two\n</div>\n"
-                + "text</body></html>", new String(doc.getChars(0, doc.getLength())));
+        LoremIpsumGenerator.insertLoremIpsumText(doc, paragraphs, "<p>", insertPosition);
+        assertEquals("<html><head></head><body>\n"
+                + "\n"
+                + "        <p>\n"
+                + "            one\n"
+                + "        </p>\n"
+                + "        <p>\n"
+                + "            two\n"
+                + "        </p>\n"
+                + "        text\n"
+                + "</body></html>", new String(doc.getChars(0, doc.getLength())));
     }
 
-    public void testInsertBeforeNewline() throws Exception {
-        String originalText = "<html><head></head>\n    <body>\ntext</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text") - 1;
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "    ", insertPosition);
-        assertEquals("<html><head></head>\n    <body>"
-                + "\n        <p>\n            one\n        </p>"
-                + "\n        <p>\n            two\n        </p>"
-                + "\ntext</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertWithIndent() throws Exception {
-        String originalText = "<html><head></head><body>\n    <p>text</p>\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n    <p>"
-                + "\n      <p>\n        one\n      </p>"
-                + "\n      <p>\n        two\n      </p>"
-                + "\ntext</p>\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertWithIndentAndSelfClosingTag() throws Exception {
-        String originalText = "<html><head></head><body>\n    <br/>text\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n    <br/>"
-                + "\n    <p>\n      one\n    </p>"
-                + "\n    <p>\n      two\n    </p>"
-                + "\ntext\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertWithIndentAndClosingTag() throws Exception {
-        String originalText = "<html><head></head><body><div>\n    </div>text\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body><div>"
-                + "\n    </div>"
-                + "\n  <p>\n    one\n  </p>"
-                + "\n  <p>\n    two\n  </p>"
-                + "\ntext\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertWithIndentAndClosingTagAndMixedIdentText() throws Exception {
-        String originalText = "<html><head></head><body><div>\n \t  </div>text\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body><div>"
-                + "\n \t  </div>"
-                + "\n \t  <p>\n \t    one\n \t  </p>"
-                + "\n \t  <p>\n \t    two\n \t  </p>"
-                + "\ntext\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertDirectlyAfterIndent() throws Exception {
-        String originalText = "<html><head></head><body>\n    text\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text");
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n    <p>\n      one\n    </p>"
-                + "\n    <p>\n      two\n    </p>"
-                + "\n    text\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
-
-    public void testInsertInsideIndent() throws Exception {
-        String originalText = "<html><head></head><body>\n    text\n</body></html>";
-        doc.insertString(0, originalText, null);
-        int insertPosition = originalText.indexOf("text") - 2;
-        LoremIpsumGenerator.insertLoremIpsum(doc, paragraphs, "<p>", "  ", insertPosition);
-        assertEquals("<html><head></head><body>"
-                + "\n    <p>\n      one\n    </p>"
-                + "\n    <p>\n      two\n    </p>"
-                + "\n    text\n</body></html>", new String(doc.getChars(0, doc.getLength())));
-    }
+    
 }

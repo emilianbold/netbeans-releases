@@ -28,11 +28,14 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -71,13 +74,67 @@ public class SwitchTest extends GeneratorTest {
                 TreePath node = copy.getTreeUtilities().pathFor(index);
                 assertTrue(node.getLeaf().getKind() == Kind.CASE);
                 CaseTree original = (CaseTree) node.getLeaf();
-                System.err.println("ORIGINAL " + original);
                 List<StatementTree> st = new ArrayList<StatementTree>();
                 st.addAll(original.getStatements());
                 st.add(make.Break(null));
                 CaseTree modified = make.Case(original.getExpression(), st);
-                System.err.println("MODIFIED " + modified);
                 copy.rewrite(original, modified);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddCase1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String test = "public class Test {\n" +
+                      "    void m(int p) {\n" +
+                      "        switch (p) {\n" +
+                      "            case 0:\n" +
+                      "                System.err.println(1);\n" +
+                      "                break;\n" +
+                      "            ca|se 2:\n" +
+                      "                System.err.println(2);\n" +
+                      "                break;\n" +
+                      "        }\n" +
+                      "    }\n" +
+                      "}\n";
+        String golden = "public class Test {\n" +
+                        "    void m(int p) {\n" +
+                        "        switch (p) {\n" +
+                        "            case 0:\n" +
+                        "                System.err.println(1);\n" +
+                        "                break;\n" +
+                        "            case 1:\n" +
+                        "            case 2:\n" +
+                        "            case 3:\n" +
+                        "                System.err.println(2);\n" +
+                        "                break;\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n";
+        final int index = test.indexOf("|");
+        assertTrue(index != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                TreeMaker make = copy.getTreeMaker();
+                TreePath node = copy.getTreeUtilities().pathFor(index);
+                assertTrue(node.getLeaf().getKind() == Kind.CASE);
+                SwitchTree st = (SwitchTree) node.getParentPath().getLeaf();
+                List<CaseTree> newCases = new LinkedList<CaseTree>();
+                newCases.add(st.getCases().get(0));
+                newCases.add(make.Case(make.Literal(1), Collections.<StatementTree>emptyList()));
+                newCases.add(make.Case(make.Literal(2), Collections.<StatementTree>emptyList()));
+                newCases.add(make.Case(make.Literal(3), st.getCases().get(1).getStatements()));
+                copy.rewrite(st, make.Switch(st.getExpression(), newCases));
             }
         };
         src.runModificationTask(task).commit();

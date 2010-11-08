@@ -665,7 +665,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (length != null && isCharacterType(memberType)) {
                     if (generateValidationConstraints) {
                         if (memberName.equalsIgnoreCase("email")) { //NOI18N
-//                            List <ExpressionTree> patternAnnArguments = new ArrayList<ExpressionTree>();
                             String regexpString = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\\\."    //NOI18N
                                                    +"[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@"  //NOI18N
                                                    +"(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";   //NOI18N
@@ -673,23 +672,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             comment = Comment.create(Comment.Style.LINE, "@Pattern(regexp=\""+regexpString+"\", " +
                                                                         "message=\""+ NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_EMAIL")+"\")" +
                                                                         commentString);
-
-//                            patternAnnArguments.add(genUtils.createAnnotationArgument("regexp", regexpString));    //NOI18N
-//                            patternAnnArguments.add(genUtils.createAnnotationArgument("message", NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_EMAIL")));   //NOI18N
-//                            annotations.add(genUtils.createAnnotation("javax.validation.constraints.Pattern", patternAnnArguments)); //NOI18N
-
                         } else if (memberName.equalsIgnoreCase("phone") || memberName.equalsIgnoreCase("fax")) { //NOI18N
-//                            List <ExpressionTree> patternAnnArguments = new ArrayList<ExpressionTree>();
                             //Pattern for phone in the form (xxx) xxx–xxxx.
                             String regexpString = "^\\\\(?(\\\\d{3})\\\\)?[- ]?(\\\\d{3})[- ]?(\\\\d{4})$";   //NOI18N
                             String commentString = NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_ANNOTATION_PHONE_COMMENT");
                             comment = Comment.create(Comment.Style.LINE,  "@Pattern(regexp=\""+regexpString+"\", " +
                                                                         "message=\""+ NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_PHONE")+"\")" +
                                                                         commentString);
-//                            patternAnnArguments.add(genUtils.createAnnotationArgument("regexp", regexpString));   //NOI18N
-//                            patternAnnArguments.add(genUtils.createAnnotationArgument("message", NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_PHONE")));   //NOI18N
-//                            annotations.add(genUtils.createAnnotation("javax.validation.constraints.Pattern", patternAnnArguments)); //NOI18N
-
                         }
                         List <ExpressionTree> sizeAnnArguments = new ArrayList<ExpressionTree>();
                         if (!m.isNullable()) {

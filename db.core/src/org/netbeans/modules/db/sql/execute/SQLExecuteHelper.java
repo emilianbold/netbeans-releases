@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -260,7 +260,9 @@ public final class SQLExecuteHelper {
                         } else if (ch == '/') {
                             state = STATE_MAYBE_BLOCK_COMMENT;
                         } else if (ch == '#') {
-                            state = STATE_LINE_COMMENT;
+                            if (statement.length() == 0 || !Character.isLetterOrDigit(statement.charAt(statement.length() - 1))) {
+                                state = STATE_LINE_COMMENT;
+                            }
                         } else if (ch == '\'') {
                             state = STATE_STRING;
                         }

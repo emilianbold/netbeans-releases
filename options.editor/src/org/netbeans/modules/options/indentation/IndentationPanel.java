@@ -624,6 +624,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         public @Override void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
+            pane.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+            pane.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+            pane.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
             pane.setText(previewText);
             
             final Document doc = pane.getDocument();

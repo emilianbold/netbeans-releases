@@ -66,6 +66,11 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  */
 
 public final class ViewUtils {
+    
+    /**
+     * To how big fractions the sizes (fonts, ascents etc.) are ceil-ed/floor-ed.
+     */
+    private static final double ROUND_FRACTION = 8d;
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUtils.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUtils.class.getName());
@@ -167,13 +172,19 @@ public final class ViewUtils {
     public static int getOtherAxis(int axis) {
         return (axis == View.X_AXIS) ? View.Y_AXIS : View.X_AXIS;
     }
+    
+    public static String toStringAxis(int axis) {
+        return (axis == View.X_AXIS) ? "X" : "Y";
+    }
 
     public static void repaint(JComponent component, Rectangle2D r) {
         component.repaint((int)r.getX(), (int)r.getY(), (int)r.getWidth(), (int)r.getHeight());
     }
 
     public static String toString(Color c) {
-        return "RGB[" + c.getRed() + ';' + c.getGreen() + ';' + c.getBlue() + ']'; // NOI18N
+        return (c != null)
+                ? "RGB[" + c.getRed() + ';' + c.getGreen() + ';' + c.getBlue() + ']' // NOI18N
+                : "<NULL>"; // NOI18N
     }
 
     public static String toString(Rectangle2D r) {
@@ -191,7 +202,7 @@ public final class ViewUtils {
     public static String toStringHex8(int i) {
         String s = Integer.toHexString(i);
         while (s.length() < 8) {
-            s = "0" + s;
+            s = "0" + s; // NOI18N
         }
         return s;
     }
@@ -209,7 +220,7 @@ public final class ViewUtils {
         // Use last part (after '.') of class name
         String className = o.getClass().getName();
         className = className.substring(className.lastIndexOf('.') + 1);
-        return className + "@" + toStringId(o);
+        return className + "@" + toStringId(o); // NOI18N
     }
 
     public static String toStringPrec1(double d) {
@@ -243,13 +254,13 @@ public final class ViewUtils {
             }
             sb.append(',');
             sb.append((fontSizeInteger != null) ? fontSizeInteger : '?');
-            sb.append("], ");
+            sb.append("], "); // NOI18N
             nonFirst = true;
         }
         Color foreColor = (Color) attributes.getAttribute(StyleConstants.Foreground);
         if (foreColor != null) {
             if (nonFirst) {
-                sb.append(", ");
+                sb.append(", "); // NOI18N
             }
             sb.append("fg=").append(toString(foreColor));
             nonFirst = true;
@@ -257,7 +268,7 @@ public final class ViewUtils {
         Color backColor = (Color) attributes.getAttribute(StyleConstants.Background);
         if (backColor != null) {
             if (nonFirst) {
-                sb.append(", ");
+                sb.append(", "); // NOI18N
             }
             sb.append("bg=").append(toString(backColor));
             nonFirst = true;
@@ -273,7 +284,7 @@ public final class ViewUtils {
         sb.append(toStringNameId(component));
         if (component instanceof JTextComponent) {
             JTextComponent textComponent = (JTextComponent) component;
-            sb.append(" doc: ").append(toString(textComponent.getDocument()));
+            sb.append(" doc: ").append(toString(textComponent.getDocument())); // NOI18N
         }
         return sb.toString();
     }
@@ -284,9 +295,9 @@ public final class ViewUtils {
         }
         StringBuilder sb = new StringBuilder(100);
         sb.append(toStringNameId(doc));
-        sb.append(", Length=").append(doc.getLength());
-        sb.append(", Version=").append(DocumentUtilities.getDocumentVersion(doc));
-        sb.append(", StreamDesc:");
+        sb.append(", Length=").append(doc.getLength()); // NOI18N
+        sb.append(", Version=").append(DocumentUtilities.getDocumentVersion(doc)); // NOI18N
+        sb.append(", StreamDesc:"); // NOI18N
         Object streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
         if (streamDesc != null) {
             sb.append(streamDesc);
@@ -295,7 +306,7 @@ public final class ViewUtils {
         }
         return sb.toString();
     }
-
+    
     public static void checkFragmentBounds(int p0, int p1, int startOffset, int length) {
         if (p0 < startOffset || p0 > p1 || p1 > startOffset + length) {
             throw new IllegalArgumentException("Illegal bounds: <" + p0 + "," + p1 + // NOI18N
@@ -304,25 +315,41 @@ public final class ViewUtils {
     }
 
     /**
-     * Round given float number to maximum of 1/8 of fractional parts for
+     * Ceil (round up) given float number to maximum of 1/8 of fractional parts for
      * bound-related operations to partly eliminate rounding errors.
-     *
-     * @param f
-     * @return
      */
-    public static float cutFractions(float f) {
-        return (float) (Math.ceil(f * 8f) / 8f);
+    public static float ceilFractions(float f) {
+        return (float) (Math.ceil(f * ROUND_FRACTION) / ROUND_FRACTION);
     }
 
     /**
-     * Round given double number to maximum of 1/8 of fractional parts for
+     * Ceil (round up) given double number to maximum of 1/8 of fractional parts for
      * bound-related operations to partly eliminate rounding errors.
-     *
-     * @param d
-     * @return
+     * <br/>
+     * Return float since after ceiling to fractions the mantissa should be reasonably small
+     * (for numbers used in rendering).
      */
-    public static float cutFractions(double d) {
-        return (float) (Math.ceil(d * 8d) / 8d);
+    public static float ceilFractions(double d) {
+        return (float) (Math.ceil(d * ROUND_FRACTION) / ROUND_FRACTION);
+    }
+
+    /**
+     * Floor (round down) given float number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     */
+    public static float floorFractions(float f) {
+        return (float) (Math.floor(f * ROUND_FRACTION) / ROUND_FRACTION);
+    }
+
+    /**
+     * Floor (round down) given double number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     * <br/>
+     * Return float since after flooring to fractions the mantissa should be reasonably small
+     * (for numbers used in rendering).
+     */
+    public static float floorFractions(double d) {
+        return (float) (Math.floor(d * ROUND_FRACTION) / ROUND_FRACTION);
     }
 
 }

@@ -61,21 +61,25 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements CsmUsingDirective
  * @author Vladimir Kvasihn
  */
-public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
+public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final CharSequence name;
     private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
-    public UsingDirectiveImpl(AST ast, CsmFile file, boolean global) {
+    private UsingDirectiveImpl(AST ast, CsmFile file) {
         super(file, ((CsmAST)ast.getFirstChild()).getOffset(), getEndOffset(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
-        
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
+    }
+
+    public static UsingDirectiveImpl create(AST ast, CsmFile file, boolean global) {
+        UsingDirectiveImpl usingDirectiveImpl = new UsingDirectiveImpl(ast, file);
         if (!global) {
-            Utils.setSelfUID(UsingDirectiveImpl.this);
+            Utils.setSelfUID(usingDirectiveImpl);
         }
+        return usingDirectiveImpl;
     }
     
     @Override
@@ -113,22 +117,27 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         assert this.referencedNamespaceUID != null || referencedNamespace == null;
     }
  
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DIRECTIVE;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         return getName();
     }
     
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
     
+    @Override
     public CsmScope getScope() {
         //TODO: implement!
         return null;

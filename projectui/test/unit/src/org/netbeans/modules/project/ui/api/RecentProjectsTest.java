@@ -48,14 +48,12 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.openide.filesystems.FileObject;
@@ -66,14 +64,12 @@ import org.openide.util.lookup.Lookups;
  * Tests for RecentProjects class
  * @author Milan Kubec
  */
-@RandomlyFails // NB-Core-Build #1315
 public class RecentProjectsTest extends NbTestCase {
 
     private Project[] testProjects = new Project[15];
     private String[] tpDisplayNames = new String[15];
     private URL[] tpURLs = new URL[15];
 
-    public static final ImageIcon icon = new ImageIcon(RecentProjectsTest.class.getResource("testimage.png"));
     public static final String PRJ_NAME_PREFIX = "Project";
 
     public RecentProjectsTest(String testName) {
@@ -112,7 +108,6 @@ public class RecentProjectsTest extends NbTestCase {
             assertEquals(1, RecentProjects.getDefault().getRecentProjectInformation().size());
             assertEquals(tpDisplayNames[j], pil.get(0).getDisplayName());
             assertEquals(tpURLs[j], pil.get(0).getURL());
-            assertEquals(icon, pil.get(0).getIcon());
             OpenProjectList.getDefault().open(testProjects[j], false);
         }
 
@@ -130,23 +125,18 @@ public class RecentProjectsTest extends NbTestCase {
 
         assertEquals(tpDisplayNames[12], pil.get(0).getDisplayName());
         assertEquals(tpURLs[12], pil.get(0).getURL());
-        assertEquals(icon, pil.get(0).getIcon());
 
         assertEquals(tpDisplayNames[10], pil.get(1).getDisplayName());
         assertEquals(tpURLs[10], pil.get(1).getURL());
-        assertEquals(icon, pil.get(1).getIcon());
 
         assertEquals(tpDisplayNames[6], pil.get(2).getDisplayName());
         assertEquals(tpURLs[6], pil.get(2).getURL());
-        assertEquals(icon, pil.get(2).getIcon());
 
         assertEquals(tpDisplayNames[4], pil.get(3).getDisplayName());
         assertEquals(tpURLs[4], pil.get(3).getURL());
-        assertEquals(icon, pil.get(3).getIcon());
 
         assertEquals(tpDisplayNames[3], pil.get(4).getDisplayName());
         assertEquals(tpURLs[3], pil.get(4).getURL());
-        assertEquals(icon, pil.get(4).getIcon());
 
         OpenProjectList.getDefault().open(testProjects[3], false);
         OpenProjectList.getDefault().open(testProjects[4], false);
@@ -165,7 +155,6 @@ public class RecentProjectsTest extends NbTestCase {
         for (int l = 0; l > 10; l++) {
             assertEquals(tpDisplayNames[12 - l], pil.get(l).getDisplayName());
             assertEquals(tpURLs[12 - l], pil.get(l).getURL());
-            assertEquals(icon, pil.get(l).getIcon());
         }
         for (int m = 3; m < 13; m++) {
             OpenProjectList.getDefault().open(testProjects[m], false);
@@ -182,7 +171,6 @@ public class RecentProjectsTest extends NbTestCase {
         for (int p = 0; p > 10; p++) {
             assertEquals(tpDisplayNames[testProjects.length - p], pil.get(p).getDisplayName());
             assertEquals(tpURLs[testProjects.length - p], pil.get(p).getURL());
-            assertEquals(icon, pil.get(p).getIcon());
         }
         for (Project p : testProjects) {
             OpenProjectList.getDefault().open(p, false);
@@ -197,19 +185,15 @@ public class RecentProjectsTest extends NbTestCase {
 
         assertEquals(tpDisplayNames[11], pil.get(0).getDisplayName());
         assertEquals(tpURLs[11], pil.get(0).getURL());
-        assertEquals(icon, pil.get(0).getIcon());
 
         assertEquals(tpDisplayNames[9], pil.get(1).getDisplayName());
         assertEquals(tpURLs[9], pil.get(1).getURL());
-        assertEquals(icon, pil.get(1).getIcon());
 
         assertEquals(tpDisplayNames[5], pil.get(2).getDisplayName());
         assertEquals(tpURLs[5], pil.get(2).getURL());
-        assertEquals(icon, pil.get(2).getIcon());
 
         assertEquals(tpDisplayNames[2], pil.get(3).getDisplayName());
         assertEquals(tpURLs[2], pil.get(3).getURL());
-        assertEquals(icon, pil.get(3).getIcon());
 
     }
 
@@ -229,7 +213,7 @@ public class RecentProjectsTest extends NbTestCase {
             return displayName;
         }
         public Icon getIcon() {
-            return icon;
+            return null;
         }
         public Project getProject() {
             return null;

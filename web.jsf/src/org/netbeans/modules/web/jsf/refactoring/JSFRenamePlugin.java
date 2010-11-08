@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -167,7 +168,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 JSFRefactoringUtils.renamePackage(refactoring, refactoringElements, nonRecursivefolder.getFolder(), oldName, newName, false);
             }
             
-            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+            if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                 //renaming a class
                 WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                 if (webModule != null){

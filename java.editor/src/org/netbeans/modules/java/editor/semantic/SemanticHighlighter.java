@@ -55,6 +55,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.DisjointTypeTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -113,6 +114,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -701,6 +703,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
                 //class use make look like read variable access:
                 if (type.contains(UseTypes.READ)) {
+                    type = EnumSet.copyOf(type);
                     type.remove(UseTypes.READ);
                     type.add(UseTypes.CLASS_USE);
                 }
@@ -962,11 +965,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 //constructor:
                 TreePath tp = getCurrentPath();
                 
-                while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+                while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     tp = tp.getParentPath();
                 }
                 
-                if (tp != null && tp.getLeaf().getKind() == Kind.CLASS) {
+                if (tp != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     name = ((ClassTree) tp.getLeaf()).getSimpleName().toString();
                 } else {
                     name = null;
@@ -1405,6 +1408,14 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), node.getType()), EnumSet.of(UseTypes.CLASS_USE));
             }
             return super.visitArrayType(node, p);
+        }
+
+        @Override
+        public Void visitDisjointType(DisjointTypeTree node, EnumSet<UseTypes> p) {
+            for (Tree tree : node.getTypeComponents()) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree), EnumSet.of(UseTypes.CLASS_USE));
+            }
+            return super.visitDisjointType(node, p);
         }
 
         @Override

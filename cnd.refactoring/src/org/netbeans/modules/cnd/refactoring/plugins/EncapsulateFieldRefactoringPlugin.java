@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,7 +92,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -222,7 +220,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     }
 
     private void addDiff(InsertInfo declInsert, CharSequence text, final String mtdName, String bundle, ModificationResult mr, FileObject fo) throws MissingResourceException {
-        CharSequence declText = FormattingSupport.getFormattedText(getDoc(declInsert.ces), declInsert.dot, text);
+        CharSequence declText = FormattingSupport.getFormattedText(CsmUtilities.openDocument(declInsert.ces), declInsert.dot, text);
         String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, bundle, mtdName); // NOI8N
         Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, "\n" + declText, descr); // NOI18N
         mr.addDifference(fo, declDiff);
@@ -247,6 +245,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         if (doc != null) {
             doc.render(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         int start = CndTokenUtilities.getLastCommandSeparator(doc, ref.getStartOffset());
@@ -336,6 +335,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             this.refStartPos = refStartPos;
         }
 
+        @Override
         public boolean isStopped() {
             return state == State.END;
         }
@@ -344,6 +344,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             return fldInfo;
         }
 
+        @Override
         public boolean token(Token<TokenId> token, int tokenOffset) {
             if (blockConsumer != null) {
                 if (blockConsumer.isLastToken(token)) {
@@ -415,9 +416,11 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             return false;
         }
 
+        @Override
         public void start(int startOffset, int firstTokenOffset, int lastOffset) {
         }
 
+        @Override
         public void end(int offset, int lastTokenOffset) {
             if (fldInfo.startOffset != fldInfo.endOffset) {
                 try {
@@ -645,6 +648,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
                 Collections.sort(sortedRefs, new Comparator<CsmReference>() {
 
+                    @Override
                     public int compare(CsmReference o1, CsmReference o2) {
                         return o1.getStartOffset() - o2.getStartOffset();
                     }
@@ -652,21 +656,6 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 processRefactoredReferences(sortedRefs, fo, ces, mr, outProblem);
             }
         }
-    }
-
-    private Document getDoc(CloneableEditorSupport ces) {
-        Document doc = null;
-        try {
-            try {
-                doc = ces.openDocument();
-            } catch (UserQuestionException ex) {
-                ex.confirmed();
-                doc = ces.openDocument();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return doc;
     }
 
     private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr, AtomicReference<Problem> outProblem) {
