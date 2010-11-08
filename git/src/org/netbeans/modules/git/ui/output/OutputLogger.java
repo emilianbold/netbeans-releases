@@ -47,6 +47,7 @@ package org.netbeans.modules.git.ui.output;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -93,7 +94,7 @@ public class OutputLogger {
      */
     private InputOutput getLog() {
         if(log == null) {
-            LOG.fine("Creating OutputLogger for " + repositoryRoot.getAbsolutePath()); //NOI18N
+            LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRoot.getAbsolutePath()); //NOI18N
             log = IOProvider.getDefault().getIO(repositoryRoot.getName() + " - " + repositoryRoot.getAbsolutePath(), false); //NOI18N
             writable = true;
             if (!openWindows.contains(log)) {
@@ -101,7 +102,7 @@ public class OutputLogger {
             }
         }
         if (log.isClosed()) {
-            LOG.fine("Creating OutputLogger for " + repositoryRoot); //NOI18N
+            LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRoot); //NOI18N
             log = IOProvider.getDefault().getIO(repositoryRoot.getName() + " - " + repositoryRoot.getAbsolutePath(), false); //NOI18N
             try {
                 log.getOut().reset();
