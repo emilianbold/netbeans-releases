@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
 	<folder name="Help">
           <file name="master-help.xml" url="master-help.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
+              <attr name="position" intvalue="200"/>
           </file>
         </folder>
     </folder>
