@@ -72,9 +72,9 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     }
     
     public void testInsertSaveThenUndoRedo190950() throws Exception {
-        // #191307:  Highlighting does not work if undo/redo is done
+        // #190950:  Highlighting does not work if undo/redo is done
         if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
+            System.err.printf("TEST UNDO AFTER SAVE\n");
         }
         final File sourceFile = getDataFile("fileForModification.cc");
         super.insertTextThenSave(sourceFile, 12 + 1, "void foo() {}\n", 3, 4, true);

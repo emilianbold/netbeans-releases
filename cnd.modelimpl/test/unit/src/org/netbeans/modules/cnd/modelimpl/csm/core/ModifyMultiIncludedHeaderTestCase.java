@@ -56,7 +56,7 @@ public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBas
     }
 
     public void test174007() throws Exception {
-        // #174007:  (Sometimes) Incorrect processing of i#ifndef .. #define
+        // #174007:  (Sometimes) Incorrect processing of #ifndef .. #define
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST MULTI INCLUSION\n");
         }
