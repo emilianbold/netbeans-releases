@@ -95,3 +95,49 @@ void charTest() {
 
     return "string literal";
 }
+
+struct NameId {
+
+};
+
+// Name Table
+class NameTable
+{
+public:
+    NameId AddSymbol();
+    NameId AddSymbol(const std::string &s);
+    NameId AddSymbol(const std::string &s, const std::string &busHead, 
+                    int index1, int index2, const std::string &busTail);
+    NameId AddSymbol(const std::string &s, const std::vector<std::string>
+&bits);
+    void AddTable (const NameTable &other);
+}; // class NameTabl
+
+NameId NameTable::AddSymbol()
+{
+
+}
+
+NameId NameTable::AddSymbol(const std::string &s)
+{
+
+}
+
+NameId NameTable::AddSymbol(const std::string &s, const std::string &busHead,
+                            int index1, int index2, const std::string &busTail)
+{
+
+}
+
+NameId NameTable::AddSymbol(const std::string &s, const std::vector<std::string> &bits)
+{
+
+}
+
+void NameTable::AddTable (const NameTable &other) {
+    NameId oneParam = other.AddSymbol("Default");
+    NameId empty = other.AddSymbol();
+    NameId twoParams = other.AddSymbol("Default", vector<std::string>());
+    NameId moreParams = other.AddSymbol("Default", "second", 1, 3, "tree");
+
+}
