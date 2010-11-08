@@ -749,6 +749,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 141302 - Add to keywords C++ alternative tokens
         performTest("bug141302.cpp", 8, 10, "bug141302.cpp", 2, 5);
     }
+
+    public void testBug188925() throws Exception {
+        // Bug 188925 - unable to resolve identifier in templates
+        performTest("bug188925.cpp", 40, 24, "bug188925.cpp", 26, 13);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
