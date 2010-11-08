@@ -109,9 +109,9 @@ public final class GitModuleConfig {
      * @param paths collection of paths, of File.getAbsolutePath()
      */
     public void addExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        Set<String> commitExclusions = getCommitExclusions();
+        if (commitExclusions.addAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
         }
     }
 
@@ -119,9 +119,9 @@ public final class GitModuleConfig {
      * @param paths collection of paths, File.getAbsolutePath()
      */
     public void removeExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        Set<String> commitExclusions = getCommitExclusions();
+        if (commitExclusions.removeAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
         }
     }   
     
