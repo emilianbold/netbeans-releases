@@ -449,104 +449,114 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return this.fileBuffer;
     }
 
+    private final AtomicBoolean inEnsureParsed = new AtomicBoolean(false);
     // ONLY FOR PARSER THREAD USAGE
     // Parser Queue ensures that the same file can be parsed at the same time
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
-        boolean wasDummy = false;
-        if (handlers == DUMMY_HANDLERS) {
-            wasDummy = true;
-            handlers = getPreprocHandlers();
-        }
-        long time;
-        synchronized (stateLock) {
-            try {
-                State curState;
-                synchronized (changeStateLock) {
-                    curState = state;
-                    parsingState = ParsingState.BEING_PARSED;
-                }
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    if (traceFile(getAbsolutePath())) {
-                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, wasDummy); // NOI18N
-                        int i = 0;
-                        for (APTPreprocHandler aPTPreprocHandler : handlers) {
-                            logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
+        try {
+            if (!inEnsureParsed.compareAndSet(false, true)) {
+                assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
+            }
+            boolean wasDummy = false;
+            if (handlers == DUMMY_HANDLERS) {
+                wasDummy = true;
+                handlers = getPreprocHandlers();
+            }
+            long time;
+            synchronized (stateLock) {
+                try {
+                    State curState;
+                    synchronized (changeStateLock) {
+                        curState = state;
+                        parsingState = ParsingState.BEING_PARSED;
+                    }
+                    if (reportParse || logState || TraceFlags.DEBUG) {
+                        if (traceFile(getAbsolutePath())) {
+                            System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, wasDummy); // NOI18N
+                            int i = 0;
+                            for (APTPreprocHandler aPTPreprocHandler : handlers) {
+                                logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
+                            }
                         }
                     }
-                }
-                APTFile fullAPT = getFullAPT();
-                if (fullAPT == null) {
-                    // probably file was removed
-                    return;
-                }
-                switch (curState) {
-                    case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
-                    case INITIAL:
-                    case PARTIAL:
-                        if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && curState == State.PARSED) {
-                            System.err.printf("additional parse with PARSED state " + parsingState + "for %s\n", getAbsolutePath()); // NOI18N
-                        }
-                        time = System.currentTimeMillis();
-                        try {
-                            for (APTPreprocHandler preprocHandler : handlers) {
-                                _parse(preprocHandler, fullAPT);
-                                if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                    break; // does not make sense parsing old data
-                                }
+                    APTFile fullAPT = getFullAPT();
+                    if (fullAPT == null) {
+                        // probably file was removed
+                        return;
+                    }
+                    switch (curState) {
+                        case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
+                        case INITIAL:
+                        case PARTIAL:
+                            if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && curState == State.PARSED) {
+                                System.err.printf("additional parse with PARSED state " + parsingState + "for %s\n", getAbsolutePath()); // NOI18N
                             }
-                        } finally {
-                            postParse();
-                            synchronized (changeStateLock) {
-                                if (parsingState == ParsingState.BEING_PARSED) {
-                                    state = State.PARSED;
-                                }  // if not, someone marked it with new state
-                            }
-                            stateLock.notifyAll();
-                            lastParseTime = (int)(System.currentTimeMillis() - time);
-                            //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
-                        }
-                        if (TraceFlags.DUMP_PARSE_RESULTS) {
-                            new CsmTracer().dumpModel(this);
-                        }
-                        break;
-                    case MODIFIED:
-                        boolean first = true;
-                        time = System.currentTimeMillis();
-                        try {
-                            for (APTPreprocHandler preprocHandler : handlers) {
-                                if (first) {
-                                    _reparse(preprocHandler, fullAPT);
-                                    first = false;
-                                } else {
+                            time = System.currentTimeMillis();
+                            try {
+                                for (APTPreprocHandler preprocHandler : handlers) {
                                     _parse(preprocHandler, fullAPT);
+                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                        break; // does not make sense parsing old data
+                                    }
                                 }
-                                if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                    break; // does not make sense parsing old data
+                            } finally {
+                                postParse();
+                                synchronized (changeStateLock) {
+                                    if (parsingState == ParsingState.BEING_PARSED) {
+                                        state = State.PARSED;
+                                    }  // if not, someone marked it with new state
                                 }
+                                stateLock.notifyAll();
+                                lastParseTime = (int)(System.currentTimeMillis() - time);
+                                //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
-                        } finally {
-                            synchronized (changeStateLock) {
-                                if (parsingState == ParsingState.BEING_PARSED) {
-                                    state = State.PARSED;
-                                } // if not, someone marked it with new state
+                            if (TraceFlags.DUMP_PARSE_RESULTS) {
+                                new CsmTracer().dumpModel(this);
                             }
-                            postParse();
-                            stateLock.notifyAll();
-                            lastParseTime = (int)(System.currentTimeMillis() - time);
-                            //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
-                        }
-                        if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
-                            new CsmTracer().dumpModel(this);
-                        }
-                        break;
-                    default:
-                        System.err.println("unexpected state in ensureParsed " + curState); // NOI18N
+                            break;
+                        case MODIFIED:
+                            boolean first = true;
+                            time = System.currentTimeMillis();
+                            try {
+                                for (APTPreprocHandler preprocHandler : handlers) {
+                                    if (first) {
+                                        _reparse(preprocHandler, fullAPT);
+                                        first = false;
+                                    } else {
+                                        _parse(preprocHandler, fullAPT);
+                                    }
+                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                        break; // does not make sense parsing old data
+                                    }
+                                }
+                            } finally {
+                                synchronized (changeStateLock) {
+                                    if (parsingState == ParsingState.BEING_PARSED) {
+                                        state = State.PARSED;
+                                    } // if not, someone marked it with new state
+                                }
+                                postParse();
+                                stateLock.notifyAll();
+                                lastParseTime = (int)(System.currentTimeMillis() - time);
+                                //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
+                            }
+                            if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
+                                new CsmTracer().dumpModel(this);
+                            }
+                            break;
+                        default:
+                            System.err.println("unexpected state in ensureParsed " + curState); // NOI18N
+                    }
+                } finally {
+                    synchronized (changeStateLock) {
+                        parsingState = ParsingState.NOT_BEING_PARSED;
+                    }
                 }
-            } finally {
-                synchronized (changeStateLock) {
-                    parsingState = ParsingState.NOT_BEING_PARSED;
-                }
+            }
+        } finally {
+            if (!inEnsureParsed.compareAndSet(true, false)) {
+                assert false : "broken state in file " + getAbsolutePath() + parsingState + state; 
             }
         }
     }
