@@ -109,7 +109,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         }
         int work = arg2 / 1024;
         if (handle != null) {
-            handle.progress(Math.min(units, lastunit += work));
+            handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
         }
 //        if (debug) {
 //            writer.println("Units completed :" + lastunit);//NII18N
