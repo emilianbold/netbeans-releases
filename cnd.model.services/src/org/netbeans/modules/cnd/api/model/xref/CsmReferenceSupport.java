@@ -56,6 +56,7 @@
 package org.netbeans.modules.cnd.api.model.xref;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
@@ -114,21 +115,18 @@ public final class CsmReferenceSupport {
             CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
             CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
             if (fqnCheck.equals(fqnTarget)) {
-                return true;
-            }
-            if (IGNORE_CONST) {
-                String strFqn = fqnCheck.toString().trim();
-                // we consider const and not const methods as the same
-                if (strFqn.endsWith("const")) { // NOI18N
-                    int cutConstInd = strFqn.lastIndexOf("const"); // NOI18N
-                    assert cutConstInd >= 0;
-                    fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
+                if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
+                    // we treat const and non-const functions as the same
+                    fqnCheck = ((CsmFunction) checkDecl).getSignature().toString().replace("const", "").trim();
+                    fqnTarget = ((CsmFunction) targetDecl).getSignature().toString().replace("const", "").trim();
+                    if (fqnCheck.equals(fqnTarget)) {
+                        return true;
+                    }
+                } else {
+                    return true;
                 }
-                return fqnCheck.equals(fqnTarget);
-            }
+            }            
         }
         return false;
     }
-    
-    private final static boolean IGNORE_CONST = true;
 }

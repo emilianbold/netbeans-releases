@@ -18,6 +18,9 @@ CLASS C (C ) [4:1/23-6:2/59] lcurly=31 SCOPE: $Global$
     MEMBERS:
         TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:20/52-5:22/54] SCOPE: C 
         CLASS_FORWARD_DECLARATION PRIVATE C2 [5:13/45-5:22/54] ClassImpl$ClassMemberForwardDeclaration
+            STRUCT C2 (C::C2 ) [5:5/37-5:25/57] lcurly=56 SCOPE: C 
+                BASE CLASSES:
+                MEMBERS:
 NAMESPACE DEFINITOIN N [8:1/62-10:2/102] SCOPE: forward_declarations.cc
     TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:20/95-9:22/97] SCOPE: N 
     CLASS_FORWARD_DECLARATION C3 [9:13/88-9:22/97]
@@ -32,6 +35,9 @@ CLASS C (C ) [4:1/23-6:2/59] lcurly=31 SCOPE: $Global$
     MEMBERS:
         TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:20/52-5:22/54] SCOPE: C 
         CLASS_FORWARD_DECLARATION PRIVATE C2 [5:13/45-5:22/54] ClassImpl$ClassMemberForwardDeclaration
+            STRUCT C2 (C::C2 ) [5:5/37-5:25/57] lcurly=56 SCOPE: C 
+                BASE CLASSES:
+                MEMBERS:
 NAMESPACE DEFINITIONS for N (N) 
     forward_declarations.cc  [8:1/62-10:2/102]
 NAMESPACE N (N) 
