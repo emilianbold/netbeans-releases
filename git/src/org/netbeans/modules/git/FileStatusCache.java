@@ -127,7 +127,7 @@ public class FileStatusCache {
      * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
      * @param files roots to refresh
      */
-    public void refreshAllRoots(File[] roots) {
+    public void refreshAllRoots(File... roots) {
         refreshAllRoots(Arrays.asList(roots));
     }
     

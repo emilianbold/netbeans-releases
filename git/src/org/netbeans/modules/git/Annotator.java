@@ -59,6 +59,7 @@ import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
@@ -108,17 +109,21 @@ public class Annotator extends VCSAnnotator {
 
         List<Action> actions = new LinkedList<Action>();
         if (destination.equals(ActionDestination.MainMenu)) {
-            actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(CheckoutPathsAction.class));
-            actions.add(SystemAction.get(AddAction.class));
-            actions.add(SystemAction.get(CommitAction.class));
-            actions.add(SystemAction.get(DiffAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(OpenOutputAction.class));
+            if (noneVersioned) {                    
+                actions.add(SystemAction.get(InitAction.class));
+            } else {            
+                actions.add(SystemAction.get(StatusAction.class));
+                actions.add(SystemAction.get(CheckoutPathsAction.class));
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(OpenOutputAction.class));
+            }
         } else {
             Lookup lkp = context.getElements();
-            if (noneVersioned) {
-
+            if (noneVersioned) {                    
+                actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "CTL_ContextMenuItem_Init"), lkp));
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
