@@ -59,9 +59,10 @@ import org.openide.util.NbPreferences;
 public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";                           // NOI18N
-    private static final String PROP_LAST_USED_MODE     = "lastUsedMode"; //NOI18N
+    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";     // NOI18N
+    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";   // NOI18N
+    private static final String PROP_LAST_USED_MODE     = "lastUsedMode";       // NOI18N
+    private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -93,8 +94,11 @@ public final class GitModuleConfig {
     }
 
     public boolean getExludeNewFiles() {
-        // XXX
-        return false;
+        return getPreferences().getBoolean(EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles(boolean value) {
+        getPreferences().putBoolean(EXCLUDE_NEW_FILES, value);
     }
     
     public String getLastCanceledCommitMessage() {
@@ -151,7 +155,7 @@ public final class GitModuleConfig {
     }
 
     public void setAutoOpenOutput(boolean value) {
-        throw new UnsupportedOperationException("Not supported yet.");           
-    }    
+        getPreferences().putBoolean(AUTO_OPEN_OUTPUT_WINDOW, value);
+    }
     
 }
