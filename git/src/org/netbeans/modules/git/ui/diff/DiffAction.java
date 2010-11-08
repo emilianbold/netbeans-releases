@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.git.ui.diff;
 
-import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -68,10 +66,9 @@ public class DiffAction extends GitAction {
 
     public void diff (VCSContext context) {
         String contextName = Utils.getContextDisplayName(context);
-        Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-        MultiDiffPanelController controller = new MultiDiffPanelController(context, mode);
+        MultiDiffPanelController controller = new MultiDiffPanelController(context);
         DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setTopComponent(tc);
+        controller.setActions(tc);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
         tc.open();
         tc.requestActive();

@@ -40,10 +40,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.versioning.util.status;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,12 +53,17 @@ import org.openide.nodes.Node;
  *
  * @author ondra
  */
-public class GitTableModel<T extends StatusNode> extends NodeTableModel {
+public class VCSStatusTableModel<T extends VCSStatusNode> extends NodeTableModel {
 
     private T[] nodes;
 
-    public GitTableModel (T[] nodes) {
+    public VCSStatusTableModel (T[] nodes) {
         this.nodes = nodes;
+    }
+
+    @SuppressWarnings("unchecked")
+    public final Class<T> getItemClass () {
+        return (Class<T>) nodes.getClass().getComponentType();
     }
 
     @Override
@@ -76,21 +80,23 @@ public class GitTableModel<T extends StatusNode> extends NodeTableModel {
         return nodes[idx];
     }
 
-    public Collection<T> getNodes () {
-        return new HashSet<T>(Arrays.asList(nodes));
+    public T[] getNodes () {
+        return Arrays.copyOf(nodes, nodes.length);
     }
 
+    @SuppressWarnings("unchecked")
     public void remove (List<T> toRemove) {
         Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
         newNodes.removeAll(toRemove);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(getItemClass(), newNodes.size()));
         super.setNodes(nodes);
     }
 
+    @SuppressWarnings("unchecked")
     public void add (List<T> toAdd) {
         Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
         newNodes.addAll(toAdd);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(getItemClass(), newNodes.size()));
         super.setNodes(nodes);
     }
 }

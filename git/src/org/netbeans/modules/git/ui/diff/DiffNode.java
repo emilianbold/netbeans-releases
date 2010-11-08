@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.util.OpenInEditorAction;
  *
  * @author ondra
  */
-public class DiffNode extends StatusNode {
+public class DiffNode extends GitStatusNode {
 
     public DiffNode (GitFileNode node, Mode mode) {
         super(node, mode);

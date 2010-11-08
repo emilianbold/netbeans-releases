@@ -53,7 +53,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -84,8 +83,9 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
-import org.netbeans.modules.git.ui.status.GitTableModel;
+import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -156,23 +156,22 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
 
     private GitProgressSupport statusRefreshSupport;
 
-    public MultiDiffPanelController (VCSContext context, Mode mode) {
+    public MultiDiffPanelController (VCSContext context) {
         this.context = context;
-        this.mode = mode;
         panel = new MultiDiffPanel();
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
         attachListeners();
-        setPanelMode();
+        initPanelMode();
         refreshComponents();
     }
 
-    void setTopComponent (TopComponent tc) {
-        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+    void setActions (JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
 
         panel.getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
             @Override
@@ -190,6 +189,16 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
 
     JPanel getPanel () {
         return panel;
+    }
+
+    private void attachListeners() {
+        panel.tgbHeadVsWorking.addActionListener(this);
+        panel.tgbHeadVsIndex.addActionListener(this);
+        panel.tgbIndexVsWorking.addActionListener(this);
+        panel.btnCommit.addActionListener(this);
+        panel.btnCheckout.addActionListener(this);
+        panel.btnRefresh.addActionListener(this);
+        Git.getInstance().getFileStatusCache().addPropertyChangeListener(this);
     }
 
     Lookup getLookup () {
@@ -273,8 +282,8 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
         }
     }
 
-    void requestActive() {
-        fileTable.getTable().requestFocusInWindow();
+    void focus () {
+        fileTable.focus();
     }
 
     private void displayDiffView() {
@@ -311,7 +320,8 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
     }
 
     private void initFileTable () {
-        fileTable = new DiffFileTable(new GitTableModel<DiffNode>(new DiffNode[0]), this);
+        fileTable = new DiffFileTable(new VCSStatusTableModel<DiffNode>(new DiffNode[0]));
+        fileTable.addPropertyChangeListener(this);
         panel.splitPane.setTopComponent(fileTable.getComponent());
         panel.splitPane.setBottomComponent(getInfoPanelLoading());
     }
@@ -344,16 +354,6 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentDifferenceIndex > 0 || fileTable.getPrevFile(currentFile) != null);
-    }
-
-    private void attachListeners() {
-        panel.tgbHeadVsWorking.addActionListener(this);
-        panel.tgbHeadVsIndex.addActionListener(this);
-        panel.tgbIndexVsWorking.addActionListener(this);
-        panel.btnCommit.addActionListener(this);
-        panel.btnCheckout.addActionListener(this);
-        panel.btnRefresh.addActionListener(this);
-        Git.getInstance().getFileStatusCache().addPropertyChangeListener(this);
     }
 
     private void onPrevInnerView() {
@@ -534,16 +534,27 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
         }
     }
 
+    private void applyChange (FileStatusCache.ChangedEvent event) {
+        if (context != null) {
+            synchronized (applyChangeTask.changes) {
+                applyChangeTask.changes.add(event);
+            }
+            changeTask.schedule(1000);
+        }
+    }
+
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
-            refreshComponents();
-        } else if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
+        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
             if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
                 applyChange(changedEvent);
             }
             return;
+        } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            refreshComponents();
+        } else if (VCSStatusTable.PROP_SELECTED_FILES.equals(evt.getPropertyName())) {
+            tableRowSelected((File[]) evt.getNewValue());
         }
     }
 
@@ -559,16 +570,8 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
         return context == null ? false: context.contains(file);
     }
 
-    private void applyChange (FileStatusCache.ChangedEvent event) {
-        if (context != null) {
-            synchronized (applyChangeTask.changes) {
-                applyChangeTask.changes.add(event);
-            }
-            changeTask.schedule(1000);
-        }
-    }
-
-    private void setPanelMode () {
+    private void initPanelMode () {
+        mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
         panel.tgbHeadVsWorking.setSelected(true);
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
@@ -596,7 +599,7 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
             });
             return;
         }
-        JTable jt = fileTable.getTable();
+        JTable jt = fileTable.getDiffTable();
         int optimalLocation = jt.getPreferredSize().height + jt.getTableHeader().getPreferredSize().height;
         if (optimalLocation > dim.height / 3) {
             optimalLocation = dim.height / 3;
@@ -756,18 +759,14 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
                 }
             }
             Git git = Git.getInstance();
-            Collection<DiffNode> nodes = fileTable.getNodes();
-            Map<File, DiffNode> nodesAsMap = new HashMap<File, DiffNode>(nodes.size());
-            for (DiffNode node : nodes) {
-                nodesAsMap.put(node.getFile(), node);
-            }
+            Map<File, DiffNode> nodes = fileTable.getNodes();
             // sort changes
             final List<DiffNode> toRemove = new LinkedList<DiffNode>();
             final List<DiffNode> toRefresh = new LinkedList<DiffNode>();
             final List<DiffNode> toAdd = new LinkedList<DiffNode>();
             for (FileStatusCache.ChangedEvent evt : events) {
                 FileInformation newInfo = evt.getNewInfo();
-                DiffNode node = nodesAsMap.get(evt.getFile());
+                DiffNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
                         toRefresh.add(node);
@@ -798,9 +797,6 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
                         editorCookies.remove(node.getFile());
                     }
                     fileTable.updateNodes(new HashMap<File, EditorCookie>(MultiDiffPanelController.this.editorCookies), toRemove, toRefresh, toAdd);
-                    if (fileTable.getTable().getRowCount() == 1) {
-                        fileTable.getTable().getSelectionModel().addSelectionInterval(0, 0);
-                    }
                     updateView();
                 }
             });
