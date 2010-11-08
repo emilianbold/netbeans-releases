@@ -216,8 +216,13 @@ public final class Git {
 
         RequestProcessor rp = processorsToUrl.get(repositoryRoot);
         if (rp == null) {
-            String rpName = "Git - " + (repositoryRoot != null ? repositoryRoot.toString() : "ANY_KEY");//NOI18N
-            rp = new RequestProcessor(rpName, 1, true);
+            if(repositoryRoot == null) {
+                String rpName = "Git - ANY_KEY";//NOI18N
+                rp = new RequestProcessor(rpName, 50, true);                
+            } else {    
+                String rpName = "Git - " + repositoryRoot.toString();//NOI18N
+                rp = new RequestProcessor(rpName, 1, true);
+            }
             processorsToUrl.put(repositoryRoot, rp);
         }
         return rp;
