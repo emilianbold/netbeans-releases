@@ -40,47 +40,66 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git.jgit.commands;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.InitTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.JGitClient;
+import org.netbeans.libs.git.jgit.JGitClientFactory;
+import org.netbeans.libs.git.jgit.JGitRepository;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public class InitTest extends AbstractGitTestCase {
 
-    public CommandsTestSuite (String testName) {
+    private File workDir;
+
+    public InitTest (String testName) throws IOException {
         super(testName);
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(InitTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        workDir = getWorkingDirectory();
+    }
+
+    public void testInit () throws Exception {
+        File repo2 = new File(workDir.getParentFile(), "other");
+        GitClient client = JGitClientFactory.getInstance(null).getClient(repo2);
+        Field f = JGitClient.class.getDeclaredField("gitRepository");
+        f.setAccessible(true);
+        JGitRepository jgitRepo = (JGitRepository) f.get(client);
+        f = JGitRepository.class.getDeclaredField("repository");
+        f.setAccessible(true);
+        Repository repo = (Repository) f.get(jgitRepo);
+        
+        assertFalse(repo.getDirectory().exists());
+        assertFalse(repo.getIndexFile().exists());
+        assertNull(repo.getBranch());
+
+        // test repository init
+        client.init();
+        DirCache index = repo.readDirCache();
+        assertEquals(0, index.getEntryCount());
+        assertTrue(repo.getDirectory().exists());
+        assertEquals("master", repo.getBranch());
+
+        // test failure when repository already exists
+        try {
+            client.init();
+            fail("Repository created twice");
+        } catch (GitException ex) {
+            assertTrue(ex.getMessage().contains("Repository already exists"));
+        }
     }
 
 }
