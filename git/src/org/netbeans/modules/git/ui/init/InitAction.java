@@ -41,32 +41,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.create;
+package org.netbeans.modules.git.ui.init;
 
 import java.awt.Dialog;
 import java.io.File;
-import java.util.Calendar;
 import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import java.util.Collections;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.api.project.Project;
+import org.netbeans.libs.git.GitException;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
@@ -74,30 +70,23 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
- * Create action for mercurial: 
- * hg init - create a new repository in the given directory
+ * Init action for git: 
+ * git init - init a new repository in the given directory
  * 
  * @author John Rice
+ * @author Tomas Stupka
  */
-public class CreateAction extends ContextAction {
+public class InitAction extends GitAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        // If it is not a mercurial managed repository enable action
-        File root = HgUtils.getRootFile(context);
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        if ( files == null || files.length == 0) 
-            return false;
-        
-        if (root == null)
-            return true;
-        else
-            return false;
+        VCSContext context = getCurrentContext(nodes);
+        return !GitUtils.isFromGitRepository(context);
     }
 
-    protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_Create"; // NOI18N
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(InitAction.class, "CTL_MenuItem_Init");
     }
 
     private File getCommonAncestor(File firstFile, File secondFile) {
@@ -122,7 +111,7 @@ public class CreateAction extends ContextAction {
         for (int i = 1; i < files.length; i++) {
             File f = getCommonAncestor(f1, files[i]);
             if (f == null) {
-                Mercurial.LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
+                Git.LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
                         new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
                 // XXX not sure wat to do at this point
             } else {
@@ -134,93 +123,57 @@ public class CreateAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        final VCSContext context = HgUtils.getCurrentContext(nodes);
-        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+        final VCSContext context = getCurrentContext(nodes);
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
-                performCreate(context);
+                performInit(context);
             }
         });
     }
 
-    private void performCreate (VCSContext context) {
-        final Mercurial hg = Mercurial.getInstance();
-
+    private void performInit (VCSContext context) {
         final File rootToManage = selectRootToManage(context);
         if (rootToManage == null) {
             return;
         }
 
-        RequestProcessor rp = hg.getRequestProcessor(rootToManage);
-        HgProgressSupport supportCreate = new HgProgressSupport() {
+        RequestProcessor rp = Git.getInstance().getRequestProcessor(rootToManage);
+        GitProgressSupport support = new GitProgressSupport() {
+            @Override
             public void perform() {
-
                 try {
-                    OutputLogger logger = getLogger();
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE_SEP")); // NOI18N
-                    logger.output(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_INIT", rootToManage)); // NOI18N
-                    HgCommand.doCreate(rootToManage, logger);
-                    hg.versionedFilesChanged();
-                    hg.refreshAllAnnotations();
-                } catch (HgException.HgCommandCanceledException ex) {
-                    // canceled by user, do nothing
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-            }
-        };
-        supportCreate.start(rp, rootToManage,
-                org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Progress")); // NOI18N
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE")); // NOI18N
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE_SEP")); // NOI18N
+                    output(NbBundle.getMessage(InitAction.class, "MSG_INIT", rootToManage)); // NOI18N
+                    
+                    GitClient client = Git.getInstance().getClient(rootToManage);
+                    client.init();                                        
 
-        HgProgressSupport supportAdd = new HgProgressSupport() {
-            public void perform() {
-                OutputLogger logger = getLogger();
-                try {
-                    File[] repositoryFiles;
-                    FileStatusCache cache = hg.getFileStatusCache();
-                    Calendar start = Calendar.getInstance();
-                    cache.refreshAllRoots(Collections.singletonMap(rootToManage, Collections.singleton(rootToManage)));
-                    Calendar end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "cache refresh took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                    repositoryFiles = cache.listFiles(new File[] {rootToManage}, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
-                    logger.output(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", repositoryFiles.length)); // NOI18N
-                    if (repositoryFiles.length < OutputLogger.MAX_LINES_TO_PRINT) {
-                        for (File f : repositoryFiles) {
-                            logger.output("\t" + f.getAbsolutePath());  //NOI18N
-                        }
-                    }
-                    HgUtils.createIgnored(rootToManage);
-                    logger.output(""); // NOI18N
-                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
-                } finally {
-                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
-                    logger.output(""); // NOI18N
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(rootToManage);
+                    Git.getInstance().versionedFilesChanged();                       
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_DONE")); // NOI18N                    
+                                       
+                } catch (GitException ex) {
+                    Git.LOG.log(Level.WARNING, NAME, ex);                    
                 }
-            }
+            }            
         };
-        supportAdd.start(rp, rootToManage,
-                org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
+        support.start(rp, rootToManage, NbBundle.getMessage(InitAction.class, "MSG_Init_Progress")); // NOI18N
     }
 
     private File selectRootToManage (VCSContext context) {
         File rootPath = getSuggestedRoot(context);
 
-        final CreatePanel panel = new CreatePanel();
+        final InitPanel panel = new InitPanel();
         panel.lblMessage.setVisible(false);
-        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Label"), //NOI18N
+        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Label"), //NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(CreatePanel.class), null);
+                new HelpCtx(InitPanel.class), null);
         dd.setValid(false);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-        final RequestProcessor.Task validateTask = Mercurial.getInstance().getRequestProcessor().create(new Runnable() {
+        final RequestProcessor.Task validateTask = Git.getInstance().getRequestProcessor().create(new Runnable() {
             public void run() {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
@@ -228,9 +181,9 @@ public class CreateAction extends ContextAction {
                 File dir = new File(validatedPath);
                 // must be an existing directory
                 if (!dir.isDirectory()) {
-                    errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Error_Directory"); //NOI18N
-                    if (Mercurial.LOG.isLoggable(Level.FINE) && dir.exists()) {
-                        Mercurial.LOG.fine("CreateAction.selectRootToManage.validateTask: selected a file: " + dir); //NOI18N
+                    errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Directory"); //NOI18N
+                    if (Git.LOG.isLoggable(Level.FINE) && dir.exists()) {
+                        Git.LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: selected a file: {0}", dir); //NOI18N
                     }
                     valid = false;
                 }
@@ -242,12 +195,12 @@ public class CreateAction extends ContextAction {
                     File[] children = dir.listFiles();
                     for (File f : children) {
                         File repoRoot = null;
-                        if (f.isDirectory() && (repoRoot = Mercurial.getInstance().getRepositoryRoot(f)) != null) {
+                        if (f.isDirectory() && (repoRoot = Git.getInstance().getRepositoryRoot(f)) != null) {
                             valid = false;
-                            if (Mercurial.LOG.isLoggable(Level.FINE) && dir.exists()) {
-                                Mercurial.LOG.fine("CreateAction.selectRootToManage.validateTask: file is versioned: " + f + ", root: " + repoRoot); //NOI18N
+                            if (Git.LOG.isLoggable(Level.FINE) && dir.exists()) {
+                                Git.LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: file is versioned: {0}, root: {1}", new Object[]{f, repoRoot}); //NOI18N
                             }
-                            errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Error_Versioned"); //NOI18N
+                            errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Versioned"); //NOI18N
                             break;
                         }
                     }
@@ -262,7 +215,7 @@ public class CreateAction extends ContextAction {
                     if (p != null) {
                         FileObject projectDir = p.getProjectDirectory();
                         if (FileUtil.isParentOf(projectDir, fo)) {
-                            errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Warning_Under_Project"); //NOI18N
+                            errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Warning_Under_Project"); //NOI18N
                         }
                     }
                 }
@@ -280,18 +233,18 @@ public class CreateAction extends ContextAction {
         });
 
         panel.tfRootPath.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validate();
             }
-
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validate();
             }
-
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validate();
             }
-
             private void validate () {
                 validateTask.cancel();
                 dd.setValid(false);
@@ -326,14 +279,14 @@ public class CreateAction extends ContextAction {
 
         File root = null;
         root = getCommonAncestor(files);
-        if (Mercurial.LOG.isLoggable(Level.FINER)) {
-            Mercurial.LOG.finer("CreateAction.getSuggestedRoot: common root for " + context.getRootFiles() + ": " + root); //NOI18N
+        if (Git.LOG.isLoggable(Level.FINER)) {
+            Git.LOG.log(Level.FINER, "InitAction.getSuggestedRoot: common root for {0}: {1}", new Object[]{context.getRootFiles(), root}); //NOI18N
         }
 
         if (projFile != null) {
             root = getCommonAncestor(root, projFile);
-            if (Mercurial.LOG.isLoggable(Level.FINER)) {
-                Mercurial.LOG.finer("CreateAction.getSuggestedRoot: root with project at " + projFile + ": " + root); //NOI18N
+            if (Git.LOG.isLoggable(Level.FINER)) {
+                Git.LOG.log(Level.FINER, "InitAction.getSuggestedRoot: root with project at {0}: {1}", new Object[]{projFile, root}); //NOI18N
             }
         }
         return root;

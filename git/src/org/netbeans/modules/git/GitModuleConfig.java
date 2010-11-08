@@ -59,9 +59,10 @@ import org.openide.util.NbPreferences;
 public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    private static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
-    private static final String PROP_LAST_USED_MODE = "lastUsedMode"; //NOI18N
+    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";     // NOI18N
+    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";   // NOI18N
+    private static final String PROP_LAST_USED_MODE     = "lastUsedMode";       // NOI18N
+    private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -93,8 +94,11 @@ public final class GitModuleConfig {
     }
 
     public boolean getExludeNewFiles() {
-        // XXX
-        return false;
+        return getPreferences().getBoolean(EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles(boolean value) {
+        getPreferences().putBoolean(EXCLUDE_NEW_FILES, value);
     }
     
     public String getLastCanceledCommitMessage() {
@@ -109,9 +113,9 @@ public final class GitModuleConfig {
      * @param paths collection of paths, of File.getAbsolutePath()
      */
     public void addExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        Set<String> commitExclusions = getCommitExclusions();
+        if (commitExclusions.addAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
         }
     }
 
@@ -119,9 +123,9 @@ public final class GitModuleConfig {
      * @param paths collection of paths, File.getAbsolutePath()
      */
     public void removeExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        Set<String> commitExclusions = getCommitExclusions();
+        if (commitExclusions.removeAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
         }
     }   
     
@@ -145,4 +149,13 @@ public final class GitModuleConfig {
     public void setLastUsedModificationContext (Mode mode) {
         getPreferences().put(PROP_LAST_USED_MODE, mode.name());
     }    
+    
+    public boolean getAutoOpenOutput() {
+        return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);
+    }
+
+    public void setAutoOpenOutput(boolean value) {
+        getPreferences().putBoolean(AUTO_OPEN_OUTPUT_WINDOW, value);
+    }
+    
 }
