@@ -241,7 +241,13 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved) {
-            colorModel.setHighlightings(profile, getCategories(profile));
+            Vector<AttributeSet> cat = null;
+            // Fix of #191686: don't ask just deleted profile for its
+            // categories - it caused recreation of the profile
+            if (profileToCategories.containsKey(profile)) {
+                cat = getCategories(profile);
+            }
+            colorModel.setHighlightings(profile, cat);
         }
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();
