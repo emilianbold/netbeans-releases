@@ -51,7 +51,6 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.*;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.FactoryConfigurationError;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -1089,7 +1088,7 @@ public class XMLDataObject extends MultiDataObject {
     * xmlinfo file. It is cookie, so after parsing such class is instantiated
     * and put into data objects cookie set.
     *
-    * @deprecated use lookup
+    * @deprecated Use {@link org.openide.loaders.Environment.Provider} instead.
     */
     @Deprecated
     public static interface Processor extends Node.Cookie {
