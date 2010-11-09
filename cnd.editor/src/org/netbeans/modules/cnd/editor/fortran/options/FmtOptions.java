@@ -148,8 +148,8 @@ public class FmtOptions {
             { spacesPerTab, "4"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { freeFormat, FALSE },
-            { autoDetect, FALSE }
+            { freeFormat, TRUE },
+            { autoDetect, TRUE }
         };
         
         defaults = new HashMap<String,String>();
