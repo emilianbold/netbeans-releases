@@ -164,7 +164,7 @@
             <tocitem text="Working with Layout Managers">    
                 <tocitem text="About Layout Managers" target="gui.layouts.about" />
                 <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
-                <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+                <tocitem text="Using the GridBag Customizer" target="gui.layouts.griddesigner" />
                 <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
                 <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
             </tocitem>    
