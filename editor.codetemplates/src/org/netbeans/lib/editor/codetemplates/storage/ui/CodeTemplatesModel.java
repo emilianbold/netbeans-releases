@@ -60,6 +60,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl;
+import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl.OnExpandAction;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.NbBundle;
 
@@ -133,6 +134,7 @@ final class CodeTemplatesModel {
         Collections.sort(languages);
         
         expander = CodeTemplateSettingsImpl.get(MimePath.EMPTY).getExpandKey();
+        onExpandAction = CodeTemplateSettingsImpl.get(MimePath.EMPTY).getOnExpandAction();
     }
     
     private boolean isCompoundMimeType(String mimeType) {
@@ -197,10 +199,19 @@ final class CodeTemplatesModel {
         if (expander != null) {
             CodeTemplateSettingsImpl.get(MimePath.EMPTY).setExpandKey(expander);
         }
+        
+        // Save on expand action
+        if (onExpandAction != null) {
+            CodeTemplateSettingsImpl.get(MimePath.EMPTY).setOnExpandAction(onExpandAction);
+        }
     }
     
     boolean isChanged() {
         if (!CodeTemplateSettingsImpl.get(MimePath.EMPTY).getExpandKey().equals(expander)) {
+            return true;
+        }
+
+        if (CodeTemplateSettingsImpl.get(MimePath.EMPTY).getOnExpandAction() != onExpandAction) {
             return true;
         }
 
@@ -225,6 +236,15 @@ final class CodeTemplatesModel {
     private KeyStroke expander;
     void setExpander (KeyStroke expander) {
         this.expander = expander;
+    }
+    
+    OnExpandAction getOnExpandAction() {
+        return onExpandAction;
+    }
+    
+    private OnExpandAction onExpandAction;
+    void setOnExpandAction(OnExpandAction action) {
+        onExpandAction = action;
     }
     
     private static class MComparator implements Comparator<Vector<String>> {
