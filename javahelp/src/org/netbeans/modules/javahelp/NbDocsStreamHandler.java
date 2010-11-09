@@ -155,7 +155,10 @@ public final class NbDocsStreamHandler extends URLStreamHandler {
                     target = NbBundle.getLocalizedFile(basename, ext);
                 } catch (MissingResourceException mre) {
                     // OK, try file.
-                    File f = InstalledFileLocator.getDefault().locate("docs/" + resource, null, true); // NOI18N
+                    if (host.isEmpty() && resource.equals("org/netbeans/modules/usersguide/ide.css")) { // NOI18N
+                        host = "org.netbeans.modules.usersguide"; // well-known resource referenced w/o host field by many files
+                    }
+                    File f = InstalledFileLocator.getDefault().locate("docs/" + resource, host.isEmpty() ? null : host, true); // NOI18N
                     if (f != null) {
                         target = f.toURI().toURL();
                     } else {

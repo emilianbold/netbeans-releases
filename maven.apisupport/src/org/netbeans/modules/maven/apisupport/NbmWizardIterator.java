@@ -209,7 +209,14 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             Set<FileObject> projects = ArchetypeWizards.openProjects(projFile, new File(projFile, "application"));
             for (FileObject project : projects) {
                 Project prj = ProjectManager.getDefault().findProject(project);
-                if (NbMavenProject.TYPE_NBM.equals(prj.getLookup().lookup(NbMavenProject.class).getPackagingType())) {
+                if (prj == null) {
+                    continue;
+                }
+                NbMavenProject mprj = prj.getLookup().lookup(NbMavenProject.class);
+                if (mprj == null) {
+                    continue;
+                }
+                if (NbMavenProject.TYPE_NBM.equals(mprj.getPackagingType())) {
                     storeNbAppModuleDirInfo(prj);
                 }
             }
