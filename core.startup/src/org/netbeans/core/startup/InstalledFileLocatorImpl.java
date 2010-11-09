@@ -313,7 +313,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                     if (kids != null) {
                         fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
                     } else {
-                        Util.err.log(Level.WARNING, "could not read files in {0}", d);
+                        Util.err.log(Level.WARNING, "could not read files in {0} at {1}", new Object[] {d, findCaller()});
                     }
                 }
             }
@@ -328,7 +328,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     
     private static synchronized boolean owned(String codeNameBase, File dir, String path) {
         if (codeNameBase == null) {
-            LOG.log(Level.WARNING, "no code name base passed when looking up {0}", path);
+            LOG.log(Level.WARNING, "no code name base passed when looking up {0} at {1}", new Object[] {path, findCaller()});
             return true;
         }
         if (path.lastIndexOf('_') > path.lastIndexOf('/')) {
@@ -361,7 +361,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         if (ownership == null) {
             File list = new File(updateDir, codeNameBaseDashes + ".xml"); // NOI18N
             if (!list.isFile()) {
-                LOG.log(Level.WARNING, "no such module {0}", list);
+                LOG.log(Level.WARNING, "no such module {0} at {1}", new Object[] {list, findCaller()});
                 return true;
             }
             ownership = new HashSet<String>();
@@ -401,12 +401,21 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 }
             }
             if (!found) {
-                LOG.log(Level.WARNING, "module {0} in {1} does not own {2}", new Object[] {codeNameBase, dir, path});
+                LOG.log(Level.WARNING, "module {0} in {1} does not own {2} at {3}", new Object[] {codeNameBase, dir, path, findCaller()});
             }
         }
         return true;
     }
     private static final Pattern FILE_PATTERN = Pattern.compile("\\s*<file.+name=[\"']([^\"']+)[\"'].*/>");
     private static final Map<File,Map<String,Set<String>>> ownershipByModuleByCluster = new HashMap<File,Map<String,Set<String>>>();
+
+    private static String findCaller() {
+        for (StackTraceElement line : Thread.currentThread().getStackTrace()) {
+            if (!line.getClassName().matches(".*InstalledFileLocator.*|java[.].+")) { // NOI18N
+                return line.toString();
+            }
+        }
+        return "???"; // NOI18N
+    }
     
 }
