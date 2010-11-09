@@ -82,9 +82,9 @@ public class BranchTest extends AbstractGitTestCase {
         write(f, "hello");
         File[] files = new File[] { f };
         client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(files, "init", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(files, "init", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         write(f, "hello again");
-        client.commit(files, "change", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(files, "change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         Iterator<RevCommit> it = new Git(repository).log().call().iterator();
         RevCommit info = it.next();

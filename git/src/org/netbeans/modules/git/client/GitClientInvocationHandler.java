@@ -67,7 +67,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private final File repositoryRoot;
     private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "catIndexEntry", "getBranches", "getStatus", "removeNotificationListener")); //NOI18N
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset")); //NOI18N
-    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "catIndexEntry", "getBranches", "getStatus", "removeNotificationListener")); //NOI18N
+    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "catIndexEntry", "getBranches", "getStatus", "removeNotificationListener", "getUser")); //NOI18N
     private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "commit", "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
