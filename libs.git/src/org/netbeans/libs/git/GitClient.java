@@ -186,4 +186,9 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
+    /**
+     * Returns the user from this clients repository
+     */
+    public GitUser getUser() throws GitException;
 }

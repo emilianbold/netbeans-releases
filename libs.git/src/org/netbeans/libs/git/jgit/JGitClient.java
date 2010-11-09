@@ -252,6 +252,11 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();
     }
+    
+    @Override
+    public GitUser getUser() throws GitException {        
+        return new JGitUserInfo(new PersonIdent(gitRepository.getRepository()));
+    }    
 
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     @Override
