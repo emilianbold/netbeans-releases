@@ -71,7 +71,7 @@ public class SourceFileManager implements JavaFileManager {
     
     final ClassPath sourceRoots;
     private final boolean ignoreExcludes;
-    private static Logger log = Logger.getLogger(SourceFileManager.class.getName());
+    private static final Logger LOG = Logger.getLogger(SourceFileManager.class.getName());
     
     /** Creates a new instance of SourceFileManager */
     public SourceFileManager (final ClassPath sourceRoots, final boolean ignoreExcludes) {
@@ -79,6 +79,7 @@ public class SourceFileManager implements JavaFileManager {
         this.ignoreExcludes = ignoreExcludes;
     }
 
+    @Override
     public List<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
         //Todo: Caching of results, needs listening on FS
         List<JavaFileObject> result = new ArrayList<JavaFileObject> ();
@@ -96,20 +97,7 @@ public class SourceFileManager implements JavaFileManager {
                         while (files.hasMoreElements()) {
                             FileObject file = files.nextElement();
                             if (ignoreExcludes || entry.includes(file)) {
-                                JavaFileObject.Kind kind;
-                                final String ext = file.getExt();
-                                if (FileObjects.JAVA.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.SOURCE;
-                                }
-                                else if (FileObjects.CLASS.equalsIgnoreCase(ext) || FileObjects.SIG.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.CLASS;
-                                }
-                                else if (FileObjects.HTML.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.HTML;
-                                }
-                                else {
-                                    kind = JavaFileObject.Kind.OTHER;
-                                }
+                                final JavaFileObject.Kind kind = FileObjects.getKind(file.getExt());                                
                                 if (kinds.contains(kind)) {                        
                                     result.add (SourceFileObject.create(file, root));
                                 }
@@ -122,12 +110,14 @@ public class SourceFileManager implements JavaFileManager {
         return result;
     }
 
+    @Override
     public javax.tools.FileObject getFileForInput (final Location l, final String pkgName, final String relativeName) {
         final String rp = FileObjects.getRelativePath (pkgName, relativeName);
         final FileObject[] fileRootPair = findFile(rp);
         return fileRootPair == null ? null : SourceFileObject.create (fileRootPair[0], fileRootPair[1]);
     }
 
+    @Override
     public JavaFileObject getJavaFileForInput (Location l, final String className, JavaFileObject.Kind kind) {
         String[] namePair = FileObjects.getParentRelativePathAndName (className);
         if (namePair == null) {
@@ -151,6 +141,7 @@ public class SourceFileManager implements JavaFileManager {
         return null;
     }
 
+    @Override
     public javax.tools.FileObject getFileForOutput(final Location l, final String pkgName, final String relativeName, final javax.tools.FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         if (StandardLocation.SOURCE_PATH != l) {
@@ -174,35 +165,43 @@ public class SourceFileManager implements JavaFileManager {
         }
     }
 
+    @Override
     public JavaFileObject getJavaFileForOutput (Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         throw new UnsupportedOperationException("The SourceFileManager does not support write operations."); // NOI18N
     }       
     
+    @Override
     public void flush() throws java.io.IOException {
         //Nothing to do
     }
 
+    @Override
     public void close() throws java.io.IOException {
         //Nothing to do
     }            
     
+    @Override
     public int isSupportedOption(String string) {
         return -1;
     }
     
+    @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
         return false;
     }
  
+    @Override
     public boolean hasLocation(Location location) {
         return true;
     }
        
+    @Override
     public ClassLoader getClassLoader (Location l) {
         return null;
     }
 
+    @Override
     public String inferBinaryName (final Location l, final JavaFileObject jfo) {
         try {
             if (jfo instanceof InferableJavaFileObject) {
@@ -229,12 +228,13 @@ public class SourceFileManager implements JavaFileManager {
                 return result;
             }
         } catch (MalformedURLException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
+            if (LOG.isLoggable(Level.SEVERE))
+                LOG.log(Level.SEVERE, e.getMessage(), e);
         }
         return null;
     }
 
+    @Override
     public boolean isSameFile(javax.tools.FileObject fileObject, javax.tools.FileObject fileObject0) {
         return
             fileObject instanceof SourceFileObject  &&

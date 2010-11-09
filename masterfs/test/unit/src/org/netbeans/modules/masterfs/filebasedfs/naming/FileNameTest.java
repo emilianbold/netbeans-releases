@@ -77,6 +77,18 @@ public class FileNameTest extends NbTestCase {
         n2 = NamingFactory.fromFile(f2);
         n3 = NamingFactory.fromFile(f3);        
     }
+    
+    public void testCzechNames() throws Exception {
+        File f1 = new File (getWorkDir(), "IMístnost.java");
+        File f2 = new File (getWorkDir(), "IMístnost_115.java");
+        
+        n1 = NamingFactory.fromFile(f1);
+        n2 = NamingFactory.fromFile(f2);
+        
+        assertEquals(f1.getName(), n1.getName().toString());
+        assertEquals(f2.getName(), n2.getName().toString());
+
+    }
 
     public void testCollision() throws Exception {
         // File hash code is based on path. There are many known String collisions

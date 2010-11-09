@@ -160,7 +160,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         }
                         if (repos.size() == 0) {
                             //add central repo
-                            repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central")); //NOI18N
+                            repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositoryPreferences.REPO_CENTRAL, "central")); //NOI18N
                             //add repository form info
                             if (info != null && !"central".equals(info.getRepoId())) { //NOI18N
                                 RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());

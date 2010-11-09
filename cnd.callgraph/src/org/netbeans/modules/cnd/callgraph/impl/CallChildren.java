@@ -61,21 +61,18 @@ public class CallChildren extends Children.Keys<Call> {
     private Node parent;
     private boolean isInited = false;
     private boolean isCalls;
-    private boolean showOverriding;
     private static final RequestProcessor RP = new RequestProcessor(CallChildren.class.getName(), 1);
 
-    public CallChildren(Call call, CallGraphState model, boolean isCalls, boolean showOverriding) {
+    public CallChildren(Call call, CallGraphState model, boolean isCalls) {
         this.call = call;
         this.model = model;
         this.isCalls = isCalls;
-        this.showOverriding = showOverriding;
     }
 
-    public CallChildren(Function function, CallGraphState model, boolean isCalls, boolean showOverriding) {
+    public CallChildren(Function function, CallGraphState model, boolean isCalls) {
         this.function = function;
         this.model = model;
         this.isCalls = isCalls;
-        this.showOverriding = showOverriding;
     }
  
     public void dispose(){
@@ -93,15 +90,19 @@ public class CallChildren extends Children.Keys<Call> {
         List<Call> set;
         if (isCalls) {
             if (call != null) {
-                set = model.getCallees(call.getCallee(), showOverriding);
+                set = model.getCallees(call.getCallee());
+                model.setCalleesExpanded(call.getCallee(), true);
             } else {
-                set = model.getCallees(function, showOverriding);
+                set = model.getCallees(function);
+                model.setCalleesExpanded(function, true);
             }
         } else {
             if (call != null) {
-                set = model.getCallers(call.getCaller(), showOverriding);
+                set = model.getCallers(call.getCaller());
+                model.setCalleesExpanded(call.getCaller(), true);
             } else {
-                set = model.getCallers(function, showOverriding);
+                set = model.getCallers(function);
+                model.setCalleesExpanded(function, true);
             }
         }
         if (set != null && set.size() > 0) {
@@ -117,7 +118,7 @@ public class CallChildren extends Children.Keys<Call> {
         if (call instanceof LoadingNode) {
             return new Node[]{(Node)call};
         }
-        Node node = new CallNode(call, model, isCalls, showOverriding);
+        Node node = new CallNode(call, model, isCalls);
         return new Node[]{node};
     }
 

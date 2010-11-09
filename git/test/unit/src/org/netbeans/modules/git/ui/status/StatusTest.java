@@ -55,6 +55,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -96,8 +97,8 @@ public class StatusTest extends AbstractGitTestCase {
                     VersioningPanelController controller = (VersioningPanelController) f.get(tc);
                     f = VersioningPanelController.class.getDeclaredField("syncTable");
                     f.setAccessible(true);
-                    StatusTable table = (StatusTable) f.get(controller);
-                    f = StatusTable.class.getDeclaredField("table");
+                    GitStatusTable table = (GitStatusTable) f.get(controller);
+                    f = VCSStatusTable.class.getDeclaredField("table");
                     f.setAccessible(true);
                     tables[0] = (JTable) f.get(table);
                 } catch (Exception ex) {

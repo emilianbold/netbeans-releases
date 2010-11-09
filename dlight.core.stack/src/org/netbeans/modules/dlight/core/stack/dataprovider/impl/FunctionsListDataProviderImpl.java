@@ -74,14 +74,17 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     FunctionsListDataProviderImpl() {
     }
 
+    @Override
     public void attachTo(DataStorage storage) {
         this.storage = (StackDataStorage) storage;
     }
 
+    @Override
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         this.serviceInfoStorage = serviceInfoDataStorage;
     }
 
+    @Override
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         List<DataFilter> filtersCopy = null;
         synchronized(lock) {
@@ -100,12 +103,14 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return storage.getFunctionsList(metadata, metricsColumn, functionDescription, filtersCopy);
     }
 
+    @Override
     public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         return  getFunctionsList(metadata, functionDescription, metricsColumn);
     }
 
     
 
+    @Override
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
@@ -113,9 +118,10 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
             long offset = functionCall.getOffset();
-            if (offset > 0) {
+            if (offset >= 0) {
                 // FIXME
                 // Call stack has address of next instruction
+                // -1 is valid value for function definition (call stack before first instruction)
                 offset--;
             }
             final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, offset, serviceInfoStorage.getInfo());
@@ -126,6 +132,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return null;
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //we should keep them here
         if (isAdjusting){
@@ -138,6 +145,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         //and now we should 
     }
 
+    @Override
     public boolean hasTheSameDetails(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         return true;
     }

@@ -40,63 +40,38 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.versioning.util.status;
 
 import java.io.File;
 import javax.swing.Action;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
-import org.netbeans.modules.git.ui.diff.DiffAction;
-import org.netbeans.modules.versioning.util.OpenInEditorAction;
+import org.netbeans.modules.versioning.util.common.VCSFileInformation;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.ReadOnly;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author ondra
  */
-public class StatusNode extends AbstractNode {
-    private final GitFileNode node;
-    private NameProperty nameProperty;
-    private final Mode mode;
+public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode {
+    protected final T node;
+    protected final NameProperty nameProperty;
+    protected final PathProperty pathProperty;
+    protected final StatusProperty statusProperty;
 
-    public StatusNode (GitFileNode node, Mode mode) {
+    protected VCSStatusNode (T node) {
         super(Children.LEAF, Lookups.fixed(node.getLookupObjects()));
         this.node = node;
-        this.mode = mode;
-        initProperties();
-    }
-
-    public GitFileNode getNode() {
-        return node;
+        nameProperty = new NameProperty(this);
+        pathProperty = new PathProperty(this);
+        statusProperty = new StatusProperty(this);
     }
 
     @Override
-    public Action getPreferredAction () {
-        if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
-            return new OpenInEditorAction(new File[] { getFile() });
-        } else {
-            return SystemAction.get(DiffAction.class);
-        }
-    }
-
-    private void initProperties() {
-        Sheet sheet = Sheet.createDefault();
-        Sheet.Set ps = Sheet.createPropertiesSet();
-
-        ps.put(nameProperty = new NameProperty(this));
-        ps.put(new PathProperty(this));
-        ps.put(new StatusProperty(this));
-
-        sheet.put(ps);
-        setSheet(sheet);
-    }
+    public abstract Action getPreferredAction ();
 
     @Override
     public String getHtmlDisplayName () {
@@ -112,13 +87,11 @@ public class StatusNode extends AbstractNode {
         return node.getFile();
     }
 
-    public GitFileNode getFileNode() {
+    public final T getFileNode () {
         return node;
     }
 
-    public void refresh() {
-        // do something when needed
-    }
+    public abstract void refresh ();
 
     protected static abstract class NodeProperty<T> extends ReadOnly<T> {
         protected NodeProperty (String name, Class<T> type, String displayName, String description) {
@@ -137,12 +110,12 @@ public class StatusNode extends AbstractNode {
     public static class PathProperty extends NodeProperty<String> {
         private String shortPath;
         public static final String NAME = "path"; //NOI18N
-        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Path.DisplayName"); //NOI18N
-        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Path.Description"); //NOI18N
+        public static final String DISPLAY_NAME = NbBundle.getMessage(VCSStatusNode.class, "LBL_Path.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(VCSStatusNode.class, "LBL_Path.Description"); //NOI18N
 
-        public PathProperty (StatusNode statusNode) {
+        public PathProperty (VCSStatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION); // NOI18N
-            shortPath = statusNode.getNode().getRelativePath();
+            shortPath = statusNode.getFileNode().getRelativePath();
             setValue("sortkey", shortPath + "\t" + statusNode.getName()); // NOI18N
         }
 
@@ -154,14 +127,14 @@ public class StatusNode extends AbstractNode {
 
     public static class NameProperty extends NodeProperty<String> {
         public static final String NAME = "name"; //NOI18N
-        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_File.DisplayName"); //NOI18N
-        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_File.Description"); //NOI18N
-        private final GitFileNode fileNode;
+        public static final String DISPLAY_NAME = NbBundle.getMessage(VCSStatusNode.class, "LBL_File.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(VCSStatusNode.class, "LBL_File.Description"); //NOI18N
+        private final VCSFileNode fileNode;
 
-        public NameProperty (StatusNode statusNode) {
+        public NameProperty (VCSStatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION); // NOI18N
-            setValue("sortkey", statusNode.getNode().getName()); // NOI18N
-            this.fileNode = statusNode.getNode();
+            setValue("sortkey", statusNode.getFileNode().getName()); // NOI18N
+            this.fileNode = statusNode.getFileNode();
         }
 
         @Override
@@ -173,23 +146,21 @@ public class StatusNode extends AbstractNode {
     private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     public static class StatusProperty extends NodeProperty<String> {
         public static final String NAME = "status"; //NOI18N
-        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Status.DisplayName"); //NOI18N
-        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Status.Description"); //NOI18N
-        private final GitFileNode fileNode;
-        private final Mode mode;
+        public static final String DISPLAY_NAME = NbBundle.getMessage(VCSStatusNode.class, "LBL_Status.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(VCSStatusNode.class, "LBL_Status.Description"); //NOI18N
+        private final VCSFileNode fileNode;
 
-        public StatusProperty (StatusNode statusNode) {
+        public StatusProperty (VCSStatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION);
-            String sortable = Integer.toString(statusNode.getNode().getInformation().getComparableStatus());
-            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + statusNode.getNode().getName()); // NOI18N
+            String sortable = Integer.toString(statusNode.getFileNode().getInformation().getComparableStatus());
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + statusNode.getFileNode().getName()); // NOI18N
             this.fileNode = statusNode.node;
-            this.mode = statusNode.mode;
         }
 
         @Override
         public String getValue () {
-            FileInformation finfo =  fileNode.getInformation();
-            return finfo.getStatusText(mode);
+            VCSFileInformation finfo =  fileNode.getInformation();
+            return finfo.getStatusText();
         }
     }
 }

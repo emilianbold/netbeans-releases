@@ -101,8 +101,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private boolean showGraph;
     private boolean isCalls;
     private boolean isShowOverriding;
+    private boolean isShowParameters;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
     public static final String IS_SHOW_OVERRIDING = "CallGraphIsShowOverriding"; // NOI18N
+    public static final String IS_SHOW_PARAMETERS = "CallGraphIsShowParameters"; // NOI18N
     public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
     
     private CallGraphScene scene;
@@ -116,6 +118,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
+        isShowParameters = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_PARAMETERS, false);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         this.showGraph = showGraph;
@@ -123,11 +126,12 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             scene = new CallGraphScene();
             actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(),
-                                   null, new ExportAction(scene, this)};
+                                   null, new ShowFunctionParameters(), new ExportAction(scene, this)};
             scene.setExportAction(actions[actions.length-1]);
         } else {
             actions = new Action[]{new RefreshAction(), new FocusOnAction(),
-                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction()};
+                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(), 
+                                   null, new ShowFunctionParameters()};
             
         }
         root = new AbstractNode(children){
@@ -412,6 +416,13 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         update();
     }
 
+    private void setShowParameters(boolean showParameters){
+        isShowParameters = showParameters;
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_PARAMETERS, isShowParameters);
+        updateButtons();
+        update();
+    }
+
    private void setDirection(boolean direction){
         isCalls = direction;
         NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_CALLS, isCalls);
@@ -438,7 +449,6 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         if (showGraph) {
             scene.clean();
-            scene.setShowOverriding(isShowOverriding);
         }
         final Function function = model.getRoot();
         if (function != null){
@@ -448,7 +458,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     @Override
                     public void run() {
                         children.remove(children.getNodes());
-                        final Node node = new FunctionRootNode(function, state, isCalls, isShowOverriding);
+                        final Node node = new FunctionRootNode(function, state, isCalls);
                         children.add(new Node[]{node});
                         try {
                             getExplorerManager().setSelectedNodes(new Node[]{node});
@@ -600,6 +610,26 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(isShowOverriding);
+            return menuItem;
+        }
+    }
+
+    private final class ShowFunctionParameters extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowFunctionParameters() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowFunctionSignature"));  // NOI18N
+            menuItem = new JCheckBoxMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setShowParameters(!isShowParameters);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(isShowParameters);
             return menuItem;
         }
     }

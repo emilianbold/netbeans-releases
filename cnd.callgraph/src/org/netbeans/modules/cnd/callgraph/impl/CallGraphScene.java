@@ -65,6 +65,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -91,7 +92,6 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     private Action exportAction;
 
     private CallGraphState callModel;
-    private boolean isShowOverriding;
 
     public enum LayoutKind {
         grid,
@@ -139,10 +139,6 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         callModel = model;
     }
 
-    public void setShowOverriding(boolean isShowOverriding){
-        this.isShowOverriding = isShowOverriding;
-    }
-    
     public void doLayout(){
         Runnable run = new Runnable() {
             @Override
@@ -233,7 +229,6 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             SwingUtilities.invokeLater(run);
         }
     }
-
     public void addFunctionToScene(final Function element) {
         Runnable run = new Runnable() {
             @Override
@@ -267,10 +262,18 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     @Override
     protected Widget attachNodeWidget(Function node) {
-        String name = node.getName();
+        String name;
+        if (CallGraphPreferences.isShowParameters()) {
+            name = node.getDescription();
+        } else {
+            name = node.getName();
+        }
         String scope = node.getScopeName();
         Widget label;
         if (scope != null && scope.length() > 0){
+            if (name.startsWith(scope)) {
+                name = name.substring(scope.length());
+            }
             label = new MyMemberLabelWidget(this, scope, name);
         } else {
             label = new MyLabelWidget(this, name);
@@ -578,9 +581,13 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 menu.add(new GoToReferenceAction(f,0).getPopupPresenter());
                 if (!callModel.isCalleesExpanded(f)) {
                     menu.add(new ExpandCallees(f).getPopupPresenter());
+                } else {
+                    menu.add(new CollapseCallees(f).getPopupPresenter());
                 }
                 if (!callModel.isCallersExpanded(f)) {
                     menu.add(new ExpandCallers(f).getPopupPresenter());
+                } else {
+                    menu.add(new  CollapseCallers(f).getPopupPresenter());
                 }
                 menu.add(new JSeparator());
                 menu.add(new RemoveNode(f).getPopupPresenter());
@@ -613,9 +620,44 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    for(Call call : callModel.getCallees(function, isShowOverriding)){
+                    for(Call call : callModel.getCallees(function)){
                         addCallToScene(call);
                     }
+                    callModel.setCalleesExpanded(function, true);
+                }
+            });
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class CollapseCallees extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        private Function function;
+        public CollapseCallees(Function function) {
+            this.function = function;
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "CollapseCallees"));  // NOI18N
+            putValue(Action.SMALL_ICON, new javax.swing.ImageIcon(
+                    CallGraphScene.class.getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    for(Call call : callModel.getCallees(function)){
+                        Function node = call.getCallee();
+                        if (isNode(node)) {
+                            hideNode(node);
+                        }
+                    }
+                    callModel.setCalleesExpanded(function, false);
                 }
             });
         }
@@ -643,9 +685,44 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    for(Call call : callModel.getCallers(function, isShowOverriding)){
+                    for(Call call : callModel.getCallers(function)){
                         addCallToScene(call);
                     }
+                    callModel.setCallersExpanded(function, true);
+                }
+            });
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class CollapseCallers extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        private Function function;
+        public CollapseCallers(Function function) {
+            this.function = function;
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "CollapseCallers"));  // NOI18N
+            putValue(Action.SMALL_ICON, new javax.swing.ImageIcon(
+                    CallGraphScene.class.getResource("/org/netbeans/modules/cnd/callgraph/resources/who_calls.png"))); // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    for(Call call : callModel.getCallers(function)){
+                        Function node = call.getCaller();
+                        if (isNode(node)) {
+                            hideNode(node);
+                        }
+                    }
+                    callModel.setCallersExpanded(function, false);
                 }
             });
         }

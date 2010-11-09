@@ -44,47 +44,26 @@
 
 package org.netbeans.modules.git.ui.diff;
 
-import org.openide.windows.TopComponent;
-import org.openide.awt.MouseUtils;
-import javax.swing.event.ListSelectionEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.logging.Level;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.status.GitTableModel;
+import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
+import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.netbeans.swing.etable.ETable;
-import org.netbeans.swing.etable.ETableColumn;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -101,12 +80,8 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Maros Sandor
  */
-class DiffFileTable implements MouseListener, ListSelectionListener {
+class DiffFileTable extends VCSStatusTable<DiffNode> {
 
-    // TODO Merge with StatusTable
-
-    private ETable          table;
-    private JScrollPane     component;
     /**
      * editor cookies belonging to the files being diffed.
      * The array may contain {@code null}s if {@code EditorCookie}s
@@ -116,114 +91,24 @@ class DiffFileTable implements MouseListener, ListSelectionListener {
      */
     private Map<File, EditorCookie> editorCookies;
     
-    private static final Comparator NodeComparator = new Comparator() {
-        @Override
-        public int compare(Object o1, Object o2) {
-            Node.Property p1 = (Node.Property) o1;
-            Node.Property p2 = (Node.Property) o2;
-            String sk1 = (String) p1.getValue("sortkey"); // NOI18N
-            if (sk1 != null) {
-                String sk2 = (String) p2.getValue("sortkey"); // NOI18N
-                return sk1.compareToIgnoreCase(sk2);
-            } else {
-                try {
-                    String s1 = (String) p1.getValue();
-                    String s2 = (String) p2.getValue();
-                    return s1.compareToIgnoreCase(s2);
-                } catch (Exception e) {
-                    MultiDiffPanelController.LOG.log(Level.INFO, null, e);
-                    return 0;
-                }
-            }
-        }
-    };
-    private final GitTableModel<DiffNode> tableModel;
     private PropertyChangeListener changeListener;
-    private final MultiDiffPanelController master;
     
-    public DiffFileTable (GitTableModel<DiffNode> model, MultiDiffPanelController master) {
-        this.tableModel = model;
-        this.master = master;
-        table = new ETable(tableModel);
-        table.setRowHeight(table.getRowHeight() * 6 / 5);
-        table.addMouseListener(this);
-        table.getSelectionModel().addListSelectionListener(this);
-
-        component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        component.getViewport().setBackground(table.getBackground());
-        Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
-        if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
-        component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
-
-        table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
-        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
-        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
-            }
-        });
-        setModelProperties();
+    public DiffFileTable (VCSStatusTableModel<DiffNode> model) {
+        super(model);
+        setDefaultRenderer(new DiffTableCellRenderer());
     }
 
-    private void setModelProperties () {
+    @Override
+    protected void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
         properties[0] = new ColumnDescriptor<String>(DiffNode.NameProperty.NAME, String.class, DiffNode.NameProperty.DISPLAY_NAME, DiffNode.NameProperty.DESCRIPTION);
         properties[1] = new ColumnDescriptor<String>(DiffNode.StatusProperty.NAME, String.class, DiffNode.StatusProperty.DISPLAY_NAME, DiffNode.StatusProperty.DESCRIPTION);
         properties[2] = new ColumnDescriptor<String>(DiffNode.PathProperty.NAME, String.class, DiffNode.PathProperty.DISPLAY_NAME, DiffNode.PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
-        for (int i = 0; i < table.getColumnCount(); ++i) {
-            ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
-        }
     }
 
-    public JComponent getComponent() {
-        return component;
-    }
-
-    final void setColumns (String [] columns) {
-    }
-        
-    void focus () {
-        table.requestFocus();
-    }
-
-// <editor-fold defaultstate="collapsed" desc="popup and selection">
-    private void showPopup(final MouseEvent e) {
-        int row = table.rowAtPoint(e.getPoint());
-        if (row != -1) {
-            boolean makeRowSelected = true;
-            int[] selectedrows = table.getSelectedRows();
-
-            for (int i = 0; i < selectedrows.length; i++) {
-                if (row == selectedrows[i]) {
-                    makeRowSelected = false;
-                    break;
-                }
-            }
-            if (makeRowSelected) {
-                table.getSelectionModel().setSelectionInterval(row, row);
-            }
-        }
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // invoke later so the selection on the table will be set first
-                if (table.isShowing()) {
-                    JPopupMenu menu = getPopup();
-                    menu.show(table, e.getX(), e.getY());
-                }
-            }
-        });
-    }
-
-    private void showPopup(Point p) {
-        JPopupMenu menu = getPopup();
-        menu.show(table, p.x, p.y);
-    }
-
-    private JPopupMenu getPopup() {
+    @Override
+    protected JPopupMenu getPopup () {
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
@@ -237,134 +122,26 @@ class DiffFileTable implements MouseListener, ListSelectionListener {
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showPopup(e);
-        }
-    }
-
-    @Override
-    public void mouseReleased (MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showPopup(e);
-        }
-    }
-
-    @Override
-    public void mouseClicked (MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
-            int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) {
-                return;
-            }
-            DiffNode node = tableModel.getNode(table.convertRowIndexToModel(row));
-            Action action = node.getPreferredAction();
-            if (action != null && action.isEnabled()) {
-                action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
-            }
-        }
-    }
-
-    @Override
-    public void valueChanged (ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) {
-            return;
-        }
-        List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
-        ListSelectionModel selection = table.getSelectionModel();
-        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
-        if (tc == null) {
-            return; // table is no longer in component hierarchy
-        }
-        int min = selection.getMinSelectionIndex();
-        if (min != -1) {
-            int max = selection.getMaxSelectionIndex();
-            for (int i = min; i <= max; i++) {
-                if (selection.isSelectedIndex(i)) {
-                    int idx = table.convertRowIndexToModel(i);
-                    selectedNodes.add(tableModel.getNode(idx));
-                }
-            }
-        }
-        // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
-        final DiffNode[] nodeArray = selectedNodes.toArray(new DiffNode[selectedNodes.size()]);
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                File[] selectedFiles = new File[nodeArray.length];
-                for (int i = 0; i < nodeArray.length; ++i) {
-                    selectedFiles[i] = nodeArray[i].getFile();
-                }
-                master.tableRowSelected(selectedFiles);
-                tc.setActivatedNodes(nodeArray);
-            }
-        });
-    }// </editor-fold>
-
-    File[] getSelectedFiles() {
-        int[] selection = table.getSelectedRows();
-        List<File> files = new LinkedList<File>();
-        for (int i : selection) {
-            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
-            files.add(selectedNode.getFile());
-        }
-        return files.toArray(new File[files.size()]);
-    }
-
-    void setSelectedNodes (File[] selectedFiles) {
-        Set<File> files = new HashSet<File>(Arrays.asList(selectedFiles));
-        ListSelectionModel selection = table.getSelectionModel();
-        selection.setValueIsAdjusting(true);
-        selection.clearSelection();
-        for (int i = 0; i < table.getRowCount(); ++i) {
-            DiffNode node = tableModel.getNode(table.convertRowIndexToModel(i));
-            if (files.contains(node.getFile())) {
-                selection.addSelectionInterval(i, i);
-            }
-        }
-        selection.setValueIsAdjusting(false);
-    }
-
-    private void setNodes (DiffNode[] nodes) {
-        File[] selectedFiles = getSelectedFiles();
-        tableModel.setNodes(nodes);
-        setSelectedNodes(selectedFiles);
-        if (selectedFiles.length == 0 && nodes.length > 0) {
-            table.getSelectionModel().addSelectionInterval(0, 0);
-        }
+    public void setNodes (DiffNode[] nodes) {
+        throw new UnsupportedOperationException("Do not call this method."); //NOI18N
     }
 
     void setNodes (Map<File, EditorCookie> editorCookies, DiffNode[] nodes) {
         setEditorCookies(editorCookies);
-        setNodes(nodes);
+        super.setNodes(nodes);
     }
 
-    Collection<DiffNode> getNodes () {
-        return tableModel.getNodes();
+    @Override
+    public void updateNodes (List<DiffNode> toRemove, List<DiffNode> toRefresh, List<DiffNode> toAdd) {
+        throw new UnsupportedOperationException("Do not call this method."); //NOI18N
     }
 
     void updateNodes (Map<File, EditorCookie> editorCookies, List<DiffNode> toRemove, List<DiffNode> toRefresh, List<DiffNode> toAdd) {
         setEditorCookies(editorCookies);
-        updateNodes(toRemove, toRefresh, toAdd);
-    }
-
-    private void updateNodes (List<DiffNode> toRemove, List<DiffNode> toRefresh, List<DiffNode> toAdd) {
-        File[] selectedFiles = getSelectedFiles();
-        for (DiffNode node : toRefresh) {
-            node.refresh();
+        super.updateNodes(toRemove, toRefresh, toAdd);
+        if (getTable().getRowCount() == 1) {
+            getTable().getSelectionModel().addSelectionInterval(0, 0);
         }
-        tableModel.remove(toRemove);
-        tableModel.add(toAdd);
-        tableModel.fireTableDataChanged();
-        setSelectedNodes(selectedFiles);
     }
 
     private void setEditorCookies (Map<File, EditorCookie> editorCookies) {
@@ -398,48 +175,8 @@ class DiffFileTable implements MouseListener, ListSelectionListener {
         }
     }
 
-    JTable getTable () {
-        return table;
-    }
-
-    File getNextFile (File file) {
-        return getNeighbouringFile(file, 1);
-    }
-
-    File getPrevFile (File file) {
-        return getNeighbouringFile(file, -1);
-    }
-    
-    File getNeighbouringFile (File file, int indexDelta) {
-        assert EventQueue.isDispatchThread();
-        int tableIndex = findIndex(file);
-        File neighbour = null;
-        if (tableIndex > -1) {
-            tableIndex += indexDelta;
-            if (tableIndex >= 0 && tableIndex < table.getRowCount()) {
-                neighbour = tableModel.getNode(table.convertRowIndexToModel(tableIndex)).getFile();
-            }
-        }
-        return neighbour;
-    }
-
-    int findIndex (File file) {
-        // try faster search among selected rows
-        int[] selection = table.getSelectedRows();
-        for (int i : selection) {
-            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
-            if (selectedNode.getFile().equals(file)) {
-                return i;
-            }
-        }
-        // slower, search among all rows
-        for (int i = 0; i < table.getRowCount(); ++i) {
-            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
-            if (selectedNode.getFile().equals(file)) {
-                return i;
-            }
-        }
-        return -1;
+    protected JTable getDiffTable () {
+        return super.getTable();
     }
 
     private static class ColumnDescriptor<T> extends ReadOnly<T> {
@@ -454,7 +191,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener {
         }
     }
 
-    private class SyncTableCellRenderer extends DefaultTableCellRenderer {
+    private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
 

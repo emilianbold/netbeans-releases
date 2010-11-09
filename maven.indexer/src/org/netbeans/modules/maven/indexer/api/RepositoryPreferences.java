@@ -73,7 +73,10 @@ public final class RepositoryPreferences {
      * index of local repository
      */
     public static final String LOCAL_REPO_ID = "local";//NOI18N
-    
+
+    /** location of Maven Central */
+    public static final String REPO_CENTRAL = "http://repo1.maven.org/maven2"; // NOI18N
+
     //TODO - move elsewhere, implementation detail??
     public static final String TYPE_NEXUS = "nexus"; //NOI18N
     
@@ -167,7 +170,7 @@ public final class RepositoryPreferences {
         }
         // these urls are essential (together with central) for correct
         // resolution of maven pom urls in libraries
-        urls.add("http://repo1.maven.org/maven2"); //NOI18N
+        urls.add(REPO_CENTRAL);
         urls.add("http://download.java.net/maven/2");//NOI18N
         urls.add("http://download.java.net/maven/1");//NOI18N
         urls.add("http://download.java.net/maven/glassfish");//NOI18N

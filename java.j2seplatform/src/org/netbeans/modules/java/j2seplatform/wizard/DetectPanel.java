@@ -632,7 +632,7 @@ public class DetectPanel extends javax.swing.JPanel {
             String name = this.component.getPlatformName ();            
             boolean validDisplayName = name.length() > 0;            
             boolean usedDisplayName = false;            
-            if (!detected) {
+            if (!detected) {                
                 this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
             }
             else if (!validDisplayName) {

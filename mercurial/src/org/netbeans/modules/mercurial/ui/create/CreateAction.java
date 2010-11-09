@@ -67,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -320,8 +321,8 @@ public class CreateAction extends ContextAction {
         final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return null;
 
-        final Project proj = HgUtils.getProject(context);
-        final File projFile = HgUtils.getProjectFile(proj);
+        final Project proj = Utils.getProject(context);
+        final File projFile = Utils.getProjectFile(proj);
 
         File root = null;
         root = getCommonAncestor(files);

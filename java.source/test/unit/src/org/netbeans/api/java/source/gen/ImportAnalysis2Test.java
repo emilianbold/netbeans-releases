@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
@@ -50,24 +51,30 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Tests imports matching and its correct adding/removing. Just generator
@@ -439,6 +446,112 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testInternalChangesAreLightweight1() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        String code =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    {\n" +
+            "        new Runnable() {\n" +
+            "            public void run() {\n" +
+            "|            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        final int pos = code.indexOf("|");
+        TestUtilities.copyStringToFile(testFile, code.replaceAll(Pattern.quote("|"), ""));
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    {\n" +
+            "        new Runnable() {\n" +
+            "            public void run() {\n" +
+            "                List l;\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        final AtomicReference<ElementOverlay> overlay = new AtomicReference<ElementOverlay>();
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                TreePath  tp = workingCopy.getTreeUtilities().pathFor(pos);
+                BlockTree block = (BlockTree) tp.getLeaf();
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("java.util.List"), null);
+                workingCopy.rewrite(block, make.addBlockStatement(block, vt));
+                overlay.set(JavaSourceAccessor.getINSTANCE().getJavacTask(workingCopy).getContext().get(ElementOverlay.class));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertEquals(0, overlay.get().totalMapsSize());
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testInternalChangesAreLightweight2() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        String code =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    {\n" +
+            "        new Runnable() {\n" +
+            "            public void run() {\n" +
+            "                class Foo {{\n" +
+            "|               }}\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        final int pos = code.indexOf("|");
+        TestUtilities.copyStringToFile(testFile, code.replaceAll(Pattern.quote("|"), ""));
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    {\n" +
+            "        new Runnable() {\n" +
+            "            public void run() {\n" +
+            "                class Foo {{\n" +
+            "                        List l;\n" +
+            "               }}\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        final AtomicReference<ElementOverlay> overlay = new AtomicReference<ElementOverlay>();
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                TreePath  tp = workingCopy.getTreeUtilities().pathFor(pos);
+                BlockTree block = (BlockTree) tp.getLeaf();
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("java.util.List"), null);
+                workingCopy.rewrite(block, make.addBlockStatement(block, vt));
+                overlay.set(JavaSourceAccessor.getINSTANCE().getJavacTask(workingCopy).getContext().get(ElementOverlay.class));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertEquals(0, overlay.get().totalMapsSize());
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

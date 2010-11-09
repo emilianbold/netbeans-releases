@@ -100,7 +100,7 @@ final class DelegateActionMap extends ActionMap {
             }
         }
 
-        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         Action found = null;
 
         while ((owner != null) && (owner != getComponent())) {

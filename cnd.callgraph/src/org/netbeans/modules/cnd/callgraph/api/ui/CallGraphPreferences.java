@@ -40,57 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.cnd.callgraph.api.ui;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.nodes.Node;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author ondra
+ * @author Alexander Simon
  */
-public class GitTableModel<T extends StatusNode> extends NodeTableModel {
+public final class CallGraphPreferences {
+    private static final Preferences preferences = NbPreferences.forModule(CallGraphPanel.class);
 
-    private T[] nodes;
-
-    public GitTableModel (T[] nodes) {
-        this.nodes = nodes;
+    public static boolean isShowOverriding() {
+        return preferences.getBoolean(CallGraphPanel.IS_SHOW_OVERRIDING, false);
     }
 
-    @Override
-    public final void setNodes (Node[] nodes) {
-        throw new IllegalStateException("Do not call this method");
-    }
-
-    public final void setNodes (T[] nodes) {
-        this.nodes = nodes;
-        super.setNodes(nodes);
-    }
-
-    public T getNode (int idx) {
-        return nodes[idx];
-    }
-
-    public Collection<T> getNodes () {
-        return new HashSet<T>(Arrays.asList(nodes));
-    }
-
-    public void remove (List<T> toRemove) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
-        newNodes.removeAll(toRemove);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
-        super.setNodes(nodes);
-    }
-
-    public void add (List<T> toAdd) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
-        newNodes.addAll(toAdd);
-        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
-        super.setNodes(nodes);
+    public static boolean isShowParameters() {
+        return preferences.getBoolean(CallGraphPanel.IS_SHOW_PARAMETERS, false);
     }
 }

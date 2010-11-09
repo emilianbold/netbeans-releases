@@ -49,8 +49,10 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -82,9 +84,9 @@ import org.netbeans.modules.java.source.builder.QualIdentTree;
 public class ElementOverlay {
 
     private final Map<String, List<String>> class2Enclosed = new HashMap<String, List<String>>();
-    private final Map<String, List<String>> class2SuperElementTrees = new HashMap<String, List<String>>();
+    private final Map<String, Collection<String>> class2SuperElementTrees = new HashMap<String, Collection<String>>();
     private final Set<String> packages = new HashSet<String>();
-    private final Set<String> classes = new HashSet<String>();
+    private final Map<String, Set<Modifier>> classes = new HashMap<String, Set<Modifier>>();
     private final Map<String, Element> elementCache = new HashMap<String, Element>();
 
     public List<Element> getEnclosedElements(ASTService ast, Elements elements, String parent) {
@@ -92,7 +94,15 @@ public class ElementOverlay {
         Element parentEl = resolve(ast, elements, parent);
 
         if (parentEl == null) throw new IllegalStateException(parent);
-        if (!(parentEl instanceof FakeTypeElement)) {
+        if (parentEl instanceof FakeTypeElement) {
+            TypeElement original = elements.getTypeElement(parent);
+
+            if (original != null) result.addAll(wrap(ast, elements, original.getEnclosedElements()));
+        } else if (parentEl instanceof FakePackageElement) {
+            PackageElement original = elements.getPackageElement(parent);
+
+            if (original != null) result.addAll(wrap(ast, elements, original.getEnclosedElements()));
+        } else {
             result.addAll(parentEl.getEnclosedElements());
         }
 
@@ -100,7 +110,7 @@ public class ElementOverlay {
 
         if (enclosed != null) {
             for (String enc : enclosed) {
-                Element el = createElement(ast, elements, enc);
+                Element el = resolve(ast, elements, enc);
 
                 if (el != null) {
                     result.add(el);
@@ -111,18 +121,31 @@ public class ElementOverlay {
         return result;
     }
 
-    private Element createElement(ASTService ast, Elements elements, String name) {
+    private Element createElement(ASTService ast, Elements elements, String name, Element original) {
         Element el = elementCache.get(name);
 
         if (el == null) {
+            if (original != null) {
+                if (original.getKind().isClass() || original.getKind().isInterface()) {
+                    elementCache.put(name, el = new TypeElementWrapper(ast, elements, (TypeElement) original));
+                    return el;
+                }
+                if (original.getKind() == ElementKind.PACKAGE) {
+                    elementCache.put(name, el = new PackageElementWrapper(ast, elements, (PackageElement) original));
+                    return el;
+                }
+
+                return original;
+            }
+            
             int lastDot = name.lastIndexOf('.');
             Name simpleName = elements.getName(name.substring(lastDot + 1));
             Name fqnName = elements.getName(name);
 
-            if (classes.contains(name)) {
+            if (classes.containsKey(name)) {
                 Element parent = lastDot > 0 ? resolve(ast, elements, name.substring(0, lastDot)) : elements.getPackageElement("");
 
-                elementCache.put(name, el = new FakeTypeElement(ast, elements, simpleName, fqnName, name, parent));
+                elementCache.put(name, el = new FakeTypeElement(ast, elements, simpleName, fqnName, name, parent, classes.get(name)));
             } else if (packages.contains(name)) {
                 elementCache.put(name, el = new FakePackageElement(ast, elements, fqnName, name, simpleName));
             } else {
@@ -136,8 +159,8 @@ public class ElementOverlay {
     public Element resolve(ASTService ast, Elements elements, String what) {
         Element result = null;
         
-        if (classes.contains(what)) {
-            result = createElement(ast, elements, what);
+        if (classes.containsKey(what)) {
+            result = createElement(ast, elements, what, null);
         }
 
         if (result == null) {
@@ -148,35 +171,77 @@ public class ElementOverlay {
             result = elements.getPackageElement(what);
         }
 
-        if (result == null) {
-            result = createElement(ast, elements, what);
-        }
+        result = createElement(ast, elements, what, result);
 
         return result;
     }
 
-    public void registerClass(String parent, String clazz, Tree ext, Collection<? extends Tree> impl) {
-        classes.add(clazz);
+    public void registerClass(String parent, String clazz, ClassTree tree) {
+        if (clazz == null) return;
         
-        List<String> c = class2Enclosed.get(parent);
+        Element myself = ASTService.getElementImpl(tree);
 
-        if (c == null) {
-            class2Enclosed.put(parent, c = new ArrayList<String>());
+        boolean newOrModified =    myself == null
+                                || (!myself.getKind().isClass() && !myself.getKind().isInterface())
+                                || !((QualifiedNameable) myself).getQualifiedName().contentEquals(clazz);
+
+        if (newOrModified) {
+            List<String> c = class2Enclosed.get(parent);
+
+            if (c == null) {
+                class2Enclosed.put(parent, c = new ArrayList<String>());
+            }
+
+            c.add(clazz);
+        }
+        
+        Set<String> superFQNs = superFQNs(tree);
+
+        boolean hadObject = superFQNs.remove("java.lang.Object");
+
+        Set<String> original;
+
+        if (!newOrModified) {
+            original = new LinkedHashSet<String>();
+
+            TypeElement tel = (TypeElement) myself;
+
+            if (tel.getSuperclass() != null && tel.getSuperclass().getKind() == TypeKind.DECLARED) {
+                original.add(((TypeElement) ((DeclaredType) tel.getSuperclass()).asElement()).getQualifiedName().toString());
+            }
+
+            for (TypeMirror intf : tel.getInterfaces()) {
+                original.add(((TypeElement) ((DeclaredType) intf).asElement()).getQualifiedName().toString());
+            }
+
+            original.remove("java.lang.Object");
+        } else {
+            original = null;
         }
 
-        c.add(clazz);
+        if (!superFQNs.equals(original)) {
+            if (hadObject) superFQNs.add("java.lang.Object");
+            
+            Set<Modifier> mods = EnumSet.noneOf(Modifier.class);
 
-        List<String> superFQNs = new ArrayList<String>(impl.size() + 1);
+            mods.addAll(tree.getModifiers().getFlags());
+            classes.put(clazz, mods);
+            class2SuperElementTrees.put(clazz, superFQNs);
+        }
+    }
 
-        if (ext != null) {
-            String fqn = fqnFor(ext);
+    private Set<String> superFQNs(ClassTree tree) {
+        Set<String> superFQNs = new LinkedHashSet<String>(tree.getImplementsClause().size() + 1);
+
+        if (tree.getExtendsClause() != null) {
+            String fqn = fqnFor(tree.getExtendsClause());
 
             if (fqn != null) {
                 superFQNs.add(fqn);
             }
         }
 
-        for (Tree i : impl) {
+        for (Tree i : tree.getImplementsClause()) {
             String fqn = fqnFor(i);
 
             if (fqn != null) {
@@ -184,7 +249,7 @@ public class ElementOverlay {
             }
         }
 
-        class2SuperElementTrees.put(clazz, superFQNs);
+        return superFQNs;
     }
 
     public void registerPackage(String currentPackage) {
@@ -204,9 +269,9 @@ public class ElementOverlay {
                 }
             }
         } else if (forElement.getKind().isClass() || forElement.getKind().isInterface()) {
-            addElement(((TypeElement) forElement).getSuperclass(), result);
+            addElement(ast, elements, ((TypeElement) forElement).getSuperclass(), result);
             for (TypeMirror i : ((TypeElement) forElement).getInterfaces()) {
-                addElement(i, result);
+                addElement(ast, elements, i, result);
             }
         }
 
@@ -231,16 +296,91 @@ public class ElementOverlay {
         }
     }
 
-    private void addElement(TypeMirror tm, List<Element> result) {
+    private void addElement(ASTService ast, Elements elements, TypeMirror tm, List<Element> result) {
         if (tm == null || tm.getKind() != TypeKind.DECLARED) {
             return;
         }
 
-        result.add(((DeclaredType) tm).asElement());
+        result.add(resolve(ast, elements, ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().toString()));
     }
 
+    public Element wrap(ASTService ast, Elements elements, Element original) {
+        if (original == null) return null;
+
+        if (original.getKind().isClass() || original.getKind().isInterface()) {
+            return resolve(ast, elements, ((TypeElement)original).getQualifiedName().toString());
+        } else {
+            return original;
+        }
+    }
+
+    private List<? extends Element> wrap(ASTService ast, Elements elements, Collection<? extends Element> original) {
+        List<Element> result = new ArrayList<Element>(original.size());
+
+        for (Element el : original) {
+            Element wrapped = wrap(ast, elements, el);
+
+            if (wrapped != null) { //may be null for classes living elsewhere (when original is from a package)
+                result.add(wrapped);
+            }
+        }
+
+        return result;
+    }
+    
     public void clearElementsCache() {
-        elementCache.clear();;
+        elementCache.clear();
+    }
+
+    //for tests only:
+    public int totalMapsSize() {
+        return this.class2Enclosed.size() +
+               this.class2SuperElementTrees.size() +
+               this.classes.size() +
+               this.elementCache.size() +
+               this.packages.size();
+    }
+
+    public Collection<? extends Element> getAllVisibleThrough(ASTService ast, Elements elements, String what, ClassTree tree) {
+        Collection<Element> result = new ArrayList<Element>();
+        Element current = what != null ? resolve(ast, elements, what) : null;
+
+        if (current == null) {
+            //can happen if:
+            //what == null: anonymous class
+            //TODO: what != null: apparently happens for JDK (where the same class occurs twice on one source path)
+            //might be possible to use ASTService.getElementImpl(tree) to thet the correct element
+            //use only supertypes:
+            //XXX: will probably not work correctly for newly created NCT (as the ClassTree does not have the correct extends/implements:
+            for (String sup : superFQNs(tree)) {
+                Element c = resolve(ast, elements, sup);
+
+                if (c != null) {//may legitimely be null, e.g. if the super type is not resolvable at all.
+                    result.add(c);
+                }
+            }
+        } else {
+            result.add(current);
+            result.addAll(getAllMembers(ast, elements, current));
+        }
+
+        return result;
+    }
+
+    private Collection<? extends Element> getAllMembers(ASTService ast, Elements elements, Element el) {
+        List<Element> result = new ArrayList<Element>();
+
+        result.addAll(el.getEnclosedElements());
+
+        for (Element parent : getAllSuperElements(ast, elements, el)) {
+            result.addAll(getAllMembers(ast, elements, parent));
+        }
+
+        return result;
+    }
+
+    public PackageElement unnamedPackage(ASTService ast, Elements elements) {
+        return (PackageElement) resolve(ast, elements, "");
     }
 
     private final class FakeTypeElement implements TypeElement {
@@ -251,14 +391,16 @@ public class ElementOverlay {
         private final Name fqn;
         private final String fqnString;
         private final Element parent;
+        private final Set<Modifier> mods;
 
-        public FakeTypeElement(ASTService ast, Elements elements, Name simpleName, Name fqn, String fqnString, Element parent) {
+        public FakeTypeElement(ASTService ast, Elements elements, Name simpleName, Name fqn, String fqnString, Element parent, Set<Modifier> mods) {
             this.ast = ast;
             this.elements = elements;
             this.simpleName = simpleName;
             this.fqn = fqn;
             this.fqnString = fqnString;
             this.parent = parent;
+            this.mods = mods;
         }
 
         @Override
@@ -313,7 +455,7 @@ public class ElementOverlay {
 
         @Override
         public Set<Modifier> getModifiers() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return mods;
         }
 
         @Override
@@ -324,6 +466,90 @@ public class ElementOverlay {
         @Override
         public Element getEnclosingElement() {
             return parent;
+        }
+
+        @Override
+        public <R, P> R accept(ElementVisitor<R, P> v, P p) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+
+    private final class TypeElementWrapper implements TypeElement {
+
+        private final ASTService ast;
+        private final Elements elements;
+        private final TypeElement delegateTo;
+
+        public TypeElementWrapper(ASTService ast, Elements elements, TypeElement delegateTo) {
+            this.ast = ast;
+            this.elements = elements;
+            this.delegateTo = delegateTo;
+        }
+
+        @Override
+        public List<? extends Element> getEnclosedElements() {
+            return wrap(ast, elements, delegateTo.getEnclosedElements());
+        }
+
+        @Override
+        public NestingKind getNestingKind() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Name getQualifiedName() {
+            return delegateTo.getQualifiedName();
+        }
+
+        @Override
+        public TypeMirror getSuperclass() {
+            return delegateTo.getSuperclass();
+        }
+
+        @Override
+        public List<? extends TypeMirror> getInterfaces() {
+            return delegateTo.getInterfaces();
+        }
+
+        @Override
+        public List<? extends TypeParameterElement> getTypeParameters() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public TypeMirror asType() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return delegateTo.getKind();
+        }
+
+        @Override
+        public List<? extends AnnotationMirror> getAnnotationMirrors() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return delegateTo.getModifiers();
+        }
+
+        @Override
+        public Name getSimpleName() {
+            return delegateTo.getSimpleName();
+        }
+
+        @Override
+        public Element getEnclosingElement() {
+            return ElementOverlay.this.resolve(ast, elements, ((QualifiedNameable/*XXX*/) delegateTo.getEnclosingElement()).getQualifiedName().toString());
         }
 
         @Override
@@ -407,21 +633,100 @@ public class ElementOverlay {
 
     }
 
+    private class PackageElementWrapper implements PackageElement {
+
+        private final ASTService ast;
+        private final Elements elements;
+        private final PackageElement delegateTo;
+
+        public PackageElementWrapper(ASTService ast, Elements elements, PackageElement delegateTo) {
+            this.ast = ast;
+            this.elements = elements;
+            this.delegateTo = delegateTo;
+        }
+
+        @Override
+        public Name getQualifiedName() {
+            return delegateTo.getQualifiedName();
+        }
+
+        @Override
+        public boolean isUnnamed() {
+            return delegateTo.isUnnamed();
+        }
+
+        @Override
+        public TypeMirror asType() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return delegateTo.getKind();
+        }
+
+        @Override
+        public List<? extends AnnotationMirror> getAnnotationMirrors() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Name getSimpleName() {
+            return delegateTo.getSimpleName();
+        }
+
+        @Override
+        public Element getEnclosingElement() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<? extends Element> getEnclosedElements() {
+            return wrap(ast, elements, delegateTo.getEnclosedElements());
+        }
+
+        @Override
+        public <R, P> R accept(ElementVisitor<R, P> v, P p) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+
     public static class FQNComputer {
         private final StringBuilder fqn = new StringBuilder();
+        private int anonymousCounter = 0;
         public void setCompilationUnit(CompilationUnitTree cut) {
             setPackageNameTree(cut.getPackageName());
         }
         public void enterClass(ClassTree ct) {
-            if (fqn.length() > 0) fqn.append('.');
-            fqn.append(ct.getSimpleName());
+            if (ct.getSimpleName() == null || ct.getSimpleName().length() == 0 || anonymousCounter > 0) {
+                anonymousCounter++;
+            } else {
+                if (fqn.length() > 0) fqn.append('.');
+                fqn.append(ct.getSimpleName());
+            }
         }
         public void leaveClass() {
-            int dot = Math.max(0, fqn.lastIndexOf("."));
-            
-            fqn.delete(dot, fqn.length());
+            if (anonymousCounter > 0) {
+                anonymousCounter--;
+            } else {
+                int dot = Math.max(0, fqn.lastIndexOf("."));
+
+                fqn.delete(dot, fqn.length());
+            }
         }
         public String getFQN() {
+            if (anonymousCounter > 0) return null;
             return fqn.toString();
         }
 

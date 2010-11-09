@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -113,7 +112,7 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
         }
         assertNotNull(main);
         CallModelImpl graph = new CallModelImpl(project, (CsmFunction) main);
-        List<Call> callees_main = graph.getCallees(graph.getRoot(), true);
+        List<Call> callees_main = graph.getCallees(graph.getRoot());
         assertNotNull(callees_main);
         assertEquals(callees_main.size(), 7);
         Map<String,Function> map = new TreeMap<String,Function>();
@@ -130,14 +129,14 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
         assertNotNull(map.get("AddModule"));
 
         Function addModule = map.get("AddModule");
-        List<Call> callees_addModule = graph.getCallees(addModule, true);
+        List<Call> callees_addModule = graph.getCallees(addModule);
         assertEquals(1, callees_addModule.size());
 
         Function getSupportMetric = callees_addModule.get(0).getCallee();
         assertNotNull(getSupportMetric);
         assertEquals(getSupportMetric.getName(), "GetSupportMetric");
 
-        List<Call> callers_getSupportMetric = graph.getCallers(getSupportMetric, true);
+        List<Call> callers_getSupportMetric = graph.getCallers(getSupportMetric);
         assertEquals(4, callers_getSupportMetric.size());
         map = new TreeMap<String,Function>();
         for(Call call : callers_getSupportMetric) {

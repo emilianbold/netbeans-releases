@@ -54,6 +54,7 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.api.javahelp.Help;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
 
 public class Installer extends ModuleInstall {
 
@@ -76,13 +77,14 @@ public class Installer extends ModuleInstall {
         // doesn't work on Windows.  Here we force JavaHelp instance to be
         // created and thus its AWTEventListener be registered early enough.
         
-        getDefaultHelp();
+        Lookup.getDefault().lookup(Help.class);
     }
     
     public void uninstalled() {
         log.fine("uninstalled module");
-        if (help != null) {
-            help.deactivate();
+        Help help = Lookup.getDefault().lookup(Help.class);
+        if (help instanceof JavaHelp) {
+            ((JavaHelp) help).deactivate();
         }
         HelpAction.WindowActivatedDetector.uninstall();
         // UIManager is too aggressive about caching, and we get CCE's,
@@ -125,14 +127,4 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static JavaHelp help = null;
-    /** @deprecated only for use from the layer */
-    public static synchronized Help getDefaultHelp() {
-        // Does not work to use Lookup: help set processors called too early.
-        if (help == null) {
-            help = new JavaHelp();
-        }
-        return help;
-    }
-
 }

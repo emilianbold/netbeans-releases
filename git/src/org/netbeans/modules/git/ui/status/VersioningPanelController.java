@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
+import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -51,9 +53,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -79,6 +79,7 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -99,23 +100,25 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
     private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
-    private final StatusTable syncTable;
+    private final VCSStatusTable<GitStatusNode> syncTable;
     private Mode mode;
     private GitProgressSupport refreshStatusSupport;
 
-    VersioningPanelController (GitVersioningTopComponent tc) {
+    VersioningPanelController () {
         this.panel = new VersioningPanel();
 
-        initDisplayStatus();
-        onDisplayedStatusChanged();
-        syncTable = new StatusTable(new GitTableModel<StatusNode>(new StatusNode[0]));
+        initPanelMode();
+        syncTable = new GitStatusTable(new VCSStatusTableModel<GitStatusNode>(new GitStatusNode[0]));
         setVersioningComponent(syncTable.getComponent());
         
         attachListeners();
-        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
-        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+    }
+
+    void setActions (JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
 
         panel.getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
             @Override
@@ -132,6 +135,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     }
 
     void focus () {
+        syncTable.focus();
     }
 
     JPanel getPanel () {
@@ -185,19 +189,19 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private void onDisplayedStatusChanged () {
         if (panel.tgbHeadVsWorking.isSelected()) {
             mode = Mode.HEAD_VS_WORKING_TREE;
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadWorking")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             mode = Mode.HEAD_VS_INDEX;
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadIndex")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         } else {
             mode = Mode.INDEX_VS_WORKING_TREE;
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_IndexWorking")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         }
     }
 
@@ -233,20 +237,53 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         }
     }
 
-    private void initDisplayStatus () {
+    private void applyChange (FileStatusCache.ChangedEvent event) {
+        if (context != null) {
+            synchronized (applyChangeTask.changes) {
+                applyChangeTask.changes.add(event);
+            }
+            changeTask.schedule(1000);
+        }
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
+            FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
+            if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
+                applyChange(changedEvent);
+            }
+            return;
+        }
+    }
+
+    private boolean affectsView (FileStatusCache.ChangedEvent changedEvent) {
+        File file = changedEvent.getFile();
+        FileInformation oldInfo = changedEvent.getOldInfo();
+        FileInformation newInfo = changedEvent.getNewInfo();
+        if (oldInfo == null) {
+            if (!newInfo.containsStatus(displayStatuses)) return false;
+        } else {
+            if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
+        }
+        return context == null ? false: context.contains(file);
+    }
+
+    private void initPanelMode () {
         mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
         panel.tgbHeadVsWorking.setSelected(true);
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
-                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+                panel.tgbHeadVsWorking.setSelected(true);
                 break;
             case HEAD_VS_INDEX:
-                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+                panel.tgbHeadVsIndex.setSelected(true);
                 break;
             case INDEX_VS_WORKING_TREE:
-                displayStatuses = FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
+                panel.tgbIndexVsWorking.setSelected(true);
                 break;
         }
+        onDisplayedStatusChanged();
     }
 
     private void setVersioningComponent (final JComponent component)  {
@@ -284,54 +321,22 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         }
     }
 
-    private void applyChange (FileStatusCache.ChangedEvent event) {
-        if (context != null) {
-            synchronized (applyChangeTask.changes) {
-                applyChangeTask.changes.add(event);
-            }
-            changeTask.schedule(1000);
-        }
-    }
-
-    @Override
-    public void propertyChange (PropertyChangeEvent evt) {
-        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
-            FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
-            if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
-                applyChange(changedEvent);
-            }
-            return;
-        }
-    }
-
-    private boolean affectsView (FileStatusCache.ChangedEvent changedEvent) {
-        File file = changedEvent.getFile();
-        FileInformation oldInfo = changedEvent.getOldInfo();
-        FileInformation newInfo = changedEvent.getNewInfo();
-        if (oldInfo == null) {
-            if (!newInfo.containsStatus(displayStatuses)) return false;
-        } else {
-            if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
-        }
-        return context == null ? false: context.contains(file);
-    }
-
     private class RefreshNodesTask implements Runnable {
         @Override
         public void run() {
-            final List<StatusNode> nodes = new LinkedList<StatusNode>();
+            final List<VCSStatusNode> nodes = new LinkedList<VCSStatusNode>();
             Git git = Git.getInstance();
             File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
-                    nodes.add(new StatusNode(new GitFileNode(root, f), mode));
+                    nodes.add(new GitStatusNode(new GitFileNode(root, f), mode));
                 }
             }
             Mutex.EVENT.readAccess(new Runnable () {
                 @Override
                 public void run() {
-                    syncTable.setNodes(nodes.toArray(new StatusNode[nodes.size()]));
+                    syncTable.setNodes(nodes.toArray(new GitStatusNode[nodes.size()]));
                     if (nodes.isEmpty()) {
                         setVersioningComponent(noContentComponent);
                     } else {
@@ -347,6 +352,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
      */
     private class ApplyChangesTask implements Runnable {
         private final Set<FileStatusCache.ChangedEvent> changes = new HashSet<FileStatusCache.ChangedEvent>();
+
         @Override
         public void run() {
             final Set<FileStatusCache.ChangedEvent> events;
@@ -362,25 +368,21 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 }
             }
             Git git = Git.getInstance();
-            Collection<StatusNode> nodes = syncTable.getNodes();
-            Map<File, StatusNode> nodesAsMap = new HashMap<File, StatusNode>(nodes.size());
-            for (StatusNode node : nodes) {
-                nodesAsMap.put(node.getFile(), node);
-            }
+            Map<File, GitStatusNode> nodes = syncTable.getNodes();
             // sort changes
-            final List<StatusNode> toRemove = new LinkedList<StatusNode>();
-            final List<StatusNode> toRefresh = new LinkedList<StatusNode>();
-            final List<StatusNode> toAdd = new LinkedList<StatusNode>();
+            final List<GitStatusNode> toRemove = new LinkedList<GitStatusNode>();
+            final List<GitStatusNode> toRefresh = new LinkedList<GitStatusNode>();
+            final List<GitStatusNode> toAdd = new LinkedList<GitStatusNode>();
             for (FileStatusCache.ChangedEvent evt : events) {
                 FileInformation newInfo = evt.getNewInfo();
-                StatusNode node = nodesAsMap.get(evt.getFile());
+                GitStatusNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
                         toRefresh.add(node);
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            toAdd.add(new StatusNode(new GitFileNode(root, evt.getFile()), mode));
+                            toAdd.add(new GitStatusNode(new GitFileNode(root, evt.getFile()), mode));
                         }
                     }
                 } else if (node != null) {
@@ -392,8 +394,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 @Override
                 public void run() {
                     syncTable.updateNodes(toRemove, toRefresh, toAdd);
-                    Collection<StatusNode> nodes = syncTable.getNodes();
-                    if (nodes.isEmpty()) {
+                    if (syncTable.getNodes().isEmpty()) {
                         setVersioningComponent(noContentComponent);
                     } else {
                         setVersioningComponent(syncTable.getComponent());
