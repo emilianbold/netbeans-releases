@@ -133,6 +133,7 @@ public class FmtOptions {
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
+    private static final String FALSE = "false";      // NOI18N
     
     private static Map<String,String> defaults;
     
@@ -147,8 +148,8 @@ public class FmtOptions {
             { spacesPerTab, "4"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { freeFormat, TRUE },
-            { autoDetect, TRUE }
+            { freeFormat, FALSE },
+            { autoDetect, FALSE }
         };
         
         defaults = new HashMap<String,String>();
