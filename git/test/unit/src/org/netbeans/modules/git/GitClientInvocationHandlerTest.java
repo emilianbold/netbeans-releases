@@ -203,7 +203,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.commit(new File[] { file }, "aaa", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "aaa", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
