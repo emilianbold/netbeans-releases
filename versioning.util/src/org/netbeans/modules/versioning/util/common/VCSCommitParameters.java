@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -65,6 +66,7 @@ import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
@@ -74,22 +76,39 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  */
 public abstract class VCSCommitParameters {
 
-    private static final String RECENT_COMMIT_MESSAGES  = "recentCommitMessage";
-    private static final String LAST_COMMIT_MESSAGE     = "lastCommitMessage";
+    private static final String PARAMETERS_CHANGED_PROPERTY  = "VCSCommitParameters.changed";   // NOI18N
+    
+    private static final String RECENT_COMMIT_MESSAGES  = "recentCommitMessage";                // NOI18N
+    private static final String LAST_COMMIT_MESSAGE     = "lastCommitMessage";                  // NOI18N
             
     private JLabel recentLink;
     private JLabel templateLink;
     private Preferences preferences;
 
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+    
     public VCSCommitParameters(Preferences preferences) {
         this.preferences = preferences;
     }        
     
     public abstract JPanel getPanel();
     public abstract boolean isCommitable();
+    public abstract String getWarning();
 
     protected Preferences getPreferences() {
         return preferences;
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    protected void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
     
     public static JLabel createRecentMessagesLink(final JTextArea text, final Preferences preferences) {
@@ -210,10 +229,14 @@ public abstract class VCSCommitParameters {
 
         @Override
         public boolean isCommitable() {
-            String msg = getCommitMessage();
-            return msg != null && !msg.isEmpty();
+            return true;
         }
 
+        @Override
+        public String getWarning() {
+            return "";                                                          // NOI18N
+        }
+        
         public void storeCommitMessage() {
             Utils.insert(getPreferences(), RECENT_COMMIT_MESSAGES, getCommitMessage().trim(), 20);
         }

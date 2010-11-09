@@ -42,39 +42,46 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.regex.Matcher;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitUser;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GitCommitParameters extends DefaultCommitParameters {
+public class GitCommitParameters extends DefaultCommitParameters implements ItemListener, DocumentListener {
     private CommitPanel panel;
     private String commitMessage;
     private GitUser user;
+    private String warning;
 
     public GitCommitParameters(Preferences preferences, String commitMessage, GitUser user) {
         super(preferences);
         this.commitMessage = commitMessage;
         this.user = user;
     }
-//
-//    public GitCommitParameters(Preferences preferences) {
-//        super(preferences);
-//    }
 
     @Override
     public CommitPanel getPanel() {
         if(panel == null) {
-            panel = createPanel();                
+            panel = createPanel();   
+            
+            ((JTextField) panel.authorComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+            ((JTextField) panel.commiterComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+            panel.authorComboBox.addItemListener(this);
+            panel.commiterComboBox.addItemListener(this);
         }
         return panel;
     }
@@ -126,31 +133,40 @@ public class GitCommitParameters extends DefaultCommitParameters {
     }
     
     static String getUserString(GitUser user) {
-        if(user == null) return "";
-        return user.getName() + " <" + user.getEmailAddress() + ">";
+        if(user == null) return "";                                             // NOI18N
+        return user.getName() + " <" + user.getEmailAddress() + ">";            // NOI18N
     }
         
     @Override
-    public boolean isCommitable() {
-        String msg = getCommitMessage();
-        return msg != null && !msg.isEmpty();
+    public boolean isCommitable() {            
+        if(getAuthor() != null && getCommiter() != null) {
+            warning = null;
+            return true;
+        }
+        warning = "Author and Commiter must be in format 'A U Thor <author@example.com>";
+        return false;
     }
+
+    @Override
+    public String getWarning() {
+        return warning;
+    }    
     
-    private Pattern validUserFormat = Pattern.compile("(.+)\\<(.*)\\>");                // NOI18N
+    private Pattern validUserFormat = Pattern.compile("(.+)\\<(.*)\\>");        // NOI18N
     
     // cli rejects "<>", "<bla>", "bla>" or ">"
-    private Pattern invalidUserFormat = Pattern.compile("(\\<)?(.*)\\>");               // NOI18N
+    private Pattern invalidUserFormat = Pattern.compile("(\\<)?(.*)\\>");       // NOI18N
     
     /** package private to support testing */
     GitUser getUser(JComboBox combo) {
-        String str = (String) combo.getSelectedItem();
+        String str = (String) combo.getEditor().getItem();
         if(str == null || str.trim().isEmpty()) {
             return null;
         }        
         Matcher m = validUserFormat.matcher(str.trim());
         if(m.matches()) {
             String name = m.group(1).trim();
-            String mail = m.groupCount() > 1 ? (m.group(2) != null ? m.group(2) : "") : "";
+            String mail = m.groupCount() > 1 ? (m.group(2) != null ? m.group(2) : "") : ""; // NOI18N
             mail = mail.trim();
             return new ParametersGitUser(name, mail);
         }        
@@ -159,6 +175,26 @@ public class GitCommitParameters extends DefaultCommitParameters {
             return null;
         }
         return new ParametersGitUser(str, "");
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        fireChange();
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        fireChange();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        fireChange();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        fireChange();
     }
     
     private class ParametersGitUser extends GitUser {
