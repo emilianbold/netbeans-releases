@@ -52,7 +52,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    displayName="#AdvancedOption_DisplayName_WinSys"
+    id="Appearance",
+    displayName="#AdvancedOption_DisplayName_WinSys",
+    keywords="#KW_WindowOptions",
+    keywordsCategory="Advanced/Appearance"
 //    toolTip="#AdvancedOption_Tooltip_WinSys"
 )
 public final class WinSysOptionsPanelController extends OptionsPanelController {

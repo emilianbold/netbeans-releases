@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -635,25 +636,24 @@ public final class DefaultProjectOperationsImplementation {
                     
                     RequestProcessor.getDefault().post(new Runnable() {
                         public @Override void run() {
-                            Exception e = null;
-                            
+                            final AtomicReference<Throwable> e = new AtomicReference<Throwable>();
                             try {
                                 executor.execute();
-                            } catch (Exception ex) {
-                                e = ex;
-                            }
-                            
-                            final Exception ex = e;
-                            
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public @Override void run() {
-                                    dialog[0].setVisible(false);
-                                    
-                                    if (ex != null) {
-                                        LOG.log(Level.WARNING, null, ex);
-                                    }
+                            } catch (Throwable ex) {
+                                e.set(ex);
+                                if (ex instanceof ThreadDeath) {
+                                    throw (ThreadDeath)ex;
                                 }
-                            });
+                            } finally {                            
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public @Override void run() {
+                                        dialog[0].setVisible(false);
+                                        if (e.get() != null) {
+                                            LOG.log(Level.WARNING, null, e.get());
+                                        }
+                                    }
+                                });
+                            }
                         }
                     });
                 } else {

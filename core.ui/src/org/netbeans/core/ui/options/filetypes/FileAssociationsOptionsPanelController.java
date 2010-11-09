@@ -55,7 +55,10 @@ import org.openide.util.Lookup;
  * @author Jiri Skrivanek
  */
 @OptionsPanelController.SubRegistration(
-    displayName="#AdvancedOption.displayName"
+    id="Files",
+    displayName="#AdvancedOption.displayName",
+    keywords="#KW_FilesOptions",
+    keywordsCategory="Advanced/Files"
 //    toolTip="#AdvancedOption.tooltip"
 )
 public final class FileAssociationsOptionsPanelController extends OptionsPanelController {

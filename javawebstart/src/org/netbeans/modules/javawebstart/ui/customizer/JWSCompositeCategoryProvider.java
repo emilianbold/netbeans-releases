@@ -396,6 +396,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 if (extender.getExtension("jws") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile); // NOI18N
                     ext.addDependency("jar", "jnlp"); // NOI18N
+                    ext.addDependency("-post-jar", "jnlp"); //NOI18N
                 }
                 ProjectManager.getDefault().saveProject(proj);
             } else {

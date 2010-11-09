@@ -49,6 +49,12 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+@OptionsPanelController.SubRegistration(
+    displayName="#LBL_JavaDebugger",
+    id="JavaDebugger",
+    //toolTip="#HINT_JavaDebugger",
+    keywords="#KW_JavaDebugger",
+    keywordsCategory="Advanced/JavaDebugger")
 public final class JavaDebuggerOptionsPanelController extends OptionsPanelController {
 
     private JavaDebuggerPanel panel;
