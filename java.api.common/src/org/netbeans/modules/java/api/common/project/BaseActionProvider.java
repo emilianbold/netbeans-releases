@@ -1016,6 +1016,12 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled( String command, Lookup context ) {
+        if (COMMAND_DELETE.equals(command) 
+            || COMMAND_MOVE.equals(command)
+            || COMMAND_COPY.equals(command)
+            || COMMAND_RENAME.equals(command)) {
+            return true;
+        }
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
             return false;
