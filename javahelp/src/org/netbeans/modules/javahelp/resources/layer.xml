@@ -70,39 +70,39 @@ made subject to such option by the copyright holder.
     <folder name="xml">
         <folder name="entities">
             <folder name="Sun_Microsystems_Inc_">
-                <file name="DTD_JavaHelp_HelpSet_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpset_1_0.dtd">
+                <file name="DTD_JavaHelp_HelpSet_Version_1_0" url="helpset_1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Map_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/map_1_0.dtd">
+                <file name="DTD_JavaHelp_Map_Version_1_0" url="map_1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_TOC_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/toc_1_0.dtd">
+                <file name="DTD_JavaHelp_TOC_Version_1_0" url="toc_1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Index_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/index_1_0.dtd">
+                <file name="DTD_JavaHelp_Index_Version_1_0" url="index_1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_HelpSet_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpset_2_0.dtd">
+                <file name="DTD_JavaHelp_HelpSet_Version_2_0" url="helpset_2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Map_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/map_2_0.dtd">
+                <file name="DTD_JavaHelp_Map_Version_2_0" url="map_2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_TOC_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/toc_2_0.dtd">
+                <file name="DTD_JavaHelp_TOC_Version_2_0" url="toc_2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Index_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/index_2_0.dtd">
+                <file name="DTD_JavaHelp_Index_Version_2_0" url="index_2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Favorites_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/favorites_2_0.dtd">
+                <file name="DTD_JavaHelp_Favorites_Version_2_0" url="favorites_2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Favorites Version 2.0//EN"/>
                 </file>
             </folder>
             <folder name="NetBeans">
-                <file name="DTD_JavaHelp_Help_Set_Reference_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpsetref-1_0.dtd">
+                <file name="DTD_JavaHelp_Help_Set_Reference_1_0" url="helpsetref-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"/>
                 </file>
-                <file name="DTD_Help_Context_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpcontext-1_0.dtd">
+                <file name="DTD_Help_Context_1_0" url="helpcontext-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Help Context 1.0//EN"/>
                 </file>
             </folder>
