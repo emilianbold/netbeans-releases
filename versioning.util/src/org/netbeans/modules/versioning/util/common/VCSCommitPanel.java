@@ -285,7 +285,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         basePanel.add(parametersPane1);
         
         // files table        
-        FilesPanel filesPanel = new FilesPanel(this, filters, 2 * parameters.getPanel().getPreferredSize().height);
+        FilesPanel filesPanel = new FilesPanel(this, filters, parameters.getPanel().getPreferredSize().height);
         basePanel.add(makeVerticalStrut(parametersPane1, filesPanel, RELATED, this));        
         basePanel.add(filesPanel);
         
