@@ -91,6 +91,10 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
     public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
         this.ui = ui;
         this.context = l;
+        firePropertyChangeEvent();
+    }
+
+    public void firePropertyChangeEvent() {
         if (listener != null) {
             listener.propertyChange(null);
         }
