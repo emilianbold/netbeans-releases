@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
@@ -231,7 +232,9 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	String runargs = getArgsFlatEx();
 	if (runargs == null)
 	    runargs = "";
-	dbx().sendCommand(0, 0, "runargs " + runargs);	//NOI18N
+        IOPack ioPack = dbxDebugger().getIOPack();
+        // FIXME: does not work, can this be done at all with dbx?
+	dbx().sendCommand(0, 0, "runargs " + runargs + ioPack.getExtraRunArgs(dbxDebugger().fmap()));	//NOI18N
     }
 
     protected void applyRunDirectory() {

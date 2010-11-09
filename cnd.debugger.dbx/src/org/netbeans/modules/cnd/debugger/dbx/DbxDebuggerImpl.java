@@ -1085,6 +1085,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         state().isLoaded = false;
         stateChanged();
 
+        getIOPack().close();
+
         if (executor != null) {
             // executor may sometimes be null if a session fail to start
             // properly.
@@ -3006,7 +3008,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         String slave = null;
         if (!factory.connectExisting()) {
-            slave = executor.slaveName();
+            slave = getIOPack().getSlaveName();
         }
 
         OptionValue run_io = optionLayers().byType(DebuggerOption.RUN_IO);
@@ -3104,7 +3106,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             if (factory.connectExisting()) {
                 return;
             }
-            String slave = executor.slaveName();
+            String slave = getIOPack().getSlaveName();
             setOptionHelp("DBX_run_pty", slave);		// NOI18N
             value = "pty";					// NOI18N
 
@@ -3123,7 +3125,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             // global trying to get at optionLayers() when syncing global ones
             // due to dbxDoneInitialization causes NPE's
             // SHOULD be ok once we move DBX_run_pty back to per-profile.
-            String slave = executor.slaveName();
+            String slave = getIOPack().getSlaveName();
             value = slave;
 
         } else if ("DBX_follow_fork_inherit".equals(name)) { // NOI18N

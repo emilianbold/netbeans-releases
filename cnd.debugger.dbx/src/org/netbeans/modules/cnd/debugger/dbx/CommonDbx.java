@@ -634,7 +634,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // setup the IOPack
 	    //
 
-	    ioPack = DbxIOPack.create(remote, io);
+	    ioPack = IOPack.create(remote, ndi.getInputOutput(), ndi.getProfile(), executor);
 	    tentativeDbx.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
@@ -805,7 +805,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 
 	    boolean havePio = false;
 	    if (!connectExisting)
-		havePio = ioPack.connectPio(executor, ndi.getProfile());
+		havePio = ioPack.start();
 	    if (!havePio) {
 		// SHOULD do something
 	    }
@@ -956,7 +956,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 
 	String slaveName = null;
 	if (!factory.connectExisting())
-	    slaveName = executor.slaveName();
+	    slaveName = getIOPack().getSlaveName();
 
 	if (slaveName != null && ioInWindow) {
 	    prop_set("DBX_run_io", "pty");	// NOI18N
