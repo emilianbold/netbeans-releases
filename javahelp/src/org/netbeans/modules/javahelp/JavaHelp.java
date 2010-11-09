@@ -84,6 +84,7 @@ import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.HelpCtx;
@@ -93,6 +94,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 // [PENDING] should event dispatch thread be used thruout?
@@ -100,6 +102,7 @@ import org.openide.windows.WindowManager;
 /** Help implementation using the JavaHelp 1.x system.
 * @author Jesse Glick, Richard Gregor
 */
+@ServiceProvider(service=Help.class)
 public final class JavaHelp extends AbstractHelp implements AWTEventListener {
 
     /** Make a JavaHelp implementation of the Help.Impl interface.
