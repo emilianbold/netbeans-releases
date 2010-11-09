@@ -42,12 +42,14 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
+import java.io.File;
 import javax.swing.Action;
-import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,18 +59,21 @@ final class FunctionCallNode extends AbstractNode implements GoToSourceAction.Go
 
     private final FunctionCall functionCall;
     private GoToSourceAction action;
+    private String plainDisplayName = null;
+    private String htmlDisplayName = null;
+    private String functionName = null;
+    private boolean useHtmlFormat = true;
 
     FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
 //        super(Children.LEAF);
         super(stackModel.getCallers(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCallers(functionCall)));
         this.functionCall = functionCall;
         action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall, this);
+        plainDisplayName = functionCall.getDisplayedName();
+        updateNames();
     }
 
-    @Override
-    public String getDisplayName() {
-        return functionCall.getDisplayedName();
-    }
+
 
     @Override
     public Image getIcon(int type) {
@@ -91,17 +96,81 @@ final class FunctionCallNode extends AbstractNode implements GoToSourceAction.Go
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        if (!action.isEnabled()) {
-            String baseName = super.getHtmlDisplayName();
-            baseName = baseName != null ? baseName : getDisplayName();
-            return "<font color='!controlShadow'>" + baseName.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+    public synchronized String getDisplayName() {
+        return useHtmlFormat ? htmlDisplayName : plainDisplayName;
+    }
+
+    @Override
+    public synchronized String getHtmlDisplayName() {
+        return htmlDisplayName;
+    }
+
+    private String toHtml(String plain) {
+        plain = plain.replace("&", "&amp;"); // NOI18N
+        plain = plain.replace("<", "&lt;"); // NOI18N
+        plain = plain.replace(">", "&gt;"); // NOI18N
+        plain = plain.replace(" ", "&nbsp;"); // NOI18N
+        return plain;
+    }
+    private synchronized void updateNames() {
+        plainDisplayName = functionCall.getDisplayedName();
+
+        String name = functionCall.getFunction().getName();
+        String funcName = functionCall.getFunction().getQuilifiedName();
+        int idx1 = name.indexOf(funcName);
+
+        int idx2 = funcName.lastIndexOf(':');
+        if (idx2 > 0) {
+            idx1 += idx2 + 1;
+            funcName = funcName.substring(idx2 + 1);
+        }
+
+        this.functionName = funcName;
+
+        String prefix = name.substring(0, idx1);
+        String suffix = name.substring(idx1 + funcName.length());
+
+        prefix = toHtml(prefix);
+        funcName = toHtml(funcName);
+        suffix = toHtml(suffix);
+        funcName = "<b>" + funcName + "</b>"; // NOI18N
+
+        String dispName = prefix + funcName + suffix + "&nbsp;"; // NOI18N
+
+         StringBuilder result = new StringBuilder("<html>"); // NOI18N
+
+        String infoSuffix = null;
+
+        if (action.isEnabled()) {
+            result.append("<font color='#000000'>").append(dispName).append("</font>"); // NOI18N
+
+            SourceFileInfo sourceInfo = action.getSource();
+            if (sourceInfo != null && sourceInfo.isSourceKnown()) {
+                String fname = new File(sourceInfo.getFileName()).getName();
+                int line = sourceInfo.getLine();
+                String infoPrefix = line > 0
+                        ? getMessage("FunctionCallNode.prefix.withLine") // NOI18N
+                        : getMessage("FunctionCallNode.prefix.withoutLine"); // NOI18N
+
+                infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
+                result.append("<font color='#808080'>").append(infoSuffix).append("</font>"); // NOI18N
             }
-        return super.getHtmlDisplayName();
+        } else {
+            result.append("<font color='#808080'>").append(dispName).append("</font>"); // NOI18N
+        }
+
+        result.append("</html>"); // NOI18N
+
+        htmlDisplayName = result.toString();
     }
 
     @Override
     public void ready() {
+        updateNames();
         fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(FunctionCallNode.class, key);
     }
 }
