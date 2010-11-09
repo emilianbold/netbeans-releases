@@ -40,51 +40,50 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.io;
+package org.netbeans.modules.remote.api.ui;
 
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Vladimir Kvashin
  */
-public class PioPack extends InternalTerminalPack {
-    private final TermComponent pio;
+public class RemoteFileSystemViewTestCase extends NativeExecutionBaseTestCase {
 
-    public PioPack(TermComponent console, TermComponent pio, ExecutionEnvironment exEnv) {
-        super(console, pio.getIO(), exEnv);
-        this.pio = pio;
+    public RemoteFileSystemViewTestCase(String name, ExecutionEnvironment env) {
+        super(name, env);
     }
 
-    public TermComponent pio() {
-	return pio;
+    public RemoteFileSystemViewTestCase(String name) {
+        super(name);
     }
 
-    @Override
-    public void open() {
-	pio.open();
-	super.open();
+    @ForAllEnvironments
+    public void testIZ_191613() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);
+        RemoteFileSystemView fs = new RemoteFileSystemView("/", env);
+        String dirname = "/usr";
+        String filename = "include";
+        File referenceFile = fs.createFileObject(dirname + '/' + filename);
+        assertTrue(referenceFile.exists());
+        File dir = fs.createFileObject("/usr");
+        File selectedFile = fs.createFileObject(filename);
+        assertFalse("isAbsolute() should return false for " + filename, selectedFile.isAbsolute());
+        if(!selectedFile.isAbsolute()) {
+           selectedFile = fs.getChild(dir, filename);
+        }
     }
 
-    @Override
-    public void bringDown() {
-	pio.bringDown();
-	super.bringDown();
+    @SuppressWarnings("unchecked")
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteFileSystemViewTestCase.class);
     }
 
-    @Override
-    public void bringUp() {
-	pio.bringUp();
-	super.bringUp();
-    }
-
-    @Override
-    public void switchTo() {
-	pio.switchTo();
-	super.switchTo();
-    }
-
-    public static TermComponent makePio(int flags) {
-	return TermComponentFactory.createNewTermComponent(PioTopComponent.getDefault(), flags);
-    }
 }

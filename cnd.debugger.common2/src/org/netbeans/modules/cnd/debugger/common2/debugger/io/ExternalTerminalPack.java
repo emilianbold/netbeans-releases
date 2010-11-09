@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,38 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb2;
+package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
-import org.openide.util.Utilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponentFactory;
-import org.openide.windows.InputOutput;
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class ExternalTerminalPack extends IOPack {
+    private DebuggerExternalTerminal terminal = null;
+    private final String termPath;
 
-// OLD import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+    public ExternalTerminalPack(TermComponent console, String termPath, ExecutionEnvironment exEnv) {
+        super(console, exEnv);
+        this.termPath = termPath;
+    }
 
-class GdbIOPack {
-    public static IOPack create(boolean remote, InputOutput io) {
-        TermComponent console;
-        if (remote || Utilities.isWindows() || Log.Startup.nopty) {
-	    console = IOPack.makeConsole(0);
-	} else {
-	    console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
-	}
+    @Override
+    public boolean start() {
+        if (termPath != null) {
+            terminal = new DebuggerExternalTerminal(termPath);
+            slaveName = terminal.getTty();
+            return slaveName != null;
+        }
+        return false;
+    }
 
-        IOPack res = new IOPack(console, io);
-
-	res.bringUp();
-	// OLD bug #181165 let "debugger" group open it
-	// OLD open();
-
-	// PioWindow multiplexes consoles so need to explicitly
-	// bring the new ones to front.
-	res.switchTo();
-
-        return res;
+    @Override
+    public void close() {
+        if (terminal != null) {
+            terminal.finish();
+        }
     }
 }

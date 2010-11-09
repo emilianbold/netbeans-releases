@@ -42,49 +42,46 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class PioPack extends InternalTerminalPack {
-    private final TermComponent pio;
+public class InternalTerminalPack extends IOPack {
+    private Pty pty = null;
+    protected final InputOutput io;
 
-    public PioPack(TermComponent console, TermComponent pio, ExecutionEnvironment exEnv) {
-        super(console, pio.getIO(), exEnv);
-        this.pio = pio;
+    public InternalTerminalPack(TermComponent console, InputOutput io, ExecutionEnvironment exEnv) {
+        super(console, exEnv);
+        this.io = io;
     }
 
-    public TermComponent pio() {
-	return pio;
-    }
-
-    @Override
-    public void open() {
-	pio.open();
-	super.open();
-    }
-
-    @Override
-    public void bringDown() {
-	pio.bringDown();
-	super.bringDown();
+    public boolean start() {
+        try {
+            pty = PtySupport.allocate(exEnv);
+        } catch (IOException ex) {
+            slaveName = null;
+            return false;
+        }
+        PtySupport.connect(io, pty);
+        slaveName = pty.getSlaveName();
+        return true;
     }
 
     @Override
-    public void bringUp() {
-	pio.bringUp();
-	super.bringUp();
-    }
-
-    @Override
-    public void switchTo() {
-	pio.switchTo();
-	super.switchTo();
-    }
-
-    public static TermComponent makePio(int flags) {
-	return TermComponentFactory.createNewTermComponent(PioTopComponent.getDefault(), flags);
+    public void close() {
+        if (pty != null) {
+            try {
+                pty.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }

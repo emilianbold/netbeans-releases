@@ -263,7 +263,7 @@ public class Gdb {
 	    //
 	    // setup the IOPack
 	    //
-	    ioPack = GdbIOPack.create(remote, ndi.getInputOutput());
+	    ioPack = IOPack.create(remote, ndi.getInputOutput(), ndi.getProfile(), executor);
 	    tentativeGdb.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
@@ -276,7 +276,7 @@ public class Gdb {
 	    // We need the slave name ahead of time
 	    boolean havePio = false;
 	    if (!connectExisting) {
-                havePio = ioPack.connectPio(executor, ndi.getProfile());
+                havePio = ioPack.start();
 	    }
 	    if (!havePio) {
 		// SHOULD do something
@@ -338,9 +338,9 @@ public class Gdb {
 		// Arrange for gdb victims to run under the Pio
 		boolean ioInWindow =
 		    true;
-		if (executor.slaveName() != null && ioInWindow) {
+		if (ioPack.getSlaveName() != null && ioInWindow) {
 		    avec.add("-tty"); // NOI18N
-		    avec.add(executor.slaveName());
+		    avec.add(ioPack.getSlaveName());
 		}
 
 		if (additionalArgv != null) {
