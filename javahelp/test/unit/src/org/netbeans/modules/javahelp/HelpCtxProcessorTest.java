@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.javahelp;
 
-import java.io.OutputStream;
+import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
@@ -56,11 +56,16 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
+import org.openide.util.test.TestFileUtils;
 
 public class HelpCtxProcessorTest extends NbTestCase {
 
     public HelpCtxProcessorTest(String n) {
         super(n);
+    }
+
+    protected @Override void setUp() throws Exception {
+        clearWorkDir();
     }
 
     public void testProcess() throws Exception {
@@ -77,10 +82,10 @@ public class HelpCtxProcessorTest extends NbTestCase {
             public @Override void addChangeListener(ChangeListener l) {}
             public @Override void removeChangeListener(ChangeListener l) {}
         });
-        FileObject foo = FileUtil.getConfigRoot().createData("foo.xml");
-        OutputStream os = foo.getOutputStream();
-        os.write("<!DOCTYPE helpctx PUBLIC '-//NetBeans//DTD Help Context 1.0//EN' '.../helpcontext-1_0.dtd'><helpctx id='foo' showmaster='true'/>".getBytes());
-        os.close();
+        File fooF = new File(getWorkDir(), "foo.xml");
+        TestFileUtils.writeFile(fooF, "<!DOCTYPE helpctx PUBLIC '-//NetBeans//DTD Help Context 1.0//EN' '.../helpcontext-1_0.dtd'><helpctx id='foo' showmaster='true'/>");
+        FileObject foo = FileUtil.toFileObject(fooF);
+        assertNotNull(foo);
         Lookup lkp = DataObject.find(foo).getLookup();
         InstanceCookie i = lkp.lookup(InstanceCookie.class);
         assertNotNull(lkp.lookupAll(Object.class).toString(), i);
