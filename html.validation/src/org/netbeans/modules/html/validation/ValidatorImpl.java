@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.html.validation;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.html.api.validation.ValidationContext;
@@ -69,7 +72,15 @@ public class ValidatorImpl implements Validator {
             String source = context.getSource();
             validatorTransaction.validateCode(source);
 
-            return new ValidationResult(this, context, validatorTransaction.getFoundProblems(ProblemDescription.WARNING), validatorTransaction.isSuccess());
+            Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
+            
+            if(context.getSyntaxAnalyzerResult().getDetectedHtmlVersion() == null) {
+                //unknown doctype, the HtmlSourceVersionQuery is used
+                //some of the "missing doctype" errors should be suppressed
+                filterNoDoctypeProblems(problems);
+            }
+
+            return new ValidationResult(this, context, problems, validatorTransaction.isSuccess());
 
         } catch (SAXException ex) {
             throw new ValidationException(ex);
@@ -97,6 +108,15 @@ public class ValidatorImpl implements Validator {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private void filterNoDoctypeProblems(Collection<ProblemDescription> problems) {
+        for(Iterator<ProblemDescription> itr = problems.iterator(); itr.hasNext();) {
+            ProblemDescription problem = itr.next();
+            if(problem.getText().startsWith("Error: Start tag seen without seeing a doctype first.")) { //NOI18N
+                itr.remove();
+            }
         }
     }
 
