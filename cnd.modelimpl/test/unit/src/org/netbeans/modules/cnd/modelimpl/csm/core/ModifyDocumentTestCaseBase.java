@@ -423,7 +423,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             }            
             waitParseSemaphore.acquire();
 //            waitParseSemaphore.acquire();
-            assertTrue(fileImpl.isParsed());
+            assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations", numDeclsAfterModification, curNumDecls);
 //            assertEquals("must be exactly one parse event", 1, parseCounter.get());
@@ -434,7 +434,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             waitParseSemaphore.acquire();
             project.waitParse();
             while(waitParseSemaphore.tryAcquire()) {}
-            assertTrue(fileImpl.isParsed());
+            assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
 //            assertEquals("must be exactly two parse events", 2, parseCounter.get());
@@ -446,7 +446,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 waitParseSemaphore.acquire();
                 project.waitParse();
                 while(waitParseSemaphore.tryAcquire()) {}
-                assertTrue(fileImpl.isParsed());
+                assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
     //            assertEquals("must be exactly three parse events", 3, parseCounter.get());
@@ -457,7 +457,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 waitParseSemaphore.acquire();
                 project.waitParse();
                 while(waitParseSemaphore.tryAcquire()) {}
-                assertTrue(fileImpl.isParsed());
+                assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
     //            assertEquals("must be exactly four parse events", 4, parseCounter.get());

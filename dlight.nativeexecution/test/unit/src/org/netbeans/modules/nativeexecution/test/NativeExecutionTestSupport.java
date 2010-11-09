@@ -47,16 +47,24 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
@@ -186,6 +194,53 @@ public class NativeExecutionTestSupport {
                 break;
             }
         }
+    }
+
+    public static ExecutionEnvironment[] getTestExecutionEnvironmentsFromSection(String section) throws IOException {
+        String[] platforms = getPlatforms(section, null);
+        ExecutionEnvironment[] environments = new ExecutionEnvironment[platforms.length];
+        for (int i = 0; i < platforms.length; i++) {
+            environments[i] = NativeExecutionTestSupport.getTestExecutionEnvironment(platforms[i]);
+        }
+        return environments;
+    }
+
+    /*package*/ static String[] getPlatforms(String section, NbTestSuite suite) {
+        try {
+            try {
+                RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+                List<String> result = new ArrayList<String>();
+                // We specify environments as just keys in the given section - without values.
+                // We also allow specifying some other parameters in the same sections.
+                // So we treat a key=value pair as another parameter, not an execution environment
+                for (String key : rcFile.getKeys(section)) {
+                    String value = rcFile.get(section, key, null);
+                    if (value == null) {
+                        result.add(key);
+                    }
+                }
+                Collections.sort(result);
+                return result.toArray(new String[result.size()]);
+            } catch (FileNotFoundException ex) {
+                // rcfile does not exists - no tests to run
+            }
+        } catch (IOException ex) {
+            if (suite != null) {
+                suite.addTest(TestSuite.warning("Cannot get execution environment: " + exceptionToString(ex)));
+            }
+        } catch (FormatException ex) {
+            if (suite != null) {
+                suite.addTest(TestSuite.warning("Cannot get execution environment: " + exceptionToString(ex)));
+            }
+        }
+        return new String[0];
+    }
+
+    protected static String exceptionToString(Throwable t) {
+            StringWriter stringWriter= new StringWriter();
+            PrintWriter writer= new PrintWriter(stringWriter);
+            t.printStackTrace(writer);
+            return stringWriter.toString();
     }
 
     public static ExecutionEnvironment getTestExecutionEnvironment(final String mspec) throws IOException {

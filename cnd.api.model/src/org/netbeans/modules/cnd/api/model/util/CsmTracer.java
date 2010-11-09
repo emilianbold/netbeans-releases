@@ -956,6 +956,17 @@ public final class CsmTracer {
                 sb.append(' ');
                 sb.append(getBriefClassName(member));
                 print(sb.toString());
+                // special check for inner classes with external class definitions
+                if (member.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) {
+                    final CsmClassForwardDeclaration fwdClass = (CsmClassForwardDeclaration) member;
+                    CsmClass csmClass = fwdClass.getCsmClass();
+                    if (csmClass != null && cls.equals(csmClass.getScope())) {
+                        indent();
+                        dumpModel(csmClass);
+                        unindent();
+                        continue;
+                    }
+                }            
             }
         }
         unindent();

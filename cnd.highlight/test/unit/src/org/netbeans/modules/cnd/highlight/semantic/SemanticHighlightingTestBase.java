@@ -44,7 +44,12 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -74,8 +79,16 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
         FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
         Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
         assertNotNull(out);
+        List<CsmOffsetable> sorted = new ArrayList<CsmOffsetable>(out);
+        Collections.sort(sorted, new Comparator<CsmOffsetable>() {
+
+            @Override
+            public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+                return o1.getStartOffset() - o2.getStartOffset();
+            }
+        });
         int i = 1;
-        for (CsmOffsetable b : out) {
+        for (CsmOffsetable b : sorted) {
             ref( "Block " + (i++) + ": Lines " +  // NOI18N
                     file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] + // NOI18N
                     "\tOffsets " + // NOI18N

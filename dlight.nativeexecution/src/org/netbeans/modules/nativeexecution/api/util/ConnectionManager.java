@@ -44,9 +44,11 @@ package org.netbeans.modules.nativeexecution.api.util;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import java.awt.Desktop.Action;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -54,12 +56,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
@@ -69,6 +74,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -88,6 +94,8 @@ public final class ConnectionManager {
     private static final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+
+    private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -118,6 +126,7 @@ public final class ConnectionManager {
                 }
             });
         }
+        restoreRecentConnectionsList();
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -130,11 +139,61 @@ public final class ConnectionManager {
         connectionListeners.remove(listener);
     }
 
+    public List<ExecutionEnvironment> getRecentConnections() {
+        synchronized (recentConnections) {
+            return Collections.unmodifiableList(new ArrayList<ExecutionEnvironment>(recentConnections));
+        }
+    }
+
+    /*package-local for test purposes*/ void updateRecentConnectionsList(ExecutionEnvironment execEnv) {
+        synchronized (recentConnections) {
+            recentConnections.remove(execEnv);
+            recentConnections.add(0, execEnv);
+            storeRecentConnectionsList();
+        }
+    }
+
+    /*package-local for test purposes*/ void storeRecentConnectionsList() {
+        Preferences prefs = NbPreferences.forModule(ConnectionManager.class);
+        synchronized (recentConnections) {
+            for (int i = 0; i < recentConnections.size(); i++) {
+                prefs.put(getConnectoinsHistoryKey(i), ExecutionEnvironmentFactory.toUniqueID(recentConnections.get(i)));
+            }
+        }
+    }
+
+    /*package-local for test purposes*/ void restoreRecentConnectionsList() {
+        Preferences prefs = NbPreferences.forModule(ConnectionManager.class);
+        synchronized (recentConnections) {
+            recentConnections.clear();
+            int idx = 0;
+            while (true) {
+                String id = prefs.get(getConnectoinsHistoryKey(idx), null);
+                if (id == null) {
+                    break;
+                }
+                recentConnections.add(ExecutionEnvironmentFactory.fromUniqueID(id));
+                idx++;
+            }
+        }
+    }
+
+    private static String getConnectoinsHistoryKey(int idx) {
+        return ConnectionManager.class.getName() + "_connection.history_" + idx; //NOI18N
+    }
+
+    /** for test purposes only; package-local */ void clearRecentConnectionsList() {
+        synchronized (recentConnections) {
+            recentConnections.clear();
+        }
+    }
+
     private void fireConnected(ExecutionEnvironment execEnv) {
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
             connectionListener.connected(execEnv);
         }
+        updateRecentConnectionsList(execEnv);
     }
 
     private void fireDisconnected(ExecutionEnvironment execEnv) {

@@ -44,20 +44,16 @@ package org.netbeans.modules.nativeexecution.test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
@@ -127,33 +123,6 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         }
     }
 
-    private String[] getPlatforms(String section) {
-        try {
-            try {
-                RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-                List<String> result = new ArrayList<String>();
-                // We specify environments as just keys in the given section - without values.
-                // We also allow specifying some other parameters in the same sections.
-                // So we treat a key=value pair as another parameter, not an execution environment
-                for (String key : rcFile.getKeys(section)) {
-                    String value = rcFile.get(section, key, null);
-                    if (value == null) {
-                        result.add(key);
-                    }
-                }
-                Collections.sort(result);
-                return result.toArray(new String[result.size()]);
-            } catch (FileNotFoundException ex) {
-                // rcfile does not exists - no tests to run
-            }
-        } catch (IOException ex) {
-            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
-        } catch (FormatException ex) {
-            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
-        }
-        return new String[0];
-    }
-
     /**
      * Adds a test.
      * @param testClass test class to add.
@@ -161,7 +130,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * (the only check is the search for 2-parammeter constructor that takes String and ExecutinEnvironmant);
      * the intention was rather to explain what it's used for than to restrict.
      */
-    protected void addTest(Class<? extends NativeExecutionBaseTestCase> testClass)  {
+    protected final void addTest(Class<? extends NativeExecutionBaseTestCase> testClass)  {
         
         TestClassData testData = findTestData(testClass);
         if (testData.testMethods.isEmpty()) {
@@ -173,7 +142,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                 continue;
             }
             if (methodData.isForAllEnvironments()) {
-                String[] platforms = getPlatforms(methodData.envSection);
+                String[] platforms = NativeExecutionTestSupport.getPlatforms(methodData.envSection, this);
                 for (String platform : platforms) {
                     if (testData.forAllEnvConstructor == null) {
                         addTest(warning("Class " + testClass.getName() +
@@ -190,7 +159,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         }
                     } catch (IOException ioe) {
                         addTest(warning(methodData.name + " [" + platform + "]",
-                                "Error getting execution environment for " + platform + ": " + exceptionToString(ioe)));
+                                "Error getting execution environment for " + platform + ": " + NativeExecutionTestSupport.exceptionToString(ioe)));
                     }
                 }
             } else {
@@ -211,20 +180,13 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         try {
             return (Test) ctor.newInstance(parameters);
         } catch (InstantiationException e) {
-			return warning("Cannot instantiate test case: "+name+" ("+exceptionToString(e)+")");
+			return warning("Cannot instantiate test case: "+name+" ("+NativeExecutionTestSupport.exceptionToString(e)+")");
 		} catch (InvocationTargetException e) {
-			return warning("Exception in constructor: "+name+" ("+exceptionToString(e.getTargetException())+")");
+			return warning("Exception in constructor: "+name+" ("+NativeExecutionTestSupport.exceptionToString(e.getTargetException())+")");
 		} catch (IllegalAccessException e) {
-			return warning("Cannot access test case: "+name+" ("+exceptionToString(e)+")");
+			return warning("Cannot access test case: "+name+" ("+NativeExecutionTestSupport.exceptionToString(e)+")");
 		}
     }
-
-	protected static String exceptionToString(Throwable t) {
-		StringWriter stringWriter= new StringWriter();
-		PrintWriter writer= new PrintWriter(stringWriter);
-		t.printStackTrace(writer);
-		return stringWriter.toString();
-	}
 
     private static class TestMethodData {
 

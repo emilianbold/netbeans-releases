@@ -58,9 +58,10 @@ public class PkgConfigTestCase extends MakeProjectTestBase {
 
     @Test
     public void testPkgConfig(){
-        //if (Utilities.isWindows()) {
-        //    return;
-        //}
+        if (Utilities.isWindows()) {
+            // configure script requires more then 10 minutes
+            return;
+        }
         performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, false, "");
     }
 }

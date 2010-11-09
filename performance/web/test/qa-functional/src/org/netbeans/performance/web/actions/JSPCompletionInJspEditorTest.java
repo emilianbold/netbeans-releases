@@ -111,7 +111,7 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
     }
         
     public void testScriptletCC() {
-        text = "<% ";
+        text = "<%";
         measureTime();
     }
     
