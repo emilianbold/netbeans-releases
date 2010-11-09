@@ -134,7 +134,12 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     
     static String getUserString(GitUser user) {
         if(user == null) return "";                                             // NOI18N
-        return user.getName() + " <" + user.getEmailAddress() + ">";            // NOI18N
+        String name = user.getName();
+        String mail = user.getEmailAddress();
+        return name + 
+               (mail != null && !mail.isEmpty() ? 
+                     " <" + user.getEmailAddress() + ">" :                      // NOI18N
+                     "");                                                       // NOI18N
     }
         
     @Override
