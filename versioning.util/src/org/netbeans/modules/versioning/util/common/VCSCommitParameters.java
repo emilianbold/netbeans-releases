@@ -107,7 +107,7 @@ public abstract class VCSCommitParameters {
         return recentLink;
     }
     
-    public JLabel getRecentMessagesLink(final JTextArea text) {
+    protected JLabel getRecentMessagesLink(final JTextArea text) {
         if(recentLink == null) {
             recentLink = createRecentMessagesLink(text, preferences);
         }
