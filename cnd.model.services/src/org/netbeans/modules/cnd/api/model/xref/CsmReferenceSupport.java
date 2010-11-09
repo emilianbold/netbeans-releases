@@ -117,8 +117,8 @@ public final class CsmReferenceSupport {
             if (fqnCheck.equals(fqnTarget)) {
                 if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
                     // we treat const and non-const functions as the same
-                    fqnCheck = ((CsmFunction) checkDecl).getSignature().toString().replace("const", "").trim();
-                    fqnTarget = ((CsmFunction) targetDecl).getSignature().toString().replace("const", "").trim();
+                    fqnCheck = ((CsmFunction) checkDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
+                    fqnTarget = ((CsmFunction) targetDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
                     if (fqnCheck.equals(fqnTarget)) {
                         return true;
                     }

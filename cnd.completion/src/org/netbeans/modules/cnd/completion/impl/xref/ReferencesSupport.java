@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -112,6 +113,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.text.NbDocument;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -747,19 +749,48 @@ public final class ReferencesSupport {
                     final CsmFile file = entry.getKey();
                     printOut.printf("-----------------------\n");// NOI18N 
                     printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), inst.cachedFilesVersions.get(file), file.getClass().getName());// NOI18N 
-                    boolean hasUnresolved = false;
+                    List<Integer> unresolved = new ArrayList<Integer>();
                     for (Map.Entry<Integer, CsmObject> entry1 : entry.getValue().entrySet()) {
                         if (entry1.getValue() == UNRESOLVED) {
-                            hasUnresolved = true;
-                            printOut.printf("UNRESOLVED at offset %d\n", entry1.getKey());// NOI18N 
+                            unresolved.add(entry1.getKey());
                         }
                     }
-                    if (!hasUnresolved) {
+                    if (unresolved.isEmpty()) {
                         printOut.printf("no UNRESOLVED \n");// NOI18N 
+                    } else {
+                        Collections.sort(unresolved);
+                        for (Integer integer : unresolved) {
+                            printOut.printf("UNRESOLVED [%s]\n", getPosition(integer, file));// NOI18N 
+                            CsmObject checkAgain = findDeclaration(file, getDocument(file), null, integer.intValue());
+                            if (checkAgain != null) {
+                                printOut.printf("\t ERROR: resolved as [%s]\n", checkAgain);// NOI18N 
+                            }
+                        }
                     }
                 }
                 printOut.printf("-----------------------\n");// NOI18N 
             }
+        }
+        
+        private String getPosition(int offset, CsmFile file) {
+            BaseDocument document = getDocument(file);
+            StringBuilder out = new StringBuilder();
+            out.append("offset=").append(offset);// NOI18N 
+            if (document instanceof StyledDocument) {
+                int line = NbDocument.findLineNumber((StyledDocument) document, offset)+1;
+                out.append(", line=").append(line);// NOI18N 
+                int col = NbDocument.findLineColumn((StyledDocument) document, offset)+1;
+                out.append(", column=").append(col);// NOI18N 
+                TokenItem<TokenId> jumpToken;
+                document.readLock();
+                try {
+                    jumpToken = CndTokenUtilities.getTokenCheckPrev(document, offset);
+                } finally {
+                    document.readUnlock();
+                }
+                out.append(", tok=").append(jumpToken);// NOI18N 
+            }
+            return out.toString();
         }
         
     }
