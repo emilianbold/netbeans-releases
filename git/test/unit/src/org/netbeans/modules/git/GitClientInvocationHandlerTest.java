@@ -218,7 +218,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         File anotherRepo = new File(repositoryLocation.getParentFile(), "wc2");
         anotherRepo.mkdirs();
         GitClient client2 = Git.getInstance().getClient(anotherRepo);
-        client2.init();
+        client2.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();

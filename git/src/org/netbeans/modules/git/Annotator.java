@@ -123,7 +123,7 @@ public class Annotator extends VCSAnnotator {
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {                    
-                actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "CTL_ContextMenuItem_Init"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "LBL_InitAction.popupName"), lkp));
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));

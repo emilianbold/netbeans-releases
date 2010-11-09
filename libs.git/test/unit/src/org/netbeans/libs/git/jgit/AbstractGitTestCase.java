@@ -172,7 +172,7 @@ public class AbstractGitTestCase extends NbTestCase {
 
         if (createLocalClone()) {
             JGitClientFactory fact = JGitClientFactory.getInstance();
-            fact.getClient(wc).init();
+            fact.getClient(wc).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
             Field f = JGitClientFactory.class.getDeclaredField("repositoryPool");
             f.setAccessible(true);
             localRepository = ((Map<File, JGitRepository>) f.get(fact)).get(wc);

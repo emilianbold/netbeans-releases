@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
 import org.netbeans.libs.git.jgit.commands.BranchCommand;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.jgit.commands.CatCommand;
@@ -188,19 +189,10 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      */
-    public void init () throws GitException {
-        try {
-            Repository repository = gitRepository.getRepository();
-            File workDir = repository.getWorkTree();
-            if (!(workDir.exists() || workDir.mkdirs())) {
-                throw new GitException("Cannot create local folder at " + workDir.getAbsolutePath());
-            }
-            repository.create();
-        } catch (IllegalStateException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+    public void init (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        InitRepositoryCommand cmd = new InitRepositoryCommand(repository, monitor);
+        cmd.execute();
     }
 
     /**
