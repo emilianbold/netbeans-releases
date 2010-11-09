@@ -67,7 +67,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -219,8 +218,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Web pages: " + wmRoot);
-            LOG.fine("WEB-INF: " + webInf);
+            LOG.log(Level.FINE, "Web pages: {0}", wmRoot);
+            LOG.log(Level.FINE, "WEB-INF: {0}", webInf);
         }
         fileSystemListener = new FileSystemListener();
 
@@ -267,12 +266,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         long start = 0;
         if (LOG.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
-            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initializing for WM " + (wmRoot != null ? FileUtil.toFile(wmRoot) : "<null>"));
+            Object[] objects = new Object[]{firstTime ? "" : "re", wmRoot != null ? FileUtil.toFile(wmRoot) : "<null>"}; // NOI18N
+            LOG.log(Level.FINE, "JSP parser {0}initializing for WM {1}", objects); // NOI18N
         }
         WebModule webModule = wm.get();
         if (webModule == null) {
             // already gced
-            LOG.fine("WebModule already GCed");
+            LOG.fine("WebModule already GCed"); // NOI18N
             return;
         }
         editorContext = new ParserServletContext(wmRoot, this, true);
@@ -284,7 +284,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         //new JspRuntimeContext(context, options);
         createClassLoaders();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
+            Object[] objects = new Object[]{firstTime ? "" : "re", System.currentTimeMillis() - start}; // NOI18N
+            LOG.log(Level.FINE, "JSP parser {0}initialized in {1} ms", objects); // NOI18N
         }
     }
 
@@ -297,8 +298,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
 
     private void createClassLoaders() {
-        Map<URL, URL> tomcatTable = new Hashtable<URL, URL>();
-        Map<URL, URL> loadingTable = new Hashtable<URL, URL>();
+        Map<URL, URL> tomcatTable = new HashMap<URL, URL>();
+        Map<URL, URL> loadingTable = new HashMap<URL, URL>();
         URL helpurl;
 
         FileObject actualWebInf = getWebInf();
@@ -507,7 +508,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 && webInf != null
                 && webInf.isValid();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "Checking validity - WM root: {0}, WEB-INF: {1}, valid: {2}", new Object[] {wmRoot, webInf, valid});
+            LOG.log(Level.FINE, "Checking validity - WM root: {0}, WEB-INF: {1}, valid: {2}", new Object[] {wmRoot, webInf, valid}); // NOI18N
         }
         return valid;
     }
@@ -537,7 +538,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     // ArrayIndexOutOfBoundsException - see issue 20919
                     // Throwable - see issue 21169, related to Tomcat bug 7124
                     // XXX has to be returned back to track all errors
-                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing")); // NOI18N
                     LOG.fine(e.getMessage());
                     LOG.log(Level.FINE, null, e);
                     JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
@@ -719,24 +720,24 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 tmpMappings.clear();
             }
 
-//            Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
-//            compThread.setContextClassLoader(waContextClassLoader);
-//            long start = 0;
-//            if (LOG.isLoggable(Level.FINE)) {
-//                start = System.currentTimeMillis();
-//                LOG.fine("InitTldLocationCacheThread start");
-//            }
-//            compThread.start();
-//
-//            try {
-//                compThread.join();
-//                if (LOG.isLoggable(Level.FINE)) {
-//                    long end = System.currentTimeMillis();
-//                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
-//                }
-//            } catch (InterruptedException e) {
-//                LOG.log(Level.INFO, null, e);
-//            }
+            Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
+            compThread.setContextClassLoader(waContextClassLoader);
+            long start = 0;
+            if (LOG.isLoggable(Level.FINE)) {
+                start = System.currentTimeMillis();
+                LOG.fine("InitTldLocationCacheThread start"); //NOI18N
+            }
+            compThread.start();
+
+            try {
+                compThread.join();
+                if (LOG.isLoggable(Level.FINE)) {
+                    long end = System.currentTimeMillis();
+                    LOG.log(Level.FINE, "InitTldLocationCacheThread finished in {0} ms", (end - start)); //NOI18N
+                }
+            } catch (InterruptedException e) {
+                LOG.log(Level.INFO, null, e);
+            }
 
             // obtain the current mappings after parsing
             tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
@@ -751,8 +752,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
             // update cache
             mappings.clear();
-            if (tmpMappings != null){ //TODO it was never null before the migration to the GF3 jsp parser
-                System.err.println("****** tmpMappings != null");
+            if (tmpMappings != null){
+//                System.err.println("****** tmpMappings != null");
                 mappings.putAll(tmpMappings);
             }
             // cache tld files under WEB-INF directory as well
@@ -802,11 +803,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     void reinitCaches() {
         assert Thread.holdsLock(this);
         final long counter = cpCurrent.get();
-        LOG.fine("Current class path: " + (counter == 0L));
+        LOG.log(Level.FINE, "Current class path: {0}", (counter == 0L)); // NOI18N
         if (counter != 0L) {
             reinitOptions();
             boolean cpSet = cpCurrent.compareAndSet(counter, 0L);
-            LOG.fine("Class path " + (cpSet ? "" : "*NOT* ") + "set to current");
+            LOG.log(Level.FINE, "Class path {0}set to current", (cpSet ? "" : "*NOT* ")); // NOI18N
         }
         clearTagLibraryInfoCache();
         reinitTagLibMappings();
@@ -816,9 +817,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     final class ReinitCaches implements Runnable {
         public void run() {
             synchronized (WebAppParseSupport.this) {
-                LOG.fine("ReinitCaches task started");
+                LOG.fine("ReinitCaches task started"); // NOI18N
                 reinitCaches();
-                LOG.fine("ReinitCaches task finished");
+                LOG.fine("ReinitCaches task finished"); // NOI18N
             }
         }
     }
@@ -829,7 +830,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             if (webModule == null) {
                 return;
             }
-            LOG.fine("TLD change fired");
+            LOG.fine("TLD change fired"); // NOI18N
             jspParser.fireChange(webModule);
         }
     }
@@ -869,7 +870,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
         private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
         // suppress annoying warning
-        private static final List<String> LOG4J_CONFIGS = Arrays.asList("log4j.properties", "log4j.xml");
+        private static final List<String> LOG4J_CONFIGS = Arrays.asList("log4j.properties", "log4j.xml"); // NOI18N
 
         private final URL[] tomcatURLs;
 
@@ -945,7 +946,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         public URL findResource(String name) {
             if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
                 if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "Discarding request for " + name); // NOI18N
+                    LOGGER.log(Level.FINER, "Discarding request for {0}", name); // NOI18N
                 }
                 return null;
             }
@@ -956,7 +957,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         public Enumeration<URL> findResources(String name) throws IOException {
             if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
                 if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINEST, "Discarding request for " + name); // NOI18N
+                    LOGGER.log(Level.FINEST, "Discarding request for {0}", name); // NOI18N
                 }
                 return Collections.enumeration(Collections.<URL>emptyList());
             }
@@ -1029,7 +1030,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 return; // Bad luck - will be locked
             }
 
-            LOGGER.log(Level.FINE, "Classloader released");
+            LOGGER.log(Level.FINE, "Classloader released"); // NOI18N
 
             // Fix the classpath
             try {
@@ -1044,7 +1045,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 return; // TODO Unusable classloader
             }
 
-            LOGGER.log(Level.FINE, "Classloader reinitialized");
+            LOGGER.log(Level.FINE, "Classloader reinitialized"); // NOI18N
         }
 
         public void close() throws IOException {
@@ -1052,31 +1053,32 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
     }
 
-//    private static class InitTldLocationCacheThread extends Thread {
-//
-//        private final TldScanner cache;
-//
-//        InitTldLocationCacheThread(TldScanner lc) {
-//            super("Init TldLocationCache"); // NOI18N
-//            cache = lc;
-//        }
-//
-//        @Override
-//        public void run() {
-//            try {
-//                Field initialized = TldScanner.class.getDeclaredField("initialized"); // NOI18N
-//                initialized.setAccessible(true);
-//                initialized.setBoolean(cache, false);
-//                cache.getLocation(""); // NOI18N
-//            } catch (JasperException e) {
-//                LOG.log(Level.INFO, null, e);
-//            } catch (NoSuchFieldException e) {
-//                LOG.log(Level.INFO, null, e);
-//            } catch (IllegalAccessException e) {
-//                LOG.log(Level.INFO, null, e);
-//            }
-//        }
-//    }
+    private static class InitTldLocationCacheThread extends Thread {
+
+        private final TldScanner cache;
+
+        InitTldLocationCacheThread(TldScanner lc) {
+            super("Init TldLocationCache"); // NOI18N
+            cache = lc;
+        }
+
+        @Override
+        public void run() {
+            try {
+                // #188702
+                Field mappings = TldScanner.class.getDeclaredField("mappings"); // NOI18N
+                mappings.setAccessible(true);
+                mappings.set(cache, null);
+                cache.getLocation(""); // NOI18N
+            } catch (JasperException e) {
+                LOG.log(Level.INFO, null, e);
+            } catch (NoSuchFieldException e) {
+                LOG.log(Level.INFO, null, e);
+            } catch (IllegalAccessException e) {
+                LOG.log(Level.INFO, null, e);
+            }
+        }
+    }
 
     final class FileSystemListener extends FileChangeAdapter {
 
@@ -1109,10 +1111,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     || determineIsTagFile(fo)) { // #109478
                 if ((wmRoot != null && FileUtil.isParentOf(wmRoot, fo))
                         || (webInf != null && FileUtil.isParentOf(webInf, fo))) {
-                    LOG.fine("File " + fo + " has changed, reinitCaches() called");
+                    LOG.log(Level.FINE, "File {0} has changed, reinitCaches() called", fo); // NOI18N
                     // our file => process caches
                     // #133702
-                    if (fo.getNameExt().equals("web.xml")) {
+                    if (fo.getNameExt().equals("web.xml")) { // NOI18N
                         // clear JspConfig cache as well
                         cpCurrent.incrementAndGet();
                     }
