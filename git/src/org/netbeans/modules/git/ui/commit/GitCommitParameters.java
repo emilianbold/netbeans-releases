@@ -56,6 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitUser;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -148,7 +149,7 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
             warning = null;
             return true;
         }
-        warning = "Author and Commiter must be in format 'A U Thor <author@example.com>";
+        warning = NbBundle.getMessage(GitCommitParameters.class, "MSG_WARNING_WRONG_USER");  // NOI18N
         return false;
     }
 
