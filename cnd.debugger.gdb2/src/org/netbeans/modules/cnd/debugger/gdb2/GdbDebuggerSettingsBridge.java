@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 
@@ -157,7 +158,8 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	String runargs = getArgsFlatEx();
 	if (runargs == null)
 	    runargs = "";
-	gdbDebugger.runArgs(runargs);
+        IOPack ioPack = gdbDebugger.getIOPack();
+	gdbDebugger.runArgs(runargs + ioPack.getExtraRunArgs(gdbDebugger.fmap()));
     }
 
     protected void applyRunDirectory() {

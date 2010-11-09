@@ -64,7 +64,10 @@ import org.openide.util.Lookup;
  * @author Petr Hejl
  */
 @OptionsPanelController.SubRegistration(
-    displayName="#JsOptions.displayName"
+    id="JavaScript",
+    displayName="#JsOptions.displayName",
+    keywords="#KW_JavaScriptOptions",
+    keywordsCategory="Advanced/JavaScript"
 //    toolTip="#JsOptions.tooltip"
 )
 public class JsOptionsController extends OptionsPanelController {

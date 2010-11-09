@@ -49,9 +49,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -71,14 +69,11 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.EntityResolver;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 /** XML processor for help context links.
  * The associated instance makes it suitable for
@@ -101,35 +96,18 @@ public final class HelpCtxProcessor implements Environment.Provider {
                 return Action.class;
             }
             public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
-                EntityResolver resolver = new EntityResolver() {
-                    public @Override InputSource resolveEntity(String pubid, String sysid) {
-                        return new InputSource(new ByteArrayInputStream(new byte[0]));
-                    }
-                };
-                final AtomicReference<Action> p = new AtomicReference<Action>();
-                ContentHandler handler = new DefaultHandler() {
-                    public @Override void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                        if ("helpctx".equals(qName)) { // NOI18N
-                            String id = attributes.getValue("id"); // NOI18N
-                            String showmaster = attributes.getValue("showmaster"); // NOI18N
-                            if (id != null && !"".equals(id)) { // NOI18N
-                                p.set(new ShortcutAction(obj, id, Boolean.valueOf(showmaster)));
-                            }
-                        }
-                    }
-                };
                 try {
-                    XMLReader parser = XMLUtil.createXMLReader();
-                    parser.setEntityResolver(resolver);
-                    parser.setContentHandler(handler);
-                    parser.parse(new InputSource(obj.getPrimaryFile().getInputStream()));
-                } catch (SAXException saxe) {
-                    throw new IOException(saxe);
+                    Document doc = XMLUtil.parse(new InputSource(obj.getPrimaryFile().getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                    Element el = doc.getDocumentElement();
+                    if (!el.getNodeName().equals("helpctx")) { // NOI18N
+                        throw new IOException();
+                    }
+                    return new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                } catch (IOException x) {
+                    throw x;
+                } catch (Exception x) {
+                    throw new IOException(x);
                 }
-                if (p.get() == null) {
-                    throw new IOException("No <helpctx> element in " + obj.getPrimaryFile()); // NOI18N
-                }
-                return p.get();
             }
         });
     }

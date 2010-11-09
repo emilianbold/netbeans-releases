@@ -56,9 +56,11 @@ import javax.help.HelpSet;
 import org.openide.cookies.InstanceCookie;
 
 import org.openide.loaders.Environment;
-import org.openide.loaders.XMLDataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.InputSource;
 
 /** An XML processor for help set references.
  * Provides an instance of javax.swing.HelpSet.
@@ -87,7 +89,7 @@ public final class HelpSetProcessor implements Environment.Provider {
             }
             public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
                 try {
-                    Document doc = ((XMLDataObject) obj).getDocument();
+                    Document doc = XMLUtil.parse(new InputSource(obj.getPrimaryFile().getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
                     Element el = doc.getDocumentElement();
                     if (!el.getNodeName().equals("helpsetref")) { // NOI18N
                         throw new IOException();

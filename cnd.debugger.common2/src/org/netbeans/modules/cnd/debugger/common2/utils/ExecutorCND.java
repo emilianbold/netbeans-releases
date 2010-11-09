@@ -62,36 +62,30 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
-import org.openide.windows.InputOutput;
 
 /* package */ class ExecutorCND extends Executor {
     private NativeProcess engineProc;
     private int pid = -1;
-    private String slaveName;
     private final ExecutionEnvironment exEnv;
-    private Pty pty = null;
-    private DebuggerExternalTerminal terminal;
 
     public ExecutorCND(String name, Host host) {
 	super(name, host);
         exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
     }
 
-    public String slaveName() {
-	return slaveName;
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return exEnv;
     }
 
     public boolean isAlive() {
@@ -236,16 +230,6 @@ import org.openide.windows.InputOutput;
     }
 
     public void cleanup() {
-        if (pty != null) {
-            try {
-                pty.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (terminal != null) {
-            terminal.finish();
-        }
     }
 
     @Override
@@ -301,31 +285,6 @@ import org.openide.windows.InputOutput;
 	    }
 	};
 	reaper.start();
-    }
-
-    public synchronized boolean startIO(InputOutput io, RunProfile runProfile) {
-        int consoleType = runProfile.getConsoleType().getValue();
-        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-            consoleType = RunProfile.getDefaultConsoleType();
-        }
-        if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-            String termPath = runProfile.getTerminalPath();
-            if (termPath != null) {
-                terminal = new DebuggerExternalTerminal(termPath);
-                slaveName = terminal.getTty();
-                return slaveName != null;
-            }
-        } else {
-            try {
-                pty = PtySupport.allocate(exEnv);
-            } catch (IOException ex) {
-                slaveName = "";
-                return false;
-            }
-            PtySupport.connect(io, pty);
-            slaveName = pty.getSlaveName();
-        }
-        return true;
     }
 
     public String readlink(long pid) {

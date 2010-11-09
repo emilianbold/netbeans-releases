@@ -63,7 +63,7 @@ import org.openide.windows.InputOutput;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A combination process/process factory object.
@@ -92,8 +92,7 @@ public abstract class Executor {
 	return Host.isRemote(host);
     }
 
-
-    public abstract String slaveName();
+    public abstract ExecutionEnvironment getExecutionEnvironment();
 
     public abstract boolean isAlive();
 
@@ -149,9 +148,6 @@ public abstract class Executor {
      * lines.
      */
     public abstract List<String> getCmdOutputLines();
-
-
-    public abstract boolean startIO(InputOutput io, RunProfile runProfile);
 
     protected void destroyEngine() {
 	destroyedByHand = true;

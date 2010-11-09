@@ -44,6 +44,7 @@ package org.netbeans.modules.dlight.db.derby;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -122,7 +123,7 @@ public class DerbyDataStorage extends SQLDataStorage {
             }
 
             dbIndex.getAndSet(newValue);
-            
+
             DLightExecutorService.submit(new Runnable() {
 
                 @Override
@@ -178,9 +179,10 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    public void connect() throws SQLException {
-        connection = DriverManager.getConnection(getDbURL());
-        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);        
+    protected final Connection doConnect() throws SQLException {
+        Connection connection = DriverManager.getConnection(getDbURL());
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        return connection;
     }
 
     @Override
@@ -264,10 +266,6 @@ public class DerbyDataStorage extends SQLDataStorage {
     public String getPrimaryKeyExpression() {
         return "PRIMARY KEY"; // NOI18N
     }
-    
-    
-    
-    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
