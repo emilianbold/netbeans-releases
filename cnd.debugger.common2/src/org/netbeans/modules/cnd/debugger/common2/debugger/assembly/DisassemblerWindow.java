@@ -69,9 +69,10 @@ public final class DisassemblerWindow extends TopComponent {
 
     public synchronized static DisassemblerWindow getDefault() {
 	if (DEFAULT == null) {
-	    DisassemblerWindow tc = (DisassemblerWindow) WindowManager.getDefault().findTopComponent(preferredID);
-	    if (tc == null) 
-	        new DisassemblerWindow();
+	    DisassemblerWindow tc = (DisassemblerWindow) WindowManager.getDefault().
+					findTopComponent(preferredID);
+	    if (tc == null)
+		new DisassemblerWindow();
 	}
 	return DEFAULT;
     }
@@ -86,8 +87,8 @@ public final class DisassemblerWindow extends TopComponent {
 
     public void initView () {
 	if (view == null) {
-            setLayout (new BorderLayout ());
-            view = new DisView();
+	    setLayout (new BorderLayout ());
+	    view = new DisView();
 	}
         add (view.getComponent(), "Center");  // NOI18N
     }
@@ -107,7 +108,7 @@ public final class DisassemblerWindow extends TopComponent {
     // interface TopComponent
     public void componentShowing () {
 	if (debugger == null) return;
-	    debugger.registerDisassemblerWindow(this);
+	debugger.registerDisassemblerWindow(this);
         super.componentShowing ();
 	view.getController().requestDis();
     }
