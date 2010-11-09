@@ -57,7 +57,9 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     id=AntPanelController.OPTIONS_SUBPATH,
-    displayName="#Ant"
+    displayName="#Ant",
+    keywords="#KW_AntOptions",
+    keywordsCategory="Advanced/Ant"
 //    toolTip="#Ant_Tooltip"
 )
 public final class AntPanelController extends OptionsPanelController {
