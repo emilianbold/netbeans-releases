@@ -42,15 +42,17 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author Egor Ushakov
  */
-public class PioPack extends IOPack {
+public class PioPack extends InternalTerminalPack {
     private final TermComponent pio;
 
-    public PioPack(TermComponent console, TermComponent pio) {
-        super(console, pio.getIO());
+    public PioPack(TermComponent console, TermComponent pio, ExecutionEnvironment exEnv) {
+        super(console, pio.getIO(), exEnv);
         this.pio = pio;
     }
 

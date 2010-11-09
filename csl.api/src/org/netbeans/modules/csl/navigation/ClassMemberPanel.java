@@ -53,6 +53,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.LookupListener;
+import org.openide.util.LookupEvent;
+import org.openide.loaders.DataObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -71,6 +74,19 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanel.class.getName(),1);
     
+    //Bugfix BZ#191289 - switching between files doesn't change navigator content
+    private Lookup.Result selection;
+    private final LookupListener selectionListener = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            if(selection == null)
+                return;
+            ClassMemberNavigatorSourceFactory f = ClassMemberNavigatorSourceFactory.getInstance();
+            if (f != null)
+                f.firePropertyChangeEvent();
+        }
+    };
+
+
     public ClassMemberPanel() {
     }
 
@@ -79,6 +95,11 @@ public class ClassMemberPanel implements NavigatorPanel {
         assert context != null;
         INSTANCE = this;
         getClassMemberPanelUI().showWaitNode();
+
+        //Bugfix BZ#191289 - switching between files doesn't change navigator content
+        selection = context.lookup(new Lookup.Template(DataObject.class));
+        selection.addLookupListener(selectionListener);
+
         RP.post( new Runnable () {
             @Override
             public void run () {
@@ -98,6 +119,13 @@ public class ClassMemberPanel implements NavigatorPanel {
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
         INSTANCE = null;
+
+        //Bugfix BZ#191289 - switching between files doesn't change navigator content
+        if(selection != null) {
+            selection.removeLookupListener(selectionListener);
+            selection = null;
+        }
+
         //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
         RP.post( new Runnable () {
             @Override

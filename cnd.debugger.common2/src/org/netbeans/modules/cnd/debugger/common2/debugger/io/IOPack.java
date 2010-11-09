@@ -44,29 +44,29 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
-public class IOPack {
+public abstract class IOPack {
     private final TermComponent console;
-    private final InputOutput io;
+    protected String slaveName = null;
+    protected final ExecutionEnvironment exEnv;
 
-    public IOPack(TermComponent console, InputOutput io) {
+    protected IOPack(TermComponent console, ExecutionEnvironment exEnv) {
         this.console = console;
-        this.io = io;
+        this.exEnv = exEnv;
     }
 
     public TermComponent console() {
 	return console;
     }
 
-    public boolean connectPio(Executor executor, RunProfile runProfile) {
-        if (io != null) {
-            return executor.startIO(io, runProfile);
-        }
-        return false;
-    }
+    public abstract boolean start();
 
     public void open() {
 	console.open();
@@ -86,5 +86,61 @@ public class IOPack {
 
     public static TermComponent makeConsole(int flags) {
 	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
+    }
+
+    public String getExtraRunArgs(FileMapper fMapper) {
+        return "";
+    }
+
+    public String getSlaveName() {
+        return slaveName;
+    }
+
+    public abstract void close();
+
+    public static IOPack create(boolean remote,
+                                InputOutput io,
+                                RunProfile runProfile,
+                                Executor executor) {
+        int consoleType = runProfile.getConsoleType().getValue();
+        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+            consoleType = RunProfile.getDefaultConsoleType();
+        }
+
+        TermComponent console;
+        if (remote || Utilities.isWindows()) {
+            console = IOPack.makeConsole(0);
+        } else {
+            console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
+        }
+
+        IOPack res;
+
+        boolean createPio = DebuggerManager.isStandalone();
+        if (createPio) {
+            TermComponent pio;
+            if (remote || Utilities.isWindows()) {
+                pio = PioPack.makePio(0);
+            } else {
+                pio = PioPack.makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
+            }
+            res = new PioPack(console, pio, executor.getExecutionEnvironment());
+        } else if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            res = new ExternalTerminalPack(console, runProfile.getTerminalPath(), executor.getExecutionEnvironment());
+        } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+            res = new OutputPack(console, io, executor.getExecutionEnvironment());
+        } else {
+            res = new InternalTerminalPack(console, io, executor.getExecutionEnvironment());
+        }
+
+	res.bringUp();
+	// OLD bug #181165 let "debugger" group open it
+	// OLD open();
+
+	// PioWindow multiplexes consoles so need to explicitly
+	// bring the new ones to front.
+	res.switchTo();
+
+        return res;
     }
 }

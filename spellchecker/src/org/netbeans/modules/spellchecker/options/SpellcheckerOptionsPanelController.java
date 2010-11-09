@@ -55,7 +55,11 @@ import org.openide.util.Lookup;
  *
  * @author Jan Lahoda
  */
-@SubRegistration(displayName="#TITLE_OptionsPanel")
+@SubRegistration(
+    id="Spellchecker",
+    displayName="#TITLE_OptionsPanel",
+    keywords="#KW_SpellcheckerOptions",
+    keywordsCategory="Advanced/Spellchecker")
 public class SpellcheckerOptionsPanelController extends OptionsPanelController {
 
     private SpellcheckerOptionsPanel comp;

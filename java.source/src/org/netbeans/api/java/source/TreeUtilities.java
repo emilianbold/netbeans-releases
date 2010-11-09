@@ -1015,7 +1015,7 @@ public final class TreeUtilities {
         }
 
         public Void visitTry(TryTree node, Set<TypeMirror> p) {
-            Set<TypeMirror> s = new HashSet<TypeMirror>();
+            Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
             scan(node.getBlock(), s);
             for (CatchTree ct : node.getCatches()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
@@ -1032,7 +1032,7 @@ public final class TreeUtilities {
         }
 
         public Void visitMethod(MethodTree node, Set<TypeMirror> p) {
-            Set<TypeMirror> s = new HashSet<TypeMirror>();
+            Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
             scan(node.getBody(), s);
             for (ExpressionTree et : node.getThrows()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), et));

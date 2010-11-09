@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.utils;
+package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import java.io.BufferedReader;
 import java.io.File;

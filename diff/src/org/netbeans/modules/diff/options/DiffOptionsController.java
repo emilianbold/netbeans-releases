@@ -63,7 +63,9 @@ import java.io.IOException;
  */
 @OptionsPanelController.SubRegistration(
     id=DiffOptionsController.OPTIONS_SUBPATH,
-    displayName="#LBL_DiffOptions"
+    displayName="#LBL_DiffOptions",
+    keywords="#KW_DiffOptions",
+    keywordsCategory="Advanced/Diff"
 //    toolTip="#TT_DiffOptions"
 )
 public class DiffOptionsController extends OptionsPanelController {
