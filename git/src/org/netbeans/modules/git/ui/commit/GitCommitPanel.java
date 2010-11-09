@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,14 +59,13 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.diff.MultiDiffPanelController;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
@@ -84,8 +84,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  *
@@ -278,26 +276,30 @@ public class GitCommitPanel extends VCSCommitPanel {
     }
 
     private static class DiffProvider extends VCSCommitDiffProvider {
-        
+
+        private final Map<File, MultiDiffPanelController> controllers = new HashMap<File, MultiDiffPanelController>();
+
         @Override
-        public Set<File> getModifiedFiles() {
-            // XXX implement me
-//            HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
-//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//                SaveCookie[] cookies = e.getValue().getSaveCookies(false);
-//                if (cookies.length > 0) {
-//                    modifiedFiles.put(e.getKey(), cookies[0]);
-//                }
-//            }
-//            return modifiedFiles;
-            return super.getModifiedFiles();
+        public Set<File> getModifiedFiles () {
+            return getSaveCookiesPerFile().keySet();
+        }
+
+        private Map<File, SaveCookie> getSaveCookiesPerFile () {
+            Map<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
+            for (Map.Entry<File, MultiDiffPanelController> e : controllers.entrySet()) {
+                SaveCookie[] cookies = e.getValue().getSaveCookies(false);
+                if (cookies.length > 0) {
+                    modifiedFiles.put(e.getKey(), cookies[0]);
+                }
+            }
+            return modifiedFiles;
         }
 
         @Override
-        public JComponent createDiffComponent(File file) {
-            JPanel p = new JPanel();
-            p.add(new JLabel("not yet implemented !!!"));
-            return p; // XXX implement me new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+        public JComponent createDiffComponent (File file) {
+            MultiDiffPanelController controller = new MultiDiffPanelController(file);
+            controllers.put(file, controller);
+            return controller.getPanel();
         }
         
 
@@ -305,25 +307,25 @@ public class GitCommitPanel extends VCSCommitPanel {
          * Returns save cookies available for files in the commit table
          * @return
          */
-        protected SaveCookie[] getSaveCookies() {
-            return super.getSaveCookies(); // XXX getModifiedFiles().values().toArray(new SaveCookie[0]);
+        @Override
+        protected SaveCookie[] getSaveCookies () {
+            return getSaveCookiesPerFile().values().toArray(new SaveCookie[0]);
         }
 
         /**
          * Returns editor cookies available for modified and not open files in the commit table
          * @return
          */
-        protected EditorCookie[] getEditorCookies() {
-//            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
-            // XXX      
-//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//                EditorCookie[] cookies = e.getValue().getEditorCookies(true);
-//                if (cookies.length > 0) {
-//                    allCookies.add(cookies[0]);
-//                }
-//            }
-//            return allCookies.toArray(new EditorCookie[allCookies.size()]);
-            return super.getEditorCookies();
+        @Override
+        protected EditorCookie[] getEditorCookies () {
+            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+            for (Map.Entry<File, MultiDiffPanelController> e : controllers.entrySet()) {
+                EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+                if (cookies.length > 0) {
+                    allCookies.add(cookies[0]);
+                }
+            }
+            return allCookies.toArray(new EditorCookie[allCookies.size()]);
         }        
     }    
     
