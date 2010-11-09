@@ -63,7 +63,11 @@ import org.openide.util.lookup.Lookups;
  * @author Pavel Buzek
  * @author Tomas Stupka
  */
-@OptionsPanelController.SubRegistration(displayName="#LBL_IssueTracking")
+@OptionsPanelController.SubRegistration(
+    id="IssueTracking",
+    displayName="#LBL_IssueTracking",
+    keywords="#KW_IssueTracking",
+    keywordsCategory="Advanced/IssueTracking")
 public class BugtrackingOptions extends OptionsPanelController {
         private BugtrackingOptionsPanel panel;
         private boolean initialized = false;
