@@ -49,12 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +60,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.RootsToFile;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -86,6 +82,8 @@ public final class Git {
     public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
 
+    private RootsToFile rootsToFile;
+    
     public Git () {
     }
 
@@ -104,6 +102,20 @@ public final class Git {
         gitVCS = Lookup.getDefault().lookup(GitVCS.class);
         fileStatusCache.addPropertyChangeListener(gitVCS);
         addPropertyChangeListener(gitVCS);
+
+        int statisticsFrequency;
+        String s = System.getProperty("git.root.stat.frequency", "0"); //NOI18N
+        try {
+            statisticsFrequency = Integer.parseInt(s);
+        } catch (NumberFormatException ex) {
+            statisticsFrequency = 0;
+        }
+        rootsToFile = new RootsToFile(gitVCS, new RootsToFile.Callback() {
+            @Override
+            public boolean repositoryExistsFor (File file) {
+                return GitUtils.repositoryExistsFor(file);
+            }
+        }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
     }
 
     public VCSAnnotator getVCSAnnotator() {
@@ -149,41 +161,8 @@ public final class Git {
         return fileStatusCache;
     }
 
-    //XXX move to versioning utils
-    private final RootsToFile rootsToFile = new RootsToFile();
-    public File getRepositoryRoot(File file) {
-        File oFile = file;
-
-        rootsToFile.logStatistics();
-        File root = rootsToFile.get(file, true);
-        if(root != null) {
-            return root;
-        }
-
-        root = gitVCS.getTopmostManagedAncestor(file);
-        if(root != null) {
-            if(file.isFile()) file = file.getParentFile();
-            List<File> folders = new ArrayList<File>();
-            for (; file != null && !file.getAbsolutePath().equals(root.getAbsolutePath()) ; file = file.getParentFile()) {
-                File knownRoot = rootsToFile.get(file);
-                if(knownRoot != null) {
-                    rootsToFile.put(folders, knownRoot);
-                    rootsToFile.put(oFile, knownRoot);
-                    return knownRoot;
-                }
-                folders.add(file);
-                if(GitUtils.repositoryExistsFor(file)) {
-                    rootsToFile.put(folders, file);
-                    rootsToFile.put(oFile, file);
-                    return file;
-                }
-            }
-            folders.add(root);
-            rootsToFile.put(folders, root);
-            rootsToFile.put(oFile, root);
-            return root;
-        }
-        return null;
+    public File getRepositoryRoot (File file) {
+        return rootsToFile.getRepositoryRoot(file);
     }
 
     public GitClient getClient (File repository) throws GitException {
@@ -255,69 +234,6 @@ public final class Git {
      */
     public void refreshWorkingCopyTimestamp (File repository) {
         getVCSInterceptor().refreshMetadataTimestamp(repository);
-    }
-
-    private static class RootsToFile {
-        private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.RootsToFile"); // NOI18N
-        private LinkedList<File> order = new LinkedList<File>();
-        private Map<File, File> files = new HashMap<File, File>();
-        private long cachedAccesCount = 0;
-        private long accesCount = 0;
-        private int statisticsFrequency = 0;
-
-        public RootsToFile() {
-            String s = System.getProperty("git.root.stat.frequency", "0"); // NOI18N
-            statisticsFrequency = Integer.parseInt(s);
-        }
-        synchronized void put(Collection<File> files, File root) {
-            for (File file : files) {
-                put(file, root);
-            }
-        }
-        synchronized void put(File file, File root) {
-            if(order.size() > 1500) {
-                for (int i = 0; i < 150; i++) {
-                    files.remove(order.getFirst());
-                    order.removeFirst();
-                }
-            }
-            order.addLast(file);
-            files.put(file, root);
-        }
-        synchronized File get(File file) {
-            return get(file, false);
-        }
-        synchronized File get(File file, boolean statistics) {
-            File root = files.get(file);
-            if(statistics && LOG.isLoggable(Level.FINEST)) {
-               cachedAccesCount += root != null ? 1 : 0;
-               accesCount++;
-            }
-            return root;
-        }
-        synchronized int size() {
-            return order.size();
-        }
-        synchronized void logStatistics() {
-            if(!LOG.isLoggable(Level.FINEST) ||
-               (statisticsFrequency > 0 && (accesCount % statisticsFrequency != 0)))
-            {
-                return;
-            }
-
-            LOG.finest("Git Repository roots cache statistics:\n" +                                 // NOI18N
-                     "  cached roots size       = " + order.size() + "\n" +                         // NOI18N
-                     "  access count            = " + accesCount + "\n" +                           // NOI18N
-                     "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
-                     "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
-        }
-
-        synchronized void clear () {
-            order.clear();
-            files.clear();
-            cachedAccesCount = 0;
-            accesCount = 0;
-        }
     }
 
 }
