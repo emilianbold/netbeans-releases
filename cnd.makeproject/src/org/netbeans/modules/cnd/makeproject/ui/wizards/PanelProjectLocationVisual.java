@@ -125,6 +125,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainComboBox.setVisible(true);
             createMainComboBox.addItem("C"); // NOI18N
             createMainComboBox.addItem("C++"); // NOI18N
+            createMainComboBox.addItem("Fortran"); // NOI18N
             String prefLanguage = MakeOptions.getInstance().getPrefApplicationLanguage();
             createMainComboBox.setSelectedItem(prefLanguage);
         } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
@@ -641,6 +642,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
         MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+        MIMEExtensions fortranExtensions = MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE);
 
         d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         if (createMainCheckBox.isSelected() && createMainTextField.getText().length() > 0) {
@@ -648,9 +650,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + cExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cFiles/main.c"); // NOI18N
-                } else {
+                } else if (((String) createMainComboBox.getSelectedItem()).equals("C++")) {
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
+                } else if (((String) createMainComboBox.getSelectedItem()).equals("Fortran")) {
+                    d.putProperty("mainFileName", createMainTextField.getText() + "." + fortranExtensions.getDefaultExtension()); // NOI18N
+                    d.putProperty("mainFileTemplate", "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String)createMainComboBox.getSelectedItem());
             } else if(type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
