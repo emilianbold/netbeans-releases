@@ -205,7 +205,10 @@ public class SvnClientExceptionHandler {
 
     private boolean handleRepositoryConnectError() throws SVNClientException {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
-
+        if (url == null) {
+            // god knows why this can happen
+            return false;
+        }
 
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
