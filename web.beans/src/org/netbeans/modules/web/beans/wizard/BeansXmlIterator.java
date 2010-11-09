@@ -76,6 +76,9 @@ import org.openide.util.NbBundle;
  * A template wizard operator for new beans.xml
  */
 public class BeansXmlIterator implements TemplateWizard.Iterator {
+
+    private static final String WEB_INF = "WEB-INF";        // NOI18N
+    
     private int index;
     private static final String defaultName = "beans";   //NOI18N
 
@@ -96,22 +99,22 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wizard) {
         WizardDescriptor.Panel folderPanel;
         Project project = Templates.getProject( wizard );
+        
+        FileObject  targetFolder = getTargetFolder(project);
+        
         Sources sources = project.getLookup().lookup(Sources.class);
-        SourceGroup[] webGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
-        SourceGroup[] javaGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        List<SourceGroup> groups = new ArrayList<SourceGroup>( webGroups.length +
-                javaGroups.length );  
-        for (SourceGroup group : webGroups) {
-            groups.add( group);
+        SourceGroup[] sourceGroups; 
+        if ( targetFolder != null && targetFolder.getName().equals(WEB_INF)){
+            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         }
-        for (SourceGroup group : javaGroups) {
-            groups.add( group);
+        else {
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
-        SourceGroup[] folders = groups.toArray( new SourceGroup[ groups.size() ]);
-        if ( groups.size() ==0 ){
-            folders = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        if ( sourceGroups == null ){
+            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
-        folderPanel = Templates.createSimpleTargetChooser(project, folders);
+        
+        folderPanel = Templates.createSimpleTargetChooser(project, sourceGroups );
 
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
@@ -133,7 +136,7 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         }
 
         Templates.setTargetName(wizard, defaultName);
-        Templates.setTargetFolder(wizard, getTargetFolder(project));
+        Templates.setTargetFolder(wizard, targetFolder );
     }
 
     private FileObject getTargetFolder(Project project) {
@@ -142,7 +145,7 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
             FileObject webInf = wm.getWebInf();
             if (webInf == null) {
                 try {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
