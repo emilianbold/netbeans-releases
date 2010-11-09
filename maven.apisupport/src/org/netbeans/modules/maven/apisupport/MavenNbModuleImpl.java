@@ -82,6 +82,8 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -291,7 +293,16 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             }
         }
         if (dep.getVersion() == null) {
-            dep.setVersion("RELEASE68"); //NOI18N
+            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
+            if (info != null) {
+                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info); // NOI18N
+                if (!versions.isEmpty()) {
+                    dep.setVersion(versions.get(0).getVersion());
+                }
+            }
+        }
+        if (dep.getVersion() == null) {
+            dep.setVersion("99.99"); // NOI18N
         }
         dependencyAdder.addDependency(dep);
         tsk.schedule(200);
