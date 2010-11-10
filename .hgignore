@@ -215,3 +215,4 @@ derby\.log
 \.orig\..*$
 \.chg\..*$
 \.conflict\~$
+libs.jna/external/lib/*
