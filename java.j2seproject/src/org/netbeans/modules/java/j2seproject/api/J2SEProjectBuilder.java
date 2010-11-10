@@ -103,6 +103,7 @@ import org.w3c.dom.NodeList;
  * XXX: Uses Bundle from org.netbeans.modules.java.j2seproject package not to affect
  * existing localizations.
  * @author Tomas Zezula
+ * @since 1.42
  */
 public class J2SEProjectBuilder {   
     
