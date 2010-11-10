@@ -165,7 +165,7 @@ public class CommitAction extends SingleRepositoryAction {
             }            
             
             if(GitModuleConfig.getDefault().getSignOff() && commiter != null) {
-                message += "\nSigned-off-by:" + GitCommitParameters.getUserString(commiter);
+                message += "\nSigned-off-by:" + GitCommitParameters.getUserString(commiter); // NOI18N
             }
             String origMessage = message;
             message = beforeCommitHook(commitCandidates, hooks, message);
