@@ -2025,6 +2025,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
+    }
+
+    public void dumpPPStates(PrintWriter printOut) {
         int i = 0;
         final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
         printOut.printf("Has %d ppStatePairs:\n", preprocStatePairs.size());// NOI18N 
@@ -2040,7 +2043,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             printOut.printf("handler=%s\n", ppHandler);// NOI18N 
         }
     }
-
+    
     static String toYesNo(boolean b) {
         return b ? "yes" : "no"; // NOI18N
     }
