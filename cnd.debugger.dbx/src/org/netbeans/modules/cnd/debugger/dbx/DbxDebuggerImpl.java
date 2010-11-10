@@ -430,9 +430,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	return new String[] {"8", "10", "16", "automatic"};	// NOI18N
     }
 
-
-    private Executor executor;
-
     public void start(final DbxDebuggerInfo ddi) {
 	// SHOULD factor with GdbDebuggerImpl
 

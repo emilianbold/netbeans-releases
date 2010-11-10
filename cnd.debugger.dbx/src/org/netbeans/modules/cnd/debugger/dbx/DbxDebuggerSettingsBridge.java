@@ -232,9 +232,12 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	String runargs = getArgsFlatEx();
 	if (runargs == null)
 	    runargs = "";
-        IOPack ioPack = dbxDebugger().getIOPack();
-        // FIXME: does not work, can this be done at all with dbx?
-	dbx().sendCommand(0, 0, "runargs " + runargs + ioPack.getExtraRunArgs(dbxDebugger().fmap()));	//NOI18N
+        String command = "runargs " + runargs; //NOI18N
+        String[] files = dbxDebugger().getIOPack().getIOFiles();
+        if (files != null) {
+            command += " < " + files[0] + " > " + files[1]; //NOI18N
+        }
+	dbx().sendCommand(0, 0, command);
     }
 
     protected void applyRunDirectory() {
