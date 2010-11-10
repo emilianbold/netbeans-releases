@@ -44,8 +44,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 
@@ -59,6 +61,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     
@@ -158,8 +163,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	String runargs = getArgsFlatEx();
 	if (runargs == null)
 	    runargs = "";
-        IOPack ioPack = gdbDebugger.getIOPack();
-	gdbDebugger.runArgs(runargs + ioPack.getExtraRunArgs(gdbDebugger.fmap()));
+	gdbDebugger.runArgs(runargs + ioRedirect());
     }
 
     protected void applyRunDirectory() {
@@ -191,5 +195,40 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
     protected void applyInterceptList() {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
+    }
+
+    private String ioRedirect() {
+        String[] files = gdbDebugger.getIOPack().getIOFiles();
+        if (files == null) {
+            return "";
+        }
+        OSFamily osFamily = OSFamily.UNKNOWN;
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(gdbDebugger.getExecutionEnvironment());
+            osFamily = hostInfo.getOSFamily();
+        } catch (CancellationException ex) {
+        } catch (IOException ex) {
+        }
+
+        String inRedir = "";
+        String inFile = files[0];
+        String outFile = files[1];
+        if (osFamily == OSFamily.WINDOWS) {
+            inFile = gdbDebugger.fmap().worldToEngine(inFile);
+            outFile = gdbDebugger.fmap().worldToEngine(outFile);
+        }
+        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
+        if (osFamily == OSFamily.MACOSX) {
+            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+        } else {
+            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+            String shell = HostInfoProvider.getEnv(gdbDebugger.getExecutionEnvironment()).get("SHELL"); // NOI18N
+            if (shell != null && shell.endsWith("csh")) { // NOI18N
+                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+            } else {
+                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+            }
+        }
+        return inRedir;
     }
 }
