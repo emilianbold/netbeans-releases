@@ -737,7 +737,7 @@ public final class ReferencesSupport {
 
         @Override
         public String getDisplayName() {
-            return "xRefSupport"; // NOI18N
+            return "Cache of xRef for file"; // NOI18N
         }
 
         @Override

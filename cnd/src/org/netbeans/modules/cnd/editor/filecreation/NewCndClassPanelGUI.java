@@ -303,7 +303,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         classNameTextField = new javax.swing.JTextField();
 
         jLabel1.setLabelFor(projectTextField);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Project_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_Project_Label")); // NOI18N
 
         projectTextField.setEditable(false);
         projectTextField.setFocusable(false);
@@ -336,7 +336,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         });
 
         jLabel4.setLabelFor(fileTextField);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
 
         fileTextField.setEditable(false);
         fileTextField.setFocusable(false);
@@ -357,7 +357,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
                     .addComponent(cbSourceExtension, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fileTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))
+                    .addComponent(fileTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -376,7 +376,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(fileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
-                .addContainerGap(6, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         folderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndClassPanelGUI.class).getString("AD_folderTextField")); // NOI18N
@@ -418,7 +418,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addGap(18, 18, 18)
-                        .addComponent(headerTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                        .addComponent(headerTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel7)
                         .addGap(28, 28, 28))
@@ -427,7 +427,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                         .addGap(51, 51, 51)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                .addComponent(headerFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                                .addComponent(headerFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(headerBrowseButton))
                             .addComponent(cbHeaderExtension, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -468,12 +468,12 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                             .addComponent(jLabel1))
                         .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 291, Short.MAX_VALUE)
-                            .addComponent(classNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                            .addComponent(projectTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
+                            .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 315, Short.MAX_VALUE)
+                            .addComponent(classNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                            .addComponent(projectTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                    .addComponent(targetSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                    .addComponent(targetSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -493,7 +493,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
                     .addComponent(locationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(locationLabel))
                 .addGap(4, 4, 4)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

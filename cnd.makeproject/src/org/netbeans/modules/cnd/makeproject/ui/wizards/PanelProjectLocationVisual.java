@@ -650,10 +650,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + cExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cFiles/main.c"); // NOI18N
-                } else if (((String) createMainComboBox.getSelectedItem()).equals("C++")) {
+                } else if (((String) createMainComboBox.getSelectedItem()).equals("C++")) { // NOI18N
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
-                } else if (((String) createMainComboBox.getSelectedItem()).equals("Fortran")) {
+                } else if (((String) createMainComboBox.getSelectedItem()).equals("Fortran")) { // NOI18N
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + fortranExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
                 }

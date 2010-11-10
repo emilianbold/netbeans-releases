@@ -639,7 +639,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         if (child != null) {
                             if (hasFriendPrefix(child)) {
                                 try {
-                                    CsmScope scope = ClassImpl.this.getScope();
+                                    CsmScope scope = getFriendScope();
                                     CsmFriendFunction friend;
                                     CsmFunction func;
                                     if (isMemberDefinition(token)) {
@@ -678,7 +678,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
                             try {
-                                CsmScope scope = ClassImpl.this.getScope();
+                                CsmScope scope = getFriendScope();
                                 CsmFriendFunction friend;
                                 CsmFunction func;
                                 if (isMemberDefinition(token)) {
@@ -721,6 +721,19 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 }
             }
             checkInnerIncludes(ClassImpl.this);
+        }
+
+        private CsmScope getFriendScope() {
+            CsmScope scope = ClassImpl.this.getScope();
+            while (CsmKindUtilities.isClass(scope)) {
+               CsmScope newScope = ((CsmClass)scope).getScope(); 
+               if (newScope != null) {
+                   scope = newScope;
+               } else {
+                   break;
+               }
+            }
+            return scope;
         }
 
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {

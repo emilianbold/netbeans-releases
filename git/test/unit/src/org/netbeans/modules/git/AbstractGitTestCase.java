@@ -45,7 +45,6 @@ package org.netbeans.modules.git;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -79,7 +78,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         super.setUp();
         repositoryLocation = new File(getWorkDir(), "work");
         clearWorkDir();
-        getClient(repositoryLocation).init();
+        getClient(repositoryLocation).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
         File repositoryMetadata = new File(repositoryLocation, ".git");
         assertTrue(repositoryMetadata.exists());
     }
@@ -160,7 +159,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected File initSecondRepository () throws GitException {
         File secondRepositoryFolder = new File(repositoryLocation.getParentFile(), "work_2"); //NOI18N
-        getClient(secondRepositoryFolder).init();
+        getClient(secondRepositoryFolder).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(secondRepositoryFolder.isDirectory());
         return secondRepositoryFolder;
     }

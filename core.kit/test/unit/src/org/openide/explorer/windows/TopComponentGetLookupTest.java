@@ -54,7 +54,6 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
-import junit.framework.Test;
 
 
 import org.netbeans.junit.*;
@@ -70,6 +69,10 @@ import org.openide.windows.TopComponent;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public class TopComponentGetLookupTest extends NbTestCase {
+    static Def def = new Def();
+    static {
+        Utilities.actionsGlobalContext();
+    }
     
     /** top component we work on */
     protected TopComponent top;
@@ -79,10 +82,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(TopComponentGetLookupTest.class);
     }
     
     /** Setup component with lookup.
@@ -176,7 +175,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         N[] arr = { new N ("1"), new N ("2"), new N ("3") };
         
         top.setActivatedNodes (arr);
-        assertEquals ("Three nodes there", 3, top.getActivatedNodes ().length);
+        assertEquals ("Three nodes there", 3, get.getActivatedNodes ().length);
         
         L l = new L ();
         Lookup.Result res = lookup.lookup(new Lookup.Template(OpenCookie.class));
@@ -211,8 +210,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
     public void testNodesAreInTheLookupAndNothingIsFiredBeforeFirstQuery () {
         AbstractNode n1 = new AbstractNode(Children.LEAF, Lookup.EMPTY);
         top.setActivatedNodes(new Node[] { n1 });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("Is the right now", n1, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("Is the right now", n1, get.getActivatedNodes ()[0]);
         
         Lookup.Result res = lookup.lookup(new Lookup.Template(Node.class));
         L l = new L ();
@@ -245,8 +244,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         res.addLookupListener(listener);
         
         top.setActivatedNodes (new AbstractNode[] { n2 });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("n2", n2, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("n2", n2, get.getActivatedNodes ()[0]);
         
 //MK - here it changes twice.. because the setAtivatedNodes is trigger on inner TC, then lookup of MVTC contains old activated node..
         // at this monent the merged lookup contains both items.. later it gets synchronized by setting the activated nodes on the MVTC as well..
@@ -301,8 +300,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         
         top.setActivatedNodes(new org.openide.nodes.Node[] { ac });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("It is the ac one", ac, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("It is the ac one", ac, get.getActivatedNodes ()[0]);
         ic.add (obj);
         
         L listener = new L ();
@@ -322,7 +321,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         listener.check ("One change", 1);
         
         top.setActivatedNodes (new N[0]);
-        assertEquals("The nodes are empty", 0, top.getActivatedNodes ().length);
+        assertEquals("The nodes are empty", 0, get.getActivatedNodes ().length);
         listener.check ("No change", 0);
         
         cnt.queries = 0;
@@ -386,60 +385,34 @@ public class TopComponentGetLookupTest extends NbTestCase {
     public void testActionMapIsTakenFromComponentAndAlsoFromFocusedOne () {
         JTextField panel = new JTextField();
         
-        class Def extends DefaultKeyboardFocusManager {
-            private Component c;
-            
-            public Def(Component c) {
-                this.c = c;
-            }
-            @Override
-            public Component getFocusOwner() {
-                return null;
-            }
+        top.add(BorderLayout.CENTER, panel);
 
-            @Override
-            public Component getPermanentFocusOwner() {
-                return c;
+        class Act extends AbstractAction {
+            public void actionPerformed(ActionEvent ev) {
             }
         }
-        KeyboardFocusManager prev = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        Act act1 = new Act ();
+        Act act2 = new Act ();
+        Act act3 = new Act ();
 
-        try {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (panel));
+        top.getActionMap ().put ("globalRegistration", act1);
+        top.getActionMap ().put ("doubleRegistration", act2);
 
+        panel.getActionMap ().put ("doubleRegistration", act3);
+        panel.getActionMap ().put ("focusedRegistration", act3);
+        def.setC(panel);
 
+        ActionMap map = (ActionMap)top.getLookup ().lookup (ActionMap.class);
 
-            top.add(BorderLayout.CENTER, panel);
+        assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
+        assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
 
-            class Act extends AbstractAction {
-                public void actionPerformed(ActionEvent ev) {
-                }
-            }
-            Act act1 = new Act ();
-            Act act2 = new Act ();
-            Act act3 = new Act ();
+        assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
 
-            top.getActionMap ().put ("globalRegistration", act1);
-            top.getActionMap ().put ("doubleRegistration", act2);
-
-            panel.getActionMap ().put ("doubleRegistration", act3);
-            panel.getActionMap ().put ("focusedRegistration", act3);
-
-
-            ActionMap map = (ActionMap)top.getLookup ().lookup (ActionMap.class);
-
-            assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
-            assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
-
-            assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
-
-            JTextField f = new JTextField ();
-            f.getActionMap ().put ("focusedRegistration", act3);
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (f));
-            assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
-        } finally {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager (prev);
-        }
+        JTextField f = new JTextField ();
+        f.getActionMap ().put ("focusedRegistration", act3);
+        def.setC(f);
+        assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
     }
     
     
@@ -721,4 +694,30 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         
     }
+    
+    static class Def extends DefaultKeyboardFocusManager {
+
+        private Component c;
+
+        public Def() {
+            this.c = c;
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(this);       
+        }
+
+        public void setC(Component c) {
+            this.c = c;
+            firePropertyChange("permanentFocusOwner", null, c);
+        }
+
+        @Override
+        public Component getFocusOwner() {
+            return null;
+        }
+
+        @Override
+        public Component getPermanentFocusOwner() {
+            return c;
+        }
+    }
+    
 }

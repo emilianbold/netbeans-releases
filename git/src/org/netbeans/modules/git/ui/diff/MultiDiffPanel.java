@@ -48,7 +48,7 @@ package org.netbeans.modules.git.ui.diff;
  *
  * @author Maros Sandor
  */
-public class MultiDiffPanel extends javax.swing.JPanel {
+class MultiDiffPanel extends javax.swing.JPanel {
 
     public MultiDiffPanel () {
         initComponents();
@@ -63,34 +63,33 @@ public class MultiDiffPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         btnModeGroup = new javax.swing.ButtonGroup();
-        jPanel2 = new javax.swing.JToolBar();
         jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
 
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        jPanel2.setFloatable(false);
-        jPanel2.setRollover(true);
+        controlToolbar.setFloatable(false);
+        controlToolbar.setRollover(true);
 
         btnModeGroup.add(tgbHeadVsWorking);
         tgbHeadVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png"))); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/diff/Bundle"); // NOI18N
         tgbHeadVsWorking.setToolTipText(bundle.getString("MultiDiffPanel.tgbHeadVsWorking.toolTipText")); // NOI18N
         tgbHeadVsWorking.setFocusable(false);
-        jPanel2.add(tgbHeadVsWorking);
+        controlToolbar.add(tgbHeadVsWorking);
 
         btnModeGroup.add(tgbHeadVsIndex);
         tgbHeadVsIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png"))); // NOI18N
         tgbHeadVsIndex.setToolTipText(bundle.getString("MultiDiffPanel.tgbHeadVsIndex.toolTipText")); // NOI18N
         tgbHeadVsIndex.setFocusable(false);
-        jPanel2.add(tgbHeadVsIndex);
+        controlToolbar.add(tgbHeadVsIndex);
 
         btnModeGroup.add(tgbIndexVsWorking);
         tgbIndexVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/index_vs_working.png"))); // NOI18N
         tgbIndexVsWorking.setToolTipText(bundle.getString("MultiDiffPanel.tgbIndexVsWorking.toolTipText")); // NOI18N
         tgbIndexVsWorking.setFocusable(false);
-        jPanel2.add(tgbIndexVsWorking);
+        controlToolbar.add(tgbIndexVsWorking);
 
         jPanel1.setMaximumSize(new java.awt.Dimension(80, 32767));
 
@@ -105,21 +104,21 @@ public class MultiDiffPanel extends javax.swing.JPanel {
             .addGap(0, 28, Short.MAX_VALUE)
         );
 
-        jPanel2.add(jPanel1);
+        controlToolbar.add(jPanel1);
 
         nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.nextButton.toolTipText")); // NOI18N
         nextButton.setFocusable(false);
         nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jPanel2.add(nextButton);
+        controlToolbar.add(nextButton);
 
         prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.prevButton.toolTipText")); // NOI18N
         prevButton.setFocusable(false);
         prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jPanel2.add(prevButton);
+        controlToolbar.add(prevButton);
 
         jPanel4.setMaximumSize(new java.awt.Dimension(30, 32767));
 
@@ -134,29 +133,29 @@ public class MultiDiffPanel extends javax.swing.JPanel {
             .addGap(0, 28, Short.MAX_VALUE)
         );
 
-        jPanel2.add(jPanel4);
+        controlToolbar.add(jPanel4);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("MultiDiffPanel.btnRefresh.toolTipText")); // NOI18N
         btnRefresh.setActionCommand(null);
         btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
-        jPanel2.add(btnRefresh);
+        controlToolbar.add(btnRefresh);
 
         jPanel3.setOpaque(false);
-        jPanel2.add(jPanel3);
+        controlToolbar.add(jPanel3);
 
         btnCheckout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/checkout_paths.png"))); // NOI18N
         btnCheckout.setToolTipText(bundle.getString("MultiDiffPanel.btnCheckout.toolTipText")); // NOI18N
         btnCheckout.setFocusable(false);
         btnCheckout.setPreferredSize(new java.awt.Dimension(22, 25));
-        jPanel2.add(btnCheckout);
+        controlToolbar.add(btnCheckout);
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("MultiDiffPanel.btnCommit.toolTipText")); // NOI18N
         btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
-        jPanel2.add(btnCommit);
+        controlToolbar.add(btnCommit);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -164,7 +163,7 @@ public class MultiDiffPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE))
+                .addComponent(controlToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,7 +172,7 @@ public class MultiDiffPanel extends javax.swing.JPanel {
                 .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(controlToolbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(330, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -183,8 +182,8 @@ public class MultiDiffPanel extends javax.swing.JPanel {
     final javax.swing.JButton btnCommit = new javax.swing.JButton();
     private javax.swing.ButtonGroup btnModeGroup;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
+    final javax.swing.JToolBar controlToolbar = new javax.swing.JToolBar();
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JToolBar jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     final javax.swing.JButton nextButton = new javax.swing.JButton();

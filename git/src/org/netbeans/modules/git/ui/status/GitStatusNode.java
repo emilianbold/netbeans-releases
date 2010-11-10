@@ -83,7 +83,7 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
 
         ps.put(nameProperty);
         ps.put(pathProperty);
-        ps.put(new StatusProperty(this));
+        ps.put(new GitStatusProperty(this));
 
         sheet.put(ps);
         setSheet(sheet);

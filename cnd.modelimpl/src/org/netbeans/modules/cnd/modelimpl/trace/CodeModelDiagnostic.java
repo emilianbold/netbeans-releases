@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmStandaloneFileProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -59,39 +64,124 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author vv159170
  */
-@ServiceProvider(service=CndDiagnosticProvider.class, position=1000)
-public class CodeModelDiagnostic implements CndDiagnosticProvider {
 
-    @Override
-    public String getDisplayName() {
-        return "Code Model Impl"; // NOI18N
-    }
+public final class CodeModelDiagnostic {
 
-    @Override
-    public void dumpInfo(Lookup context, PrintWriter printOut) {
-        printOut.printf("====CsmStandaloneFileProviders info:\n");// NOI18N
-        for (CsmStandaloneFileProvider sap : Lookup.getDefault().lookupAll(CsmStandaloneFileProvider.class)) {
-            if (sap instanceof CsmStandaloneFileProviderImpl) {
-                ((CsmStandaloneFileProviderImpl)sap).dumpInfo(printOut);
-            } else {
-                printOut.printf("UKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N 
-            }
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1000)
+    public final static class StandAloneProviderTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Standalone Files Information";// NOI18N 
         }
-        printOut.printf("====ModelImpl:\n");// NOI18N
-        ModelImpl.instance().dumpInfo(printOut);
-        printOut.printf("====Libraries:\n"); //NOI18N
-        LibraryManager.getInstance().dumpInfo(printOut);
-        printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
-        Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
-        for (CsmFile csmFile : allFiles) {
-            if (csmFile instanceof FileImpl) {
-                ((FileImpl) csmFile).dumpInfo(printOut);
-            } else if (csmFile instanceof FileSnapshot) {
-                ((FileSnapshot) csmFile).dumpInfo(printOut);
-            } else {
-                printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====CsmStandaloneFileProviders info:\n");// NOI18N
+            for (CsmStandaloneFileProvider sap : Lookup.getDefault().lookupAll(CsmStandaloneFileProvider.class)) {
+                if (sap instanceof CsmStandaloneFileProviderImpl) {
+                    ((CsmStandaloneFileProviderImpl) sap).dumpInfo(printOut);
+                } else {
+                    printOut.printf("UKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N 
+                }
             }
         }
     }
+        
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1100)
+    public final static class FileTrace implements CndDiagnosticProvider {
 
+        @Override
+        public String getDisplayName() {
+            return "General File Information";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    ((FileImpl) csmFile).dumpInfo(printOut);
+                } else if (csmFile instanceof FileSnapshot) {
+                    ((FileSnapshot) csmFile).dumpInfo(printOut);
+                } else {
+                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                }
+            }
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1200)    
+    public final static class PPStatesTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Preprocessor States";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    ((FileImpl) csmFile).dumpPPStates(printOut);
+                } else {
+                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                }
+            }
+        }
+    }
+      
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
+    public final static class ModelProjectsTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Model Projects";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====ModelImpl:\n");// NOI18N
+            ModelImpl.instance().dumpInfo(printOut);
+            printOut.printf("====Libraries:\n"); //NOI18N
+            LibraryManager.getInstance().dumpInfo(printOut);
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
+    public final static class FileImplModelTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "File Code Model";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                new CsmTracer(printOut).dumpModel(csmFile);
+            }            
+        }
+    }    
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
+    public final static class ModelTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "File Code Model";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                new CsmTracer(printOut).dumpModel(csmFile);
+            }
+        }
+    }    
 }

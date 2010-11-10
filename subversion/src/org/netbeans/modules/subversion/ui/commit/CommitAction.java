@@ -643,7 +643,7 @@ public class CommitAction extends ContextAction {
 
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
             List<File> hookFiles = new ArrayList<File>();
-            boolean needLogEntries = false;
+            boolean needAfterCommit = false;
             if(hooks.size() > 0) {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
@@ -654,7 +654,7 @@ public class CommitAction extends ContextAction {
                         // XXX handle returned context
                         context = hook.beforeCommit(context);
                         if(context != null) {
-                            needLogEntries = context.getLogEntries() != null;
+                            needAfterCommit = true;
                             message = context.getMessage();
                         }
                     } catch (IOException ex) {
@@ -668,7 +668,7 @@ public class CommitAction extends ContextAction {
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
 
-                CommitCmd cmd = new CommitCmd(client, support, message, needLogEntries && hooks.size() > 0 ? logs : null);
+                CommitCmd cmd = new CommitCmd(client, support, message, needAfterCommit ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
                 List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
                 if(recursiveCommits.size() > 0) {
@@ -690,7 +690,9 @@ public class CommitAction extends ContextAction {
                         return;
                     }
                 }
-                afterCommit(hooks, hookFiles, message, logs);
+                if(needAfterCommit) {
+                    afterCommit(hooks, hookFiles, message, logs);
+                }
 
                 // update and refresh
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();

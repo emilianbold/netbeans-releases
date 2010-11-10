@@ -22,7 +22,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="splitPane" alignment="0" pref="716" max="32767" attributes="0"/>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-              <Component id="jPanel2" alignment="0" pref="716" max="32767" attributes="0"/>
+              <Component id="controlToolbar" alignment="0" pref="716" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -34,7 +34,7 @@
           </Group>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="controlToolbar" min="-2" max="-2" attributes="0"/>
                   <EmptySpace pref="330" max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -52,7 +52,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
     </Container>
-    <Container class="javax.swing.JToolBar" name="jPanel2">
+    <Container class="javax.swing.JToolBar" name="controlToolbar">
       <Properties>
         <Property name="floatable" type="boolean" value="false"/>
         <Property name="rollover" type="boolean" value="true"/>
