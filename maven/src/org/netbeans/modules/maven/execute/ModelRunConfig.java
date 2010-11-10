@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.execute;
 
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -60,8 +61,9 @@ public final class ModelRunConfig extends BeanRunConfig {
         model = mod;
         NbMavenProjectImpl nbprj = proj.getLookup().lookup(NbMavenProjectImpl.class);
         setProject(nbprj);
-        setExecutionName(nbprj.getName());
-        setTaskDisplayName(nbprj.getName());
+        String label = ProjectUtils.getInformation(proj).getDisplayName();
+        setExecutionName(label);
+        setTaskDisplayName(label);
         setProperties(model.getProperties());
         setGoals(model.getGoals());
         setExecutionDirectory(ActionToGoalUtils.resolveProjectExecutionBasedir(mod, proj));
