@@ -45,9 +45,12 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -144,6 +147,27 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         assertNotNull(expected);
         assertEquals(expected, FileOwnerQuery.getOwner(srcRoot.toURI()));
         assertEquals(expected, FileOwnerQuery.getOwner(testRoot.toURI()));
+    }
+    
+    public void testProjectBuilder() throws Exception {
+        final File root = getWorkDir();
+        clearWorkDir();
+        final File projectDir = new File(root,"proj");
+        final String projectName = "Test Project";
+        final J2SEProjectBuilder generator = new J2SEProjectBuilder(projectDir, projectName);
+        generator.addDefaultSourceRoots().
+        setBuildXmlName("my-build.xml").
+        setMainClass("org.me.Main").
+        addJVMArguments("-Xmx100M").
+        build();
+        
+        EditableProperties props = new EditableProperties(true);
+        props.load(new FileInputStream(new File(projectDir,"nbproject"+File.separatorChar+"project.properties")));
+        assertEquals("-Xmx100M", props.getProperty("run.jvmargs"));
+        assertEquals("my-build.xml", props.getProperty("buildfile"));
+        assertEquals("org.me.Main", props.getProperty("main.class"));
+        assertEquals("src",props.getProperty("src.dir"));
+        assertEquals("test",props.getProperty("test.src.dir"));
     }
     
 }
