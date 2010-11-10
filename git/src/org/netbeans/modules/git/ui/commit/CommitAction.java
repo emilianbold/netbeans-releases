@@ -164,9 +164,12 @@ public class CommitAction extends SingleRepositoryAction {
                 client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, support);           
             }            
             
+            if(GitModuleConfig.getDefault().getSignOff() && commiter != null) {
+                message += "\nSigned-off-by:" + GitCommitParameters.getUserString(commiter);
+            }
             String origMessage = message;
             message = beforeCommitHook(commitCandidates, hooks, message);
-            
+                        
             GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support);
             
             GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
