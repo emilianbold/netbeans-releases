@@ -303,10 +303,16 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
+    ViewHierarchy viewHierarchy; // Assigned upon setParent()
+
     public DocumentView(Element elem) {
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
         this.tabExpander = new EditorTabExpander(this);
+    }
+
+    public ViewHierarchy viewHierarchy() { // not synced (multiple instances should not harm)
+        return viewHierarchy;
     }
 
     @Override
@@ -411,6 +417,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
             textComponent = (JTextComponent) container;
+            viewHierarchy = ViewHierarchy.get(textComponent);
             pMutex = (PriorityMutex) textComponent.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
@@ -549,6 +556,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (widthChange || heightChange) {
             preferenceChanged(null, widthChange, heightChange);
         }
+        viewHierarchy.fireViewHierarchyEvent(new ViewHierarchyEvent(viewHierarchy, getStartOffset()));
     }
 
     /**
