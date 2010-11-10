@@ -838,7 +838,7 @@ public class BaseKit extends DefaultEditorKit {
 
             @Override
             public void ancestorRemoved(AncestorEvent event) {
-                if (scrollPane.getInputMap(condition) == null) {
+                if (scrollPane != null && scrollPane.getInputMap(condition) == null) {
                     // Restore original input map
                     scrollPane.setInputMap(condition, origMap);
                 }
