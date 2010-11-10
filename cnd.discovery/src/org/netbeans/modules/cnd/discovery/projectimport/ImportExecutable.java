@@ -493,6 +493,22 @@ public class ImportExecutable implements PropertyChangeListener {
         if (ldLibPath == null) {
             ldLibPath = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName); // NOI18N
         }
+        if (ldLibPath == null) {
+            ldLibPath = "";
+        }
+        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
+        switch (platformInfo.getPlatform()) {
+            case PlatformTypes.PLATFORM_WINDOWS:
+                break;
+            case PlatformTypes.PLATFORM_MACOSX:
+                ldLibPath += ":/usr/lib:/usr/local/lib:/Library/Frameworks:/System/Library/Frameworks";  // NOI18N
+                break;
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+            case PlatformTypes.PLATFORM_LINUX:
+            default:
+                ldLibPath += ":/lib:/usr/lib";  // NOI18N
+        }
         return ldLibPath;
     }
 
@@ -720,7 +736,11 @@ public class ImportExecutable implements PropertyChangeListener {
 
     static String findLocation(String dll, String ldPath){
         if (ldPath != null) {
-            for(String search : ldPath.split(":")) {  // NOI18N
+            String separator = ":";
+            if (ldPath.indexOf(';') > 0) {
+                separator = ";";
+            }
+            for(String search : ldPath.split(separator)) {  // NOI18N
                 File file = new File(search, dll);
                 if (file.isFile() && file.exists()) {
                     String path = file.getAbsolutePath();
