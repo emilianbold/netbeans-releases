@@ -165,22 +165,25 @@ final class DelegateActionMap extends ActionMap {
         }
         
         Component owner = GlobalActionContextImpl.findFocusOwner();
-        List<Object> focusKeys = new ArrayList<Object>();
+        List<JComponent> hierarchy = new ArrayList<JComponent>();
         while ((owner != null) && (owner != getComponent())) {
             if (owner instanceof JComponent) {
-                m = ((JComponent) owner).getActionMap();
-                Object[] fk = m == null ? null : all ? m.allKeys() : m.keys();
-                if (fk != null) {
-                    focusKeys.addAll(Arrays.asList(fk));
-                }
+                hierarchy.add((JComponent)owner);
             }
-
             owner = owner.getParent();
         }
         if (owner == getComponent()) {
-            keys.addAll(focusKeys);
+            for (JComponent c : hierarchy) {
+                ActionMap am = c.getActionMap();
+                if (am == null) {
+                    continue;
+                }
+                Object[] fk = all ? am.allKeys() : am.keys();
+                if (fk != null) {
+                    keys.addAll(Arrays.asList(fk));
+                }
+            }
         }
-
         return keys.toArray();
     }
 
