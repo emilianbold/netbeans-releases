@@ -107,8 +107,11 @@ public class WsdlPort implements WSPort{
 
     public String getAddress() {
         List<SOAPAddress> addresses = port.getExtensibilityElements(SOAPAddress.class);
-        SOAPAddress address = addresses.get(0);
-        return address.getLocation();
+        if ( addresses.size() >0 ){
+            SOAPAddress address = addresses.get(0);
+            return address.getLocation();
+        }
+        return null;
     }
 
 }

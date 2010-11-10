@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -450,8 +451,8 @@ public final class Source {
     
     private int taskCount;
     private volatile Parser cachedParser;
-    private volatile ASourceModificationEvent  sourceModificationEvent;
-    private final ASourceModificationEvent unspecifiedSourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
+    private final AtomicReference<ASourceModificationEvent> sourceModificationEvent = new AtomicReference<ASourceModificationEvent>();
+    private final ASourceModificationEvent unspecifiedSourceModificationEvent = new ASourceModificationEvent (this, true, -1, -1);
     private Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
@@ -618,22 +619,26 @@ public final class Source {
         }
 
         @Override
-        public void setSourceModification (Source source, int startOffset, int endOffset) {
+        public void setSourceModification (Source source, boolean sourceChanged, int startOffset, int endOffset) {
             assert source != null;
-            source.sourceModificationEvent = new ASourceModificationEvent (source, startOffset, endOffset);
+            ASourceModificationEvent oldSourceModificationEvent;
+            ASourceModificationEvent newSourceModificationEvent;
+            do {
+                oldSourceModificationEvent = source.sourceModificationEvent.get();
+                boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
+                newSourceModificationEvent = new ASourceModificationEvent (source, mergedChange, startOffset, endOffset);                
+            } while (!source.sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
         }
 
         @Override
         public void parsed (Source source) {
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                source.sourceModificationEvent = null;
-            }
+            source.sourceModificationEvent.set(null);
         }
 
         @Override
         public SourceModificationEvent getSourceModificationEvent (Source source) {
             assert source != null;
-            SourceModificationEvent event = source.sourceModificationEvent;
+            SourceModificationEvent event = source.sourceModificationEvent.get();
             if (event == null) {
                 event = source.unspecifiedSourceModificationEvent;
             }
@@ -743,10 +748,11 @@ public final class Source {
 
         ASourceModificationEvent (
             Object          source,
+            boolean         sourceChanged,
             int             _startOffset,
             int             _endOffset
         ) {
-            super (source);
+            super (source, sourceChanged);
             startOffset = _startOffset;
             endOffset = _endOffset;
         }
@@ -761,6 +767,7 @@ public final class Source {
 
         @Override
         public String toString () {
+            //XXX: Never change the toString value, some tests depends on it!
             return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }

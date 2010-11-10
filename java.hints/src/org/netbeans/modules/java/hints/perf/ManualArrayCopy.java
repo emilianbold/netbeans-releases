@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
@@ -77,9 +76,8 @@ public class ManualArrayCopy {
                               "}")
     })
     public static ErrorDescription arrayCopy(HintContext ctx) {
-        TreePath source = ctx.getVariables().get("$arr").getParentPath();
-        TypeMirror sourceType = ctx.getInfo().getTrees().getTypeMirror(source);
-        TypeMirror targetType = getTargetType(ctx, source);
+        TypeMirror sourceType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$arr"));
+        TypeMirror targetType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$tarr"));
 
         if (   !ctx.getInfo().getTypes().isSubtype(sourceType, targetType)
             || sourceType.getKind() == TypeKind.ERROR)
@@ -143,9 +141,4 @@ public class ManualArrayCopy {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
 
-    private static TypeMirror getTargetType(HintContext ctx, TreePath tp) {
-        //XXX:
-        return ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$tarr").getParentPath());
-    }
-    
 }

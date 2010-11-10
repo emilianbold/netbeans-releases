@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.AstCompositeExpression;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
@@ -64,6 +63,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 
 /**
  * Expression Language indexer.
+ *
+ * TODO: should store node offsets to the index
  *
  * @author Erno Mononen
  */

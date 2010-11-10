@@ -57,38 +57,38 @@ public final class Authentication {
 
     private static final Preferences prefs = NbPreferences.forModule(Authentication.class);
     private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
-    private static final String knownHosts;
-    private static String last_ssh_key;
+    private static final String knownHostsFile;
+    private static String lastSSHKeyFile;
     private final ExecutionEnvironment env;
     private final String pref_key;
-    private String ssh_key;
+    private String sshKeyFile;
     private Type type = Type.UNDEFINED;
 
     static {
         String hosts = System.getProperty("ssh.knonwhosts.file", null); // NOI18N
 
-        if (hosts == null || !isValidHosts(hosts)) {
+        if (hosts == null || !isValidKnownHostsFile(hosts)) {
             hosts = System.getProperty("user.home") + "/.ssh/known_hosts"; // NOI18N
-            if (!isValidHosts(hosts)) {
+            if (!isValidKnownHostsFile(hosts)) {
                 hosts = System.getProperty("netbeans.user") + "/.ssh/known_hosts"; // NOI18N
-                if (!isValidHosts(hosts)) {
+                if (!isValidKnownHostsFile(hosts)) {
                     hosts = null;
                 }
             }
         }
 
-        knownHosts = hosts;
+        knownHostsFile = hosts;
 
         String key = System.getProperty("user.home") + "/.ssh/id_dsa"; // NOI18N
 
-        if (!isValidKey(key)) {
+        if (!isValidSSHKeyFile(key)) {
             key = System.getProperty("user.home") + "/.ssh/id_rsa"; // NOI18N
-            if (!isValidKey(key)) {
+            if (!isValidSSHKeyFile(key)) {
                 key = null;
             }
         }
 
-        last_ssh_key = key;
+        lastSSHKeyFile = key;
     }
 
     private Authentication(ExecutionEnvironment env) {
@@ -103,8 +103,8 @@ public final class Authentication {
         if (isUnitTest) {
             result.setPassword();
         } else {
-            if (result.ssh_key == null || result.ssh_key.trim().length() == 0) {
-                result.ssh_key = last_ssh_key;
+            if (result.sshKeyFile == null || result.sshKeyFile.trim().length() == 0) {
+                result.sshKeyFile = lastSSHKeyFile;
             }
         }
 
@@ -123,24 +123,24 @@ public final class Authentication {
         type = Type.PASSWORD;
     }
 
-    public String getKnownHosts() {
-        return knownHosts;
+    public String getKnownHostsFile() {
+        return knownHostsFile;
     }
 
-    public void setSSHKey(String ssh_key) throws IllegalArgumentException {
-        if (!isValidKey(ssh_key)) {
-            throw new IllegalArgumentException("Invalid key " + ssh_key); // NOI18N
+    public void setSSHKeyFile(String filename) throws IllegalArgumentException {
+        if (!isValidSSHKeyFile(filename)) {
+            throw new IllegalArgumentException("Invalid ssh key file " + filename); // NOI18N
         }
 
         type = type.SSH_KEY;
-        this.ssh_key = ssh_key;
+        sshKeyFile = filename;
     }
 
-    public static boolean isValidKey(String key) {
+    public static boolean isValidSSHKeyFile(String filename) {
         JSch test = new JSch();
 
         try {
-            test.addIdentity(key);
+            test.addIdentity(filename);
         } catch (JSchException ex) {
             return false;
         }
@@ -148,11 +148,11 @@ public final class Authentication {
         return true;
     }
 
-    private static boolean isValidHosts(String knownHosts) {
+    private static boolean isValidKnownHostsFile(String knownHostsFile) {
         JSch test = new JSch();
 
         try {
-            test.setKnownHosts(knownHosts);
+            test.setKnownHosts(knownHostsFile);
         } catch (JSchException ex) {
             return false;
         }
@@ -170,8 +170,8 @@ public final class Authentication {
         }
 
         if (type == Type.SSH_KEY) {
-            prefs.put(pref_key, ssh_key);
-            last_ssh_key = ssh_key;
+            prefs.put(pref_key, sshKeyFile);
+            lastSSHKeyFile = sshKeyFile;
         } else {
             prefs.put(pref_key, type.name());
         }
@@ -189,9 +189,9 @@ public final class Authentication {
         } else if (Type.PASSWORD.name().equals(typeOrKey)) {
             type = Type.PASSWORD;
         } else {
-            if (isValidKey(typeOrKey)) {
+            if (isValidSSHKeyFile(typeOrKey)) {
                 type = Type.SSH_KEY;
-                ssh_key = typeOrKey;
+                sshKeyFile = typeOrKey;
             } else {
                 type = Type.UNDEFINED;
             }
@@ -220,7 +220,11 @@ public final class Authentication {
     }
 
     public String getKey() {
-        return ssh_key;
+        return getSSHKeyFile();
+    }
+
+    public String getSSHKeyFile() {
+        return sshKeyFile;
     }
 
     public enum Type {

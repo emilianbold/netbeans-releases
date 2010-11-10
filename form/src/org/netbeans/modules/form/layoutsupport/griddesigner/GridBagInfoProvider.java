@@ -212,4 +212,14 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return constraints.fill;
     }
 
+    public double getWeightX(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.weightx;
+    }
+
+    public double getWeightY(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.weighty;
+    }
+
 }

@@ -92,6 +92,11 @@ implements ContextAwareAction, PropertyChangeListener, ChangeListener, LookupLis
         this.result = context.lookupResult(UndoRedo.Provider.class);
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[undo=" + doUndo + ", fallback: " + fallback + "]"; // NOI18N
+    }
+
     public static Action create(Map<?,?> map) {
         if (Boolean.TRUE.equals(map.get("redo"))) { // NOI18N
             return new UndoRedoAction(Utilities.actionsGlobalContext(), false, true);

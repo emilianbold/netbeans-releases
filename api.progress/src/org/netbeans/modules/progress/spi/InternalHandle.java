@@ -233,7 +233,7 @@ public final class InternalHandle {
      */
     public synchronized void finish() {
         if (state == STATE_INITIALIZED) {
-            throw new IllegalStateException("Cannot finish not a started task");
+            throw new IllegalStateException("Cannot finish a task that was never started");
         }
         if (state == STATE_FINISHED) {
             return;

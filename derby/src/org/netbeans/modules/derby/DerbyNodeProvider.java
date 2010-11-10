@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.derby;
 
-import org.netbeans.modules.derby.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -65,6 +64,7 @@ public class DerbyNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public DerbyNodeProvider createInstance(Lookup lookup) {
                 DerbyNodeProvider provider = new DerbyNodeProvider(lookup);
                 return provider;

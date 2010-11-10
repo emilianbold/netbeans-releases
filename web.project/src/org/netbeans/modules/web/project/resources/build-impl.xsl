@@ -634,7 +634,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <!-- XXX one little flaw in this weird trick: does not work on folders. -->
                         <pathconvert>
                             <xsl:attribute name="property">javac.includes.binary</xsl:attribute>
-                            <xsl:attribute name="pathsep">,</xsl:attribute>
+                            <xsl:attribute name="pathsep">${line.separator}</xsl:attribute>
                             <path>
                                 <filelist>
                                     <xsl:attribute name="dir">@{destdir}</xsl:attribute>
@@ -646,9 +646,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="to">*.class</xsl:attribute>
                             </globmapper>
                         </pathconvert>
+                        <tempfile property="javac.includesfile.binary" deleteonexit="true"/>
+                        <echo message="${{javac.includes.binary}}" file="${{javac.includesfile.binary}}"/>
                         <delete>
-                            <files includes="${{javac.includes.binary}}"/>
+                            <files includesfile="${{javac.includesfile.binary}}"/>
                         </delete>
+                        <delete file="${{javac.includesfile.binary}}"/> <!-- deleteonexit keeps the file during IDE run -->
                     </sequential>
                 </macrodef>
             </target>
@@ -698,6 +701,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg value="-ea"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>

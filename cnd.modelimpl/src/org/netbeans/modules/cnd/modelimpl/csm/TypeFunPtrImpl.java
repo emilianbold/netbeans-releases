@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Represent pointer to function type
  * @author Vladimir Kvashin
  */
-public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
+public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
     private Collection<CsmUID<CsmParameter>> functionParameters;
     private short functionPointerDepth;
@@ -95,6 +95,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
     }
 
+    @Override
     public Collection<CsmParameter> getParameters() {
         if (functionParameters == null) {
             return Collections.<CsmParameter>emptyList();
@@ -161,10 +162,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
                 next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
             } else if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // typedef void foo_type(...);
-            } else {
-                if (next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
-                    return false;
-                }
+            } else if (next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
                 // skip adjacent asterisks
                 do {
                     next = next.getNextSibling();
@@ -172,6 +170,16 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
                         ++instance.functionPointerDepth;
                     }
                 } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
+            } else if(inTypedef) {
+                brace = AstUtil.findLastSiblingOfType(ast, CPPTokenTypes.LPAREN);
+                next = brace.getNextSibling();
+                if(next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                    // typedef void (foo_type)(...);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
             }
         }
 

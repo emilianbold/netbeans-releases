@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -109,7 +110,7 @@ public class Utilities {
         
         Tree startSearchingForNameIndentifierBehindThisTree = null;
         
-        if (tree.getKind() == Tree.Kind.CLASS){
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
             startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
             
         } else if (tree.getKind() == Tree.Kind.METHOD){

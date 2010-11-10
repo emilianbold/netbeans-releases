@@ -44,6 +44,9 @@ package org.netbeans.modules.quicksearch;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -52,6 +55,9 @@ import org.openide.util.actions.CallableSystemAction;
  * QuickSearch Action provides toolbar presenter
  * @author  Jan Becicka
  */
+@ActionID(id = "org.netbeans.modules.quicksearch.QuickSearchAction", category = "Edit")
+@ActionRegistration(displayName = "#CTL_QuickSearchAction")
+@ActionReference(name = "D-I", path = "Shortcuts")
 public final class QuickSearchAction extends CallableSystemAction {
 
     private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());

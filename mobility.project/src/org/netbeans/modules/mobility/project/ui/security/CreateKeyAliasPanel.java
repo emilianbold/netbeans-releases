@@ -317,14 +317,14 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
     
     private boolean isEmpty(final JTextField field) {
         final String text = field.getText();
-        return text == null  ||  "".equals(text); // NOI18N
+        return text == null  ||  "".equals(text.trim()); // NOI18N
     }
     
     public String getErrorMessage() {
         final String text = tAlias.getText();
         if (isEmpty(tAlias))
             return "ERR_EmptyAliasName"; // NOI18N
-        if (bean.getAlias(text) != null)
+        if (bean.getAlias(text.trim()) != null)
             return "ERR_AliasAlreadyExists"; // NOI18N
         if (isEmpty(tCommon)  &&  isEmpty(tOrgUnit)  &&  isEmpty(tOrg)  &&  isEmpty(tLocality)  &&  isEmpty(tState)  &&  isEmpty(tCountry))
             return "ERR_EmptyInfo"; // NOI18N
@@ -427,7 +427,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         final String dname = create.getDName();
         try {
             final String keyAliasPassword = new String(create.tPassword.getPassword());
-            final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = bean.addKeyToStore(create.tAlias.getText(), dname, keyAliasPassword, -1);
+            final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = bean.addKeyToStore(create.tAlias.getText().trim(), dname, keyAliasPassword, -1);
             if (alias != null) {
                 alias.setPassword((keyAliasPassword == null  ||  "".equals(keyAliasPassword)) ? bean.getPassword() : keyAliasPassword);
                 alias.open();

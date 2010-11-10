@@ -59,9 +59,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
 /**
- * Check synthetic non-static initializer represented by semicolon inside
- * type declaration, i.e. semicolon is represeted by empty non-static block
- * in tree with position -1.
+ * Semicolon as a member is not parsed at all as of 3ff3f20471b4.
  * 
  * @author Pavel Flaska
  */
@@ -126,7 +124,7 @@ public class SyntetickejTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
-                MethodTree method = (MethodTree) clazz.getMembers().get(3);
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
                 VariableTree var = (VariableTree) method.getBody().getStatements().get(1);
                 ExpressionTree init = var.getInitializer();
                 ExpressionTree cast = make.TypeCast(make.Identifier("String"), init);

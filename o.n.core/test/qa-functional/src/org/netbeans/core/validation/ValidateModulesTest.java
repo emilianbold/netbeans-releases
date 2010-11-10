@@ -82,7 +82,7 @@ public class ValidateModulesTest extends NbTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
-                clusters("(?!(extra|python)$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).

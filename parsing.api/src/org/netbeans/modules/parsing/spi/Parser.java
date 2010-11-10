@@ -43,6 +43,9 @@
 package org.netbeans.modules.parsing.spi;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.api.ParserManager;
 
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
@@ -96,8 +99,18 @@ public abstract class Parser {
     
     /**
      * Called by the infrastructure to stop the parser operation.
+     * @deprecated use {@link Parser#cancel(CancelReason, org.netbeans.modules.parsing.spi.SourceModificationEvent)}
      */
-    public abstract void cancel ();
+    @Deprecated
+    public void cancel () {};
+    
+    /**
+     * Called by the infrastructure to stop the parser operation.
+     * @param reason of the cancel, see {@link Parser#CancelReason}
+     * @param event an additional info if the reason is SOURCE_MODIFICATION_EVENT, otherwise null
+     * @since 
+     */
+    public void cancel (@NonNull CancelReason reason, @NullAllowed SourceModificationEvent event) {}
     
     /**
      * Registers new listener.
@@ -153,6 +166,35 @@ public abstract class Parser {
          */
         protected abstract void invalidate ();
         
+    }
+    
+    /**
+     * The {@link CancelReason} is passed to {@link Parser#cancel(org.netbeans.modules.parsing.spi.Parser.CancelReason, org.netbeans.modules.parsing.spi.SourceModificationEvent)}
+     * as a hint. The parser may use this information to optimize the canceling.
+     * @since 1.36
+     */
+    public enum CancelReason {
+        /**
+         * The cancel is called due to source modification.
+         * Any information calculated by the parser is based on obsolete data,
+         * the parser should stop and throw all the cached data.
+         */
+        SOURCE_MODIFICATION_EVENT,
+        
+        /**
+         * The cancel is called because {@link ParserManager}'s parse method
+         * was called.
+         * The source used by the parser is still valid, the parser can use
+         * these data during the next request.
+         */
+        USER_TASK,
+        
+        /**
+         * The cancel is called because a higher priority task was added.
+         * The source used by the parser is still valid, the parser can use
+         * these data during next request.
+         */
+        PARSER_RESULT_TASK;
     }
     
     

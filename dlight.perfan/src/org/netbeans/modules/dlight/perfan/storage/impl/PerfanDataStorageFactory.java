@@ -57,30 +57,35 @@ public final class PerfanDataStorageFactory implements PersistentDataStorageFact
 
     static final Collection<DataStorageType> supportedTypes = Collections.singletonList(PerfanDataStorage.storageType);
 
+    @Override
     public Collection<DataStorageType> getStorageTypes() {
         return supportedTypes;
     }
 
+    @Override
     public PerfanDataStorage createStorage() {
         return new PerfanDataStorage();
     }
 
+    @Override
     public PerfanDataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null;
     }
 
+    @Override
     public PerfanDataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null;
     }
 
     @Override
     public PerfanDataStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
+        return null;
     }
 
     
 
+    @Override
     public String getUniqueKey(PerfanDataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null;
     }
 }

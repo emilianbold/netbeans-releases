@@ -77,6 +77,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -223,16 +225,20 @@ public final class OpenProjectList {
     // Implementation of the class ---------------------------------------------
     
     public static OpenProjectList getDefault() {
-        synchronized ( OpenProjectList.class ) {
-            if ( INSTANCE == null ) {
-                INSTANCE = new OpenProjectList();
-                INSTANCE.openProjects = loadProjectList();
-                // Load recent project list
-                INSTANCE.recentProjects.load();
-                WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
+        return ProjectManager.mutex().readAccess(new Mutex.Action<OpenProjectList>() {
+            public @Override OpenProjectList run() {
+                synchronized (OpenProjectList.class) { // must be read access, but must not run concurrently
+                    if (INSTANCE == null) {
+                        INSTANCE = new OpenProjectList();
+                        INSTANCE.openProjects = loadProjectList();
+                        // Load recent project list
+                        INSTANCE.recentProjects.load();
+                        WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
+                    }
+                }
+                return INSTANCE;
             }
-        }
-        return INSTANCE;
+        });
     }
     
     static void waitProjectsFullyOpen() {
@@ -264,11 +270,11 @@ public final class OpenProjectList {
     }
 
     /** Modifications to the recentTemplates variables shall be done only 
-     * when hodling a lock.
+     * when holding a lock.
      * @return the list
      */
     private List<String> getRecentTemplates() {
-        assert Thread.holdsLock(this);
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         return recentTemplates;
     }
     
@@ -341,8 +347,9 @@ public final class OpenProjectList {
             }
         }
 
-        final void preferredProject(Project lazyP) {
-            synchronized (toOpenProjects) {
+        final void preferredProject(final Project lazyP) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 for (Project p : toOpenProjects) {
                     FileObject dir = p.getProjectDirectory();
                     assert dir != null : "Project has real directory " + p;
@@ -352,15 +359,18 @@ public final class OpenProjectList {
                     if (dir.equals(lazyP.getProjectDirectory())) {
                         toOpenProjects.remove(p);
                         toOpenProjects.addFirst(p);
-                        return;
+                        return null;
                     }
                 }
-            }
+                    return null;
+                }
+            });
         }
 
         private void updateGlobalState() {
             log(Level.FINER, "updateGlobalState"); // NOI18N
-            synchronized (INSTANCE) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 INSTANCE.openProjects = lazilyOpenedProjects;
                 log(Level.FINER, "openProjects changed: {0}", lazilyOpenedProjects); // NOI18N
                 if (lazyMainProject != null) {
@@ -369,7 +379,9 @@ public final class OpenProjectList {
                 INSTANCE.mainProject = unwrapProject(INSTANCE.mainProject);
                 INSTANCE.getRecentTemplates().addAll(recentTemplates);
                 log(Level.FINER, "updateGlobalState, applied"); // NOI18N
+                return null;
             }
+            });
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], lazilyOpenedProjects.toArray(new Project[0]));
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
@@ -377,36 +389,41 @@ public final class OpenProjectList {
             log(Level.FINER, "updateGlobalState, done, notified"); // NOI18N
         }
 
-        boolean closeBeforeOpen(Project[] arr) {
-            NEXT: for (int i = 0; i < arr.length; i++) {
-                FileObject dir = arr[i].getProjectDirectory();
-                synchronized (toOpenProjects) {
-                    for (Iterator<Project> it = toOpenProjects.iterator(); it.hasNext();) {
-                        if (dir.equals(it.next().getProjectDirectory())) {
-                            it.remove();
-                            continue NEXT;
+        boolean closeBeforeOpen(final Project[] arr) {
+            return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+                public @Override Boolean run() {
+                    NEXT: for (Project p : arr) {
+                        FileObject dir = p.getProjectDirectory();
+                        for (Iterator<Project> it = toOpenProjects.iterator(); it.hasNext();) {
+                            if (dir.equals(it.next().getProjectDirectory())) {
+                                it.remove();
+                                continue NEXT;
+                            }
                         }
+                        return false;
                     }
-                    return false;
+                    return true;
                 }
-            }
-            return true;
+            });
         }
             
         private void loadOnBackground() {
             lazilyOpenedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
-            Project[] inital;
+            final List<Project> initial = new ArrayList<Project>();
             final LinkedList<Project> projects = URLs2Projects(URLs);
-            synchronized (toOpenProjects) {
-                toOpenProjects.addAll(projects);
-                log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
-                inital = toOpenProjects.toArray(new Project[0]);
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
+                    toOpenProjects.addAll(projects);
+                    log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
+                    initial.addAll(toOpenProjects);
+                    return null;
             }
+            });
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
-            URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
-            int max;
-            synchronized (toOpenProjects) {
+            final URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
+            int max = ProjectManager.mutex().writeAccess(new Mutex.Action<Integer>() {
+                public @Override Integer run() {
                 for (Project p : toOpenProjects) {
                     INSTANCE.addModuleInfo(p);
                     // Set main project
@@ -420,19 +437,25 @@ public final class OpenProjectList {
                         // Not a main project
                     }
                 }
-                max = toOpenProjects.size();
-            }
+                return toOpenProjects.size();
+                }
+            });
             progress.switchToDeterminate(max);
             for (;;) {
-                Project p;
-                int openPrjSize;
-                synchronized (toOpenProjects) {
-                    if (toOpenProjects.isEmpty()) {
-                        break;
+                final AtomicInteger openPrjSize = new AtomicInteger();
+                Project p = ProjectManager.mutex().writeAccess(new Mutex.Action<Project>() {
+                    public @Override Project run() {
+                        if (toOpenProjects.isEmpty()) {
+                            return null;
+                        }
+                        Project p = toOpenProjects.remove();
+                        log(Level.FINER, "after remove {0}", toOpenProjects); // NOI18N
+                        openPrjSize.set(toOpenProjects.size());
+                        return p;
                     }
-                    p = toOpenProjects.remove();
-                    log(Level.FINER, "after remove {0}", toOpenProjects); // NOI18N
-                    openPrjSize = toOpenProjects.size();
+                });
+                if (p == null) {
+                    break;
                 }
                 log(Level.FINE, "about to open a project {0}", p); // NOI18N
                 if (notifyOpened(p)) {
@@ -451,12 +474,13 @@ public final class OpenProjectList {
                         lazyMainProject = null;
                     }
                 }
-                progress.progress(max - openPrjSize);
+                progress.progress(max - openPrjSize.get());
             }
 
-            if (inital != null) {
-                log(createRecord("UI_INIT_PROJECTS", inital),"org.netbeans.ui.projects");
-                log(createRecordMetrics("USG_PROJECT_OPEN", inital),"org.netbeans.ui.metrics.projects");
+            if (initial != null) {
+                Project[] initialA = initial.toArray(new Project[initial.size()]);
+                log(createRecord("UI_INIT_PROJECTS", initialA),"org.netbeans.ui.projects");
+                log(createRecordMetrics("USG_PROJECT_OPEN", initialA),"org.netbeans.ui.metrics.projects");
             }
 
         }
@@ -687,9 +711,12 @@ public final class OpenProjectList {
         
         final List<Project> oldprjs = new ArrayList<Project>();
         final List<Project> newprjs = new ArrayList<Project>();
-        synchronized (this) {
-            oldprjs.addAll(openProjects);
-        }
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public @Override Void run() {
+                oldprjs.addAll(openProjects);
+                return null;
+            }
+        });
         
         for (Project p: projectsToOpen) {
             
@@ -707,14 +734,18 @@ public final class OpenProjectList {
                 handle.progress((int) currentWork);
             }
         }
-        
-        synchronized ( this ) {
-            newprjs.addAll(openProjects);
-            saveProjectList( openProjects );
-            if ( recentProjectsChanged ) {
-                recentProjects.save();
+
+        final boolean _recentProjectsChanged = recentProjectsChanged;
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public @Override Void run() {
+                newprjs.addAll(openProjects);
+                saveProjectList(openProjects);
+                if (_recentProjectsChanged) {
+                    recentProjects.save();
+                }
+                return null;
             }
-        }
+        });
         
 	if (handle != null) {
 	    handle.finish();
@@ -750,7 +781,7 @@ public final class OpenProjectList {
             LOAD.waitFinished();
         }
         
-        Project[] projects = new Project[someProjects.length];
+        final Project[] projects = new Project[someProjects.length];
         for (int i = 0; i < someProjects.length; i++) {
             projects[i] = unwrapProject(someProjects[i]);
         }
@@ -764,18 +795,19 @@ public final class OpenProjectList {
             LOAD.enter();
             ProjectUtilities.WaitCursor.show();
             logProjects("close(): closing project: ", projects);
-            boolean mainClosed = false;
-            boolean someClosed = false;
-            List<Project> oldprjs = new ArrayList<Project>();
-            List<Project> newprjs = new ArrayList<Project>();
+            final AtomicBoolean mainClosed = new AtomicBoolean();
+            final AtomicBoolean someClosed = new AtomicBoolean();
+            final List<Project> oldprjs = new ArrayList<Project>();
+            final List<Project> newprjs = new ArrayList<Project>();
             final List<Project> notifyList = new ArrayList<Project>();
-            synchronized ( this ) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 oldprjs.addAll(openProjects);
-                for( int i = 0; i < projects.length; i++ ) {
+                    for (Project p : projects) {
                     Iterator<Project> it = openProjects.iterator();
                     boolean found = false;
                     while (it.hasNext()) {
-                        if (it.next().equals(projects[i])) {
+                        if (it.next().equals(p)) {
                             found = true;
                             break;
                         }
@@ -783,28 +815,30 @@ public final class OpenProjectList {
                     if (!found) {
                         continue; // Nothing to remove
                     }
-                    if ( !mainClosed ) {
-                        mainClosed = isMainProject( projects[i] );
+                    if (!mainClosed.get()) {
+                        mainClosed.set(isMainProject(p));
                     }
                     // remove the project from openProjects
                     it.remove();
-                    removeModuleInfo(projects[i]);
+                    removeModuleInfo(p);
 
-                    projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
+                    p.getProjectDirectory().removeFileChangeListener(deleteListener);
 
-                    notifyList.add(projects[i]);
+                    notifyList.add(p);
 
-                    someClosed = true;
+                    someClosed.set(true);
                 }
-                if ( someClosed ) {
+                if (someClosed.get()) {
                     newprjs.addAll(openProjects);
                     saveProjectList(openProjects);
                 }
-                if ( mainClosed ) {
-                    this.mainProject = null;
+                if (mainClosed.get()) {
+                    mainProject = null;
                     saveMainProject( mainProject );
                 }
+                return null;
             }
+            });
             if (!notifyList.isEmpty()) {
                 for (Project p : notifyList) {
                     recentProjects.add(p); // #183681: call outside of lock
@@ -820,14 +854,14 @@ public final class OpenProjectList {
                 }
             });
             logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-            if ( someClosed ) {
+            if (someClosed.get()) {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS,
                                 oldprjs.toArray(new Project[oldprjs.size()]), newprjs.toArray(new Project[newprjs.size()]) );
             }
-            if ( mainClosed ) {
+            if (mainClosed.get()) {
                 pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
             }
-            if ( someClosed ) {
+            if (someClosed.get()) {
                 pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
             }
             if (doSave) {
@@ -854,59 +888,71 @@ public final class OpenProjectList {
         }
     }
         
-    public synchronized Project[] getOpenProjects() {
-        Project projects[] = new Project[ openProjects.size() ];
-        openProjects.toArray( projects );
-        return projects;
-    }
-    
-    public synchronized boolean isOpen( Project p ) {
-        // XXX shouldn't this just use openProjects.contains(p)?
-        for(Project cp : openProjects) {
-            if ( p.getProjectDirectory().equals( cp.getProjectDirectory() ) ) { 
-                return true;
+    public Project[] getOpenProjects() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Project[]>() {
+            public @Override Project[] run() {
+                return openProjects.toArray(new Project[openProjects.size()]);
             }
-        }
-        return false;
-    }
-
-    public synchronized boolean isMainProject( Project p ) {
-
-        if ( mainProject != null && p != null &&
-             mainProject.getProjectDirectory().equals( p.getProjectDirectory() ) ) {
-            return true;
-        }
-        else {
-            return false;
-        }
-        
+        });
     }
     
-    public synchronized Project getMainProject() {
-        return mainProject;
+    public boolean isOpen(final Project p) {
+        // XXX shouldn't this just use openProjects.contains(p)?
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public @Override Boolean run() {
+                for (Project cp : openProjects) {
+                    if (p.getProjectDirectory().equals(cp.getProjectDirectory())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    public boolean isMainProject(final Project p) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public @Override Boolean run() {
+                if (mainProject != null && p != null && mainProject.getProjectDirectory().equals(p.getProjectDirectory())) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
     }
     
-    public void setMainProject( Project mainProject ) {
+    public Project getMainProject() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Project>() {
+            public @Override Project run() {
+                return mainProject;
+            }
+        });
+    }
+    
+    public void setMainProject( final Project mainProject ) {
         LOGGER.finer("Setting main project: " + mainProject); // NOI18N
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-        synchronized ( this ) {
-            if (mainProject != null && !openProjects.contains(mainProject)) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public @Override Void run() {
+            Project main = mainProject;
+            if (main != null && !openProjects.contains(main)) {
                 //#139965 the project passed in here can be different from the current one.
                 // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
                 // but when the user eventually selects one, the openProjects list already might hold the 
                 // correct loaded list.
                 try {
-                    mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
-                    if (mainProject != null) {
+                    main = ProjectManager.getDefault().findProject(main.getProjectDirectory());
+                    if (main != null) {
                         boolean fail = true;
                         for (Project p : openProjects) {
-                            if (p.equals(mainProject)) {
+                            if (p.equals(main)) {
                                 fail = false;
                                 break;
                             }
                             if (p instanceof LazyProject) {
-                                if (p.getProjectDirectory().equals(mainProject.getProjectDirectory())) {
-                                    mainProject = p;
+                                if (p.getProjectDirectory().equals(main.getProjectDirectory())) {
+                                    main = p;
                                     fail = false;
                                     break;
                                 }
@@ -922,18 +968,18 @@ public final class OpenProjectList {
                 }
             }
         
-            this.mainProject = mainProject;
-            saveMainProject( mainProject );
+            OpenProjectList.this.mainProject = main;
+            saveMainProject(main);
+            return null;
         }
+        });
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
     public List<Project> getRecentProjects() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<List<Project>>() {
             public List<Project> run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.getProjects();
-                }
+                return recentProjects.getProjects();
             }
         });
     }
@@ -941,9 +987,7 @@ public final class OpenProjectList {
     public boolean isRecentProjectsEmpty() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.isEmpty();
-                }
+                return recentProjects.isEmpty();
             }
         });         
     }
@@ -951,9 +995,7 @@ public final class OpenProjectList {
     public List<UnloadedProjectInformation> getRecentProjectsInformation() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
             public List<UnloadedProjectInformation> run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.getRecentProjectsInfo();
-                }
+                return recentProjects.getRecentProjectsInfo();
             }
         });
     }
@@ -997,7 +1039,9 @@ public final class OpenProjectList {
         
     
     // Used from NewFile action    
-    public synchronized void updateTemplatesLRU( FileObject template ) {
+    public void updateTemplatesLRU(final FileObject template) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public @Override Void run() {
         
         String templateName = template.getPath();
         
@@ -1011,6 +1055,9 @@ public final class OpenProjectList {
         }
         
         OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( getRecentTemplates() )  );
+                return null;
+            }
+        });
     }
     
     
@@ -1159,12 +1206,14 @@ public final class OpenProjectList {
     }
 
     private boolean doOpenProject(final Project p) {
-        boolean recentProjectsChanged;
         LOGGER.finer("doOpenProject(): opening project " + p.toString());
-        synchronized (this) {
+        final AtomicBoolean alreadyOpen = new AtomicBoolean();
+        boolean recentProjectsChanged = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            public @Override Boolean run() {
             log(Level.FINER, "already opened: {0} ", openProjects);
             for (Project existing : openProjects) {
                 if (p.equals(existing) || existing.equals(p)) {
+                    alreadyOpen.set(true);
                     return false;
                 }
             }
@@ -1174,7 +1223,11 @@ public final class OpenProjectList {
             p.getProjectDirectory().addFileChangeListener(deleteListener);
             p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
             
-            recentProjectsChanged = recentProjects.remove(p);
+            return recentProjects.remove(p);
+        }
+        });
+        if (alreadyOpen.get()) {
+            return false;
         }
         logProjects("doOpenProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         // Notify projects opened
@@ -1238,24 +1291,25 @@ public final class OpenProjectList {
         }
     }
         
-    private ArrayList<FileObject> getTemplateNamesLRU( Project project, PrivilegedTemplates priv ) {
+    private ArrayList<FileObject> getTemplateNamesLRU( final Project project, PrivilegedTemplates priv ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
         
-        ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);        
+        final ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);
         
         RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
         String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
         PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
-        ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
+        final ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         
         if (priv == null) {
             // when the privileged templates are part of the active lookup,
             // do not mix them with the recent templates, but use only the privileged ones.
             // eg. on Webservices node, one is not interested in a recent "jsp" file template..
             
-            synchronized (this) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 Iterator<String> it = getRecentTemplates().iterator();
                 for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
                     String templateName = it.next();
@@ -1271,7 +1325,9 @@ public final class OpenProjectList {
                         continue;
                     }
                 }
+                return null;
             }
+            });
         }
         
         // If necessary fill the list with the rest of privileged templates
@@ -1352,8 +1408,8 @@ public final class OpenProjectList {
             }
         }
         
-        public void add(Project p) {
-            UnloadedProjectInformation projectInfo;
+        public void add(final Project p) {
+            final UnloadedProjectInformation projectInfo;
             try { // #183681: call outside of lock
                 projectInfo = ProjectInfoAccessor.DEFAULT.getProjectInfo(
                         ProjectUtils.getInformation(p).getDisplayName(),
@@ -1363,7 +1419,8 @@ public final class OpenProjectList {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return;
             }
-            synchronized (this) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 int index = getIndex(p);
                 if (index == -1) {
                     // Project not in list
@@ -1383,10 +1440,14 @@ public final class OpenProjectList {
                 }
                 recentProjects.add(0, new ProjectReference(p));
                 recentProjectsInfos.add(0, projectInfo);
+                return null;
             }
+            });
         }
         
-        public synchronized boolean remove( Project p ) {
+        public boolean remove(final Project p) {
+            return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+                public @Override Boolean run() {
             int index = getIndex( p );
             if ( index != -1 ) {
                 LOGGER.log(Level.FINE, "remove recent project: {0} @{1}", new Object[] {p, index});
@@ -1395,12 +1456,13 @@ public final class OpenProjectList {
                 return true;
             }
             return false;
+                }
+            });
         }
 
         public void refresh() {
-            ProjectManager.mutex().readAccess(new Runnable() {
+            ProjectManager.mutex().writeAccess(new Runnable() {
                 public void run () {
-                    synchronized (RecentProjectList.this) {
                         assert recentProjects.size() == recentProjectsInfos.size();
                         boolean refresh = false;
                         Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
@@ -1438,7 +1500,6 @@ public final class OpenProjectList {
                             pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                             save();
                         }
-                    }
                 }
             });
         }
@@ -1473,7 +1534,9 @@ public final class OpenProjectList {
             return empty;
         }
         
-        public synchronized void load() {
+        public void load() {
+            ProjectManager.mutex()./* called only from getDefault, does not need writeAccess */readAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
@@ -1507,6 +1570,9 @@ public final class OpenProjectList {
                     assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
                     p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
                 }
+            return null;
+        }
+        });
         }
         
         public void save() {
@@ -1561,10 +1627,14 @@ public final class OpenProjectList {
             return -1;
         }
         
-        private synchronized List<UnloadedProjectInformation> getRecentProjectsInfo() {
+        private List<UnloadedProjectInformation> getRecentProjectsInfo() {
             // #166408: refreshing is too time expensive and we want to be fast, not correct
             //refresh();
-            return new ArrayList<UnloadedProjectInformation>(recentProjectsInfos);
+            return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
+                public @Override List<UnloadedProjectInformation> run() {
+                    return new ArrayList<UnloadedProjectInformation>(recentProjectsInfos);
+                }
+            });
         }
         
         private class ProjectReference {
@@ -1701,14 +1771,15 @@ public final class OpenProjectList {
     }
     
     /**
-     * Closesdeleted projects.
+     * Closes deleted projects.
      */
     private final class ProjectDeletionListener extends FileChangeAdapter {
         
         public ProjectDeletionListener() {}
 
-        public @Override void fileDeleted(FileEvent fe) {
-            synchronized (OpenProjectList.this) {
+        public @Override void fileDeleted(final FileEvent fe) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 Project toRemove = null;
                 for (Project prj : openProjects) {
                     if (fe.getFile().equals(prj.getProjectDirectory())) {
@@ -1726,7 +1797,9 @@ public final class OpenProjectList {
                         }
                     });
                 }
-            }
+                    return null;
+                }
+            });
         }
         
     }
@@ -1747,17 +1820,20 @@ public final class OpenProjectList {
         return info;
     }
     
-    private void addModuleInfo(Project prj) {
-        ModuleInfo info = findModuleForProject(prj);
+    private void addModuleInfo(final Project prj) {
+        final ModuleInfo info = findModuleForProject(prj);
         if (info != null) {
             // is null in tests..
-            synchronized (openProjectsModuleInfos) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 if (!openProjectsModuleInfos.containsKey(info)) {
                     openProjectsModuleInfos.put(info, new ArrayList<Project>());
                     info.addPropertyChangeListener(infoListener);
                 }
                 openProjectsModuleInfos.get(info).add(prj);
+                return null;
             }
+            });
         }
     }
     
@@ -1766,19 +1842,22 @@ public final class OpenProjectList {
         removeModuleInfo(prj, info);
     }
     
-    private void removeModuleInfo(Project prj, ModuleInfo info) {
+    private void removeModuleInfo(final Project prj, final ModuleInfo info) {
         // info can be null in case we are closing a project from disabled module
         if (info != null) {
-            synchronized (openProjectsModuleInfos) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
                 List<Project> prjlist = openProjectsModuleInfos.get(info);
                 if (prjlist != null) {
                     prjlist.remove(prj);
-                    if (prjlist.size() == 0) {
+                    if (prjlist.isEmpty()) {
                         info.removePropertyChangeListener(infoListener);
                         openProjectsModuleInfos.remove(info);
                     }
                 }
+                return null;
             }
+            });
         }
     }
 

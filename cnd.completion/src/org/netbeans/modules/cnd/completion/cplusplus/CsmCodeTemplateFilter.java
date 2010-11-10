@@ -46,7 +46,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
@@ -72,6 +71,7 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
         this.id = getID(component, offset);
     }
 
+    @Override
     public synchronized boolean accept(CodeTemplate template) {
         return enabled && (startOffset == endOffset) && isTemplateContext(template);
     }
@@ -107,6 +107,7 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
 
     public static final class Factory implements CodeTemplateFilter.Factory {
         
+        @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new CsmCodeTemplateFilter(component, offset);
         }

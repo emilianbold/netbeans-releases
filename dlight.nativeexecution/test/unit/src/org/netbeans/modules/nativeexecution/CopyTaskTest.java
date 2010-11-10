@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
+import java.lang.Object;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -140,10 +144,42 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         writeFile(src, "qwe/nasd/nzxc"); // NOI18N
         String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName(); // NOI18N
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst); // NOI18N
-        Future<Integer> upload = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
-        int rc = upload.get();
+
+        Future<Integer> uploadTask;
+        int rc;
+
+        uploadTask = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
+        rc = uploadTask.get();
         assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst, 0, rc);
         assertTrue(HostInfoUtils.fileExists(execEnv, dst));
+
+        CommonTasksSupport.UploadParameters up = new CommonTasksSupport.UploadParameters(src, execEnv, dst);
+        up.mask = 0755;
+        up.error = new PrintWriter(System.err);
+        final AtomicReference<Object> ref = new AtomicReference<Object>();
+        up.callback = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ref.set(e.getSource());
+            }
+        };
+        uploadTask = CommonTasksSupport.uploadFile(up);
+
+        rc = uploadTask.get();
+
+        // sleep a bit since listener can be just not calleds
+        if (ref.get() == null) {
+            sleep(100);
+        }
+        if (ref.get() == null) {
+            sleep(500);
+        }
+
+        assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst, 0, rc);
+
+        assertNotNull("callback wasn't called", ref.get());
+        assertEquals("callback was called with incorrect source object", uploadTask, ref.get());
+
         Future<Integer> res = CommonTasksSupport.rmFile(execEnv, dst, null);
         assertEquals("Error removing " + execEnv + ":" + dst, 0, res.get().intValue());
     }

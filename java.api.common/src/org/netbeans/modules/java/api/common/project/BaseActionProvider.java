@@ -1342,9 +1342,15 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
 
         if (mainClass == null || mainClass.length () == 0) {
+            LOG.fine("Main class is not set");    //NOI18N
             return MainClassStatus.UNSET;
         }
         if (sourcesRoots.length > 0) {
+            LOG.log(Level.FINE, "Searching main class {0} for root: {1}",   //NOI18N
+                    new Object[] {
+                        mainClass,
+                        FileUtil.getFileDisplayName(sourcesRoots[0])
+            });
             ClassPath bootPath = null, compilePath = null;
             try {
                 bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
@@ -1365,25 +1371,41 @@ public abstract class BaseActionProvider implements ActionProvider {
             //the SimpleFileOwnerQueryImplementation is broken in some cases. When assertions are enabled
             //log the data.
             if (bootPath == null) {
+                LOG.fine("Source root has no boot classpath, using project boot classpath.");   //NOI18N
                 bootPath = callback.getProjectSourcesClassPath(ClassPath.BOOT);
             }
             if (compilePath == null) {
+                LOG.fine("Source root has no execute classpath, using project execute classpath.");   //NOI18N
                 compilePath = callback.getProjectSourcesClassPath(ClassPath.EXECUTE);
             }
 
             ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+            LOG.log(Level.FINE, "Classpaths used to resolve main boot: {0}, exec: {1}, src: {2}",   //NOI18N
+                    new Object[]{
+                        bootPath,
+                        compilePath,
+                        sourcePath
+            });
             if (CommonProjectUtils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
             }
         }
         else {
+            LOG.log(Level.FINE, "Searching main class {0} without source root", mainClass);  //NOI18N
             ClassPath bootPath = callback.getProjectSourcesClassPath(ClassPath.BOOT);
             ClassPath compilePath = callback.getProjectSourcesClassPath(ClassPath.EXECUTE);
             ClassPath sourcePath = callback.getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
+            LOG.log(Level.FINE, "Classpaths used to resolve main boot: {0}, exec: {1}, src: {2}",   //NOI18N
+                    new Object[]{
+                        bootPath,
+                        compilePath,
+                        sourcePath
+            });
             if (CommonProjectUtils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
             }
         }
+        LOG.log(Level.FINE, "Main class {0} is invalid.", mainClass);   //NOI18N
         return MainClassStatus.SET_BUT_INVALID;
     }
 

@@ -1,8 +1,0 @@
-
-def |>^new_name<|(_a, a, b):
-    if _a >a:
-        c = a
-    else
-        c = b
-
-|>new_name<|(_a, a, b)

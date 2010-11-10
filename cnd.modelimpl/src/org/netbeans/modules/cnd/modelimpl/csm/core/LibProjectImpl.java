@@ -109,30 +109,33 @@ public final class LibProjectImpl extends ProjectBase {
         return Collections.<Key>emptySet();
     }
 
-    /** override parent to avoid inifinite recursion */
+    /** override parent to avoid infinite recursion */
     @Override
     public List<CsmProject> getLibraries() {
         return Collections.<CsmProject>emptyList();
     }
 
-    public void onFileRemoved(FileImpl file) {
-    }
-
+    @Override
     public void onFileRemoved(List<NativeFileItem> file) {
     }
 
-    public void onFileImplRemoved(List<FileImpl> files) {
+    @Override
+    public void onFileImplRemoved(Collection<FileImpl> files) {
     }
 
+    @Override
     public void onFileAdded(NativeFileItem file) {
     }
 
+    @Override
     public void onFileAdded(List<NativeFileItem> file) {
     }
 
+    @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
     }
 
+    @Override
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {
     }
 
@@ -141,6 +144,7 @@ public final class LibProjectImpl extends ProjectBase {
         return ParserQueue.Position.TAIL;
     }
 
+    @Override
     public boolean isArtificial() {
         return true;
     }

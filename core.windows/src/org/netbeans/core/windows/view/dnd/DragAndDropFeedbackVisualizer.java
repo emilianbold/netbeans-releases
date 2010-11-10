@@ -53,6 +53,8 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Area;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
@@ -141,10 +143,16 @@ public class DragAndDropFeedbackVisualizer {
             SwingUtilities.convertPointToScreen(loc, source.getComponent());
             tmp.setLocation( loc.x-dragOffset.x, loc.y-dragOffset.y );
             //let the JNA transparency stuff to kick in
-            tmp.setVisible( true );
-            //make drag window visible, i.e. move to proper location, 
-            //dragImage.setLocation( startingPoint );
-            dragWindow = tmp;
+            try {
+                tmp.setVisible( true );
+                //make drag window visible, i.e. move to proper location,
+                //dragImage.setLocation( startingPoint );
+                dragWindow = tmp;
+            } catch( UnsatisfiedLinkError ulE ) {
+                Logger.getLogger(DragAndDropFeedbackVisualizer.class.getName()).log(Level.INFO, null, ulE);
+            } catch( Throwable ex ) {
+                Logger.getLogger(DragAndDropFeedbackVisualizer.class.getName()).log(Level.FINE, null, ex);
+            }
         }
     }
 

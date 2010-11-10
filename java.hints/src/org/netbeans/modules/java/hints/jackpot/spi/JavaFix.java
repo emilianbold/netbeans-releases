@@ -88,6 +88,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -468,25 +469,29 @@ public abstract class JavaFix {
                 wc.rewrite(tp.getLeaf(), parsed);
             } else {
                 if (isFakeBlock(parsed)) {
-                    TreePath parent = tp.getParentPath();
-                    List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
-
-                    statements = statements.subList(1, statements.size() - 1);
-
-                    if (parent.getLeaf().getKind() == Kind.BLOCK) {
-                        List<StatementTree> newStatements = new LinkedList<StatementTree>();
-
-                        for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
-                            if (st == tp.getLeaf()) {
-                                newStatements.addAll(statements);
-                            } else {
-                                newStatements.add(st);
-                            }
-                        }
-
-                        wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                    if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$")) {
+                        wc.rewrite(tp.getLeaf(), parsed);
                     } else {
-                        wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                        TreePath parent = tp.getParentPath();
+                        List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
+
+                        statements = statements.subList(1, statements.size() - 1);
+
+                        if (parent.getLeaf().getKind() == Kind.BLOCK) {
+                            List<StatementTree> newStatements = new LinkedList<StatementTree>();
+
+                            for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
+                                if (st == tp.getLeaf()) {
+                                    newStatements.addAll(statements);
+                                } else {
+                                    newStatements.add(st);
+                                }
+                            }
+
+                            wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                        } else {
+                            wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                        }
                     }
                 } else if (isFakeClass(parsed)) {
                     TreePath parent = tp.getParentPath();
@@ -494,7 +499,7 @@ public abstract class JavaFix {
 
                     members = members.subList(1, members.size());
 
-                    assert parent.getLeaf().getKind() == Kind.CLASS;
+                    assert TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind());
                     
                     List<Tree> newMembers = new LinkedList<Tree>();
 
@@ -773,7 +778,7 @@ public abstract class JavaFix {
         OPERATOR_PRIORITIES.put(Kind.XOR_ASSIGNMENT, 15);
     }
 
-    private static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
+    protected static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
         if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
         if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
 

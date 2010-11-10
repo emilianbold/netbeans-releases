@@ -124,6 +124,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.editor.JumpList;
 
@@ -1064,7 +1065,7 @@ public class EditorContextImpl extends EditorContext {
                                 "No position for tree "+tree+" of element "+classElement+" ("+className+")");
                         return;
                     }
-                    if (tree.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                         boolean shifted = false;
                         ModifiersTree mtree = ((ClassTree) tree).getModifiers();
                         for (AnnotationTree atree : mtree.getAnnotations()) {
@@ -1157,7 +1158,7 @@ public class EditorContextImpl extends EditorContext {
                     Tree tree;
                     do {
                         tree = path.getLeaf();
-                        if (tree.getKind() != Tree.Kind.CLASS) {
+                        if (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                             path = path.getParentPath();
                             if (path == null) {
                                 break;
@@ -1166,7 +1167,7 @@ public class EditorContextImpl extends EditorContext {
                             break;
                         }
                     } while (true);
-                    if (tree.getKind() == Tree.Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                         SourcePositions positions =  ci.getTrees().getSourcePositions();
                         int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
                         if (pos == Diagnostic.NOPOS) {
@@ -1444,7 +1445,7 @@ public class EditorContextImpl extends EditorContext {
                         return;
                     }
                     TreePath p = ci.getTreeUtilities().pathFor(offset);
-                    while  (p != null && p.getLeaf().getKind() != Kind.CLASS) {
+                    while  (p != null && !TreeUtilities.CLASS_TREE_KINDS.contains(p.getLeaf().getKind())) {
                         p = p.getParentPath();
                     }
                     TypeElement te;
@@ -2172,7 +2173,7 @@ public class EditorContextImpl extends EditorContext {
                             TreePath currentPath = ci.getTreeUtilities().pathFor(currentOffset);
                             Tree tree = currentPath.getLeaf();
                             TypeElement te;
-                            if (tree.getKind() == Tree.Kind.CLASS) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                                 te = (TypeElement) ci.getTrees().getElement(currentPath);
                             } else {
                                 Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);

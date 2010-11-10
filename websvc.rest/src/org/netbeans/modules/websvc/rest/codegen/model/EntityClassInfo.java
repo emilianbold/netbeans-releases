@@ -79,6 +79,19 @@ import org.openide.util.Exceptions;
  */
 public class EntityClassInfo {
 
+    private static final String JAVAX_PERSISTENCE = "javax.persistence.";//NOI18N
+    
+    private static final Set<String> LIFECYCLE_ANNOTATIONS = new HashSet<String>(7);
+    static {
+        LIFECYCLE_ANNOTATIONS.add("PrePersist");    // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PostPersist");   // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PreRemove");     // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PostRemove");    // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PreUpdate");     // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PostUpdate");    // NOI18N
+        LIFECYCLE_ANNOTATIONS.add("PostLoad");      // NOI18N
+        }; 
+    
     private EntityResourceModelBuilder builder;
     private final Entity entity;
     private JavaSource entitySource;
@@ -439,8 +452,13 @@ public class EntityClassInfo {
             for (AnnotationMirror annotation : annotationMirrors) {
                 String annotationType = annotation.getAnnotationType().toString();
               
-                if (!annotationType.startsWith("javax.persistence.")) { //NOI18N
+                if (!annotationType.startsWith(JAVAX_PERSISTENCE)) { 
                     continue;     
+                }
+                String simpleName = annotationType.substring( 
+                        JAVAX_PERSISTENCE.length() );
+                if ( LIFECYCLE_ANNOTATIONS.contains( simpleName)){
+                    continue;
                 }
                 hasPersistenceAnnotation = true;
 

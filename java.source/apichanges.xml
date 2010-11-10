@@ -108,6 +108,50 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="jdk7-update">
+             <api name="general"/>
+             <summary>Added several methods to support new API for modeling JDK7 features.</summary>
+             <version major="0" minor="67"/>
+             <date day="12" month="10" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CodeStyle.alignMultilineTryResources</code>, <code>CodeStyle.spaceBeforeTryParen</code>,
+                 <code>CodeStyle.spaceWithinTryParens</code>, <code>CodeStyle.wrapTryResources</code>
+                 <code>TreeMaker.DisjointType</code>, <code>CodeStyle.Try</code> and <code>TreeUtilities.CLASS_TREE_KINDS</code>
+                 to support new language features in JDK7.
+             </description>
+             <issue number="190767"/>
+        </change>
+        <change id="TreeMaker.PackageAnnotations">
+             <api name="general"/>
+             <summary>Added TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...), TreeMaker.addPackageAnnotation, TreeMaker.insertPackageAnnotation, TreeMaker.removePackageAnnotation methods.</summary>
+             <version major="0" minor="66"/>
+             <date day="27" month="9" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...)</code>,
+                 <code>TreeMaker.addPackageAnnotation</code>, <code>TreeMaker.insertPackageAnnotation</code>,
+                 <code>TreeMaker.removePackageAnnotation</code> to allow modification of the list of package annotations.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="157760"/>
+        </change>
+        <change id="TreeMaker.QualIdent_String">
+             <api name="general"/>
+             <summary>Added TreeMaker.QualIdent(String) and TreeMaker.Type(String) method.</summary>
+             <version major="0" minor="65"/>
+             <date day="16" month="9" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeMaker.QualIdent(String)</code> and <code>TreeMaker.Type(String)</code> method, which allow
+                 to construct QualIdents and Types from String specification.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="190123"/>
+        </change>
         <change id="TreeUtilities.translate">
              <api name="general"/>
              <summary>Added TreeUtilities.translate method.</summary>

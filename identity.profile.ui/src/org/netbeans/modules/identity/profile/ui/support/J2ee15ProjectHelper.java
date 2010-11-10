@@ -62,6 +62,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -278,7 +279,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         List<? extends Tree> decls = controller.getCompilationUnit().getTypeDecls();
         
         for (Tree decl : decls) {
-            if (decl.getKind() != Tree.Kind.CLASS) {
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(decl.getKind())) {
                 continue;
             }
             

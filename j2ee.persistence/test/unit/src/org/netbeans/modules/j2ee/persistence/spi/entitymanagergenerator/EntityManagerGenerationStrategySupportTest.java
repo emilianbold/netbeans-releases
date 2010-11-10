@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.persistence.action.*;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.ClassTree;
@@ -236,7 +237,7 @@ public class EntityManagerGenerationStrategySupportTest extends EntityManagerGen
             TreeMaker make = workingCopy.getTreeMaker();
             
             for (Tree typeDeclaration : cut.getTypeDecls()){
-                if (Tree.Kind.CLASS == typeDeclaration.getKind()){
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDeclaration.getKind())){
                     ClassTree clazz = (ClassTree) typeDeclaration;
                     EntityManagerGenerationStrategySupport strategy =
                             (EntityManagerGenerationStrategySupport) getStrategy(workingCopy, make, clazz, new GenerationOptions());

@@ -148,7 +148,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     
     private void addEntity(NamedEntity ne) {
         JCheckBox cb = new JCheckBox();
-        cb.setMnemonic(getString("Show-" + ne.getName() + "-mnemonic").charAt(0)); //NOI18N
+        String mnemonic = getString("Show-" + ne.getName() + "-mnemonic");
+        if (mnemonic.length() > 0) {
+            cb.setMnemonic(mnemonic.charAt(0)); //NOI18N
+        }
         cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + ne.getName() + "-AD")); //NOI18N
         cb.setText(getString("Show-" + ne.getName())); //NOI18N
         cb.setToolTipText(getString("Show-" + ne.getName() + "-AD")); //NOI18N

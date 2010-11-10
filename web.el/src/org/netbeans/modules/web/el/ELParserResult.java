@@ -91,7 +91,7 @@ public final class ELParserResult extends ParserResult {
         return Collections.unmodifiableList(elements);
     }
 
-    ELElement getElementAt(int offset) {
+    public ELElement getElementAt(int offset) {
         for (ELElement each : elements) {
             if (each.getOriginalOffset().containsInclusive(offset)) {
                 return each;

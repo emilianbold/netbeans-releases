@@ -1052,8 +1052,8 @@ outer:  do {
             throw new RejectedExecutionException("Request Processor already " + //NOI18N
                     "stopped"); //NOI18N
         }
-        long initialDelayMillis = unit.convert(initialDelay, TimeUnit.MILLISECONDS);
-        long periodMillis = unit.convert(period, TimeUnit.MILLISECONDS);
+        long initialDelayMillis = TimeUnit.MILLISECONDS.convert(initialDelay, unit);
+        long periodMillis = TimeUnit.MILLISECONDS.convert(period, unit);
 
         TaskFutureWrapper wrap = fixedDelay ? 
             new FixedDelayTask(command, initialDelayMillis, periodMillis) :
@@ -1199,7 +1199,6 @@ outer:  do {
     }
 
     private static final class FixedDelayTask extends TaskFutureWrapper {
-        private volatile boolean firstRun = true;
         private final AtomicLong nextRunTime = new AtomicLong();
         FixedDelayTask(Runnable run, long initialDelay, long period)  {
             super (run, initialDelay, period);
@@ -1227,16 +1226,9 @@ outer:  do {
         }
 
         private void reschedule() {
-            long delay;
-            if (firstRun) {
-                delay = initialDelay;
-            } else {
-                delay = period;
-            }
-            nextRunTime.set(System.currentTimeMillis() + delay);
-            firstRun = false;
+            nextRunTime.set(System.currentTimeMillis() + period);
             if (!fini()) {
-                t.schedule((int) delay);
+                t.schedule((int) period);
             }
         }
     }

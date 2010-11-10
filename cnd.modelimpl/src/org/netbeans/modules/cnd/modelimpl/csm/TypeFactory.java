@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -70,7 +71,7 @@ public class TypeFactory {
     
     private TypeFactory() {}
     
-    public static TypeImpl createBuiltinType(String text, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
+    public static TypeImpl createBuiltinType(CharSequence text, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
         CsmBuiltIn builtin = BuiltinTypes.getBuiltIn(text);
         return createType(builtin, ptrOperator, arrayDepth, ast, file);
     }
@@ -192,7 +193,7 @@ public class TypeFactory {
         TypeImpl type;
 
         if (parent != null) {
-            type = new NestedType(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+            type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
@@ -240,7 +241,7 @@ public class TypeFactory {
                     } else {
                         //Check for global type
                         if (tokFirstId.getType() ==  CPPTokenTypes.SCOPE) {
-                            type = new NestedType(null, file, type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                            type = NestedType.create(null, file, type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
@@ -250,7 +251,7 @@ public class TypeFactory {
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                                 sb.append(namePart.getText());
-                                l.add(NameCache.getManager().getString(namePart.getText()));
+                                l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                                 //l.add(namePart.getText());
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
@@ -284,12 +285,14 @@ public class TypeFactory {
                                     // TODO: maybe we need to filter out some more tokens
                                     if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
-                                            || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_struct
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_class
+                                            || namePart.getType() == CPPTokenTypes.LITERAL_union) {
                                         CsmType t = AstRenderer.renderType(namePart, file);
                                         type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                        type.instantiationParams.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(namePart, type.getContainingFile(), scope),
+                                        type.instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
                                                 type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }

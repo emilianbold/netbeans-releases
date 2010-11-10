@@ -192,7 +192,10 @@ public class TreeMakerDemo extends GeneratorTestMDRCompat {
                 if (Kind.CHAR_LITERAL == tree.getKind()) builder.append('\'');
                 builder.append("),");
                 return;
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 builder.append("make.Class(");
                 ClassTree classTree = (ClassTree) tree;
                 ++indent;

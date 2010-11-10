@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="CslActions">
+        <api name="csl.api"/>
+        <summary>Added CslActions, deprecated currently exposed Actions</summary>
+        <version major="2" minor="10"/>
+        <date day="30" month="9" year="2010"/>
+        <author login="emononen"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+                Added CslActions; a factory class for creating actions provided by CSL. Also deprecated the currently exposed actions in csl.api, CslActions is now the preferred way of accessing them.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="CslActions"/>
+        <issue number="190209"/>
+    </change>
     <change id="StructureItem.CollapsedDefault">
         <api name="csl.api"/>
         <summary>Adding a new StructureItem.CollapsedDefault interface</summary>

@@ -111,7 +111,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private final boolean customizer;
-    
+    private final WebModule webModule;
     private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
@@ -121,11 +121,13 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
      * Creates a new instance of SpringWebModuleExtender
      * @param framework
      * @param controller an instance of org.netbeans.modules.web.api.webmodule.ExtenderController
+     * @param webModule the web module to extend, or {@code null} for new projects.
      * @param customizer
      */
-    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
+    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, WebModule webModule, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
+        this.webModule = webModule;
         this.customizer = customizer;
     }
 
@@ -170,6 +172,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         }
         if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
+            return false;
+        }
+        if (webModule != null && !isWebXmlValid(webModule)) {
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_WebXmlIsNotValid")); // NOI18N
             return false;
         }
         controller.setErrorMessage(null);
@@ -221,6 +227,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
         }
         return createSpringConfig.getFilesToOpen();
+    }
+
+    private boolean isWebXmlValid(WebModule webModule) {
+        FileObject webXml = webModule.getDeploymentDescriptor();
+        if (webXml == null) {
+            return true;
+        }
+        WebApp webApp = null;
+        try {
+            webApp = DDProvider.getDefault().getDDRoot(webXml);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Can't read web.xml file: " + webXml.getPath(), ex);
+        }
+        return webApp != null && webApp.getStatus() == WebApp.STATE_VALID;
     }
 
     private class CreateSpringConfig implements FileSystem.AtomicAction {

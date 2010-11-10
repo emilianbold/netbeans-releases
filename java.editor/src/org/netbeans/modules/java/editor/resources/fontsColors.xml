@@ -48,7 +48,6 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <!-- JavaTokenId categories -->
     <fontcolor name="character" default="char"/>
-    <fontcolor name="errors" default="error"/>
     <fontcolor name="identifier" default="identifier"/>
     <fontcolor name="keyword" default="keyword"/>
     <fontcolor name="literal" default="keyword" />

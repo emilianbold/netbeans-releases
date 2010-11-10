@@ -195,12 +195,12 @@ public class getTopmostTest extends NbTestCase {
         r1f1 = getFile(r1, "file", "s2", 1500);
         tm1 = Mercurial.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(1601, m.size());
+        assertEquals(1466, m.size());
 
         r1f1 = getFile(r1, "file", "s3", 10);
         tm1 = Mercurial.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(11, m.size());
+        assertEquals(1476, m.size());
     }
 
     public void testGetRepositoryRootUnversioned() throws HgException, IOException {

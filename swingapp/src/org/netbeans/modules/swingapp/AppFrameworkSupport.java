@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -315,7 +316,7 @@ class AppFrameworkSupport {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                             ClassTree classT = (ClassTree) t;
                             if (fileName.equals(classT.getSimpleName().toString())) {
                                 if (isViewClass(classT, controller)) {
@@ -449,7 +450,7 @@ class AppFrameworkSupport {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                             ClassTree classT = (ClassTree) t;
                             if (fileName.equals(classT.getSimpleName().toString())) {
                                 Tree superT = classT.getExtendsClause();

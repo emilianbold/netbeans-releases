@@ -109,6 +109,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="removing.org.openide.loaders.DataFolder.lazy">
+          <api name="loaders"/>
+          <summary>Removed <code>org.openide.loaders.DataFolder.lazy</code></summary>
+          <version major="7" minor="19"/>
+          <date day="7" month="10" year="2010"/>
+          <author login="jtulach"/>
+          <compatibility semantic="incompatible"/>
+          <description>
+              <p>
+                  The private API to honor
+                  <code>org.openide.loaders.DataFolder.lazy</code> property
+                  has been removed, as being obsolete.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="DataFolder"/>
+      </change>
       <change id="CreateFromTemplateHandler.FREE_FILE_EXTENSION">
           <api name="loaders"/>
           <summary>Added <code>CreateFromTemplateHandler.FREE_FILE_EXTENSION</code></summary>

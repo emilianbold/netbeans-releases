@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +28,8 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -53,52 +56,31 @@ made subject to such option by the copyright holder.
 
         <h2>Adding a JDBC Driver</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>To connect to a database from within the IDE, you need to register an appropriate JDBC driver for the database with the IDE.</p>
-        <p>If the JDBC driver for your database is not registered with the IDE, you can add the driver in the Services window. 
-        Registered drivers (&nbsp;<img src="images/driverPrefered.gif" alt="installed driver, preferred">&nbsp;) are listed under Drivers under the Databases node in the Services window.</p>
-        <p>Note that several drivers are registered in the IDE by default. These are drivers for Java DB, MySQL, and PostgreSQL databases. If you need another JDBC driver, you need to add it manually to the IDE. </p>
-        <p><b>To add a JDBC driver:</b></p>
-        <ol>
-            <li>In the Services window, expand the Databases node. </li>
-            <li>Right-click the Drivers node and choose New Driver. </li>
-            <li>In the Add JDBC Driver dialog box, click the Add button to open a file
-                chooser. Then navigate to and select the archive files of the driver that you
-                want to add. 
-
-                <p>Once you choose a valid archive file, the Driver Class and
-                the Name fields should be filled in by the IDE.</p>
-            </li>
-
-            <li>If the Driver Class field is empty or incorrect, click Find.
-                The IDE will search the archive files that you selected in the 
-                previous step and find all classes that implement the JDBC
-                API Driver interface (<tt>java.sql.Driver</tt>). The Driver 
-                Class combo box lists the classes that the IDE finds. Use the 
-                combo box to select the driver class that you need.</li>
-            <li>In the Name field, type a descriptive name for the new driver. 
-            <p>The IDE uses this name for display purposes. </p></li>
-            <li>Click OK to add the new driver to the list of registered drivers. </li>
-        </ol>
-
-        <p>After the JDBC driver for your database is registered, you can then create a database connection.
-        The IDE uses the database connection information when creating database resources and <a href="connectdb.html">connecting to a database</a>.</p>
-  
-        <ul class="note"><li>Adding a new driver just creates a template for 
-            new connections. The IDE does not actually try to use that driver or check 
-            to make sure it is correct until a connection is made using the driver. 
-        </li>
+        <p>To connect to a database from within the IDE, you must have an appropriate JDBC driver for this database and register this driver with the IDE. Registered drivers (<img src="images/driverPrefered.gif" alt="installed driver, preferred">) are listed under Drivers under the Databases node in the Services window.</p>
+        <p>The drivers are of the following kind:</p>
+        <ul>
+          <li>JDBC drivers that are registered and bundled with the NetBeans IDE. <br>
+          These are drivers for  MySQL and PostgreSQL. You can establish a connection to these databases right away, without downloading them separately.. </li>
+          <li>JDBC drivers that are registered with the IDE by default, but not bundled with the IDE. <br>
+          These are drivers for Oracle Database and Java DB. For example, the Java DB drivers are located in the Java DB installation directory and NetBeans recognizes them automatically at their default location. As for the drivers for Oracle Database, you need to download them manually from the Oracle website.  </li>
         </ul>
-        
+        <p>If you need another JDBC driver that is different from those mentioned above, you need to  manually add it to the IDE. </p>
+		 <ul class="note">
+		   <li>Adding a new driver just creates a template for 
+            new connections. The IDE does not actually try to use that driver or check 
+            it to ensure it is correct until a connection is made using the driver. </li>
+           <li>You can add the driver directly at the <a href="connectdb.html">first step when setting up a connection.</a> If you want just to add a driver, without connecting to the database, right-click the Drivers node and choose <a href="csh_driver.html">New Driver</a>. </li>
+	    </ul>
         <p>
         An uninstalled driver node (&nbsp;<img src="images/driverPreferedNotInstalled.gif" alt="preferred driver which is not installed">&nbsp;)
         is displayed in the Services window if a driver is registered with the IDE but the archive JAR file for the driver is not currently on the IDE's class path.
-        In this case, you should remove the driver or modify the driver's properties to specify the correct location of the JAR file for the driver.</p>
+        In this case, you should remove the driver or modify the driver's properties to specify the correct location of the driver JAR file.</p>
         <p><b>To remove a driver:</b></p>
         <ul>
             <li>Right-click the driver node in the Services window and choose Delete.</li>
         </ul>
         
-        <p><b>To modify a driver's configuration:</b></p>
+        <p><b>To modify driver's properties:</b></p>
         <ul>
             <li>Right-click the driver's node and choose Customize.</li>
         </ul>

@@ -231,7 +231,7 @@ public final class ModuleActions implements ActionProvider {
             return testSources != null && testSources.sources.length == 1;
         } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             NbPlatform plaf = project.getPlatform(false);
-            if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V610) < 0) {
+            if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V70) < 0) {
                 return false;
             }
             return findTestMethodSources(context) != null;

@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <jpda.listen>true</jpda.listen>
-            <netbeans.run.params>-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=${jpda.address}</netbeans.run.params>
+            <netbeans.run.params.ide>-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=${jpda.address}</netbeans.run.params.ide>
         </properties>
     </action>
     <action>
@@ -74,5 +74,17 @@ made subject to such option by the copyright holder.
         <goals>
             <goal>package</goal>
         </goals>
+    </action>
+    <action>
+        <actionName>reload-target</actionName>
+        <packagings>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>nbm:run-platform</goal>
+        </goals>
+        <properties>
+            <netbeans.run.params>--reload ${module}</netbeans.run.params>
+        </properties>
     </action>
 </actions>

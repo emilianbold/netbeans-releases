@@ -1503,13 +1503,12 @@ public class ActionFactory {
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
 
-                final Reformat formatter = Reformat.get(doc);
-                formatter.lock();
+                final Indent indenter = Indent.get(doc);
+                indenter.lock();
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             try {
-                                int caretLine = Utilities.getLineOffset(doc, caret.getDot());
                                 int startPos;
                                 Position endPosition;
 
@@ -1526,7 +1525,7 @@ public class ActionFactory {
                                     pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
                                 }
 
-                                while (pos < endPosition.getOffset()) {
+                                while (pos <= endPosition.getOffset()) {
                                     int stopPos = endPosition.getOffset();
                                     if (gdoc != null) { // adjust to start of the next guarded block
                                         stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
@@ -1536,8 +1535,8 @@ public class ActionFactory {
                                     }
 
                                     Position stopPosition = doc.createPosition(stopPos);
-                                    formatter.reformat(pos, stopPos);
-                                    pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
+                                    indenter.reindent(pos, stopPos);
+                                    pos = pos + Math.max(stopPosition.getOffset() - pos, 1);
 
                                     if (gdoc != null) { // adjust to end of current block
                                         pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
@@ -1551,7 +1550,7 @@ public class ActionFactory {
                         }
                     });
                 } finally {
-                    formatter.unlock();
+                    indenter.unlock();
                 }
             }
         }

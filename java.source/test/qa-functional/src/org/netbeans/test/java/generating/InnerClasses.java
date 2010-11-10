@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.*;
 import org.netbeans.test.java.Common;
@@ -191,7 +192,7 @@ public class InnerClasses extends org.netbeans.test.java.XRunner {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for

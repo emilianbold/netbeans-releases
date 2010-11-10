@@ -1,3 +1,3 @@
-10:36-10:37:error:cannot find symbol
-  symbol:constructor TestShortErrorsNewClass(java.lang.Object)
-  location:class javahints.TestShortErrorsNewClass
+10:8-10:39:error:constructor TestShortErrorsNewClass in class javahints.TestShortErrorsNewClass cannot be applied to given types
+  required:java.lang.String
+  found:java.lang.Object

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -366,6 +367,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (currentClass == null) return false;
             if (workingCopy.getTypes().isSubtype(currentClass.asType(), inner.asType()))
                 return true;
+            return outer.equals(cur.getEnclosingElement());
         }
         return false;
     }
@@ -373,7 +375,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     private TypeElement getCurrentClass() {
         TreePath treePath = getCurrentPath();
         while (treePath != null) {
-            if (treePath.getLeaf().getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
                 return (TypeElement) workingCopy.getTrees().getElement(treePath);
             } else if (treePath.getLeaf().getKind() == Tree.Kind.IMPORT) {
                 return (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());

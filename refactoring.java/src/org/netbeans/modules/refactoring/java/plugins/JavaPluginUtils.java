@@ -43,6 +43,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -61,7 +62,7 @@ final class JavaPluginUtils {
         if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
             preCheckProblem = new Problem(true, NbBundle.getMessage(
                     JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
-                    el.getEnclosingElement()
+                    el.getKind()==ElementKind.PACKAGE?el:el.getEnclosingElement()
                     ));
             return preCheckProblem;
         }

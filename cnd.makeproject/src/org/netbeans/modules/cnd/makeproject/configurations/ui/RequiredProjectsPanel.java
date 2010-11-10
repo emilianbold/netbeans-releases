@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -200,18 +201,8 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
             MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
             if (artifacts != null) {
                 for (int i = 0; i < artifacts.length; i++) {
-                    String location;
-                    String workingdir;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else {
-                        location = artifacts[i].getProjectLocation();
-                        workingdir = artifacts[i].getWorkingDirectory();
-                    }
+                    String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
+                    String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
                     location = CndPathUtilitities.normalize(location);
                     workingdir = CndPathUtilitities.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);

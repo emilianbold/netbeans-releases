@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 
@@ -67,11 +68,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     
-    public OffsetableDeclarationBase(AST ast, CsmFile file) {
+    protected OffsetableDeclarationBase(AST ast, CsmFile file) {
         super(ast, file);
     }
 
-    public OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
+    protected OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
     }
 
@@ -79,6 +80,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         super(containingFile, pos);
     }
     
+    @Override
     public CharSequence getUniqueName() {
         return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
     }
@@ -110,6 +112,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return UIDUtilities.<CsmOffsetableDeclaration>createDeclarationUID(this);
     }
 
+    @Override
     public boolean isValid() {
         return CsmBaseUtilities.isValid(getContainingFile());
     }
@@ -265,5 +268,28 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     @Override
     public int hashCode() {
         return  31*super.hashCode() + getName().hashCode();
+    }
+
+    protected boolean registerInProject() {
+        //do nothing by default
+        return false;
+    }
+
+    protected static<T> void postObjectCreateRegistration(boolean register, OffsetableDeclarationBase<T> obj) {
+        if (register) {
+            if (!obj.registerInProject()) {
+                RepositoryUtils.put(obj);
+            }
+        } else {
+            Utils.setSelfUID(obj);
+        }
+    }
+
+    protected static<T> void temporaryRepositoryRegistration(boolean global, OffsetableDeclarationBase<T> obj) {
+        if (global) {
+            RepositoryUtils.hang(obj); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(obj);
+        }
     }
 }

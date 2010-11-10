@@ -66,10 +66,6 @@ public class CsmFileModel {
         this.actions = actions;
     }
 
-    public boolean setFile(CsmFile csmFile, boolean force){
-        return buildModel(csmFile, force);
-    }
-    
     public Node[] getNodes() {
         return list.toArray(new Node[0]);
     }
@@ -98,53 +94,58 @@ public class CsmFileModel {
     public void addFileOffset(Node node, CsmFile element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node, 0, 0));
     }
-    
-    private boolean buildModel(CsmFile csmFile, boolean force) {
+
+    public PreBuildModel buildPreModel(CsmFile csmFile) {
         isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
         fileObject = CsmUtilities.getFileObject(csmFile);
-        boolean res = true;
-        List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
-        List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
+        PreBuildModel preBuildModel = new PreBuildModel();
         if (csmFile != null && csmFile.isValid()) {
             if (isStandalone) {
                 CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex);
                 if (node != null) {
-                    newList.add(node);
+                    preBuildModel.newList.add(node);
                 }
             }
             if (filter.isApplicableInclude()) {
                 for (CsmInclude element : csmFile.getIncludes()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
                     if (node != null) {
-                        newList.add(node);
+                        preBuildModel.newList.add(node);
                     }
                 }
             }
             if (filter.isApplicableMacro()) {
                 for (CsmMacro element : csmFile.getMacros()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
                     if (node != null) {
-                        newList.add(node);
+                        preBuildModel.newList.add(node);
                     }
                 }
             }
             for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
                 if (filter.isApplicable(element)) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
                     if (node != null) {
-                        newList.add(node);
+                        preBuildModel.newList.add(node);
                     }
                 }
             }
         }
         if (csmFile != null &&  csmFile.isValid()) {
-            Collections.<CppDeclarationNode>sort(newList);
-            Collections.<IndexOffsetNode>sort(newLineNumberIndex);
-            resetScope(newLineNumberIndex);
-            if (force || isNeedChange(newLineNumberIndex)) {
+            Collections.<CppDeclarationNode>sort(preBuildModel.newList);
+            Collections.<IndexOffsetNode>sort(preBuildModel.newLineNumberIndex);
+        }
+        return preBuildModel;
+    }
+
+    public boolean buildModel(PreBuildModel preBuildModel, CsmFile csmFile, boolean force) {
+        boolean res = true;
+        if (csmFile != null &&  csmFile.isValid()) {
+            resetScope(preBuildModel.newLineNumberIndex);
+            if (force || isNeedChange(preBuildModel.newLineNumberIndex)) {
                 clear();
-                list.addAll(newList);
-                lineNumberIndex.addAll(newLineNumberIndex);
+                list.addAll(preBuildModel.newList);
+                lineNumberIndex.addAll(preBuildModel.newLineNumberIndex);
                 logger.log(Level.FINE, "Set new navigator model for file {0}", csmFile); // NOI18N
             } else {
                 resetScope(lineNumberIndex);
@@ -155,8 +156,8 @@ public class CsmFileModel {
             clear();
             logger.log(Level.FINE, "Clear navigator model for file {0}", csmFile); // NOI18N
         }
-        newList.clear();
-        newLineNumberIndex.clear();
+        preBuildModel.newList.clear();
+        preBuildModel.newLineNumberIndex.clear();
         return res;
     }
 
@@ -249,5 +250,10 @@ public class CsmFileModel {
 
     public Action[] getActions() {
         return actions;
+    }
+
+    public static final class PreBuildModel {
+        List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
+        List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
     }
 }

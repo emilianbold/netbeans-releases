@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.indexing;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -51,17 +52,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileObject;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,46 +83,51 @@ import org.openide.util.Exceptions;
 public class JavaBinaryIndexer extends BinaryIndexer {
 
     static final Logger LOG = Logger.getLogger(JavaBinaryIndexer.class.getName());
-
+    
+    private static final int CLEAN_ALL_LIMIT = 1000;
+    
     @Override
     protected void index(final Context context) {
         LOG.log(Level.FINE, "index({0})", context.getRootURI());
         try {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
-                    CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
-                    File cacheFolder = JavaIndex.getClassFolder(context.getRootURI());
-                    FileObjects.deleteRecursively(cacheFolder);
                     ClassIndexImpl uq = cim.createUsagesQuery(context.getRootURI(), false);
                     if (uq == null) {
                         return null; //IDE is exiting, indeces are already closed.
                     }
-                    if (context.isAllFilesIndexing()) {
-                        final BinaryAnalyser ba = uq.getBinaryAnalyser();
-                        if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
-                            BinaryAnalyser.Result finished = null;
-                            try {
-                                finished = ba.start(context);
-                                while (finished == BinaryAnalyser.Result.CANCELED) {
-                                    finished = ba.resume();
-                                }
-                            } finally {
-                                if (finished == BinaryAnalyser.Result.FINISHED) {
-                                    final BinaryAnalyser.Changes changes = ba.finish();
-                                    final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
-                                    final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
-                                    final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
-                                    changed.addAll(changes.changed);
-                                    changed.addAll(changes.removed);
-                                    final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty(), false);
-                                    for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
-                                        context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                    final BinaryAnalyser ba = uq.getBinaryAnalyser();
+                    if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
+                        BinaryAnalyser.Result finished = null;
+                        try {
+                            finished = ba.start(context);
+                            while (finished == BinaryAnalyser.Result.CANCELED) {
+                                finished = ba.resume();
+                            }
+                        } finally {
+                            if (finished == BinaryAnalyser.Result.FINISHED) {
+                                final BinaryAnalyser.Changes changes = ba.finish();
+                                final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
+                                final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
+                                final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
+                                changed.addAll(changes.changed);
+                                changed.addAll(changes.removed);
+                                if (!changes.changed.isEmpty() || !changes.added.isEmpty() || !changes.removed.isEmpty()) {
+                                    CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
+                                    deleteSigFiles(context.getRootURI(), changed);
+                                    if (changes.preBuildArgs) {
+                                        preBuildArgs(context.getRootURI());
                                     }
+                                }                                
+                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty(), false);
+                                for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
+                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                                 }
                             }
                         }
-                    }
+                    }                    
                     return null;
                 }
             });
@@ -122,6 +139,64 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             Exceptions.printStackTrace(ie);
         }
     }
+    
+    private static void deleteSigFiles(final URL root, final List<? extends ElementHandle<TypeElement>> toRemove) throws IOException {
+        File cacheFolder = JavaIndex.getClassFolder(root);
+        if (cacheFolder.exists()) {
+            if (toRemove.size() > CLEAN_ALL_LIMIT) {
+                //Todo: do as SlowIOTask
+                FileObjects.deleteRecursively(cacheFolder);
+            } else {
+                for (ElementHandle<TypeElement> eh : toRemove) {
+                    final StringBuilder sb = new StringBuilder(FileObjects.convertPackage2Folder(eh.getBinaryName(),File.separatorChar));
+                    sb.append('.'); //NOI18N
+                    sb.append(FileObjects.SIG);
+                    final File f = new File (cacheFolder, sb.toString());
+                    f.delete();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Pre builds argument names for {@link javax.swing.JComponent} to speed up first
+     * call of code completion on swing classes. Has no semantic impact only improves performance,
+     * so it's can be safely disabled.
+     * @param archiveFile the archive
+     * @param archiveUrl URL of an archive
+     */
+    private static void preBuildArgs (final URL archiveUrl) {
+        class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
+            @Override
+            public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Diagnostic reported during prebuilding args: {0}", diagnostic.toString()); //NOI18N
+                }
+            }
+        }
+        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
+            ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]));
+        final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
+        TreeLoader.preRegister(jt.getContext(), cpInfo);
+        //Force JTImpl.prepareCompiler to get JTImpl into Context
+        try {
+            jt.parse(new JavaFileObject[0]);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
+        if (jc != null) {
+            List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
+            for (ExecutableElement method : methods) {
+                List<? extends VariableElement> params = method.getParameters();
+                if (!params.isEmpty()) {
+                    params.get(0).getSimpleName();
+                    break;
+                }
+            }
+        }
+    }   
 
     public static class Factory extends BinaryIndexerFactory {
 
@@ -145,7 +220,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             assert removedRoots != null;
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             try {
-                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                    @Override
                     public Void run() throws IOException, InterruptedException {
                         //todo:
                         for (URL removedRoot : removedRoots) {
@@ -164,9 +240,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                return ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
+                    @Override
                     public Boolean run() throws IOException, InterruptedException {
-                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                        return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
+                            @Override
                             public Boolean run() throws IOException, InterruptedException {
                                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
                                 if (uq == null) {

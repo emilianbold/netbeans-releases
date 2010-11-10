@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
@@ -196,6 +198,12 @@ public class DTD2HtmlTag {
             return children;
         }
 
+        @Override
+        public HelpItem getHelp() {
+            return null;
+        }
+        
+
     }
 
      private static class Attribute2HtmlTagAttribute implements HtmlTagAttribute {
@@ -242,6 +250,13 @@ public class DTD2HtmlTag {
             }
             return res;
         }
+
+        @Override
+        public HelpItem getHelp() {
+            return null;
+        }
+
+
 
     }
 }

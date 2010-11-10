@@ -46,12 +46,19 @@ package org.netbeans.modules.editor.impl;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.ext.GotoDialogSupport;
+import org.netbeans.editor.ext.KeyEventBlocker;
+import org.openide.awt.MouseUtils;
 import org.openide.util.NbBundle;
 
 
@@ -90,6 +97,16 @@ public final class StatusLineComponent extends JLabel {
                 throw new IllegalStateException();
         }
         setHorizontalAlignment(SwingConstants.CENTER);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (MouseUtils.isDoubleClick(e)) {
+                    JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+                    if (lastFocusedComponent!=null)
+                        new GotoDialogSupport().showGotoDialog(new KeyEventBlocker(lastFocusedComponent, false));
+                }
+            }
+        });
     }
 
     @Override
@@ -109,10 +126,9 @@ public final class StatusLineComponent extends JLabel {
         int minHeight = fm.getHeight() + ins.top + ins.bottom;
         minDimension = new Dimension(minWidth, minHeight);
     }
-    
+
     enum Type { // Type of component
         LINE_COLUMN,
         TYPING_MODE;
     }
-
 }

@@ -154,17 +154,16 @@ public final class ExtraProjectJavadocForBinaryQueryImpl extends ProjectOpenedHo
                     // #138349 - ignore non existing paths or entries with undefined IDE variables
                     if (src.exists()) {
                         try {
-                            URL url = src.toURI().toURL();
-                            if (FileUtil.isArchiveFile(url)) {
-                                url = FileUtil.getArchiveRoot(url);
+                            URL url = FileUtil.urlForArchiveOrDir(src);
+                            if (url != null) {
+                                if (source[1] != null) {
+                                    assert url.toExternalForm().endsWith("!/") : url.toExternalForm();  //NOI18N
+                                    url = new URL(url.toExternalForm()+source[1]);
+                                }
+                                result.put(binURL, url);
                             }
-                            if (source[1] != null) {
-                                assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
-                                url = new URL(url.toExternalForm()+source[1]);
-                            }
-                            result.put(binURL, url);
                         } catch (MalformedURLException ex) {
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }

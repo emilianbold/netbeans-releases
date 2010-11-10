@@ -53,12 +53,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
@@ -76,12 +76,13 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ludo
  */
-public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
+public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     
     private Hk2DeploymentManager dm;
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
     private final LibraryImplementation[] libraries = { lib };
     private Hk2JavaEEPlatformFactory pf;
+    private FileChangeListener fcl;
 
     /**
      * 
@@ -90,35 +91,53 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
-        String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File f = new File(path, "modules"); // NOI18N
-        FileUtil.toFileObject(FileUtil.normalizeFile(f)).addFileChangeListener(new FileChangeListener() {
-
-            public void fileFolderCreated(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileDataCreated(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileChanged(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileDeleted(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileRenamed(FileRenameEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileAttributeChanged(FileAttributeEvent fe) {
-                // we can ignore this type of change
-            }
-        });
+        addFcl();
         initLibraries();
+    }
+
+    private void addFcl() {
+        if (null == fcl) {
+            String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            File f = new File(path, "modules"); // NOI18N
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            if (null == fo) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "{0} did not exist but should", f.getAbsolutePath());
+                return;
+            }
+            fcl = new FileChangeListener() {
+
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    // we can ignore this type of change
+                }
+            };
+            fo.addFileChangeListener(fcl);
+        }
     }
 
     // Persistence provider strings
@@ -147,6 +166,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @param toolName 
      * @return 
      */
+    @Override
     public boolean isToolSupported(String toolName) {
         // Persistence Providers
         if(PERSISTENCE_PROV_ECLIPSELINK.equals(toolName)) {
@@ -223,6 +243,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @param toolName 
      * @return 
      */
+    @Override
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (null != gfRootStr) {
@@ -324,24 +345,46 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public java.io.File[] getPlatformRoots() {
+        File server = getServerHome();
+        if (server != null) {
+            return new File[] {server};
+        }
+        return new File[]{};
+    }
+
+    @Override
+    public File getServerHome() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         File returnedElement;
-        File[] retVal = new File[0];
         if (gfRootStr != null) {
             returnedElement = new File(gfRootStr);
             if (returnedElement.exists()) {
-                retVal = new File[] { returnedElement };
+                return returnedElement;
             }
         }
-        return retVal;
+        return null;
+    }
+
+    @Override
+    public File getDomainHome() {
+        // FIXME perhaps we want to return GF domain
+        return null;
+    }
+
+    @Override
+    public File getMiddlewareHome() {
+        return null;
     }
     
     /**
      * 
      * @return 
      */
+    @Override
     public LibraryImplementation[] getLibraries() {
+        addFcl();
         return libraries.clone();
     }
     
@@ -349,6 +392,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public java.awt.Image getIcon() {
         return ImageUtilities.loadImage("org/netbeans/modules/j2ee/hk2/resources/server.gif"); // NOI18N
     }
@@ -357,6 +401,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public String getDisplayName() {
         return pf.getDisplayName();
     }
@@ -365,6 +410,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public Set getSupportedJavaPlatformVersions() {
         return pf.getSupportedJavaPlatforms();
     }
@@ -373,6 +419,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public JavaPlatform getJavaPlatform() {
         return pf.getJavaPlatform();
     }
@@ -387,7 +434,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static RequestProcessor libInitThread =
             new RequestProcessor("init libs -- Hk2JavaEEPlatformImpl");
     
-    private void initLibraries() {
+     private void initLibraries() {
         libInitThread.post(new Runnable() {
 
             @Override

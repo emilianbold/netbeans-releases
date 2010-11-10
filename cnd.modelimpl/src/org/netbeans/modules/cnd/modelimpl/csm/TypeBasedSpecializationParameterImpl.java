@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nick Krasilnikov
  */
-public class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent, Resolver.SafeClassifierProvider {
+public final class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent, Resolver.SafeClassifierProvider {
 
     private final CsmType type;
 
@@ -88,14 +88,17 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableBase impleme
         this.type = type;
     }
 
+    @Override
     public CsmType getType() {
         return type;
     }
 
+    @Override
     public CsmClassifier getClassifier() {
         return getClassifier(null);
     }
 
+    @Override
     public CsmClassifier getClassifier(Resolver resolver) {
         if (type instanceof Resolver.SafeClassifierProvider) {
             return ((Resolver.SafeClassifierProvider) type).getClassifier(resolver);
@@ -104,46 +107,57 @@ public class TypeBasedSpecializationParameterImpl extends OffsetableBase impleme
         }
     }
 
+    @Override
     public CharSequence getClassifierText() {
         return type.getClassifierText();
     }
 
+    @Override
     public boolean isInstantiation() {
         return type.isInstantiation();
     }
 
+    @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }
 
+    @Override
     public int getArrayDepth() {
         return type.getArrayDepth();
     }
 
+    @Override
     public boolean isPointer() {
         return type.isPointer();
     }
 
+    @Override
     public int getPointerDepth() {
         return type.getPointerDepth();
     }
 
+    @Override
     public boolean isReference() {
         return type.isReference();
     }
 
+    @Override
     public boolean isConst() {
         return type.isConst();
     }
 
+    @Override
     public boolean isBuiltInBased(boolean resolveTypeChain) {
         return type.isBuiltInBased(resolveTypeChain);
     }
 
+    @Override
     public boolean isTemplateBased() {
         return type.isTemplateBased();
     }
 
+    @Override
     public CharSequence getCanonicalText() {
         return type.getCanonicalText();
     }

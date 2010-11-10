@@ -42,17 +42,20 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-//import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
@@ -66,6 +69,7 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -85,6 +89,52 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        HtmlVersion version = result.getDetectedHtmlVersion();
+        FileObject file = result.getSnapshot().getSource().getFileObject();
+        Project project = FileOwnerQuery.getOwner(file);
+
+        if (version == null) {
+            //the version can be determined
+            
+            if (project == null) {
+                //we cannot set the default anywhere, just show a warning message
+
+                hints.add(new Hint(getRule(Severity.WARNING),
+                        NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_NO_PROJECT"),
+                        file,
+                        new OffsetRange(0, 0),
+                        Collections.<HintFix>emptyList(),
+                        100) {
+                });
+            } else {
+                //no doctype declaration found, generate the set default project html version hint
+                HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+                String msg =  defaulted == null ?
+                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION") :
+                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
+
+                hints.add(new Hint(getRule(Severity.WARNING),
+                        msg,
+                        file,
+                        new OffsetRange(0, 0),
+                        generateSetDefaultHtmlVersionHints(project, result.getSnapshot().getSource().getDocument(false)),
+                        100) {
+                });
+            }
+        }
+
+    }
+
+    private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc) {
+        List<HintFix> fixes = new LinkedList<HintFix>();
+        if(project != null) {
+            for(HtmlVersion v : HtmlVersion.values()) {
+                fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc));
+            }
+        }
+
+        return fixes;
     }
 
     /**
@@ -121,7 +171,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     assert e.getDescription() != null;
                     List<HintFix> fixes = new ArrayList<HintFix>(3);
 
-                    if(isErrorCheckingEnabledForFile(fo)) {
+                    if(!isErrorCheckingDisabledForFile(fo)) {
                         fixes.add(new DisableErrorChecksFix(snapshot));
                     }
 
@@ -160,7 +210,7 @@ public class HtmlHintsProvider implements HintsProvider {
         } else {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);
-            if(!isErrorCheckingEnabledForFile(fo)) {
+            if(isErrorCheckingDisabledForFile(fo)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }
             if(!isErrorCheckingEnabledForMimetype(fo)) {
@@ -186,9 +236,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
         List<HintFix> fixes = new ArrayList<HintFix>();
-        //XXX fix
-//        if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
-        if(true) {
+        if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
             fixes.add(new HintFix() {
                 
                 @Override
@@ -199,16 +247,14 @@ public class HtmlHintsProvider implements HintsProvider {
                 @Override
                 public void implement() throws Exception {
                     AstNode node = HtmlParserResult.getBoundAstNode(e);
-                    //XXX FIX
-//                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES);
-                    Collection<String> missingAttrs = Collections.emptyList();
+                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES);
                     assert missingAttrs != null;
                     int astOffset = node.startOffset() + 1 + node.name().length();
                     int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);
                     if(insertOffset == -1) {
                         return ;
                     }
-                    StringBuffer templateText = new StringBuffer();
+                    StringBuilder templateText = new StringBuilder();
                     templateText.append(' ');
 
                     for(String attr : missingAttrs) {
@@ -342,20 +388,19 @@ public class HtmlHintsProvider implements HintsProvider {
     static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
     public static boolean isErrorCheckingEnabled(FileObject fo) {
-        return isErrorCheckingEnabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
+        return !isErrorCheckingDisabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
     }
 
-    public static boolean isErrorCheckingEnabledForFile(FileObject fo) {
-        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
+    public static boolean isErrorCheckingDisabledForFile(FileObject fo) {
+        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) != null;
     }
 
     public static boolean isErrorCheckingEnabledForMimetype(FileObject fo) {
-        return !HtmlPreferences.isHtmlErrorCheckingDisabledForMimetype(fo.getMIMEType());
+        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(fo.getMIMEType());
     }
 
     private static final class DisableErrorChecksFix implements HintFix {
 
-        private static String VALUE = "true"; //NOI18N
         private Snapshot snapshot;
 
         public DisableErrorChecksFix(Snapshot snapshot) {
@@ -371,7 +416,7 @@ public class HtmlHintsProvider implements HintsProvider {
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
-                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, VALUE);
+                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, Boolean.TRUE);
             }
 
             //force reparse => hints update
@@ -502,6 +547,41 @@ public class HtmlHintsProvider implements HintsProvider {
         public boolean isInteractive() {
             return false;
         }
+    }
+
+    private static class SetDefaultHtmlVersionHintFix implements HintFix {
+
+        private HtmlVersion version;
+        private Document doc;
+        private Project project;
+
+        public SetDefaultHtmlVersionHintFix(HtmlVersion version, Project project, Document doc) {
+            this.version = version;
+            this.project = project;
+            this.doc = doc; //to be able to force reparse the hinted document
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_SET_DEFAULT_HTML_VERSION", version.getDisplayName());
+        }
+
+        @Override
+        public void implement() throws Exception {
+            ProjectDefaultHtmlSourceVersionController.setDefaultHtmlVersion(project, version);
+            forceReparse(doc);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
     }
 
 

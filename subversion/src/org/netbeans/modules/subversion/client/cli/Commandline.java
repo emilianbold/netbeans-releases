@@ -175,7 +175,7 @@ class Commandline {
 
     private String[] getEnvVar() {
         Map vars = System.getenv();            
-        List ret = new ArrayList(vars.keySet().size());           
+        List<String> ret = new ArrayList<String>(vars.keySet().size());
         for (Iterator it = vars.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();                
             if(key.equals("LC_ALL")) {                                          // NOI18N

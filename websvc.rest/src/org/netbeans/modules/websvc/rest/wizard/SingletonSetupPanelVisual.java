@@ -409,6 +409,9 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
         } else if (getResourceClassFile() != null) {
             AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass");
             return false;
+        } else if (!Util.isValidUri(resourceUri)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_IncorrectUriTemplate");
+            return false;
         }
         return true;
     }

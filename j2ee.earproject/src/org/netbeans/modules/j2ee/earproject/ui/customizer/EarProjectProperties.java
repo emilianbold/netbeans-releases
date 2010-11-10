@@ -420,11 +420,11 @@ public final class EarProjectProperties {
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
             return;
         }
-        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
         // update j2ee.appclient.tool.runtime
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_APP_CLIENT_RUNTIME)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(wsClasspath, root));
+            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(wsClasspath, roots));
         } else {
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
         }
@@ -1005,18 +1005,6 @@ public final class EarProjectProperties {
     }
     
     
-    private static boolean showModifiedMessage(final String title) {
-        String message = NbBundle.getMessage(EarProjectProperties.class,"TXT_Regenerate");
-        JButton regenerateButton = new JButton(NbBundle.getMessage(EarProjectProperties.class,"CTL_RegenerateButton"));
-        regenerateButton.setDefaultCapable(true);
-        regenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EarProjectProperties.class,"AD_RegenerateButton"));
-        NotifyDescriptor d = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
-        d.setTitle(title);
-        d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-        d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});
-        return DialogDisplayer.getDefault().notify(d) == regenerateButton;
-    }
-
     public static String getCompletePathInArchive(EarProject project, ClassPathSupport.Item item) {
         String full = "";
         if (item.getReference() == null) {

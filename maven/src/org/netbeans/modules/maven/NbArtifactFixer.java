@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
-import org.apache.maven.ReactorArtifactRepository;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -55,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * #189442: tries to associate snapshot artifacts with their owners.
- * @see ReactorArtifactRepository
+ * Inspired by {@code org.apache.maven.ReactorReader}.
  */
 @ServiceProvider(service=ArtifactFixer.class)
 public class NbArtifactFixer implements ArtifactFixer {

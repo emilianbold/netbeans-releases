@@ -61,13 +61,37 @@ import org.netbeans.modules.cnd.litemodel.api.Declaration;
  */
 public class DwarfRenderer {
     private static final boolean TRACE = true;
+    private boolean PROCESS_TOP_LEVEL_DECLARATIONS = true;
+    private boolean LIMIT_TO_COMPILATION_UNIT = true;
     private Map<String, String> onePath = new HashMap<String, String>();
     private Set<Declaration> sourceInfoMap = new HashSet<Declaration>();
     private String filePath;
     private String compDir;
     private Set<Long> antiLoop;
+    private int fileEntryIdx = 0;
 
-    public DwarfRenderer() {
+    private DwarfRenderer() {
+    }
+
+    public static DwarfRenderer createFullRenderer() {
+        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+        dwarfRenderer.PROCESS_TOP_LEVEL_DECLARATIONS = false;
+        dwarfRenderer.LIMIT_TO_COMPILATION_UNIT = false;
+        return dwarfRenderer;
+    }
+
+    public static DwarfRenderer createTopLevelDeclarationsRenderer() {
+        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+        dwarfRenderer.PROCESS_TOP_LEVEL_DECLARATIONS = true;
+        dwarfRenderer.LIMIT_TO_COMPILATION_UNIT = false;
+        return dwarfRenderer;
+    }
+
+    public static DwarfRenderer createTopLevelDeclarationsCompilationUnitsRenderer() {
+        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+        dwarfRenderer.PROCESS_TOP_LEVEL_DECLARATIONS = true;
+        dwarfRenderer.LIMIT_TO_COMPILATION_UNIT = true;
+        return dwarfRenderer;
     }
 
     public void dumpModel(PrintStream out) {
@@ -101,10 +125,18 @@ public class DwarfRenderer {
         filePath = compilationUnit.getSourceFileAbsolutePath();
         compDir = compilationUnit.getCompilationDir();
         antiLoop = new HashSet<Long>();
-        processEntries(compilationUnit, compilationUnit.getDeclarations(false), null);
+        if (PROCESS_TOP_LEVEL_DECLARATIONS) {
+            processEntries(compilationUnit, compilationUnit.getTopLevelEntries(), null);
+        } else {
+            processEntries(compilationUnit, compilationUnit.getDeclarations(false), null);
+        }
     }
 
     private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, MyDeclaration parent) throws IOException {
+        if (LIMIT_TO_COMPILATION_UNIT) {
+            fileEntryIdx = compilationUnit.getStatementList().getFileEntryIdx(compilationUnit.getSourceFileName());
+        }
+
         for (DwarfEntry entry : declarations) {
             prosessEntry(compilationUnit, entry, parent);
         }
@@ -124,37 +156,39 @@ public class DwarfRenderer {
             case DW_TAG_SUN_dtor:
             case DW_TAG_SUN_function_template:
             {
-                MyDeclaration functionToLine = null;
-                if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
-                    if (functionToLine.getQName() != null) {
-                        sourceInfoMap.add(functionToLine);
-                    } else {
-                        if (TRACE) {
-                            System.err.println("Entry has empty qname\n"+entry); // NOI18N
-                        }
-                    }
-                } else if (parent != null && parent.getLine() >= 0 && parent.getFileName() != null) {
-                    functionToLine = new MyDeclaration(entry, parent, onePath);
-                    if (functionToLine.getQName() != null) {
-                        sourceInfoMap.add(functionToLine);
-                    } else {
-                        if (TRACE) {
-                            System.err.println("Entry has empty qname\n"+entry); // NOI18N
-                        }
-                    }
-                }
-                if (functionToLine != null) {
-                    switch (entry.getKind()) {
-                        case DW_TAG_variable:
-                        case DW_TAG_member:
-                        case DW_TAG_inlined_subroutine:
-                        case DW_TAG_subprogram:
-                        case DW_TAG_SUN_function_template:
-                            DwarfEntry type = compilationUnit.getReferencedType(entry);
-                            if (type != null) {
-                                functionToLine.setReferencedType(type, onePath);
+                if (!LIMIT_TO_COMPILATION_UNIT || entry.isEntryDefinedInFile(fileEntryIdx)) {
+                    MyDeclaration functionToLine = null;
+                    if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
+                        functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
+                        if (functionToLine.getQName() != null) {
+                            sourceInfoMap.add(functionToLine);
+                        } else {
+                            if (TRACE) {
+                                System.err.println("Entry has empty qname\n"+entry); // NOI18N
                             }
+                        }
+                    } else if (parent != null && parent.getLine() >= 0 && parent.getFileName() != null) {
+                        functionToLine = new MyDeclaration(entry, parent, onePath);
+                        if (functionToLine.getQName() != null) {
+                            sourceInfoMap.add(functionToLine);
+                        } else {
+                            if (TRACE) {
+                                System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                            }
+                        }
+                    }
+                    if (functionToLine != null) {
+                        switch (entry.getKind()) {
+                            case DW_TAG_variable:
+                            case DW_TAG_member:
+                            case DW_TAG_inlined_subroutine:
+                            case DW_TAG_subprogram:
+                            case DW_TAG_SUN_function_template:
+                                DwarfEntry type = compilationUnit.getReferencedType(entry);
+                                if (type != null) {
+                                    functionToLine.setReferencedType(type, onePath);
+                                }
+                        }
                     }
                 }
                 break;
@@ -195,18 +229,20 @@ public class DwarfRenderer {
             }
             case DW_TAG_namespace:
             {
-                MyDeclaration aParent = null;
-                if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    aParent = new MyDeclaration(filePath, compDir, entry, onePath);
-                    if (aParent.getQName() != null) {
-                        sourceInfoMap.add(aParent);
-                    } else {
-                        if (TRACE) {
-                            System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                if (!LIMIT_TO_COMPILATION_UNIT || entry.isEntryDefinedInFile(fileEntryIdx)) {
+                    MyDeclaration aParent = null;
+                    if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
+                        aParent = new MyDeclaration(filePath, compDir, entry, onePath);
+                        if (aParent.getQName() != null) {
+                            sourceInfoMap.add(aParent);
+                        } else {
+                            if (TRACE) {
+                                System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                            }
                         }
                     }
+                    processEntries(compilationUnit, entry.getChildren(), aParent);
                 }
-                processEntries(compilationUnit, entry.getChildren(), aParent);
                 break;
             }
             case DW_TAG_SUN_class_template:
@@ -217,18 +253,20 @@ public class DwarfRenderer {
             case DW_TAG_union_type:
             case DW_TAG_enumeration_type:
             {
-                MyDeclaration aParent = null;
-                if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    aParent = new MyDeclaration(filePath, compDir, entry, onePath);
-                    if (aParent.getQName() != null) {
-                        sourceInfoMap.add(aParent);
-                    } else {
-                        if (TRACE) {
-                            System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                if (!LIMIT_TO_COMPILATION_UNIT || entry.isEntryDefinedInFile(fileEntryIdx)) {
+                    MyDeclaration aParent = null;
+                    if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
+                        aParent = new MyDeclaration(filePath, compDir, entry, onePath);
+                        if (aParent.getQName() != null) {
+                            sourceInfoMap.add(aParent);
+                        } else {
+                            if (TRACE) {
+                                System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                            }
                         }
                     }
+                    processEntries(compilationUnit, entry.getChildren(), aParent);
                 }
-                processEntries(compilationUnit, entry.getChildren(), aParent);
                 break;
             }
             case DW_TAG_typedef:
@@ -238,21 +276,23 @@ public class DwarfRenderer {
             case DW_TAG_array_type:
             case DW_TAG_ptr_to_member_type:
             {
-                MyDeclaration functionToLine = null;
-                if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
-                    if (functionToLine.getQName() != null) {
-                        sourceInfoMap.add(functionToLine);
-                    } else {
-                        if (TRACE) {
-                            System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                if (!LIMIT_TO_COMPILATION_UNIT || entry.isEntryDefinedInFile(fileEntryIdx)) {
+                    MyDeclaration functionToLine = null;
+                    if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
+                        functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
+                        if (functionToLine.getQName() != null) {
+                            sourceInfoMap.add(functionToLine);
+                        } else {
+                            if (TRACE) {
+                                System.err.println("Entry has empty qname\n"+entry); // NOI18N
+                            }
                         }
                     }
-                }
-                DwarfEntry type = compilationUnit.getReferencedType(entry);
-                if (functionToLine != null && type != null) {
-                    functionToLine.setReferencedType(type, onePath);
-                    prosessEntry(compilationUnit, type, null);
+                    DwarfEntry type = compilationUnit.getReferencedType(entry);
+                    if (functionToLine != null && type != null) {
+                        functionToLine.setReferencedType(type, onePath);
+                        prosessEntry(compilationUnit, type, null);
+                    }
                 }
                 break;
             }

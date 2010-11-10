@@ -101,7 +101,7 @@ public class ElementDescriptorRules {
         "prsubset", "quotient", "rationals", "real", "reals", "reln", "rem", "root", "scalarproduct",
         "sdev", "sec", "sech", "selector", "semantics", "sep", "set", "setdiff", "sin", "sinh", "subset",
         "sum", "tan", "tanh", "tendsto", "times", "transpose", "true", "union", "uplimit", "variance",
-        "vector", "vectorproduct", "xor"}));
+        "vector", "vectorproduct", "xor"}));//NOI18N
 
     //manually regexped from http://www.w3.org/TR/SVGTiny12/elementTable.html
     public static final Collection<String> SVG_TAG_NAMES = new HashSet<String>(Arrays.asList(new String[]{
@@ -111,7 +111,7 @@ public class ElementDescriptorRules {
         "linearGradient", "listener", "metadata", "missing-glyph", "mpath", "path", "polygon",
         "polyline", "prefetch", "radialGradient", "rect", "script", "set", "solidColor", "stop",
         "svg", "switch", "tbreak", "text", "textArea", "title", "tspan", "use", "video"
-    }));
+    }));//NOI18N
 
     public static synchronized Collection<ElementDescriptor> getElementsByContentType(ContentType ctype) {
         //the mapping needs to be extracted from the reverse information element->ctype first

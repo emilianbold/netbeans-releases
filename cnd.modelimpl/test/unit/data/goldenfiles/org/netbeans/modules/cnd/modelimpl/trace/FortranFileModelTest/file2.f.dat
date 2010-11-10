@@ -16,6 +16,7 @@ FUNCTION DEFINITION d2ch  [3:17/57-19:10/426] SubroutineImpl SCOPE: $Global$
     UNIQUE NAME f:d2ch
     DECLARATION: d2ch  [3:17/57-19:10/426]
     PARAMETERS:
+        idig [3:17/57-19:10/426]  TYPE: null   INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 FUNCTION DEFINITION SetViewAngle  [22:7/502-46:10/1174] SubroutineImpl SCOPE: $Global$ 
@@ -44,6 +45,9 @@ FUNCTION DEFINITION InitDevice  [70:15/1765-106:10/2628] SubroutineImpl SCOPE: $
     UNIQUE NAME f:InitDevice
     DECLARATION: InitDevice  [70:15/1765-106:10/2628]
     PARAMETERS:
+        name [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
+        nch [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
+        pgopen [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 FUNCTION DEFINITION DrawFrame  [111:7/2678-148:10/3961] SubroutineImpl SCOPE: $Global$ 
@@ -118,6 +122,7 @@ FUNCTION DEFINITION d2ch  [3:17/57-19:10/426] SubroutineImpl SCOPE: $Global$
     UNIQUE NAME f:d2ch
     DECLARATION: d2ch  [3:17/57-19:10/426]
     PARAMETERS:
+        idig [3:17/57-19:10/426]  TYPE: null   INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 FUNCTION DEFINITION SetViewAngle  [22:7/502-46:10/1174] SubroutineImpl SCOPE: $Global$ 
@@ -146,6 +151,9 @@ FUNCTION DEFINITION InitDevice  [70:15/1765-106:10/2628] SubroutineImpl SCOPE: $
     UNIQUE NAME f:InitDevice
     DECLARATION: InitDevice  [70:15/1765-106:10/2628]
     PARAMETERS:
+        name [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
+        nch [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
+        pgopen [70:15/1765-106:10/2628]  TYPE: null   INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 FUNCTION DEFINITION DrawFrame  [111:7/2678-148:10/3961] SubroutineImpl SCOPE: $Global$ 

@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
@@ -165,7 +166,7 @@ public class FieldEncapsulation {
 
     private static TypeElement getEnclosingClass (TreePath path, final Trees trees) {
         while (path != null && path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
-            if (path.getLeaf().getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
                 return (TypeElement) trees.getElement(path);
             }
             path = path.getParentPath();
@@ -182,7 +183,7 @@ public class FieldEncapsulation {
         assert suppressWarnings != null;
         final TreePath tp = ctx.getPath();
         final Tree parent = tp.getParentPath().getLeaf();
-        if (parent.getKind() != Tree.Kind.CLASS ||
+        if (!TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) ||
             ctx.getInfo().getTreeUtilities().isInterface((ClassTree)parent)) {
             return null;
         }

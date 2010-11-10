@@ -150,10 +150,12 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
             IndentReformatTaskFactoriesProvider provider = ref == null ? null : ref.get();
             if (provider == null) {
                 try {
-                    Class kitClass = KitsTracker.getInstance().findKitClass(mimePath.getPath());
-                    Method createFormatterMethod = kitClass.getDeclaredMethod("createFormatter"); //NOI18N
-                    provider = new IndentReformatTaskFactoriesProvider(mimePath);
-                    cache.put(mimePath, new WeakReference<IndentReformatTaskFactoriesProvider>(provider));
+                    Class<?> kitClass = KitsTracker.getInstance().findKitClass(mimePath.getPath());
+                    if (kitClass != null) {
+                        /*Method createFormatterMethod =*/ kitClass.getDeclaredMethod("createFormatter"); //NOI18N
+                        provider = new IndentReformatTaskFactoriesProvider(mimePath);
+                        cache.put(mimePath, new WeakReference<IndentReformatTaskFactoriesProvider>(provider));
+                    }
                 } catch (Exception e) {
                     // ignore
                 }

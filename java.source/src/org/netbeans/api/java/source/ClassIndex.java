@@ -75,9 +75,10 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
-import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -294,13 +295,13 @@ public final class ClassIndex {
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
         final String binaryName = element.getSignature()[0];
-        final ResultConvertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     try {
                         query.search(binaryName, ut, thConvertor, result);
-                    } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                    } catch (Index.IndexClosedException e) {
                         logClosedIndex (query);
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
@@ -333,10 +334,10 @@ public final class ClassIndex {
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
-                    final ResultConvertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
+                    final Convertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
                     try {
                         query.search (binaryName, ut, foConvertor, result);
-                    } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                    } catch (Index.IndexClosedException e) {
                         logClosedIndex (query);
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
@@ -365,12 +366,12 @@ public final class ClassIndex {
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final ResultConvertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {
                     query.getDeclaredTypes (name, kind, thConvertor, result);
-                } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                } catch (Index.IndexClosedException e) {
                     logClosedIndex (query);
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
@@ -401,7 +402,7 @@ public final class ClassIndex {
             for (ClassIndexImpl query : queries) {
                 try {
                     query.getPackageNames (prefix, directOnly, result);
-                } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                } catch (Index.IndexClosedException e) {
                     logClosedIndex (query);
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);

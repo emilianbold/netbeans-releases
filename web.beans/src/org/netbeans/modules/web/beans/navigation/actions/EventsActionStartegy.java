@@ -71,7 +71,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.EVENTS;
+        return id == InspectActionId.EVENTS || id == InspectActionId.INJECTABLES;
     }
 
     /* (non-Javadoc)
@@ -85,8 +85,16 @@ final class EventsActionStartegy implements ModelActionStrategy {
         }
         Element element = ((ElementHandle<?>)handle).resolve( 
                 model.getCompilationController());
-        ExecutableElement method = (ExecutableElement)element;
-        if ( model.getObserverParameter( method ) == null ){
+        ExecutableElement method = null;
+        if ( element instanceof ExecutableElement ){
+            method = (ExecutableElement)element;
+        }
+        else {
+            return false;
+        }
+        if ( context[2] == InspectActionId.EVENTS && 
+                model.getObserverParameter( method ) == null )
+        {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
                             "LBL_NotObserverContext"), // NOI18N
@@ -101,7 +109,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
      */
     @Override
     public void invokeModelAction( final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] subject,
             JTextComponent component, FileObject fileObject )
     {
         final Object handle = subject[0];
@@ -121,18 +129,16 @@ final class EventsActionStartegy implements ModelActionStrategy {
             .getCompilationController();
         final EventsModel uiModel = new EventsModel(eventInjectionPoints, 
                 controller, metaModel);
-        final ElementHandle<ExecutableElement> methodHandle = 
-            ElementHandle.create( method);
         final String name = method.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showEventsDialog( metaModel, model, 
-                    methodHandle , uiModel , name );
+                    subject , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showEventsDialog(metaModel, null , 
-                            methodHandle ,uiModel , name );
+                            subject ,uiModel , name );
                 }
             });
         }

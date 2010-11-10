@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -83,7 +84,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         Problem result = null;
         TreePathHandle handle = whereUsedQuery.getRefactoringSource().lookup(TreePathHandle.class);
-        if (handle == null || Kind.CLASS != handle.getKind()){
+        if (handle == null || !TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())){
             return null;
         }
         Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));

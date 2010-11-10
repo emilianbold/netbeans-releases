@@ -295,6 +295,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             switch (topID) {
                 case GENERIC_TYPE:
                 {
+                    boolean stop = false;
                     switch (top2ID) {
                         case METHOD_OPEN:
                             switch (tokenID) {
@@ -306,12 +307,15 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     CsmCompletionExpression typeExpr = new CsmCompletionExpression(TYPE);
                                     typeExpr.addParameter(top);
                                     pushExp(typeExpr);
+                                    stop = true;
                                     break;
                             }
                             break;
                     }
+                    if (stop) {
+                        break;
+                    }
                 }
-                break;
                 case VARIABLE:
                     boolean stop = false;
                     switch (top2ID) {
@@ -351,7 +355,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         break;
                     }
                 // nobreak;
-                case CONSTANT:
                 case METHOD:
                 case CONSTRUCTOR:
                 case ARRAY:
@@ -433,6 +436,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case SCOPE_OPEN:
                             if (isSeparatorOrOperator(tokenID)) {
                                 switch (tokenID) {
+                                    case LT:
                                     case LPAREN:
                                         break;
                                     default:

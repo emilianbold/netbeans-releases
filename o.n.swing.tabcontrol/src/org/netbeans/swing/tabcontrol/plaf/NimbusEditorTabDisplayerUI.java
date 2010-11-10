@@ -123,8 +123,8 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
             if (!displayer.isActive() || null == painter) {
                 painter = (javax.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
             }
-
-            painter.paint(g2d, null, w, h);
+            if( null != painter )
+                painter.paint(g2d, null, w, h);
         } else {
             com.sun.java.swing.Painter painter = null;
             if (displayer.isActive()) {
@@ -133,8 +133,8 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
             if (!displayer.isActive() || null == painter) {
                 painter = (com.sun.java.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
             }
-
-            painter.paint(g2d, null, w, h);
+            if( null != painter )
+                painter.paint(g2d, null, w, h);
         }
 
         Color c = (Color) UIManager.get("nimbusBorder");

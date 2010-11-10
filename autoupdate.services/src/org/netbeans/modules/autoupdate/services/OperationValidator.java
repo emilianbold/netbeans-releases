@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -203,10 +203,12 @@ abstract class OperationValidator {
         }
     }
     private static class InstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() == null && containsElement (uElement, unit);
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
             List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, false));
@@ -229,6 +231,7 @@ abstract class OperationValidator {
     
     private static class UninstallValidator extends OperationValidator {
         
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -258,6 +261,7 @@ abstract class OperationValidator {
             return res;
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl  (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -298,10 +302,12 @@ abstract class OperationValidator {
     }
     
     private static class UpdateValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() != null && containsElement (uElement, unit);
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
             List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, true));
@@ -319,6 +325,7 @@ abstract class OperationValidator {
     }
     
     private static class EnableValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -370,6 +377,7 @@ abstract class OperationValidator {
             return toEnable;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -396,6 +404,7 @@ abstract class OperationValidator {
     }
     
     private static class DisableValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -424,6 +433,7 @@ abstract class OperationValidator {
             return res;
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -470,6 +480,7 @@ abstract class OperationValidator {
     }
     
     private static class CustomInstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
             boolean res = false;
             UpdateElementImpl impl = Trampoline.API.impl (uElement);
@@ -483,6 +494,7 @@ abstract class OperationValidator {
             return res;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
@@ -490,6 +502,7 @@ abstract class OperationValidator {
     }
 
     private static class CustomUninstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
             boolean res = false;
             UpdateElementImpl impl = Trampoline.API.impl (uElement);
@@ -501,6 +514,7 @@ abstract class OperationValidator {
             return res;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomUninstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
@@ -579,12 +593,14 @@ abstract class OperationValidator {
                 Set<Module> depends = Utilities.findDependingModules (depM, mm, module2depending);
                 if (! compactSet.containsAll (depends)) {
                     mustRemain.add (depM);
-                    mustRemain.addAll (Utilities.findRequiredModules (depM, mm, module2required));
+                    Set<Module> otherRequiredModules = Utilities.findRequiredModules(depM, mm, module2required);
+                    mustRemain.addAll (otherRequiredModules);
                     LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
                     if (LOGGER.isLoggable (Level.FINER)) {
                         Set<Module> outsideModules = new HashSet<Module> (depends);
                         outsideModules.removeAll (compactSet);
                         LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivating modules: " + outsideModules);
+                        LOGGER.log (Level.FINER, "With " + depM.getCodeNameBase () + " must remain also these required modules: " + otherRequiredModules);
                     }
                 } else {
                     result.add (depM);

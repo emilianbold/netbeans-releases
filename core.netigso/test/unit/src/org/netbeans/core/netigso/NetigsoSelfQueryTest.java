@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Locale;
 import java.util.jar.Manifest;
 import org.netbeans.ArchiveResources;
@@ -501,9 +502,10 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        private Dictionary empty = new Hashtable();
         @Override
         public Dictionary getHeaders() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return empty;
         }
 
         @Override

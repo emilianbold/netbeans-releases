@@ -42,9 +42,8 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -53,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -85,6 +85,30 @@ public final class SemanticEntitiesProvider {
         };
     }
 
+    private SemanticEntity getFastFields(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
+            @Override
+            public String getName() {
+                return "fast-class-fields"; // NOI18N
+            }
+            @Override
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+                List<CsmOffsetable> res = new ArrayList<CsmOffsetable>();
+                for(CsmReference ref : references) {
+                    if (CsmKindUtilities.isField(ref.getReferencedObject())){
+                        res.add(ref);
+                    }
+                }
+                return res;
+            }
+            @Override
+            public ReferenceCollector getCollector() {
+                return null;
+            }
+        };
+    }
+
     private SemanticEntity getFields(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
             @Override
@@ -102,7 +126,52 @@ public final class SemanticEntitiesProvider {
         };
     }
 
-    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
+    private SemanticEntity getFastFunctions(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
+            @Override
+            public String getName() {
+                return "fast-functions-names"; // NOI18N
+            }
+            @Override
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+                List<CsmOffsetable> res = new ArrayList<CsmOffsetable>();
+                for(CsmReference ref : references) {
+                    if (CsmKindUtilities.isFunction(ref.getReferencedObject())){
+                        res.add(ref);
+                    }
+                }
+                return res;
+            }
+
+            @Override
+            public ReferenceCollector getCollector() {
+                return null;
+            }
+
+            @Override
+            public AttributeSet getAttributes(CsmOffsetable obj) {
+                CsmReference ref = (CsmReference) obj;
+                CsmFunction fun = (CsmFunction) ref.getReferencedObject();
+                if (fun == null) {
+                    return color;
+                }
+                // check if we are in the function declaration
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                    return color;
+                } else {
+                    return funUsageColors;
+                }
+            }
+
+            @Override
+            public void updateFontColors(FontColorProvider provider) {
+                super.updateFontColors(provider);
+                funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
+            }
+            private AttributeSet funUsageColors;
+        };
+    }
     private SemanticEntity getFunctions(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
             @Override
@@ -126,7 +195,7 @@ public final class SemanticEntitiesProvider {
                     return color;
                 }
                 // check if we are in the function declaration
-                if (CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS)) {
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                     return color;
                 } else {
                     return funUsageColors;
@@ -230,8 +299,12 @@ public final class SemanticEntitiesProvider {
         if (!HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
             // Macro
             list.add(getMacros());
+            // Class Fields declarations
+            list.add(getFastFields());
             // Class Fields
             list.add(getFields());
+            // Function declaration/definition Names
+            list.add(getFastFunctions());
             // Function Names
             list.add(getFunctions());
             // typedefs

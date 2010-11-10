@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
 import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -237,6 +238,19 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     
     public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
+        if (wa == null) {
+            ProjectWebModule jp = webProject.getLookup().lookup(ProjectWebModule.class);
+            // if web.xml is optional then create a blank one so that reference can be added to it;
+            // if this results into unnecessary creation of web.xml then the caller of this
+            // method should be fixed to not call it
+            if (!isDescriptorMandatory(jp.getJ2eeProfile())) {
+                DDHelper.createWebXml(jp.getJ2eeProfile(), jp.getWebInf());
+                wa = getWebApp();
+            }
+        }
+        if (wa == null) {
+            return null;
+        }
         String resourceRefName = ref.getResRefName();
         // see if jdbc resource has already been used in the app
         // this change requested by Ludo

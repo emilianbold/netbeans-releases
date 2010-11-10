@@ -945,6 +945,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             libs.add("jsp-compiler"); // NOI18N
         }
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
+        /* Disabled because of 190387 - make removal and cleanup in 7.1
         if (res) {
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary"),
@@ -974,7 +975,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                     }
                 });
             }
-        }
+        } */
         return res;
     }
 

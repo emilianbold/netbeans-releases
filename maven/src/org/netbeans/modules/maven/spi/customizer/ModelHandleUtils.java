@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.spi.customizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -59,8 +58,6 @@ import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3R
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
-import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,16 +77,6 @@ public final class ModelHandleUtils {
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
         ModelSource source = Utilities.createModelSource(pom);
         POMModel model = POMModelFactory.getDefault().getModel(source);
-        FileObject profilesFO = prj.getProjectDirectory().getFileObject("profiles.xml"); //NOI18N
-        if (profilesFO != null) {
-            source = Utilities.createModelSource(profilesFO);
-        } else {
-            //the file doesn't exist. what now?
-            File file = FileUtil.toFile(prj.getProjectDirectory());
-            file = new File(file, "profiles.xml"); //NOI18N
-            source = Utilities.createModelSourceForMissingFile(file, true, CustomizerProviderImpl.PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
-        }
-        ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
         //TODO why only the default? maybe we should add all? but then again, it's deprecated.
         M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
         ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
@@ -98,9 +85,8 @@ public final class ModelHandleUtils {
         // with fix of #180773 we need to start transactions here for compatibility
         // because it has been removed from ModelHandle's constructor
         model.startTransaction();
-        profilesModel.startTransaction();
         
-        return CustomizerProviderImpl.ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(),
+        return CustomizerProviderImpl.ACCESSOR.createHandle(model, project.getOriginalMavenProject(),
                 Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), configs, null, project.getAuxProps());
     }
 

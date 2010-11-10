@@ -48,14 +48,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import junit.framework.*;
-import org.netbeans.junit.*;
 
 /**
  *
  * @author pzajac
  */
-public class TestDepsTest extends NbTestCase {
+public class TestDepsTest extends TestBase {
     
     public TestDepsTest(java.lang.String testName) {
         super(testName);
@@ -64,7 +62,6 @@ public class TestDepsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         File nball = new File(prop);
@@ -75,16 +72,16 @@ public class TestDepsTest extends NbTestCase {
     public void testDepsTest () throws Exception {
       // create test
       File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsProject.xml"),"project.xml");  
-      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps" });
+      execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps" });
     }
     public void testDepsNoTestDeps() throws Exception {
       File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsProjectNoTestDeps.xml"),"project.xml");
-      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-no-test-deps" });
+      execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-no-test-deps" });
         
     }
   public void testMisingModuleEntryTestDeps() throws Exception {
       File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsMissingModuleEntry.xml"),"project.xml");
-      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-missing-module-entry-test-deps" });
+      execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-missing-module-entry-test-deps" });
         
     }
 

@@ -311,7 +311,7 @@ public class CsmContextUtilities {
                 break;
             }
             stoppedBeforeFirst = false;
-            List<CsmDeclaration> declList = extractDeclarations(scpElem, strPrefix, match, caseSensitive);
+            List<CsmDeclaration> declList = extractDeclarations(fullContext, scpElem, strPrefix, match, caseSensitive);
             resList.addAll(declList);
         }
         if (stoppedBeforeFirst && CsmKindUtilities.isFunction(scope)) {
@@ -320,7 +320,7 @@ public class CsmContextUtilities {
             if (CsmOffsetUtilities.isInObject(paramList, offsetInScope)) {
                 // add all parameters
                 for (CsmParameter csmParameter : paramList.getParameters()) {
-                    List<CsmDeclaration> declList = extractDeclarations(csmParameter, strPrefix, match, caseSensitive);
+                    List<CsmDeclaration> declList = extractDeclarations(fullContext, csmParameter, strPrefix, match, caseSensitive);
                     resList.addAll(declList);
                 }
             }
@@ -460,8 +460,12 @@ public class CsmContextUtilities {
         return false;
     }
 
+    private static CsmClassifier getTypeClassifier(CsmContext fullContext, CsmType type) {
+        return CsmBaseUtilities.getClassifier(type, fullContext.getFile(), fullContext.getOffset(), true);
+    }
+    
     @SuppressWarnings("unchecked")
-    private static List<CsmDeclaration> extractDeclarations(CsmScopeElement scpElem,
+    private static List<CsmDeclaration> extractDeclarations(CsmContext fullContext, CsmScopeElement scpElem,
                                                         String strPrefix, boolean match, boolean caseSensitive) {
         List list = new ArrayList();
         if (CsmKindUtilities.isDeclaration(scpElem)) {
@@ -483,7 +487,8 @@ public class CsmContextUtilities {
                 list.addAll(listByName);
                 for (CsmDeclaration elem : decls) {
                     if (CsmKindUtilities.isTypedef(elem)) {
-                        CsmClassifier classifier = ((CsmTypedef)elem).getType().getClassifier();
+                        final CsmType type = ((CsmTypedef)elem).getType();
+                        CsmClassifier classifier = getTypeClassifier(fullContext, type);
                         if (CsmOffsetUtilities.isInObject(elem, classifier) && !CsmOffsetUtilities.sameOffsets(elem, classifier)) {
                             elem = classifier;
                         }

@@ -55,13 +55,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -75,16 +78,19 @@ import org.openide.nodes.Node;
  *
  * @author Jiri Rechtacek
  */
-public class TemplatesAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.favorites.templates.TemplatesAction", category = "System")
+@ActionRegistration(displayName = "#LBL_TemplatesAction_Name", iconInMenu=false, asynchronous=true)
+@ActionReference(position = 1000, path = "Menu/Tools")
+public class TemplatesAction extends AbstractAction { // XXX could be ActionListener if not using SHORT_DESCRIPTION, or maybe alwaysEnabled should support that as an option?
 
     /** Weak reference to the dialog showing singleton Template Manager. */
     private Reference<Dialog> dialogWRef = new WeakReference<Dialog> (null);
     
     public TemplatesAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TemplatesAction.class, "HINT_TemplatesAction")); // NOI18N
     }    
     
-    public void performAction () {
+    public @Override void actionPerformed(ActionEvent evt) {
         
         Dialog dialog = dialogWRef.get ();
 
@@ -119,33 +125,6 @@ public class TemplatesAction extends CallableSystemAction {
             dialog.toFront ();
         }
         
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    public String getName () {
-        return NbBundle.getMessage (TemplatesAction.class, "LBL_TemplatesAction_Name"); // NOI18N
-    }
-
-    @Override
-    protected String iconResource () {
-        return null;
-    }
-
-    public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    /**
-     * Adding hint.
-     */
-    @Override
-    protected void initialize () {
-	super.initialize ();
-        putProperty (TemplatesAction.SHORT_DESCRIPTION, NbBundle.getMessage (TemplatesAction.class, "HINT_TemplatesAction")); // NOI18N
     }
     
     // helper classes

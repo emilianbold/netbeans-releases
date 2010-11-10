@@ -164,7 +164,7 @@ public final class VCSContext {
                 projectOwners.add(owner);
             }
         }
-        if(projectOwners.size() == 0) {
+        if(projectOwners.isEmpty()) {
             // all roots are unversioned -> keep them
         } else if(projectOwners.size() == 1) {
             // context contais one owner -> remove unversioned files
@@ -454,7 +454,7 @@ public final class VCSContext {
         files.remove(exclusion);
     }
 
-    private static final Set<File> emptySet() {
+    private static Set<File> emptySet() {
         return Collections.emptySet();
     }
 

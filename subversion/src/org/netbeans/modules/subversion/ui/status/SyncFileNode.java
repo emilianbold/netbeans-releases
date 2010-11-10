@@ -126,7 +126,7 @@ public class SyncFileNode extends AbstractNode {
      * If a node represents primary file of a DataObject
      * it has respective DataObject cookies.
      */
-    public Cookie getCookie(Class klass) {
+    public <T extends Cookie> T getCookie(Class<T> klass) {
         FileObject fo = FileUtil.toFileObject(getFile());
         if (fo != null) {
             try {
@@ -140,6 +140,8 @@ public class SyncFileNode extends AbstractNode {
         }
         return super.getCookie(klass);
     }
+
+
 
     private void initProperties() {
         if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif"); // NOI18N
@@ -175,10 +177,10 @@ public class SyncFileNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
 
-    private abstract class SyncFileProperty extends org.openide.nodes.PropertySupport.ReadOnly {
+    private abstract class SyncFileProperty extends org.openide.nodes.PropertySupport.ReadOnly<String> {
 
-        protected SyncFileProperty(String name, Class type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
+        protected SyncFileProperty(String name, String displayName, String shortDescription) {
+            super(name, String.class, displayName, shortDescription);
         }
 
         public String toString() {
@@ -194,10 +196,10 @@ public class SyncFileNode extends AbstractNode {
     private class BranchProperty extends SyncFileProperty {
 
         public BranchProperty() {
-            super(COLUMN_NAME_BRANCH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
+            super(COLUMN_NAME_BRANCH, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
         }
 
-        public Object getValue() {            
+        public String getValue() {
             String copyName = SvnUtils.getCopy(node.getFile());
             return copyName == null ? "" : copyName;
         }
@@ -209,11 +211,11 @@ public class SyncFileNode extends AbstractNode {
         private boolean reading;
 
         public PathProperty() {
-            super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004")); // NOI18N
+            super(COLUMN_NAME_PATH, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004")); // NOI18N
             setValue("sortkey", "\u65000\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (shortPath == null && !reading) {
                 reading = true;
                 Runnable run = new Runnable() {
@@ -255,11 +257,11 @@ public class SyncFileNode extends AbstractNode {
     private class NameProperty extends SyncFileProperty {
 
         public NameProperty() {
-            super(COLUMN_NAME_NAME, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2005"), NbBundle.getMessage(SyncFileNode.class, "BK2006")); // NOI18N
+            super(COLUMN_NAME_NAME, NbBundle.getMessage(SyncFileNode.class, "BK2005"), NbBundle.getMessage(SyncFileNode.class, "BK2006")); // NOI18N
             setValue("sortkey", SyncFileNode.this.getName()); // NOI18N
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return SyncFileNode.this.getDisplayName();
         }
     }
@@ -269,13 +271,13 @@ public class SyncFileNode extends AbstractNode {
     private class StatusProperty extends SyncFileProperty {
         
         public StatusProperty() {
-            super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008")); // NOI18N
+            super(COLUMN_NAME_STATUS, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008")); // NOI18N
             String shortPath = "path";//SvnUtils.getRelativePath(node.getFile()); // NOI18N
             String sortable = Integer.toString(SvnUtils.getComparableStatus(node.getInformation().getStatus()));
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  node.getInformation();
             finfo.getEntry(node.getFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
             int mask = panel.getDisplayStatuses();

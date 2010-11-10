@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -87,13 +88,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private static String picklistHomeDir = null;
     private static final String picklistName = "executables"; // NOI18N
     private boolean isValidating = false;
-    
-    public RunDialogPanel() {
-        isRun = true;
-        initialize(null);
-        errorLabel.setText(""); //NOI18N
-        initAccessibility();
-    }
     
     private void initAccessibility() {
         // Accessibility
@@ -190,9 +184,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(guidanceTextarea, gridBagConstraints);
 
-        executableLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("EXECUTABLE_MN").charAt(0));
         executableLabel1.setLabelFor(executableTextField);
-        executableLabel1.setText(bundle.getString("EXECUTABLE_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(executableLabel1, bundle.getString("EXECUTABLE_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -200,8 +193,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
         add(executableLabel1, gridBagConstraints);
 
-        executableBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("BROWSE_BUTTON_MN").charAt(0));
-        executableBrowseButton.setText(bundle.getString("BROWSE_BUTTON_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(executableBrowseButton, bundle.getString("BROWSE_BUTTON_TXT")); // NOI18N
         executableBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executableBrowseButtonActionPerformed(evt);
@@ -223,9 +215,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
         add(executableTextField, gridBagConstraints);
 
-        projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("ASSOCIATED_PROJECT_MN").charAt(0));
         projectLabel.setLabelFor(projectComboBox);
-        projectLabel.setText(bundle.getString("ASSOCIATED_PROJECT_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, bundle.getString("ASSOCIATED_PROJECT_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -257,9 +248,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(24, 12, 0, 12);
         add(errorLabel, gridBagConstraints);
 
-        runDirectoryLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("RUN_DIRECTORY_LABEL_MN").charAt(0));
         runDirectoryLabel.setLabelFor(runDirectoryTextField);
-        runDirectoryLabel.setText(bundle.getString("RUN_DIRECTORY_LABEL_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(runDirectoryLabel, bundle.getString("RUN_DIRECTORY_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -274,8 +264,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(10, 4, 0, 0);
         add(runDirectoryTextField, gridBagConstraints);
 
-        runDirectoryBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("RUN_DIRECTORY_BUTTON_MN").charAt(0));
-        runDirectoryBrowseButton.setText(bundle.getString("RUN_DIRECTORY_BUTTON_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(runDirectoryBrowseButton, bundle.getString("RUN_DIRECTORY_BUTTON_TXT")); // NOI18N
         runDirectoryBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 runDirectoryBrowseButtonActionPerformed(evt);
@@ -289,9 +278,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(10, 4, 0, 12);
         add(runDirectoryBrowseButton, gridBagConstraints);
 
-        argumentLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("ARGUMENTS_LABEL_MN").charAt(0));
         argumentLabel.setLabelFor(argumentTextField);
-        argumentLabel.setText(bundle.getString("ARGUMENTS_LABEL_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(argumentLabel, bundle.getString("ARGUMENTS_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -307,9 +295,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
         add(argumentTextField, gridBagConstraints);
 
-        environmentLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("ENVIRONMENT_LABEL_MN").charAt(0));
         environmentLabel.setLabelFor(environmentTextField);
-        environmentLabel.setText(bundle.getString("ENVIRONMENT_LABEL_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(environmentLabel, bundle.getString("ENVIRONMENT_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -406,8 +393,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
         String seed = getExecutablePath();
-        if (seed.length() == 0 && FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        if (seed.length() == 0 && FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         }
         if (seed.length() == 0) {
             seed = System.getProperty("user.home");
@@ -613,7 +600,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
                     String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(getExecutablePath()).getName());
                     String baseDir = projectParentFolder + File.separator + projectName;
-                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE);  // NOI18N
+                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                            ExecutionEnvironmentFactory.getLocal().getHost());
                     // Working dir
                     String wd = new File(getExecutablePath()).getParentFile().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);

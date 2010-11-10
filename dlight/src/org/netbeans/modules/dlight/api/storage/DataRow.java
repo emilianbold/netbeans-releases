@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.api.storage;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
@@ -61,7 +62,7 @@ public final class DataRow {
     public DataRow(List<String> colnames, List<? extends Object> data) {
         this.colnames = colnames;
         DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
-        this.data = data;
+        this.data = data == null ? new ArrayList<Object>(colnames.size()) : data;
     }
 
     /**
@@ -78,6 +79,36 @@ public final class DataRow {
         return result;
     }
 
+    public Long getLongValue(int idx) {
+        Long result = null;
+        if (idx >= 0 && idx < data.size()) {
+            result = (Long) data.get(idx);
+        }
+        return result;
+    }
+
+    /**
+     * Returns value of the row as Integer for column with the name <code>columnName</code>
+     * @param columnName column name to get Integer value for
+     * @return value of row for the column as Long
+     */
+    public Integer getIntValue(String columnName) {
+        Integer result = null;
+        int idx = colnames.indexOf(columnName);
+        if (idx >= 0) {
+            result = (Integer) data.get(idx);
+        }
+        return result;
+    }
+
+    public Integer getIntValue(int idx) {
+        Integer result = null;
+        if (idx >= 0 && idx < data.size()) {
+            result = (Integer) data.get(idx);
+        }
+        return result;
+    }
+
     /**
      * Returns value of the row as String for column with the name <code>columnName</code>
      * @param columnName column name to get String value for
@@ -89,7 +120,7 @@ public final class DataRow {
 
     public String getStringValue(int idx) {
         String result = null;
-        if (idx >= 0) {
+        if (idx >= 0 && idx < data.size()) {
             result = String.valueOf(data.get(idx));
         }
         return result;
@@ -158,7 +189,7 @@ public final class DataRow {
         sb.append("\n"); //NOI18N
 
         for (Object v : data) {
-            sb.append((v  == null ? "NULL" : v.toString())).append(" | "); //NOI18N
+            sb.append((v == null ? "NULL" : v.toString())).append(" | "); //NOI18N
         }
 
         return sb.toString();

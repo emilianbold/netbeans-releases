@@ -418,9 +418,12 @@ public class JavaFixAllImports {
                         try {
                             js.runModificationTask(new Task<WorkingCopy>() {
                                 public void run(WorkingCopy wc) throws Exception {
-                                    cancel.setEnabled(false);
-                                    ((JDialog) d).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-                                    
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            cancel.setEnabled(false);
+                                            ((JDialog)d).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+                                        }
+                                    });                                    
                                     wc.toPhase(Phase.RESOLVED);
                                     if (stop.get()) return;
                                     performFixImports(wc, data, selections, removeUnusedImports);
@@ -431,7 +434,11 @@ public class JavaFixAllImports {
                         }
 
                         prefs.putBoolean(KEY_REMOVE_UNUSED_IMPORTS, removeUnusedImports);
-                        d.setVisible(false);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                d.setVisible(false);
+                            }
+                        });
                     }
                 });
             }

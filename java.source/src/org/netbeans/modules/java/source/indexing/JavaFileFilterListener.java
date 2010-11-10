@@ -87,9 +87,7 @@ final class JavaFileFilterListener implements ChangeListener {
                     if (filter != null) {
                         filter.addChangeListener(this);
                         listensOn.put(rootURL, filter);
-                        if (!(result = verify(rootURL))) {
-                            IndexingManager.getDefault().refreshIndex(rootURL, null, true);
-                        }
+                        result = verify(rootURL);
                     }
                 }
             }

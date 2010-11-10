@@ -1,0 +1,10 @@
+<xsl:comment>ojec-init</xsl:comment>
+
+    <target name="ojec-pre-init" if="cdc-platform.trigger">
+        <condition property="ojec-platform.trigger">
+            <equals arg1="ojec" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+    </target>
+    <target name="ojec-init" depends="ojec-pre-init" if="ojec-platform.trigger">
+    </target>
+    

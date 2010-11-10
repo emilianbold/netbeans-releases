@@ -341,6 +341,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // NOI18N
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
+        /* Disabled because of 190387 - make removal and cleanup in 7.1
         if (res) {
             // more or less just for consistency I'm adding server library question here.
             // server library IMO never made any sense in EAR as it never compiles anything
@@ -369,7 +370,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     }
                 });
             }
-        }
+        } */
         return res;
     }
 

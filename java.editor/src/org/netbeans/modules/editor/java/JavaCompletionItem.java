@@ -1607,7 +1607,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
-                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
@@ -1775,7 +1775,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
-                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
@@ -2050,7 +2050,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
                                 Tree parentTree = path.getParentPath().getLeaf();                                
-                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && tree.getKind() == Tree.Kind.CLASS) {
+                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                                     GeneratorUtils.generateAllAbstractMethodImplementations(copy, path);
                                     break;
                                 }                                
@@ -2251,7 +2251,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
                                 Tree parentTree = path.getParentPath().getLeaf();                                
-                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && tree.getKind() == Tree.Kind.CLASS) {
+                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                                     GeneratorUtils.generateAllAbstractMethodImplementations(copy, path);
                                     break;
                                 }                                
@@ -3205,7 +3205,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
-                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             TypeElement parent = parentHandle.resolve(copy);
                             ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> handle : fieldHandles)

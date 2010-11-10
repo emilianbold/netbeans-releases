@@ -967,7 +967,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         JiraConfiguration config = issue.getRepository().getConfiguration();
         List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> components = new ArrayList<com.atlassian.connector.eclipse.internal.jira.core.model.Component>(componentIds.size());
         for (String id : componentIds) {
-            components.add(config.getComponentById(projectId, id));
+            com.atlassian.connector.eclipse.internal.jira.core.model.Component component = config.getComponentById(projectId, id);
+            if(component != null) {
+                components.add(component);
+            }
         }
         return components;
     }
@@ -976,7 +979,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         JiraConfiguration config = issue.getRepository().getConfiguration();
         List<Version> versions = new ArrayList<Version>(versionIds.size());
         for (String id : versionIds) {
-            versions.add(config.getVersionById(projectId, id));
+            Version version = config.getVersionById(projectId, id);
+            if(version != null) {
+                versions.add(version);
+            }
         }
         return versions;
     }

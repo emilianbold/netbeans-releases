@@ -52,8 +52,20 @@ import com.sun.tools.javac.util.Name;
  */
 public class QualIdentTree extends JCTree.JCFieldAccess {
 
+    private final String fqn;
+
     public QualIdentTree(JCExpression selected, Name name, Symbol sym) {
         super(selected, name, sym);
+        this.fqn = null;
+    }
+
+    public QualIdentTree(JCExpression selected, Name name, String fqn) {
+        super(selected, name, null);
+        this.fqn = fqn;
+    }
+
+    public String getFQN() {
+        return fqn;
     }
 
 }

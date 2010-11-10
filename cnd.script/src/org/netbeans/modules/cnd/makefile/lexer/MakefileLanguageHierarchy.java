@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import java.util.Collection;
 
 import java.util.EnumSet;

@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.util.Utilities;
 
@@ -59,7 +60,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 @SuppressWarnings("unchecked") // NOI18N
-public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
+public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor {
     public static final String PROJECT = "DW:project"; // NOI18N
     public static final String PROVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
@@ -72,6 +73,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
+    public static final String ERRORS = "DW:errors"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -115,6 +117,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         putProperty(ROOT_FOLDER, root);
     }
     
+    @Override
+    public List<String> getErrors(){
+        return (List<String>) getProperty(ERRORS);
+    }
+
+    @Override
+    public void setErrors(List<String> errors){
+        stateChanged = true;
+        putProperty(ERRORS, errors);
+    }
+
     @Override
     public String getBuildResult() {
         return (String) getProperty(BUILD_RESULT);
@@ -275,7 +288,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) wizard.getProperty(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+                root = (String)wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }
@@ -289,6 +302,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
                 root = root.replace('\\','/');
             }
             wizard.putProperty(ROOT_FOLDER, root);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> getErrors(){
+            return (List<String>) wizard.getProperty(ERRORS);
+        }
+
+        @Override
+        public void setErrors(List<String> errors){
+            wizard.putProperty(ERRORS, errors);
         }
         
         @Override
@@ -460,7 +484,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) map.get(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)map.get("buildCommandWorkingDirTextField"); // NOI18N
+                root = (String)map.get(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }
@@ -474,6 +498,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
                 root = root.replace('\\','/');
             }
             map.put(ROOT_FOLDER, root);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> getErrors(){
+            return (List<String>) map.get(ERRORS);
+        }
+
+        @Override
+        public void setErrors(List<String> errors){
+            map.put(ERRORS, errors);
         }
         
         @Override

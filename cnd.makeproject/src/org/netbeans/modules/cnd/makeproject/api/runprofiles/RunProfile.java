@@ -131,22 +131,29 @@ public final class RunProfile implements ConfigurationAuxObject {
     };
     private IntConfiguration removeInstrumentation;
 
+    /**
+     * creation of help run profiles to be executed in output window
+     */
     public RunProfile(String baseDir, int platform) {
         this.platform = platform;
         this.baseDir = baseDir;
         this.pcs = null;
-        initialize();
+        initializeImpl(CONSOLE_TYPE_OUTPUT_WINDOW);
     }
 
     public RunProfile(String baseDir, PropertyChangeSupport pcs) {
         platform = PlatformTypes.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
-        initialize();
+        initializeImpl(CONSOLE_TYPE_DEFAULT);
     }
 
     @Override
     public final void initialize() {
+       initializeImpl(CONSOLE_TYPE_DEFAULT);
+    }
+
+    private void initializeImpl(int initialConsoleType) {
         //parent = null;
         environment = new Env();
         defaultProfile = false;
@@ -158,7 +165,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
         termOptions = new HashMap<String, String>();
-        consoleType = new IntConfiguration(null, CONSOLE_TYPE_DEFAULT, consoleTypeNames, null);
+        consoleType = new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);
         terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
         removeInstrumentation = new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
         clearChanged();
@@ -537,7 +544,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     public static int getDefaultConsoleType() {
-        return CONSOLE_TYPE_EXTERNAL;
+        return CONSOLE_TYPE_INTERNAL;
     }
 
     public IntConfiguration getTerminalType() {

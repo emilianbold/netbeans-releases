@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -79,15 +78,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Annotation;
@@ -112,15 +104,12 @@ import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
-import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -149,11 +138,17 @@ public class BinaryAnalyser {
         public final List<ElementHandle<TypeElement>> added;
         public final List<ElementHandle<TypeElement>> removed;
         public final List<ElementHandle<TypeElement>> changed;
+        public final boolean preBuildArgs;
 
-        private Changes (final List<ElementHandle<TypeElement>> added, final List<ElementHandle<TypeElement>> removed, final List<ElementHandle<TypeElement>> changed) {
+        private Changes (
+                final List<ElementHandle<TypeElement>> added,
+                final List<ElementHandle<TypeElement>> removed,
+                final List<ElementHandle<TypeElement>> changed,
+                final boolean preBuildArgs) {
             this.added = added;
             this.removed = removed;
             this.changed = changed;
+            this.preBuildArgs = preBuildArgs;
         }
 
     }
@@ -162,13 +157,14 @@ public class BinaryAnalyser {
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
-    static final String OBJECT = Object.class.getName();
+    private static final String JCOMPONENT = javax.swing.JComponent.class.getName();
+    static final String OBJECT = Object.class.getName();    
 
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
 
     private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
-    private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
+    private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LMListener lmListener;
     private Continuation cont;
@@ -215,16 +211,22 @@ public class BinaryAnalyser {
 
     public Changes finish () throws IOException {
         if (cont == null) {
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
+        }
+        if (!cont.hasChanges() && timeStamps.second.isEmpty()) {
+            assert refs.isEmpty();
+            assert toDelete.isEmpty();
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
         }
         final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
         final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
+        final boolean preBuildArgs = cont.preBuildArgs();
         cont = null;
         store();
         storeCRCs(cacheRoot, newState);
         storeTimeStamps(cacheRoot,timeStamps);
         timeStamps = null;
-        return diff(oldState,newState);
+        return diff(oldState,newState, preBuildArgs);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
@@ -243,12 +245,11 @@ public class BinaryAnalyser {
                         writer.clear();
                         try {
                             final ZipFile zipFile = new ZipFile(archive);
-                            prebuildArgs(zipFile, root);
                             final Enumeration<? extends ZipEntry> e = zipFile.entries();
                             cont = new ZipContinuation (zipFile, e, ctx);
                             return cont.execute();
                         } catch (ZipException e) {
-                            LOGGER.warning("Broken zip file: " + archive.getAbsolutePath());
+                            LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
                     }
                 }
@@ -337,7 +338,7 @@ public class BinaryAnalyser {
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
         try {
             for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
-                StringBuilder sb = new StringBuilder(pair.first.getQualifiedName());
+                StringBuilder sb = new StringBuilder(pair.first.getBinaryName());
                 sb.append('='); //NOI18N
                 sb.append(pair.second.longValue());
                 out.println(sb.toString());
@@ -396,7 +397,11 @@ public class BinaryAnalyser {
         return oldTime == timeStamp;
     }
 
-    static Changes diff (List<Pair<ElementHandle<TypeElement>,Long>> oldState, List<Pair<ElementHandle<TypeElement>,Long>> newState) {
+    static Changes diff (
+            final List<Pair<ElementHandle<TypeElement>,Long>> oldState,
+            final List<Pair<ElementHandle<TypeElement>,Long>> newState,
+            final boolean preBuildArgs
+            ) {
         final List<ElementHandle<TypeElement>> changed = new LinkedList<ElementHandle<TypeElement>>();
         final List<ElementHandle<TypeElement>> removed = new LinkedList<ElementHandle<TypeElement>>();
         final List<ElementHandle<TypeElement>> added = new LinkedList<ElementHandle<TypeElement>>();
@@ -412,7 +417,7 @@ public class BinaryAnalyser {
             if (newE == null) {
                 newE = newIt.next();
             }
-            int ni = oldE.first.getQualifiedName().compareTo(newE.first.getQualifiedName());
+            int ni = oldE.first.getBinaryName().compareTo(newE.first.getBinaryName());
             if (ni == 0) {
                 if (oldE.second.longValue() == 0 || oldE.second.longValue() != newE.second.longValue()) {
                     changed.add(oldE.first);
@@ -440,7 +445,7 @@ public class BinaryAnalyser {
         while (newIt.hasNext()) {
             added.add(newIt.next().first);
         }
-        return new Changes(added, removed, changed);
+        return new Changes(added, removed, changed, preBuildArgs);
     }
 
     private static String nameToString( ClassName name ) {
@@ -459,51 +464,11 @@ public class BinaryAnalyser {
         uset.add(usage);
     }
 
-    /**
-     * Prebuilds argument names for {@link javax.swing.JComponent} to speed up first
-     * call of code completion on swing classes. Has no semantic impact only improves performance,
-     * so it's can be safely disabled.
-     * @param archiveFile the archive
-     * @param archiveUrl url of an archive
-     */
-    private static void prebuildArgs (final ZipFile archiveFile, final URL archiveUrl) {
-        final ZipEntry jce = archiveFile.getEntry(FileObjects.convertPackage2Folder(javax.swing.JComponent.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
-        if (jce != null) {                                   //NOI18N
-            //On the IBM VMs the swing is in separate jar (graphics.jar) where no j.l package exists, don't prebuild such an archive.
-            //The param names will be created on deamand
-            final ZipEntry oe = archiveFile.getEntry(FileObjects.convertPackage2Folder(Object.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
-            if (oe != null) {
-                class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
-                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(Level.FINE, "Diagnostic reported during prebuilding args: {0}", diagnostic.toString()); //NOI18N
-                        }
-                    }
-                };
-                ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
-                    ClassPathSupport.createClassPath(new URL[0]),
-                    ClassPathSupport.createClassPath(new URL[0]));
-                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
-                TreeLoader.preRegister(jt.getContext(), cpInfo);
-                TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
-                if (jc != null) {
-                    List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
-                    for (ExecutableElement method : methods) {
-                        List<? extends VariableElement> params = method.getParameters();
-                        if (!params.isEmpty()) {
-                            params.get(0).getSimpleName();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private void store() throws IOException {
         try {
             if (this.refs.size()>0 || this.toDelete.size()>0) {
-                this.writer.store(this.refs,this.toDelete);
+                this.writer.deleteAndStore(this.refs,this.toDelete);
             }
         } finally {
             refs.clear();
@@ -517,7 +482,7 @@ public class BinaryAnalyser {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
-    private final void delete (final String className) throws IOException {
+    private void delete (final String className) throws IOException {
         assert className != null;
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
@@ -658,7 +623,11 @@ public class BinaryAnalyser {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        LOGGER.warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid method signature: {0}::{1} signature is:{2}",
+                                new Object[] {
+                                    className,
+                                    method.getName(),
+                                    jvmTypeId});  // NOI18N
                     }
                 }
                 Code code = method.getCode();
@@ -678,7 +647,10 @@ public class BinaryAnalyser {
                                 addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                             }
                         } catch (IllegalStateException is) {
-                            LOGGER.warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
+                            LOGGER.log(Level.WARNING, "Invalid local variable signature: {0}::{1}",
+                                    new Object[]{
+                                        className,
+                                        method.getName()});  // NOI18N
                         }
                     }
                 }
@@ -701,7 +673,10 @@ public class BinaryAnalyser {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        LOGGER.warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid field signature: {0}::{1} signature is: {2}",
+                                new Object[]{
+                                    className, var.getName(),
+                                    jvmTypeId});  // NOI18N
                     }
                 }
             }
@@ -720,15 +695,12 @@ public class BinaryAnalyser {
 
     private List<String> getClassReferences (final Pair<String,String> name) {
         assert name != null;
-        Object[] cr = this.refs.get (name);
-        if (cr == null) {
-            cr = new Object[] {
-                new ArrayList<String> (),
-                null,
-                null
-            };
-            this.refs.put (name, cr);
-        }
+        Object[] cr = new Object[] {
+            new ArrayList<String> (),
+            null,
+            null
+        };
+        this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
         return (ArrayList<String>) cr[0];
     }
 
@@ -783,6 +755,8 @@ public class BinaryAnalyser {
     private static abstract class Continuation {
 
         private List<Pair<ElementHandle<TypeElement>,Long>> result;
+        private boolean changed;
+        private byte preBuildArgsState;
 
         protected Continuation () {
             this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
@@ -794,6 +768,18 @@ public class BinaryAnalyser {
 
         protected final void report (final ElementHandle<TypeElement> te, final long crc) {
             this.result.add(Pair.of(te, crc));
+            //On the IBM VMs the swing is in separate jar (graphics.jar) where no j.l package exists, don't prebuild such an archive.
+            //The param names will be created on deamand
+            final String binName = te.getBinaryName();
+            if (OBJECT.equals(binName)) {
+                preBuildArgsState|=1;
+            } else if (JCOMPONENT.equals(binName)) {
+                preBuildArgsState|=2;
+            }
+        }
+        
+        protected final void markChanged() {
+            this.changed = true;
         }
 
         public final Result execute () throws IOException {
@@ -803,13 +789,22 @@ public class BinaryAnalyser {
         public final List<Pair<ElementHandle<TypeElement>,Long>> finish () throws IOException {
             doFinish();
             Collections.sort(result, new Comparator() {
+                @Override
                 public int compare(Object o1, Object o2) {
                     final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
                     final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
-                    return p1.first.getQualifiedName().compareTo(p2.first.getQualifiedName());
+                    return p1.first.getBinaryName().compareTo(p2.first.getBinaryName());
                 }
             });
             return result;
+        }
+        
+        public final boolean hasChanges() {
+            return changed;
+        }
+        
+        public final boolean preBuildArgs() {
+            return preBuildArgsState == 3;
         }
     }
 
@@ -827,8 +822,10 @@ public class BinaryAnalyser {
             this.zipFile = zipFile;
             this.entries = entries;
             this.ctx = ctx;
+            markChanged();  //Always dirty, created only for dirty root
         }
 
+        @Override
         protected Result doExecute () throws IOException {
             while(entries.hasMoreElements()) {
                 ZipEntry ze;
@@ -847,7 +844,10 @@ public class BinaryAnalyser {
                     try {
                         analyse(in);
                     } catch (InvalidClassFormatException icf) {
-                        LOGGER.warning("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}!/{1}",
+                                new Object[]{
+                                    new File(zipFile.getName()).toURI(),
+                                    ze.getName()});     //NOI18N
                     } catch (IOException x) {
                         Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                         throw x;
@@ -871,6 +871,7 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         protected void doFinish () throws IOException {
             this.zipFile.close();
         }
@@ -891,6 +892,7 @@ public class BinaryAnalyser {
             this.ctx = ctx;
         }
 
+        @Override
         public Result doExecute () throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
@@ -913,22 +915,23 @@ public class BinaryAnalyser {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), 0L);
-                    if (accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
+                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), fileMTime);
+                    if (!isUpToDate (relativePath, fileMTime)) {
+                        markChanged();
                         toDelete.add(Pair.<String,String>of (relativePath,null));
                         try {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
                             try {
                                 analyse(in);
                             } catch (InvalidClassFormatException icf) {
-                                LOGGER.warning("Invalid class file format: " + file.getAbsolutePath());      //NOI18N
+                                LOGGER.log(Level.WARNING, "Invalid class file format: {0}", file.getAbsolutePath());      //NOI18N
 
                             } finally {
                                 in.close();
                             }
                         } catch (IOException ex) {
                             //unreadable file?
-                            LOGGER.warning("Cannot read file: " + file.getAbsolutePath());      //NOI18N
+                            LOGGER.log(Level.WARNING, "Cannot read file: {0}", file.getAbsolutePath());      //NOI18N
                             LOGGER.log(Level.FINE, null, ex);
                         }
                         if (lmListener.isLowMemory()) {
@@ -948,6 +951,7 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         public void doFinish () throws IOException {
         }
     }
@@ -963,8 +967,10 @@ public class BinaryAnalyser {
             assert ctx != null;
             this.todo = todo;
             this.ctx = ctx;
+            markChanged();  //Always dirty, created only for dirty root
         }
 
+        @Override
         public Result doExecute () throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
@@ -975,7 +981,7 @@ public class BinaryAnalyser {
                     try {
                         analyse (in);
                     } catch (InvalidClassFormatException icf) {
-                        LOGGER.warning("Invalid class file format: "+FileUtil.getFileDisplayName(fo));      //NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}", FileUtil.getFileDisplayName(fo));      //NOI18N
                     }
                     finally {
                         in.close();
@@ -996,12 +1002,17 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         public void doFinish () throws IOException {
 
         }
     }
 
     private class DeletedContinuation extends Continuation {
+        
+        public DeletedContinuation() {
+            markChanged();  //Always dirty
+        }
 
         @Override
         protected Result doExecute() throws IOException {

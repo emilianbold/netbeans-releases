@@ -39,6 +39,7 @@ import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.ui.ElementHeaderFormater;
 
 /**
@@ -97,12 +98,12 @@ public final class ElementHeaders {
         if (tp != null) {
             Tree tree = tp.getLeaf();
             if (tree.getKind() == Tree.Kind.METHOD) {
-                while (tp != null && tp.getLeaf().getKind() != Tree.Kind.CLASS) {
+                while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     tp = tp.getParentPath();
                 }
                 Name enclosingClassName = tp != null ? ((ClassTree) tp.getLeaf()).getSimpleName() : null;
                 return ElementHeaderFormater.getMethodHeader((MethodTree) tree, enclosingClassName, info, formatString);
-            } else if (tree.getKind() == Tree.Kind.CLASS) {
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 return ElementHeaderFormater.getClassHeader((ClassTree)tree, info, formatString);
             } else if (tree.getKind() == Tree.Kind.VARIABLE) {
                 return ElementHeaderFormater.getVariableHeader((VariableTree)tree, info, formatString);

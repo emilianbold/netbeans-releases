@@ -93,6 +93,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -119,13 +120,13 @@ public class LogViewMgr {
 
     private static final Logger LOGGER = Logger.getLogger("glassfish"); //  NOI18N
 
-    private static final boolean strictFilter = Boolean.getBoolean("glassfish.logger.strictfilter");
+    private static final boolean strictFilter = Boolean.getBoolean("glassfish.logger.strictfilter"); // NOI18N
 
     /**
      * Amount of time in milliseconds to wait between checks of the input
      * stream
      */
-    private static final int DELAY = 100;
+    private static final int DELAY = Utilities.isWindows() ? 1 : 100;
     
     /**
      * Singleton model pattern
@@ -1161,8 +1162,10 @@ public class LogViewMgr {
                         state = result.get();
                         if (state == OperationState.COMPLETED) {
                             String s = fld.getLines();
-                            os.write(s.getBytes());
-                            os.flush();
+                            if (null != s && !"null\n".equals(s)) {
+                                os.write(s.getBytes());
+                                os.flush();
+                            }
                         } else {
                             break;
                         }

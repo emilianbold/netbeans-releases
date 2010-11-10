@@ -42,105 +42,66 @@
 
 package org.netbeans.libs.svnclientadapter;
 
-import java.util.logging.Level;
+import java.util.Collection;
 import java.util.logging.Logger;
+import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
-import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
-import org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class SvnClientAdapterFactory {
+public abstract class SvnClientAdapterFactory {
     
-    private static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
+    public static final String JAVAHL_WIN32_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
+    
+    protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
     private static SvnClientAdapterFactory instance;
-    private Client client;
+    private static Client client;
 
-    private SvnClientAdapterFactory() { }
+    public SvnClientAdapterFactory() { }
 
-    public static SvnClientAdapterFactory getInstance() {
+    public enum Client {
+        JAVAHL,
+        SVNKIT
+    }
+
+    public static SvnClientAdapterFactory getInstance(Client client) {
+        assert SvnClientAdapterFactory.client == null || client == SvnClientAdapterFactory.client;
+
         if(instance == null) {
-            instance = new SvnClientAdapterFactory();
+            Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
+            for (SvnClientAdapterFactory f : cl) {
+                if(f.provides() == client) {
+                    if(f.isAvailable()) {
+                        instance = f;
+                        SvnClientAdapterFactory.client = client;
+                        break;
+                    }
+                }
+            }
         }
         return instance;
     }
 
-    private static boolean isSupportedJavahlVersion(String version) {
-        boolean retval = false;
-        if (version != null) {
-            version = version.toLowerCase();
-            if (version.startsWith("1.6") ||                                    // NOI18N
-                    version.contains("version 1.6")) {                          // NOI18N
-                retval = true;
-            }
-        }
-        return retval;
-    }
-
-    public enum Client {
-        javahl,
-        svnkit
-    }
-
-    public boolean setup(Client c) throws SVNClientException {
-        client = c;
-        switch(c) {
-            case javahl: {
-                try {
-                    JhlClientAdapterFactory.setup();
-                } catch (Throwable t) {
-                    String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
-                    LOG.log(Level.INFO, t.getMessage());
-                    LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                 // NOI18N
-                    return false;
-                }
-                return JhlClientAdapterFactory.isAvailable();
-            }
-            case svnkit: {
-                SvnKitClientAdapterFactory.setup();
-                return SvnKitClientAdapterFactory.isAvailable();
-            }
-        }
-        return false;
-    }
-
-    public ISVNClientAdapter createClient() {
-        switch(client) {
-            case javahl: {
-                return JhlClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);
-            }
-            case svnkit: {
-                return SvnKitClientAdapterFactory.createSVNClient(SvnKitClientAdapterFactory.SVNKIT_CLIENT); 
-            }
-        }
-        return null;
-    }
+    /**
+     * Creates a new {@link ISVNClientAdapter} instance
+     * @return
+     */
+    public abstract ISVNClientAdapter createClient();
 
     /**
-     * Checks if accessible javahl libraries version is supported.
-     * Currently supported:
-     * <ul>
-     * <li>1.6</li>
-     * </ul>
-     * @return true if javahl is of a supported version, otherwise false
+     * Returns the client type provided by this factory
+     * @return
      */
-    public boolean isSupportedJavahlVersion() {
-        boolean retval = false;
-        if (Client.javahl.equals(client)) {
-            ISVNClientAdapter adapter = JhlClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);
-            if (adapter != null && adapter instanceof JhlClientAdapter) {
-                JhlClientAdapter jhlAdapter = (JhlClientAdapter) adapter;
-                String version = jhlAdapter.getNativeLibraryVersionString();
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "isSupportedJavahlVersion: version {0}", version);
-                }
-                retval = isSupportedJavahlVersion(version);
-            }
-        }
-        return retval;
-    }
+    protected abstract Client provides();
+
+    /**
+     * Setups the {@link SvnClientAdapterFactory}
+     * @return true if the client is available, otherwise false
+     */
+    protected abstract boolean isAvailable();
+
+    
 }

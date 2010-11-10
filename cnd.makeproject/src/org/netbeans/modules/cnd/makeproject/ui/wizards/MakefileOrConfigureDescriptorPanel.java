@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -56,7 +55,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private MakefileOrConfigurePanel component;
@@ -68,7 +67,8 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
         name = NbBundle.getMessage(BuildActionsDescriptorPanel.class, "MakefileOrConfigureName"); // NOI18N
     }
 
-    public Component getComponent() {
+    @Override
+    public MakefileOrConfigurePanel getComponent() {
         if (component == null) {
             component = new MakefileOrConfigurePanel(this);
             component.setName(name);
@@ -76,6 +76,7 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
         return component;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -84,12 +85,14 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
         return wizardDescriptor;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP11"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        boolean valid = ((MakefileOrConfigurePanel) getComponent()).valid(wizardDescriptor);
+        boolean valid = getComponent().valid(wizardDescriptor);
         if (valid) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
@@ -97,12 +100,14 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -110,31 +115,33 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
 
-    public void readSettings(Object settings) {
+    @Override
+    public void readSettings(WizardDescriptor settings) {
         //if (initialized) {
         //    return;
         //}
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
         //initialized = true;
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 }

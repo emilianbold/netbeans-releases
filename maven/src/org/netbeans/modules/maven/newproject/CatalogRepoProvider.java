@@ -39,31 +39,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.newproject;
 
-import org.codehaus.plexus.util.IOUtil;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 
 /**
  * list of archetypes coming from an archetype catalog
  * @author mkleint
  */
-public class CatalogRepoProvider implements ArchetypeProvider {
+public abstract class CatalogRepoProvider implements ArchetypeProvider {
+
     private static final String EL_ARCHETYPES = "archetypes"; //NOI18N
     private static final String EL_ARCHETYPE = "archetype"; //NOI18N
     private static final String EL_ARTIFACTID = "artifactId"; //NOI18N
@@ -72,37 +71,35 @@ public class CatalogRepoProvider implements ArchetypeProvider {
     private static final String EL_REPOSITORY = "repository"; //NOI18N
     private static final String EL_VERSION = "version"; //NOI18N
 
-    private final FileObject fo;
+    private static final Logger LOG = Logger.getLogger(CatalogRepoProvider.class.getName());
 
-    public CatalogRepoProvider(File path) {
-        fo = FileUtil.toFileObject(path);
+    protected CatalogRepoProvider() {}
+
+    protected abstract URL file() throws IOException;
+
+    protected String repository() {
+        return null;
     }
 
-    public CatalogRepoProvider(FileObject path) {
-        fo = path;
-    }
-
-    public List<Archetype> getArchetypes() {
-        if (fo == null) {
-            return Collections.<Archetype>emptyList();
-        }
+    public @Override List<Archetype> getArchetypes() {
         List<Archetype> toRet = new ArrayList<Archetype>();
-        InputStream inStr = null;
         try {
-            Document doc;
-            inStr = fo.getInputStream();
+            URL file = file();
+            if (file == null) {
+                return toRet;
+            }
             SAXBuilder builder = new SAXBuilder();
-            doc = builder.build(inStr);
+            Document doc = builder.build(file);
             Element root = doc.getRootElement();
-            Element list = root.getChild(EL_ARCHETYPES);
+            Namespace ns = root.getNamespace(); // should be http://maven.apache.org/plugins/maven-archetype-plugin/archetype-catalog/1.0.0 but missing in older copies
+            Element list = root.getChild(EL_ARCHETYPES, ns);
             if (list != null) {
-                List<Element> archetypes = list.getChildren(EL_ARCHETYPE);
-                for (Element el : archetypes) {
-                    String grId = el.getChildText(EL_GROUPID);
-                    String artId = el.getChildText(EL_ARTIFACTID);
-                    String ver = el.getChildText(EL_VERSION);
-                    String repo = el.getChildText(EL_REPOSITORY);
-                    String desc = el.getChildText(EL_DESCRIPTION);
+                for (Element el : NbCollections.checkedListByCopy(list.getChildren(EL_ARCHETYPE, ns), Element.class, true)) {
+                    String grId = el.getChildText(EL_GROUPID, ns);
+                    String artId = el.getChildText(EL_ARTIFACTID, ns);
+                    String ver = el.getChildText(EL_VERSION, ns);
+                    String repo = el.getChildText(EL_REPOSITORY, ns);
+                    String desc = el.getChildText(EL_DESCRIPTION, ns);
                     Archetype archetype = new Archetype(false);
                     if (grId != null && artId != null && ver != null) {
                         archetype.setArtifactId(artId);
@@ -110,6 +107,8 @@ public class CatalogRepoProvider implements ArchetypeProvider {
                         archetype.setVersion(ver);
                         if (repo != null) {
                             archetype.setRepository(repo);
+                        } else {
+                            archetype.setRepository(repository());
                         }
                         if (desc != null) {
                             archetype.setName(desc);
@@ -119,11 +118,9 @@ public class CatalogRepoProvider implements ArchetypeProvider {
                 }
             }
         } catch (IOException exc) {
-            Logger.getLogger(CatalogRepoProvider.class.getName()).log(Level.FINE, "", exc);
+            LOG.log(Level.INFO, null, exc);
         } catch (JDOMException exc) {
-            Logger.getLogger(CatalogRepoProvider.class.getName()).log(Level.FINE, "", exc);
-        } finally {
-            IOUtil.close(inStr);
+            LOG.log(Level.INFO, null, exc);
         }
         return toRet;
     }

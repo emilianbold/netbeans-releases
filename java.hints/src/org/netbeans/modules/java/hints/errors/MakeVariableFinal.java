@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -75,12 +76,14 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class MakeVariableFinal implements ErrorRule<Void> {
-    
+
     public MakeVariableFinal() {
     }
     
+    private static final String MULTICATCH_ERROR = "compiler.err.multicatch.param.must.be.final";
     private static final Set<String> CODES = new HashSet<String>(Arrays.asList(
-            "compiler.err.local.var.accessed.from.icls.needs.final"
+            "compiler.err.local.var.accessed.from.icls.needs.final",
+            MULTICATCH_ERROR
     ));
     
     public Set<String> getCodes() {
@@ -89,7 +92,16 @@ public class MakeVariableFinal implements ErrorRule<Void> {
 
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         Tree leaf = treePath.getLeaf();
-        
+
+        if (MULTICATCH_ERROR.equals(diagnosticKey)) {
+            if (leaf.getKind() != Kind.VARIABLE) return null;
+
+            VariableTree vt = (VariableTree) leaf;
+            String fixDisplayName = NbBundle.getMessage(MakeVariableFinal.class, "FIX_MakeVariableFinal", vt.getName());
+
+            return Collections.singletonList(FixFactory.addModifiersFix(compilationInfo, new TreePath(treePath, vt.getModifiers()), EnumSet.of(Modifier.FINAL), fixDisplayName));
+        }
+
         if (leaf.getKind() == Kind.IDENTIFIER) {
             Element el = compilationInfo.getTrees().getElement(treePath);
             TreePath declaration = compilationInfo.getTrees().getPath(el);

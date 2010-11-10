@@ -65,8 +65,10 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -312,7 +314,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         } else {
             ElementKind k = RetoucheUtils.getElementKind(handle);
             
-            if (k.isClass() || k.isInterface())
+            if (k==null) {
+                postfix = "";
+            } else if (k.isClass() || k.isInterface())
                 postfix = ".JavaClass";//NOI18N
             else if (k == ElementKind.METHOD)
                 postfix = ".Method";//NOI18N
@@ -329,23 +333,32 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         return !panel.isUpdateReferences();
     }
     public void doRefactoringBypass() throws IOException {
-        DataObject dob = null;
-        if (byPassFolder != null) {
-            dob = DataFolder.findFolder(byPassFolder);
-        } else {
-            FileObject fob = refactoring.getRefactoringSource().lookup(FileObject.class);
-            if (fob!=null) {
-                dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DataObject dob = null;
+                    if (byPassFolder != null) {
+                        dob = DataFolder.findFolder(byPassFolder);
+                    } else {
+                        FileObject fob = refactoring.getRefactoringSource().lookup(FileObject.class);
+                        if (fob != null) {
+                            dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
+                        }
+                    }
+                    if (dob != null) {
+                        dob.rename(panel.getNameValue());
+                    } else {
+                        NonRecursiveFolder pack = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+                        if (pack != null) {
+                            renamePackage(pack.getFolder(), panel.getNameValue());
+                        }
+                    }
+                } catch (IOException iOException) {
+                    Exceptions.printStackTrace(iOException);
+                }
             }
-        }
-        if (dob!=null) {
-            dob.rename(panel.getNameValue());
-        } else {
-            NonRecursiveFolder pack = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
-            if (pack!=null) {
-                renamePackage(pack.getFolder(), panel.getNameValue());
-            }
-        }
+        });
     }
     
     private void renamePackage(FileObject source, String name) {

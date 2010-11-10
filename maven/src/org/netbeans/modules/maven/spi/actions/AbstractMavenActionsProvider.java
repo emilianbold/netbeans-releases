@@ -149,7 +149,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 //            //TODO how to allow running main() in tests?
 //            actionName = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
 //        }
-        return mapGoalsToAction(project, actionName, replaceMap, fo);
+        return mapGoalsToAction(project, actionName, replaceMap, fo, lookup);
     }
   
     public ActionToGoalMapping getRawMappings() {
@@ -256,7 +256,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      */
     protected abstract InputStream getActionDefinitionStream();
 
-    private RunConfig mapGoalsToAction(Project project, String actionName, Map<String, String> replaceMap, FileObject selectedFile) {
+    private RunConfig mapGoalsToAction(Project project, String actionName, Map<String, String> replaceMap, FileObject selectedFile, Lookup lookup) {
         try {
             // TODO need some caching really badly here..
             Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());
@@ -275,7 +275,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 }
             }
             if (action != null) {
-                ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile);
+                ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile, lookup);
                 if (replaceMap.containsKey(DefaultReplaceTokenProvider.METHOD_NAME)) {
                     //sort of hack to push the method name through the current apis..
                     mrc.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, replaceMap.get(DefaultReplaceTokenProvider.METHOD_NAME));

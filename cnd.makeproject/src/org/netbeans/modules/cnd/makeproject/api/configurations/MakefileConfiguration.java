@@ -48,16 +48,30 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.CancellationException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 
 public class MakefileConfiguration {
     private MakeConfiguration makeConfiguration;
@@ -267,7 +281,7 @@ public class MakefileConfiguration {
         
         @Override
         public java.awt.Component getCustomEditor() {
-            return new DirPanel(seed, this, propenv);
+            return createDirPanel(seed, this, propenv);
         }
         
         @Override
@@ -275,37 +289,44 @@ public class MakefileConfiguration {
             this.propenv = propenv;
         }
     }
-    
-    private final class DirPanel extends FileChooser implements PropertyChangeListener {
-        private PropertyEditorSupport editor;
-        
-        public DirPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
-            super(
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel"),
-                    FileChooser.DIRECTORIES_ONLY,
-                    null,
-                    seed,
-                    true
-                    );
-            setControlButtonsAreShown(false);
-            
-            this.editor = editor;
-            
-            propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(this);
-        }
-        
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = CndPathUtilitities.normalize(path);
-                editor.setValue(path);
+
+    private ExecutionEnvironment getExecutionEnvironment() {
+        ExecutionEnvironment env = null;
+        MakeConfiguration mc = this.getMakeConfiguration();
+        if (mc != null && mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
+            if (dhc != null) {
+                env = dhc.getExecutionEnvironment();
             }
         }
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.getLocal();
+        }
+        return env;
     }
-    
+
+    private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
+        String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
+        String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
+        final JFileChooser chooser = RemoteFileUtil.createFileChooser(getExecutionEnvironment(), titleText, buttonText,
+                FileChooser.DIRECTORIES_ONLY, null, seed, true);
+        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
+        chooser.setControlButtonsAreShown(false);
+        propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        propenv.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+                    File selectedFile= chooser.getSelectedFile();
+                    String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilitities.normalize(path);
+                    editor.setValue(path);
+                }
+            }
+        });
+        return chooser;
+    }
+   
     private final class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
         private String seed;
@@ -341,7 +362,7 @@ public class MakefileConfiguration {
         
         @Override
         public java.awt.Component getCustomEditor() {
-            return new ElfPanel(seed, this, propenv);
+            return createElfPanel(seed, this, propenv);
         }
         
         @Override
@@ -349,53 +370,69 @@ public class MakefileConfiguration {
             this.propenv = propenv;
         }
     }
-    
-    private final class ElfPanel extends FileChooser implements PropertyChangeListener {
-        private PropertyEditorSupport editor;
-        
-        public ElfPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
-            super(
-                    "", // NOI18N
-                    "", // NOI18N
-                    FileChooser.FILES_ONLY,
-                    null,
-                    seed,
-                    true
-                    );
-            
-            setControlButtonsAreShown(false);
-            
-            if (Utilities.isWindows()) {
-                addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getPeDynamicLibraryFileFilter());
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                addChoosableFileFilter(FileFilterFactory.getMacOSXExecutableFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
-            } else {
-                addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
-                addChoosableFileFilter(FileFilterFactory.getElfDynamicLibraryFileFilter());
+
+    private void setElfFilters(final ExecutionEnvironment execEnv, final JFileChooser chooser) {
+        final List<FileFilter> filters = new ArrayList<FileFilter>();
+        // to be run in EDT
+        Runnable setFiltersRunner = new Runnable() {
+            @Override
+            public void run() {
+                for (FileFilter f : filters) {
+                    chooser.addChoosableFileFilter(f);
+                }
+                chooser.setFileFilter(chooser.getAcceptAllFileFilter());
             }
-            setFileFilter(getAcceptAllFileFilter());
-            
-            this.editor = editor;
-            
-            propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(this);
-        }
-        
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
-                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = CndPathUtilitities.normalize(path);
-                editor.setValue(path);
+        };
+        Runnable determineFiltersRunner = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                    if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.WINDOWS) {
+                        chooser.addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getPeDynamicLibraryFileFilter());
+                    } else if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.MACOSX) {
+                        chooser.addChoosableFileFilter(FileFilterFactory.getMacOSXExecutableFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
+                    } else {
+                        chooser.addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                        chooser.addChoosableFileFilter(FileFilterFactory.getElfDynamicLibraryFileFilter());
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    // don't report CancellationException
+                }
             }
-        }
+        };
+        RequestProcessor.getDefault().post(determineFiltersRunner);
     }
-    
+
+    private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
+        ExecutionEnvironment execEnv = getExecutionEnvironment();
+        final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
+                "", "", FileChooser.FILES_ONLY, null, seed, true); //NOI18N
+        chooser.setControlButtonsAreShown(false);
+        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
+        setElfFilters(execEnv, chooser);
+        propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        propenv.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                File selectedFile = chooser.getSelectedFile();
+                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
+                    String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilitities.normalize(path);
+                    editor.setValue(path);
+                }
+            }
+        });
+        return chooser;
+    }
+   
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {

@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -158,6 +159,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         } else if (type.equals("classpath/packaged")) { //NOI18N
             //a semi-private contract with visual web.
             return getProvidedClassPath();
+        } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+            // XXX read <processorpath> from maven-compiler-plugin config
+            return getCompileTimeClasspath(fileType);
         } else {
             return null;
         }

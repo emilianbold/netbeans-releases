@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -265,7 +266,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
 
     /* package */ static boolean existFileName(FileObject targetFolder, String relFileName) {
         boolean result = false;
-        File fileForTargetFolder = FileUtil.toFile(targetFolder);
+        File fileForTargetFolder = CndFileUtils.toFile(targetFolder);
         if (fileForTargetFolder.exists()) {
             result = new File (fileForTargetFolder, relFileName).exists();
         } else {

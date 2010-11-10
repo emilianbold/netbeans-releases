@@ -79,7 +79,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
 //            component.setBackground(DEFAULT);
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
         }
         @SuppressWarnings("unchecked")
         T val = (T)component.getSelectedItem();
@@ -114,7 +114,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
     private void setComboValue(T value, T projectValue, JComboBox field) {
         if (value != null) {
             field.setSelectedItem(value);
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
             inherited = false;
             label.setFont(label.getFont().deriveFont(Font.BOLD));
         } else if (projectValue != null) {
@@ -125,7 +125,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
             inherited = true;
         } else {
             field.setSelectedItem(field.getModel().getElementAt(0));
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
             inherited = false;
             label.setFont(label.getFont().deriveFont(Font.BOLD));
       }

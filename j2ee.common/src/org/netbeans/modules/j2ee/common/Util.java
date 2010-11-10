@@ -62,6 +62,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -72,9 +74,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -310,25 +315,29 @@ public class Util {
             }
         };
     }
-    
-    public static File[] getJ2eePlatformClasspathEntries(Project project) {
+
+    @NonNull
+    public static File[] getJ2eePlatformClasspathEntries(@NullAllowed Project project, @NullAllowed J2eePlatform j2eePlatform) {
         if (project != null) {
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-                if (j2eePlatform != null) {
-                    File[] classpath = null;
+                J2eePlatform j2eePlatformLocal = j2eePlatform != null
+                        ? j2eePlatform
+                        : Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+                if (j2eePlatformLocal != null) {
                     try {
-                        classpath = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                        return j2eePlatformLocal.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
                     } catch (ConfigurationException ex) {
                         LOGGER.log(Level.FINE, null, ex);
-                        classpath = j2eePlatform.getClasspathEntries();
+                        return j2eePlatformLocal.getClasspathEntries();
                     }
-                    return classpath;
                 }
             }
         }
-        return new File[0];
+        if (j2eePlatform != null) {
+            return j2eePlatform.getClasspathEntries();
+        }
+        return new File[] {};
     }
     
     /**
@@ -480,4 +489,27 @@ public class Util {
         return null;
     }
 
+    public static void backupBuildImplFile(UpdateHelper updateHelper) throws IOException {
+        //When the project.xml was changed from the customizer and the build-impl.xml was modified
+        //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
+        //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
+        //when the project is opened.
+        final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+        final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        if (buildImpl  != null) {
+            final String name = buildImpl.getName();
+            final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+            final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+            if (oldBackup != null) {
+                oldBackup.delete();
+            }
+            FileLock lock = buildImpl.lock();
+            try {
+                buildImpl.rename(lock, name, backupext);
+            } finally {
+                lock.releaseLock();
+            }
+        }
+    }
+    
 }

@@ -131,7 +131,7 @@ made subject to such option by the copyright holder.
     ${cursor}
 }]]></code></codetemplate>
 
-    <codetemplate abbreviation="fori" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="fori" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
@@ -140,7 +140,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forc" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="forc" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${IT}.next();
@@ -149,7 +149,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forl" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="forl" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${LIST instanceof="java.util.List" default="lst"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${LIST}.get(${IDX});
@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forv" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="forv" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${VECTOR instanceof="java.util.Vector" default="vct"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${VECTOR}.elementAt(${IDX});
@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="fore" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="fore" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
    ${selection}${cursor}
@@ -175,7 +175,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forst" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="forst" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[for (${STR_TOK type="java.util.StringTokenizer" default="StringTokenizer" editable=false} ${TOKENIZER newVarName} = new ${STR_TOK}(${STRING instanceof="java.lang.String"}); ${TOKENIZER}.hasMoreTokens();) {
     String ${TOKEN default="token"} = ${TOKENIZER}.nextToken();
@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="inst" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="inst" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[if (${EXP instanceof="java.lang.Object" default="exp"} instanceof ${TYPE default="Object"}) {
    ${TYPE} ${VAR newVarName default="obj"} = (${TYPE})${EXP};
@@ -198,7 +198,7 @@ made subject to such option by the copyright holder.
         <![CDATA[System.out.println("${EXP instanceof="<any>" default="exp"} = " + ${EXP});]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whilen" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="whilen" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
@@ -207,7 +207,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whileit" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="whileit" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[while(${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
@@ -216,7 +216,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="iff" contexts="BLOCK,CASE" descriptionId="CT_iff">
+    <codetemplate abbreviation="iff" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
    ${selection}${cursor}
@@ -224,7 +224,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE" descriptionId="CT_ifelse">
+    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
    ${selection}${cursor}
@@ -233,7 +233,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[while (${EXP instanceof="boolean" default="exp"}) { 
    ${selection}${cursor}
@@ -241,7 +241,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[do { 
    ${selection}${cursor}
@@ -249,7 +249,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="runn" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="runn" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[${RUNN_TYPE type="java.lang.Runnable" default="Runnable" editable=false} ${RUNN newVarName default="r"} = new ${RUNN_TYPE}() {
    public void run() {
@@ -259,7 +259,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
 <![CDATA[try {
    ${selection}${cursor}
@@ -299,7 +299,7 @@ ${selection}${cursor}// </editor-fold>
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
-    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE" descriptionId="CT_fori">
+    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_fori">
          <code>
  <![CDATA[${clazz}[] ${var newVarName default="arr"} = (${clazz}[]) ${coll instanceof="java.util.Collection"}.toArray(new ${clazz}[${coll}.size()]);
  ]]>
@@ -450,7 +450,7 @@ ${cursor}]]></code></codetemplate>
         }
      }
      ]]></code></codetemplate>
-    <codetemplate abbreviation="if" contexts="BLOCK,CASE" descriptionId="CT_iff">
+    <codetemplate abbreviation="if" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}
@@ -458,7 +458,7 @@ ${cursor}]]></code></codetemplate>
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ife" contexts="BLOCK,CASE" descriptionId="CT_ifelse">
+    <codetemplate abbreviation="ife" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}
@@ -485,5 +485,40 @@ ${cursor}]]></code></codetemplate>
  ${sb}.append (${EXP});
 ${cursor}]]></code>
     </codetemplate>
+
+    <!-- Added in 7.0 -->
+
+    <!-- Logging contributed by krissco@netbeans.org -->
+    
+    <codetemplate abbreviation="logr">
+        <code>
+<![CDATA[private static final ${loggerType type="java.util.logging.Logger" default="Logger" editable="false"} logger = ${loggerType}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName());]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logrb">
+        <code>
+<![CDATA[private static final ${loggerType type="java.util.logging.Logger" default="Logger" editable="false"} logger = ${loggerType}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName(), ${classVar}.class.getPackage().getName() + "${bundleName default=".Log" editable="true"}");]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logb">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}");]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logbp">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}", ${args instanceof="java.lang.Object" default="args"});]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logbps">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}", new Object [] {${args default="null"}});]]>
+        </code>
+    </codetemplate>
+    
 
 </codetemplates>

@@ -269,7 +269,7 @@ public class Saas implements Comparable<Saas> {
         return delegate.getApiDoc();
     }
 
-    public FileObject getSaasFolder() {
+    public synchronized FileObject getSaasFolder() {
         if (saasFolder == null) {
             String folderName = SaasUtil.toValidJavaName(getDisplayName());
             saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(folderName);

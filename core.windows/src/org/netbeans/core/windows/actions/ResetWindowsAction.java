@@ -46,10 +46,10 @@ package org.netbeans.core.windows.actions;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.WindowSystem;
@@ -60,10 +60,12 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 
@@ -72,13 +74,11 @@ import org.openide.windows.TopComponentGroup;
  *
  * @author S. Aubrecht
  */
-public class ResetWindowsAction extends AbstractAction {
+@ActionID(id = "org.netbeans.core.windows.actions.ResetWindowsAction", category = "Window")
+@ActionRegistration(displayName = "#CTL_ResetWindows")
+@ActionReference(position = 3000, path = "Menu/Window")
+public class ResetWindowsAction implements ActionListener {
     
-    /** Creates a new instance of ResetWindowsAction */
-    public ResetWindowsAction() {
-        putValue(NAME, NbBundle.getMessage(CloneDocumentAction.class, "CTL_ResetWindows" ) ); // NOI18N
-    }
-
     public void actionPerformed(ActionEvent e) {
         final WindowSystem ws = Lookup.getDefault().lookup( WindowSystem.class );
         if( null == ws ) {

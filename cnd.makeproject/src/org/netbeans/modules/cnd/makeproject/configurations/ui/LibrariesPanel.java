@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -235,18 +236,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.LIBRARY, project, myListEditorPanel);
             if (artifacts != null) {
                 for (int i = 0; i < artifacts.length; i++) {
-                    String location;
-                    String workingdir;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else {
-                        location = artifacts[i].getProjectLocation();
-                        workingdir = artifacts[i].getWorkingDirectory();
-                    }
+                    String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
+                    String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
                     location = CndPathUtilitities.normalize(location);
                     workingdir = CndPathUtilitities.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
@@ -279,8 +270,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = baseDir;
@@ -326,8 +317,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = baseDir;
@@ -353,15 +344,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
-            String path = fileChooser.getSelectedFile().getPath();
             // FIXUP: why are baseDir UNIX path when remote?
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, path);
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                path = CndPathUtilitities.toRelativePath(baseDir, path);
-            } else {
-                // path = path;
-            }
+            String path = ProjectSupport.toProperPath(baseDir, fileChooser.getSelectedFile().getPath(), project);
             path = CndPathUtilitities.normalize(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }

@@ -43,6 +43,7 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.List;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class SyntaxAnalyzerTest extends TestBase {
         super(testName);
     }
 
+
     public static Test xsuite() throws IOException, BadLocationException {
         TestSuite suite = new TestSuite();
         suite.addTest(new SyntaxAnalyzerTest("testParseBrokenSource"));
@@ -78,6 +80,7 @@ public class SyntaxAnalyzerTest extends TestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
         Logger.getLogger(SyntaxAnalyzer.class.getName()).setLevel(Level.FINE);
         MockServices.setServices(MockMimeLookup.class);
     }

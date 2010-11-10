@@ -53,6 +53,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +83,6 @@ import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -91,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -101,7 +102,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class DefaultProjectOperationsImplementation {
     
-    private static final ErrorManager ERR = ErrorManager.getDefault(); // NOI18N
+    private static final Logger LOG = Logger.getLogger(DefaultProjectOperationsImplementation.class.getName());
     
     //fractions how many time will be spent in some phases of the move and copy operation
     //the rename and delete operation use a different approach:
@@ -120,7 +121,7 @@ public final class DefaultProjectOperationsImplementation {
     /**
      * @return true if success
      */
-    private static boolean performDelete(Project project, List<FileObject> toDelete, ProgressHandle handle) throws Exception {
+    private static void performDelete(Project project, List<FileObject> toDelete, ProgressHandle handle) throws Exception {
         try {
             handle.start(toDelete.size() + 1 /*clean*/);
             
@@ -135,30 +136,33 @@ public final class DefaultProjectOperationsImplementation {
             for (FileObject f : toDelete) {
                 handle.progress(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Progress_Deleting_File", FileUtil.getFileDisplayName(f)));
                 
-                if (f != null && f.isValid())
+                if (f != null && f.isValid()) {
                     f.delete();
+                }
                 
                 handle.progress(++done);
             }
             
             FileObject projectFolder = project.getProjectDirectory();
+            projectFolder.refresh(); // #190983
             
-            if (projectFolder.isValid() && projectFolder.getChildren().length == 0) {
-                //empty, delete:
+            if (!projectFolder.isValid()) {
+                LOG.log(Level.WARNING, "invalid project folder: {0}", projectFolder);
+            } else if (projectFolder.getChildren().length == 0) {
                 projectFolder.delete();
+            } else {
+                LOG.log(Level.WARNING, "project folder {0} was not empty: {1}", new Object[] {projectFolder, Arrays.asList(projectFolder.getChildren())});
             }
             
             handle.finish();
             
             ProjectOperations.notifyDeleted(project);
-            return true;
         } catch (Exception e) {
             String displayName = getDisplayName(project);
             String message     = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Project_cannot_be_deleted.", displayName);
-            
-            ErrorManager.getDefault().annotate(e, message);
-            
-            return false;
+
+            Exceptions.attachLocalizedMessage(e, message);
+            throw e;
         }
     }
     
@@ -170,9 +174,7 @@ public final class DefaultProjectOperationsImplementation {
         String displayName = getDisplayName(project);
         FileObject projectFolder = project.getProjectDirectory();
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "delete started: " + displayName); // NOI18N
-        }
+        LOG.log(Level.FINE, "delete started: {0}", displayName);
         
         final List<FileObject> metadataFiles = ProjectOperations.getMetadataFiles(project);
         final List<FileObject> dataFiles = ProjectOperations.getDataFiles(project);
@@ -198,7 +200,7 @@ public final class DefaultProjectOperationsImplementation {
         String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
         handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
-            public void execute() throws Exception {
+            public @Override void execute() throws Exception {
                 close(project);
                 
                 if (deletePanel.isDeleteSources()) {
@@ -209,9 +211,7 @@ public final class DefaultProjectOperationsImplementation {
             }
         });
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "delete done: " + displayName); // NOI18N
-        }
+        LOG.log(Level.FINE, "delete done: {0}", displayName);
     }
     
     static interface UserInputHandler {
@@ -220,7 +220,7 @@ public final class DefaultProjectOperationsImplementation {
     
     private static final class GUIUserInputHandler implements UserInputHandler {
         
-        public void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
+        public @Override void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
             DefaultProjectOperationsImplementation.showConfirmationDialog(panel, project, caption, confirmButton, cancelButton, doSetMessageType, executor);
         }
         
@@ -235,7 +235,7 @@ public final class DefaultProjectOperationsImplementation {
         handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws Exception {
+            public @Override void execute() throws Exception {
                 final String nueName = panel.getNewName();
                 File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
                 
@@ -245,7 +245,7 @@ public final class DefaultProjectOperationsImplementation {
                 }
                 final FileObject newTgtFO = newTargetFO;
                 project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
+                    public @Override void run() throws IOException {
                         try {
                             doCopyProject(handle, project, nueName, newTgtFO);
                         } catch (IOException x) {
@@ -314,7 +314,7 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress(totalWork);
             handle.finish();
         } catch (Exception e) {
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", e.getLocalizedMessage()));
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -328,7 +328,7 @@ public final class DefaultProjectOperationsImplementation {
         handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws Exception {
+            public @Override void execute() throws Exception {
                 final String nueFolderName = panel.getProjectFolderName();
                 final String nueProjectName = panel.getNewName();
                 File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
@@ -355,14 +355,14 @@ public final class DefaultProjectOperationsImplementation {
         handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
-            public void execute() throws Exception {
+            public @Override void execute() throws Exception {
                 final String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
                     doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
                 } else {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
+                        public @Override void run() throws IOException {
                             try {
                                 doRenameProject(handle, project, nueName);
                             } catch (IOException x) {
@@ -404,7 +404,7 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress(++currentWorkDone);
             handle.finish();
         } catch (Exception e) {
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -453,7 +453,7 @@ public final class DefaultProjectOperationsImplementation {
                 assert nue != null;
                 open(nue, wasMain);
             }
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -531,7 +531,7 @@ public final class DefaultProjectOperationsImplementation {
 		
                 open(nue, wasMain);
             }
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -594,7 +594,7 @@ public final class DefaultProjectOperationsImplementation {
         assert panel instanceof InvalidablePanel;
         
         ((InvalidablePanel) panel).addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
+            public @Override void stateChanged(ChangeEvent e) {
                 confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
             }
         });
@@ -605,7 +605,7 @@ public final class DefaultProjectOperationsImplementation {
         
         DialogDescriptor dd = new DialogDescriptor(doSetMessageType ? panel : wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, cancelButton != null ? cancel : confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
             private boolean operationRunning;
-            public void actionPerformed(ActionEvent e) {
+            public @Override void actionPerformed(ActionEvent e) {
                 //#65634: making sure that the user cannot close the dialog before the operation is finished:
                 if (operationRunning) {
                     return ;
@@ -634,7 +634,7 @@ public final class DefaultProjectOperationsImplementation {
                     }
                     
                     RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             Exception e = null;
                             
                             try {
@@ -646,12 +646,11 @@ public final class DefaultProjectOperationsImplementation {
                             final Exception ex = e;
                             
                             SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
+                                public @Override void run() {
                                     dialog[0].setVisible(false);
                                     
                                     if (ex != null) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                                        ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+                                        LOG.log(Level.WARNING, null, ex);
                                     }
                                 }
                             });
@@ -722,8 +721,8 @@ public final class DefaultProjectOperationsImplementation {
     
     private static void close(final Project prj) {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
-		LifecycleManager.getDefault().saveAll();
+            public @Override Void run() {
+                LifecycleManager.getDefault().saveAll();
 		
                 Action closeAction = CommonProjectActions.closeProjectAction();
                 closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(prj)) : null;

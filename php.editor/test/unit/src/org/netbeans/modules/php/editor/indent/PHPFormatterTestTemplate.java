@@ -409,6 +409,15 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         options.put(FmtOptions.spacesPerTab, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_09.php", options, true);
     }
+    
+    public void testIssue191565_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue191565_01.php", options, true);
+    }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);

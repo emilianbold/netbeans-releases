@@ -90,6 +90,7 @@ public class DwarfSource implements SourceFileProperties{
     private String sourceName;
     private String fullName;
     private ItemProperties.LanguageKind language;
+    private ItemProperties.LanguageStandard standard;
     private List<String> userIncludes;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
@@ -101,17 +102,19 @@ public class DwarfSource implements SourceFileProperties{
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
     
-    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
-        initCompilerSettings(compilerSettings, lang);
+    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
+        language = lang;
         this.grepBase = grepBase;
+        this.standard = standard;
+        initCompilerSettings(compilerSettings, lang);
         initSourceSettings(cu, lang);
     }
 
     private void countFileName(CompilationUnit cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
-        File file = new File(fullName);
-        fullName = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
+        //File file = new File(fullName);
+        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
         fullName = linkSupport(fullName);
         if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');
@@ -132,7 +135,7 @@ public class DwarfSource implements SourceFileProperties{
            //}
            if (compilerSettings.isWindows()) {
                if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
-               if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
+               if (compilerSettings.getCompileFlavor() != null && compilerSettings.getCompileFlavor().isCygwinCompiler()) {
                    cygwinPath = compilerSettings.getCygwinDrive();
                    if (cygwinPath == null) {
                        for(String path:list){
@@ -178,6 +181,10 @@ public class DwarfSource implements SourceFileProperties{
     public String getItemPath() {
         return fullName;
     }
+
+    void resetItemPath(String path) {
+        fullName = path;
+    }
     
     @Override
     public String getItemName() {
@@ -211,6 +218,11 @@ public class DwarfSource implements SourceFileProperties{
     @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
+    }
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        return standard;
     }
 
     @Override
@@ -367,7 +379,6 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         }
-        language = lang;
     }
     
     public void process(CompilationUnit cu) throws IOException{

@@ -500,7 +500,7 @@ public final class ProjectXMLManager {
 
     /**
      * Removes test dependency under type <code>testType</code>, indentified
-     * by <code>cnbToRemove</code>. Does not remove whole 610test type even if
+     * by <code>cnbToRemove</code>. Does not remove whole test type even if
      * removed test dependency was the last one.
      */
     public boolean removeTestDependency(String testType, String cnbToRemove) {
@@ -660,7 +660,7 @@ public final class ProjectXMLManager {
      * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
      * to the set of {@link TestModuleDependency dependencies} belonging to it.
      */
-    public Map<String, Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
+    public @NonNull Map<String, Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
         Element testDepsEl = findTestDependenciesElement(getConfData());
 
         Map<String, Set<TestModuleDependency>> testDeps = new HashMap<String, Set<TestModuleDependency>>();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mode PUBLIC
+          "-//NetBeans//DTD Mode Properties 2.1//EN"
+          "http://www.netbeans.org/dtds/mode-properties2_1.dtd">
+
+<mode version="2.1">
+    <name unique="breakpoints" />
+    <kind type="view" />
+    <state type="joined" />
+    <constraints>
+      <path orientation="vertical" number="20" weight="0.7"/>
+      <path orientation="horizontal" number="20" weight="0.3"/>
+      <path orientation="vertical" number="80" weight="0.5"/>
+    </constraints>
+    <active-tc id="breakpoints"/>
+    <empty-behavior permanent="true" />
+    <bounds x="128" y="440" width="448" height="460" />
+    <frame state="0"/>
+</mode>

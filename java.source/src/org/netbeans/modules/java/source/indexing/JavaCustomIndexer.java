@@ -90,12 +90,14 @@ import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -132,34 +134,16 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
-            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel) && !context.isAllFilesIndexing()) {
-                JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
-                return;
-            }
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null) && !context.isAllFilesIndexing()) {
-                JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
-                return;
-            }
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
-            APTUtils aptUtils = APTUtils.get(root);
-            if (aptUtils != null && aptUtils.verifyAttributes(root, context.isAllFilesIndexing()))
-                return;
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(root)); // NOI18N
+                JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
             }
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
-                JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
-                return;
-            }
-            if (!JavaFileFilterListener.getDefault().startListeningOn(root)) {
-                JavaIndex.LOG.fine("Forcing reindex dou to changed JavaFileFilter"); // NOI18N
+                JavaIndex.LOG.log(Level.WARNING, "Source root: {0} is not on its sourcepath", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
             }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
@@ -167,7 +151,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     splitSources(files,javaSources),
                     context.getRootURI());
 
-            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
@@ -304,7 +288,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             return VirtualSourceProviderQuery.translate(virtualSources, root);
         } catch (IllegalArgumentException e) {
             //Called on non local fs => not supported, log and ignore.
-            JavaIndex.LOG.warning("Virtual sources in the root: " + rootURL +" are ignored due to: " + e.getMessage()); //NOI18N
+            JavaIndex.LOG.log(Level.WARNING, "Virtual sources in the root: {0} are ignored due to: {1}", new Object[]{rootURL, e.getMessage()}); //NOI18N
             return Collections.<CompileTuple>emptySet();
         }
     }
@@ -333,7 +317,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
-            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
                         final JavaParsingContext javaContext = new JavaParsingContext(context);
@@ -344,6 +329,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         for (Indexable i : files) {
                             clear(context, javaContext, i, removedTypes, removedFiles);
                             ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                            ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
                             javaContext.checkSums.remove(i.getURL());
                         }
                         for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
@@ -356,7 +342,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         javaContext.uq.typesEvent(null, removedTypes, null);
                         return null;
                     } catch (NoSuchAlgorithmException ex) {
-                        throw (IOException) new IOException().initCause(ex);
+                        throw new IOException(ex);
                     }
                 }
             });
@@ -434,6 +420,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
 
+                        @Override
                         public boolean accept(File dir, String name) {
                             for (int i = 0; i < patterns.length; i++) {
                                 if (name.startsWith(patterns[i])) {
@@ -443,12 +430,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                             return false;
                         }
                     };
-                    for (File f : parent.listFiles(filter)) {
-                        String className = FileObjects.getBinaryName(f, classFolder);
-                        toDelete.add(Pair.<String, String>of(className, null));
-                        removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                        removedFiles.add(f);
-                        f.delete();
+                    final File[] children = parent.listFiles(filter);
+                    if (children != null) {
+                        for (File f : children) {
+                            String className = FileObjects.getBinaryName(f, classFolder);
+                            toDelete.add(Pair.<String, String>of(className, null));
+                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedFiles.add(f);
+                            f.delete();
+                        }
                     }
                 }
             }
@@ -522,6 +512,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
             File parent = file.getParentFile();
             FilenameFilter filter = new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     if (!name.endsWith(FileObjects.SIG)) {
                         return false;
@@ -685,7 +676,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     break;
             }
         } catch (TopologicalSortException ex) {
-            JavaIndex.LOG.warning("Cycle in the source root dependencies detected: " + ex.unsortableSets()); //NOI18N
+            JavaIndex.LOG.log(Level.WARNING, "Cycle in the source root dependencies detected: {0}", ex.unsortableSets()); //NOI18N
             List part = ex.partialSort();
             part.retainAll(depRoots);
             depRoots = part;
@@ -773,9 +764,11 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
+                    @Override
                     public Boolean run() throws IOException, InterruptedException {
-                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                        return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
+                            @Override
                             public Boolean run() throws IOException, InterruptedException {
                                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
                                 if (uq == null) {
@@ -794,7 +787,35 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                         });
                     }
-                });                
+                });
+
+                if (!classIndexConsistent) return false;
+
+                FileObject root = context.getRoot();
+
+                if (root == null) {
+                    return true;
+                }
+                
+                APTUtils aptUtils = APTUtils.get(root);
+
+                if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) return false;
+
+                String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+                if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
+                    JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                    return false;
+                }
+                if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+                    JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
+                    return false;
+                }
+
+                if (!JavaFileFilterListener.getDefault().startListeningOn(context.getRoot())) {
+                    JavaIndex.LOG.fine("Forcing reindex due to changed JavaFileFilter"); // NOI18N
+                    return false;
+                }
+                return true;
             } catch (IOException ioe) {
                 JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
                 return false;
@@ -829,7 +850,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
-                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                    @Override
                     public Void run() throws IOException, InterruptedException {
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
@@ -902,12 +924,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         public ErrorConvertorImpl(ErrorKind errorKind) {
             this.errorKind = errorKind;
         }
+        @Override
         public ErrorKind getKind(Diagnostic<?> t) {
             return t.getKind() == Kind.ERROR ? errorKind : ErrorKind.WARNING;
         }
+        @Override
         public int getLineNumber(Diagnostic<?> t) {
             return (int) t.getLineNumber();
         }
+        @Override
         public String getMessage(Diagnostic<?> t) {
             return t.getMessage(null);
         }

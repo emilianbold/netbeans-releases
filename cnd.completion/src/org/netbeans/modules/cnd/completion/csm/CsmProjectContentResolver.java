@@ -1440,6 +1440,11 @@ public final class CsmProjectContentResolver {
             this.visibility = visibility;
             this.friend = friend;
         }
+
+        @Override
+        public String toString() {
+            return "inheritanceLevel=" + inheritanceLevel + ", visibility=" + visibility + ", friend=" + friend; // NOI18N
+        }
     }
 
     private VisibilityInfo getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility minVisibility, int inheritanceLevel) {

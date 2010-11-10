@@ -56,6 +56,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="netbeans.bootdelegation">
+        <api name="exec-property"/>
+        <summary>netbeans.bootdelegation property</summary>
+        <version major="1" minor="26"/>
+        <date day="17" month="10" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            New property 
+            <a href="architecture-summary.html#systemproperty-netbeans.bootdelegation">netbeans.bootdelegation</a> 
+            is available.
+        </p>
+        </description>
+    </change>
      <change id="no-env-properties">
         <api name="exec-property"/>
         <summary>Environment variables are no longer accessible through system properties</summary>

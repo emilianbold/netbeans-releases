@@ -1,9 +1,0 @@
-class BadChild( BadParent ):
-                ---------
-HINT:Inheriting from undefined parent class "BadParent"
-class BadImported( undefined.Undefined ):
-                   -------------------
-HINT:Inheriting from undefined parent class "undefined.Undefined"
-class BadImported2( pdb.Pdb ): # import missing
-                    -------
-HINT:Inheriting from undefined parent class "pdb.Pdb"

@@ -68,6 +68,6 @@ public interface GlassfishModule2 extends GlassfishModule {
      *  and which need to be part of deployment
      */
     Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name, final String contextRoot, File[] libraries);
+            final String name, final String contextRoot, File[] libraries, boolean resourcesChanged);
     
 }
