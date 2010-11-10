@@ -283,8 +283,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return option.isEnabled(optionLayers());
     }
 
-    private Executor executor;
-
     public void start(final GdbDebuggerInfo gdi) {
 	// SHOULD factor with DbxDebuggerImpl
 

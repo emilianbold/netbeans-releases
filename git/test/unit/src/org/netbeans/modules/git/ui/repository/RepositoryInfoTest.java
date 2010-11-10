@@ -116,7 +116,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         File[] roots = new File[] { f };
         GitClient client = getClient(repositoryLocation);
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revInfo = client.commit(roots, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
@@ -124,7 +124,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         // test refresh
         write(f, "huhu 1");
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        revInfo = client.commit(roots, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
     }
@@ -134,7 +134,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         File[] roots = new File[] { f };
         GitClient client = getClient(repositoryLocation);
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revInfo = client.commit(roots, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
@@ -145,7 +145,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         info.addPropertyChangeListener(list);
         write(f, "huhu 2");
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        revInfo = client.commit(roots, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
         list.assertPropertyEvent(RepositoryInfo.PROPERTY_HEAD, oldRevision, revInfo.getRevision());
@@ -166,7 +166,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         info.addPropertyChangeListener(list);
         write(f, "huhu");
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(roots, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         info.refresh();
         list.assertPropertyEvent(RepositoryInfo.PROPERTY_ACTIVE_BRANCH, oldBranch, info.getActiveBranch());
         

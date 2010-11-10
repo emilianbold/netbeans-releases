@@ -47,11 +47,13 @@ import java.io.IOException;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
+import org.netbeans.modules.cnd.completion.doxygensupport.DoxygenDocumentation.CompletionDocumentationImpl;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -95,18 +97,28 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
     }
 
     private static CompletionDocumentation createDocumentationImpl(CsmObject obj, CsmFile file) {
-        CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
+        CompletionDocumentation bestDocumentation = null;
+        CompletionDocumentationImpl codeDocumentation = DoxygenDocumentation.create(obj);
         String errorText = null;
 
-        if (documentation == null) {
+        if (codeDocumentation != null && codeDocumentation.getKind() == CppTokenId.DOXYGEN_COMMENT) {
+            bestDocumentation = codeDocumentation;
+        } else {
+            CompletionDocumentation manDocumentation = null;
             try {
-                documentation = ManDocumentation.getDocumentation(obj, file);
+                manDocumentation = ManDocumentation.getDocumentation(obj, file);
             } catch (IOException ioe) {
                 errorText = ioe.getMessage();
             }
+            if (manDocumentation != null) {
+                bestDocumentation = manDocumentation;
+            } else if (codeDocumentation != null) {
+                bestDocumentation = codeDocumentation;
+                errorText = null;
+            }
         }
 
-        if (documentation == null) {
+        if (bestDocumentation == null) {
             StringBuilder w = new StringBuilder();
 
             w.append("<html><body>"); // NOI18N
@@ -114,9 +126,9 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             if (errorText != null) {
                 w.append("<p>").append(errorText).append("</p>"); // NOI18N
             }
-            documentation = new EmptyCompletionDocumentationImpl(w.toString());
+            bestDocumentation = new EmptyCompletionDocumentationImpl(w.toString());
         }
-        return documentation;
+        return bestDocumentation;
     }
 
     private static class DocQuery extends AsyncCompletionQuery {

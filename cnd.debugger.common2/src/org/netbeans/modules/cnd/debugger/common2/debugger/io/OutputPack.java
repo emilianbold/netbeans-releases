@@ -42,14 +42,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.windows.InputOutput;
 
 /**
@@ -72,35 +65,8 @@ public class OutputPack extends IOPack {
     }
 
     @Override
-    public String getExtraRunArgs(FileMapper fMapper) {
-        OSFamily osFamily = OSFamily.UNKNOWN;
-        try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
-            osFamily = hostInfo.getOSFamily();
-        } catch (CancellationException ex) {
-        } catch (IOException ex) {
-        }
-
-        String inRedir = "";
-        String inFile = ioProxy.getInFilename();
-        String outFile = ioProxy.getOutFilename();
-        if (osFamily == OSFamily.WINDOWS) {
-            inFile = fMapper.worldToEngine(inFile);
-            outFile = fMapper.worldToEngine(outFile);
-        }
-        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
-        if (osFamily == OSFamily.MACOSX) {
-            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
-        } else {
-            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-            String shell = HostInfoProvider.getEnv(exEnv).get("SHELL"); // NOI18N
-            if (shell != null && shell.endsWith("csh")) { // NOI18N
-                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
-            } else {
-                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
-            }
-        }
-        return inRedir;
+    public String[] getIOFiles() {
+        return new String[]{ioProxy.getInFilename(), ioProxy.getOutFilename()};
     }
 
     @Override

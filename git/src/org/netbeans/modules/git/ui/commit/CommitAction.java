@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
@@ -72,6 +73,7 @@ import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -90,7 +92,16 @@ public class CommitAction extends SingleRepositoryAction {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
+                
+                GitUser user = null;
+                try {
+                    GitClient client = Git.getInstance().getClient(repository);
+                    user = client.getUser();
+                } catch (GitException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
+                
+                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user, context);
                 VCSCommitTable table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
@@ -105,7 +116,7 @@ public class CommitAction extends SingleRepositoryAction {
                         @Override
                         public void perform() {
                             try {
-                                performCommit(panel.getParameters().getCommitMessage(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
+                                performCommit(panel.getParameters(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
                             } catch (GitException ex) {
                                 LOG.log(Level.WARNING, null, ex);
                                 return;
@@ -119,7 +130,7 @@ public class CommitAction extends SingleRepositoryAction {
     }
 
     private static void performCommit(
-            String message, 
+            GitCommitParameters parameters, 
             Map<VCSFileNode, VCSCommitOptions> commitFiles,
             VCSCommitFilter filter,
             GitClient client, 
@@ -137,7 +148,11 @@ public class CommitAction extends SingleRepositoryAction {
             return;
         }
 
+        String message = parameters.getCommitMessage();
+        GitUser author = parameters.getAuthor();
+        GitUser commiter = parameters.getCommiter();
         try {
+
             support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE")); // NOI18N
             support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE_SEP")); // NOI18N
             support.output(message); // NOI18N
@@ -152,7 +167,11 @@ public class CommitAction extends SingleRepositoryAction {
             String origMessage = message;
             message = beforeCommitHook(commitCandidates, hooks, message);
             
-            GitRevisionInfo info = commit(commitCandidates, client, message, support);
+            GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support);
+            
+            GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
+            GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
+            
             afterCommitHook(commitCandidates, hooks, info, origMessage);
             
         } /*catch (GitException.HgCommandCanceledException ex) {
@@ -189,9 +208,10 @@ public class CommitAction extends SingleRepositoryAction {
              
             VCSCommitOptions option = commitFiles.get(node);
             File file = node.getFile();
-            if (option != VCSCommitOptions.EXCLUDE && filter == GitCommitPanel.FILTER_HEAD_VS_WORKING) {
+            if (option != VCSCommitOptions.EXCLUDE) {                
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||
-                    info.containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) 
+                    info.containsStatus(Status.MODIFIED_INDEX_WORKING_TREE) && 
+                    filter == GitCommitPanel.FILTER_HEAD_VS_WORKING) 
                 {
                     addCandidates.add(file);
                 } else if (info.containsStatus(FileInformation.STATUS_REMOVED)) {
@@ -250,9 +270,9 @@ public class CommitAction extends SingleRepositoryAction {
         }
     }
       
-    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitProgressSupport support) throws GitException {  
-        try {                                        
-            return client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, support);
+    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support) throws GitException {  
+        try {                          
+            return client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
         } catch (GitException ex) {
             // XXX
 //                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {

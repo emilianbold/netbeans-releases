@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
@@ -88,8 +87,8 @@ public abstract class IOPack {
 	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
     }
 
-    public String getExtraRunArgs(FileMapper fMapper) {
-        return "";
+    public String[] getIOFiles() {
+        return null;
     }
 
     public String getSlaveName() {

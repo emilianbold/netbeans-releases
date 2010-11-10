@@ -60,6 +60,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
@@ -84,8 +85,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  *
@@ -115,11 +114,13 @@ public class GitCommitPanel extends VCSCommitPanel {
         this.hooks = hooks;        
     }
 
-    public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
+    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user, VCSContext context) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
-        DefaultCommitParameters parameters = new DefaultCommitParameters(preferences, lastCanceledCommitMessage);
+        
+        
+        DefaultCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage, user);
         
         Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
         GitHookContext hooksCtx = new GitHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new GitHookContext.LogEntry[] {});        
@@ -137,8 +138,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     }
     
     @Override
-    public DefaultCommitParameters getParameters() {
-        return (DefaultCommitParameters) super.getParameters();
+    public GitCommitParameters getParameters() {
+        return (GitCommitParameters) super.getParameters();
     }
 
     public Collection<GitHook> getHooks() {

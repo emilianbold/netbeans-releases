@@ -106,7 +106,6 @@ public class ManDocumentation {
         if (obj instanceof CsmFunction) {
             return getDocumentation(((CsmFunction) obj).getName().toString(), file);
         }
-
         return null;
     }
 
