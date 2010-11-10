@@ -44,7 +44,6 @@
 package org.openide.windows;
 
 import java.awt.Component;
-import java.awt.KeyboardFocusManager;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -55,6 +54,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
+import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 
 
 // This is almost copy of org.openide.util.UtilitiesCompositeActionMap.
@@ -107,7 +107,7 @@ final class DelegateActionMap extends ActionMap {
             }
         }
 
-        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        Component owner = GlobalActionContextImpl.findFocusOwner();
         Action found = null;
 
         while ((owner != null) && (owner != getComponent())) {
@@ -164,7 +164,7 @@ final class DelegateActionMap extends ActionMap {
             keys.addAll(l);
         }
         
-        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        Component owner = GlobalActionContextImpl.findFocusOwner();
         List<Object> focusKeys = new ArrayList<Object>();
         while ((owner != null) && (owner != getComponent())) {
             if (owner instanceof JComponent) {
@@ -198,7 +198,7 @@ final class DelegateActionMap extends ActionMap {
     public void setParent(ActionMap map) {
         if (delegate != null) {
             delegate.setParent(map);
-            org.netbeans.modules.openide.windows.GlobalActionContextImpl.blickActionMap(new ActionMap());
+            GlobalActionContextImpl.blickActionMap(new ActionMap());
         }
     }
 

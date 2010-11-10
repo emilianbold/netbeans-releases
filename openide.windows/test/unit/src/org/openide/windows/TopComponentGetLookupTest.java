@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -450,7 +451,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         panel.getActionMap().put("doubleRegistration", act3);
         panel.getActionMap().put("focusedRegistration", act3);
 
-        ActionMap map = (ActionMap)top.getLookup().lookup(ActionMap.class);
+        final ActionMap map = (ActionMap)top.getLookup().lookup(ActionMap.class);
 
         assertEquals("actions registered directly on TC are found", act1, map.get("globalRegistration"));
         assertEquals("even if they are provided by focused component", act2, map.get("doubleRegistration"));
@@ -466,8 +467,25 @@ public class TopComponentGetLookupTest extends NbTestCase {
         top.open();
         top.requestActive();
         
-        Result<ActionMap> res = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
-        L listener = new L();
+        final Result<ActionMap> res = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+        class Checker implements LookupListener {
+            List<Object> keys1, keys2;
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                Object[] arr = map.allKeys(); 
+                if (arr == null) {
+                    arr = new Object[0];
+                }
+                
+                if (keys1 == null) {
+                    keys1 = Arrays.asList(arr);
+                } else {
+                    assertNull("At most two calls", keys2);
+                    keys2 = Arrays.asList(arr);
+                }
+            }
+        }
+        Checker listener = new Checker();
         res.addLookupListener(listener);
         assertEquals("One map", 1, res.allInstances().size());
         
@@ -476,7 +494,16 @@ public class TopComponentGetLookupTest extends NbTestCase {
         defaultFocusManager.setC(f);
         assertEquals("but as it is not in the right component, nothing is found", null, map.get("focusedRegistration"));
         
-        listener.checkAtLeast("ActionMap changed because focus shifted", 1);
+        assertNotNull("Two changes delivered", listener.keys2);
+        assertTrue("doubleRegistration was there: " + listener.keys1, listener.keys1.contains("doubleRegistration"));
+        assertTrue("globalRegistration was there: " + listener.keys1, listener.keys1.contains("globalRegistration"));
+        assertTrue("closeWindow was there: " + listener.keys1, listener.keys1.contains("closeWindow"));
+        assertTrue("focusedRegistration was there: " + listener.keys1, listener.keys1.contains("focusedRegistration"));
+        
+        assertFalse("focusedRegistration was there: " + listener.keys2, listener.keys2.contains("focusedRegistration"));
+        assertTrue("doubleRegistration was there: " + listener.keys2, listener.keys2.contains("doubleRegistration"));
+        assertTrue("globalRegistration was there: " + listener.keys2, listener.keys2.contains("globalRegistration"));
+        assertTrue("closeWindow was there: " + listener.keys2, listener.keys2.contains("closeWindow"));
     }
     
     
@@ -765,6 +792,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     static class Def extends DefaultKeyboardFocusManager {
         private Component c;
+        private int cnt;
 
         public Def() {
             KeyboardFocusManager.setCurrentKeyboardFocusManager(this);
@@ -782,9 +810,14 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         @Override
         public Component getPermanentFocusOwner() {
+            cnt++;
             return c;
         }
 
     }
     private final static Def defaultFocusManager = new Def();
+    static {
+        Utilities.actionsGlobalContext();
+        assertEquals("actionsGlobalContext calls once into our focus manager", 1, defaultFocusManager.cnt);
+    }
 }
