@@ -130,7 +130,7 @@ public class PHPFormatter implements Formatter {
 	
 	if (LOG.isLoggable(Level.FINE)) {
 	    long end = System.currentTimeMillis();
-            LOG.log(Level.FINE, "Creating formating stream took: {0} ms", (end - start)); //NOI18N
+            LOG.log(Level.FINE, "Reformat took: {0} ms", (end - start)); //NOI18N
 	}
     }
 
