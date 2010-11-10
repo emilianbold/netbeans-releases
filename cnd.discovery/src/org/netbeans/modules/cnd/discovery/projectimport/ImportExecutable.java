@@ -494,7 +494,7 @@ public class ImportExecutable implements PropertyChangeListener {
             ldLibPath = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName); // NOI18N
         }
         if (ldLibPath == null) {
-            ldLibPath = "";
+            ldLibPath = "";  // NOI18N
         }
         PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
         switch (platformInfo.getPlatform()) {
@@ -736,9 +736,9 @@ public class ImportExecutable implements PropertyChangeListener {
 
     static String findLocation(String dll, String ldPath){
         if (ldPath != null) {
-            String separator = ":";
+            String separator = ":";  // NOI18N
             if (ldPath.indexOf(';') > 0) {
-                separator = ";";
+                separator = ";";  // NOI18N
             }
             for(String search : ldPath.split(separator)) {  // NOI18N
                 File file = new File(search, dll);
