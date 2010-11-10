@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.java.j2seproject.api;
 
-import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -156,7 +155,7 @@ public class J2SEProjectBuilder {
      * @param sourceRoots the roots to be added
      * @return the builder
      */
-    public J2SEProjectBuilder addSourceRoots(final @NotNull File... sourceRoots) {
+    public J2SEProjectBuilder addSourceRoots(final @NonNull File... sourceRoots) {
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
         this.sourceRoots.addAll(Arrays.asList(sourceRoots));
         return this;
@@ -167,7 +166,7 @@ public class J2SEProjectBuilder {
      * @param testRoots the roots to be added
      * @return the builder
      */
-    public J2SEProjectBuilder addTestRoots(final @NotNull File... testRoots) {
+    public J2SEProjectBuilder addTestRoots(final @NonNull File... testRoots) {
         Parameters.notNull("testRoots", testRoots);     //NOI18N
         this.testRoots.addAll(Arrays.asList(testRoots));
         return this;
@@ -266,7 +265,7 @@ public class J2SEProjectBuilder {
      * @param jvmArgs the arguments to be added
      * @return the builder
      */
-    public J2SEProjectBuilder addJVMArguments(final @NotNull String jvmArgs) {
+    public J2SEProjectBuilder addJVMArguments(final @NonNull String jvmArgs) {
         Parameters.notNull("jvmArgs", jvmArgs); //NOI18N
         if (this.jvmArgs.length() != 0) {
             this.jvmArgs.append(' ');   //NOI18N
