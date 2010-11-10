@@ -358,7 +358,7 @@ public class TokenFormatter {
 
                 if (LOGGER.isLoggable(Level.FINE)) {
                     long end = System.currentTimeMillis();
-                    LOGGER.log(Level.FINE, "Creating formating stream took: {0}", (end - start.get()));
+                    LOGGER.log(Level.FINE, "Creating formating stream took: {0} ms", (end - start.get()));
                 }
 
                 if (ts == null)  // if PHP is not top language
@@ -1342,7 +1342,7 @@ public class TokenFormatter {
                 }
 		if (LOGGER.isLoggable(Level.FINE)) {
 		    long end = System.currentTimeMillis();
-		    LOGGER.log(Level.FINE, "Applaying format stream took: {0}", (end - start.get())); // NOI18N
+		    LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
 		}
 	    }
 
