@@ -64,7 +64,6 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
-import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.Lookup;
@@ -94,9 +93,7 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
                 TypedTextInterceptor.Factory legacyAutoIndenter = provider.getTypedTextInterceptorFactory();
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("'" + mimePath.getPath() + "' uses legacyIndenter=" + legacyIndenter //NOI18N
-                            + ", legacyFormatter=" + legacyFormatter //NOI18N
-                            + ", legacyAutoIndenter=" + legacyAutoIndenter); //NOI18N
+                    LOG.log(Level.FINE, "'{0}' uses legacyIndenter={1}, legacyFormatter={2}, legacyAutoIndenter={3}", new Object[]{mimePath.getPath(), legacyIndenter, legacyFormatter, legacyAutoIndenter}); //NOI18N
                 }
 
                 return Lookups.fixed(legacyIndenter, legacyFormatter, legacyAutoIndenter);
@@ -149,16 +146,8 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
             Reference<IndentReformatTaskFactoriesProvider> ref = cache.get(mimePath);
             IndentReformatTaskFactoriesProvider provider = ref == null ? null : ref.get();
             if (provider == null) {
-                try {
-                    Class<?> kitClass = KitsTracker.getInstance().findKitClass(mimePath.getPath());
-                    if (kitClass != null) {
-                        /*Method createFormatterMethod =*/ kitClass.getDeclaredMethod("createFormatter"); //NOI18N
-                        provider = new IndentReformatTaskFactoriesProvider(mimePath);
-                        cache.put(mimePath, new WeakReference<IndentReformatTaskFactoriesProvider>(provider));
-                    }
-                } catch (Exception e) {
-                    // ignore
-                }
+                provider = new IndentReformatTaskFactoriesProvider(mimePath);
+                cache.put(mimePath, new WeakReference<IndentReformatTaskFactoriesProvider>(provider));
             }
             return provider;
         }
@@ -216,7 +205,7 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
         // -------------------------------------------------------------------
 
         private static final Map<MimePath, Reference<IndentReformatTaskFactoriesProvider>> cache = new WeakHashMap<MimePath, Reference<IndentReformatTaskFactoriesProvider>>();
-        private static final String NO_FORMATTER = new String("NO_FORMATTER"); //NOI18N
+        private static final String NO_FORMATTER = "NO_FORMATTER"; //NOI18N
 
         private final MimePath mimePath;
 
