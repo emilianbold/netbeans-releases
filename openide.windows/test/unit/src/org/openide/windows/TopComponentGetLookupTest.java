@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.CloseCookie;
@@ -466,14 +467,19 @@ public class TopComponentGetLookupTest extends NbTestCase {
             
             panel.getActionMap().put("doubleRegistration", act3);
             panel.getActionMap().put("focusedRegistration", act3);
-            
-            
+
             ActionMap map = (ActionMap)top.getLookup().lookup(ActionMap.class);
             
             assertEquals("actions registered directly on TC are found", act1, map.get("globalRegistration"));
             assertEquals("even if they are provided by focused component", act2, map.get("doubleRegistration"));
             
             assertEquals("actions are delegated to focus owner, if not present", act3, map.get("focusedRegistration"));
+            
+            List<Object> keys = Arrays.asList(map.allKeys());
+            assertTrue("focusedRegistration is there: " + keys, keys.contains("focusedRegistration"));
+            assertTrue("doubleRegistration is there: " + keys, keys.contains("doubleRegistration"));
+            assertTrue("globalRegistration is there: " + keys, keys.contains("globalRegistration"));
+            assertTrue("closeWindow is by default there: " + keys, keys.contains("closeWindow"));
             
             JTextField f = new JTextField();
             f.getActionMap().put("focusedRegistration", act3);

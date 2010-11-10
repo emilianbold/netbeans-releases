@@ -43,8 +43,15 @@
  */
 package org.openide.windows;
 
+import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -79,7 +86,7 @@ final class DelegateActionMap extends ActionMap {
 
     @Override
     public Action get(Object key) {
-        javax.swing.ActionMap m;
+        ActionMap m;
 
         if (delegate == null) {
             JComponent comp = getComponent();
@@ -100,7 +107,7 @@ final class DelegateActionMap extends ActionMap {
             }
         }
 
-        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         Action found = null;
 
         while ((owner != null) && (owner != getComponent())) {
@@ -129,10 +136,10 @@ final class DelegateActionMap extends ActionMap {
     }
 
     private Object[] keys(boolean all) {
-        java.util.Set<Object> keys = new java.util.HashSet<Object>();
+        Set<Object> keys = new HashSet<Object>();
 
         
-        javax.swing.ActionMap m;
+        ActionMap m;
 
         if (delegate == null) {
             JComponent comp = getComponent();
@@ -146,15 +153,32 @@ final class DelegateActionMap extends ActionMap {
         }
 
         if (m != null) {
-            java.util.List<Object> l;
+            List<Object> l;
 
             if (all) {
-                l = java.util.Arrays.asList(m.allKeys());
+                l = Arrays.asList(m.allKeys());
             } else {
-                l = java.util.Arrays.asList(m.keys());
+                l = Arrays.asList(m.keys());
             }
 
             keys.addAll(l);
+        }
+        
+        Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        List<Object> focusKeys = new ArrayList<Object>();
+        while ((owner != null) && (owner != getComponent())) {
+            if (owner instanceof JComponent) {
+                m = ((JComponent) owner).getActionMap();
+                Object[] fk = m == null ? null : all ? m.allKeys() : m.keys();
+                if (fk != null) {
+                    focusKeys.addAll(Arrays.asList(fk));
+                }
+            }
+
+            owner = owner.getParent();
+        }
+        if (owner == getComponent()) {
+            keys.addAll(focusKeys);
         }
 
         return keys.toArray();
