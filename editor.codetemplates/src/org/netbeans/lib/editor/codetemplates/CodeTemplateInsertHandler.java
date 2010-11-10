@@ -67,6 +67,7 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
+import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl.OnExpandAction;
 import org.netbeans.lib.editor.codetemplates.textsync.TextRegion;
 import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManager;
 import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManagerEvent;
@@ -76,6 +77,7 @@ import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroup;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
@@ -126,13 +128,15 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
     private String completeInsertString;
 
     private Reformat formatter;
+    private Indent indenter;   
     
     private TextSyncGroup textSyncGroup;
     
     public CodeTemplateInsertHandler(
         CodeTemplate codeTemplate,
         JTextComponent component, 
-        Collection<? extends CodeTemplateProcessorFactory> processorFactories
+        Collection<? extends CodeTemplateProcessorFactory> processorFactories,
+        OnExpandAction onExpandAction
     ) {
         this.codeTemplate = codeTemplate;
         this.component = component;
@@ -148,6 +152,25 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
         processors = new ArrayList<CodeTemplateProcessor>();
         for (CodeTemplateProcessorFactory factory : processorFactories) {
             processors.add(factory.createProcessor(this.request));
+        }
+        
+        for (CodeTemplateParameter parameter : masterParameters) {
+            if (CodeTemplateParameter.NO_FORMAT_PARAMETER_NAME.equals(parameter.getName()) && onExpandAction != OnExpandAction.NOOP) {
+                onExpandAction = OnExpandAction.INDENT;
+                break;
+            }
+            if (CodeTemplateParameter.NO_INDENT_PARAMETER_NAME.equals(parameter.getName())) {
+                onExpandAction = OnExpandAction.NOOP;
+                break;
+            }
+        }
+        switch (onExpandAction) {
+            case FORMAT:
+                formatter = Reformat.get(component.getDocument());
+                break;
+            case INDENT:
+                indenter = Indent.get(component.getDocument());
+                break;
         }
 
         if (TIMERS.isLoggable(Level.FINE)) {
@@ -250,10 +273,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
         // Build insert string outside of the atomic lock
         completeInsertString = getInsertText();
 
-
-        // Need to lock formatter first because CT's multiline text will be reformatted
-        formatter = Reformat.get(doc);
-        formatter.lock();
+        if (formatter != null)
+            formatter.lock();
+        if (indenter != null)
+            indenter.lock();
         try {
             if (doc instanceof BaseDocument) {
                 ((BaseDocument) doc).runAtomicAsUser(this);
@@ -261,8 +284,14 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
                 this.run();
             }
         } finally {
-            formatter.unlock();
-            formatter = null;
+            if (formatter != null) {
+                formatter.unlock();
+                formatter = null;
+            }
+            if (indenter != null) {
+                indenter.unlock();
+                indenter = null;
+            }
             completeInsertString = null;
         }
     }
@@ -336,7 +365,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             
             if (bdoc != null) {
                 component.setCaretPosition(caretTextRegion.startOffset());
-                formatter.reformat(pos.getOffset(), pos.getOffset() + completeInsertString.length());
+                if (formatter != null)
+                    formatter.reformat(pos.getOffset(), pos.getOffset() + completeInsertString.length());
+                if (indenter != null)
+                    indenter.reindent(pos.getOffset(), pos.getOffset() + completeInsertString.length());
             }
 
             if (!released) {
