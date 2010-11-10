@@ -493,6 +493,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         f.getActionMap().put("focusedRegistration", act3);
         defaultFocusManager.setC(f);
         assertEquals("but as it is not in the right component, nothing is found", null, map.get("focusedRegistration"));
+        res.removeLookupListener(listener);
         
         assertNotNull("Two changes delivered", listener.keys2);
         assertTrue("doubleRegistration was there: " + listener.keys1, listener.keys1.contains("doubleRegistration"));
