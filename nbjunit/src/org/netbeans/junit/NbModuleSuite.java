@@ -692,10 +692,6 @@ public class NbModuleSuite {
                 }
             }
             
-            if (config.enableClasspathModules) {
-                addNonModules(bootCP, NbTestSuite.class.getClassLoader());
-            }
-
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
@@ -895,17 +891,6 @@ public class NbModuleSuite {
             }
 
             return cnbs;
-        }
-        private void addNonModules(List<URL> bootCP, ClassLoader loader) throws IOException {
-            Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
-            while (en.hasMoreElements()) {
-                URL url = en.nextElement();
-                String manifest = asString(url.openStream(), true);
-                Matcher m = CODENAME.matcher(manifest);
-                if (!m.find()) {
-                    bootCP.add(new URL(url.toString().replaceFirst("/META-INF/MANIFEST[.]MF$", "/")));
-                }
-            }
         }
         private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
