@@ -45,6 +45,7 @@
 package org.netbeans.modules.openide.windows;
 
 import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
 import javax.swing.ActionMap;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
@@ -69,6 +70,7 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     
     public GlobalActionContextImpl (TopComponent.Registry r) {
         this.registry = r;
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("permanentFocusOwner", this); // NOI18N
     }
     
     /** the lookup to temporarily use */
@@ -94,7 +96,7 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;
             
             Lookup[] arr = {
-                Lookups.singleton (map),
+                map == null ? Lookup.EMPTY : Lookups.singleton (map),
                 Lookups.exclude (g.getLookup (), new Class[] { javax.swing.ActionMap.class }),
             };
             
@@ -135,6 +137,9 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals (evt.getPropertyName())) {
             org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
+        }
+        if ("permanentFocusOwner".equals(evt.getPropertyName())) {
+            blickActionMap(null);
         }
     }
     
