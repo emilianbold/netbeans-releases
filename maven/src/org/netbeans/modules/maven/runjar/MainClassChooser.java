@@ -247,8 +247,6 @@ class MainClassChooser extends JPanel {
         );
 
         lblMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MainClassChooser.class, "AD_jMainClassList")); // NOI18N
-
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(MainClassChooser.class).getString("AD_MainClassChooser")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
