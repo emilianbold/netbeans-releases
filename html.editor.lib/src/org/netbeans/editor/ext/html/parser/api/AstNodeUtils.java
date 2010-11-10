@@ -230,6 +230,15 @@ public class AstNodeUtils {
         }
 
         for (AstNode child : node.children()) {
+            if(child.isVirtual()) {
+                //we need to recurse into every virtual branch blindly hoping there might by some
+                //real nodes fulfilling our constrains
+                AstNode n =  findDescendantTag(child, astOffset, useLogicalRanges, forward);
+                if(n != null) {
+                    return n;
+                }
+            }
+            
             int ch_so = child.logicalStartOffset();
             int ch_eo = child.logicalEndOffset();
             if (forward) {

@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
@@ -63,6 +64,9 @@ import org.xml.sax.SAXException;
 @ServiceProvider(service=Validator.class, position=10)
 public class ValidatorImpl implements Validator {
 
+    private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
+    private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
+
     @Override
     public ValidationResult validate(ValidationContext context) throws ValidationException {
         assert canValidate(context.getVersion());
@@ -76,7 +80,7 @@ public class ValidatorImpl implements Validator {
 //                validatorTransaction.setBodyFragmentContextMode(true);
 //            }
 
-            String source = context.getSource();
+            String source = maskTemplatingMarks(context.getSource());
             validatorTransaction.validateCode(source);
 
             Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
@@ -146,5 +150,10 @@ public class ValidatorImpl implements Validator {
         }
         return false;
     }
+
+    static String maskTemplatingMarks(String code) {
+        return TEMPLATING_MARKS_PATTERN.matcher(code).replaceAll(TEMPLATING_MARKS_MASK);
+    }
+
 
 }

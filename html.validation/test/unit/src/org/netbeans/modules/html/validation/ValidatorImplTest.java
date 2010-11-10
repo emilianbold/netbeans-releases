@@ -41,7 +41,6 @@ package org.netbeans.modules.html.validation;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-import java.util.Collection;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -92,8 +91,7 @@ public class ValidatorImplTest extends NbTestCase {
         assertNotNull(instance);
 
         ValidationResult validationResult = instance.validate(new ValidationContext(code, HtmlVersion.HTML5, null, result));
-        assertNotNull(validationResult);
-        assertTrue(validationResult.isSuccess());
+        assertNoProblems(validationResult);
 
     }
 
@@ -127,9 +125,34 @@ public class ValidatorImplTest extends NbTestCase {
         assertNotNull(instance);
 
         ValidationResult validationResult = instance.validate(new ValidationContext(code, HtmlVersion.HTML5, null, result));
-        assertNotNull(validationResult);
-        assertTrue(validationResult.isSuccess());
+        assertNoProblems(validationResult);
 
     }
 
+    //tests if the validation ignores the templating language marks @@@
+    public void testValidateVirtualHtmlSource() throws SAXException, IOException, ParseException, ValidationException {
+        String code = "@@@<!doctype html> <html @@@><head><title>hello</title></head><body><div>ahoj!</div></body></html>";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        Validator instance = Lookup.getDefault().lookup(Validator.class);
+        assertNotNull(instance);
+
+        ValidationResult validationResult = instance.validate(new ValidationContext(code, HtmlVersion.HTML5, null, result));
+        assertNoProblems(validationResult);
+
+    }
+
+    private void assertNoProblems(ValidationResult result) {
+        assertNotNull(result);
+        if (!result.isSuccess()) {
+            StringBuilder b = new StringBuilder();
+            b.append("Unexpected problem(s) found: ");
+            for (ProblemDescription pd : result.getProblems()) {
+                b.append(pd.toString());
+                b.append(',');
+            }
+            assertFalse(b.toString(), true);
+        }
+    }
 }

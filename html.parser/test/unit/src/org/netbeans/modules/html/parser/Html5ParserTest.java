@@ -42,10 +42,10 @@
 package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -54,7 +54,6 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
@@ -576,6 +575,11 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(root);
 
 //        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testMaskTemplatingMarksPattern() throws ParseException {
+        String code = "@@@<div> @@@ </div>";
+        assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
