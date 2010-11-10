@@ -43,11 +43,30 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="libs.jna" default="netbeans" basedir=".">
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="build-init" depends="projectized.build-init">
-        <ant dir="external" target="unzip"/>
+<project name="core.nativeaccess/external" default="unzip" basedir=".">
+    <target name="unzip" >
+        <unzip src="jna-3.0.9.jar" dest="lib/x86" overwrite="true">
+            <patternset><include name="**/win32-x86/jnidispatch.dll"/></patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="jna-3.0.9.jar" dest="lib/amd64" overwrite="true">
+            <patternset><include name="**/win32-amd64/jnidispatch.dll"/></patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="jna-3.0.9.jar" dest="lib" overwrite="true">
+            <patternset><include name="**/darwin/libjnidispatch.jnilib"/></patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="jna-3.0.9.jar" dest="lib/amd64/Linux" overwrite="true">
+            <patternset><include name="**/linux-amd64/libjnidispatch.so"/></patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="jna-3.0.9.jar" dest="lib/i386/Linux" overwrite="true">
+            <patternset><include name="**/linux-i386/libjnidispatch.so"/></patternset>
+            <flattenmapper/>
+        </unzip>
     </target>
-
+    <target name="clean">
+        <delete dir="lib" failonerror="false"/>
+    </target>
 </project>

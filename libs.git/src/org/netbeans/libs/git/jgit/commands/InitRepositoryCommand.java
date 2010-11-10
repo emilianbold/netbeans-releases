@@ -44,63 +44,51 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.jgit.JGitClient;
-import org.netbeans.libs.git.jgit.JGitClientFactory;
-import org.netbeans.libs.git.jgit.JGitRepository;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public class InitTest extends AbstractGitTestCase {
+public class InitRepositoryCommand extends GitCommand {
+    private final File workDir;
+    private final ProgressMonitor monitor;
 
-    private File workDir;
-
-    public InitTest (String testName) throws IOException {
-        super(testName);
+    public InitRepositoryCommand (Repository repository, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.monitor = monitor;
+        this.workDir = getRepository().getWorkTree();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        workDir = getWorkingDirectory();
+    protected boolean prepareCommand () throws GitException {
+        boolean repositoryExists = getRepository().getDirectory().exists();
+        if (repositoryExists) {
+            monitor.preparationsFailed("Git repository already exists at " + getRepository().getWorkTree());
+            throw new GitException("Git repository already exists at " + getRepository().getWorkTree());
+        }
+        return true;
     }
 
-    public void testInit () throws Exception {
-        File repo2 = new File(workDir.getParentFile(), "other");
-        GitClient client = JGitClientFactory.getInstance(null).getClient(repo2);
-        Field f = JGitClient.class.getDeclaredField("gitRepository");
-        f.setAccessible(true);
-        JGitRepository jgitRepo = (JGitRepository) f.get(client);
-        f = JGitRepository.class.getDeclaredField("repository");
-        f.setAccessible(true);
-        Repository repo = (Repository) f.get(jgitRepo);
-        
-        assertFalse(repo.getDirectory().exists());
-        assertFalse(repo.getIndexFile().exists());
-        assertNull(repo.getBranch());
-
-        // test repository init
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
-        DirCache index = repo.readDirCache();
-        assertEquals(0, index.getEntryCount());
-        assertTrue(repo.getDirectory().exists());
-        assertEquals("master", repo.getBranch());
-
-        // test failure when repository already exists
+    @Override
+    protected void run() throws GitException {
+        Repository repository = getRepository();
         try {
-            client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
-            fail("Repository created twice");
-        } catch (GitException ex) {
-            assertTrue(ex.getMessage().contains("Git repository already exists"));
+            if (!(workDir.exists() || workDir.mkdirs())) {
+                throw new GitException("Cannot create local folder at " + workDir.getAbsolutePath());
+            }
+            repository.create();
+        } catch (IllegalStateException ex) {
+            throw new GitException(ex);
+        } catch (IOException ex) {
+            throw new GitException(ex);
         }
     }
 
+    @Override
+    protected String getCommandDescription () {
+        return new StringBuilder("git init ").append(workDir.getAbsolutePath()).toString(); //NOI18N
+    }
 }
