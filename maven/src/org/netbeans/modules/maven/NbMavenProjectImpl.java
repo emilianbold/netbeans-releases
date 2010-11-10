@@ -777,7 +777,11 @@ public final class NbMavenProjectImpl implements Project {
         List<URI> toRet = new ArrayList<URI>();
         List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
         for (Resource elem : res) {
-            URI uri = FileUtilities.getDirURI(getProjectDirectory(), elem.getDirectory());
+            String dir = elem.getDirectory();
+            if (dir == null) {
+                continue; // #191742
+            }
+            URI uri = FileUtilities.getDirURI(getProjectDirectory(), dir);
 //            if (new File(uri).exists()) {
             toRet.add(uri);
 //            }
