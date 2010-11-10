@@ -175,7 +175,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         N[] arr = { new N ("1"), new N ("2"), new N ("3") };
         
         top.setActivatedNodes (arr);
-        assertEquals ("Three nodes there", 3, top.getActivatedNodes ().length);
+        assertEquals ("Three nodes there", 3, get.getActivatedNodes ().length);
         
         L l = new L ();
         Lookup.Result res = lookup.lookup(new Lookup.Template(OpenCookie.class));
@@ -210,8 +210,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
     public void testNodesAreInTheLookupAndNothingIsFiredBeforeFirstQuery () {
         AbstractNode n1 = new AbstractNode(Children.LEAF, Lookup.EMPTY);
         top.setActivatedNodes(new Node[] { n1 });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("Is the right now", n1, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("Is the right now", n1, get.getActivatedNodes ()[0]);
         
         Lookup.Result res = lookup.lookup(new Lookup.Template(Node.class));
         L l = new L ();
@@ -244,8 +244,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         res.addLookupListener(listener);
         
         top.setActivatedNodes (new AbstractNode[] { n2 });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("n2", n2, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("n2", n2, get.getActivatedNodes ()[0]);
         
 //MK - here it changes twice.. because the setAtivatedNodes is trigger on inner TC, then lookup of MVTC contains old activated node..
         // at this monent the merged lookup contains both items.. later it gets synchronized by setting the activated nodes on the MVTC as well..
@@ -300,8 +300,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         
         top.setActivatedNodes(new org.openide.nodes.Node[] { ac });
-        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
-        assertEquals ("It is the ac one", ac, top.getActivatedNodes ()[0]);
+        assertEquals ("One node there", 1, get.getActivatedNodes ().length);
+        assertEquals ("It is the ac one", ac, get.getActivatedNodes ()[0]);
         ic.add (obj);
         
         L listener = new L ();
@@ -321,7 +321,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         listener.check ("One change", 1);
         
         top.setActivatedNodes (new N[0]);
-        assertEquals("The nodes are empty", 0, top.getActivatedNodes ().length);
+        assertEquals("The nodes are empty", 0, get.getActivatedNodes ().length);
         listener.check ("No change", 0);
         
         cnt.queries = 0;
