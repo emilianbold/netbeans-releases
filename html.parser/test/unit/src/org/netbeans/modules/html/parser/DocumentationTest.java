@@ -117,8 +117,8 @@ public class DocumentationTest extends NbTestCase {
         URL url = Documentation.getDefault().resolveLink("sections.html#the-article-element");
         assertNotNull(url);
         String content = Documentation.getDefault().getHelpContent(url);
-        //XXX fails! figure it out...
-//        assertTrue(content.startsWith("<h4 id=\"the-article-element\">"));
+        assertTrue(content.substring(0, 200).indexOf("<h4 id=\"the-article-element\">") != -1);
+
     }
 
 }

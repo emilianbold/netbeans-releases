@@ -125,7 +125,6 @@ public class HtmlTagProviderTest extends NbTestCase {
 
         HelpItem helpItem = t.getHelp();
         assertNull(helpItem);
-
     }
     
     public void testAnnotation_XML() {
