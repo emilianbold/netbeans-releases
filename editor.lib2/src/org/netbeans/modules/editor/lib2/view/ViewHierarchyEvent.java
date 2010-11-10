@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,43 +40,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.io;
+package org.netbeans.modules.editor.lib2.view;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.windows.InputOutput;
+import java.util.EventObject;
 
 /**
- *
- * @author Egor Ushakov
+ * View hierarchy listener.
+ * 
+ * @author Miloslav Metelka
  */
-public class OutputPack extends IOPack {
-    private final IOProxy ioProxy;
 
-    public OutputPack(TermComponent console,
-            InputOutput io,
-            ExecutionEnvironment exEnv) {
-        super(console, exEnv);
-        this.ioProxy = IOProxy.create(exEnv, io);
+public final class ViewHierarchyEvent extends EventObject {
+    
+    private final int affectedStartOffset;
+
+    ViewHierarchyEvent(ViewHierarchy source, int affectedStartOffset) {
+        super(source);
+        this.affectedStartOffset = affectedStartOffset;
     }
 
-    @Override
-    public boolean start() {
-        return true;
+    public ViewHierarchy viewHierarchy() {
+        return (ViewHierarchy) getSource();
     }
 
-    @Override
-    public String[] getIOFiles() {
-        return new String[]{ioProxy.getInFilename(), ioProxy.getOutFilename()};
+    public int affectedStartOffset() {
+        return affectedStartOffset;
     }
 
-    @Override
-    public void close() {
-        ioProxy.stop();
-    }
 }

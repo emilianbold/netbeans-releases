@@ -110,6 +110,9 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.openide.util.WeakListeners;
 
 /**
@@ -239,8 +242,6 @@ AtomicLockListener, FoldHierarchyListener {
     */
     protected Color textBackColor;
 
-    private transient FocusListener focusListener;
-
     /** Whether the text is being modified under atomic lock.
      * If so just one caret change is fired at the end of all modifications.
      */
@@ -265,7 +266,7 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private boolean updateAfterFoldHierarchyChange;
     private FoldHierarchyListener weakFHListener;
-
+    
     /**
      * Whether at least one typing change occurred during possibly several atomic operations.
      */
@@ -290,6 +291,7 @@ AtomicLockListener, FoldHierarchyListener {
     };
     private PreferenceChangeListener weakPrefsListener = null;
     
+    private boolean caretUpdatePending;
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
@@ -410,6 +412,7 @@ AtomicLockListener, FoldHierarchyListener {
         component.addFocusListener(listenerImpl);
         component.addMouseListener(this);
         component.addMouseMotionListener(this);
+        ViewHierarchy.get(component).addViewHierarchyListener(listenerImpl);
 
         EditorUI editorUI = Utilities.getEditorUI(component);
         editorUI.addPropertyChangeListener( this );
@@ -452,6 +455,8 @@ AtomicLockListener, FoldHierarchyListener {
         c.removeFocusListener(listenerImpl);
         c.removeMouseListener(this);
         c.removeMouseMotionListener(this);
+        ViewHierarchy.get(c).removeViewHierarchyListener(listenerImpl);
+
         
         EditorUI editorUI = Utilities.getEditorUI(c);
         editorUI.removePropertyChangeListener(this);
@@ -652,6 +657,7 @@ AtomicLockListener, FoldHierarchyListener {
      *  scrolled to the position of the caret.
      */
     protected void update(boolean scrollViewToCaret) {
+        caretUpdatePending = false;
         JTextComponent c = component;
         if (c != null) {
             BaseTextUI ui = (BaseTextUI)c.getUI();
@@ -1652,8 +1658,20 @@ AtomicLockListener, FoldHierarchyListener {
         });
     }
     
+    void scheduleCaretUpdate() {
+        if (!caretUpdatePending) {
+            caretUpdatePending = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update(false);
+                }
+            });
+        }
+    }
+    
     private class ListenerImpl extends ComponentAdapter
-    implements FocusListener {
+    implements FocusListener, ViewHierarchyListener {
 
         ListenerImpl() {
         }
@@ -1747,6 +1765,13 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
 
+        @Override
+        public void viewHierarchyChanged(ViewHierarchyEvent evt) {
+            if (getDot() >= evt.affectedStartOffset()) {
+                scheduleCaretUpdate();
+            }
+        }
+        
     } // End of ListenerImpl class
 
     public final void refresh() {

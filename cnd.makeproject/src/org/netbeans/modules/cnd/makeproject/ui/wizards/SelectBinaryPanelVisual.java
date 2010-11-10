@@ -128,6 +128,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable"); // NOI18N
     private DefaultTableModel tableModel;
     private static final String BINARY_FILE_KEY = "binaryField"; // NOI18N
+    private String pathSepararor = ":"; // NOI18N
 
 
     /** Creates new form SelectBinaryPanelVisual */
@@ -344,7 +345,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String findLocation(String dll, String ldPath){
         if (ldPath != null) {
-            for(String search :  ldPath.split(":")) {  // NOI18N
+            for(String search :  ldPath.split(pathSepararor)) {  // NOI18N
                 File file = new File(search, dll);
                 if (file.isFile() && file.exists()) {
                     String path = file.getAbsolutePath();
@@ -358,7 +359,27 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private String getLdLibraryPath() {
         ExecutionEnvironment eenv = ExecutionEnvironmentFactory.getLocal();
         String ldLibraryPathName = getLdLibraryPathName(eenv);
-        return HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
+        String paths = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
+        if (paths == null) {
+            paths = "";
+        }
+        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
+        switch (platformInfo.getPlatform()) {
+            case PlatformTypes.PLATFORM_WINDOWS:
+                pathSepararor = ";";  // NOI18N
+                break;
+            case PlatformTypes.PLATFORM_MACOSX:
+                pathSepararor = ":";  // NOI18N
+                paths += ":/usr/lib:/usr/local/lib:/Library/Frameworks:/System/Library/Frameworks";  // NOI18N
+                break;
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+            case PlatformTypes.PLATFORM_LINUX:
+            default:
+                pathSepararor = ":";  // NOI18N
+                paths += ":/lib:/usr/lib";  // NOI18N
+        }
+        return paths;
     }
 
     private static String getLdLibraryPathName(ExecutionEnvironment eenv) {

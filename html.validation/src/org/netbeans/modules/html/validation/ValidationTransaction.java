@@ -140,10 +140,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         });
     }
 
-    static {
-        enableDebug();
-    }
-
     private static final Pattern SPACE = Pattern.compile("\\s+");
     protected static final int HTML5_SCHEMA = 3;
     protected static final int XHTML1STRICT_SCHEMA = 2;
@@ -207,9 +203,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private LinesMapper linesMapper = new LinesMapper();
 
     private HtmlVersion version;
+    private boolean bodyFragmentContextMode;
 
     public static synchronized ValidationTransaction create(HtmlVersion version) {
         return new ValidationTransaction(version);
+    }
+
+    public void setBodyFragmentContextMode(boolean bodyFragmentContextMode) {
+        this.bodyFragmentContextMode = bodyFragmentContextMode;
     }
 
     private static void  initializeLocalEntities_HACK() {
@@ -742,6 +743,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 }
                 htmlParser.setDoctypeExpectation(doctypeExpectation);
                 htmlParser.setDocumentModeHandler(this);
+//                htmlParser.setProperty("http://validator.nu/properties/body-fragment-context-mode", bodyFragmentContextMode);
                 reader = htmlParser;
                 if (validator == null) {
                     validator = validatorByDoctype(schemaId);
