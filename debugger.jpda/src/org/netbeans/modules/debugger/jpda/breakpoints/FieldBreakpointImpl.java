@@ -48,6 +48,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Value;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
@@ -65,6 +66,7 @@ import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -81,6 +83,8 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ModificationWatchpointEventW
 import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.WatchpointRequestWrapper;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 
@@ -221,6 +225,11 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         try {
             if (event instanceof ModificationWatchpointEvent) {
                 thread = LocatableEventWrapper.thread((ModificationWatchpointEvent) event);
+                /* TODO
+                Value valueToBe = ((ModificationWatchpointEvent) event).valueToBe();
+                Variable varToBe = getVariable(valueToBe);
+                getDebugger().markObject(varToBe, "breakpoint_field_valueToBe");
+                 */
             } else if (event instanceof AccessWatchpointEvent) {
                 thread = LocatableEventWrapper.thread((AccessWatchpointEvent) event);
             } else {
@@ -231,8 +240,27 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         } catch (VMDisconnectedExceptionWrapper ex) {
             return false;
         }
-        return processCondition(event, breakpoint.getCondition (), thread, null);
+        /* TODO
+        Value valueCurrent = ((WatchpointEvent) event).valueCurrent();
+        Variable varCurrent = getVariable(valueCurrent);
+        getDebugger().markObject(varCurrent, "breakpoint_field_valueCurrent");
+        ObjectReference object = ((WatchpointEvent) event).object();
+        AbstractObjectVariable varObject = new AbstractObjectVariable(getDebugger(), object, null);
+        getDebugger().markObject(varObject, "breakpoint_field_object");
+         */
+        ObjectReference object = ((WatchpointEvent) event).object();
+        return processCondition(event, breakpoint.getCondition (), thread, null, object);
     }
+
+    /*public Variable getVariable (Value v) {
+        if (v instanceof ObjectReference)
+            return new AbstractObjectVariable (
+                getDebugger(),
+                (ObjectReference) v,
+                null
+            );
+        return new AbstractVariable (getDebugger(), v, null);
+    }*/
 
     @Override
     public boolean exec (Event event) {
