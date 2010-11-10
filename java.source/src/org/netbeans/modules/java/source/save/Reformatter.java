@@ -509,7 +509,8 @@ public class Reformatter implements ReformatTask {
                 } else {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
                 }
-                if (tree.getKind() != Tree.Kind.BLOCK) {
+                if (tree.getKind() != Tree.Kind.ERRONEOUS && tree.getKind() != Tree.Kind.BLOCK
+                        && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)) {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
@@ -2538,6 +2539,11 @@ public class Reformatter implements ReformatTask {
                         after = 0;
                         break;
                     default:
+                        if (lastWSToken != null) {
+                            lastBlankLines = 0;
+                            lastBlankLinesTokenIndex = tokens.index() - 1;
+                            lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
+                        }
                         return null;
                 }
             } while(tokens.moveNext());

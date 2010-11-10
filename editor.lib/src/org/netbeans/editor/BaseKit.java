@@ -44,6 +44,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -57,9 +58,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
 import javax.swing.text.Document;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.BadLocationException;
@@ -74,7 +77,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
@@ -809,6 +816,38 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         c.setKeymap(keymap);
+        
+        c.addAncestorListener(new AncestorListener() {
+            private JScrollPane scrollPane;
+            private InputMap origMap;
+            int condition = JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
+
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                Component c = (Component) event.getSource();
+                Component parent;
+                if ((parent = c.getParent()) instanceof JViewport) {
+                    c = parent;
+                    if ((parent = c.getParent()) instanceof JScrollPane) {
+                        scrollPane = (JScrollPane) parent;
+                        origMap = scrollPane.getInputMap(condition);
+                        scrollPane.setInputMap(condition, null);
+                    }
+                }
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+                if (scrollPane != null && scrollPane.getInputMap(condition) == null) {
+                    // Restore original input map
+                    scrollPane.setInputMap(condition, origMap);
+                }
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
         
         executeInstallActions(c);
     }
