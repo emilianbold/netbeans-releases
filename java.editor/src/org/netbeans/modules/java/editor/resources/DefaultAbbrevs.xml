@@ -48,38 +48,40 @@ made subject to such option by the copyright holder.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
-    <codetemplate abbreviation="ab"><code><![CDATA[abstract ]]></code></codetemplate> 
-    <codetemplate abbreviation="bo"><code><![CDATA[boolean ]]></code></codetemplate> 
-    <codetemplate abbreviation="br"><code><![CDATA[break;]]></code></codetemplate>
-    <codetemplate abbreviation="ca"><code><![CDATA[catch (]]></code></codetemplate> 
-    <codetemplate abbreviation="cl"><code><![CDATA[class ]]></code></codetemplate> 
-    <codetemplate abbreviation="cn"><code><![CDATA[continue]]></code></codetemplate> 
-    <codetemplate abbreviation="df"><code><![CDATA[default:]]></code></codetemplate> 
-    <codetemplate abbreviation="eq"><code><![CDATA[equals]]></code></codetemplate> 
-    <codetemplate abbreviation="ex"><code><![CDATA[extends ]]></code></codetemplate> 
-    <codetemplate abbreviation="fa"><code><![CDATA[false]]></code></codetemplate> 
-    <codetemplate abbreviation="fi"><code><![CDATA[final ]]></code></codetemplate> 
-    <codetemplate abbreviation="fl"><code><![CDATA[float ]]></code></codetemplate> 
+    <codetemplate abbreviation="ab"><code><![CDATA[${no-indent}abstract ]]></code></codetemplate> 
+    <codetemplate abbreviation="bo"><code><![CDATA[${no-indent}boolean ]]></code></codetemplate> 
+    <codetemplate abbreviation="br"><code><![CDATA[${no-indent}break;]]></code></codetemplate>
+    <codetemplate abbreviation="ca"><code><![CDATA[catch (${EXC instanceof="java.lang.Throwable" default="Exception"} ${NAME newVarName default="ex"}) {
+        ${cursor}
+    }]]></code></codetemplate> 
+    <codetemplate abbreviation="cl"><code><![CDATA[${no-indent}class ]]></code></codetemplate> 
+    <codetemplate abbreviation="cn"><code><![CDATA[${no-indent}continue]]></code></codetemplate> 
+    <codetemplate abbreviation="df"><code><![CDATA[${no-indent}default:]]></code></codetemplate> 
+    <codetemplate abbreviation="eq"><code><![CDATA[${no-indent}equals]]></code></codetemplate> 
+    <codetemplate abbreviation="ex"><code><![CDATA[${no-indent}extends ]]></code></codetemplate> 
+    <codetemplate abbreviation="fa"><code><![CDATA[${no-indent}false]]></code></codetemplate> 
+    <codetemplate abbreviation="fi"><code><![CDATA[${no-indent}final ]]></code></codetemplate> 
+    <codetemplate abbreviation="fl"><code><![CDATA[${no-indent}float ]]></code></codetemplate> 
     <codetemplate abbreviation="fy"><code><![CDATA[finally {
-    ${cursor}
-}]]></code></codetemplate>
-    <codetemplate abbreviation="ie"><code><![CDATA[interface ]]></code></codetemplate> 
-    <codetemplate abbreviation="im"><code><![CDATA[implements ]]></code></codetemplate> 
-    <codetemplate abbreviation="iof"><code><![CDATA[instanceof ]]></code></codetemplate> 
-    <codetemplate abbreviation="ir"><code><![CDATA[import ]]></code></codetemplate> 
-    <codetemplate abbreviation="le"><code><![CDATA[length]]></code></codetemplate> 
-    <codetemplate abbreviation="pe"><code><![CDATA[protected ]]></code></codetemplate> 
-    <codetemplate abbreviation="pr"><code><![CDATA[private ]]></code></codetemplate> 
-    <codetemplate abbreviation="psf"><code><![CDATA[private static final ]]></code></codetemplate> 
-    <codetemplate abbreviation="psfi"><code><![CDATA[private static final int ]]></code></codetemplate> 
-    <codetemplate abbreviation="psfs"><code><![CDATA[private static final String ]]></code></codetemplate> 
-    <codetemplate abbreviation="psfb"><code><![CDATA[private static final boolean ]]></code></codetemplate> 
+        ${cursor}
+    }]]></code></codetemplate>
+    <codetemplate abbreviation="ie"><code><![CDATA[${no-indent}interface ]]></code></codetemplate> 
+    <codetemplate abbreviation="im"><code><![CDATA[${no-indent}implements ]]></code></codetemplate> 
+    <codetemplate abbreviation="iof"><code><![CDATA[${no-indent}instanceof ]]></code></codetemplate> 
+    <codetemplate abbreviation="ir"><code><![CDATA[${no-indent}import ]]></code></codetemplate> 
+    <codetemplate abbreviation="le"><code><![CDATA[${no-indent}length]]></code></codetemplate> 
+    <codetemplate abbreviation="pe"><code><![CDATA[${no-indent}protected ]]></code></codetemplate> 
+    <codetemplate abbreviation="pr"><code><![CDATA[${no-indent}private ]]></code></codetemplate> 
+    <codetemplate abbreviation="psf"><code><![CDATA[${no-format}private static final ]]></code></codetemplate> 
+    <codetemplate abbreviation="psfi"><code><![CDATA[${no-format}private static final int ]]></code></codetemplate> 
+    <codetemplate abbreviation="psfs"><code><![CDATA[${no-format}private static final String ]]></code></codetemplate> 
+    <codetemplate abbreviation="psfb"><code><![CDATA[${no-format}private static final boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="pst"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
-    <codetemplate abbreviation="pu"><code><![CDATA[public ]]></code></codetemplate> 
-    <codetemplate abbreviation="re"><code><![CDATA[return ]]></code></codetemplate>
+    <codetemplate abbreviation="pu"><code><![CDATA[${no-indent}public ]]></code></codetemplate> 
+    <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
     <codetemplate abbreviation="serr"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
     <codetemplate abbreviation="sout"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
-    <codetemplate abbreviation="st"><code><![CDATA[static ]]></code></codetemplate> 
+    <codetemplate abbreviation="st"><code><![CDATA[${no-indent}static ]]></code></codetemplate> 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (${var instanceof="java.lang.Enum"}) {
         case ${val completionInvoke}:
             ${cursor}
@@ -100,36 +102,41 @@ made subject to such option by the copyright holder.
         ${cursor}
     }
 ]]></code></codetemplate>
-    <codetemplate abbreviation="do"><code><![CDATA[do {
+    <codetemplate abbreviation="do" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[do {
             ${cursor}
         } while (${expr instanceof="boolean" default="true"});
     ]]></code></codetemplate>
 
-    <codetemplate abbreviation="sy"><code><![CDATA[synchronized ]]></code></codetemplate> 
+    <codetemplate abbreviation="sy"><code><![CDATA[${no-indent}synchronized ]]></code></codetemplate> 
     <codetemplate abbreviation="tds"><code><![CDATA[Thread.dumpStack();]]></code></codetemplate> 
-    <codetemplate abbreviation="th"><code><![CDATA[throws ]]></code></codetemplate> 
-    <codetemplate abbreviation="En"><code><![CDATA[Enumeration]]></code></codetemplate> 
-    <codetemplate abbreviation="Ex"><code><![CDATA[Exception]]></code></codetemplate> 
-    <codetemplate abbreviation="Ob"><code><![CDATA[Object]]></code></codetemplate> 
-    <codetemplate abbreviation="Psf"><code><![CDATA[public static final ]]></code></codetemplate> 
-    <codetemplate abbreviation="Psfi"><code><![CDATA[public static final int ]]></code></codetemplate> 
-    <codetemplate abbreviation="Psfs"><code><![CDATA[public static final String ]]></code></codetemplate> 
-    <codetemplate abbreviation="Psfb"><code><![CDATA[public static final boolean ]]></code></codetemplate> 
-    <codetemplate abbreviation="St"><code><![CDATA[String]]></code></codetemplate>
+    <codetemplate abbreviation="th"><code><![CDATA[${no-indent}throws ]]></code></codetemplate> 
+    <codetemplate abbreviation="En"><code><![CDATA[${no-indent}Enumeration]]></code></codetemplate> 
+    <codetemplate abbreviation="Ex"><code><![CDATA[${no-indent}Exception]]></code></codetemplate> 
+    <codetemplate abbreviation="Ob"><code><![CDATA[${no-indent}Object]]></code></codetemplate> 
+    <codetemplate abbreviation="Psf"><code><![CDATA[${no-format}public static final ]]></code></codetemplate> 
+    <codetemplate abbreviation="Psfi"><code><![CDATA[${no-format}public static final int ]]></code></codetemplate> 
+    <codetemplate abbreviation="Psfs"><code><![CDATA[${no-format}public static final String ]]></code></codetemplate> 
+    <codetemplate abbreviation="Psfb"><code><![CDATA[${no-format}public static final boolean ]]></code></codetemplate> 
+    <codetemplate abbreviation="St"><code><![CDATA[${no-indent}String]]></code></codetemplate>
     <!-- #173655 partial fix -->
-    <codetemplate abbreviation="as"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
-    <codetemplate abbreviation="na"><code><![CDATA[native ]]></code></codetemplate>
-    <codetemplate abbreviation="tr"><code><![CDATA[transient ]]></code></codetemplate>
+    <codetemplate abbreviation="as" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
+    <codetemplate abbreviation="na"><code><![CDATA[${no-indent}native ]]></code></codetemplate>
+    <codetemplate abbreviation="tr"><code><![CDATA[${no-indent}transient ]]></code></codetemplate>
     <!-- Some bug in template processing always appends 4 spaces after volatile, if there is a single space in the template -->
-    <codetemplate abbreviation="vo"><code><![CDATA[volatile]]></code></codetemplate>
-    <codetemplate abbreviation="db"><code><![CDATA[double ]]></code></codetemplate>
-    <codetemplate abbreviation="sh"><code><![CDATA[short ]]></code></codetemplate>
-    <codetemplate abbreviation="su"><code><![CDATA[super]]></code></codetemplate>
-    <codetemplate abbreviation="pvb"><code><![CDATA[private volatile boolean ]]></code></codetemplate>
+    <codetemplate abbreviation="vo"><code><![CDATA[${no-indent}volatile]]></code></codetemplate>
+    <codetemplate abbreviation="db"><code><![CDATA[${no-indent}double ]]></code></codetemplate>
+    <codetemplate abbreviation="sh"><code><![CDATA[${no-indent}short ]]></code></codetemplate>
+    <codetemplate abbreviation="su"><code><![CDATA[${no-indent}super]]></code></codetemplate>
+    <codetemplate abbreviation="pvb"><code><![CDATA[${no-format}private volatile boolean ]]></code></codetemplate>
     <!-- #108167 -->
-    <codetemplate abbreviation="for"><code><![CDATA[for (int ${i newVarName default="i"}=0; ${i} < ${max default="10"}; ${i}++) {
-    ${cursor}
-}]]></code></codetemplate>
+    <codetemplate abbreviation="for" contexts="BLOCK,CASE,LABELED_STATEMENT">
+        <code>
+<![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${MAX default="10"}; ${IDX}++) {
+    ${selection}${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
 
     <codetemplate abbreviation="fori" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>
@@ -339,15 +346,15 @@ ${cursor}]]></code></codetemplate>
     ${cursor}]]></code></codetemplate>
 
     <!-- #167824 -->
-    <codetemplate abbreviation="in"><code><![CDATA[interface ]]></code></codetemplate>
+    <codetemplate abbreviation="in"><code><![CDATA[${no-indent}interface ]]></code></codetemplate>
 
      <!-- Miscellaneous common code patterns -->
-     <codetemplate abbreviation="rn"><code><![CDATA[return null;]]></code></codetemplate>
-     <codetemplate abbreviation="f"><code><![CDATA[final ]]></code></codetemplate>
-     <codetemplate abbreviation="ps"><code><![CDATA[private static ]]></code></codetemplate>
-     <codetemplate abbreviation="Ps"><code><![CDATA[public static ]]></code></codetemplate>
-     <codetemplate abbreviation="pf"><code><![CDATA[private final ]]></code></codetemplate>
-     <codetemplate abbreviation="Pf"><code><![CDATA[public final ]]></code></codetemplate>
+     <codetemplate abbreviation="rn"><code><![CDATA[${no-indent}return null;]]></code></codetemplate>
+     <codetemplate abbreviation="f"><code><![CDATA[${no-indent}final ]]></code></codetemplate>
+     <codetemplate abbreviation="ps"><code><![CDATA[${no-format}private static ]]></code></codetemplate>
+     <codetemplate abbreviation="Ps"><code><![CDATA[${no-format}public static ]]></code></codetemplate>
+     <codetemplate abbreviation="pf"><code><![CDATA[${no-format}private final ]]></code></codetemplate>
+     <codetemplate abbreviation="Pf"><code><![CDATA[${no-format}public final ]]></code></codetemplate>
      <codetemplate abbreviation="spl"><code><![CDATA[
         for (String ${str newVarName default="s"} : ${string instanceof="java.lang.String"}.split("${expr default=","}")) {
             ${cursor}

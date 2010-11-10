@@ -57,8 +57,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
-import org.netbeans.modules.cnd.api.model.CsmKnRName;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -209,7 +207,7 @@ public class DoxygenDocumentation {
         WORD, LINE, PAR, NONE;
     }
 
-    public static CompletionDocumentation create(CsmObject csmObject) {
+    public static CompletionDocumentationImpl create(CsmObject csmObject) {
         if (!(csmObject instanceof CsmOffsetable)) {
             return null;
         }
@@ -233,7 +231,7 @@ public class DoxygenDocumentation {
         DocCandidate bestDoc = getBestDoc(list);
         String htmlDocText = doxygen2HTML(bestDoc.text, bestDoc.kind);
 
-        return new CompletionDocumentationImpl(htmlDocText);
+        return new CompletionDocumentationImpl(htmlDocText, bestDoc.kind);
     }
 
     private static DocCandidate getBestDoc(List<DocCandidate> list) {
@@ -410,12 +408,18 @@ public class DoxygenDocumentation {
         COMMAND, WHITESPACE, PAR_END, LINE_END, WORD//, LINE_START;
     }
 
-    private static final class CompletionDocumentationImpl implements CompletionDocumentation {
+    public static final class CompletionDocumentationImpl implements CompletionDocumentation {
 
         private final String text;
+        private final CppTokenId kind;
 
-        public CompletionDocumentationImpl(String text) {
+        public CompletionDocumentationImpl(String text, CppTokenId kind) {
+            this.kind = kind;
             this.text = text;
+        }
+
+        public CppTokenId getKind() {
+            return kind;
         }
 
         @Override

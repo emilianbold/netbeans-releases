@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import org.openide.util.ImageUtilities;
 import org.netbeans.modules.versioning.util.common.CollapsiblePanel.FilesPanel;
 import org.netbeans.modules.versioning.util.common.CollapsiblePanel.HookPanel;
 import java.util.List;
@@ -139,6 +140,8 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         this.parameters = parameters;
         this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
         this.diffProvider = diffProvider;
+        
+        parameters.addChangeListener(this);
         
         boolean selected = false;
         for (VCSCommitFilter f : filters) {
@@ -285,7 +288,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         basePanel.add(parametersPane1);
         
         // files table        
-        FilesPanel filesPanel = new FilesPanel(this, filters, 2 * parameters.getPanel().getPreferredSize().height);
+        FilesPanel filesPanel = new FilesPanel(this, filters, parameters.getPanel().getPreferredSize().height);
         basePanel.add(makeVerticalStrut(parametersPane1, filesPanel, RELATED, this));        
         basePanel.add(filesPanel);
         
@@ -306,6 +309,9 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         bottomPanel.add(errorLabel);
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
+        errorLabel.setVisible(false);
+        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/info.png", false)); // NOI18N        
+        
         progressPanel.setAlignmentY(LEFT_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
         bottomPanel.setBorder(createEmptyBorder(10,           // top
@@ -377,6 +383,16 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             if(diffProvider != null) {
                 commitTable.setModifiedFiles(diffProvider.getModifiedFiles());
             }
+        } else if(e.getSource() == parameters) {
+            boolean commitable = parameters.isCommitable();
+            commitButton.setEnabled(commitable);
+            if(!commitable) {
+                String warning = parameters.getWarning();
+                errorLabel.setText(warning != null ? warning : "");             // NOI18N
+            } else {
+                errorLabel.setText("");                                         // NOI18N
+            }
+            errorLabel.setVisible(!errorLabel.getText().isEmpty());
         }
     }
 

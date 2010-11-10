@@ -347,38 +347,40 @@ public class ComputeImports {
                 TypeMirror type = el.asType();
                 String simpleName = null;
                 
-                if (type.getKind() == TypeKind.ERROR) {
-                    simpleName = el.getSimpleName().toString();
-                }
-                
-                if (type.getKind() == TypeKind.PACKAGE) {
-                    //does the package really exists?
-                    String s = ((PackageElement) el).getQualifiedName().toString();
-                    if (info.getElements().getPackageElement(s) == null) {
-                        //probably situation like:
-                        //Map.Entry e;
-                        //where Map is not imported
+                if (type != null) {
+                    if (type.getKind() == TypeKind.ERROR) {
                         simpleName = el.getSimpleName().toString();
                     }
-                }
-                
-                if (simpleName == null || !SourceVersion.isIdentifier(simpleName) || SourceVersion.isKeyword(simpleName)) {
-                    simpleName = null;
-                }
-                    
-                if (simpleName != null) {
-                    unresolved.add(simpleName);
-                    
-                    Scope currentScope = getScope();
-                    
-                    hints.add(new AccessibleHint(simpleName, currentScope));
-                    
-                    if (p.containsKey("request")) {
-                        p.put("result", Union2.<String, DeclaredType>createFirst(simpleName));
+
+                    if (type != null && type.getKind() == TypeKind.PACKAGE) {
+                        //does the package really exists?
+                        String s = ((PackageElement) el).getQualifiedName().toString();
+                        if (info.getElements().getPackageElement(s) == null) {
+                            //probably situation like:
+                            //Map.Entry e;
+                            //where Map is not imported
+                            simpleName = el.getSimpleName().toString();
+                        }
                     }
-                } else {
-                    if (p.containsKey("request") && type.getKind() == TypeKind.DECLARED) {
-                        p.put("result", Union2.<String, DeclaredType>createSecond((DeclaredType) type));
+
+                    if (simpleName == null || !SourceVersion.isIdentifier(simpleName) || SourceVersion.isKeyword(simpleName)) {
+                        simpleName = null;
+                    }
+
+                    if (simpleName != null) {
+                        unresolved.add(simpleName);
+
+                        Scope currentScope = getScope();
+
+                        hints.add(new AccessibleHint(simpleName, currentScope));
+
+                        if (p.containsKey("request")) {
+                            p.put("result", Union2.<String, DeclaredType>createFirst(simpleName));
+                        }
+                    } else {
+                        if (p.containsKey("request") && type.getKind() == TypeKind.DECLARED) {
+                            p.put("result", Union2.<String, DeclaredType>createSecond((DeclaredType) type));
+                        }
                     }
                 }
             }

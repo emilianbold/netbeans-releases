@@ -188,7 +188,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected void commit (File... files) throws GitException {
-        getClient(wc).commit(files, "commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).commit(files, "commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     protected void remove (boolean cached, File... files) throws GitException {

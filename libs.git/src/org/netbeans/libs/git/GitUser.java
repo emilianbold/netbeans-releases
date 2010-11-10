@@ -43,20 +43,47 @@
 package org.netbeans.libs.git;
 
 /**
- * identification of git user
+ * Identification of a git user
  * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public interface GitUser {
+public abstract class GitUser {
 
     /**
      * user's name
      * @return
      */
-    public String getName ();
+    public abstract String getName ();
 
     /**
      * users email address
      * @return
      */
-    public String getEmailAddress ();
+    public abstract String getEmailAddress ();
+        
+    @Override 
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof GitUser)) {
+            return false;
+        }
+        final GitUser other = (GitUser) obj;
+        if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+            return false;
+        }
+        if ((this.getEmailAddress() == null) ? (other.getEmailAddress() != null) : !this.getEmailAddress().equals(other.getEmailAddress())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 37 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+        hash = 37 * hash + (this.getEmailAddress() != null ? this.getEmailAddress().hashCode() : 0);
+        return hash;
+    }    
 }

@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.git.FileInformation.Mode;
@@ -63,6 +64,8 @@ public final class GitModuleConfig {
     private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";   // NOI18N
     private static final String PROP_LAST_USED_MODE     = "lastUsedMode";       // NOI18N
     private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
+    private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N
+    private static final String RECENT_COMMITERS        = "recentCommiters";    // NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -156,6 +159,28 @@ public final class GitModuleConfig {
 
     public void setAutoOpenOutput(boolean value) {
         getPreferences().putBoolean(AUTO_OPEN_OUTPUT_WINDOW, value);
+    }
+
+    public void putRecentCommitAuthors(String author) {
+        if(author == null) return;
+        author = author.trim();
+        if(author.isEmpty()) return;
+        Utils.insert(getPreferences(), RECENT_COMMIT_AUTHORS, author, 10);
+    }
+    
+    public void putRecentCommiter(String commiter) {
+        if(commiter == null) return;
+        commiter = commiter.trim();
+        if(commiter.isEmpty()) return;
+        Utils.insert(getPreferences(), RECENT_COMMITERS, commiter, 10);
+    }
+    
+    public List<String> getRecentCommitAuthors() {
+        return Utils.getStringList(getPreferences(), RECENT_COMMIT_AUTHORS);
+    }
+    
+    public List<String> getRecentCommiters() {
+        return Utils.getStringList(getPreferences(), RECENT_COMMITERS);
     }
     
 }
