@@ -1232,7 +1232,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         System.out.println("Unexpcted callback '" + what + "' on '" + command + "'"); // NOI18N
     }
 
-    private void genericRunning() {
+    void genericRunning() {
         clearFiredEvents();
         deleteMarkLocations();
         deliverSignal = -1;
@@ -2706,7 +2706,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	System.out.printf("............................................\n"); // NOI18N
     }
 
-    private void genericStopped(final MIRecord stopRecord) {
+    void genericStopped(final MIRecord stopRecord) {
 	// Get as much info about the stopped src code location
 	/* OLD
 	 * for gdb 6.3/6.4 ( can debug gcc-build dbx on linux ) 

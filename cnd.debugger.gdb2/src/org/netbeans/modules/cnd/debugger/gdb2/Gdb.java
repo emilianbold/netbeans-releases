@@ -1011,6 +1011,20 @@ public class Gdb {
         }
 
         @Override
+        protected void execAsyncOutput(MIRecord record) {
+            // dispatch async messages without a token here
+            if (record.token() == 0) {
+                if (record.cls().equals("stopped")) { // NOI18N
+                    debugger.genericStopped(record);
+                } else if (record.cls().equals("running")) { // NOI18N
+                    debugger.genericRunning();
+                }
+            } else {
+                dispatch(record);
+            }
+        }
+
+        @Override
         protected void targetStreamOutput(MIRecord record) {
         }
 
