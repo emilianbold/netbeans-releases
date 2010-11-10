@@ -150,6 +150,9 @@ public final class ViewUpdates implements DocumentListener {
             buildingViews = false;
             viewBuilder.finish(); // Includes factory.finish() in each factory
         }
+        // Fire change of views
+        documentView.viewHierarchy.fireViewHierarchyEvent(new ViewHierarchyEvent(documentView.viewHierarchy(),
+                startOffset));
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.finer("ViewUpdates.buildViews(): UPDATED-DOC-VIEW:\n" + documentView); // NOI18N
         }
@@ -553,10 +556,10 @@ public final class ViewUpdates implements DocumentListener {
                             LOG.fine("ViewUpdates.checkRebuild-buildViews(): r<" + rStartOffset + "," + rEndOffset + // NOI18N
                                     "> createLocalViews=" + createLocalViews + "\n"); // NOI18N
                         }
+                        resetRebuildInfo();
                         buildViews(paragraphView, paragraphViewIndex,
                                 rStartOffset, rEndOffset,
                                 rEndOffset, 0, createLocalViews);
-                        resetRebuildInfo();
                     }
                 }
             } finally {
