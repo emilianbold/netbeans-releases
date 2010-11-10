@@ -693,7 +693,7 @@ public class StatusTest extends AbstractGitTestCase {
         f.createNewFile();
         commit();
         getCache().refreshAllRoots(files);
-        assertEquals("file<font color=\"#999999\"> [-/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertEquals("file<font color=\"#999999\"></font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
         assertIconTooltip(annotator, context, "");
 
         // file is modified in WT
