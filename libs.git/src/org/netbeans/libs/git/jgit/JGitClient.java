@@ -57,11 +57,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
@@ -141,9 +143,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
      * @throws GitException an error occurs
      */
     @Override
-    public GitRevisionInfo commit (File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException {
+    public GitRevisionInfo commit (File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CommitCommand cmd = new CommitCommand(repository, roots, commitMessage, monitor);
+        CommitCommand cmd = new CommitCommand(repository, roots, commitMessage, author, commiter, monitor);
         cmd.execute();
         return cmd.revision;
     }
@@ -250,6 +252,11 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();
     }
+    
+    @Override
+    public GitUser getUser() throws GitException {        
+        return new JGitUserInfo(new PersonIdent(gitRepository.getRepository()));
+    }    
 
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     @Override

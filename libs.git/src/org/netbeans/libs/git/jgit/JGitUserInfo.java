@@ -49,7 +49,7 @@ import org.netbeans.libs.git.GitUser;
  * identification of git user
  * @author Jan Becicka
  */
-public final class JGitUserInfo implements GitUser {
+public final class JGitUserInfo extends GitUser {
 
     private final String name;
     private final String email;
