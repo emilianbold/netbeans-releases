@@ -72,14 +72,16 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
     private Tree.Kind ctx = null;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
-        this.startOffset = offset;
-        this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-        JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null) {
-            try {
-                js.runUserActionTask(this, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        if (Utilities.isJavaContext(component, offset)) {
+            this.startOffset = offset;
+            this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
+            JavaSource js = JavaSource.forDocument(component.getDocument());
+            if (js != null) {
+                try {
+                    js.runUserActionTask(this, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
