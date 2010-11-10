@@ -67,7 +67,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.main.JavaCompiler;
 
 import java.io.IOException;
-import java.net.URL;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,10 +78,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -91,7 +91,6 @@ import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  *
@@ -123,10 +122,10 @@ public class Reindenter implements IndentTask {
         newIndents = new HashMap<Integer, Integer>();
         cs = CodeStyle.getDefault(context.document());
         String text = context.document().getText(0, context.document().getLength());
+        ClassLoader origCL = Thread.currentThread().getContextClassLoader();
         try {
-            ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
-            ClasspathInfo cpInfo = ClasspathInfo.create(empty, empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null);
+            Thread.currentThread().setContextClassLoader(Reindenter.class.getClassLoader());
+            JavacTaskImpl javacTask = (JavacTaskImpl)ToolProvider.getSystemJavaCompiler().getTask(null, null, null, null, null, Collections.<JavaFileObject>emptySet());
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             cut = javacTask.parse(FileObjects.memoryFileObject("", "", text)).iterator().next(); //NOI18N
@@ -180,6 +179,8 @@ public class Reindenter implements IndentTask {
                 }
             }
         } catch (IOException ex) {
+        } finally {
+            Thread.currentThread().setContextClassLoader(origCL);
         }
     }
 

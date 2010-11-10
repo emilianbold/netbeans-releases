@@ -243,6 +243,8 @@ public class Reformatter implements ReformatTask {
                     if (ts.token().id() == WHITESPACE) {
                         String t = ts.token().text().toString();
                         t = t.substring(0, startOffset - ts.offset());
+                        if (ts.movePrevious() && ts.token().id() == LINE_COMMENT)
+                            t = "\n" + t; //NOI18N
                         if (templateEdit) {
                             int idx = t.lastIndexOf('\n'); //NOI18N
                             if (idx >= 0) {

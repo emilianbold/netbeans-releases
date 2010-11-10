@@ -108,6 +108,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     // -J-Dorg.netbeans.modules.editor.completion.CompletionImpl.level=FINE
     private static final Logger LOG = Logger.getLogger(CompletionImpl.class.getName());
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
+    private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.editor.completion"); // NOI18N
 
@@ -613,7 +614,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
                 hideCompletion(false);                
             }
-            if (e.getKeyCode() == KeyEvent.VK_TAB) {
+            if (e.getKeyCode() == KeyEvent.VK_TAB && comp.getDocument().getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
                 e.consume();
                 if (guardedPos) {
                     Toolkit.getDefaultToolkit().beep();

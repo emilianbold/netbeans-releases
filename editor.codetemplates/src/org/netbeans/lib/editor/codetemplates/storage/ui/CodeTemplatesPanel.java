@@ -76,6 +76,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.lib.editor.codetemplates.AbbrevDetection;
+import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl.OnExpandAction;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -120,6 +121,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         loc(bNew, "New"); //NOI18N
         loc(bRemove, "Remove"); //NOI18N
         loc(lExplandTemplateOn, "ExpandTemplateOn"); //NOI18N
+        loc(lOnExpandAction, "OnExpandAction"); //NOI18N
         loc(tabPane, 0, "Expanded_Text", epExpandedText); //NOI18N
         loc(tabPane, 1, "Description", epDescription); //NOI18N
         tabPane.getAccessibleContext().setAccessibleName(loc("AN_tabPane")); //NOI18N
@@ -130,6 +132,10 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         cbExpandTemplateOn.addItem(loc("TAB")); //NOI18N
         cbExpandTemplateOn.addItem(loc("ENTER")); //NOI18N
         
+        cbOnExpandAction.addItem(loc("FORMAT")); //NOI18N
+        cbOnExpandAction.addItem(loc("INDENT")); //NOI18N
+        cbOnExpandAction.addItem(loc("NOOP")); //NOI18N
+
         bRemove.setEnabled (false);
         tTemplates.getTableHeader().setReorderingAllowed(false);
         tTemplates.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -182,6 +188,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         bNew.removeActionListener (this);
         bRemove.removeActionListener (this);
         cbExpandTemplateOn.removeActionListener (this);
+        cbOnExpandAction.removeActionListener(this);
         tTemplates.getSelectionModel ().removeListSelectionListener (this);
         
         cbLanguage.removeAllItems ();
@@ -210,10 +217,24 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         else
             cbExpandTemplateOn.setSelectedIndex (0);
         
+        OnExpandAction onExpandAction = model.getOnExpandAction();
+        switch (onExpandAction) {
+            case FORMAT:
+                cbOnExpandAction.setSelectedIndex(0);
+                break;
+            case INDENT:
+                cbOnExpandAction.setSelectedIndex(1);
+                break;
+            default:
+                cbOnExpandAction.setSelectedIndex(2);
+                break;
+        }
+        
         cbLanguage.addActionListener (this);
         bNew.addActionListener (this);
         bRemove.addActionListener (this);
         cbExpandTemplateOn.addActionListener (this);
+        cbOnExpandAction.addActionListener (this);
         tTemplates.getSelectionModel ().addListSelectionListener (this);
         
         // Pre-select a language
@@ -399,6 +420,18 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     model.setExpander (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0));
                     break;
             }
+        } else if (e.getSource() == cbOnExpandAction) {
+            switch (cbOnExpandAction.getSelectedIndex()) {
+                case 0:
+                    model.setOnExpandAction(OnExpandAction.FORMAT);
+                    break;
+                case 1:
+                    model.setOnExpandAction(OnExpandAction.INDENT);
+                    break;
+                default:
+                    model.setOnExpandAction(OnExpandAction.NOOP);
+                    break;
+            }
         }
     }
 
@@ -514,6 +547,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         bRemove = new javax.swing.JButton();
         lExplandTemplateOn = new javax.swing.JLabel();
         cbExpandTemplateOn = new javax.swing.JComboBox();
+        lOnExpandAction = new javax.swing.JLabel();
+        cbOnExpandAction = new javax.swing.JComboBox();
         tabPane = new javax.swing.JTabbedPane();
         spExpandedText = new javax.swing.JScrollPane();
         epExpandedText = new javax.swing.JEditorPane();
@@ -565,7 +600,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         lExplandTemplateOn.setLabelFor(cbExpandTemplateOn);
         lExplandTemplateOn.setText("Expand Template on:");
 
-        cbExpandTemplateOn.setNextFocusableComponent(bNew);
+        cbExpandTemplateOn.setNextFocusableComponent(cbOnExpandAction);
+
+        lOnExpandAction.setLabelFor(cbOnExpandAction);
+        lOnExpandAction.setText("On Template Expand:");
+
+        cbOnExpandAction.setNextFocusableComponent(bNew);
 
         tabPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
         tabPane.setFocusCycleRoot(true);
@@ -593,7 +633,11 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     .add(layout.createSequentialGroup()
                         .add(lExplandTemplateOn)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbExpandTemplateOn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(cbExpandTemplateOn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(lOnExpandAction)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cbOnExpandAction, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
@@ -625,7 +669,9 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lExplandTemplateOn)
-                    .add(cbExpandTemplateOn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(cbExpandTemplateOn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lOnExpandAction)
+                    .add(cbOnExpandAction, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
         
@@ -634,10 +680,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     private javax.swing.JButton bRemove;
     private javax.swing.JComboBox cbExpandTemplateOn;
     private javax.swing.JComboBox cbLanguage;
+    private javax.swing.JComboBox cbOnExpandAction;
     private javax.swing.JEditorPane epDescription;
     private javax.swing.JEditorPane epExpandedText;
     private javax.swing.JLabel lExplandTemplateOn;
     private javax.swing.JLabel lLanguage;
+    private javax.swing.JLabel lOnExpandAction;
     private javax.swing.JLabel lTemplates;
     private javax.swing.JScrollPane spDescription;
     private javax.swing.JScrollPane spExpandedText;
