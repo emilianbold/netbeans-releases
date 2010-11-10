@@ -52,6 +52,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.ActionMap;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -130,6 +131,13 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
         focusOwner = new WeakReference<Component>(focus);
     }
     public static Component findFocusOwner() {
+        if (focusOwner == null) {
+            Utilities.actionsGlobalContext();
+            if (focusOwner == null) {
+                // give up
+                setFocusOwner(null);
+            }
+        }
         return focusOwner.get();
     }
     
