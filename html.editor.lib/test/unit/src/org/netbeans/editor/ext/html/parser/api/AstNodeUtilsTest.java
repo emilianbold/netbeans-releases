@@ -78,7 +78,7 @@ public class AstNodeUtilsTest extends TestBase {
         super.setUp();
     }
 
-    public static Test suite() {
+    public static Test Xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AstNodeUtilsTest("testFindClosestNodeBackward"));
         return suite;
@@ -283,6 +283,39 @@ public class AstNodeUtilsTest extends TestBase {
         //root node allows all dtd elements
         assertPossibleElements(root, 40, arr("del", "ins"), Match.CONTAINS);
         assertPossibleElements(root, 43, arr("del", "ins"), Match.CONTAINS);
+
+    }
+
+    public void testFindDescendantWithVirtualNodes() throws BadLocationException, ParseException {
+        String code = "<!doctype html><title>hi</title><div>buddy</div>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
+
+        AstNode title = AstNodeUtils.query(root, "html/head/title");
+        assertNotNull(title);
+
+        //non logical range
+        assertSame(title, AstNodeUtils.findDescendantTag(root, 17, false, true)); //middle
+        assertSame(title, AstNodeUtils.findDescendantTag(root, 15, false, true)); //fw
+        assertSame(title, AstNodeUtils.findDescendantTag(root, 22, false, false)); //bw
+
+        //logical range
+        assertSame(title, AstNodeUtils.findDescendantTag(root, 23, true, false)); 
+
+        AstNode div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        //non logical range
+        assertSame(div, AstNodeUtils.findDescendantTag(root, 35, false, true)); //middle
+        assertSame(div, AstNodeUtils.findDescendantTag(root, 32, false, true)); //fw
+        assertSame(div, AstNodeUtils.findDescendantTag(root, 37, false, false)); //bw
+
+        //logical range
+        assertSame(div, AstNodeUtils.findDescendantTag(root, 40, true, false));
 
     }
 

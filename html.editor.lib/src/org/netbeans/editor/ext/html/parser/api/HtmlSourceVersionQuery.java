@@ -43,7 +43,6 @@
 package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlSourceVersionController;
 import org.openide.util.Lookup;
 
