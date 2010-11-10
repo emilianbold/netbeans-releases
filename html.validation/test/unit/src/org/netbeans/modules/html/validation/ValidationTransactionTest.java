@@ -61,11 +61,13 @@ public class ValidationTransactionTest extends NbTestCase {
         super(name);
     }
 
-    public static Test Xsuite() {
-        String testName = "testHtml4";
+    public static Test xsuite() {
+//        ValidationTransaction.enableDebug();
+
+        String testName = "testFragment";
         System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest(testName));
+        suite.addTest(new ValidatorImplTest(testName));
         return suite;
     }
 
@@ -81,7 +83,7 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "<body>\n"
                 + "<div>ahoj!</Xiv>\n"
                 + "</body></html>\n", false);
-        
+
         validate("1\n"
                 + "23\n"
                 + "345\n"
@@ -137,6 +139,17 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "     </body>"
                 + "</html>", true, HtmlVersion.HTML41_TRANSATIONAL);
     }
+
+//    public void testFragment() throws SAXException {
+//        String code = "<div>aaa</div>";
+//        ValidationTransaction vt = ValidationTransaction.create(HtmlVersion.HTML5);
+//        vt.setBodyFragmentContextMode(true);
+//        vt.validateCode(code);
+//        for (ProblemDescription pd : vt.getFoundProblems()) {
+//                System.err.println(pd);
+//            }
+//        assertTrue(vt.isSuccess());
+//    }
 
     private void validate(String code, boolean expectedPass) throws SAXException {
         validate(code, expectedPass, HtmlVersion.HTML5);
