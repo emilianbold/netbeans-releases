@@ -114,10 +114,12 @@ public interface GitClient {
      * Commits all changes made in the index to all files under the given roots
      * @param roots
      * @param commitMessage
+     * @param author
+     * @param commiter
      * @param monitor
      * @throws GitException an error occurs
      */
-    public GitRevisionInfo commit(File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException;
 
     /**
      * Modifies the index. The entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
@@ -184,4 +186,9 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
+    /**
+     * Returns the user from this clients repository
+     */
+    public GitUser getUser() throws GitException;
 }

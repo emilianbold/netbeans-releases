@@ -71,6 +71,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -237,7 +238,7 @@ public final class CodeTemplateManagerOperation
             MimeLookup.getLookup(mimePath).lookupAll(CodeTemplateProcessorFactory.class);
         
         CodeTemplateInsertHandler handler = new CodeTemplateInsertHandler(
-                codeTemplate, component, processorFactories);
+                codeTemplate, component, processorFactories, CodeTemplateSettingsImpl.get(MimePath.parse(mimePath)).getOnExpandAction());
         handler.processTemplate();
     }
     

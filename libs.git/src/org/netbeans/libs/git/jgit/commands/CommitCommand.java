@@ -71,6 +71,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -84,13 +85,18 @@ public class CommitCommand extends GitCommand {
     private final File[] roots;
     private final ProgressMonitor monitor;
     private final String message;
+    private final GitUser author;
+    private final GitUser commiter;
     public GitRevisionInfo revision;
 
-    public CommitCommand (Repository repository, File[] roots, String message, ProgressMonitor monitor) {
+    public CommitCommand (Repository repository, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
         super(repository, monitor);
         this.roots = roots;
         this.message = message;
         this.monitor = monitor;
+                
+        this.author = author;
+        this.commiter = commiter;
     }
 
     @Override
@@ -101,8 +107,16 @@ public class CommitCommand extends GitCommand {
             try {
                 prepareIndex();
                 org.eclipse.jgit.api.CommitCommand commit = new Git(repository).commit();
-                PersonIdent pid = new PersonIdent(repository);
-                commit.setAuthor(pid);
+                                
+                if(author != null) {
+                    commit.setAuthor(author.getName(), author.getEmailAddress());
+                } else {
+                    commit.setAuthor(new PersonIdent(repository));
+                }                               
+                if(commiter != null) {                    
+                    commit.setCommitter(commiter.getName(), commiter.getEmailAddress());
+                }
+                
                 commit.setMessage(message);
                 RevCommit rev = commit.call();
                 revision = new JGitRevisionInfo(rev, repository);

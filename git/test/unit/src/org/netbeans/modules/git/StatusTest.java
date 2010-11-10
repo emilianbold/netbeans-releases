@@ -747,7 +747,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         // rename
         add(f);
-        String commitId = getClient(repositoryLocation).commit(files, "commit", ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String commitId = getClient(repositoryLocation).commit(files, "commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         delete(false, f);
         f = new File(repositoryLocation, "copy");
         write(f, "blabla");

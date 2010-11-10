@@ -61,6 +61,7 @@ public final class CodeTemplateSettingsImpl {
     
     public static final String PROP_CODE_TEMPLATES = "CodeTemplateSettingsImpl.PROP_CODE_TEMPLATES"; //NOI18N
     public static final String PROP_EXPANSION_KEY = "CodeTemplateSettingsImpl.PROP_EXPANSION_KEY"; //NOI18N
+    public static final String PROP_ON_EXPAND_ACTION = "CodeTemplateSettingsImpl.PROP_ON_EXPAND_ACTION"; //NOI18N
     
     public static synchronized CodeTemplateSettingsImpl get(MimePath mimePath) {
         WeakReference<CodeTemplateSettingsImpl> reference = INSTANCES.get(mimePath);
@@ -138,12 +139,51 @@ public final class CodeTemplateSettingsImpl {
         }
     }
 
+    public OnExpandAction getOnExpandAction() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String action = prefs.get(CODE_TEMPLATE_ON_EXPAND_ACTION, null);
+        if (action != null) {
+            return OnExpandAction.valueOf(action);
+        }
+        return DEFAULT_ON_EXPAND_ACTION;
+    }
+
+    public void setOnExpandAction(OnExpandAction action) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(CODE_TEMPLATE_ON_EXPAND_ACTION, action.name());
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            // ignore
+        }
+        
+        // notify all lookups for all mime types that the on expand action has changed
+        List<CodeTemplateSettingsImpl> all = new ArrayList<CodeTemplateSettingsImpl>();
+        synchronized (CodeTemplateSettingsImpl.class) {
+            for(Reference<CodeTemplateSettingsImpl> r : INSTANCES.values()) {
+                CodeTemplateSettingsImpl ctsi = r.get();
+                if (ctsi != null) {
+                    all.add(ctsi);
+                }
+            }
+        }
+        
+        for(CodeTemplateSettingsImpl ctsi : all) {
+            ctsi.pcs.firePropertyChange(PROP_CODE_TEMPLATES, null, null);
+        }
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
+    }
+
+    public static enum OnExpandAction {
+        FORMAT, INDENT, NOOP
     }
     
     // ---------------------------------------------
@@ -152,6 +192,8 @@ public final class CodeTemplateSettingsImpl {
 
     private static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
     private static final KeyStroke DEFAULT_EXPANSION_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+    private static final String CODE_TEMPLATE_ON_EXPAND_ACTION = "code-template-on-expand-action"; // NOI18N
+    private static final OnExpandAction DEFAULT_ON_EXPAND_ACTION = OnExpandAction.FORMAT;
 
     private static final Map<MimePath, WeakReference<CodeTemplateSettingsImpl>> INSTANCES =
         new WeakHashMap<MimePath, WeakReference<CodeTemplateSettingsImpl>>();
@@ -164,5 +206,4 @@ public final class CodeTemplateSettingsImpl {
     private CodeTemplateSettingsImpl(MimePath mimePath) {
         this.mimePath = mimePath;
     }
-
-}
+}    

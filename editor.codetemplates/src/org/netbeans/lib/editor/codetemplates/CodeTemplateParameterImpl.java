@@ -370,7 +370,9 @@ public final class CodeTemplateParameterImpl {
         }
         value = defaultValue;
         
-        if (name.equals(CodeTemplateParameter.CURSOR_PARAMETER_NAME)) {
+        if (name.equals(CodeTemplateParameter.CURSOR_PARAMETER_NAME)
+                || name.equals(CodeTemplateParameter.NO_FORMAT_PARAMETER_NAME)
+                || name.equals(CodeTemplateParameter.NO_INDENT_PARAMETER_NAME)) {
             editable = false;
             value = "";
         } else if (name.equals(CodeTemplateParameter.SELECTION_PARAMETER_NAME)) {
