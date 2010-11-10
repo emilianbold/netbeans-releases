@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -7,7 +7,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -27,10 +27,10 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="txtId" pref="158" max="32767" attributes="0"/>
+                              <Component id="txtId" pref="159" max="32767" attributes="0"/>
                               <EmptySpace min="145" pref="145" max="145" attributes="0"/>
                           </Group>
-                          <Component id="comMirrorOf" alignment="0" pref="303" max="32767" attributes="0"/>
+                          <Component id="comMirrorOf" alignment="0" pref="304" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -38,7 +38,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="comUrl" pref="303" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="btnLink" alignment="0" pref="390" max="32767" attributes="0"/>
+                  <Component id="btnLink" alignment="0" pref="400" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
