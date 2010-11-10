@@ -86,6 +86,7 @@
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
