@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 
@@ -148,6 +149,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private DisassemblerWindow disassemblerWindow;
     private StateModelAdaptor disStateModel = new StateModelAdaptor();
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
+
+    protected Executor executor;
 
     protected NativeDebuggerImpl(ContextProvider ctxProvider) {
         this.ctxProvider = ctxProvider;
@@ -227,6 +230,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     private Host host = null;
+
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return executor.getExecutionEnvironment();
+    }
 
     public Host getHost() {
         if (host == null) {

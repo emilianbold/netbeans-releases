@@ -481,10 +481,10 @@ made subject to such option by the copyright holder.
 
 		<!-- separate out disassembly stuff -->
 
-		<file name="PioAction.shadow">
+<!--		<file name="PioAction.shadow">
 		    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-debugger-common2-debugger-io-PioAction.instance"/>
 		    <attr name="position" intvalue="1400"/>
-		</file>
+		</file>-->
 		<file name="ConsoleAction.shadow">
 		    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-debugger-common2-debugger-io-ConsoleAction.instance"/>
 		    <attr name="position" intvalue="1450"/>
