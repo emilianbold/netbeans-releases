@@ -123,27 +123,27 @@ public class FindInRepoPanel extends javax.swing.JPanel implements DocumentListe
 
         org.openide.awt.Mnemonics.setLocalizedText(cbClasses, org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbClasses.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout pnlIncludesLayout = new org.jdesktop.layout.GroupLayout(pnlIncludes);
+        javax.swing.GroupLayout pnlIncludesLayout = new javax.swing.GroupLayout(pnlIncludes);
         pnlIncludes.setLayout(pnlIncludesLayout);
         pnlIncludesLayout.setHorizontalGroup(
-            pnlIncludesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlIncludesLayout.createSequentialGroup()
+            pnlIncludesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlIncludesLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(pnlIncludesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbName)
-                    .add(cbDescription)
-                    .add(cbClasses))
-                .addContainerGap(355, Short.MAX_VALUE))
+                .addGroup(pnlIncludesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbName)
+                    .addComponent(cbDescription)
+                    .addComponent(cbClasses))
+                .addContainerGap(359, Short.MAX_VALUE))
         );
         pnlIncludesLayout.setVerticalGroup(
-            pnlIncludesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlIncludesLayout.createSequentialGroup()
+            pnlIncludesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlIncludesLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(cbName)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbDescription)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbClasses)
+                .addComponent(cbName)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbDescription)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbClasses)
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
@@ -151,29 +151,29 @@ public class FindInRepoPanel extends javax.swing.JPanel implements DocumentListe
         cbDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbDescription.AccessibleContext.accessibleDescription")); // NOI18N
         cbClasses.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbClasses.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pnlIncludes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(lblFind)
-                        .add(18, 18, 18)
-                        .add(txtFind, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlIncludes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblFind)
+                        .addGap(18, 18, 18)
+                        .addComponent(txtFind, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblFind)
-                    .add(txtFind, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(pnlIncludes, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblFind)
+                    .addComponent(txtFind, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(pnlIncludes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         txtFind.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.txtFind.AccessibleContext.accessibleDescription")); // NOI18N

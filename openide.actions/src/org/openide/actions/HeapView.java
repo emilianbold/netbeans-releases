@@ -188,21 +188,6 @@ class HeapView extends JComponent {
      * MessageFormat used to generate text.
      */
     private final MessageFormat format;
-    
-    /**
-     * Whether or not to show a drop shadow.
-     */
-    private boolean showDropShadow;
-    
-    /**
-     * Style to render things in.
-     */
-    private int tickStyle;
-
-    /**
-     * Whether or not text is shown.
-     */
-    private boolean showText;
 
     /**
      * Data for the graph as a percentage of the heap used.
@@ -546,11 +531,15 @@ class HeapView extends JComponent {
             if (!graphFilled) {
                 x = width - graphIndex;
             }
-            float min = graph[index];
-            index = (index + 1) % graph.length;
+            float[] localGraph = graph;
+            if (localGraph == null) {
+                return;
+            }
+            float min = localGraph[index];
+            index = (index + 1) % localGraph.length;
             while (index != graphIndex) {
-                min = Math.min(min, graph[index]);
-                index = (index + 1) % graph.length;
+                min = Math.min(min, localGraph[index]);
+                index = (index + 1) % localGraph.length;
             }
             int minHeight = (int)(min * (float)height);
             if (minHeight > 0) {
@@ -559,12 +548,12 @@ class HeapView extends JComponent {
             }
             index = getGraphStartIndex();
             do {
-                int tickHeight = (int)(graph[index] * (float)height);
+                int tickHeight = (int)(localGraph[index] * (float)height);
                 if (tickHeight > minHeight) {
                     g.drawImage(tickGradientImage, x, height - tickHeight, x + 1, height - minHeight,
                             x, height - tickHeight, x + 1, height - minHeight, null);
                 }
-                index = (index + 1) % graph.length;
+                index = (index + 1) % localGraph.length;
                 x++;
             } while (index != graphIndex);
         }
@@ -824,6 +813,10 @@ class HeapView extends JComponent {
         }
         Runtime r = Runtime.getRuntime();
         long total = r.totalMemory();
+        float[] localGraph = graph;
+        if (localGraph == null) {
+            return;
+        }
         if (total != lastTotal) {
             if (lastTotal != 0) {
                 // Total heap size has changed, start an animation.
@@ -831,9 +824,9 @@ class HeapView extends JComponent {
                 // Readjust the graph size based on the new max.
                 int index = getGraphStartIndex();
                 do {
-                    graph[index] = (float)(((double)graph[index] *
+                    localGraph[index] = (float)(((double)localGraph[index] *
                             (double)lastTotal) / (double)total);
-                    index = (index + 1) % graph.length;
+                    index = (index + 1) % localGraph.length;
                 } while (index != graphIndex);
             }
             lastTotal = total;
@@ -841,8 +834,8 @@ class HeapView extends JComponent {
         if (heapGrowTimer == null) {
             // Not animating a heap size change, update the graph data and text.
             long used = total - r.freeMemory();
-            graph[graphIndex] = (float)((double)used / (double)total);
-            graphIndex = (graphIndex + 1) % graph.length;
+            localGraph[graphIndex] = (float)((double)used / (double)total);
+            graphIndex = (graphIndex + 1) % localGraph.length;
             if (graphIndex == 0) {
                 graphFilled = true;
             }

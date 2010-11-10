@@ -428,7 +428,18 @@ public abstract class Lookup {
      */
     public static abstract class Result<T> extends Object {
         /** Registers a listener that is invoked when there is a possible
-         * change in this result.
+         * change in this result. 
+         * <p>
+         * <div class="nonnormative">
+         * Sometimes people report that their listener is not receiving 
+         * events (for example <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=191471">IZ 191471</a>)
+         * or that the listener receives few events, but then it <em>stops</em>
+         * listening.
+         * Such behavior is often caused by not keeping strong reference to 
+         * the {@link Result} object. When it gets garbage collected
+         * it can no longer deliver events. Thus remember to keep reference
+         * to the object you are attaching listener to.
+         * </div>
          *
          * @param l the listener to add
          */

@@ -45,4 +45,9 @@ made subject to such option by the copyright holder.
 -->
 <project name="libs.jna" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <ant dir="external" target="unzip"/>
+    </target>
+
 </project>

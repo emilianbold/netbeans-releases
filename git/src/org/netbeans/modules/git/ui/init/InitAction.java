@@ -46,6 +46,7 @@ package org.netbeans.modules.git.ui.init;
 import java.awt.Dialog;
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -56,12 +57,10 @@ import org.netbeans.libs.git.GitException;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
@@ -78,15 +77,12 @@ import org.openide.util.HelpCtx;
  */
 public class InitAction extends GitAction {
 
+    private static final Logger LOG = Logger.getLogger(InitAction.class.getName());
+
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = getCurrentContext(nodes);
         return !GitUtils.isFromGitRepository(context);
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(InitAction.class, "CTL_MenuItem_Init");
     }
 
     private File getCommonAncestor(File firstFile, File secondFile) {
@@ -111,7 +107,7 @@ public class InitAction extends GitAction {
         for (int i = 1; i < files.length; i++) {
             File f = getCommonAncestor(f1, files[i]);
             if (f == null) {
-                Git.LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
+                LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
                         new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
                 // XXX not sure wat to do at this point
             } else {
@@ -143,19 +139,14 @@ public class InitAction extends GitAction {
             @Override
             public void perform() {
                 try {
-                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE")); // NOI18N
-                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE_SEP")); // NOI18N
                     output(NbBundle.getMessage(InitAction.class, "MSG_INIT", rootToManage)); // NOI18N
-                    
-                    GitClient client = Git.getInstance().getClient(rootToManage);
-                    client.init();                                        
-
+                    GitClient client = getClient();
+                    client.init(this);
                     Git.getInstance().getFileStatusCache().refreshAllRoots(rootToManage);
                     Git.getInstance().versionedFilesChanged();                       
-                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_DONE")); // NOI18N                    
                                        
                 } catch (GitException ex) {
-                    Git.LOG.log(Level.WARNING, NAME, ex);                    
+                    LOG.log(Level.WARNING, NAME, ex);
                 }
             }            
         };
@@ -174,6 +165,7 @@ public class InitAction extends GitAction {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
         final RequestProcessor.Task validateTask = Git.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
@@ -182,8 +174,8 @@ public class InitAction extends GitAction {
                 // must be an existing directory
                 if (!dir.isDirectory()) {
                     errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Directory"); //NOI18N
-                    if (Git.LOG.isLoggable(Level.FINE) && dir.exists()) {
-                        Git.LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: selected a file: {0}", dir); //NOI18N
+                    if (LOG.isLoggable(Level.FINE) && dir.exists()) {
+                        LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: selected a file: {0}", dir); //NOI18N
                     }
                     valid = false;
                 }
@@ -197,8 +189,8 @@ public class InitAction extends GitAction {
                         File repoRoot = null;
                         if (f.isDirectory() && (repoRoot = Git.getInstance().getRepositoryRoot(f)) != null) {
                             valid = false;
-                            if (Git.LOG.isLoggable(Level.FINE) && dir.exists()) {
-                                Git.LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: file is versioned: {0}, root: {1}", new Object[]{f, repoRoot}); //NOI18N
+                            if (LOG.isLoggable(Level.FINE) && dir.exists()) {
+                                LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: file is versioned: {0}, root: {1}", new Object[]{f, repoRoot}); //NOI18N
                             }
                             errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Versioned"); //NOI18N
                             break;
@@ -279,14 +271,14 @@ public class InitAction extends GitAction {
 
         File root = null;
         root = getCommonAncestor(files);
-        if (Git.LOG.isLoggable(Level.FINER)) {
-            Git.LOG.log(Level.FINER, "InitAction.getSuggestedRoot: common root for {0}: {1}", new Object[]{context.getRootFiles(), root}); //NOI18N
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "InitAction.getSuggestedRoot: common root for {0}: {1}", new Object[]{context.getRootFiles(), root}); //NOI18N
         }
 
         if (projFile != null) {
             root = getCommonAncestor(root, projFile);
-            if (Git.LOG.isLoggable(Level.FINER)) {
-                Git.LOG.log(Level.FINER, "InitAction.getSuggestedRoot: root with project at {0}: {1}", new Object[]{projFile, root}); //NOI18N
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "InitAction.getSuggestedRoot: root with project at {0}: {1}", new Object[]{projFile, root}); //NOI18N
             }
         }
         return root;

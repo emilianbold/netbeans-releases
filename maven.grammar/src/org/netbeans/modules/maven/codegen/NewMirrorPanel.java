@@ -50,16 +50,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.openide.DialogDescriptor;
@@ -227,17 +228,17 @@ public class NewMirrorPanel extends javax.swing.JPanel {
         btnLink = new JButton();
 
         lblId.setLabelFor(txtId);
-
         Mnemonics.setLocalizedText(lblId, NbBundle.getMessage(NewMirrorPanel.class, "NewMirrorPanel.lblId.text")); // NOI18N
-        lblMirrorOf.setLabelFor(comMirrorOf);
 
+        lblMirrorOf.setLabelFor(comMirrorOf);
         Mnemonics.setLocalizedText(lblMirrorOf, NbBundle.getMessage(NewMirrorPanel.class, "NewMirrorPanel.lblMirrorOf.text")); // NOI18N
+
         comMirrorOf.setEditable(true);
         comMirrorOf.setModel(new DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         lblUrl.setLabelFor(comUrl);
-
         Mnemonics.setLocalizedText(lblUrl, NbBundle.getMessage(NewMirrorPanel.class, "NewMirrorPanel.lblUrl.text")); // NOI18N
+
         comUrl.setEditable(true);
         comUrl.setModel(new DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -250,44 +251,44 @@ public class NewMirrorPanel extends javax.swing.JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(lblMirrorOf)
-                            .add(lblId))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(txtId, GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                .add(145, 145, 145))
-                            .add(comMirrorOf, 0, 303, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(lblUrl)
-                        .addPreferredGap(LayoutStyle.UNRELATED)
-                        .add(comUrl, 0, 303, Short.MAX_VALUE))
-                    .add(btnLink, GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(lblMirrorOf)
+                            .addComponent(lblId))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(txtId, GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                                .addGap(145, 145, 145))
+                            .addComponent(comMirrorOf, 0, 304, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblUrl)
+                        .addPreferredGap(ComponentPlacement.UNRELATED)
+                        .addComponent(comUrl, 0, 303, Short.MAX_VALUE))
+                    .addComponent(btnLink, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(lblId)
-                    .add(txtId, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(lblMirrorOf)
-                    .add(comMirrorOf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(lblUrl)
-                    .add(comUrl, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(btnLink)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblId)
+                    .addComponent(txtId, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblMirrorOf)
+                    .addComponent(comMirrorOf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblUrl)
+                    .addComponent(comUrl, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btnLink, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(36, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

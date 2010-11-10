@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.cnd.modelui.actions;
 
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +58,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -64,6 +71,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -112,9 +122,6 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
             lookupObjects.add(lastFocusedComponent);
             doc = lastFocusedComponent.getDocument();
         }
-        if (doc != null) {
-            lookupObjects.add(doc);
-        }
         List<CsmFile> files = new ArrayList<CsmFile>();
         if (activatedNodes != null) {
             lookupObjects.addAll(Arrays.asList(activatedNodes));
@@ -128,12 +135,28 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     }
                 }
             }
+        }        
+        if (doc != null) {
+            lookupObjects.add(doc);
+            if (files.isEmpty()) {
+                // add from editor
+                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+                if (csmFile != null) {
+                    files.add(csmFile);
+                }            
+            }
         }
         lookupObjects.addAll(csmProjects);
         lookupObjects.addAll(files);
         LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
         if (!lookupObjects.isEmpty()) {
             Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
+            JPanel pnl = createPanel();
+            DialogDescriptor descr = new DialogDescriptor(pnl, "C/C++ Diagnostics");// NOI18N
+            NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(descr));
+            if (descr.getValue() != NotifyDescriptor.OK_OPTION) {
+                return;
+            }            
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
             String tmpDir = System.getProperty("java.io.tmp"); // NOI18N
             if (tmpDir == null) {
@@ -160,9 +183,11 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     }
                     pw.printf("document version=%d timestamp=%s. Is modified? %s\n", DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), modified);// NOI18N 
                 }
-                for (CndDiagnosticProvider provider : providers) {
-                    pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());// NOI18N 
-                    provider.dumpInfo(context, pw);
+                for (ProviderAction enabledProvider : providerActions) {
+                    if (enabledProvider.isSelected()) {
+                        pw.printf("**********************\ndiagnostics of %s\n", enabledProvider.getProvider().getDisplayName());// NOI18N 
+                        enabledProvider.getProvider().dumpInfo(context, pw);
+                    }
                 }
                 pw.close();
                 // copy all into output window
@@ -182,5 +207,54 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
             }
 
         }
-    }    
+    }
+
+    private JPanel createPanel() {
+        if (panel == null) {
+            panel = new JPanel();
+            panel.setLayout(new GridBagLayout());
+            GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+            Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
+            panel.setPreferredSize(new Dimension(250, 32*providers.size()));
+            for (CndDiagnosticProvider prov : providers) {
+                gridBagConstraints.gridy++;
+                ProviderAction providerAction = new ProviderAction(prov);
+                providerActions.add(providerAction);
+                JCheckBox cb = new JCheckBox(providerAction);
+                cb.setSelected(providerAction.isSelected());
+                panel.add(cb, gridBagConstraints);
+            }
+        }
+        return panel;
+    }
+    
+    private JPanel panel;
+    private final List<ProviderAction> providerActions = new ArrayList<ProviderAction>();
+    private final static class ProviderAction extends AbstractAction {
+        private final CndDiagnosticProvider provider;
+        private boolean selected;
+        ProviderAction(CndDiagnosticProvider provider) {
+            super(provider.getDisplayName());
+            this.provider = provider;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            selected = !selected;
+        }
+        
+        boolean isSelected() {
+            return selected;
+        }
+
+        public CndDiagnosticProvider getProvider() {
+            return provider;
+        }
+    }
 }
