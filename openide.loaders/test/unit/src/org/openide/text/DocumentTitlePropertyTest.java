@@ -110,6 +110,26 @@ public class DocumentTitlePropertyTest extends NbTestCase {
         assertTrue("Test property value", val.startsWith("someFolder/newFile.obj"));
     }
 
+    public void testDocumentId () throws IOException {
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");
+        FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.txt");
+        
+        DataObject obj = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.obj"));
+        DataObject txt = DataObject.find(FileUtil.getConfigFile("someFolder/someFile.txt"));
+        assertEquals( MyDataObject.class, obj.getClass());
+        assertTrue( "we need UniFileLoader", obj.getLoader() instanceof UniFileLoader );
+
+        CloneableEditorSupport ecobj = (CloneableEditorSupport) obj.getCookie(EditorCookie.class);
+        CloneableEditorSupport ectxt = (CloneableEditorSupport) txt.getCookie(EditorCookie.class);
+        
+        if (ecobj.documentID().equals(ectxt.documentID())) {
+            fail("The same ID: " + ectxt.documentID());
+        }
+        assertEquals("Should be full name of the fileObj", obj.getPrimaryFile().getNameExt(), ecobj.documentID());
+        assertEquals("Should be full name of the txtObj", txt.getPrimaryFile().getNameExt(), ectxt.documentID());
+    }
+    
+    
     /** Test updating document property Document.TitleProperty when dataobject is moved */
     public void testMove () throws IOException {
         FileUtil.createData(FileUtil.getConfigRoot(), "someFolder/someFile.obj");

@@ -275,7 +275,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         if (! obj.isValid()) {
             return ""; // NOI18N
         }
-        return obj.getPrimaryFile().getName();
+        return obj.getPrimaryFile().getNameExt();
     }
 
     /**

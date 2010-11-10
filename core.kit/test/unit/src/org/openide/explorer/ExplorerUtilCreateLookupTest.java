@@ -96,6 +96,7 @@ public class ExplorerUtilCreateLookupTest extends org.openide.explorer.windows.T
         ExTC e = new ExTC ();
         
         top = e;
+        get = e;
         lookup = ExplorerUtils.createLookup (e.em, e.getActionMap ());
     }
     

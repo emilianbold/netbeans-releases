@@ -693,7 +693,7 @@ public class StatusTest extends AbstractGitTestCase {
         f.createNewFile();
         commit();
         getCache().refreshAllRoots(files);
-        assertEquals("file<font color=\"#999999\"> [-/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertEquals("file<font color=\"#999999\"></font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
         assertIconTooltip(annotator, context, "");
 
         // file is modified in WT
@@ -749,13 +749,13 @@ public class StatusTest extends AbstractGitTestCase {
         add(f);
         String commitId = getClient(repositoryLocation).commit(files, "commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         delete(false, f);
-        f = new File(repositoryLocation, "copy");
-        write(f, "blabla");
-        files  = new File[] { f };
+        File f2 = new File(repositoryLocation, "copy");
+        write(f2, "blabla");
+        files  = new File[] { f, f2 };
         add();
         getCache().refreshAllRoots(files);
-        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [R/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f)) }), "<font color=\"#008000\">Renamed/-</font>");
+        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [R/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f2), f2));
+        assertIconTooltip(annotator, VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f2)) }), "<font color=\"#008000\">Renamed/-</font>");
 
         assertEquals("reposka<font color=\"#999999\"> [master]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
         // test annotation for detached head

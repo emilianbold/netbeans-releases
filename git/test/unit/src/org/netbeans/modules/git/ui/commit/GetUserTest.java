@@ -46,7 +46,6 @@ import javax.swing.JComboBox;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 
 /**
  *
@@ -73,7 +72,6 @@ public class GetUserTest extends NbTestCase {
         assertUser(parameters, panel.authorComboBox, "Thor", "Thor", "");
         assertUser(parameters, panel.authorComboBox, "A U Thor", "A U Thor", "");
         assertUser(parameters, panel.authorComboBox, "<a", "<a", ""); // cli seems to live with this
-        
     }
     
     public void testWrongGetUser() {
@@ -87,7 +85,6 @@ public class GetUserTest extends NbTestCase {
         assertNull(getUser(parameters, panel.authorComboBox, "<odin.org>"));
         assertNull(getUser(parameters, panel.authorComboBox, "org>"));
         assertNull(getUser(parameters, panel.authorComboBox, ">"));
-        
     }
 
     private void assertUser(GitCommitParameters parameters, JComboBox combo, String userString, String name, String mail) {

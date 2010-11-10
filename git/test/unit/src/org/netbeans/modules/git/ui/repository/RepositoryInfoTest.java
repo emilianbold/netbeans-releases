@@ -87,7 +87,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
 
     public void testInstanceCollected () throws Exception {
         File repo2 = new File(repositoryLocation.getParentFile(), "other");
-        getClient(repo2).init();
+        getClient(repo2).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(repo2.exists());
         Git.getInstance().versionedFilesChanged();
         assertEquals(repo2, Git.getInstance().getRepositoryRoot(repo2));

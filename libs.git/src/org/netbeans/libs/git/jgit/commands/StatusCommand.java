@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
@@ -114,7 +113,7 @@ public class StatusCommand extends GitCommand {
             try {
                 String workTreePath = repository.getWorkTree().getAbsolutePath();
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
-                Map<String, DiffEntry> renames = detectRenames(repository, cache, pathFilters);
+                Map<String, DiffEntry> renames = pathFilters.isEmpty() ? Collections.<String, DiffEntry>emptyMap() : detectRenames(repository, cache, pathFilters);
                 TreeWalk treeWalk = new TreeWalk(repository);
                 if (!pathFilters.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.create(pathFilters));
@@ -214,6 +213,7 @@ public class StatusCommand extends GitCommand {
 
     private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache, Collection<PathFilter> filters) {
         List<DiffEntry> entries;
+        assert !filters.isEmpty();
         TreeWalk treeWalk = new TreeWalk(repository);
         try {
             treeWalk.setRecursive(true);
@@ -224,27 +224,10 @@ public class StatusCommand extends GitCommand {
             } else {
                 treeWalk.addTree(new EmptyTreeIterator());
             }
+            treeWalk.setFilter(PathFilterGroup.create(filters));
             // Index
             treeWalk.addTree(new DirCacheIterator(cache));
             entries = DiffEntry.scan(treeWalk);
-            // remove adds from outside of the scanned subtree
-            if (!filters.isEmpty()) {
-                for (ListIterator<DiffEntry> it = entries.listIterator(); it.hasNext();) {
-                    DiffEntry e = it.next();
-                    if (e.getChangeType().equals(DiffEntry.ChangeType.ADD)) {
-                        boolean contained = false;
-                        for (PathFilter f : filters) {
-                            if (e.getNewPath().startsWith(f.getPath())) {
-                                contained = true;
-                                break;
-                            }
-                        }
-                        if (!contained) {
-                            it.remove();
-                        }
-                    }
-                }
-            }
             RenameDetector d = new RenameDetector(repository);
             d.addAll(entries);
             entries = d.compute();

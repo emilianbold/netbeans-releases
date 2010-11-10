@@ -230,6 +230,8 @@ public class FileInformation extends VCSFileInformation {
         } else if (containsStatus(Status.IN_CONFLICT)) {
             Git.LOG.log(Level.WARNING, "Confict found, please annotate: {0}", getStatus());
             return "CON"; //NOI18N
+        } else if ("-".equals(sIndex) && "-".equals(sWorkingTree)) { //NOI18N
+            return ""; //NOI18N
         } else {
             return new MessageFormat("{0}/{1}").format(new Object[] {sIndex, sWorkingTree}, new StringBuffer(), null).toString(); //NOI18N
         }
