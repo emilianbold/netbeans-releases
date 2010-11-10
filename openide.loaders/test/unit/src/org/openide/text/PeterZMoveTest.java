@@ -46,56 +46,23 @@
 package org.openide.text;
 
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.actions.*;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.UniFileLoader;
-import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -157,7 +124,13 @@ public class PeterZMoveTest extends NbTestCase {
     
     /** holds the instance of the object so insane is able to find the reference */
     private DataObject obj;
+    public void testWhenMovingAFileNoLockshallBetakenNoSave() throws Exception {
+        doWhenMovingAFileNoLockshallBetaken(false);
+    }
     public void testWhenMovingAFileNoLockshallBetaken () throws Exception {
+        doWhenMovingAFileNoLockshallBetaken(true);
+    }
+    private void doWhenMovingAFileNoLockshallBetaken (boolean save) throws Exception {
         DES sup = support ();
         assertFalse ("It is closed now", support ().isDocumentLoaded ());
         
@@ -172,7 +145,9 @@ public class PeterZMoveTest extends NbTestCase {
         
         assertTrue("Really modified", sup.isModified());
         
-        sup.saveDocument();
+        if (save) {
+            sup.saveDocument();
+        }
         
         FileObject fo = FileUtil.createFolder(obj.getFolder().getPrimaryFile(), "newfold");
         DataFolder nf = DataFolder.findFolder(fo);
@@ -200,7 +175,7 @@ public class PeterZMoveTest extends NbTestCase {
     private static final class MyEnv extends DataEditorSupport.Env {
         static final long serialVersionUID = 1L;
         
-        public MyEnv (DataObject obj) {
+        public MyEnv (MyDataObject obj) {
             super (obj);
         }
         
@@ -209,7 +184,8 @@ public class PeterZMoveTest extends NbTestCase {
         }
 
         protected FileLock takeLock () throws IOException {
-            return super.getDataObject ().getPrimaryFile ().lock ();
+            MyDataObject my = (MyDataObject) getDataObject();
+            return my.getPrimaryEntry().takeLock();
         }
         
     }
