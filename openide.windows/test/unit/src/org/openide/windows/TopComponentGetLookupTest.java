@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,8 +75,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -84,6 +87,9 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public class TopComponentGetLookupTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     /** top component we call set on*/
     protected TopComponent top;
@@ -427,61 +433,77 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     public void testActionMapIsTakenFromComponentAndAlsoFromFocusedOne() {
         JTextField panel = new JTextField();
+        defaultFocusManager.setC(panel);
         
-        class Def extends DefaultKeyboardFocusManager {
-            private Component c;
-            
-            public Def(Component c) {
-                this.c = c;
+        top.add(BorderLayout.CENTER, panel);
+
+        class Act extends AbstractAction {
+            public void actionPerformed(ActionEvent ev) {
             }
-            @Override
-            public Component getFocusOwner() {
-                return null;
-            }
-            @Override
-            public Component getPermanentFocusOwner() {
-                return c;
-            }
-            
         }
-        KeyboardFocusManager prev = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        Act act1 = new Act();
+        Act act2 = new Act();
+        Act act3 = new Act();
+
+        top.getActionMap().put("globalRegistration", act1);
+        top.getActionMap().put("doubleRegistration", act2);
+
+        panel.getActionMap().put("doubleRegistration", act3);
+        panel.getActionMap().put("focusedRegistration", act3);
+
+        final ActionMap map = (ActionMap)top.getLookup().lookup(ActionMap.class);
+
+        assertEquals("actions registered directly on TC are found", act1, map.get("globalRegistration"));
+        assertEquals("even if they are provided by focused component", act2, map.get("doubleRegistration"));
+
+        assertEquals("actions are delegated to focus owner, if not present", act3, map.get("focusedRegistration"));
+
+        List<Object> keys = Arrays.asList(map.allKeys());
+        assertTrue("focusedRegistration is there: " + keys, keys.contains("focusedRegistration"));
+        assertTrue("doubleRegistration is there: " + keys, keys.contains("doubleRegistration"));
+        assertTrue("globalRegistration is there: " + keys, keys.contains("globalRegistration"));
+        assertTrue("closeWindow is by default there: " + keys, keys.contains("closeWindow"));
         
-        try {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def(panel));
-            
-            
-            
-            top.add(BorderLayout.CENTER, panel);
-            
-            class Act extends AbstractAction {
-                public void actionPerformed(ActionEvent ev) {
+        top.open();
+        top.requestActive();
+        
+        final Result<ActionMap> res = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+        class Checker implements LookupListener {
+            List<Object> keys1, keys2;
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                Object[] arr = map.allKeys(); 
+                if (arr == null) {
+                    arr = new Object[0];
+                }
+                
+                if (keys1 == null) {
+                    keys1 = Arrays.asList(arr);
+                } else {
+                    assertNull("At most two calls", keys2);
+                    keys2 = Arrays.asList(arr);
                 }
             }
-            Act act1 = new Act();
-            Act act2 = new Act();
-            Act act3 = new Act();
-            
-            top.getActionMap().put("globalRegistration", act1);
-            top.getActionMap().put("doubleRegistration", act2);
-            
-            panel.getActionMap().put("doubleRegistration", act3);
-            panel.getActionMap().put("focusedRegistration", act3);
-            
-            
-            ActionMap map = (ActionMap)top.getLookup().lookup(ActionMap.class);
-            
-            assertEquals("actions registered directly on TC are found", act1, map.get("globalRegistration"));
-            assertEquals("even if they are provided by focused component", act2, map.get("doubleRegistration"));
-            
-            assertEquals("actions are delegated to focus owner, if not present", act3, map.get("focusedRegistration"));
-            
-            JTextField f = new JTextField();
-            f.getActionMap().put("focusedRegistration", act3);
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def(f));
-            assertEquals("but as it is not in the right component, nothing is found", null, map.get("focusedRegistration"));
-        } finally {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(prev);
         }
+        Checker listener = new Checker();
+        res.addLookupListener(listener);
+        assertEquals("One map", 1, res.allInstances().size());
+        
+        JTextField f = new JTextField();
+        f.getActionMap().put("focusedRegistration", act3);
+        defaultFocusManager.setC(f);
+        assertEquals("but as it is not in the right component, nothing is found", null, map.get("focusedRegistration"));
+        
+        assertNotNull("Two changes delivered", listener.keys2);
+        assertTrue("doubleRegistration was there: " + listener.keys1, listener.keys1.contains("doubleRegistration"));
+        assertTrue("globalRegistration was there: " + listener.keys1, listener.keys1.contains("globalRegistration"));
+        assertTrue("closeWindow was there: " + listener.keys1, listener.keys1.contains("closeWindow"));
+        assertTrue("focusedRegistration was there: " + listener.keys1, listener.keys1.contains("focusedRegistration"));
+        
+        assertFalse("focusedRegistration was there: " + listener.keys2, listener.keys2.contains("focusedRegistration"));
+        assertTrue("doubleRegistration was there: " + listener.keys2, listener.keys2.contains("doubleRegistration"));
+        assertTrue("globalRegistration was there: " + listener.keys2, listener.keys2.contains("globalRegistration"));
+        assertTrue("closeWindow was there: " + listener.keys2, listener.keys2.contains("closeWindow"));
     }
     
     
@@ -766,5 +788,36 @@ public class TopComponentGetLookupTest extends NbTestCase {
             return new Wrap();
         }
         
+    }
+    
+    static class Def extends DefaultKeyboardFocusManager {
+        private Component c;
+        private int cnt;
+
+        public Def() {
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(this);
+        }
+
+        public void setC(Component c) {
+            Object oldC = this.c;
+            this.c = c;
+            firePropertyChange("permanentFocusOwner", oldC, c);
+        }
+
+        @Override
+        public Component getFocusOwner() {
+            return null;
+        }
+        @Override
+        public Component getPermanentFocusOwner() {
+            cnt++;
+            return c;
+        }
+
+    }
+    private final static Def defaultFocusManager = new Def();
+    static {
+        Utilities.actionsGlobalContext();
+        assertEquals("actionsGlobalContext calls once into our focus manager", 1, defaultFocusManager.cnt);
     }
 }

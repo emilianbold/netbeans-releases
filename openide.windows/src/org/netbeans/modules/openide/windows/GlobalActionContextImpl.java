@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.openide.windows;
 
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.ActionMap;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
@@ -69,32 +73,40 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     
     public GlobalActionContextImpl (TopComponent.Registry r) {
         this.registry = r;
+        KeyboardFocusManager m = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        m.addPropertyChangeListener("permanentFocusOwner", this); // NOI18N
+        setFocusOwner(m.getPermanentFocusOwner());
     }
     
+    /** we also manage the current focus owner */
+    private static Reference<Component> focusOwner;
     /** the lookup to temporarily use */
     private static volatile Lookup temporary;
     /** Temporarily provides different action map in the lookup.
      */
-    public static void blickActionMap(final ActionMap map) {
+    public static void blickActionMap(ActionMap map) {
+        blickActionMap(map, null);
+    }
+    private static void blickActionMap(final ActionMap map, final Component[] focus) {
         if (EventQueue.isDispatchThread()) {
-            blickActionMapImpl(map);
+            blickActionMapImpl(map, focus);
         } else {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    blickActionMapImpl(map);
+                    blickActionMapImpl(map, focus);
                 }
             });
         }
     }
 
-    static void blickActionMapImpl(ActionMap map) {
+    static void blickActionMapImpl(ActionMap map, Component[] focus) {
         assert EventQueue.isDispatchThread();
         Object obj = Lookup.getDefault ().lookup (ContextGlobalProvider.class);
         if (obj instanceof GlobalActionContextImpl) {
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;
             
             Lookup[] arr = {
-                Lookups.singleton (map),
+                map == null ? Lookup.EMPTY : Lookups.singleton (map),
                 Lookups.exclude (g.getLookup (), new Class[] { javax.swing.ActionMap.class }),
             };
             
@@ -103,12 +115,22 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
                 temporary = new ProxyLookup (arr);
                 Object q = org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
                 assert q == map : "We really get map from the lookup. Map: " + map + " returned: " + q; // NOI18N
+                if (focus != null) {
+                    setFocusOwner(focus[0]);
+                }
             } finally {
                 temporary = prev;
                 // fire the changes about return of the values back
                 org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
             }
         }
+    }
+    
+    private static void setFocusOwner(Component focus) {
+        focusOwner = new WeakReference<Component>(focus);
+    }
+    public static Component findFocusOwner() {
+        return focusOwner.get();
     }
     
     /** Let's create the proxy listener that delegates to currently 
@@ -135,6 +157,10 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals (evt.getPropertyName())) {
             org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
+        }
+        if ("permanentFocusOwner".equals(evt.getPropertyName())) {
+            Component[] arr = { (Component)evt.getNewValue() };
+            blickActionMap(null, arr);
         }
     }
     
