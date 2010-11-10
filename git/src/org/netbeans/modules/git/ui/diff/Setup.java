@@ -135,6 +135,34 @@ class Setup extends AbstractDiffSetup {
         title = "<html>" + info.annotateNameHtml(baseFile.getName()); // NOI18N
     }
 
+    Setup (File file, Mode mode, final boolean forceNonEditable) {
+        this.baseFile = file;
+        switch (mode) {
+            case HEAD_VS_INDEX:
+                firstRevision = GitUtils.HEAD;
+                secondRevision = GitUtils.INDEX;
+                break;
+            case HEAD_VS_WORKING_TREE:
+                firstRevision = GitUtils.HEAD;
+                secondRevision = GitUtils.CURRENT;
+                break;
+            case INDEX_VS_WORKING_TREE:
+                firstRevision = GitUtils.INDEX;
+                secondRevision = GitUtils.CURRENT;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
+        // XXX delete when UndoAction works correctly
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision) {
+            @Override
+            public boolean isEditable() {
+                return !forceNonEditable && super.isEditable();
+            }
+        };
+    }
+
     public File getBaseFile() {
         return baseFile;
     }
