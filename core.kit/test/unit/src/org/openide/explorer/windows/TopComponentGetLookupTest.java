@@ -54,7 +54,6 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
-import junit.framework.Test;
 
 
 import org.netbeans.junit.*;
@@ -70,6 +69,10 @@ import org.openide.windows.TopComponent;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public class TopComponentGetLookupTest extends NbTestCase {
+    static Def def = new Def();
+    static {
+        Utilities.actionsGlobalContext();
+    }
     
     /** top component we work on */
     protected TopComponent top;
@@ -79,10 +82,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(TopComponentGetLookupTest.class);
     }
     
     /** Setup component with lookup.
@@ -386,60 +385,34 @@ public class TopComponentGetLookupTest extends NbTestCase {
     public void testActionMapIsTakenFromComponentAndAlsoFromFocusedOne () {
         JTextField panel = new JTextField();
         
-        class Def extends DefaultKeyboardFocusManager {
-            private Component c;
-            
-            public Def(Component c) {
-                this.c = c;
-            }
-            @Override
-            public Component getFocusOwner() {
-                return null;
-            }
+        top.add(BorderLayout.CENTER, panel);
 
-            @Override
-            public Component getPermanentFocusOwner() {
-                return c;
+        class Act extends AbstractAction {
+            public void actionPerformed(ActionEvent ev) {
             }
         }
-        KeyboardFocusManager prev = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        Act act1 = new Act ();
+        Act act2 = new Act ();
+        Act act3 = new Act ();
 
-        try {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (panel));
+        top.getActionMap ().put ("globalRegistration", act1);
+        top.getActionMap ().put ("doubleRegistration", act2);
 
+        panel.getActionMap ().put ("doubleRegistration", act3);
+        panel.getActionMap ().put ("focusedRegistration", act3);
+        def.setC(panel);
 
+        ActionMap map = (ActionMap)top.getLookup ().lookup (ActionMap.class);
 
-            top.add(BorderLayout.CENTER, panel);
+        assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
+        assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
 
-            class Act extends AbstractAction {
-                public void actionPerformed(ActionEvent ev) {
-                }
-            }
-            Act act1 = new Act ();
-            Act act2 = new Act ();
-            Act act3 = new Act ();
+        assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
 
-            top.getActionMap ().put ("globalRegistration", act1);
-            top.getActionMap ().put ("doubleRegistration", act2);
-
-            panel.getActionMap ().put ("doubleRegistration", act3);
-            panel.getActionMap ().put ("focusedRegistration", act3);
-
-
-            ActionMap map = (ActionMap)top.getLookup ().lookup (ActionMap.class);
-
-            assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
-            assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
-
-            assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
-
-            JTextField f = new JTextField ();
-            f.getActionMap ().put ("focusedRegistration", act3);
-            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (f));
-            assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
-        } finally {
-            KeyboardFocusManager.setCurrentKeyboardFocusManager (prev);
-        }
+        JTextField f = new JTextField ();
+        f.getActionMap ().put ("focusedRegistration", act3);
+        def.setC(f);
+        assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
     }
     
     
@@ -721,4 +694,30 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
         
     }
+    
+    static class Def extends DefaultKeyboardFocusManager {
+
+        private Component c;
+
+        public Def() {
+            this.c = c;
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(this);       
+        }
+
+        public void setC(Component c) {
+            this.c = c;
+            firePropertyChange("permanentFocusOwner", null, c);
+        }
+
+        @Override
+        public Component getFocusOwner() {
+            return null;
+        }
+
+        @Override
+        public Component getPermanentFocusOwner() {
+            return c;
+        }
+    }
+    
 }
