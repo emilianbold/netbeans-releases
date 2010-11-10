@@ -97,7 +97,8 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         setIcon(ImageUtilities.loadImage("org/netbeans/modules/git/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
-        controller = new VersioningPanelController(this);
+        controller = new VersioningPanelController();
+        controller.setActions(this);
         add(controller.getPanel());
     }
 
@@ -120,6 +121,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
 
     @Override
     protected void componentClosed () {
+        controller.cancelRefresh();
         super.componentClosed();
     }
 

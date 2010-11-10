@@ -62,7 +62,11 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -78,6 +82,8 @@ public final class GitUtils {
     private static final Pattern METADATA_PATTERN = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
     private static final String FILENAME_GITIGNORE = ".gitignore"; // NOI18N
     public static final String HEAD = "HEAD"; //NOI18N
+    public static final String INDEX = "INDEX"; //NOI18N
+    public static final String CURRENT = "CURRENT"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -378,7 +384,7 @@ public final class GitUtils {
     }
 
     /**
-     * Normalize flat files, Mercurial treats folder as normal file
+     * Normalize flat files, Git treats folder as normal file
      * so it's necessary explicitly list direct descendants to
      * get classical flat behaviour.
      * <strong>Does not return up-to-date files</strong>
@@ -429,6 +435,51 @@ public final class GitUtils {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         return VCSContext.forNodes(nodes);
+    }
+
+    /**
+     * Uses content analysis to return the mime type for files.
+     *
+     * @param file file to examine
+     * @return String mime type of the file (or best guess)
+     */
+    public static String getMimeType(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        String foMime;
+        boolean hasMime = false;
+        if (fo == null) {
+            foMime = "content/unknown"; // NOI18N
+        } else {
+            foMime = fo.getMIMEType();
+            if ("content/unknown".equals(foMime)) { // NOI18N
+                foMime = "text/plain"; // NOI18N
+            } else {
+                hasMime = true;
+            }
+        }
+        if (!hasMime) {
+            return isFileContentBinary(file) ? "application/octet-stream" : foMime; // NOI18N
+        } else {
+            return foMime;
+        }
+    }
+
+    /**
+     * Checks if the file is binary.
+     *
+     * @param file file to check
+     * @return true if the file cannot be edited in NetBeans text editor, false otherwise
+     */
+    public static boolean isFileContentBinary(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return false;
+        try {
+            DataObject dao = DataObject.find(fo);
+            return dao.getCookie(EditorCookie.class) == null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
+        return false;
     }
     
     private GitUtils() {

@@ -113,6 +113,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
+    public boolean catIndexEntry (File file, OutputStream out, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CatCommand cmd = new CatCommand(repository, file, out, monitor);
+        cmd.execute();
+        return cmd.foundInRevision();
+    }
+
+    @Override
     public void checkout (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         if (revision != null) {

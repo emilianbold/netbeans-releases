@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -70,7 +71,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private FileFilterFactory.FileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
-    private MakeConfiguration conf;
+    private final MakeConfiguration conf;
+    private final FileObject buildWorkingDirFO;
 
     /** Creates new form SelectExecutable */
     public SelectExecutablePanel(MakeConfiguration conf) {
@@ -78,10 +80,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         initComponents();
         instructionsTextArea.setBackground(getBackground());
 
-        FileObject root = RemoteFileUtil.getFileObject(
+        buildWorkingDirFO = RemoteFileUtil.getFileObject(
                 conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(),
                 conf.getFileSystemHost());
-        String[] executables = findAllExecutables(root);
+        String[] executables = findAllExecutables(buildWorkingDirFO);
         exeList = new JList(executables);
         executableList.setViewportView(exeList);
 
@@ -136,16 +138,24 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private void validateExe() {
         String errorText = null;
-        FileObject exe = RemoteFileUtil.getFileObject(
-                executableTextField.getText(),
-                conf.getFileSystemHost());
-
         if (executableTextField.getText().length() == 0) {
             errorText = getString("NO_EXE_ERROR");
-        } else if (!exe.isValid()) {
-            errorText = getString("EXE_DOESNT_EXISTS");
-        } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
-            errorText = getString("FILE_NOT_AN_EXECUTABLE");
+        } else {
+            String executablePath = executableTextField.getText();
+            FileObject exe;
+            if (!CndPathUtilitities.isPathAbsolute(executablePath)) {
+                exe = buildWorkingDirFO.getFileObject(executablePath);
+            } else {
+                executablePath = CndFileUtils.normalizeAbsolutePath(executablePath);
+                exe = RemoteFileUtil.getFileObject(
+                        executablePath,
+                        conf.getFileSystemHost());
+            }
+            if (!exe.isValid()) {
+                errorText = getString("EXE_DOESNT_EXISTS");
+            } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
+                errorText = getString("FILE_NOT_AN_EXECUTABLE");
+            }
         }
         if (errorText != null) {
             errorLabel.setText(errorText);

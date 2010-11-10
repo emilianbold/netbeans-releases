@@ -423,7 +423,7 @@ public class WorkingCopy extends CompilationController {
                 public Void visitClass(ClassTree node, Void p) {
                     String parent = fqn.getFQN();
                     fqn.enterClass(node);
-                    overlay.registerClass(parent, fqn.getFQN(), node.getExtendsClause(), node.getImplementsClause());
+                    overlay.registerClass(parent, fqn.getFQN(), node);
                     super.visitClass(node, p);
                     fqn.leaveClass();
                     return null;
@@ -546,7 +546,7 @@ public class WorkingCopy extends CompilationController {
                     public Void visitClass(ClassTree node, Void p) {
                         String parent = fqn.getFQN();
                         fqn.enterClass(node);
-                        overlay.registerClass(parent, fqn.getFQN(), node.getExtendsClause(), node.getImplementsClause());
+                        overlay.registerClass(parent, fqn.getFQN(), node);
                         super.visitClass(node, p);
                         fqn.leaveClass();
                         return null;

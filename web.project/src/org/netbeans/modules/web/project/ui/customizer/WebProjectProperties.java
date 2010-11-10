@@ -480,8 +480,13 @@ final public class WebProjectProperties {
                     return null;
                 }
             });
-            // and save the project        
-            ProjectManager.getDefault().saveProject(project);
+            // and save the project
+            project.setProjectPropertiesSave(true);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } finally {
+                project.setProjectPropertiesSave(false);
+            }
 
             if (COMPILE_JSP_MODEL.isSelected()) {
                 WebProject.makeSureProjectHasJspCompilationLibraries(refHelper);

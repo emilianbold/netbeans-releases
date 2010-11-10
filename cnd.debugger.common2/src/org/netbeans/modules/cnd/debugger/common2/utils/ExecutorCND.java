@@ -62,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
@@ -74,12 +73,10 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
-import org.openide.windows.InputOutput;
 
 /* package */ class ExecutorCND extends Executor {
     private NativeProcess engineProc;
     private int pid = -1;
-    private String slaveName;
     private final ExecutionEnvironment exEnv;
 
     public ExecutorCND(String name, Host host) {
@@ -87,8 +84,8 @@ import org.openide.windows.InputOutput;
         exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
     }
 
-    public String slaveName() {
-	return slaveName;
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return exEnv;
     }
 
     public boolean isAlive() {
@@ -233,13 +230,6 @@ import org.openide.windows.InputOutput;
     }
 
     public void cleanup() {
-        if (pty != null) {
-            try {
-                pty.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     @Override
@@ -295,20 +285,6 @@ import org.openide.windows.InputOutput;
 	    }
 	};
 	reaper.start();
-    }
-
-    private Pty pty = null;
-
-    public synchronized boolean startIO(InputOutput io) {
-        try {
-            pty = PtySupport.allocate(exEnv);
-        } catch (IOException ex) {
-            slaveName = "";
-            return false;
-        }
-        PtySupport.connect(io, pty);
-        slaveName = pty.getSlaveName();
-        return true;
     }
 
     public String readlink(long pid) {

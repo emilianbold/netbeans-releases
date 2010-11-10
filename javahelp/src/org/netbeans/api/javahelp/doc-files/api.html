@@ -39,10 +39,11 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <title>NetBeans JavaHelp Integration API</title>
-<link rel="stylesheet" href="../../../../../prose.css" type="text/css"/>
+<link rel="stylesheet" href="../../../../../prose.css" type="text/css">
 </head>
 
 <body>
@@ -66,21 +67,11 @@ the master helpset, this means that the menu item <b>Help&nbsp;| Contents</b>
 will show any navigators you define in your helpset, merged into others.
 
 <p>To add a helpset, you must register an object implementing <code>javax.swing.HelpSet</code>
-into the IDE's lookup system. The normal way to do this is to create an XML file with
-a special DTD which you place into the <samp>Services/JavaHelp/</samp> folder of the system
-filesystem via layer. This file specifies the URL to the help set, for example:
-
-<pre>
-&lt;?<font class="keyword">xml</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">helpsetref</font> <font class="keyword">PUBLIC</font>
-          <font class="string">"-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"</font>
-          <font class="string">"http://www.netbeans.org/dtds/helpsetref-1_0.dtd"</font>&gt;
-&lt;<font class="function-name">helpsetref</font> <font class="variable-name">url</font>=<font class="string">"nbresloc:/org/netbeans/modules/foo/help/HelpSet.hs"</font>/&gt;
-</pre>
+into the IDE's lookup system. The normal way to do this is to use <code>@HelpSetRegistration</code>.
 
 <p>By default such a helpset will be merged into the IDE's master help
 navigators. You may opt out of this by specifying
-<samp>merge="false"</samp> on the <samp>&lt;helpsetref/&gt;</samp>. If
+<samp>merge="false"</samp>. If
 providing a custom help set instance via lookup, in order to turn off
 merging you should set the "key data" on the helpset with the context
 <code>OpenIDE</code> and key <code>mergeIntoMaster</code> to
@@ -102,17 +93,17 @@ if not in the module classloader.</span></p>
 
 <h3>Shortcut registration</h3>
 
-<p>To add a shortcut to a specific help ID in your help set, there is a different
+<p>To add a shortcut to a specific help ID in your help set, there is an
 XML DTD you can use.
 The shortcut XML specifies the help ID to display (which must be present in some
 registered help set of course), for example:
 
 <pre>
-&lt;?<font class="keyword">xml</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">helpctx</font> <font class="keyword">PUBLIC</font>
-          <font class="string">"-//NetBeans//DTD Help Context 1.0//EN"</font>
-          <font class="string">"http://www.netbeans.org/dtds/helpcontext-1_0.dtd"</font>&gt;
-&lt;<font class="function-name">helpctx</font> <font class="variable-name">id</font>=<font class="string">"org.netbeans.modules.foo.some-topic"</font>/&gt;
+&lt;?<span class="keyword">xml</span>?&gt;
+&lt;!<span class="keyword">DOCTYPE</span> <span class="type">helpctx</span> <span class="keyword">PUBLIC</span>
+          <span class="string">"-//NetBeans//DTD Help Context 1.0//EN"</span>
+          <span class="string">"http://www.netbeans.org/dtds/helpcontext-1_0.dtd"</span>&gt;
+&lt;<span class="function-name">helpctx</span> <span class="variable-name">id</span>=<span class="string">"org.netbeans.modules.foo.some-topic"</span>/&gt;
 </pre>
 
 <p>By default such a link will display a help window containing
@@ -129,20 +120,6 @@ accessible via the presenters of this kind of XML file.
 
 <p class="nonnormative">Note that usage of help shortcuts is no longer recommended by NetBeans style
 guidelines.</p>
-
-<h3>Module dependency</h3>
-
-<p>Note that JavaHelp capability is <em>not</em>
-automatically guaranteed to modules. Rather, modules supplying
-JavaHelp documentation which wish to ensure that this documentation
-will be visible, must declare an explicit dependency on the
-JavaHelp library. This library provides the capability
-<code>org.netbeans.api.javahelp.Help</code>, so a module may declare
-the dependency as follows:</p>
-
-<pre>
-OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
-</pre>
 
 <h2><a name="helpctx-context-help">Context Help</a></h2>
 
@@ -213,7 +190,7 @@ specify a <code>HelpCtx</code> in this fashion:
 
 </ul>
 
-There are some other points where you may specify a help ID directly:
+<p>There are some other points where you may specify a help ID directly:</p>
 
 <ul>
 
@@ -303,8 +280,8 @@ the
 
 <pre>
 <span class="type">String</span> <span class="variable-name">id</span> = ...;
-<span class="type">Help</span> <span class="variable-name">help</span> = (<span class="type">Help</span>)Lookup.getDefault().lookup(Help.<span class="keyword">class</span>);
-<span class="keyword">if</span> (help != <span class="constant">null</span> &amp;&amp; help.isValidID(id, <span class="constant">true</span>).booleanValue()) {
+<span class="type">Help</span> <span class="variable-name">help</span> = Lookup.getDefault().lookup(Help.<span class="keyword">class</span>);
+<span class="keyword">if</span> (help != <span class="constant">null</span> &amp;&amp; help.isValidID(id, <span class="constant">true</span>)) {
     help.showHelp(<span class="keyword">new</span> <span class="type">HelpCtx</span>(id));
 } <span class="keyword">else</span> {
     Toolkit.getDefaultToolkit().beep();
@@ -314,7 +291,7 @@ the
 <p class="nonnormative">If you are having trouble figuring out why you
 are not seeing the help you expect, try running the IDE with the
 command-line option <samp>-J-Dorg.netbeans.modules.javahelp=0</samp>
-and look in your <samp>system/ide.log</samp> file for details.
+and look in your log file for details.
 <samp>-J-Dorg.openide.util.HelpCtx=0</samp> may also be used to get
 further information on association between help IDs and GUI
 components, and so on.</p>
@@ -399,7 +376,7 @@ in a css termonolgy. Acceptable values are as follows:
       <li>white
       <li>yellow
       </ul>
-<ul>
+</ul>
 
 </div>
 
@@ -437,6 +414,6 @@ Monitoring Data Flow on the Web Server&lt;/a&gt;
 </div>
 
 <hr>
-@FOOTER@
+<p>@FOOTER@</p>
 </body>
 </html>

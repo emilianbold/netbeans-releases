@@ -77,6 +77,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -285,8 +286,14 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
-            if ("hibernatePersistenceProviderIsDefault1.0".equals(toolName)) {
-                return true;
+            if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+                if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
+                    return true;
+                }                
+            } else {
+                if ("hibernatePersistenceProviderIsDefault1.0".equals(toolName)) {
+                    return true;
+                }
             }
             if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
                 return true;

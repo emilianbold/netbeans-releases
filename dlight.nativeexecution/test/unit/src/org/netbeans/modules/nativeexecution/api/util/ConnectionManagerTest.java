@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -87,6 +90,24 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
     public static Test suite() {
         return new NativeExecutionBaseTestSuite(ConnectionManagerTest.class);
+    }
+
+    public void testGetRecentConnections() throws Exception {
+        String section = "remote.platforms";
+        ExecutionEnvironment[] envs = NativeExecutionTestSupport.getTestExecutionEnvironmentsFromSection(section);
+        assertTrue("Empty environmens list for section ", envs.length > 0);
+        ConnectionManager.getInstance().clearRecentConnectionsList();
+        AbstractList<ExecutionEnvironment> referenceList = new ArrayList<ExecutionEnvironment>();
+        for (ExecutionEnvironment env : envs) {
+            ConnectionManager.getInstance().updateRecentConnectionsList(env);
+            referenceList.add(0, env);
+        }
+        List<ExecutionEnvironment> managersList = ConnectionManager.getInstance().getRecentConnections();
+        assertEquals("Connections lists differ", referenceList, managersList);
+        ConnectionManager.getInstance().clearRecentConnectionsList();
+        assertTrue("Recent connections list should be empty", ConnectionManager.getInstance().getRecentConnections().isEmpty());
+        ConnectionManager.getInstance().restoreRecentConnectionsList();
+        assertEquals("Restopred connections list differ", referenceList, managersList);
     }
 
     @ForAllEnvironments(section = "remote.platforms")

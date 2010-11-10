@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.EventQueue;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
@@ -68,10 +69,8 @@ import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
-import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -86,39 +85,43 @@ public class CommitAction extends SingleRepositoryAction {
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
 
     @Override
-    protected void performAction (File repository, File[] roots, VCSContext context) {
+    protected void performAction (final File repository, final File[] roots, final VCSContext context) {
 
-        final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
-        VCSCommitTable table = panel.getCommitTable();
-        boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
-        
-        if (ok) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
+                VCSCommitTable table = panel.getCommitTable();
+                boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
-            final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
-            
-            GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
-            panel.getParameters().storeCommitMessage();
-            
-            RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
-            GitProgressSupport support = new GitProgressSupport() {
-                @Override
-                public void perform() {
-                    try {
-                        performCommit(panel.getParameters().getCommitMessage(), commitFiles, getClient(), this, panel.getHooks());
-                    } catch (GitException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                        return;
-                    }
+                if (ok) {
+                    final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
+
+                    GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
+                    panel.getParameters().storeCommitMessage();
+
+                    RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
+                    GitProgressSupport support = new GitProgressSupport() {
+                        @Override
+                        public void perform() {
+                            try {
+                                performCommit(panel.getParameters().getCommitMessage(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
+                            } catch (GitException ex) {
+                                LOG.log(Level.WARNING, null, ex);
+                                return;
+                            }
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
                 }
-            };
-            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
-
-        }
+            }
+        });
     }
 
     private static void performCommit(
             String message, 
             Map<VCSFileNode, VCSCommitOptions> commitFiles,
+            VCSCommitFilter filter,
             GitClient client, 
             GitProgressSupport support, 
             Collection<GitHook> hooks) 
@@ -128,7 +131,7 @@ public class CommitAction extends SingleRepositoryAction {
         List<File> deleteCandidates = new LinkedList<File>();
         List<File> commitCandidates = new LinkedList<File>();
         
-        populateCandidates(commitFiles, addCandidates, deleteCandidates, commitCandidates, support);
+        populateCandidates(filter, commitFiles, addCandidates, deleteCandidates, commitCandidates, support);
         
         if (support.isCanceled()) {
             return;
@@ -156,8 +159,7 @@ public class CommitAction extends SingleRepositoryAction {
             // XXX
             // canceled by user, do nothing
         } */catch (GitException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            Git.LOG.log(Level.WARNING, message, ex);
         } finally {
             refreshFS(commitCandidates);
             Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);
@@ -167,6 +169,7 @@ public class CommitAction extends SingleRepositoryAction {
     }
 
     private static void populateCandidates(
+            VCSCommitFilter filter,
             Map<VCSFileNode, VCSCommitOptions> commitFiles, 
             List<File> addCandidates,
             List<File> deleteCandidates,
@@ -186,7 +189,7 @@ public class CommitAction extends SingleRepositoryAction {
              
             VCSCommitOptions option = commitFiles.get(node);
             File file = node.getFile();
-            if (option != VCSCommitOptions.EXCLUDE) {
+            if (option != VCSCommitOptions.EXCLUDE && filter == GitCommitPanel.FILTER_HEAD_VS_WORKING) {
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||
                     info.containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) 
                 {
@@ -261,7 +264,7 @@ public class CommitAction extends SingleRepositoryAction {
 //                            return;
 //                        } else {
 //                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
-//                            refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
+//                            refreshFiles = new HashSet<File>(Git.getInstance().getSeenRoots(repository));
 //                            commitAfterMerge = true;
 //                        }
 //                    } else {

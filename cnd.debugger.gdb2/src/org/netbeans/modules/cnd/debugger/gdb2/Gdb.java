@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import java.awt.Color;
 
@@ -59,8 +58,6 @@ import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.RequestProcessor;
 
-import org.netbeans.lib.terminalemulator.TermInputListener;
-import org.netbeans.lib.terminalemulator.LineDiscipline;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
@@ -82,6 +79,7 @@ import javax.swing.JLabel;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.NotifyDescriptor;
 
@@ -173,7 +171,7 @@ public class Gdb {
 	private Map<String, String> additionalEnv;
 	private IOPack ioPack;
 	private boolean remote;
-	private GdbDebuggerInfo gdi;	// TMP
+	private NativeDebuggerInfo ndi;	// TMP
 
 	public Factory(Executor executor,
 		       String additionalArgv[],
@@ -192,7 +190,7 @@ public class Gdb {
 	    this.gdbInitFile = gdbInitFile;
 	    this.host = host;
 	    this.connectExisting = connectExisting;
-	    this.gdi = gdi;
+	    this.ndi = gdi;
 	}
 
 	private Gdb getGdb(Factory factory,
@@ -227,7 +225,7 @@ public class Gdb {
 		//
 		// Figure gdb'a exec path
 		//
-		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)gdi.getConfiguration());
+		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)ndi.getConfiguration());
 	    }
 
 
@@ -265,7 +263,7 @@ public class Gdb {
 	    //
 	    // setup the IOPack
 	    //
-	    ioPack = GdbIOPack.create(remote, gdi.getInputOutput());
+	    ioPack = IOPack.create(remote, ndi.getInputOutput(), ndi.getProfile(), executor);
 	    tentativeGdb.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
@@ -278,7 +276,7 @@ public class Gdb {
 	    // We need the slave name ahead of time
 	    boolean havePio = false;
 	    if (!connectExisting) {
-                havePio = ioPack.connectPio(executor);
+                havePio = ioPack.start();
 	    }
 	    if (!havePio) {
 		// SHOULD do something
@@ -317,9 +315,9 @@ public class Gdb {
 
 
 		// attach or debug corefile
-		String program = gdi.getTarget();
-		long attach_pid = gdi.getPid();
-		String corefile = gdi.getCorefile();
+		String program = ndi.getTarget();
+		long attach_pid = ndi.getPid();
+		String corefile = ndi.getCorefile();
 
 		if (corefile != null) {
 		    // debug corefile
@@ -340,9 +338,9 @@ public class Gdb {
 		// Arrange for gdb victims to run under the Pio
 		boolean ioInWindow =
 		    true;
-		if (executor.slaveName() != null && ioInWindow) {
+		if (ioPack.getSlaveName() != null && ioInWindow) {
 		    avec.add("-tty"); // NOI18N
-		    avec.add(executor.slaveName());
+		    avec.add(ioPack.getSlaveName());
 		}
 
 		if (additionalArgv != null) {

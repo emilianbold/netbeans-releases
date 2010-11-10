@@ -72,7 +72,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -134,15 +136,21 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     @Override
-    public CsmFile getCsmFile(FileObject file) {
+    public CsmFile getCsmFile(FileObject fo) {
         CsmModelState modelState = CsmModelAccessor.getModelState();
         if (modelState != CsmModelState.ON) {
             if (TRACE) {
-                trace("model is %s, no extra work for %s", modelState, file.getPath());  //NOI18N
+                trace("model is %s, no extra work for %s", modelState, fo.getPath());  //NOI18N
             }
             return null;
         }
-        String name = file.getPath();
+        File file = CndFileUtils.toFile(fo);
+        // the file can be null, for example, when we edit templates
+        // TODO: check with full remote
+        if (file == null) {
+            return null;
+        }        
+        String name = file.getAbsolutePath();
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
@@ -155,7 +163,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 if (toBeRmoved.contains(name)){
                     return null;
                 }
-                NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(file);
+                NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(fo);
                 if (platformProject != null) {
                     project = ModelImpl.instance().addProject(platformProject, name, true);
                     if (TRACE) {trace("added project %s", project.toString());} //NOI18N
@@ -541,8 +549,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public File getFile() {
             File result = FileUtil.toFile(file);
             if (result == null) { // XXX:fullRemote
-                return new File(file.getPath());
+                result = new File(file.getPath());
             }
+            CndUtils.assertAbsoluteFileInConsole(result);
             return result;
         }
 

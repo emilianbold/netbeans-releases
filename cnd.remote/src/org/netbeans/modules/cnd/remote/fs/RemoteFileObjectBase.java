@@ -48,7 +48,9 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileChangeListener;
@@ -223,7 +225,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        String text = "setAttribute(" + attrName + ", " + value + " is unsupported"; //NOI18N
+        RemoteUtil.LOGGER.log(Level.INFO, text, new UnsupportedOperationException(text)); // NOI18N
     }
 
     @Override

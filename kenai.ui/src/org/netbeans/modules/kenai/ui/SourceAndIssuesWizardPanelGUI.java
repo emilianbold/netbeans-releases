@@ -231,7 +231,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     }
                 } catch (KenaiException ex) {
                     // OK, no services
-                    // XXX or show message that "Cannot connect to Kenai.com server" ???
+                    // XXX or show message that "Cannot connect to {url} server" ???
                 }
                 List<KenaiService> repoList = new ArrayList<KenaiService>();
                 final DefaultComboBoxModel repoModel = new DefaultComboBoxModel();

@@ -109,6 +109,29 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+
+      <change id="HelpSetRegistration">
+          <api name="general"/>
+          <summary>Added <code>@HelpSetRegistration</code></summary>
+          <version major="2" minor="20"/>
+          <date day="8" month="11" year="2010"/>
+          <author login="jglick"/>
+          <compatibility>
+              <p>
+                  Modules registering help sets in their XML layers are encouraged to migrate to the new annotation.
+                  Delete the <code>&lt;helpsetref&gt;</code> file from your layer, move your help set files
+                  into the project's regular source/resource root, remove the "requires" token from your module's manifest,
+                  add a direct dependency on this module, and add a <code>package-info.java</code> with the annotation.
+              </p>
+          </compatibility>
+          <description>
+              <p>
+                  There is a new annotation to make it easier to register help sets.
+              </p>
+          </description>
+          <class package="org.netbeans.api.javahelp" name="HelpSetRegistration"/>
+          <issue number="191452"/>
+      </change>
   
         <change id="object">
             <api name="general"/>

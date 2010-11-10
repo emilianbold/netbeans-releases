@@ -74,9 +74,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -486,4 +489,27 @@ public class Util {
         return null;
     }
 
+    public static void backupBuildImplFile(UpdateHelper updateHelper) throws IOException {
+        //When the project.xml was changed from the customizer and the build-impl.xml was modified
+        //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
+        //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
+        //when the project is opened.
+        final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+        final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        if (buildImpl  != null) {
+            final String name = buildImpl.getName();
+            final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+            final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+            if (oldBackup != null) {
+                oldBackup.delete();
+            }
+            FileLock lock = buildImpl.lock();
+            try {
+                buildImpl.rename(lock, name, backupext);
+            } finally {
+                lock.releaseLock();
+            }
+        }
+    }
+    
 }

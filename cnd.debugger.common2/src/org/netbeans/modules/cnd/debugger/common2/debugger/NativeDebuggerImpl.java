@@ -222,7 +222,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         this.ioPack = ioPack;
     }
 
-    protected IOPack getIOPack() {
+    public IOPack getIOPack() {
         return ioPack;
     }
 

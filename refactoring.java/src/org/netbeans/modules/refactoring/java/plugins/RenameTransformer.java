@@ -346,6 +346,10 @@ public class RenameTransformer extends RefactoringVisitor {
             if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length()))) {
                 continue;
             }
+            //at least do not rename html start and end tags.
+            if (text.charAt(index-1) == '<' || text.charAt(index-1) == '/') {
+                continue;
+            }
             workingCopy.rewriteInComment(offset + index, originalName.length(), newName);
         }
     }

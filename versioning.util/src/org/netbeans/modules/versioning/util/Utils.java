@@ -86,6 +86,9 @@ import java.util.Set;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.ErrorManager;
@@ -103,6 +106,8 @@ import org.openide.windows.WindowManager;
  */
 public final class Utils {
 
+    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
+    
     /**
      * Request processor for quick tasks.
      */
@@ -1381,4 +1386,76 @@ public final class Utils {
             EventQueue.invokeLater(r);
         }
     }
+    
+    /**
+     * Returns the {@link Project} {@link File} for the given context
+     *
+     * @param VCSContext
+     * @return File of Project Directory
+     */
+    public static File getProjectFile(VCSContext context){
+        return getProjectFile(getProject(context));
+    }
+
+    /**
+     * Returns {@link Project} for the given context
+     * 
+     * @param context
+     * @return 
+     */
+    public static Project getProject(VCSContext context){
+        if (context == null) return null;
+        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+
+        for (File file : files) {
+            /* We may be committing a LocallyDeleted file */
+            if (!file.exists()) file = file.getParentFile();
+            FileObject fo = FileUtil.toFileObject(file);
+            if(fo == null) {
+                LOG.log(Level.FINE, "Utils.getProjectFile(): No FileObject for {0}", file); // NOI18N
+            } else {
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    return p;
+                } else {
+                    LOG.log(Level.FINE, "Utils.getProjectFile(): No project for {0}", file); // NOI18N
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the {@link Project} {@link File} for the given {@link Project}
+     * 
+     * @param project
+     * @return 
+     */
+    public static File getProjectFile(Project project){
+        if (project == null) return null;
+
+        FileObject fo = project.getProjectDirectory();
+        return  FileUtil.toFile(fo);
+    }
+
+    /**
+     * Returns all root files for the given {@link Project}
+     * 
+     * @param project
+     * @return 
+     */
+    public static File[] getProjectRootFiles(Project project){
+        if (project == null) return null;
+        Set<File> set = new HashSet<File>();
+
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        for (int j = 0; j < sourceGroups.length; j++) {
+            SourceGroup sourceGroup = sourceGroups[j];
+            FileObject srcRootFo = sourceGroup.getRootFolder();
+            File rootFile = FileUtil.toFile(srcRootFo);
+            set.add(rootFile);
+        }
+        return set.toArray(new File[set.size()]);
+    }    
 }

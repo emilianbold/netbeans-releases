@@ -53,11 +53,9 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,13 +93,13 @@ public class ImportAnalysis2 {
     private Stack<Set<Element>> visibleThroughClasses;
     private Map<String, Element> simpleNames2Elements;
     private PackageElement unnamedPackage;
-    private PackageElement pack;
+    private Element pack;
     private ASTService model;
     private final ElementOverlay overlay;
     private CompilationUnitTree cut; //current compilation unit
     private Map<String, Element> usedImplicitlyImportedClassesCache;
     private Set<String> implicitlyImportedClassNames;
-    private PackageElement javaLang;
+    private Element javaLang;
 
     public ImportAnalysis2(CompilationInfo info) {
         this(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
@@ -110,9 +108,9 @@ public class ImportAnalysis2 {
     public ImportAnalysis2(Context env) {
         elements = JavacElements.instance(env);
         make = TreeFactory.instance(env);
-        unnamedPackage = Symtab.instance(env).unnamedPackage;
         model = ASTService.instance(env);
         overlay = env.get(ElementOverlay.class);
+        unnamedPackage = overlay != null ? overlay.unnamedPackage(model, elements) : elements.getPackageElement("");
     }
 
     public void setCompilationUnit(CompilationUnitTree cut) {
@@ -130,7 +128,7 @@ public class ImportAnalysis2 {
 
         String packageName = getFQN(packageNameTree);
 
-        this.pack = elements.getPackageElement(packageName);
+        this.pack = overlay.resolve(model, elements, packageName);
     }
 
     /*
@@ -148,7 +146,7 @@ public class ImportAnalysis2 {
         }
         
         implicitlyImportedClassNames = new HashSet<String>();
-        javaLang = elements.getPackageElement("java.lang");
+        javaLang = overlay.resolve(model, elements, "java.lang");
         
         if (javaLang != null) {//might be null for broken platforms
             for (Element e : javaLang.getEnclosedElements()) {
@@ -172,13 +170,7 @@ public class ImportAnalysis2 {
 
         currentFQN.enterClass(clazz);
 
-        Element current = overlay.resolve(model, elements, currentFQN.getFQN());
-
-        if (current == null) throw new IllegalStateException(currentFQN.getFQN());
-        
-        visible.add(current);
-
-        visible.addAll(getAllMembers(current));
+        visible.addAll(overlay.getAllVisibleThrough(model, elements, currentFQN.getFQN(), clazz));
 
         visibleThroughClasses.push(visible);
     }
@@ -219,7 +211,7 @@ public class ImportAnalysis2 {
         String fqn = getFQN(imp);
 
         if (!imp.isStatic()) {
-            TypeElement resolve = elements.getTypeElement(fqn);
+            Element resolve = overlay.resolve(model, elements, fqn);
 
             if (resolve != null) {
                 imported.add(resolve);
@@ -230,18 +222,10 @@ public class ImportAnalysis2 {
                     fqn = fqn.substring(0, fqn.length() - 2);
 
                     List<TypeElement> classes = Collections.<TypeElement>emptyList();
-                    TypeElement clazz = elements.getTypeElement(fqn);
+                    Element clazz = overlay.resolve(model, elements, fqn);
 
                     if (clazz != null) {
                         classes = ElementFilter.typesIn(clazz.getEnclosedElements());
-                    } else {
-                        PackageElement pack = elements.getPackageElement(fqn);
-
-                        if (pack != null) {
-                            classes = ElementFilter.typesIn(pack.getEnclosedElements());
-                        } else {
-                            //cannot resolve - the imports will probably not work correctly...
-                        }
                     }
 
                     for (TypeElement te : classes) {
@@ -259,7 +243,7 @@ public class ImportAnalysis2 {
                 String className = fqn.substring(0, dot);
                 String memberName = fqn.substring(dot + 1);
                 boolean isStarred = "*".equals(memberName);
-                TypeElement resolved = elements.getTypeElement(className);
+                Element resolved = overlay.resolve(model, elements, className);
 
                 if (resolved != null) {
                     for (Element e : resolved.getEnclosedElements()) {
@@ -384,7 +368,7 @@ public class ImportAnalysis2 {
             ExpressionTree clazz = orig.getExpression();
 
             if (clazz.getKind() == Kind.MEMBER_SELECT) {
-                clazz = resolveImport((MemberSelectTree) clazz, element.getEnclosingElement());
+                clazz = resolveImport((MemberSelectTree) clazz, overlay.wrap(model, elements, element.getEnclosingElement()));
             }
             return make.MemberSelect(clazz, orig.getIdentifier());
         }
@@ -412,18 +396,6 @@ public class ImportAnalysis2 {
         return (PackageElement) el;
     }
 
-    private Collection<? extends Element> getAllMembers(Element el) {
-        List<Element> result = new ArrayList<Element>();
-
-        result.addAll(el.getEnclosedElements());
-
-        for (Element parent : overlay.getAllSuperElements(model, elements, el)) {
-            result.addAll(getAllMembers(parent));
-        }
-
-        return result;
-    }
-    
     private Map<String, Element> getUsedImplicitlyImportedClasses() {
         if (usedImplicitlyImportedClassesCache != null) {
             return usedImplicitlyImportedClassesCache;
@@ -434,7 +406,7 @@ public class ImportAnalysis2 {
         new TreeScanner<Void, Void>() {
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
-                Element e = model.getElement(node);
+                Element e = overlay.wrap(model, elements, model.getElement(node));
 
                 //javaLang might be null for broken platforms
                 if (e != null && ((javaLang != null && javaLang.equals(e.getEnclosingElement())) || (pack != null && pack.equals(e.getEnclosingElement())))) {

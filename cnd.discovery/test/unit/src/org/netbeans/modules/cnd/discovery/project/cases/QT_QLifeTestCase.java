@@ -74,6 +74,10 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
             // There are troubles with generated Makefile on Windows - attempt to fix it.
             // Note: MSYS make is required to run patched Makefile.
             list.add("sed -e 's:\\\\\\(.\\):/\\1:g' -i Makefile");
+            list.add("sed -e 's:\\\\\\(.\\):/\\1:g' -i Makefile.Debug");
+            list.add("sed -e 's:\\\\\\(.\\):/\\1:g' -i Makefile.Release");
+            // does not work on windows
+            return;
         }
         performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list, false, "");
     }

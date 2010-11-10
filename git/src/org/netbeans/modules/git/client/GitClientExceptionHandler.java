@@ -79,7 +79,7 @@ public class GitClientExceptionHandler {
         DialogDisplayer.getDefault().notify(descriptor);
     }
     
-    private static boolean isCancelledAction (final Exception ex) {
+    public static boolean isCancelledAction (final Exception ex) {
         Throwable sourceException = ex;
         while (sourceException != null && !(sourceException instanceof GitCanceledException)) {
             sourceException = sourceException.getCause();

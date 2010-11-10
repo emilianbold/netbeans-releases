@@ -53,9 +53,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -230,12 +233,25 @@ public class JBProperties {
             addFiles(new File(rootDir, "lib"), list); // NOI18N
             addFiles(new File(serverDir, "lib"), list); // NOI18N
 
-            // Add common libs for JBoss 5.x
-            String[] commonLibs = new String[] {"servlet-api.jar", // NOI18N
-                "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
-                "ejb3-persistence.jar", "jbossws-native-jaxws.jar", // NOI18N
-                "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
-                "jbossws-native-saaj.jar"}; // NOI18N
+            
+            Set<String> commonLibs = new HashSet<String>();
+    
+            if (version != null
+                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
+                // Needed for JBoss 6
+                Collections.addAll(commonLibs, "jboss-servlet-api_3.0_spec.jar", // NOI18N
+                    "jboss-jsp-api_2.2_spec.jar", "jboss-el-api_2.2_spec.jar", // NOI18N
+                    "mail.jar", "jboss-jsr77.jar", "jboss-ejb-api_3.1_spec.jar", // NOI18N
+                    "hibernate-jpa-2.0-api.jar", "hibernate-entitymanager.jar", "jbossws-common.jar", "jbossws-framework.jar", // NOI18N
+                    "jbossws-jboss60.jar", "jbossws-native-core.jar", "jbossws-spi.jar"); // NOI18N
+            } else {
+                // Add common libs for JBoss 5.x
+                Collections.addAll(commonLibs, "servlet-api.jar", // NOI18N
+                    "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
+                    "ejb3-persistence.jar", "hibernate-entitymanager.jar","jbossws-native-jaxws.jar", // NOI18N
+                    "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
+                    "jbossws-native-saaj.jar"); // NOI18N                
+            }
 
             for (String commonLib : commonLibs) {
                 File libJar = new File(commonLibDir, commonLib);
@@ -253,9 +269,16 @@ public class JBProperties {
                 }
             }
 
-            // JBoss 5
-            File jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"); // NOI18N
+            // JBoss 6
+            File jsfAPI = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-api-2.0.2-FCS.jar"); // NOI18N
             if (jsfAPI.exists()) {
+                try {
+                    list.add(fileToUrl(jsfAPI));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            // JBoss 5
+            } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar")).exists()) {
                 try {
                     list.add(fileToUrl(jsfAPI));
                 } catch (MalformedURLException e) {
@@ -281,8 +304,16 @@ public class JBProperties {
                 }
             }
 
-            File jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"); // NOI18N
+            // JBoss 6
+            File jsfIMPL = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-impl-2.0.2-FCS.jar"); // NOI18N
             if (jsfIMPL.exists()) {
+                try {
+                    list.add(fileToUrl(jsfIMPL));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            // JBoss 5
+            } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
                 try {
                     list.add(fileToUrl(jsfIMPL));
                 } catch (MalformedURLException e) {
@@ -308,6 +339,7 @@ public class JBProperties {
                 }
             }
 
+            // JBoss 5 & 6
             File jstlImpl = new File(serverDir, "/deploy/jbossweb.sar/jstl.jar"); // NOI18N
             if (jstlImpl.exists()) {
                 try {

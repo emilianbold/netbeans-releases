@@ -45,7 +45,9 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -66,6 +68,7 @@ public class CatCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private String relativePath;
     private boolean found;
+    private final boolean fromRevision;
 
     public CatCommand (Repository repository, File file, String revision, OutputStream out, ProgressMonitor monitor) {
         super(repository, monitor);
@@ -73,6 +76,16 @@ public class CatCommand extends GitCommand {
         this.revision = revision;
         this.os = out;
         this.monitor = monitor;
+        this.fromRevision = true;
+    }
+
+    public CatCommand (Repository repository, File file, OutputStream out, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.file = file;
+        this.revision = null;
+        this.os = out;
+        this.monitor = monitor;
+        this.fromRevision = false;
     }
 
     @Override
@@ -90,6 +103,14 @@ public class CatCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        if (fromRevision) {
+            catFromRevision();
+        } else {
+            catIndexEntry();
+        }
+    }
+
+    private void catFromRevision () throws GitException.MissingObjectException, GitException {
         Repository repository = getRepository();
         try {
             RevCommit commit = Utils.findCommit(repository, revision);
@@ -108,6 +129,25 @@ public class CatCommand extends GitCommand {
                 }
             }
         } catch (MissingObjectException ex) {
+            throw new GitException(ex);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    private void catIndexEntry () throws GitException {
+        Repository repository = getRepository();
+        try {
+            DirCacheEntry entry = repository.readDirCache().getEntry(relativePath);
+            found = false;
+            if (entry != null) {
+                found = true;
+                ObjectLoader loader = repository.getObjectDatabase().open(entry.getObjectId());
+                loader.copyTo(os);
+                os.close();
+                found = true;
+            }
+        } catch (NoWorkTreeException ex) {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);

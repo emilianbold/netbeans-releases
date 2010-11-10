@@ -110,6 +110,6 @@ public class DiffTopComponent extends TopComponent {
     @Override
     protected void componentActivated () {
         super.componentActivated();
-        controller.requestActive();
+        controller.focus();
     }
 }

@@ -478,8 +478,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 ((EditorTabExpander) tabExpander).updateTabSize();
                 if (isBuildable()) {
                     LOG.fine("viewUpdates.reinitViews()\n");
-                    viewUpdates.reinitViews();
+                    // Signal early that the views will be valid - otherwise preferenceChange()
+                    // that calls getPreferredSpan() would attempt to reinit the views again
+                    // (failing in HighlightsViewFactory on usageCount).
                     childrenValid = true;
+                    viewUpdates.reinitViews();
                 }
             }
         }
@@ -712,7 +715,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             FontColorSettings fcs = result.allInstances().iterator().next();
             AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
             if (attributes != null) {
-                font = ViewUtils.getFont(attributes, font);
+                font = ViewUtils.getFont(attributes, new Font(font.getFamily(), 0, font.getSize()));
                 Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
                 if (c != null) {
                     foreColor = c;
@@ -773,11 +776,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             // caused by using a [float,float] point that does not fit into views boundaries
             // maintained as doubles.
             defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
-            defaultAscent = lineHeightTextLayout.getAscent();
+            defaultAscent = ViewUtils.floorFractions(lineHeightTextLayout.getAscent());
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
-            defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
+            defaultUnderlineOffset = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
             defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
-            defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
+            defaultStrikethroughOffset = ViewUtils.floorFractions(lineMetrics.getStrikethroughOffset());
             defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
             defaultCharWidth = ViewUtils.ceilFractions(defaultCharTextLayout.getAdvance());
             tabTextLayout = null;

@@ -161,4 +161,24 @@ public class ElementDescriptorTest extends NbTestCase {
 
     }
 
+    public void testAttributes() {
+        Collection<String> attrs = ElementDescriptor.getAttrNamesForElement("div"); //only global attrs
+
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
+
+        attrs = ElementDescriptor.getAttrNamesForElement("meta"); //some specific attrs as well
+
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+        assertTrue(attrs.contains("http-equiv"));
+
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
+    }
 }

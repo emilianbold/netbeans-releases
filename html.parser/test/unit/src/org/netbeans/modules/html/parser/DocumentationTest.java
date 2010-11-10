@@ -89,7 +89,7 @@ public class DocumentationTest extends NbTestCase {
     }
 
     public void testSectioningPattern() {
-        System.out.println(Documentation.SECTIONS_PATTERN_CODE);
+//        System.out.println(Documentation.SECTIONS_PATTERN_CODE);
 
 
         String code = "w<h1 id=\"mojeid\">xxx<h1 id=\"jeho\">sew";
@@ -97,7 +97,7 @@ public class DocumentationTest extends NbTestCase {
         int i = 0;
         while(m.find()) {
             i++;
-            System.out.println(m.group(1));
+//            System.out.println(m.group(1));
         }
         assertEquals(2, i);
 
@@ -106,7 +106,7 @@ public class DocumentationTest extends NbTestCase {
         i = 0;
         while(m.find()) {
             i++;
-            System.out.println(m.group(1));
+//            System.out.println(m.group(1));
         }
         assertEquals(1, i);
 

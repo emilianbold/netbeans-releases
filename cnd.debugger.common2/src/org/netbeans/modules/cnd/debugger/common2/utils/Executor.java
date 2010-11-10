@@ -56,7 +56,6 @@ import java.util.Map;
 
 import org.openide.ErrorManager;
 
-import org.openide.util.Utilities;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.windows.InputOutput;
@@ -64,6 +63,7 @@ import org.openide.windows.InputOutput;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A combination process/process factory object.
@@ -92,8 +92,7 @@ public abstract class Executor {
 	return Host.isRemote(host);
     }
 
-
-    public abstract String slaveName();
+    public abstract ExecutionEnvironment getExecutionEnvironment();
 
     public abstract boolean isAlive();
 
@@ -150,9 +149,6 @@ public abstract class Executor {
      */
     public abstract List<String> getCmdOutputLines();
 
-
-    public abstract boolean startIO(InputOutput io);
-
     protected void destroyEngine() {
 	destroyedByHand = true;
     }
@@ -168,8 +164,6 @@ public abstract class Executor {
     public boolean destroyedByHand() {
 	return destroyedByHand;
     }
-
-    public static final boolean CND_EXEC = System.getProperty("dbxgui.cndexec", "true").equalsIgnoreCase("true"); //NOI18N
 
     public static final int NOPTY = 1;
 

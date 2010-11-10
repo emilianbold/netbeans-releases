@@ -189,8 +189,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private Lookup lookup;
 
     private static final int MAX_RESULT_COUNT = 512;
-    private static final int DEFAULT_MAX_CLAUSE = 1024;
-    private static final int MAX_MAX_CLAUSE = 2048;
 
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {
@@ -333,7 +331,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         Set<String> toRemove = new HashSet<String>(indexer.getIndexingContexts().keySet());
         toRemove.removeAll(currents);
         if (!toRemove.isEmpty()) {
-            unloadIndexingContext(toRemove);
+            for (final String repo : toRemove) {
+                try {
+                    getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public @Override Void run() throws Exception {
+                            unloadIndexingContext(repo);
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 
@@ -358,10 +367,26 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
+        
+        int MAX_MAX_CLAUSE = 2048;  // conservative maximum for too general queries, like "c:*class*"
+        
+        Query q = fsr.getQuery();
+        if (q instanceof BooleanQuery) {
+            BooleanClause[] c = ((BooleanQuery)q).getClauses();
+            if (c.length==1) {
+                Query q1 = c[0].getQuery();
+                if (q1 instanceof PrefixQuery && "u".equals(((PrefixQuery)q1).getPrefix().field())) {
+                    // increase for queries like "+u:org.netbeans.modules|*" to succeed
+                    MAX_MAX_CLAUSE = 8196;
+                }
+            }
+        }
+        
         FlatSearchResponse response = null;
+        int oldMax = BooleanQuery.getMaxClauseCount();
         try {
             BooleanQuery.TooManyClauses tooManyC = null;
-            for (int i = DEFAULT_MAX_CLAUSE; i <= MAX_MAX_CLAUSE; i*=2) {
+            for (int i = oldMax; i <= MAX_MAX_CLAUSE; i*=2) {
                 try {
                     BooleanQuery.setMaxClauseCount(i);
                     response = searcher.searchFlatPaged(fsr, contexts);
@@ -379,7 +404,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 throw tooManyC;
             }
         } finally {
-            BooleanQuery.setMaxClauseCount(DEFAULT_MAX_CLAUSE);
+            BooleanQuery.setMaxClauseCount(oldMax);
+        }
+        if (response == null) {
+            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, fsr.getQuery()});
         }
         return response;
     }
@@ -399,14 +427,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
 
     //always call from mutex.writeAccess
-    private void unloadIndexingContext(final Set<String> repos) throws IOException {
-        for (String repo : repos) {
-            assert getRepoMutex(repo).isWriteAccess();
-            LOGGER.fine("Unloading Context :" + repo);//NOI18N
-            IndexingContext ic = indexer.getIndexingContexts().get(repo);
-            if (ic != null) {
-                indexer.removeIndexingContext(ic, false);
-            }
+    private void unloadIndexingContext(final String repo) throws IOException {
+        assert getRepoMutex(repo).isWriteAccess();
+        LOGGER.fine("Unloading Context :" + repo);//NOI18N
+        IndexingContext ic = indexer.getIndexingContexts().get(repo);
+        if (ic != null) {
+            indexer.removeIndexingContext(ic, false);
         }
     }
 
@@ -1206,7 +1232,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    /** Adapted from a class formerly in DefaultIndexUpdater, but seems to work better than default JettyFetcher. */
+    /** XXX use WagonHelper when available (3.0.5?) */
     private class WagonFetcher extends AbstractResourceFetcher {
         private final TransferListener listener;
         private Wagon wagon = null;

@@ -80,7 +80,7 @@ public class Link {
     
     @Override
     public String toString() {
-        return "Link{" + "name=" + name + ", link=" + link + '}';
+        return "Link{" + "name=" + name + ", link=" + link + '}';//NOI18N
     }
 
     @Override

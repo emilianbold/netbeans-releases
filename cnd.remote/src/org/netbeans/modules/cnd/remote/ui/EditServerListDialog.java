@@ -329,7 +329,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void showReason(String reason) {
-        lbReason.setText(NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason"));
         tfReason.setText(reason);
         tfReason.setEnabled(true); // setVisible(true);
     }

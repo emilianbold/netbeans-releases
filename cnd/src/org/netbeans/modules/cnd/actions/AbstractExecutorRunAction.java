@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -292,8 +293,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected static String getBuildDirectory(Node node, PredefinedToolKind tool) {
         DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = CndFileUtils.toFile(fileObject);
+        FileObject makeFileDir = dataObject.getPrimaryFile().getParent();
         // Build directory
         String bdir = null;
         if (tool == PredefinedToolKind.MakeTool) {
@@ -313,10 +313,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (bdir == null) {
-            bdir = makefile.getParent();
+            return makeFileDir.getPath();
+        } else {
+            return getAbsolutePath(bdir, makeFileDir);
         }
-        File buildDir = getAbsoluteBuildDir(bdir, makefile);
-        return buildDir.getAbsolutePath();
     }
 
     protected static String[] getArguments(Node node, PredefinedToolKind tool) {
@@ -442,6 +442,24 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return false;
     }
 
+    protected static String getAbsolutePath(String bdir, FileObject relativeDirFO) {
+        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
+            return relativeDirFO.getPath();
+        } else if (CndPathUtilitities.isPathAbsolute(bdir)) {
+            return bdir;
+        } else {
+            FileObject buildDirFO = relativeDirFO.getFileObject(bdir);
+            if (buildDirFO == null) {
+                return null;
+            } else {
+                return buildDirFO.getPath();
+            }
+        }
+        // Canonical path not appropriate here.
+        // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
+        // See IZ#157677:LiteSQL is not configurable in case of symlinks.
+    }
+
     protected static File getAbsoluteBuildDir(String bdir, File startFile) {
         File buildDir;
         if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
@@ -505,12 +523,19 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir, Project project) {
         if (!checkConnection(execEnv)) {
             return null;
         }
         if (execEnv.isRemote()) {
-            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            PathMap mapper;
+            if (remoteProject != null) {
+                mapper = remoteProject.getSyncFactory().getPathMap(execEnv);
+            } else {
+                mapper = HostInfoProvider.getMapper(execEnv);
+            }
+            return mapper.getRemotePath(localDir, false);
         }
         return localDir;
     }

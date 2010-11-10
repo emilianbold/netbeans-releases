@@ -150,7 +150,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;

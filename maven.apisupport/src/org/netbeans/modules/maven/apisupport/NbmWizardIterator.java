@@ -92,21 +92,22 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.5"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.6"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.6"); //NOI18N
+        NB_APP_ARCH.setVersion("1.7"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.2"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.3"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
+    static final String NB_VERSION = "nb.version"; // NOI18N
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -132,7 +133,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
             return new WizardDescriptor.Panel[] {
-                ArchetypeWizards.basicWizardPanel(vg, true, archetype),
+                ArchetypeWizards.basicWizardPanel(vg, false, archetype),
                 new NbmWizardPanel(vg, archetype)
             };
     }
@@ -161,8 +162,8 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             int max = nbm_artifactId != null ? 7 : 4;
             handle.start(max);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-            // XXX perhaps should display a GUI listing possible versions of org.netbeans.cluster:platform as choices?
-            Map<String, String> additional = Collections.singletonMap("netbeansVersion", "RELEASE691"); // NOI18N
+            String version = (String) wiz.getProperty(NB_VERSION);
+            Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
             ArchetypeWizards.createFromArchetype(handle, projFile, vi, archetype, additional, 0, true);
             if (nbm_artifactId != null && projFile.exists()) {
                 //NOW we have the nbm-Platform or nbm suite template

@@ -196,6 +196,12 @@ public final class CompilerSetPreferences {
             if (env.isLocal()) {
                 pform = ToolUtils.computeLocalPlatform();
             }
+        } else {
+            if (env.isLocal() && pform != ToolUtils.computeLocalPlatform()) {
+                // it seems user dir is shared among different platforms
+                // return null and reinit tool collection
+                return null;
+            }
         }
 
         ArrayList<CompilerSet> css = new ArrayList<CompilerSet>();

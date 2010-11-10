@@ -43,6 +43,7 @@
 package org.netbeans.modules.html.validation;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.ValidationResult;
@@ -62,13 +63,13 @@ public class ValidatorImpl implements Validator {
         assert canValidate(context.getVersion());
         
         try {
-
-            ValidationTransaction validatorTransaction = ValidationTransaction.create(context.getVersion());
+            ValidationTransaction validatorTransaction = 
+                    ValidationTransaction.create(context.getVersion()); //NOI18N
 
             String source = context.getSource();
             validatorTransaction.validateCode(source);
 
-            return new ValidationResult(this, context, validatorTransaction.getFoundProblems(), validatorTransaction.isSuccess());
+            return new ValidationResult(this, context, validatorTransaction.getFoundProblems(ProblemDescription.WARNING), validatorTransaction.isSuccess());
 
         } catch (SAXException ex) {
             throw new ValidationException(ex);
@@ -85,6 +86,12 @@ public class ValidatorImpl implements Validator {
     //XXX the validator can also validate html4, but for now such validation is done by the old SGML parser
     public boolean canValidate(HtmlVersion version) {
         switch(version) {
+            case HTML41_FRAMESET:
+            case HTML41_STRICT:
+            case HTML41_TRANSATIONAL:
+            case XHTML10_FRAMESET:
+            case XHTML10_TRANSATIONAL:
+            case XHTML10_STICT:
             case HTML5:
             case XHTML5:
                 return true;

@@ -45,8 +45,6 @@ package org.netbeans.modules.maven.apisupport;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.BrandingUtils;
@@ -80,27 +78,13 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         super( NbBundle.getMessage(OpenBrandingEditorAction.class, "LBL_OpenBrandingEditor") ); //NOI18N
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         this.context = context;
-        enable( context );
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Project project = context.lookup(Project.class);
-        if (null == project) {
-            return;
-        }
-        
-        NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
-        if (null == mproject) {
-            return;
-        }
-
-        String brandingPath = PluginPropertyUtils.getPluginProperty(mproject.getMavenProject(),
-                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", BRANDING_GOAL); //NOI18N
-        if( null == brandingPath ) {
-            brandingPath = "src/main/nbm-branding"; //NOI18N
-        }
-        BrandingUtils.openBrandingEditor(mproject.getMavenProject().getName(), project, brandingPath);
+        MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        BrandingUtils.openBrandingEditor(mavenProject.getName(), project, brandingPath(mavenProject));
     }
 
     @Override
@@ -108,39 +92,21 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         return new OpenBrandingEditorAction(actionContext);
     }
 
-    private void enable( Lookup context ) {
-        boolean enable = false;
+    public @Override boolean isEnabled() {
         Project project = context.lookup(Project.class);
-        if( null != project ) {
-            NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
-            if( null != mproject ) {
-                enable = isBrandingProject(mproject.getMavenProject());
-            }
-        }
-        setEnabled(enable);
-    }
-
-    private static final String BRANDING_GOAL = "branding"; //NOI18N
-
-    private static boolean isBrandingProject(MavenProject prj) {
-        if (prj.getBuildPlugins() == null) {
+        if (project == null) {
             return false;
         }
-        for (Plugin plug : prj.getBuildPlugins()) {
-            if (MavenNbModuleImpl.NBM_PLUGIN.equals(plug.getArtifactId()) &&
-                   MavenNbModuleImpl.GROUPID_MOJO.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
-                        if (exe.getGoals().contains(BRANDING_GOAL) ||
-                                ("default-" + BRANDING_GOAL).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
-
-                            return true;
-                        }
-                    }
-                }
-            }
+        NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
+        if (mproject == null) {
+            return false;
         }
-        return false;
+        return project.getProjectDirectory().getFileObject(brandingPath(mproject.getMavenProject())) != null;
     }
+
+    private String brandingPath(MavenProject mavenProject) {
+        String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding"); //NOI18N
+        return brandingPath != null ? brandingPath : "src/main/nbm-branding"; //NOI18N
+    }
+
 }

@@ -119,14 +119,18 @@ public final class Git {
         if (repository != null) {
             try {
                 GitClient client = getClient(repository);
-                client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), ProgressMonitor.NULL_PROGRESS_MONITOR)) {
+                    originalFile.delete();
+                }
             } catch (java.io.FileNotFoundException ex) {
                 LOG.log(Level.SEVERE, "Parent folder [{0}] does not exist", originalFile.getParentFile()); //NOI18N
                 LOG.log(Level.SEVERE, null, ex);
             } catch (GitException.MissingObjectException ex) {
                 LOG.log(Level.FINE, null, ex); //NOI18N
+                originalFile.delete();
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "Error retrieving file", ex); //NOI18N
+                originalFile.delete();
             }
         }
     }
@@ -212,8 +216,13 @@ public final class Git {
 
         RequestProcessor rp = processorsToUrl.get(repositoryRoot);
         if (rp == null) {
-            String rpName = "Git - " + (repositoryRoot != null ? repositoryRoot.toString() : "ANY_KEY");//NOI18N
-            rp = new RequestProcessor(rpName, 1, true);
+            if(repositoryRoot == null) {
+                String rpName = "Git - ANY_KEY";//NOI18N
+                rp = new RequestProcessor(rpName, 50, true);                
+            } else {    
+                String rpName = "Git - " + repositoryRoot.toString();//NOI18N
+                rp = new RequestProcessor(rpName, 1, true);
+            }
             processorsToUrl.put(repositoryRoot, rp);
         }
         return rp;

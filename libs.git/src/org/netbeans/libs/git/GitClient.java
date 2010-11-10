@@ -85,12 +85,22 @@ public interface GitClient {
     /**
      * Prints file's content in the given revision to output stream
      * @param file
-     * @param revision git revision
+     * @param revision git revision, never null
      * @param out output stream
      * @return true if the file was found in the specified revision and printed to out, otherwise false
      * @throws GitException
+     * @throws GitException.MissingObjectException if the given revision does not exist
      */
     public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
+    /**
+     * Prints content of an index entry accordant with the given file to output stream
+     * @param file
+     * @param out output stream
+     * @return true if the file was found in the index and printed to out, otherwise false
+     * @throws GitException
+     */
+    public boolean catIndexEntry (File file, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -136,6 +146,8 @@ public interface GitClient {
     /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
+     * XXX init what???
+     * XXX no monitor???
      */
     public void init () throws GitException;
 

@@ -128,6 +128,10 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
     public JComponent getProgressComponent() {
         return ProgressHandleFactory.createProgressComponent(getProgressHandle());
     }
+
+    public RequestProcessor.Task getTask () {
+        return task;
+    }
     
     protected void setDisplayName (String displayName) {
         this.displayName = displayName;
