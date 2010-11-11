@@ -45,7 +45,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Level;
+import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.openide.util.NbBundle;
@@ -60,6 +60,7 @@ public class FileInformation extends VCSFileInformation {
     private final boolean directory;
     private final boolean renamed, copied;
     private final File oldFile;
+    private Type conflictType;
 
     FileInformation (EnumSet<Status> status, boolean isDirectory) {
         this.status = status;
@@ -79,6 +80,7 @@ public class FileInformation extends VCSFileInformation {
                     : EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE);
         } else if (status.isConflict()) {
             this.status = EnumSet.of(Status.IN_CONFLICT);
+            this.conflictType = status.getConflictDescriptor().getType();
         } else {
             GitStatus.Status statusHeadIndex = status.getStatusHeadIndex();
             GitStatus.Status statusIndexWC = status.getStatusIndexWC();
@@ -228,8 +230,24 @@ public class FileInformation extends VCSFileInformation {
         if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return "I"; //NOI18N
         } else if (containsStatus(Status.IN_CONFLICT)) {
-            Git.LOG.log(Level.WARNING, "Confict found, please annotate: {0}", getStatus());
-            return "CON"; //NOI18N
+            switch (conflictType) {
+                case ADDED_BY_THEM:
+                    return "UA"; //NOI18N
+                case ADDED_BY_US:
+                    return "AU"; //NOI18N
+                case BOTH_ADDED:
+                    return "AA"; //NOI18N
+                case BOTH_DELETED:
+                    return "DD"; //NOI18N
+                case BOTH_MODIFIED:
+                    return "UU"; //NOI18N
+                case DELETED_BY_THEM:
+                    return "UD"; //NOI18N
+                case DELETED_BY_US:
+                    return "DU"; //NOI18N
+                default:
+                    throw new IllegalStateException("Unknown conflict type: " + conflictType.toString()); //NOI18N
+            }
         } else if ("-".equals(sIndex) && "-".equals(sWorkingTree)) { //NOI18N
             return ""; //NOI18N
         } else {
@@ -275,8 +293,24 @@ public class FileInformation extends VCSFileInformation {
         if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Excluded_Short"); //NOI18N
         } else if (containsStatus(Status.IN_CONFLICT)) {
-            Git.LOG.log(Level.WARNING, "Confict found, please annotate: {0}", getStatus());
-            return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_Short"); //NOI18N
+            switch (conflictType) {
+                case ADDED_BY_THEM:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_AddedByThem"); //NOI18N
+                case ADDED_BY_US:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_AddedByUs"); //NOI18N
+                case BOTH_ADDED:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_BothAdded"); //NOI18N
+                case BOTH_DELETED:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_BothDeleted"); //NOI18N
+                case BOTH_MODIFIED:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_BothModified"); //NOI18N
+                case DELETED_BY_THEM:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_DeletedByThem"); //NOI18N
+                case DELETED_BY_US:
+                    return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_DeletedByUs"); //NOI18N
+                default:
+                    throw new IllegalStateException("Unknown conflict type: " + conflictType.toString()); //NOI18N
+            }
         } else if (Mode.HEAD_VS_INDEX.equals(mode)) {
             return new MessageFormat("{0}").format(new Object[] { sIndex }); //NOI18N
         } else if (Mode.INDEX_VS_WORKING_TREE.equals(mode)) {
