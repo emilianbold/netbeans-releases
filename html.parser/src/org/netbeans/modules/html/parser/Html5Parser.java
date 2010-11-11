@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
@@ -81,9 +82,12 @@ public class Html5Parser implements HtmlParser {
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
     private static final HtmlModel HTML5MODEL = new Html5Model();
 
+    private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
+    private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
+
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
-            String code = source.getSourceCode().toString();
+            String code = maskTemplatingMarks(source.getSourceCode().toString());
             InputSource is = new InputSource(new StringReader(code));
             final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
@@ -125,6 +129,10 @@ public class Html5Parser implements HtmlParser {
 
     public String getName() {
         return PARSER_NAME;
+    }
+
+    static String maskTemplatingMarks(String code) {
+        return TEMPLATING_MARKS_PATTERN.matcher(code).replaceAll(TEMPLATING_MARKS_MASK);
     }
 
     private static class Html5ParserResult extends DefaultHtmlParseResult {

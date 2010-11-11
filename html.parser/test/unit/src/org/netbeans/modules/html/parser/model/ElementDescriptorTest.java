@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.html.parser.model;
 
+import java.net.URL;
 import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.Documentation;
+import org.netbeans.modules.html.parser.HtmlTagProvider;
 
 /**
  *
@@ -56,6 +61,14 @@ public class ElementDescriptorTest extends NbTestCase {
     public ElementDescriptorTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Documentation.setupDocumentationForUnitTests();
+    }
+
+
 
     public void testNamePattern() {
         assertEquals("title", Attribute.parseName("title"));
@@ -181,4 +194,29 @@ public class ElementDescriptorTest extends NbTestCase {
         assertFalse(attrs.contains("bla"));
         assertFalse(attrs.contains("href"));
     }
+
+    public void testAllElementsHasHelpContent() {
+        for(ElementDescriptor d : ElementDescriptor.values()) {
+            if(d.getTagType() != HtmlTagType.HTML) {
+                continue;
+            }
+//            System.err.println("tag: " + d.getName());
+            HtmlTag tag = HtmlTagProvider.getTagForElement(d.getName());
+            assertNotNull(tag);
+
+            HelpItem item = tag.getHelp();
+            assertNotNull(item);
+
+            URL helpUrl = item.getHelpURL();
+            assertNotNull(helpUrl);
+
+            HelpResolver resolver = item.getHelpResolver();
+            assertNotNull(resolver);
+
+            String helpContent = resolver.getHelpContent(helpUrl);
+            assertNotNull(String.format("No help content for tag %s, help url is %s ", d.getName(), helpUrl.toExternalForm()), helpContent);
+
+        }
+    }
+
 }
