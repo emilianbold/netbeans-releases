@@ -220,6 +220,10 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** If the RP was stopped, this variable will be set, every new post()
      * will throw an exception and no task will be processed any further */
     volatile boolean stopped = false;
+    
+    /** Flag indicating that awaiting tasks should be executed although
+     * RP is in stopped state (rejecting new tasks) */
+    volatile boolean finishAwaitingTasks = false;
 
     /** The lock covering following five fields. They should be accessed
      * only while having this lock held. */
@@ -654,7 +658,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     Task askForWork(Processor worker, String debug) {
-        if (stopped || queue.isEmpty()) { // no more work in this burst, return him
+        if (queue.isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
             running--;
@@ -682,7 +686,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
             throw new IllegalStateException ("Cannot shut down the default " + //NOI18N
                     "request processor"); //NOI18N
         }
-        stop();
+        stopped = true;
+        finishAwaitingTasks = true;
     }
 
     /**

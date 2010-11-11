@@ -53,6 +53,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -1194,5 +1195,68 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue (f.isCancelled());
         exitLatch.await();
         assertTrue (r.interrupted);
+    }
+    
+    public void testSubmittedTasksExecutedBeforeShutdown() throws InterruptedException {
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final CountDownLatch executedLatch = new CountDownLatch(2);
+        Runnable dummyRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    startLatch.await();
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    executedLatch.countDown();
+                }
+            }
+        };
+        
+        RequestProcessor rp = new RequestProcessor("X", 1);
+        rp.submit(dummyRunnable);
+        rp.submit(dummyRunnable);
+        rp.shutdown();
+        startLatch.countDown();
+        
+        assertTrue("Submitted tasks not executed", executedLatch.await(5, TimeUnit.SECONDS));
+    }
+    
+    public void testExecutingTasksNotInterruptedOnShutdown() throws InterruptedException {
+        final CountDownLatch startLatch = new CountDownLatch(2);
+        final CountDownLatch blockingLatch = new CountDownLatch(1);
+        final CountDownLatch executedLatch = new CountDownLatch(1);
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        Runnable dummyRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    startLatch.countDown();
+                    startLatch.await();
+                    blockingLatch.await();
+                } catch (InterruptedException ex) {
+                    interrupted.set(true);
+                    Thread.currentThread().interrupt();
+                } finally {
+                    executedLatch.countDown();
+                }
+            }
+        };
+        
+        RequestProcessor rp = new RequestProcessor("X", 1);
+        rp.submit(dummyRunnable);
+        startLatch.countDown();
+        try {
+            startLatch.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        rp.shutdown();
+        blockingLatch.countDown();
+        executedLatch.await();
+        assertFalse("Executing tasks interrupted", interrupted.get());
     }
 }
