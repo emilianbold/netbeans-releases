@@ -111,7 +111,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 
 /**
- * <UL>Extended JTable (ETable) adds these features to JTable:
+ * Extended JTable (ETable) adds these features to JTable:
+ * <UL>
  *     <LI> The notion of fully editable (non-editable) table. </LI>
  *     <LI> <strong>Sorting</strong> the rows of the table by clicking the header.
  *          Shift-Click allows to use more columns for the sort. The sort is
@@ -119,12 +120,11 @@ import javax.swing.table.*;
  *     <LI> Automatic <strong>column width</strong> after init or after
  *          the model is changed (or triggered by "Ctrl-+" shortcut). 
  *          Automatic resize the column after double-click
- *          in the header column divider araa. </LI>
+ *          in the header column divider area. </LI>
  *     <LI> <strong>Persistence</strong> of the user customized settings via
  *          methods readSettings and writeSettings.
  *     <LI> <strong>Quick-Filter</strong> features allowing to show only
  *          certain rows from the model (see setQuickFilter()). </LI>
- *     <LI> 
  * </UL>
  * 
  * <p><b>Note:</b> This API is still under development and may change even in
@@ -849,7 +849,7 @@ public class ETable extends JTable {
     }
     
     /**
-     * 
+     * Test if the column hiding is allowed.
      * @return True if column hiding is allowed.
      */
     public boolean isColumnHidingAllowed() {
@@ -868,7 +868,7 @@ public class ETable extends JTable {
     }
     
     /**
-     * Overriden to do additional initialization.
+     * Overridden to do additional initialization.
      * @see javax.swing.JTable#initializeLocalVars()
      */
     @Override
@@ -963,7 +963,7 @@ public class ETable extends JTable {
 
     /**
      * Make the column sorted. Value of columnIndex is in the model coordinates.
-     * <strong>Be carefull</strong> with the columnIndes parameter: again, it
+     * <strong>Be careful</strong> with the columnIndes parameter: again, it
      * is in the <strong>model</strong> coordinates.
      */
     public void setColumnSorted(int columnIndex, boolean ascending, int rank) {
@@ -992,7 +992,7 @@ public class ETable extends JTable {
     }
     
     /**
-     * Overriden to install special button into the upper right hand corner.
+     * Overridden to install special button into the upper right hand corner.
      * @see javax.swing.JTable#configureEnclosingScrollPane()
      */
     @Override
@@ -1025,6 +1025,7 @@ public class ETable extends JTable {
                     b.getAccessibleContext().setAccessibleName(selectVisibleColumnsLabel);
                     b.getAccessibleContext().setAccessibleDescription(selectVisibleColumnsLabel);
                     b.addActionListener(new ActionListener() {
+                        @Override
                         public void actionPerformed(ActionEvent evt) {
                             ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
                         }
@@ -1388,6 +1389,7 @@ public class ETable extends JTable {
      * Helper method converting the row index according to the active sorting
      * columns.
      */
+    @Override
     public int convertRowIndexToModel(int row) {
         if (sortingPermutation == null) {
             sortAndFilter();
@@ -1405,6 +1407,7 @@ public class ETable extends JTable {
      * Helper method converting the row index according to the active sorting
      * columns.
      */
+    @Override
     public int convertRowIndexToView(int row) {
         if (inverseSortingPermutation == null) {
             sortAndFilter();
@@ -1525,6 +1528,7 @@ public class ETable extends JTable {
             this.value = value;
             this.equals = equals;
         }
+        @Override
         public boolean accept(Object aValue) {
             if ((value == null) && (aValue == null)) {
                 return equals;
@@ -1539,6 +1543,7 @@ public class ETable extends JTable {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent actionEvent) {
             setQuickFilter(column, this);
         }
@@ -1550,6 +1555,7 @@ public class ETable extends JTable {
     public JMenuItem getQuickFilterNoFilterItem(String label) {
         JMenuItem res = new JMenuItem(label);
         res.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 unsetQuickFilter();
             }
@@ -1586,6 +1592,7 @@ public class ETable extends JTable {
             this.greater = greater;
             this.equalsCounts = equalsCounts;
         }
+        @Override
         public boolean accept(Object aValue) {
             if (equalsCounts) {
                 if (greater) {
@@ -1620,6 +1627,7 @@ public class ETable extends JTable {
             return obj1.toString().compareTo(obj2.toString());
         }
         
+        @Override
         public void actionPerformed(ActionEvent actionEvent) {
             setQuickFilter(column, this);
         }
@@ -1765,6 +1773,7 @@ public class ETable extends JTable {
                     //get transferred to the next component in the
                     //parent focusTraversalPolicy *after* our request
                     //focus completes, so focus goes into a black hole - Tim
+                    @Override
                     public void run() {
                         ETable.this.requestFocus();
                     }
@@ -1896,14 +1905,17 @@ public class ETable extends JTable {
         SearchFieldListener() {
         }
         
+        @Override
         public void changedUpdate(DocumentEvent e) {
             searchForRow();
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             searchForRow();
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             searchForRow();
         }
@@ -1982,10 +1994,12 @@ public class ETable extends JTable {
             }
         }
         
+        @Override
         public void focusGained(FocusEvent e) {
             // Do nothing
         }
         
+        @Override
         public void focusLost(FocusEvent e) {
             Component c = e.getOppositeComponent();
             if (c != searchCombo) {
@@ -2006,6 +2020,7 @@ public class ETable extends JTable {
         SearchComboListener() {
         }
         
+        @Override
         public void itemStateChanged(java.awt.event.ItemEvent itemEvent) {
             Object selItem = searchCombo.getSelectedItem();
             for (Enumeration en = getColumnModel().getColumns(); en.hasMoreElements(); ) {
@@ -2039,10 +2054,12 @@ public class ETable extends JTable {
             }
         }
         
+        @Override
         public void focusGained(FocusEvent e) {
             // Do nothing
         }
         
+        @Override
         public void focusLost(FocusEvent e) {
             Component c = e.getOppositeComponent();
             if (c != searchTextField) {
@@ -2120,7 +2137,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to place the search text field.
+     * Overridden to place the search text field.
      * @see javax.swing.JTable#doLayout()
      */
     @Override
@@ -2161,13 +2178,28 @@ public class ETable extends JTable {
         private int originalIndex;
         // table model of my table
         private TableModel model;
+
+        /**
+         * Create a new table row mapping.
+         * @param index The row index
+         * @param model The table model
+         */
         public RowMapping(int index, TableModel model) {
             originalIndex = index;
             this.model = model;
         }
+        /**
+         * Get the model row index.
+         * @return The model row index
+         */
         public int getModelRowIndex() {
             return originalIndex;
         }
+        /**
+         * Get the model object at the row index of this mapping and the given column.
+         * @param column The column
+         * @return The model object
+         */
         public Object getModelObject(int column) {
             return model.getValueAt(originalIndex, column);
         }
@@ -2180,6 +2212,7 @@ public class ETable extends JTable {
     static class OriginalRowComparator implements Comparator<RowMapping> {
         public OriginalRowComparator() {
         }
+        @Override
         public int compare(RowMapping rm1, RowMapping rm2) {
             int i1 = rm1.getModelRowIndex();
             int i2 = rm2.getModelRowIndex();
@@ -2248,7 +2281,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to force requesting the focus after the user starts editing.
+     * Overridden to force requesting the focus after the user starts editing.
      * @see javax.swing.JTable#editCellAt(int, int, EventObject)
      */
     @Override
@@ -2278,7 +2311,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to track whether the remove request is in progress.
+     * Overridden to track whether the remove request is in progress.
      * @see javax.swing.JTable#removeEditor()
      */
     @Override
@@ -2381,6 +2414,7 @@ public class ETable extends JTable {
             this.direction = direction;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (isEditing()) {
                 removeEditor();
@@ -2470,6 +2504,7 @@ public class ETable extends JTable {
     /** Used to explicitly invoke editing from the keyboard */
     private class EditAction extends AbstractAction {
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             int row = getSelectedRow();
             int col = getSelectedColumn();
@@ -2487,6 +2522,7 @@ public class ETable extends JTable {
      */
     private class CancelEditAction extends AbstractAction {
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (isEditing() || editorComp != null) {
                 removeEditor();
@@ -2528,6 +2564,7 @@ public class ETable extends JTable {
      * Action for the keyboard event of hitting the Enter key.
      */
     private class EnterAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JRootPane jrp = getRootPane();
             if (jrp != null) {
@@ -2548,6 +2585,7 @@ public class ETable extends JTable {
      * CTRL-Tab transfers focus up.
      */
     private class CTRLTabAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             setFocusCycleRoot(false);
             try {
@@ -2630,7 +2668,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Allows to supply the deafult column selector for all instances
+     * Allows to supply the default column selector for all instances
      * of ETable.
      */
     public static void setDefaultColumnSelector(TableColumnSelector aDefaultColumnSelector) {
