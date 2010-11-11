@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.regex.Pattern;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -74,8 +73,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
-        String testName = "testaParseErrorneousHeadContent";
+    public static Test Xsuite() {
+        String testName = "testParseUnknownElementInTable";
         
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -619,6 +618,33 @@ public class Html5ParserTest extends NbTestCase {
         }
 
         
+    }
+
+    //unknown node 't' has no parent set
+    public void testParseUnknownElementInTable() throws ParseException {
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head><title></title></head>"
+                + "<body>"
+                + "<table>"
+                + "<t>"
+                + "</table>"
+                + "</body>"
+                + "</html>";
+//      AstNodeTreeBuilder.DEBUG = true;
+      HtmlParseResult result = parse(code);
+      AstNode root = result.root();
+
+//      AstNodeUtils.dumpTree(root);
+
+      //the 't' node is foster parented, so it goes to the table's parent, not table itself
+      AstNode t = AstNodeUtils.query(root, "html/body/t");
+      assertNotNull(t);
+      AstNode body = AstNodeUtils.query(root, "html/body");
+      assertNotNull(body);
+
+      assertEquals(body, t.parent());
+
     }
 
     private static class HtmlTagImpl implements HtmlTag {
