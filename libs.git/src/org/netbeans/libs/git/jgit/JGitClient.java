@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
 import org.netbeans.libs.git.jgit.commands.BranchCommand;
 import org.netbeans.libs.git.GitBranch;
@@ -52,7 +53,6 @@ import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -184,6 +185,33 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         StatusCommand cmd = new StatusCommand(repository, roots, monitor, this);
         cmd.execute();
         return cmd.getStatuses();
+    }
+
+    @Override
+    public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RepositoryState state = repository.getRepositoryState();
+        switch (state) {
+            case APPLY:
+                return GitRepositoryState.APPLY;
+            case BARE:
+                return GitRepositoryState.BARE;
+            case BISECTING:
+                return GitRepositoryState.BISECTING;
+            case MERGING:
+                return GitRepositoryState.MERGING;
+            case MERGING_RESOLVED:
+                return GitRepositoryState.MERGING_RESOLVED;
+            case REBASING:
+            case REBASING_INTERACTIVE:
+            case REBASING_MERGE:
+            case REBASING_REBASING:
+                return GitRepositoryState.REBASING;
+            case SAFE:
+                return GitRepositoryState.SAFE;
+            default:
+                throw new IllegalStateException(state.getDescription());
+        }
     }
 
     @Override

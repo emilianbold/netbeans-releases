@@ -112,7 +112,7 @@ public class Watcher extends AnnotationProvider {
 
         public Ext(Notifier<KEY> impl) {
             this.impl = impl;
-            new Thread(this).start();
+            new Thread(this, "File Watcher").start(); // NOI18N
         }
 
         // will be called from WHM implementation on lost key

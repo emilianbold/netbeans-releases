@@ -98,6 +98,7 @@ public class ReleaseFilesCopy extends Task {
                             ZipFile zf = new ZipFile(zip);
                             try {
                                 String path = fromString.substring(bangSlash + 2);
+                                log("Copying " + path + " in " + zip + " to " + to);
                                 ZipEntry ze = zf.getEntry(path);
                                 if (ze == null) {
                                     throw new BuildException("No such entry " + path + " in " + zip, getLocation());

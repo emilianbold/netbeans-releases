@@ -65,9 +65,36 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
 public class GitClientInvocationHandler implements InvocationHandler {
     private final GitClient client;
     private final File repositoryRoot;
-    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "catIndexEntry", "getBranches", "getStatus", "removeNotificationListener")); //NOI18N
+    /**
+     * Set of commands that do not need to run under repository lock
+     */
+    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", //NOI18N
+            "catFile",  //NOI18N
+            "catIndexEntry",  //NOI18N
+            "getBranches",  //NOI18N
+            "getStatus",  //NOI18N
+            "getRepositoryState",  //NOI18N
+            "getUser",  //NOI18N
+            "removeNotificationListener")); //NOI18N
+    /**
+     * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
+     */
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset")); //NOI18N
-    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "catIndexEntry", "getBranches", "getStatus", "removeNotificationListener", "getUser")); //NOI18N
+    /**
+     * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
+     * otherwise a FS event will come to Interceptor and trigger the full scan.
+     */
+    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener",  //NOI18N
+            "catFile",  //NOI18N
+            "catIndexEntry",  //NOI18N
+            "getBranches",  //NOI18N
+            "getStatus",  //NOI18N
+            "getRepositoryState",  //NOI18N
+            "getUser",  //NOI18N
+            "removeNotificationListener")); //NOI18N
+    /**
+     * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
+     */
     private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "commit", "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
