@@ -74,7 +74,7 @@ public class GlobalOptionSet extends OptionSetSupport {
     private static final Option[] options = {
 	DebuggerOption.SESSION_REUSE,
 	//DebuggerOption.MAIN_FUNC_WARNING,
-	DebuggerOption.SUPPRESS_STARTUP_MESSAGE,
+	//DebuggerOption.SUPPRESS_STARTUP_MESSAGE,
 	//DebuggerOption.OPTION_EXEC32,
 
 	DebuggerOption.FRONT_IDE,
