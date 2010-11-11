@@ -61,6 +61,8 @@ made subject to such option by the copyright holder.
 <mapID target="connectdb" url="connectdb.html" />
 <mapID target="derbydb" url="derbydb.html" />
 <mapID target="delobj" url="delobj.html" />
+<mapID target="oracledb" url="oracledb.html" />
+
 
 <mapID target="addcopycols" url="addcopycols.html" />
 <mapID target="createtables" url="createtables.html" />
@@ -83,9 +85,14 @@ made subject to such option by the copyright holder.
 <mapID target="org.netbeans.modules.derby.CreateDatabaseAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 <mapID target="org.netbeans.modules.derby.DerbySettingsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 
-<!-- connect to db dialog -->
+<!-- add driver dialog -->
+<mapID target="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" url="csh_driver.html" />
+
+
+<!-- connect to db dialog: second and third steps -->
 <mapID target="db_save_password" url="csh_connectdb.html" />
-<mapID target="new_db_save_password" url="csh_newconnectdb.html" />
+<mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="csh_newconnectdb.html" />
+<mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="csh_chooseschema.html" />
 
 <!-- create table dialog box csh -->
 <mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="create-table-db.html" />
