@@ -113,7 +113,11 @@ public final class ActionsManager {
      * @since 1.24 */
     public static final Object              ACTION_NEW_WATCH = "newWatch";
 
-    
+    /** Action constant for Evaluate Action.
+     *  @since 1.29 */
+    public static final Object              ACTION_EVALUATE = "evaluate";
+
+
     // variables ...............................................................
     
     private Vector                  listener = new Vector ();
