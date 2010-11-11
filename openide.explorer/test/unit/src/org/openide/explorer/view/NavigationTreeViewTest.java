@@ -49,12 +49,16 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreePath;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -73,6 +77,7 @@ public class NavigationTreeViewTest extends NbTestCase {
     private TreeView treeView;
     private ExplorerWindow testWindow;
     private CharSequence log;
+    private Object enter;
     
     public NavigationTreeViewTest(String testName) {
         super(testName);
@@ -107,6 +112,8 @@ public class NavigationTreeViewTest extends NbTestCase {
         }
 
         assertTrue("Tree is visible", testWindow.isShowing());
+        enter = treeView.tree.getInputMap().get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        assertNotNull("Enter has assigned key", enter);
     }
 
     @Override
@@ -124,20 +131,30 @@ public class NavigationTreeViewTest extends NbTestCase {
         ch.add(nodeWith("A", "-A", "-B", "B"));
         ch.add(nodeWith("X", "Y", "Z"));
 
-        Node first = ch.getNodes()[0];
+        final Node first = ch.getNodes()[0];
 
         ExplorerManager em = testWindow.getExplorerManager();
         em.setRootContext(root);
         em.setSelectedNodes(new Node[] { first });
 
-        sendKey(KeyEvent.VK_RIGHT);
-        sendKey(KeyEvent.VK_DOWN);
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                TreePath path = treeView.tree.getSelectionPath();
+                assertNotNull("Something is selected", path);
+                Node node = Visualizer.findNode(path.getLastPathComponent());
+                assertEquals("It is the first node", first, node);
+            }
+        });
+        
+        sendAction("expand");
+        sendAction("selectNext");
 
         assertEquals("Explored context is N0", first, em.getExploredContext());
         assertEquals("Selected node is A", 1, em.getSelectedNodes().length);
         assertEquals("Selected node is A", "A", em.getSelectedNodes()[0].getName());
 
-        sendKey(KeyEvent.VK_ENTER);
+        sendAction(enter);
 
         Keys keys = (Keys)first.getChildren();
         assertEquals("One invocation", 1, keys.actionPerformed);
@@ -145,39 +162,19 @@ public class NavigationTreeViewTest extends NbTestCase {
         assertFalse("No read access", keys.readAccess);
     }
 
-    private void sendKey(final int keyCode) throws Exception {
+    private void sendAction(final Object key) throws Exception {
         class Process implements Runnable {
-            int i = 0;
-            Component owner = null;
-
             public void run() {
-                Component o = FocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-                for (Component t = o; t != null; t = t.getParent()) {
-                    if (t == treeView) {
-                        owner = o;
-                    }
-                }
-                if (owner == null && i < 20) {
-                    i++;
-                    return;
-                }
-
-
-                assertNotNull("Focus owner: " + owner + "\nis not under: " + treeView, owner);
-
-                KeyEvent ke = new KeyEvent(
-                    owner, KeyEvent.KEY_PRESSED, System.currentTimeMillis(),
-                    0, keyCode, KeyEvent.CHAR_UNDEFINED,
-                    KeyEvent.KEY_LOCATION_STANDARD
-                );
-                owner.dispatchEvent(ke);
+                final ActionMap map = treeView.tree.getActionMap();
+                Action a = map.get(key);
+                String all = Arrays.toString(map.allKeys()).replace(',', '\n');
+                
+                assertNotNull("Action for key " + key + " found: " + all, a);
+                a.actionPerformed(new ActionEvent(treeView.tree, 0, null));
             }
         }
         Process processEvent = new Process();
-
-        while (processEvent.owner == null) {
-            SwingUtilities.invokeAndWait(processEvent);
-        }
+        SwingUtilities.invokeAndWait(processEvent);
     }
     
     private int cnt;
