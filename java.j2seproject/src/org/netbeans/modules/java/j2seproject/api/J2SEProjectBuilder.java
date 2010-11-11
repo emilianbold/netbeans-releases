@@ -560,7 +560,7 @@ public class J2SEProjectBuilder {
         final Iterator<? extends Library> it = libraries.iterator();
         for (int i=0; it.hasNext(); i++) {
             final Library lib = it.next();
-            result[i++] = "${libs." + lib.getName() + ".classpath}" + (it.hasNext() || additionalEntries.length != 0 ? ":":"");    //NOI18N
+            result[i] = "${libs." + lib.getName() + ".classpath}" + (it.hasNext() || additionalEntries.length != 0 ? ":":"");    //NOI18N
         }
         System.arraycopy(additionalEntries, 0, result, libraries.size(), additionalEntries.length);
         return result;
