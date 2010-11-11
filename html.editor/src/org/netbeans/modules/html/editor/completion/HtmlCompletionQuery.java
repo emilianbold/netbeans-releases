@@ -59,10 +59,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
@@ -718,11 +716,12 @@ public class HtmlCompletionQuery extends UserTask {
 
     List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible, Collection<HtmlTag> all) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(possible.size());
-        all.removeAll(possible); //remove possible elements
+        Set<HtmlTag> allmodifiable = new HashSet<HtmlTag>(all);
+        allmodifiable.removeAll(possible); //remove possible elements
         for (HtmlTag e : possible) {
             result.add(item4HtmlTag(e, offset, true));
         }
-        for (HtmlTag e : all) {
+        for (HtmlTag e : allmodifiable) {
             result.add(item4HtmlTag(e, offset, false));
         }
         return result;

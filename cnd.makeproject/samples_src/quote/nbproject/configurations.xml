@@ -38,7 +38,6 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -111,7 +110,6 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>

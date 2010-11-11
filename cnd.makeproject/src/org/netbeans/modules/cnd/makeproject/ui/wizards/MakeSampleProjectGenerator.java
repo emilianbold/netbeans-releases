@@ -96,6 +96,7 @@ public class MakeSampleProjectGenerator {
 
     private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
+    private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
 
     private MakeSampleProjectGenerator() {
     }
@@ -183,7 +184,7 @@ public class MakeSampleProjectGenerator {
                         csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
                     }
                 }
-                changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
                 changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
                 changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
@@ -212,8 +213,14 @@ public class MakeSampleProjectGenerator {
                         changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
                     }
                 }
-                //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
                 saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
+                FileObject privateConfiguration = prjLoc.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+                if (privateConfiguration != null) {
+                    projXml = FileUtil.toFile(privateConfiguration);
+                    doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                    changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                    saveXml(doc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
+                }
                 recordCreateSampleProject(env);
             }
 

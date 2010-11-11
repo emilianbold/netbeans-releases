@@ -51,9 +51,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
-public abstract class IOPack {
+/**
+ * Only console, base for all IOPacks
+ * @author Egor Ushakov
+ */
+public class IOPack {
     private final TermComponent console;
-    protected String slaveName = null;
     protected final ExecutionEnvironment exEnv;
 
     protected IOPack(TermComponent console, ExecutionEnvironment exEnv) {
@@ -65,7 +68,9 @@ public abstract class IOPack {
 	return console;
     }
 
-    public abstract boolean start();
+    public boolean start() {
+        return true;
+    }
 
     public void open() {
 	console.open();
@@ -92,10 +97,11 @@ public abstract class IOPack {
     }
 
     public String getSlaveName() {
-        return slaveName;
+        return null;
     }
 
-    public abstract void close();
+    public void close() {
+    }
 
     public static IOPack create(boolean remote,
                                 InputOutput io,
@@ -115,8 +121,9 @@ public abstract class IOPack {
 
         IOPack res;
 
-        boolean createPio = DebuggerManager.isStandalone();
-        if (createPio) {
+        if (io == null) { // Attach or other non-start mode
+            res = new IOPack(console, executor.getExecutionEnvironment());
+        } else if (DebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);
