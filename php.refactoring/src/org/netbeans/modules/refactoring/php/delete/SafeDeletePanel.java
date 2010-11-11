@@ -130,8 +130,8 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
 
                     checkBoxes.add(safeDelete, BorderLayout.CENTER);
                     if (!hasVisibleElements) {
-                        checkBoxes.setVisible(false);
-                        checkBoxes.setEnabled(true);
+                        safeDelete.setVisible(true);
+                        safeDelete.setEnabled(false);
                     }
                 }
 

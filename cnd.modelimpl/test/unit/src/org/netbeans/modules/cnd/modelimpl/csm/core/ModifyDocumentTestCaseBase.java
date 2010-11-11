@@ -151,7 +151,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             });
             try {
                 assertTrue("must have undo", urm.canUndo());
-                assertEquals("must have only one modified object", 1, this.doListener.size());
+                checkModifiedObjects(1);
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     if (TraceFlags.TRACE_191307_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
@@ -226,7 +226,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
 
             try {
                 assertTrue("must have undo", urm.canUndo());
-                assertEquals("must have only one modified object", 1, this.doListener.size());
+                checkModifiedObjects(1);
                 if (!parse1.await(2000, TimeUnit.SECONDS)) {
                     if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
@@ -289,7 +289,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             });
             try {
                 assertTrue("must have undo", urm.canUndo());
-                assertEquals("must have only one modified object", 1, this.doListener.size());
+                checkModifiedObjects(1);
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
@@ -311,6 +311,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 throw ex;
             }
         }
+    }
+
+    private void checkModifiedObjects(int expected) {
+        assertEquals("unexpected number of modified objects:\n" + DataObject.getRegistry().getModified() + "\n Our List:\n" + this.doListener.modifiedDOs + "\n", expected, this.doListener.size());
     }
 
     private void saveDocument(final File sourceFile, final BaseDocument doc, final CsmProject project) throws DataObjectNotFoundException, BadLocationException, IOException {
@@ -414,7 +418,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 }
             });
             assertTrue("must have undo", urm.canUndo());
-            assertEquals("must have only one modified object", 1, this.doListener.size());
+            checkModifiedObjects(1);
             if (!parse1.await(20, TimeUnit.SECONDS)) {
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
@@ -437,8 +441,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
-//            assertEquals("must be exactly two parse events", 2, parseCounter.get());
-            assertEquals("must have zero modified object", 0, this.doListener.size());
+            checkModifiedObjects(0);
             
             assertTrue("must have undoable modification", urm.canUndo());
             if (doUndoRedo) {
@@ -450,7 +453,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
     //            assertEquals("must be exactly three parse events", 3, parseCounter.get());
-                assertEquals("must have only one modified object", 1, this.doListener.size());
+                checkModifiedObjects(1);
 
                 assertTrue("must have redoable modification", urm.canRedo());
                 urm.redo();
@@ -460,8 +463,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
-    //            assertEquals("must be exactly four parse events", 4, parseCounter.get());
-                assertEquals("must have zero modified object", 0, this.doListener.size());
+                checkModifiedObjects(0);
                 project.waitParse();
             }
         } finally {

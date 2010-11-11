@@ -140,16 +140,18 @@ public class DbSchemaEjbGenerator {
         for(int i = 0; i < allTables.length; i ++ ) {
             TableElement table0 = allTables[i];
             UniqueKeyElement pk0 = table0.getPrimaryKey();
-            ForeignKeyElement[] fkElements = table0.getForeignKeys();
-            for(int fkix = 0; fkix < fkElements.length; fkix ++ ) {
-                ForeignKeyElement fk = fkElements[fkix];
-                TableElement table = fk.getReferencedTable();
-                UniqueKeyElement pk = table.getPrimaryKey();
-                //at first step support 1-1 keys (no composite yet).
-                if(1 == pk0.getColumns().length && fk.getLocalColumns().length == 1 && pk.getColumns().length==1){
-                    if(fk.getLocalColumns()[0].equals(pk0.getColumns()[0])){
-                        tableNames.add(table0.getName().getName());
-                        continue;
+            if(pk0 != null){//it may be join table or other without pk
+                ForeignKeyElement[] fkElements = table0.getForeignKeys();
+                for(int fkix = 0; fkix < fkElements.length; fkix ++ ) {
+                    ForeignKeyElement fk = fkElements[fkix];
+                    TableElement table = fk.getReferencedTable();
+                    UniqueKeyElement pk = table.getPrimaryKey();
+                    //at first step support 1-1 keys (no composite yet).
+                    if(pk != null && 1 == pk0.getColumns().length && fk.getLocalColumns().length == 1 && pk.getColumns().length==1){
+                        if(fk.getLocalColumns()[0].equals(pk0.getColumns()[0])){
+                            tableNames.add(table0.getName().getName());
+                            continue;
+                        }
                     }
                 }
             }

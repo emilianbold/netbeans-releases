@@ -44,19 +44,29 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.beans.Customizer;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
+import java.util.Collections;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -86,7 +96,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/project.properties",
 //        "nbproject/private/private.properties",       no private.properties are created when project and source roots are collocated
     };
-
+            
     public void testCreateProject() throws Exception {
         MockLookup.setLayersAndInstances();
         File proj = getWorkDir();
@@ -150,15 +160,27 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     }
     
     public void testProjectBuilder() throws Exception {
+        MockLookup.setLayersAndInstances(new TestLibTypeProvider(), new TestLibProvider());
         final File root = getWorkDir();
         clearWorkDir();
         final File projectDir = new File(root,"proj");
         final String projectName = "Test Project";
+        final Library[] compileTimeLibs = new Library[] {
+            LibraryManager.getDefault().getLibrary("foo1"),
+            LibraryManager.getDefault().getLibrary("foo2")
+        };
+        assertNotNull(compileTimeLibs[0]);
+        assertNotNull(compileTimeLibs[1]);
+        final Library runtimeLib = LibraryManager.getDefault().getLibrary("foo3");
+        assertNotNull(runtimeLib);
         final J2SEProjectBuilder generator = new J2SEProjectBuilder(projectDir, projectName);
+        
         generator.addDefaultSourceRoots().
         setBuildXmlName("my-build.xml").
         setMainClass("org.me.Main").
         addJVMArguments("-Xmx100M").
+        addCompileLibraries(compileTimeLibs).
+        addRuntimeLibraries(runtimeLib).
         build();
         
         EditableProperties props = new EditableProperties(true);
@@ -168,6 +190,79 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         assertEquals("org.me.Main", props.getProperty("main.class"));
         assertEquals("src",props.getProperty("src.dir"));
         assertEquals("test",props.getProperty("test.src.dir"));
+        assertEquals("${libs.foo1.classpath}:${libs.foo2.classpath}",props.get("javac.classpath"));
+        assertEquals("${libs.foo3.classpath}:${javac.classpath}:${build.classes.dir}",props.get("run.classpath"));
     }
     
+    
+    // <editor-fold defaultstate="collapsed" desc="Libraries Mock Services">
+    public static class TestLibProvider implements LibraryProvider<LibraryImplementation> {
+        
+        private LibraryImplementation[] libs;
+
+        @Override
+        public LibraryImplementation[] getLibraries() {
+            if (libs == null) {
+                libs = createLibs();
+            }
+            return libs;
+        }
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {            
+        }
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {            
+        }                
+        private LibraryImplementation[] createLibs() {
+            final TestLibTypeProvider tlp = Lookup.getDefault().lookup(TestLibTypeProvider.class);
+            final LibraryImplementation lib1 = tlp.createLibrary();
+            lib1.setName("foo1");
+            lib1.setContent("classpath", Collections.<URL>emptyList());
+            final LibraryImplementation lib2 = tlp.createLibrary();
+            lib2.setName("foo2");
+            lib2.setContent("classpath", Collections.<URL>emptyList());
+            final LibraryImplementation lib3 = tlp.createLibrary();
+            lib3.setName("foo3");
+            lib3.setContent("classpath", Collections.<URL>emptyList());
+            return new LibraryImplementation[] {
+                lib1,
+                lib2,
+                lib3
+            };
+        }
+    }
+    
+    public static class TestLibTypeProvider implements LibraryTypeProvider {
+        @Override
+        public String getDisplayName() {
+            return "j2se";
+        }
+        @Override
+        public String getLibraryType() {
+            return "j2se";
+        }
+        @Override
+        public String[] getSupportedVolumeTypes() {
+            return new String[] {"classpath","src","javadoc"};
+        }
+        @Override
+        public LibraryImplementation createLibrary() {
+            return LibrariesSupport.createLibraryImplementation("j2se", getSupportedVolumeTypes());
+        }
+        @Override
+        public void libraryDeleted(LibraryImplementation libraryImpl) {            
+        }
+        @Override
+        public void libraryCreated(LibraryImplementation libraryImpl) {            
+        }
+        @Override
+        public Customizer getCustomizer(String volumeType) {
+            return null;
+        }
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }        
+    }
+    //</editor-fold>
 }

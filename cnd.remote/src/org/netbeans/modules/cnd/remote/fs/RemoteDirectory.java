@@ -103,9 +103,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public FileObject getFileObject(String relativePath) {
         FileObject fo = (FileObject) getFileOrCheckExistence(relativePath, Mode.FILE_OBJECT);
-        if (fo == null) {
-            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, remotePath + '/' + relativePath);
-        }
+// The FileObject contract is to return NULL in the case file object is not found
+//        if (fo == null) {
+//            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, remotePath + '/' + relativePath);
+//        }
         return fo;
     }
 

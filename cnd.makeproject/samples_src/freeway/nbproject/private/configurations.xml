@@ -4,6 +4,9 @@
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <gdbdebugger version="2">
         <gdb_command>gdb</gdb_command>
         <array_repeat_threshold>20</array_repeat_threshold>
