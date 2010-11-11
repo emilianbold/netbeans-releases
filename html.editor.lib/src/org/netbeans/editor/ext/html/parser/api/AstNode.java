@@ -404,6 +404,7 @@ public class AstNode {
             return false; //no such node in children
         }
         children.add(idx, node);
+        node.setParent(this);
         return true;
     }
 
