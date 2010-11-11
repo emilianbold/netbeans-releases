@@ -75,10 +75,12 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private final BeanTreeView treeView;
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
+    private final boolean useHtmlFormat;
 
-    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
+    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
+        this.useHtmlFormat = useHTML;
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new MyOwnBeanTreeView();
         treeView.setRootVisible(false);
@@ -111,11 +113,15 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public static MultipleCallStackPanel createInstance() {
-        return new MultipleCallStackPanel(null);
+        return new MultipleCallStackPanel(null, false);
     }
 
     public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider);
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, false);
+    }
+
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML);
     }
 
     @Override
@@ -171,17 +177,17 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions, useHtmlFormat));
     }
 
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, useHtmlFormat));
     }
 
     public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
         treeView.setRootVisible(false);
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack, useHtmlFormat));
     }
 
     public void update() {
