@@ -143,12 +143,12 @@ final class VisualizerChildren extends Object {
 
             @Override
             public boolean hasMoreElements() {
-                return index < getVisNodes(true).size();
+                return index < getVisNodes(false).size();
             }
 
             @Override
             public VisualizerNode nextElement() {
-                return create ? (VisualizerNode) getChildAt(index++) : getVisNodes(true).get(index++);
+                return create ? (VisualizerNode) getChildAt(index++) : getVisNodes(false).get(index++);
             }
         };
     }
@@ -379,7 +379,7 @@ final class VisualizerChildren extends Object {
         return str;
     }
 
-    private List<VisualizerNode> getVisNodes(boolean guardAccess) {
+    final List<VisualizerNode> getVisNodes(boolean guardAccess) {
         if (guardAccess) {
             assert EventQueue.isDispatchThread();
         }
