@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,8 +67,11 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.netbeans.libs.git.GitConflictDescriptor;
+import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.jgit.JGitConflictDescriptor;
 import org.netbeans.libs.git.jgit.JGitStatus;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -133,8 +137,14 @@ public class StatusCommand extends GitCommand {
                 final int T_HEAD = 0;
                 final int T_INDEX = 1;
                 final int T_WORKSPACE = 2;
+                String lastPath = null;
+                GitStatus[] conflicts = new GitStatus[3];
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
+                    if (!path.equals(lastPath)) {
+                        handleConflict(conflicts, workTreePath);
+                    }
+                    lastPath = path;
                     File file = new File(workTreePath + File.separator + path);
                     int mHead = treeWalk.getRawMode(T_HEAD);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
@@ -189,14 +199,17 @@ public class StatusCommand extends GitCommand {
                         }
                     }
 
-                    boolean inConflict = false;
-                    if (indexEntry != null) {
-                        inConflict = indexEntry.getStage() > 0;
+                    int stage = indexEntry == null ? 0 : indexEntry.getStage();
+
+                    GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
+                    if (stage == 0) {
+                        statuses.put(file, status);
+                        listener.notifyStatus(status);
+                    } else {
+                        conflicts[stage - 1] = status;
                     }
-                    GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict, isFolder, renames.get(path));
-                    statuses.put(file, status);
-                    listener.notifyStatus(status);
                 }
+                handleConflict(conflicts, workTreePath);
             } finally {
                 cache.unlock();
             }
@@ -243,6 +256,37 @@ public class StatusCommand extends GitCommand {
             }
         }
         return renames;
+    }
+
+    private void handleConflict (GitStatus[] conflicts, String workTreePath) {
+        if (conflicts[0] != null || conflicts[1] != null || conflicts[2] != null) {
+            GitStatus status;
+            Type type;
+            if (conflicts[1] == null && conflicts[2] == null) {
+                type = Type.BOTH_DELETED;
+                status = conflicts[0];
+            } else if (conflicts[1] == null && conflicts[2] != null) {
+                type = Type.DELETED_BY_US;
+                status = conflicts[2];
+            } else if (conflicts[1] != null && conflicts[2] == null) {
+                type = Type.DELETED_BY_THEM;
+                status = conflicts[1];
+            } else if (conflicts[0] == null) {
+                type = Type.BOTH_ADDED;
+                status = conflicts[1];
+            } else {
+                type = Type.BOTH_MODIFIED;
+                status = conflicts[1];
+            }
+            // how do we get other types??
+            GitConflictDescriptor desc = new JGitConflictDescriptor(type);
+            status = new JGitStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
+                    GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null);
+            statuses.put(status.getFile(), status);
+            listener.notifyStatus(status);
+        }
+        // clear conflicts cache
+        Arrays.fill(conflicts, null);
     }
 
 }

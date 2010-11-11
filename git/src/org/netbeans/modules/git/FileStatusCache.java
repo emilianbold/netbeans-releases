@@ -557,7 +557,13 @@ public class FileStatusCache {
      * @return true if status constants of both object are equal, false otherwise
      */
     private static boolean equivalent (FileInformation main, FileInformation other) {
-        return other != null && main.getStatus().equals(other.getStatus()) && main.isDirectory() == other.isDirectory();
+        boolean retval;
+        if (other != null && main.getStatus().equals(other.getStatus()) && main.isDirectory() == other.isDirectory()) {
+            retval = main.getStatusText().equals(other.getStatusText());
+        } else {
+            retval = false;
+        }
+        return retval;
     }
 
     private boolean containsFilesIntern (Set<File> indexRoots, Set<Status> includeStatus, boolean recursively, boolean addExcluded) {
