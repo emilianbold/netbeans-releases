@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -930,5 +931,37 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             return s;
         }
         return res;
+    }
+
+    @Override
+    protected void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+        xes.elementOpen(TOOLS_SET_ELEMENT);
+        RemoteSyncFactory fixedSyncFactory = makeConfiguration.getFixedRemoteSyncFactory();
+        if (fixedSyncFactory != null) {
+            xes.element(FIXED_SYNC_FACTORY_ELEMENT, fixedSyncFactory.getID());
+        }
+        // XXX:fullRemote: move to project-level
+        xes.element(REMOTE_MODE_ELEMENT, makeConfiguration.getRemoteMode().name());
+        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
+        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
+            xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
+        }
+        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault()) {
+            xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
+        }
+        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault()) {
+            xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
+        }
+        if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
+            xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
+        }
+        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
+        if (makeConfiguration.getDependencyChecking().getModified()) {
+            xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
+        }
+        if (makeConfiguration.getRebuildPropChanged().getModified()) {
+            xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
+        }
+        xes.elementClose(TOOLS_SET_ELEMENT);
     }
 }

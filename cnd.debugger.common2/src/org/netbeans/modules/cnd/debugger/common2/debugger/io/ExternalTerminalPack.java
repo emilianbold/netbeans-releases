@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class ExternalTerminalPack extends IOPack {
     private DebuggerExternalTerminal terminal = null;
     private final String termPath;
+    private String slaveName = null;
 
     public ExternalTerminalPack(TermComponent console, String termPath, ExecutionEnvironment exEnv) {
         super(console, exEnv);
@@ -65,6 +66,11 @@ public class ExternalTerminalPack extends IOPack {
             return slaveName != null;
         }
         return false;
+    }
+
+    @Override
+    public String getSlaveName() {
+        return slaveName;
     }
 
     @Override
