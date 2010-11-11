@@ -178,7 +178,7 @@ public class NbModuleProjectTest extends TestBase {
     }
 
     public void testMemoryConsumption() throws Exception { // #90195
-        assertSize("java.project is not too big", Arrays.asList(javaProjectProject.evaluator(), javaProjectProject.getHelper()), 1234567, new MemoryFilter() {
+        assertSize("java.project is not too big", Arrays.asList(javaProjectProject.evaluator(), javaProjectProject.getHelper()), 2345678, new MemoryFilter() {
             final Class<?>[] REJECTED = {
                 Project.class,
                 FileObject.class,
