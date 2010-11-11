@@ -32,8 +32,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dbschemaComboBox" alignment="0" pref="387" max="32767" attributes="0"/>
-                  <Component id="datasourceComboBox" alignment="0" pref="387" max="32767" attributes="0"/>
+                  <Component id="dbschemaComboBox" alignment="0" pref="423" max="32767" attributes="0"/>
+                  <Component id="datasourceComboBox" alignment="0" pref="423" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Component id="tablesPanel" alignment="1" pref="536" max="32767" attributes="0"/>

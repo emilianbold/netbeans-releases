@@ -198,11 +198,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
             DBSchemaUISupport.connect(dbschemaComboBox, dbschemaFileList);
             boolean hasDBSchemas = (dbschemaComboBox.getItemCount() > 0 && dbschemaComboBox.getItemAt(0) instanceof FileObject);
-            if (!hasDBSchemas) {
-                dbschemaRadioButton.setEnabled(hasDBSchemas);
-                dbschemaComboBox.setEnabled(hasDBSchemas);
-            }
 
+            dbschemaRadioButton.setEnabled(hasDBSchemas);
+            dbschemaComboBox.setEnabled(hasDBSchemas);
+            dbschemaRadioButton.setVisible(hasDBSchemas);
+            dbschemaComboBox.setVisible(hasDBSchemas);
+            
             selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
         } 
 
@@ -811,8 +812,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
-                    .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
+                    .add(dbschemaComboBox, 0, 423, Short.MAX_VALUE)
+                    .add(datasourceComboBox, 0, 423, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
