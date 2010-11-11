@@ -954,13 +954,13 @@ outer:  do {
                     throw new NullPointerException ("Contains null tasks: " +  //NOI18N
                             tasks);
                 }
-                Callable<T> delegate = new WaitableCallable(c, ref, wait);
+                Callable<T> delegate = new WaitableCallable<T>(c, ref, wait);
                 result.add (submit(delegate));
             }
             wait.await(timeout, unit);
         } finally {
             for (Future<T> f : result) {
-                RPFutureTask ft = (RPFutureTask) f;
+                RPFutureTask<?> ft = (RPFutureTask) f;
                 ft.cancel(true);
             }
         }
@@ -1948,7 +1948,9 @@ outer:  do {
                     // need the same sync as interruptTask
                     synchronized (current.processorLock) {
                         todo = current.askForWork(this, debug);
-                        if (todo == null) break;
+                        if (todo == null) {
+                            break;
+                        }
                     }
                     setPrio(todo.getPriority());
 
