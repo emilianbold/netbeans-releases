@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -656,10 +657,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
 	
 	// IZ 189550
-	MICommand findPidCmd = new FindPidMICmd(false);
-        gdb.sendCommand(findPidCmd);
-	
-	
+        sendPidCommand(false);
     }
 
     public final void stepOver() {
@@ -903,10 +901,56 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	return pid;
     }
 
-    private final class FindPidMICmd extends AbstractMICommand {
+    private void sendPidCommand(boolean resume) {
+        if (getHost().getPlatform() == Platform.Windows_x86) {
+            MICommand findPidCmd = new InfoThreadsMICmd(resume);
+            gdb.sendCommand(findPidCmd);
+        } else if (getHost().getPlatform() != Platform.MacOSX_x86) {
+            MICommand findPidCmd = new InfoProcMICmd(resume);
+            gdb.sendCommand(findPidCmd);
+        }
+    }
+
+    private final class InfoThreadsMICmd extends AbstractMICommand {
+        final boolean resume;
+
+	public InfoThreadsMICmd(boolean resume) {
+	    super(0, "info threads");// NOI18N
+	    this.resume = resume;
+	}
+
+        @Override
+	protected void onDone(MIRecord record) {
+            int pid = 0;
+            String msg = record.command().getConsoleStream();
+	    int pos1 = msg.toLowerCase().indexOf("* 1 thread "); // NOI18N
+            if (pos1 >= 0) {
+                int pos2 = msg.indexOf('.', pos1);
+                if (pos2 > 0) {
+                    try {
+                        pid = Integer.valueOf(msg.substring(pos1 + 11, pos2));
+                    } catch (NumberFormatException ex) {
+                        //log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                    }
+                }
+            }
+
+	    session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+	    if (pid != 0) {
+		session().setPid(pid);
+            }
+
+	    if (resume) {
+		go();	// resume
+            }
+	    finish();
+	}
+    }
+
+    private final class InfoProcMICmd extends AbstractMICommand {
 	final boolean resume;
 
-	public FindPidMICmd(boolean resume) {
+	public InfoProcMICmd(boolean resume) {
 	    // I was hoping that that using -interpreter-exec
 	    // would make the ~ output come out with tokens 
 	    // but it doesn't, at least in gdb 6.4. If it did
@@ -976,9 +1020,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		new AbstractMICommand(0, "-break-insert -t main");// NOI18N
 	    startHook2Cmd.setEmptyDoneIsError(true);
 
-	    final MICommand findPidCmd = new FindPidMICmd(true);
-
-
 	    //
 	    // The actual run command
 	    //
@@ -1011,10 +1052,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 @Override
                     protected void onStopped(MIRecord record) {
 			// Are we sure we hit '_start' or 'main'?
-			if (pid == 0)
-			    gdb.sendCommand(findPidCmd);
-			else
+			if (pid == 0) {
+                            sendPidCommand(true);
+                        } else {
 			    go();	// resume
+                        }
 			finish();
 		    }
                 };
@@ -2954,7 +2996,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         final String mi_command = tmp_cmd;
         final String fprogram = program;
-        final String mprogram = toCString(fmap.worldToEngine(program));
+
+        // There is no way to determine correct file mapper here, see #191835
+        //final String mprogram = toCString(fmap.worldToEngine(program));
+        final String mprogram = toCString(program);
 
 	// mainly load symbol table
 	// -file-core-file is not implemented in gdb 6.1
