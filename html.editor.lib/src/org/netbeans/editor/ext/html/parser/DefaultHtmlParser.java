@@ -196,6 +196,11 @@ public class DefaultHtmlParser implements HtmlParser {
         public Collection<NamedCharRef> getNamedCharacterReferences() {
             return version.getDTD().getCharRefList("");
         }
+
+        @Override
+        public String getModelId() {
+            return "html4model"; //NOI18N
+        }
         
     }
 

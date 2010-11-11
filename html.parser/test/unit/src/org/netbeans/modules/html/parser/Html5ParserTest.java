@@ -55,11 +55,13 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.xml.sax.SAXException;
 
 /**
@@ -589,6 +591,34 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result);
 
         return result;
+    }
+
+    public void testHtml5Model() throws ParseException {
+        String code = "<!doctype html><title>hi</title>";
+        HtmlParseResult result = parse(code);
+
+        HtmlModel model = result.model();
+        assertNotNull(model);
+        assertEquals("html5model", model.getModelId());
+
+        Collection<HtmlTag> all = model.getAllTags();
+        assertNotNull(all);
+        assertEquals(ElementDescriptor.values().length, all.size());
+
+        HtmlTag table = HtmlTagProvider.getTagForElement("table");
+        assertNotNull(table);
+
+        assertTrue(all.contains(table));
+
+        //try to modify the unmodifiable collection
+        try {
+            all.remove(table);
+            assertTrue("The tags collection can be modified!", false);
+        } catch (UnsupportedOperationException t) {
+            //ok
+        }
+
+        
     }
 
     private static class HtmlTagImpl implements HtmlTag {
