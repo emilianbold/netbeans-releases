@@ -64,6 +64,7 @@ import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
@@ -97,6 +98,32 @@ public class CommitCommand extends GitCommand {
                 
         this.author = author;
         this.commiter = commiter;
+    }
+
+    @Override
+    protected boolean prepareCommand() throws GitException {
+        boolean retval = super.prepareCommand();
+        if (retval) {
+            RepositoryState state = getRepository().getRepositoryState();
+            if (RepositoryState.MERGING.equals(state)) {
+                monitor.preparationsFailed("Index contains files in conflict, please resolve them before commit");
+                throw new GitException("Index contains files in conflict, please resolve them before commit");
+            } else if (RepositoryState.MERGING_RESOLVED.equals(state) && roots.length > 0) {
+                boolean fullWorkingTree = false;
+                File repositoryRoot = getRepository().getWorkTree();
+                for (File root : roots) {
+                    if (root.equals(repositoryRoot)) {
+                        fullWorkingTree = true;
+                        break;
+                    }
+                }
+                if (!fullWorkingTree) {
+                    monitor.preparationsFailed("Cannot do a partial commit during a merge.");
+                    throw new GitException("Cannot do a partial commit during a merge.");
+                }
+            }
+        }
+        return retval;
     }
 
     @Override

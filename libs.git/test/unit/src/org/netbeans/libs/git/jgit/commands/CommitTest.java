@@ -47,11 +47,18 @@ import java.io.IOException;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuilder;
+import org.eclipse.jgit.dircache.DirCacheEditor;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -496,5 +503,47 @@ public class CommitTest extends AbstractGitTestCase {
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertNull(statuses.get(file1));
         assertNull(statuses.get(file2));
+    }
+
+    public void testNeverCommitConflicts () throws Exception {
+        File f = new File(workDir, "conflict");
+        DirCache cache = repository.lockDirCache();
+        try {
+            DirCacheBuilder builder = cache.builder();
+            DirCacheEntry e = new DirCacheEntry(f.getName(), 1);
+            e.setLength(0);
+            e.setLastModified(0);
+            e.setFileMode(FileMode.REGULAR_FILE);
+            builder.add(e);
+            builder.finish();
+            builder.commit();
+        } finally {
+            cache.unlock();
+        }
+        File mergeFile = new File(new File(workDir, Constants.DOT_GIT), "MERGE_HEAD");
+        mergeFile.createNewFile();
+        try {
+            getClient(workDir).commit(new File[] { f }, "nothing", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail();
+        } catch (GitException ex) {
+            assertEquals("Index contains files in conflict, please resolve them before commit", ex.getMessage());
+        }
+        cache = repository.lockDirCache();
+        try {
+            DirCacheEditor edit = cache.editor();
+            edit.add(new DirCacheEditor.DeletePath(f.getName()));
+            edit.finish();
+            edit.commit();
+        } finally {
+            cache.unlock();
+        }
+        try {
+            getClient(workDir).commit(new File[] { f }, "nothing", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail();
+        } catch (GitException ex) {
+            assertEquals("Cannot do a partial commit during a merge.", ex.getMessage());
+        }
+
+        //TODO try to commit the whole WT, for that we need to create the real conflict, not just this fake ones
     }
 }
