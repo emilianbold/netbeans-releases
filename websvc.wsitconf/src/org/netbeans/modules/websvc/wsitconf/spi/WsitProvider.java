@@ -121,8 +121,12 @@ public abstract class WsitProvider {
         }
         return false;
     }
-
+    
     public FileObject getConfigFilesFolder(boolean client) {
+        return getConfigFilesFolder(client, true);
+    }
+
+    public FileObject getConfigFilesFolder(boolean client, boolean create) {
         FileObject folder = null;
 
         Sources sources = ProjectUtils.getSources(project);
@@ -133,6 +137,9 @@ public abstract class WsitProvider {
             folder = sourceGroups[0].getRootFolder();
             if (folder != null) {
                 folder = folder.getFileObject(CLIENT_CFG_FOLDER);
+            }
+            if ( !create ){
+                return folder;
             }
             if ((folder == null) || (!folder.isValid())) {
                 try {

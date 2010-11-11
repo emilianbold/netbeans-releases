@@ -379,7 +379,9 @@ public class WSITModelSupport {
 
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
      */
-    public static WSDLModel getModelForServiceFromJava(FileObject jc, Project p, boolean create, Collection<FileObject> createdFiles) throws IOException {
+    public static WSDLModel getModelForServiceFromJava(FileObject jc, Project p, 
+            boolean create, Collection<FileObject> createdFiles) throws IOException 
+    {
         
         WSDLModel model = null;
         String configWsdlName = CONFIG_WSDL_SERVICE_PREFIX;
@@ -406,7 +408,7 @@ public class WSITModelSupport {
         }
 
         WsitProvider wp = p.getLookup().lookup(WsitProvider.class);        
-        FileObject cfgFolder = wp.getConfigFilesFolder(false);
+        FileObject cfgFolder = wp.getConfigFilesFolder(false, create);
 
         // check whether config file already exists
         if ((cfgFolder != null) && (cfgFolder.isValid())) {

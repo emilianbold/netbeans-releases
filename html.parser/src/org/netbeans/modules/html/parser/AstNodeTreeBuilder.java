@@ -72,6 +72,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private final AstNodeFactory factory;
     private AstNode root;
     //element's internall offsets
+    private int offset;
     private int tag_lt_offset;
     private boolean self_closing_starttag;
     //stack of opened tags
@@ -158,7 +159,14 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             AstNode latestEndTag = physicalEndTagsQueue.peek();
             if(latestEndTag != null) {
                 t.setLogicalEndOffset(latestEndTag.startOffset());
+            } else if(startTag != null) {
+                //or to an open tag which implies this tag to be closed
+                t.setLogicalEndOffset(tag_lt_offset);
+            } else {
+                //the rest - simply current token offset
+                t.setLogicalEndOffset(offset);
             }
+
         }
 
         if (stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
@@ -222,7 +230,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (DEBUG_STATES) {
             System.out.println(Util.TOKENIZER_STATE_NAMES[from] + " -> " + Util.TOKENIZER_STATE_NAMES[to] + " at " + offset);//NOI18N
         }
-
+        this.offset = offset;
         int tag_gt_offset = -1;
         switch (to) {
             case TAG_OPEN:
