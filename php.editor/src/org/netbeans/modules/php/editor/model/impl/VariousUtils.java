@@ -393,7 +393,7 @@ public class VariousUtils {
                         //new FooImpl()-> not allowed in php
                         return Collections.emptyList();
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
-                        List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
@@ -403,7 +403,7 @@ public class VariousUtils {
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
-                        List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         FunctionScope fnc = ModelUtils.getFirst(CachingSupport.getFunctions(frag, varScope));
                         if (fnc != null) {
                             newRecentTypes.addAll(fnc.getReturnTypes(true));
@@ -411,7 +411,7 @@ public class VariousUtils {
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
-                        List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String[] frgs = frag.split("\\.");
                         assert frgs.length == 2;
                         String clsName = frgs[0];
@@ -450,7 +450,7 @@ public class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)
                             || (operation.startsWith(VariousUtils.ARRAY_TYPE_PREFIX))) {
-                        List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String varName = frag;
                         VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                         if (var != null) {
@@ -490,7 +490,7 @@ public class VariousUtils {
                         
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
                         VariableName var = fldVarStack.isEmpty() ? null : fldVarStack.pop();
-                        List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String fldName = frag;
                         if (!fldName.startsWith("$")) {//NOI18N
                             fldName = "$" + fldName;//NOI18N
