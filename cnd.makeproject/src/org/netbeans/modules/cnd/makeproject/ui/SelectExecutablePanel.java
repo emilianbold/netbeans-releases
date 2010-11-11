@@ -151,7 +151,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                         executablePath,
                         conf.getFileSystemHost());
             }
-            if (!exe.isValid()) {
+            if (exe == null || !exe.isValid()) {
                 errorText = getString("EXE_DOESNT_EXISTS");
             } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
                 errorText = getString("FILE_NOT_AN_EXECUTABLE");
