@@ -212,7 +212,7 @@ public class Html5Parser implements HtmlParser {
                     ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.getName()));
                 }
             }
-            return ALL_TAGS;
+            return Collections.unmodifiableCollection(ALL_TAGS);
         }
 
         public HtmlTag getTag(String tagName) {
@@ -225,6 +225,10 @@ public class Html5Parser implements HtmlParser {
 
         public HelpResolver getHelpResolver() {
             return Documentation.getDefault();
+        }
+
+        public String getModelId() {
+            return "html5model";//NOI18N
         }
     }
 }
