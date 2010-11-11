@@ -2996,7 +2996,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         final String mi_command = tmp_cmd;
         final String fprogram = program;
-        final String mprogram = toCString(fmap.worldToEngine(program));
+
+        // There is no way to determine correct file mapper here, see #191835
+        //final String mprogram = toCString(fmap.worldToEngine(program));
+        final String mprogram = toCString(program);
 
 	// mainly load symbol table
 	// -file-core-file is not implemented in gdb 6.1
