@@ -60,14 +60,14 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
     public static class SessionStartup extends GlobalOptionsSubPanel {
 	public SessionStartup() {
 	    OptionUI[]	dbxtool_panels = {
-		    DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
+		    //DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
                     DebuggerOption.TRACE_SPEED.createUI(),
 		    DebuggerOption.FINISH_SESSION.createUI(),
 		    DebuggerOption.SESSION_REUSE.createUI(),
 		    DebuggerOption.BALLOON_EVAL.createUI(),
 		};
 	    OptionUI[]	panels = {
-		    DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
+		    //DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
 		    DebuggerOption.TRACE_SPEED.createUI(),
                     DebuggerOption.FINISH_SESSION.createUI(),
 		    DebuggerOption.RUN_AUTOSTART.createUI(),
