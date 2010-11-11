@@ -38,7 +38,6 @@
   <confs>
       <conf name="Default" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
