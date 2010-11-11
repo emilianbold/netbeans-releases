@@ -121,6 +121,9 @@ public class CommitCommand extends GitCommand {
                     monitor.preparationsFailed("Cannot do a partial commit during a merge.");
                     throw new GitException("Cannot do a partial commit during a merge.");
                 }
+            } else if (!state.canCommit()) {
+                monitor.preparationsFailed("Cannot commit in current state: " + state.getDescription());
+                throw new GitException("Cannot commit in current state: " + state.getDescription());
             }
         }
         return retval;

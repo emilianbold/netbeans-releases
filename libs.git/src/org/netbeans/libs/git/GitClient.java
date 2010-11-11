@@ -146,6 +146,13 @@ public interface GitClient {
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Returns the current state of the repository this client is associated with.
+     * @return current repository state
+     * @throws GitException an error occurs
+     */
+    public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException;
+
+    /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      * XXX init what???
