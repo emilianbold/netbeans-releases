@@ -25,7 +25,6 @@
   <confs>
     <conf name="FastBuild" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -58,7 +57,6 @@
     </conf>
     <conf name="Debug" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -83,7 +81,6 @@
     </conf>
     <conf name="PerformanceDebug" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -116,7 +113,6 @@
     </conf>
     <conf name="DianogsableRelease" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -149,7 +145,6 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -182,7 +177,6 @@
     </conf>
     <conf name="PerformanceRelease" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
@@ -215,7 +209,6 @@
     </conf>
     <conf name="PerformanceRelease64Bits" type="1">
       <toolsSet>
-        <developmentServer>X-HOST-UID-X</developmentServer>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
         <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
