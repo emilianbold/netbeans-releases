@@ -56,6 +56,7 @@ import org.openide.windows.InputOutput;
 public class InternalTerminalPack extends IOPack {
     private Pty pty = null;
     protected final InputOutput io;
+    private String slaveName = null;
 
     public InternalTerminalPack(TermComponent console, InputOutput io, ExecutionEnvironment exEnv) {
         super(console, exEnv);
@@ -72,6 +73,11 @@ public class InternalTerminalPack extends IOPack {
         PtySupport.connect(io, pty);
         slaveName = pty.getSlaveName();
         return true;
+    }
+
+    @Override
+    public String getSlaveName() {
+        return slaveName;
     }
 
     @Override
