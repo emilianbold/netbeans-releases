@@ -161,7 +161,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             }
         };
         nameTextField.getDocument().addDocumentListener(documentListener);
-        drvList.getModel().addListDataListener(new ListDataListener() {
+        dlm.addListDataListener(new ListDataListener() {
 
             @Override
             public void intervalAdded(ListDataEvent evt) {
@@ -418,6 +418,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         } while (count != i);
         
         findDriverClass();
+        if (wp != null) {
+            wp.fireChangeEvent();
+        }
         updateState();
     }//GEN-LAST:event_removeButtonActionPerformed
 

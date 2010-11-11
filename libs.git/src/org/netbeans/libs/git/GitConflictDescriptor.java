@@ -42,38 +42,33 @@
 
 package org.netbeans.libs.git;
 
-import java.io.File;
-
 /**
  *
  * @author ondra
  */
-public interface GitStatus {
-    public enum Status {
-        STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
+public interface GitConflictDescriptor {
+
+    public static enum Type {
+        BOTH_DELETED,
+        ADDED_BY_US,
+        /**
+         * Modified but deleted in other branch
+         */
+        DELETED_BY_THEM,
+        ADDED_BY_THEM,
+        /**
+         * Deleted and modified in other branch
+         */
+        DELETED_BY_US,
+        /**
+         * Added in two branches simultaneously
+         */
+        BOTH_ADDED,
+        /**
+         * Modified in two branches simultaneously
+         */
+        BOTH_MODIFIED
     }
 
-    File getFile();
-
-    String getRelativePath();
-
-    Status getStatusHeadIndex();
-
-    Status getStatusIndexWC();
-
-    Status getStatusHeadWC();
-
-    boolean isTracked();
-
-    boolean isConflict();
-
-    boolean isFolder ();
-
-    boolean isCopied ();
-
-    boolean isRenamed ();
-
-    File getOldPath ();
-
-    GitConflictDescriptor getConflictDescriptor ();
+    Type getType ();
 }

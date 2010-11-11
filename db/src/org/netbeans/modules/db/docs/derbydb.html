@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +28,8 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -52,8 +55,8 @@ made subject to such option by the copyright holder.
 <p>The Java DB database is Sun's supported distribution of the open source Apache Derby database.
 Java DB is a fully transactional, secure, standards-based database server, written 
   fully in the Java programming language, and fully supports SQL, JDBC API, and Java EE technology. 
-  The Java DB database server is bundled with the Glassfish application server.
-  If you install the GlassFish application server during the IDE installation, 
+  The Java DB database server is bundled with the Glassfish application server.  </p>
+<p>If you install the GlassFish application server during the IDE installation, 
   the Java DB database server is automatically registered in the IDE.</p>
 <p><b>To enable the Java DB database server in the IDE, do one of the following:</b></p>
 <ul>
@@ -86,7 +89,7 @@ This menu item enables you to easily start and stop the Java DB database server 
 <p><b>To connect to an existing Java DB database:</b> </p>
 <ol>
   <li>In the Services window, right-click the Databases node and choose New Connection.</li>
-  <li>In the New Database Connection dialog box, choose one of the following Java DB drivers from the drop-down menu: 
+  <li>In the Locate Driver step of the New Connection wizard, choose one of the following Java DB drivers from the drop-down menu: 
     <ul>
       <li><b>Java DB (Embedded).</b> Use this driver when you are sure your application will access 
       the database from a single JVM. A typical example of this scenario is a single-user 
@@ -94,19 +97,12 @@ This menu item enables you to easily start and stop the Java DB database server 
       <li><b>Java DB (Network).</b> Use this driver when you need to connect to the database 
         from multiple JVMs. An example of this scenario is when you need to connect 
         from the IDE and from a Java EE application on the application server. Using 
-        the net driver, you can also access the database from remote computers.</li>
+        the network driver, you can also access the database from remote computers.</li>
     </ul>
   </li>
-  <li>Enter the URL of the database. The URL format is given in the textbox:
-  <pre>jdbc:derby://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</pre> 
-    <ul class="note">
-      <li>If the database you are connecting to is in the default Java DB database 
-        folder, you only have to specify the database name. If the database is 
-        not in the default database folder, you have to enter the full path to 
-        the database and not just the database name. </li>
-    </ul>
-  </li>
-  <li>Enter a user name and password.</li>
+  <li>In the <a href="csh_newconnectdb.html">Customize Connection dialog box</a> of the New Connection wizard, enter the database name to which you want to connect. </li>
+  <li>Provide the database user name and password. </li>
+  <li>(Optional) Click Test Connection to see if the connection can be established. </li>
   <li>Click OK. The IDE displays the connection to the database under the Databases 
     node in the Services window.</li>
 </ol>

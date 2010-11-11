@@ -728,7 +728,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     // * Might be changed to return a variable with disabled collection. When not used any more,
     // * it's collection must be enabled again.
-    private Value evaluateIn (EvaluatorExpression expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
+    public Value evaluateIn (EvaluatorExpression expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
         Variable variable = evaluateGeneric(expression, csf, var);
         if (variable instanceof JDIVariable) {
             return ((JDIVariable) variable).getJDIValue();

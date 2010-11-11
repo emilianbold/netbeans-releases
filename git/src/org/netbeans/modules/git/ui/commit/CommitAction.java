@@ -65,6 +65,7 @@ import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.hooks.GitHook;
@@ -73,7 +74,6 @@ import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -178,7 +178,7 @@ public class CommitAction extends SingleRepositoryAction {
             // XXX
             // canceled by user, do nothing
         } */catch (GitException ex) {
-            Git.LOG.log(Level.WARNING, message, ex);
+            GitClientExceptionHandler.notifyException(ex, true);
         } finally {
             refreshFS(commitCandidates);
             Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);

@@ -82,6 +82,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.Session;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -99,6 +100,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
@@ -342,7 +344,17 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             Event event,
             String condition,
             ThreadReference threadReference,
-            Value value) {
+            Value returnValue) {
+        
+        return processCondition(event, condition, threadReference, returnValue, null);
+    }
+
+    public boolean processCondition(
+            Event event,
+            String condition,
+            ThreadReference threadReference,
+            Value returnValue,
+            ObjectReference contextValue) {
 
         try {
             EventRequest request = EventWrapper.request(event);
@@ -362,9 +374,9 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             if (getBreakpoint() instanceof MethodBreakpoint &&
                     (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
                      & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
-                if (value != null) {
+                if (returnValue != null) {
                     JPDAThreadImpl jt = getDebugger().getThread(threadReference);
-                    ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
+                    ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), returnValue, "", jt.getMethodName());
                     jt.setReturnVariable(retVariable);
                     variable = retVariable;
                 }
@@ -383,10 +395,14 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 } catch (java.lang.IndexOutOfBoundsException e) {
                     // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
                 }
+                AbstractObjectVariable contextVar = (contextValue != null) ?
+                        new AbstractObjectVariable(getDebugger(), contextValue, null) :
+                        null;
                 success = evaluateCondition (
                         event,
                         condition,
-                        threadReference
+                        threadReference,
+                        contextVar
                     );
                 getDebugger().setAltCSF(null);
             } else {
@@ -638,7 +654,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     private boolean evaluateCondition (
         Event event,
         String condition,
-        ThreadReference thread
+        ThreadReference thread,
+        ObjectVariable contextVar
     ) {
         try {
             try {
@@ -647,7 +664,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 jtr.accessLock.writeLock().lock();
                 try {
                     CallStackFrame csf = jtr.getCallStack(0, 1)[0];
-                    success = evaluateConditionIn (condition, csf);
+                    success = evaluateConditionIn (condition, csf, contextVar);
                 } finally {
                     jtr.accessLock.writeLock().unlock();
                 }
@@ -756,7 +773,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     private boolean evaluateConditionIn (
         String condExpr,
-        CallStackFrame csf
+        CallStackFrame csf,
+        ObjectVariable contextVariable
         /*StackFrame frame,
         int frameDepth*/
     ) throws InvalidExpressionException {
@@ -769,7 +787,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         
         // 2) evaluate expression
         // already synchronized (debugger.LOCK)
-        com.sun.jdi.Value value = getDebugger().evaluateIn(compiledCondition, csf);
+        com.sun.jdi.Value value = getDebugger().evaluateIn(compiledCondition, csf, contextVariable);
         /* Uncomment if evaluator returns a variable with disabled collection.
            When not used any more, it's collection must be enabled again.
         if (value instanceof ObjectReference) {

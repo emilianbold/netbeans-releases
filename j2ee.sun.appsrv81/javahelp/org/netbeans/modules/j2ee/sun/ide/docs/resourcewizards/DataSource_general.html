@@ -82,14 +82,42 @@ made subject to such option by the copyright holder.
                 For example, the JNDI name for the resource of a payroll database could 
                 be <tt>java:comp/env/jdbc/payrolldb</tt>. Because all resource JNDI names are in 
                 the <tt>java:comp/env</tt> subcontext, when you specify the JNDI name of a JDBC 
-                resource enter only jdbc/name. For example, for a payroll database, specify <tt>jdbc/payrolldb</tt>.</li>
-                <li><b>Object-types.</b> The type of the object. A resource object may be
-                user, system-all, system-admin, or system-instance.</li>
+                resource enter only jdbc/name. For example, for a payroll database, specify <tt>jdbc/payrolldb</tt>.
+                When looking up a resource, relative lookups are attempted when other lookup attempts fail.
+                For example, a client can use <tt>context.lookup("jdbc/payrolldb")</tt>
+                in the place of <tt>context.lookup("java:comp/env/jdbc/payrolldb")</tt> to look up the resource.</li>
+                <li><b>Object-types.</b> The type of the object. You can choose from the following values.
+                <ul>
+                    <li><strong>system-all.</strong> A system resource for all server instances and the domain application server.</li>
+                    <li><strong>system-admin.</strong> A system resource only for the domain application server.</li>
+                    <li><strong>system-instance.</strong> A system resource for all server instances only.</li>
+                    <li><strong>user.</strong> A user resource.</li>
+                </ul>
+
+                </li>
                 <li><b>Enabled.</b> Set to true to enable the resource, or false to disable the resource.</li>
                 <li><b>Description.</b> Description of the resource (optional).</li>
             </ul></li>
             <li>Click Next.</li>
         </ol>
+
+        <p>For more on working with JNDI,
+        see Chapter 2 Using JNDI in the Oracle Containers for J2EE Services Guide:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/jndi.htm">
+        <param name="text" value="<html><u>http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/jndi.htm</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+
+        <p>For more on working with datasources,
+        see Chapter 5 Data Sources in the Oracle Containers for J2EE Services Guide:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/datasrc.htm">
+        <param name="text" value="<html><u>http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/datasrc.htm</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>

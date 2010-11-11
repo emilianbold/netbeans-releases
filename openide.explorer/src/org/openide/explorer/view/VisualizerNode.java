@@ -400,13 +400,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public void nodeDestroyed(NodeEvent ev) {
         node = Node.EMPTY;
         parent = null;
-        Enumeration<VisualizerNode> ch = getChildren(false).children(false);
-        while (ch.hasMoreElements()) {
-            final VisualizerNode v = ch.nextElement();
-            if (v != null) {
-                v.nodeDestroyed(ev);
-            }
-        }
+        QUEUE.runSafe(new VisualizerEvent.Destroyed(getChildren(false), ev));
     }
 
     /** Change in the node properties (icon, etc.)

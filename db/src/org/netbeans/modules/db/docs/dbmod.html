@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +28,8 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -47,7 +50,7 @@ made subject to such option by the copyright holder.
         <title>Executing SQL Statements and Scripts</title>
 
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
+</head>
 
 
 
@@ -57,14 +60,20 @@ made subject to such option by the copyright holder.
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>You can use the SQL Editor to write and execute SQL statements and SQL scripts within the IDE.
         
-            The SQL statement or script is executed on the database that is selected in the Connection drop-down menu in the toolbar.
-        If the database connection is closed, the IDE opens the connection to the database.</p>
-	<p>You can use the SQL Editor to create, edit and execute any SQL files in your project. 
+            The SQL statement or script is executed on the database that is selected in the Connection drop-down list in the toolbar.
+        If the database connection is closed, the IDE opens the connection to the database. In the Connection drop-down list, you can change the database on which you want to run the SQL statement. </p>
+	    <p>You can use the SQL Editor to create, edit and execute any SQL files in your project. 
 	To open an SQL file, right-click the SQL file (&nbsp; <img src="images/sqlfile_icon.png" alt="SQL File">&nbsp;) in the Projects or Files window and choose Open.
 	You can also double-click the icon to open the file in the SQL Editor.</p>
-        
-        
-        <p><b>To create and execute a SQL statement or script:</b></p>
+	    <p>You can run SQL statements directly from an SQL file, without opening it. </p>
+	    <p><strong>To run an SQL file</strong>:</p>
+	    <ol>
+	      <li>Open the Favorites window by choosing Window &gt; Favorites. </li>
+	      <li>Right-click inside the Favorites window and choose Add to Favorites. Add the directory that contains the SQL file you want to run. </li>
+	      <li>Right-click the SQL file and choose Run file. <br>
+          The SQL script will be executed on the database that is currently connected (selected in the Connection drop-down list in the toolbar).  </li>
+    </ol>
+	    <p><b>To create and execute a SQL statement or script:</b></p>
         <ol>
             <li>Expand the Databases node in the Services window.</li>
             <li>Right-click the node for the connected database and choose Execute Command from the pop-up menu to open the SQL Editor.</li>
@@ -95,6 +104,7 @@ that the previous tab remains open.  To do this, click Keep Prior Results  ( <im
             <li>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node"> )&nbsp; in the Services window.</li>
             <li>To view the data in a table, right-click a table in the Services window and choose View Data from the pop-up menu.
             For more, see <a href="viewdata.html">Viewing Data</a>.</li> 
+            <li>Click <a href="sql_history.html">SQL History</a> (&nbsp;<img src="images/sqlhistory.png" alt="SQL History" width="16" height="16"> ) in the toolbar to show the list of all SQL commands that you executed. </li>
         </ul>
         
         <dl>
@@ -104,7 +114,7 @@ that the previous tab remains open.  To do this, click Keep Prior Results  ( <im
             <dd>      <a href="viewdata.html">Viewing Data in a Database Table</a></dd>
 	    <dd>      <a href="manipsql.html">Defining Database Explorer Debug Mode</a></dd>
             <dd>      <a href="createtables.html">Creating a Database Table</a></dd>
-	    
+			 <dd>      <a href="sql_history.html">SQL History</a></dd>
         </dl>
         <hr>
 

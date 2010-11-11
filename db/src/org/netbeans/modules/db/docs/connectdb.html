@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +28,8 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -52,60 +55,37 @@ made subject to such option by the copyright holder.
     <body>
         <h2>Connecting to a Database</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>To connect to a database you first need to do the following:</p>
-        <ul>
-            <li>Confirm that a JDBC driver for your database is registered with the IDE.<br>
-            The registered JDBC drivers are visible under the Drivers node in the Services window.</li>
-            <li>Create a database connection for the database.<br> 
-            A database connection is represented by a database connection node (&nbsp;<img src="images/connection.gif">&nbsp;)
-            under the Databases node in the Services window.</li>
-        </ul>
-             
-        <p>When you create a database connection, you supply the details needed to connect to a specific database.
-        The details needed to connect to a database include the location of the database, which driver to use and the username and password information.</p>     
+        <p>A database connection is represented by a database connection node (&nbsp;<img src="images/connection.gif">&nbsp;)
+        under the Databases node in the Services window. To connect to a database, you need to provide a valid JDBC driver for your database in the NetBeans IDE. </p>
+        <p>When you create a database connection, you supply the details needed to connect to a specific database. These details include the location of the database, which driver to use, and the username and password information.</p>     
         <p><b>To create a new connection:</b></p>
         <ol>
-            <li>Confirm that your database is running.</li>
-            <li>In the Services window, confirm that the appropriate JDBC driver for your database is listed under the Drivers node.</li>
+            <li>Ensure that your database is running.</li>
             <li>Right-click the Databases node and choose New Connection.<br>
-              Alternatively, expand the Drivers node, right-click your driver's instance node and 
+              Alternatively, you can initiate a connection directly from the list of registered drivers. If the database driver is already listed under the Drivers node, right-click this driver's instance node and 
             choose Connect Using.<br>
             <br>
             </li>
-            <li>In the New Database Connection dialog box, select the Data Input Mode, which can be either a field entry or a direct JDBC database URL. The Data Input Mode option defines only the form in which you want to specify the database connection settings: either type the host name, port, and database name in separate fields or use a direct URL.<br>
-              <br>
+            <li>In the first step of the New Connection wizard, choose the driver for the database you are connecting to from the Driver drop-down list and confirm that the correct driver's file is provided in the Driver File field. Click Next. <br>
+                        You are passing the same steps when registering <a href="adddriver.html">a new driver</a> in the IDE. <br>
+          </li>
+            <li>In the Customize Connection dialog box of the New Connection  wizard, confirm that the correct driver is selected for your database. </li>
+            <li>Depending on what database you are connecting to, provide the connection details  for this database, such as database location (hostname or IP address), port, username and password, database name, service name, etc. For more information, see <br>
+             <ul> <li><a href="derbydb.html">Connecting to a Java DB Database</a></li>
+			   <li><a href="mysql.html">Using MySQL with the  IDE</a></li>
+               <li><a href="oracledb.html">Connecting to an Oracle Database XE</a>  </li>
+             </ul><br>
+			 To help you get started, the IDE fills the default details for some databases for you. If in doubt, refer to the documentation 
+                for the driver that you are using. 
+              </p>
             </li>
-            <li>Confirm that the correct driver for your database is 
-              selected in the Driver Name list.</li>
-            <li>If you selected the Field Entry option, enter the host name, port, and database name in the respective fields. You can select the Show JDBC URL checkbox to see the actual URL for the new connection. <br>
-              <br>
-              If you selected Direct URL Entry for the Data Input Mode, enter the JDBC database URL for the database connection in the Database URL field. 
-                <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
-                for the driver, followed by another colon. The rest of the URL depends on 
-                the type of driver you are using. For example, you might need to specify 
-                a host and port; alternatively, the name of a database file might suffice, 
-                or an ODBC DSN. For MySQL, the Database URL might look as follows:
-                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
-                To help you get started, the IDE provides templates for the correct URL format for
-                the most common drivers. If in doubt, refer to the documentation 
-                for the driver that you are using. </p>
-            </li>
-            <li>Provide the user name and password, if required by your database configuration.</li>
-            <li>Click the Remember Password checkbox to have the IDE remember your password. 
-                <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database.
-                To change this property, right-click the database connection node
-            in the Services window and choose Properties and unselect the Remember Password property in the Properties window.</p>
-            </li>
-            <li>Click OK to create the database connection and connect to the database from the IDE.</li>
+            <li>(Optional) Click the Remember Password checkbox to have the IDE remember your password.
+              
+          If selected, you will not be prompted for the user name and password on subsequent connections to the database.                </li>
+            <li>Click Test Connection to test the connection to the database.</li>
         </ol>
-        <ul class="note"><li>When connecting to the database, the schema with the same name as the user name is 
-            set as default, but if a schema with that name does not exist, 
-            you are automatically switched to the Advanced Tab of the Connect dialog box to select a schema. 
-        </li>
-        </ul>
         <p>If the connection is successful, the database connection node appears as 
-        a subnode of the Databases node. The database connection node appears whole (&nbsp;<img src="images/connection.gif">&nbsp;)
-        indicating the database is connected. 
+        a subnode of the Databases node. The&nbsp;<img src="images/connection.gif" alt="connection"> icon indicates that the database is connected. 
         When the database is connected, you can expand the database connection node to see the child folders 
         representing lists of tables, views and procedures.
         For more, see <a href="browstruct.html">Browsing Structures</a>.</p>
@@ -124,13 +104,16 @@ made subject to such option by the copyright holder.
 -->
         <p><b>To disconnect from the database:</b></p>
         <ol>
-            <li>Right-click the database connection node and choose Disconnect. 
-                <p>You cannot browse the database until you reconnect to the database. </p>
-            </li>
-        </ol>
+            <li>Right-click the database connection node and choose Disconnect. <br>
+              Disconnected connections are marked with the <img src="images/connectionDisconnected.gif" alt="connection" width="16" height="16"> icon. <br>
+              <p>You cannot browse the database until you reconnect to the database. </p>
+          </li></ol>
         <dl>
                 <dt><a name="seealso">See Also</a></dt>
                 <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>
+                <dd><a href="derbydb.html">Connecting to a Java DB Database</a></dd>
+                <dd><a href="mysql.html">Using MySQL with the IDE</a></dd>
+                <dd><a href="oracledb.html">Connecting to an Oracle Database XE</a></dd>
         </dl>
 
         <hr>

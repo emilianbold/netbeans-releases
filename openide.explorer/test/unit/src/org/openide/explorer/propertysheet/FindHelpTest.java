@@ -129,20 +129,6 @@ public class FindHelpTest extends ExtTestCase {
         
     }
     
-    public void testSetHelpProvided() throws Exception {
-        Node n = new WithTabsSetHelpNode();
-        setCurrentNode(n, sheet);
-        
-        sleep();
-        
-        PropertySheet.HelpAction act = sheet.helpAction;
-        
-        HelpCtx ctx = act.getContext();
-        assertTrue("A help context should have been found", ctx != null);
-        
-        assertTrue("Wrong help context returned: " + ctx.getHelpID(), "set-help-id".equals(ctx.getHelpID()));
-    }
-    
     // XXX test use of ExPropertyEditor.PROPERTY_HELP_ID
     
     private static Collection findChildren(Component p, Class c) {
