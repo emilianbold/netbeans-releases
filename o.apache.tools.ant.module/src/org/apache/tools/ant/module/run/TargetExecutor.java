@@ -99,7 +99,7 @@ import org.w3c.dom.Element;
  */
 public final class TargetExecutor implements Runnable {
 
-    private static final RequestProcessor RP = new RequestProcessor(TargetExecutor.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(TargetExecutor.class.getName(), Integer.MAX_VALUE);
 
     /**
      * All tabs which were used for some process which has now ended.
