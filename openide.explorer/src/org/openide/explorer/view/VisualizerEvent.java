@@ -43,6 +43,7 @@
  */
 package org.openide.explorer.view;
 
+import java.util.Enumeration;
 import org.openide.nodes.*;
 
 import java.util.EventObject;
@@ -153,6 +154,24 @@ abstract class VisualizerEvent extends EventObject {
         */
         public void run() {
             super.getChildren().reordered(this);
+        }
+    }
+    
+    static final class Destroyed extends VisualizerEvent implements Runnable {
+        public Destroyed(VisualizerChildren ch, NodeEvent ev) {
+            super(ch, null, ev, null);
+        }
+        
+        @Override
+        public void run() {
+            Enumeration<VisualizerNode> ch = getChildren().children(false);
+            while (ch.hasMoreElements()) {
+                final VisualizerNode v = ch.nextElement();
+                if (v != null) {
+                    v.nodeDestroyed(originalEvent);
+                }
+            }
+            
         }
     }
 }

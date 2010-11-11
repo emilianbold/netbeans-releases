@@ -43,8 +43,11 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.EventQueue;
 import org.openide.nodes.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** List of Visualizers. This is holded by parent visualizer by a
@@ -55,11 +58,14 @@ import java.util.*;
 final class VisualizerChildren extends Object {
     /** empty visualizer children for any leaf */
     public static final VisualizerChildren EMPTY = new VisualizerChildren();   
+    private static final Logger LOG = Logger.getLogger(VisualizerChildren.class.getName());
     
     /** parent visualizer */
     public final VisualizerNode parent;
 
-    /** visualizer nodes (children) */
+    /** visualizer nodes (children), access only from AWT dispatch thread
+     * via the getVisNodes() getter
+     */
     private final List<VisualizerNode> visNodes;
     
     private List<Node> snapshot;
@@ -87,12 +93,13 @@ final class VisualizerChildren extends Object {
     /** recomputes indexes for all nodes.
      * @param tn tree node that we are looking for
      */
-    private final void recomputeIndexes(VisualizerNode tn) {
-        assert visNodes.size() == snapshot.size() : "visnodes.size()=" + visNodes.size()
+    private void recomputeIndexes(VisualizerNode tn) {
+        final List<VisualizerNode> vn = getVisNodes(true);
+        assert vn.size() == snapshot.size() : "visnodes.size()=" + vn.size()
                 + " snapshot.size()=" + snapshot.size();
 
-        for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = visNodes.get(i);
+        for (int i = 0; i < vn.size(); i++) {
+            VisualizerNode node = vn.get(i);
             if (node != null) {
                 node.indexOf = i;
             }
@@ -100,7 +107,7 @@ final class VisualizerChildren extends Object {
 
         if (tn != null && tn.indexOf == -1) {
             // not computed => force computation
-            for (int i = 0; i < visNodes.size(); i++) {
+            for (int i = 0; i < vn.size(); i++) {
                 VisualizerNode visNode = (VisualizerNode) getChildAt(i);
                 visNode.indexOf = i;
                 if (visNode == tn) {
@@ -111,35 +118,37 @@ final class VisualizerChildren extends Object {
     }
     
     public javax.swing.tree.TreeNode getChildAt(int pos) {
-        if (pos >= visNodes.size()) {
+        final List<VisualizerNode> vn = getVisNodes(false);
+        if (pos >= vn.size()) {
             return VisualizerNode.EMPTY;
         }
-        VisualizerNode visNode = visNodes.get(pos);
+        VisualizerNode visNode = vn.get(pos);
         if (visNode == null) {
             Node node = snapshot.get(pos);
             visNode = VisualizerNode.getVisualizer(this, node);
             visNode.indexOf = pos;
-            visNodes.set(pos, visNode);
+            vn.set(pos, visNode);
             parent.notifyVisualizerChildrenChange(false, this);
         }
         return visNode;
     }
     
     public int getChildCount() {
-        return visNodes.size();
+        return getVisNodes(false).size();
     }
 
     public java.util.Enumeration<VisualizerNode> children(final boolean create) {
         return new java.util.Enumeration<VisualizerNode>() {
-
             private int index;
 
+            @Override
             public boolean hasMoreElements() {
-                return index < visNodes.size();
+                return index < getVisNodes(true).size();
             }
 
+            @Override
             public VisualizerNode nextElement() {
-                return create ? (VisualizerNode) getChildAt(index++) : visNodes.get(index++);
+                return create ? (VisualizerNode) getChildAt(index++) : getVisNodes(true).get(index++);
             }
         };
     }
@@ -150,7 +159,8 @@ final class VisualizerChildren extends Object {
     public int getIndex(final javax.swing.tree.TreeNode p1) {
         VisualizerNode visNode = (VisualizerNode) p1;
         if (visNode.indexOf != -1) {
-            if (visNode.indexOf >= visNodes.size() || visNodes.get(visNode.indexOf) != visNode) {
+            final List<VisualizerNode> vn = getVisNodes(false);
+            if (visNode.indexOf >= vn.size() || vn.get(visNode.indexOf) != visNode) {
                 return -1;
             }
         } else {
@@ -161,8 +171,9 @@ final class VisualizerChildren extends Object {
 
     final String dumpIndexes(VisualizerNode visNode) {
         StringBuilder sb = new StringBuilder();
-        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY) + ", Lazy: " // NOI18N
-                + snapshot.getClass().getName().endsWith("LazySnapshot")); // NOI18N
+        sb.append("EMPTY: ").append(visNode == VisualizerNode.EMPTY).
+            append(", Lazy: ").
+            append(snapshot.getClass().getName().endsWith("LazySnapshot")); // NOI18N
         sb.append("\nSeeking for: ").append(visNode.toId()); // NOI18N
         sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null // NOI18N
                 ? ((VisualizerNode)visNode.getParent()).toId() : "null"); // NOI18N
@@ -172,8 +183,9 @@ final class VisualizerChildren extends Object {
     }
     
     private void addVisNodesInfo(StringBuilder sb) {
-        for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = visNodes.get(i);
+        final List<VisualizerNode> vn = getVisNodes(false);
+        for (int i = 0; i < vn.size(); i++) {
+            VisualizerNode node = vn.get(i);
             sb.append("  ").append(i); // NOI18N
             if (node != null) {
                 sb.append(" = ").append(node.toId()); // NOI18N
@@ -186,8 +198,8 @@ final class VisualizerChildren extends Object {
     
     final String dumpEventInfo(VisualizerEvent ev) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nEvent: " + ev.getClass().getName()); // NOI18N
-        sb.append("\nOriginal event: " + ev.originalEvent.getClass().getName()); // NOI18N
+        sb.append("\nEvent: ").append(ev.getClass().getName()); // NOI18N
+        sb.append("\nOriginal event: ").append(ev.originalEvent.getClass().getName()); // NOI18N
         sb.append("\ncurrent vis. nodes:"); // NOI18N
         addVisNodesInfo(sb);
         sb.append("\nIndexes: "); // NOI18N
@@ -210,7 +222,7 @@ final class VisualizerChildren extends Object {
             return;
         }        
         snapshot = ev.getSnapshot();
-        ListIterator<VisualizerNode> it = visNodes.listIterator();
+        ListIterator<VisualizerNode> it = getVisNodes(true).listIterator();
 
         int[] indxs = ev.getArray();
         int current = 0;
@@ -226,13 +238,13 @@ final class VisualizerChildren extends Object {
 
         recomputeIndexes(null);
 
-        VisualizerNode parent = this.parent;
-        while (parent != null) {
-            Object[] listeners = parent.getListenerList();
+        VisualizerNode p = this.parent;
+        while (p != null) {
+            Object[] listeners = p.getListenerList();
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).added(ev);
             }
-            parent = (VisualizerNode) parent.getParent();
+            p = (VisualizerNode) p.getParent();
         }
     }
 
@@ -249,34 +261,35 @@ final class VisualizerChildren extends Object {
         if (idxs.length == 0) {
             return;
         }
-        if (visNodes.isEmpty()) {
+        final List<VisualizerNode> vn = getVisNodes(true);
+        if (vn.isEmpty()) {
             return;
         }
         
-        assert visNodes.size() > idxs[idxs.length - 1] : dumpEventInfo(ev);
+        assert vn.size() > idxs[idxs.length - 1] : dumpEventInfo(ev);
 
         int prev = Integer.MAX_VALUE;
         for (int i = idxs.length - 1; i >= 0; i--) {
-            if (visNodes.isEmpty()) {
+            if (vn.isEmpty()) {
                 continue;
             }
             assert idxs[i] < prev : "Indexes have to be descendant. Prev: " + prev + " next: " + idxs[i] + " at " + i;
-            VisualizerNode visNode = visNodes.remove(idxs[i]);
+            VisualizerNode visNode = vn.remove(idxs[i]);
             ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
         recomputeIndexes(null);
 
-        VisualizerNode parent = this.parent;
-        while (parent != null) {
-            Object[] listeners = parent.getListenerList();
+        VisualizerNode p = this.parent;
+        while (p != null) {
+            Object[] listeners = p.getListenerList();
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).removed(ev);
             }
-            parent = (VisualizerNode) parent.getParent();
+            p = (VisualizerNode) p.getParent();
         }
 
-        if (visNodes.isEmpty()) {
+        if (vn.isEmpty()) {
             // now is empty
             this.parent.notifyVisualizerChildrenChange(true, this);
         }
@@ -293,7 +306,8 @@ final class VisualizerChildren extends Object {
         snapshot = ev.getSnapshot();
 
         int[] indxs = ev.getArray();
-        VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+        final List<VisualizerNode> vn = getVisNodes(true);
+        VisualizerNode[] old = vn.toArray(new VisualizerNode[vn.size()]);
         VisualizerNode[] arr = new VisualizerNode[old.length];
         int s = indxs.length;
         try {
@@ -304,15 +318,15 @@ final class VisualizerChildren extends Object {
 
                 if (arr[indxs_i] != null) {
                     // this is bad <-- we are rewriting some old value --> there will remain some null somewhere
-                    System.err.println("Writing to this index for the second time: " + indxs_i); // NOI18N
-                    System.err.println("Length of indxs array: " + indxs.length); // NOI18N
-                    System.err.println("Length of actual array: " + old.length); // NOI18N
-                    System.err.println("Indices of reorder event:"); // NOI18N
+                    LOG.log(Level.WARNING, "Writing to this index for the second time: {0}", indxs_i); // NOI18N
+                    LOG.log(Level.WARNING, "Length of indxs array: {0}", indxs.length); // NOI18N
+                    LOG.log(Level.WARNING, "Length of actual array: {0}", old.length); // NOI18N
+                    LOG.warning("Indices of reorder event:"); // NOI18N
 
                     for (int j = 0; i < indxs.length; j++) {
-                        System.err.println("\t" + indxs[j]); // NOI18N
+                        LOG.log(Level.WARNING, "\t{0}", indxs[j]); // NOI18N
                     }
-                    Thread.dumpStack();
+                    LOG.log(Level.WARNING, "Who", new Exception());
 
                     return;
                 }
@@ -320,28 +334,26 @@ final class VisualizerChildren extends Object {
                 arr[indxs_i] = old_i;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
-            System.err.println("Length of actual array: " + old.length); // NOI18N
-            System.err.println("Indices of reorder event:"); // NOI18N
+            LOG.log(Level.WARNING, "Length of actual array: " + old.length, e); // NOI18N
+            LOG.warning("Indices of reorder event:"); // NOI18N
 
             for (int i = 0; i < indxs.length; i++) {
-                System.err.println("\t" + indxs[i]); // NOI18N
+                LOG.log(Level.WARNING, "\t{0}", indxs[i]); // NOI18N
             }
             return;
         }
-
-        visNodes.clear();
-        visNodes.addAll(Arrays.asList(arr));
+        vn.clear();
+        vn.addAll(Arrays.asList(arr));
         recomputeIndexes(null);
 
-        VisualizerNode parent = this.parent;
+        VisualizerNode p = this.parent;
 
-        while (parent != null) {
-            Object[] listeners = parent.getListenerList();
+        while (p != null) {
+            Object[] listeners = p.getListenerList();
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).reordered(ev);
             }
-            parent = (VisualizerNode) parent.getParent();
+            p = (VisualizerNode) p.getParent();
         }
     }
 
@@ -352,7 +364,7 @@ final class VisualizerChildren extends Object {
             str = "Parent: " + parent + " ";
         }
         str += "[";
-        for (VisualizerNode vn : visNodes) {
+        for (VisualizerNode vn : getVisNodes(false)) {
             str += vn;
             if (vn != null) {
                 VisualizerChildren vch = vn.getChildren(false);
@@ -365,5 +377,12 @@ final class VisualizerChildren extends Object {
         str += " {" + snapshot + "}";
         str += "]";
         return str;
+    }
+
+    private List<VisualizerNode> getVisNodes(boolean guardAccess) {
+        if (guardAccess) {
+            assert EventQueue.isDispatchThread();
+        }
+        return visNodes;
     }
 }
