@@ -548,7 +548,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         buttonsPane.setVisible(false);
                         buttonsSubPane = null;
                     } else {
-                        buttonsPane.setVisible(true);
                         int i = 0;
                         if (sessionProviders.size() > 0) {
                             javax.swing.AbstractButton b = createSessionsSwitchButton();
@@ -580,6 +579,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         // [TODO]
                         //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
                         //buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
+                        buttonsPane.setVisible(true);
+                        buttonsPane.repaint();
                     }
                 }
                 

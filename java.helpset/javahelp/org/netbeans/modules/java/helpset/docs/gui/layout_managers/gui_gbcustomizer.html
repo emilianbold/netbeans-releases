@@ -31,9 +31,15 @@
             <li> Once the approximate layout of the components has been established,
             select a component  and adjust its constraints as desired
             in the  left pane. Note that you can  either enter the values directly or
-            use the provided buttons to adjust the component's constraints. </li>
-            <li>Once you are satisfied with the layout, click Close to exit the customizer.
-            <p>The IDE updates the edited components to reflect there new positions. 
+            use the provided buttons to adjust the component's constraints. <br>
+			<ul class="note">
+            <li> While editing you may need the Redo, Undo, Pad, and Test Layout buttons in the toolbar above the right pane.</li>
+        </ul></li>
+			
+					
+            <li>Once you are satisfied with the layout, click Close to exit the customizer.</li>
+            <p>The IDE updates the edited components to reflect there new positions. </p>
+			
         </ol>
         <p><b>You can adjust the following constraints:</b></p>
         <ul>
@@ -50,20 +56,20 @@
                 <li>Relative - to specify that the component be the next to last one in
                 its row or column
             </ul>
-            <p> You can also adjust Grid Width and Height using the Grid Size buttons.
-            Click the rightmost button with yellow shading to set the value to Remainder. </p></li>
+            </li>
             <li><b>Fill.</b>&nbsp; The Fill constraint enables you to choose whether
             the component uses all of the vertical or horizontal space (or both) that
             is allocated to it. Any space allocated to a component that the component
-            does not fill is marked with blue in the right pane. </li>
+            fills is marked with green in the right pane. <br>
+		  You can also adjust the Fill constraint using the Grid Size buttons.</li>
             <li><b>Internal Padding X and Y.</b>&nbsp; The internal padding settings
             enable you to increase the horizontal and vertical dimensions of the component.
-            You can adjust these by directly entering numbers for the properties or
-            by using the I-Padding buttons. </li>
+            You can adjust these by directly entering numbers for the properties. </li>
             <li><b>Anchor.</b>&nbsp; The Anchor constraint enables you to place the component
-            in one of nine positions within the space allocated to it (Center, North,
+            in one of eleven positions within the space allocated to it (Center, North,
             North-West, and so on). This setting has no effect if there is no free
-            space remaining for the component. </li>
+            space remaining for the component.<br>
+			You can also adjust the Anchor constraint using the Grid Size buttons. </li>
             <li><b>Weight X and Weight Y.</b>&nbsp; Adjust the weight settings to determine
             how much space a component should be given relative to other components
             in its row or column when the container window is resized. Generally, weight
@@ -75,11 +81,8 @@
             column and the components stay the same size. </p></li>
             <li><b>Insets.</b>&nbsp; The Insets determine the minimum amount of external
                 space on each of the four sides of the component. You can enter numbers
-                manually or use the inset buttons. The buttons are divided into four sets
-                that enable you to adjust the insets for each side separately, the left
-                and right insets simultaneously, the top and bottom insets simultaneously,
-                or all four insets simultaneously. 
-                <p> As you change the insets, you will see the inset area marked by a yellow
+                manually. 
+                <p> As you change the insets, you will see the inset area marked by a green
                 background in the right pane. </p>
             </li>
         </ul>

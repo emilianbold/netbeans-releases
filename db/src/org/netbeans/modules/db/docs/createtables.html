@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +28,8 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -55,7 +58,7 @@ made subject to such option by the copyright holder.
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>When connected to a database, you can use the IDE to create tables in a database in the following ways:</p>
         <ul>
-            <li><a href="#create_table">Use the Create Tables dialog</a> by right-clicking the Tables node in the Services window and choosing Create Table</li>
+            <li><a href="#create_table">Use the Create Tables dialog</a> by right-clicking the Tables node in the Services window and choosing Create Table. You can create a table in a graphic form. </li>
             <li><a href="#table_structure">Use a table definition</a> to re-create a table.</li>
             <li><a href="dbmod.html">Run an SQL script</a> in the SQL Editor.</li>
         </ul>
@@ -69,13 +72,10 @@ made subject to such option by the copyright holder.
                 Case is usually significant and you can use spaces. 
                 However, it is recommended that table names be entered in upper case and without spaces.</p>
             </li>
-            <li>Select the owner of the table from the Owner drop-down menu.  
-                <p>The dialog box defaults to the schema to which you are connected.</p>
-            </li>
-            <li>Modify the table with the Add Column and Remove buttons.
+          <li>Modify the table with the Add Column and Remove buttons.
             <p>Specify the column type (required) and column size. 
             Column size is optional for some data types.</p></li> 
-            <li>Specify any additional properties (Optional).</li>
+            <li>Specify additional properties for the column (Optional).</li>
             <li>Click OK to create the table.</li>
         </ol>
 

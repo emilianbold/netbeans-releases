@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.File;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitStatus;
 
 /**
@@ -59,11 +60,12 @@ public class JGitStatus implements GitStatus {
     private final File correspondingFile;
     private final Status statusHeadIndex;
     private final Status statusIndexWC;
-    private final boolean conflict;
+    private final GitConflictDescriptor conflictDescriptor;
     private final boolean isFolder;
     private final String workTreePath;
 
-    public JGitStatus (boolean tracked, String relativePath, String workTreePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, boolean conflict, boolean isFolder, DiffEntry diffEntry) {
+    public JGitStatus (boolean tracked, String relativePath, String workTreePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC,
+            GitConflictDescriptor conflictDescriptor, boolean isFolder, DiffEntry diffEntry) {
         this.tracked = tracked;
         this.relativePath = relativePath;
         this.workTreePath = workTreePath;
@@ -71,7 +73,7 @@ public class JGitStatus implements GitStatus {
         this.statusHeadIndex = statusHeadIndex;
         this.statusIndexWC = statusIndexWC;
         this.statusHeadWC = statusHeadWC;
-        this.conflict = conflict;
+        this.conflictDescriptor = conflictDescriptor;
         this.isFolder = isFolder;
         this.diffEntry = diffEntry;
     }
@@ -108,7 +110,7 @@ public class JGitStatus implements GitStatus {
 
     @Override
     public boolean isConflict() {
-        return conflict;
+        return conflictDescriptor != null;
     }
 
     @Override
@@ -133,5 +135,10 @@ public class JGitStatus implements GitStatus {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public GitConflictDescriptor getConflictDescriptor () {
+        return conflictDescriptor;
     }
 }

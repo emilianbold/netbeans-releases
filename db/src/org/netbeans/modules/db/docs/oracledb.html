@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<HTML>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <TITLE>Connecting to Oracle Database XE</TITLE>
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</HEAD>
+<BODY>
+<h2>Connecting to Oracle Database XE</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You can establish a connection to Oracle Database from the NetBeans IDE. For example, you can use Oracle Database 10<em>g</em> Express Edition (Oracle Database XE), a lightweight database that is free to develop, deploy, and distribute. </p>
+<p>Before connecting to Oracle Database, ensure that you have downloaded the JDBC driver for the database. The recommended driver is ojdbc6.jar. For more information about Oracle JDBC drivers, refer to the Oracle JDBC information: </p>
+<p>
+<p>
+                  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html">
+                    <param name="text" value="<html><u>Oracle Database JDBC Driver Downloads</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                  </object>
+</p>
+<p><b>To connect to the Oracle Database XE from the IDE:</b></p>
+<ol>
+  <li>In the Services window, right-click the Databases node and choose New Connection.</li>
+  <li>In the Locate Driver step of the New Connection wizard, choose one of the following drivers for Oracle Database:
+    <ul>
+        <li><b>Oracle Thin.</b> Oracle's JDBC Thin driver uses Java sockets to connect directly to Oracle Database. Because it is written in Java, this driver is platform independent and can also run from a Web Browser (applets). </li>
+        <li><b>Oracle OCI.</b> Oracle's JDBC OCI drivers use Oracle Call Interface (OCI) and native libraries to interact with an Oracle database. The required libraries are part of the Oracle Database Instant Client, which needs to be installed and configured on your system. </li>
+    </ul>
+  </li>
+  <li>Click Add to specify the location of the ojdbc6.jar file. This file contains packages for both types of Oracle DB drivers. However, if you want to use the OCI driver, you also need to have Oracle Instant Client installed on your machine. Click Next. </li>
+  <li>In the <a href="csh_newconnectdb.html">Customize Connection dialog box</a> of the New Connection wizard, choose the driver name and how you want to specify the database: by a SID name (Oracle System ID), Service Name, or a TNS name. </li>
+  <li>Then, enter the hostname or IP address to which you want to connect. If you are connecting to a locally installed database instance, enter <tt>localhost</tt> or <tt>127.0.0.1</tt>. </li>
+  <li>Provide the port number. The default port is <tt>1521</tt>. </li>
+  <li>Depending on your choice of the driver, enter either the SID name, Service, or TNS name. <br>
+  For example, the default SID <span class="tbltd1">for Oracle Database XE is <tt>XE</tt>.</span></li>
+  <li>Provide the database user name and password. </li>
+  <li>(Optional) Click Test Connection to see if the connection can be established. </li>
+  <li>Click OK. The IDE displays the connection to the database under the Databases 
+    node in the Services window.</li>
+</ol>
+<p>For more information on how to connect to Oracle Database from the NetBeans IDE, see: </p>
+<p>
+<p>
+                  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/ide/oracle-db.html">
+                    <param name="text" value="<html><u>Connecting to Oracle Database from the NetBeans IDE</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                  </object>
+</p>
+<p><b>Notes:</b></p>
+<ul>
+  <li>SID, or System ID, is a unique name of an Oracle database instance. For example, the default SID <span class="tbltd1">for Oracle Database XE is <tt>XE</tt>.</span><br>
+  You can find the SID in the <tt>tnsnames.ora</tt> file, which is a configuration file that specifies various database properties used to connect to the database. The default location of <tt>tnsnames.ora</tt> is <tt>%ORACLE_HOME%\NETWORK\ADMIN</tt> directory. </li>
+    <li>You can also find the SID and Service Name values through the web-based database management interface. For example, go to Database Home Page for Oracle Database XE, choose Administration &gt; About Database &gt; Parameters. Find the values of the following properties: <tt>db_name</tt>, which is the database SID; <tt>service_names</tt> is the database Service Name. You must have database administrator rights to access this informaiton. </li>
+    <li>The sample URL to the Orace Database XE is <tt>jdbc:oracle:thin:@//localhost:1521/XE</tt></li>
+</ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd> <a href="connectdb.html">Connecting to a Database</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+    <tr><td>&nbsp;</td></tr>
+</table>
+</body>
+
+</html>

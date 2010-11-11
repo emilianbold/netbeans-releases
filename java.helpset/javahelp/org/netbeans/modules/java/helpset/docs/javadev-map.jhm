@@ -143,7 +143,7 @@
 
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
-<mapID target="gui.layouts.gbcustomizer" url="gui/layout_managers/gui_gbcustomizer.html" />
+<mapID target="gui.layouts.griddesigner" url="gui/layout_managers/gui_gbcustomizer.html" />
 <mapID target="gui.layouts.custom_mgr" url="gui/layout_managers/gui_customlayout.html" />
 <mapID target="gui.layouts.props" url="gui/layout_managers/gui_layoutprops.html" />
 
