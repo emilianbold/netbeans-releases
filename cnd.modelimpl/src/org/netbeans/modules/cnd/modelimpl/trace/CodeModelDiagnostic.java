@@ -49,6 +49,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
@@ -151,7 +152,7 @@ public final class CodeModelDiagnostic {
         }
     }
     
-    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplModelTrace implements CndDiagnosticProvider {
 
         @Override
@@ -168,19 +169,19 @@ public final class CodeModelDiagnostic {
         }
     }    
     
-    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
     public final static class ModelTrace implements CndDiagnosticProvider {
 
         @Override
         public String getDisplayName() {
-            return "File Code Model";// NOI18N 
+            return "Project Code Model";// NOI18N 
         }
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
-            for (CsmFile csmFile : allFiles) {
-                new CsmTracer(printOut).dumpModel(csmFile);
+            Collection<? extends CsmProject> allFiles = context.lookupAll(CsmProject.class);
+            for (CsmProject prj : allFiles) {
+                new CsmTracer(printOut).dumpModel(prj);
             }
         }
     }    
