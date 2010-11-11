@@ -45,18 +45,22 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.xml.sax.Attributes;
 
 class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String tag;
     private ConfigurationDescriptor configurationDescriptor;
+    private Configuration currentConf;
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public AuxConfigurationXMLCodec(String tag,
@@ -90,7 +94,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (element.equals(CONF_ELEMENT)) {
             String currentConfName = atts.getValue(NAME_ATTR);
             Configurations confs = configurationDescriptor.getConfs();
-            Configuration currentConf = confs.getConf(currentConfName);
+            currentConf = confs.getConf(currentConfName);
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
@@ -117,6 +121,18 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void endElement(String element, String currentText) {
         if (element.equals(DEFAULT_CONF_ELEMENT)) {
             configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());
+        } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
+                        ExecutionEnvironmentFactory.fromUniqueID(currentText));
+            }
         }
+    }
+
+    @Override
+    protected void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+        xes.elementOpen(TOOLS_SET_ELEMENT);
+        xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
+        xes.elementClose(TOOLS_SET_ELEMENT);
     }
 }

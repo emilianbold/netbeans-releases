@@ -4,6 +4,9 @@
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="4">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <gdbdebugger version="2">
         <gdb_command>gdb</gdb_command>
         <array_repeat_threshold>10</array_repeat_threshold>
@@ -19,6 +22,9 @@
       </runprofile>
     </conf>
     <conf name="Release" type="4">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <gdbdebugger version="2">
         <gdb_command>gdb</gdb_command>
         <array_repeat_threshold>10</array_repeat_threshold>
