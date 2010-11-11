@@ -46,6 +46,7 @@ import java.io.File;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,11 +64,13 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
     private String plainDisplayName = null;
     private String htmlDisplayName = null;
     private String functionName = null;
-    private boolean useHtmlFormat = true;
+    private final boolean useHtmlFormat;
 
-    PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, FunctionCall functionCall) {
+    PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, 
+            FunctionCall functionCall, boolean useHMTL) {
         super(Children.LEAF);
         this.functionCall = functionCall;
+        this.useHtmlFormat = useHMTL;
         action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
         updateNames();
     }
@@ -122,7 +125,7 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
     private synchronized void updateNames() {
         plainDisplayName = functionCall.getDisplayedName();
 
-        String name = functionCall.getFunction().getName();
+        String name = FunctionNameUtils.getFunctionName(functionCall.getFunction().getName());
         String funcName = functionCall.getFunction().getQuilifiedName();
         int idx1 = name.indexOf(funcName);
 
