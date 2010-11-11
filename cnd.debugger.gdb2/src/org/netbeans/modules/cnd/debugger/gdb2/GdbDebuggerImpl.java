@@ -2900,7 +2900,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         } else if (reason.equals("function-finished")) { // NOI18N
             stateMsg = Catalog.get("Dbx_function_returned");	// NOI18N
-
+        } else if (reason.equals("breakpoint-hit")) {		// NOI18N
+            stateMsg = Catalog.get("Dbx_breakpoint_hit");	// NOI18N
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }
