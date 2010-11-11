@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,14 +87,11 @@ public class JavaHudsonLogger implements HudsonLogger {
             String filename = m.group(2);
             String resource = pkg.replace('.', '/') + filename;
             int lineNumber = Integer.parseInt(m.group(3));
-            FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
-            if (source != null) {
-                try {
-                    stream.println(line, new Hyperlink(source, lineNumber));
-                    return true;
-                } catch (IOException x) {
-                    LOG.log(Level.INFO, null, x);
-                }
+            try {
+                stream.println(line, new Hyperlink(resource, lineNumber));
+                return true;
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
             }
             stream.println(line);
             return true;
@@ -103,11 +101,11 @@ public class JavaHudsonLogger implements HudsonLogger {
 
     private static class Hyperlink implements OutputListener {
 
-        private final FileObject source;
+        private final String resource;
         private final int lineNumber;
 
-        Hyperlink(FileObject source, int lineNumber) {
-            this.source = source;
+        Hyperlink(String resource, int lineNumber) {
+            this.resource = resource;
             this.lineNumber = lineNumber;
         }
 
@@ -123,10 +121,15 @@ public class JavaHudsonLogger implements HudsonLogger {
 
         private void acted(final boolean force) {
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    // XXX possible to also display exception message in status line
-                    // (would need to have grepped output for EXCEPTION_MESSAGE)
-                    Helper.openAt(source, lineNumber - 1, -1, force);
+                public @Override void run() {
+                    FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
+                    if (source != null) {
+                        // XXX possible to also display exception message in status line
+                        // (would need to have grepped output for EXCEPTION_MESSAGE)
+                        Helper.openAt(source, lineNumber - 1, -1, force);
+                    } else if (force) {
+                        Toolkit.getDefaultToolkit().beep();
+                    }
                 }
             });
         }

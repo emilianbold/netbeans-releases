@@ -40,40 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.jgit;
 
-import java.io.File;
+import org.netbeans.libs.git.GitConflictDescriptor;
 
 /**
  *
  * @author ondra
  */
-public interface GitStatus {
-    public enum Status {
-        STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
+public class JGitConflictDescriptor implements GitConflictDescriptor {
+
+    private final Type type;
+
+    public JGitConflictDescriptor(Type type) {
+        this.type = type;
     }
 
-    File getFile();
-
-    String getRelativePath();
-
-    Status getStatusHeadIndex();
-
-    Status getStatusIndexWC();
-
-    Status getStatusHeadWC();
-
-    boolean isTracked();
-
-    boolean isConflict();
-
-    boolean isFolder ();
-
-    boolean isCopied ();
-
-    boolean isRenamed ();
-
-    File getOldPath ();
-
-    GitConflictDescriptor getConflictDescriptor ();
+    @Override
+    public Type getType () {
+        return type;
+    }
 }

@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Parent;
@@ -140,15 +141,18 @@ public class ParentVersionError implements POMErrorFixProvider {
             }
         }
         if ((!useSources || currentVersion == null) && declaredVersion != null) {
-            List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId());
             ArtifactVersion currentAV = new DefaultArtifactVersion(declaredVersion);
-            for (NBVersionInfo info : infos) {
-                ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
-                if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
-                    continue;
-                }
-                if (currentAV.compareTo(av) < 0) {
-                    currentAV = av;
+            List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
+            if (!loadedRepos.isEmpty()) {
+                List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId(), loadedRepos.toArray(new RepositoryInfo[]{}));
+                for (NBVersionInfo info : infos) {
+                    ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
+                    if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
+                        continue;
+                    }
+                    if (currentAV.compareTo(av) < 0) {
+                        currentAV = av;
+                    }
                 }
             }
             currentVersion = currentAV.toString();
