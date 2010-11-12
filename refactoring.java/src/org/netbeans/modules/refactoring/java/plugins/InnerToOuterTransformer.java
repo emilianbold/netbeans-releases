@@ -348,8 +348,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                             : make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                     rewrite(memberSelect, m);
                 } else {
-                    problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
-                    isThisReferenceToOuter();
+                    if (inner.getKind()!=ElementKind.INTERFACE) {
+                        problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+                    }
                 }
             }
         } else if (isThisReferenceToInner()) {
