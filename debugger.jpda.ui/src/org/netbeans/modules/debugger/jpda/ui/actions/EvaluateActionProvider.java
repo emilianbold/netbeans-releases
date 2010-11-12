@@ -41,34 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.swing.outline;
 
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.ExpandVetoException;
+package org.netbeans.modules.debugger.jpda.ui.actions;
 
-/** A trivial extension to TreeWillExpandListener, to allow listeners to be
- * notified if another TreeWillExpandListener vetoes a pending expansion.
- * If a TreeExpansionListener added to an instance of TreePathSupport implements
- * this interface, it will be notified by the TreePathSupport if some other
- * listener vetoes expanding a node.
- * <p>
- * This interface is primarily used to avoid memory leaks if a TreeWillExpandListener
- * constructs some data structure (like a TableModelEvent that is a translation
- * of a TreeExpansionEvent) for use when the expansion actually occurs, to notify
- * it that the pending TableModelEvent will never be fired.  It is not of much
- * interest to the rest of the world.
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
+/**
+ * Invokes the expression evaluator GUI
  *
- * @author  Tim Boudreau
+ * @author Martin Entlicher
  */
-public interface ExtTreeWillExpandListener extends TreeWillExpandListener {
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions="evaluate")
+public class EvaluateActionProvider extends JPDADebuggerAction {
 
-    /**
-     * Called when another listener vetoes a pending expansion.
-     * @param event The vetoed event
-     * @param exception The veto exception.
-     */
-    public void treeExpansionVetoed (TreeExpansionEvent event, 
-        ExpandVetoException exception);
-    
+    public EvaluateActionProvider(ContextProvider lookupProvider) {
+        super (
+            lookupProvider.lookupFirst(null, JPDADebugger.class)
+        );
+        getDebuggerImpl ().addPropertyChangeListener
+            (JPDADebugger.PROP_CURRENT_THREAD, this);
+    }
+
+    @Override
+    public Set getActions () {
+        return Collections.singleton (ActionsManager.ACTION_EVALUATE);
+    }
+
+    @Override
+    protected void checkEnabled (int debuggerState) {
+        setEnabledSingleAction(getDebuggerImpl().getCurrentThread() != null);
+    }
+
+    @Override
+    public void postAction(Object action, Runnable actionPerformedNotifier) {
+        CodeEvaluator.openEvaluator();
+    }
+
+    @Override
+    public void doAction(Object action) {
+        // Not called since we override postAction().
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
 }

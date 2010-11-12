@@ -1,6 +1,6 @@
 Name: JavaEE Endorsed API 6.0
 Version: 6.0
-License: CDDL+GPL
+License: CDDL-GPL-2-CP
 OSR: Sun
 Description: JavaEE Endorsed API 6.0
 Origin: http://download.java.net/maven/2/javax/javaee-endorsed-api/6.0/

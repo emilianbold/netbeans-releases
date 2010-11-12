@@ -312,6 +312,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * other than TableModelEvent.UPDATE - the ProxyTableModel should never,
      * ever fire structural changes - only the tree model is allowed to do
      * that. */
+    @Override
     public void tableChanged(final TableModelEvent e) {
         //The *ONLY* time we should see events here is due to user
         //data entry.  The ProxyTableModel should never change out
@@ -324,6 +325,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             fireTableChange (translateEvent(e));
         } else {
             SwingUtilities.invokeLater( new Runnable() {
+                @Override
                 public void run() {
                     tableChanged(e);
                 }
@@ -342,6 +344,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * layout cache, so it will update its state appropriately</li>
      * <li>Fire the generated TableModelEvent(s)</li></ol>
      */
+    @Override
     public void treeNodesChanged(TreeModelEvent e) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -363,6 +366,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * layout cache, so it will update its state appropriately</li>
      * <li>Fire the generated TableModelEvent(s)</li></ol>
      */
+    @Override
     public void treeNodesInserted(TreeModelEvent e) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -384,6 +388,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * layout cache, so it will update its state appropriately</li>
      * <li>Fire the generated TableModelEvent(s)</li></ol>
      */
+    @Override
     public void treeNodesRemoved(TreeModelEvent e) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -397,6 +402,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Process a structural change event from the user-supplied tree model.
      * This will result in a generic &quot;something changed&quot; 
      * TableModelEvent being fired.  */
+    @Override
     public void treeStructureChanged(TreeModelEvent e) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -424,6 +430,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Receives a TreeWillCollapse event and constructs a TableModelEvent
      * based on the pending changes while the model still reflects the unchanged
      * state */
+    @Override
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -440,6 +447,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Receives a TreeWillExpand event and constructs a TableModelEvent
      * based on the pending changes while the model still reflects the unchanged
      * state */
+    @Override
     public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
         assert SwingUtilities.isEventDispatchThread();
 
@@ -454,6 +462,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         inProgressEvent = event;
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         assert SwingUtilities.isEventDispatchThread();
 
@@ -487,6 +496,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     
     /** Updates the layout to mark the descendants of the events path as also
      * expanded if they were the last it was expanded, then fires a table change. */
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -518,6 +528,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Messaged if the tree expansion event (for which we will have already
      * constructed a TableModelEvent) was vetoed;  disposes of the constructed
      * TableModelEvent in that circumstance. */
+    @Override
     public void treeExpansionVetoed(TreeExpansionEvent event, ExpandVetoException exception) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -574,7 +585,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         return nue;
     }
     
-    /** Tranlates a TreeModelEvent into one or more contiguous TableModelEvents 
+    /** Translates a TreeModelEvent into one or more contiguous TableModelEvents
      */
     private TableModelEvent[] translateEvent (TreeModelEvent e, int type) {
 

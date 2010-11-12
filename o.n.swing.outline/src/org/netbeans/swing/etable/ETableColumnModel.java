@@ -54,7 +54,8 @@ import javax.swing.table.TableColumn;
 import org.netbeans.swing.etable.ETable.RowMapping;
 
 /**
- *
+ * Column model implementation for ETable.
+ * 
  * @author David Strupl
  */
 public class ETableColumnModel extends DefaultTableColumnModel {
@@ -160,8 +161,9 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     }
 
     /**
-     * @return a comparator for sorting the rows of the table. The comparator
+     * Provides a comparator for sorting the rows of the table. The comparator
      * operates over ETable.RowMappings objects.
+     * @return The comparator for sorting the rows of the table.
      */
     public Comparator<RowMapping> getComparator() {
         if (sortedColumns.isEmpty()) {
@@ -243,6 +245,8 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     /** 
      * Makes the given column hidden or visible according to the parameter
      * hidden.
+     * @param column The table column to change the visibility.
+     * @param hidden <code>true</code> to make the column hidden, <code>false</code> to make it visible.
      */
     public void setColumnHidden(TableColumn column, boolean hidden) {
         if (hidden) {
@@ -261,7 +265,12 @@ public class ETableColumnModel extends DefaultTableColumnModel {
             }
         }
     }
-    
+
+    /**
+     * Test if the column is hidden or visible.
+     * @param tc The table column to test
+     * @return <code>true</code> when the column is hidden, <code>false</code> when it's visible.
+     */
     public boolean isColumnHidden(TableColumn tc) {
         return hiddenColumns.contains(tc);
     }
@@ -330,6 +339,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         public CompoundComparator() {
             original = new ETable.OriginalRowComparator();
         }
+        @Override
         public int compare(RowMapping o1, RowMapping o2) {
             for (Iterator it = sortedColumns.iterator(); it.hasNext(); ) {
                 Object o = it.next();

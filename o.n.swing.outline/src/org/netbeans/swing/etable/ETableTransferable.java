@@ -54,14 +54,15 @@ import java.io.StringReader;
 
 /**
  * Transferable for use with the ETable. This class is partial copy (with
- * ommision of the HTML transfers)
- * of javax.swing.plaf.basic.BasicTransferable which is unfortunatelly not
+ * omission of the HTML transfers)
+ * of javax.swing.plaf.basic.BasicTransferable which is unfortunately not
  * public.
  *
  * @author David Strupl
  */
 public class ETableTransferable implements Transferable {
-    
+
+    /** The data content of this transferable */
     protected String plainData;
     
     private static DataFlavor[] stringFlavors;
@@ -82,7 +83,11 @@ public class ETableTransferable implements Transferable {
             System.err.println("error initializing SheetTasbleTransferable");
         }
     }
-    
+
+    /**
+     * Create a new transferable.
+     * @param plainData The data content of this transferable
+     */
     public ETableTransferable(String plainData) {
         this.plainData = plainData;
     }
@@ -94,6 +99,7 @@ public class ETableTransferable implements Transferable {
      * for providing the data (from most richly descriptive to least descriptive).
      * @return an array of data flavors in which this data can be transferred
      */
+    @Override
     public DataFlavor[] getTransferDataFlavors() {
         int nPlain = (isPlainSupported()) ? plainFlavors.length: 0;
         int nString = (isPlainSupported()) ? stringFlavors.length : 0;
@@ -119,6 +125,7 @@ public class ETableTransferable implements Transferable {
      * @param flavor the requested flavor for the data
      * @return boolean indicating whether or not the data flavor is supported
      */
+    @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         DataFlavor[] flavors = getTransferDataFlavors();
         for (int i = 0; i < flavors.length; i++) {
@@ -140,6 +147,7 @@ public class ETableTransferable implements Transferable {
      * @exception UnsupportedFlavorException if the requested data flavor is
      *              not supported.
      */
+    @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (isPlainFlavor(flavor)) {
             String data = getPlainData();

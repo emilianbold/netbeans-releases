@@ -53,6 +53,7 @@ import javax.swing.TransferHandler;
  */
 public class ETableTransferHandler extends TransferHandler {
     
+    @Override
     protected Transferable createTransferable(JComponent c) {
         if (c instanceof ETable) {
             ETable table = (ETable) c;
@@ -111,6 +112,7 @@ public class ETableTransferHandler extends TransferHandler {
         return null;
     }
     
+    @Override
     public int getSourceActions(JComponent c) {
         return COPY;
     }

@@ -78,24 +78,29 @@ final class ProxyTableModel implements TableModel {
         return outlineModel;
     }
     
+    @Override
     public Class getColumnClass(int columnIndex) {
         return rowmodel.getColumnClass(columnIndex);
     }
     
+    @Override
     public int getColumnCount() {
         return rowmodel.getColumnCount();
     }
     
+    @Override
     public String getColumnName(int columnIndex) {
         return rowmodel.getColumnName(columnIndex);
     }
     
+    @Override
     public int getRowCount() {
         //not interesting, will never be called - the outline model
         //handles this
         return -1;
     }
     
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Object node = getNodeForRow(rowIndex);
         if (node == null) {
@@ -105,15 +110,18 @@ final class ProxyTableModel implements TableModel {
         return rowmodel.getValueFor(node, columnIndex);
     }
     
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         Object node = getNodeForRow(rowIndex);
         return rowmodel.isCellEditable (node, columnIndex);
     }
     
+    @Override
     public synchronized void removeTableModelListener(TableModelListener l) {
         listeners.remove(l);
     }
     
+    @Override
     public synchronized void addTableModelListener(TableModelListener l) {
         listeners.add(l);
     }
@@ -129,6 +137,7 @@ final class ProxyTableModel implements TableModel {
         }
     }
     
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         Object node = getNodeForRow(rowIndex);
         rowmodel.setValueFor (node, columnIndex, aValue);

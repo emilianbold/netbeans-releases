@@ -282,6 +282,12 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
 
+    public static DebuggerAction createEvaluateAction() {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_EVALUATE);
+        action.putValue (Action.NAME, "CTL_Evaluate"); // NOI18N
+        return action;
+    }
+
     /**
      * Use this method to register an additional debugger action.
      * Register in a module layer manually as follows:
