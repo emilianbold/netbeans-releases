@@ -81,6 +81,7 @@ import org.openide.util.NbBundle;
 public class MakeConfiguration extends Configuration {
 
     public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
+    public static final String NBPROJECT_PRIVATE_FOLDER = "nbproject/private"; // NOI18N
     public static final String PROJECT_XML = "project.xml"; // NOI18N
     public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N
     public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
