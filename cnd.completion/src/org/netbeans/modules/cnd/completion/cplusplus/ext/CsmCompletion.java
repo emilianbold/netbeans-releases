@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -256,10 +257,12 @@ abstract public class CsmCompletion {
      * @param obj
      * @return
      */
-    public static CsmType getObjectType(CsmObject obj) {
+    public static CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
         CsmType type = null;
-        if (CsmKindUtilities.isClassifier(obj)) {
-            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+        if (CsmKindUtilities.isTypedef(obj)) {
+            type = ((CsmTypedef)obj).getType();
+        } else if (CsmKindUtilities.isClassifier(obj)) {
+            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, _constIfClassifier);
         } else if (CsmKindUtilities.isFunction(obj)) {
             CsmFunction fun = (CsmFunction) obj;
             if (CsmKindUtilities.isConstructor(fun)) {
