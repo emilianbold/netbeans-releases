@@ -1396,8 +1396,6 @@ public class ConfigurationMakefileWriter {
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
         String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
-
-
         FileOutputStream os = null;
         try {
             os = new FileOutputStream(outputFileName);
@@ -1406,7 +1404,23 @@ public class ConfigurationMakefileWriter {
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         try {
-            writeMakefileVariablesBody(bw, conf);
+            writeMakefileFixedVariablesBody(bw);
+            writeMakefileVariablesRedirector(bw);
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            // FIXUP
+        }
+
+        outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
+        try {
+            os = new FileOutputStream(outputFileName);
+        } catch (Exception e) {
+            // FIXUP
+        }
+        bw = new BufferedWriter(new OutputStreamWriter(os));
+        try {
+            writeMakefilePrivateVariablesBody(bw);
             bw.flush();
             bw.close();
         } catch (IOException e) {
@@ -1414,7 +1428,26 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    private void writeMakefileVariablesBody(BufferedWriter bw, MakeConfigurationDescriptor conf) throws IOException {
+    private void writeMakefileVariablesRedirector(BufferedWriter bw) throws IOException {
+        bw.write("#\n"); // NOI18N
+        bw.write("# include compiler specific variables\n"); // NOI18N
+
+        bw.write("#\n"); // NOI18N
+        bw.write("# dmake command\n"); // NOI18N
+        bw.write("ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \\\n"); // NOI18N
+	bw.write("\tmkdir -p nbproject/private && \\\n"); // NOI18N
+	bw.write("\ttouch nbproject/private/Makefile-variables.mk\n"); // NOI18N
+
+        bw.write("#\n"); // NOI18N
+        bw.write("# gmake command\n"); // NOI18N
+        bw.write(".PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || \\\n"); // NOI18N
+	bw.write("\tmkdir -p nbproject/private && \\\n"); // NOI18N
+	bw.write("\ttouch nbproject/private/Makefile-variables.mk)\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
+        bw.write("include nbproject/private/Makefile-variables.mk\n"); // NOI18N
+    }
+
+    private void writeMakefileFixedVariablesBody(BufferedWriter bw) throws IOException {
         bw.write("#\n"); // NOI18N
         bw.write("# Generated - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
@@ -1427,8 +1460,7 @@ public class ConfigurationMakefileWriter {
         Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
-            bw.write("# " + makeConf.getName() + " configuration"); // NOI18N
-            bw.write("\n"); // NOI18N // NOI18N
+            bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
             bw.write("CND_PLATFORM_" + makeConf.getName() + "=" + makeConf.getVariant()); // NOI18N
             bw.write("\n"); // NOI18N // NOI18N
             // output artifact
@@ -1464,7 +1496,20 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
             bw.write("CND_PACKAGE_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
             bw.write("\n"); // NOI18N
+        }
+    }
 
+    private void writeMakefilePrivateVariablesBody(BufferedWriter bw) throws IOException {
+        bw.write("#\n"); // NOI18N
+        bw.write("# Generated - do not edit!\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
+        bw.write("# NOCDDL\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
+
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration makeConf = (MakeConfiguration) confs[i];
+            bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
             // Sys includes
             CompilerSet compilerSet = makeConf.getCompilerSet().getCompilerSet();
             if (compilerSet != null) {
