@@ -445,6 +445,24 @@ made subject to such option by the copyright holder.
         <issue number="190080"/>
     </change>
 
+    <change id="EvaluateAction">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Evaluate action is made generic, based on action providers.</summary>
+        <version major="1" minor="29"/>
+        <date day="12" month="11" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Evaluate action is moved from JPDA Debugger into Debugger Core UI module.
+             ActionsManager.ACTION_EVALUATE constant was added for use by debugger-specific
+             provider (ActionsProvider) of Evaluate action.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="ActionsManager" />
+        <issue number="191394"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
