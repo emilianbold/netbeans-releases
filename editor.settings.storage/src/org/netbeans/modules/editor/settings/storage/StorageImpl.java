@@ -159,7 +159,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
             Map<K, V> dataForSave = new HashMap<K, V>(data);
             filterBeforeSave(dataForSave, mimePath, profile, defaults);
             _save(mimePath, profile, defaults, dataForSave);
-            refresh();
+            profilesCache.clear();
         }
     }
 
