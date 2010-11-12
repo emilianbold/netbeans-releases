@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfigurat
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -364,6 +365,31 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     ProjectInformation pi = ProjectUtils.getInformation(project);
                     if (pi != null) { // node will check whether it equals...
                         root.setDisplayName(pi.getDisplayName());
+                    }
+                }
+            }
+        });
+    }
+
+    public static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                Node root = findProjectNode(rootNode, project);
+                if (root != null) {
+                    for(Item item : delta.deleted) {
+                        // TODO remove nodes from view
+                    }
+                    for(Item item : delta.added) {
+                        // TODO add nodes in view
+                    }
+                    List<Item> list = new ArrayList<Item>(delta.changed);
+                    list.addAll(delta.exluded);
+                    list.addAll(delta.included);
+                    for(Item item : list) {
+                        // TODO change nodes in view
                     }
                 }
             }

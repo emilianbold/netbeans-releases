@@ -61,6 +61,10 @@ public abstract class FileSystemProvider {
 
     protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
 
+    public static FileSystem getFileSystem(ExecutionEnvironment env) {
+        return DEFAULT.getFileSystemImpl(env, "/"); //NOI18N
+    }
+
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         return DEFAULT.getFileSystemImpl(env, root);
     }
