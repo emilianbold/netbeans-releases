@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.git;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.openide.ErrorManager;
+import java.awt.Color;
+import java.io.OutputStream;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInstall;
@@ -58,16 +56,16 @@ import org.xml.sax.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.logging.Level;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
 import org.openide.LifecycleManager;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -94,6 +92,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
 
     private void disableOtherModules() {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 boolean notify = false;
                 outter: for (int i = 0; i < otherGitModules.length; i++) {
@@ -127,30 +126,35 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                         
                         XMLUtil.write(document, os, "UTF-8"); // NOI18N
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Git.LOG.log(Level.WARNING, null, e);
                     } finally {
                         if (os != null) try { os.close(); } catch (IOException ex) {}
                         if (lock != null) lock.releaseLock();
                     }
                 }
                 if(notify) {
-                    OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if(OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                                try {
-                                    if(InstallWarningPanel.open()) {
-                                        LifecycleManager.getDefault().markForRestart();
-                                        LifecycleManager.getDefault().exit();                                
-                                    }
-                                } finally {
-                                    OpenProjects.getDefault().removePropertyChangeListener(this);
-                                }
-                           }
-                       }
-                    });
+                    JTextPane ballonDetails = getPane(NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning")); // using the same pane causes the balloon popup
+                    JTextPane popupDetails = getPane(NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning"));  // to trim the text to the first line
+                    NotificationDisplayer.getDefault().notify(
+                            NbBundle.getMessage(ModuleLifecycleManager.class, "MSG_Install_Warning_Title"), //NOI18N
+                            ImageUtilities.loadImageIcon("org/netbeans/modules/git/resources/icons/info.png", false),
+                            ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL);
                 }
             }
+                        
+            private JTextPane getPane(String txt) {
+                JTextPane bubble = new JTextPane();
+                bubble.setOpaque(false);
+                bubble.setEditable(false);
+                if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {                   //NOI18N
+                    //#134837
+                    //http://forums.java.net/jive/thread.jspa?messageID=283882
+                    bubble.setBackground(new Color(0, 0, 0, 0));
+                }
+                bubble.setContentType("text/html");                                          //NOI18N
+                bubble.setText(txt);
+                return bubble;
+            }             
         };
         RequestProcessor.getDefault().post(runnable);
     }
@@ -188,65 +192,6 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
     @Override
     public void warning(SAXParseException exception) {
         Git.LOG.log(Level.INFO, null, exception);
-    }
-    
-    private static class InstallWarningPanel extends javax.swing.JPanel {
-
-        /** Creates new form InstallWarningPanel */
-        public InstallWarningPanel() {
-            initComponents();
-        }
-
-        static boolean open() {
-            InstallWarningPanel panel= new InstallWarningPanel();
-            DialogDescriptor dd = 
-                    new DialogDescriptor(
-                        panel, 
-                        NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Install_Warning_Title"), 
-                        true, 
-                        DialogDescriptor.YES_NO_OPTION, 
-                        null, null);        
-
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);        
-            dialog.pack();
-            dialog.setVisible(true);
-            return dd.getValue() == DialogDescriptor.YES_OPTION;
-        }
-
-        /** This method is called from within the constructor to
-         * initialize the form.
-         * WARNING: Do NOT modify this code. The content of this method is
-         * always regenerated by the Form Editor.
-         */
-        @SuppressWarnings("unchecked")
-        // <editor-fold defaultstate="collapsed" desc="Generated Code">
-        private void initComponents() {
-
-            jLabel1 = new javax.swing.JLabel();
-
-            jLabel1.setText(org.openide.util.NbBundle.getMessage(InstallWarningPanel.class, "MSG_Install_Warning")); // NOI18N
-
-            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-            layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-        }// </editor-fold>
-
-        // Variables declaration - do not modify
-        private javax.swing.JLabel jLabel1;
-        // End of variables declaration
-    }
+    }        
 
 }

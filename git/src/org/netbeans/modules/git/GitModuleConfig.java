@@ -66,6 +66,7 @@ public final class GitModuleConfig {
     private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N
     private static final String RECENT_COMMITERS        = "recentCommiters";    // NOI18N
+    private static final String SIGN_OFF                = "signOff";            // NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -181,6 +182,14 @@ public final class GitModuleConfig {
     
     public List<String> getRecentCommiters() {
         return Utils.getStringList(getPreferences(), RECENT_COMMITERS);
+    }
+
+    public void setSignOff(boolean value) {
+        getPreferences().putBoolean(SIGN_OFF, value);
+    }
+    
+    public boolean getSignOff() {
+        return getPreferences().getBoolean(SIGN_OFF, false);
     }
     
 }
