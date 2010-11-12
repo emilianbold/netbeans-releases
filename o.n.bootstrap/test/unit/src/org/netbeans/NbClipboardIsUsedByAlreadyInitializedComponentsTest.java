@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans;
 
 import java.awt.datatransfer.*;
 import java.io.IOException;
@@ -51,8 +51,6 @@ import javax.swing.JComboBox;
 import javax.swing.TransferHandler;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.*;
