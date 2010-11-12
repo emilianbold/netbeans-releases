@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.core;
+package org.netbeans;
 
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
@@ -61,7 +61,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /** Basic tests on NbClipboard
  *
@@ -111,26 +110,20 @@ public class NbClipboardTest extends NbTestCase {
         class Safe implements Runnable {
             WeakReference<Object> ref;
             Window w;
-            TopComponent tc;
-            
             
             public void beforeAWT() throws InterruptedException {
                 NbClipboard ec = new NbClipboard();
                 
-                tc = new TopComponent();
-                tc.open();
-                
-                for(;;) {
-                    w = SwingUtilities.getWindowAncestor(tc);
-                    if (w != null && w.isVisible()) {
-                        break;
-                    }
-                    Thread.sleep(100);
-                }
-                
-                tc.close();
+                w = new JFrame("Original frame");
+                w.pack();
+                w.setVisible(true);
+                w.toFront();
+                w.requestFocus();
+                w.requestFocusInWindow();
+
+                w.setVisible(false);
                 w.dispose();
-                
+
                 // opening new frame shall clear all the AWT references to previous frame
                 JFrame f = new JFrame("Focus stealer");
                 f.setVisible(true);
@@ -145,7 +138,6 @@ public class NbClipboardTest extends NbTestCase {
                 
                 ref = new WeakReference<Object>(w);
                 w = null;
-                tc = null;
             }
 }
         
@@ -155,7 +147,7 @@ public class NbClipboardTest extends NbTestCase {
         SwingUtilities.invokeAndWait(safe);
         
         try {
-            assertGC("Top component can disappear", safe.ref);
+            assertGC("Original frame can disappear", safe.ref);
         } catch (junit.framework.AssertionFailedError ex) {
             if (ex.getMessage().indexOf("NbClipboard") >= 0) {
                 throw ex;

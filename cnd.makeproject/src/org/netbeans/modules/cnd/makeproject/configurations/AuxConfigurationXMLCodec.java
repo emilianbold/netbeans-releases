@@ -95,6 +95,10 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String currentConfName = atts.getValue(NAME_ATTR);
             Configurations confs = configurationDescriptor.getConfs();
             currentConf = confs.getConf(currentConfName);
+            if (currentConf == null) {
+                // it is valid situation when configuration was removed from public project properties
+                return;
+            }
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
