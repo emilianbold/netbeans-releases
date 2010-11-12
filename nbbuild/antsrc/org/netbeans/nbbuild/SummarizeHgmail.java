@@ -135,8 +135,9 @@ public class SummarizeHgmail extends Task {
                                             modules.add(name);
                                         }
                                     }
-                                } else {
-                                    // Single file, may or may not exist, so record it.
+                                }
+                                if (modules.isEmpty()) {
+                                    // Single file (may or may not exist), or unmatched pattern; so record it.
                                     modules.add(patt);
                                 }
                                 String addr = split[0].trim();
