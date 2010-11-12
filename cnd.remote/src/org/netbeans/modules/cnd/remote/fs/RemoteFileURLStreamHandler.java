@@ -56,6 +56,7 @@ import org.openide.util.URLStreamHandlerRegistration;
 public class RemoteFileURLStreamHandler extends URLStreamHandler {
 
     public static final String PROTOCOL = "rfs"; //NOI18N
+    public static final String PROTOCOL_PREFIX = "rfs:"; //NOI18N
     
     @Override
     protected URLConnection openConnection(URL url) throws IOException {

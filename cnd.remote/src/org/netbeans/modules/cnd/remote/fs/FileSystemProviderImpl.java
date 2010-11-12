@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -56,6 +57,19 @@ public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.File
     @Override
     protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
         return RemoteFileSystemManager.getInstance().get(env);
+    }
+
+    @Override
+    protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+        return RemoteFileSystemManager.getInstance().get(env).normalizeAbsolutePath(absPath);
+    }
+
+    @Override
+    protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
+        if (fileObject instanceof RemoteFileObjectBase) {
+            return fileObject;
+        }
+        return null;
     }
 
 }
