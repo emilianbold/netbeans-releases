@@ -832,7 +832,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		try {
 		    viaShowLocation = true;
 		    disassemblerWindow().open();
-		    disassemblerWindow().requestActive();
+// CR 6986846	    disassemblerWindow().requestActive();
 		    disassemblerWindow.componentShowing();
 		} finally {
 		    viaShowLocation = false;
@@ -857,6 +857,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public void requestDisassembly() {
 	setSrcRequested(false);
 	updateLocation(true);
+	// CR 6986846
+	disassemblerWindow().requestActive();
     }
 
     public void requestSource(boolean andShow) {
@@ -945,6 +947,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 							  disStateModel(),
 							  breakpointModel());
 	updateLocation(true);
+	// CR 6986846
+	if (!(isSrcRequested() && haveSource())) {
+	   disassemblerWindow().requestActive();
+	}
 
         visitMarker.attach(true);
         currentPCMarker.attach(true);
