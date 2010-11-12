@@ -219,4 +219,8 @@ public class PHPBracketCompleterFileBasedTest extends PHPTestBase {
     public void testIssue191892_01()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue191892_01.php");
     }
+    
+    public void testIssue191856_01()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue191856_01.php");
+    }
 }
