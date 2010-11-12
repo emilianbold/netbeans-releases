@@ -74,7 +74,7 @@ public class InterceptorTest extends AbstractHgTest {
         super.setUp();
 
         // create
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
         System.setProperty("netbeans.user", "/tmp/hgtest");
     }
 
@@ -116,12 +116,12 @@ public class InterceptorTest extends AbstractHgTest {
         File file = createFile(folder, "file");
 
         commit(folder);
-        File cloned = clone(getWorkDir());
+        File cloned = clone(getWorkTreeDir());
 
         FileObject fo = FileUtil.toFileObject(cloned);
         String attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
-        assertEquals(getWorkDir().getAbsolutePath(), attr);
+        assertEquals(getWorkTreeDir().getAbsolutePath(), attr);
     }
 
     public void testGetAttributeCloned() throws HgException, IOException {
@@ -129,12 +129,12 @@ public class InterceptorTest extends AbstractHgTest {
         File file = createFile(folder, "file");
 
         commit(folder);
-        File cloned = clone(getWorkDir());
+        File cloned = clone(getWorkTreeDir());
 
         FileObject fo = FileUtil.toFileObject(new File(new File(cloned, folder.getName()), file.getName()));
         String attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
-        assertEquals(getWorkDir().getAbsolutePath(), attr);
+        assertEquals(getWorkTreeDir().getAbsolutePath(), attr);
     }
 
     public void testGetAttributeClonedOnlyPush() throws HgException, IOException {
@@ -142,7 +142,7 @@ public class InterceptorTest extends AbstractHgTest {
         File file = createFile(folder, "file");
 
         commit(folder);
-        File cloned = clone(getWorkDir());
+        File cloned = clone(getWorkTreeDir());
 
         String defaultPush = "http://a.repository.far.far/away";
         new HgConfigFiles(cloned).removeProperty(HgConfigFiles.HG_PATHS_SECTION, HgConfigFiles.HG_DEFAULT_PULL);
@@ -161,7 +161,7 @@ public class InterceptorTest extends AbstractHgTest {
         File file = createFile(folder, "file");
 
         commit(folder);
-        File cloned = clone(getWorkDir());
+        File cloned = clone(getWorkTreeDir());
 
         String defaultPull = "http://a.repository.far.far/away";
         new HgConfigFiles(cloned).setProperty(HgConfigFiles.HG_DEFAULT_PULL, defaultPull);
@@ -178,7 +178,7 @@ public class InterceptorTest extends AbstractHgTest {
         File file = createFile(folder, "file");
 
         commit(folder);
-        File cloned = clone(getWorkDir());
+        File cloned = clone(getWorkTreeDir());
 
         String defaultPull = "http://so:secure@a.repository.far.far/away";
         String defaultPullReturned = "http://a.repository.far.far/away";

@@ -43,7 +43,6 @@
 package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlSourceVersionController;
 import org.openide.util.Lookup;
 
@@ -56,10 +55,10 @@ public final class HtmlSourceVersionQuery {
     private HtmlSourceVersionQuery() {
     }
 
-    public static HtmlVersion getSourceCodeVersion(HtmlSource source, HtmlVersion detectedVersion) {
+    public static HtmlVersion getSourceCodeVersion(SyntaxAnalyzerResult analyzerResult, HtmlVersion detectedVersion) {
         Collection<? extends HtmlSourceVersionController> controllers = Lookup.getDefault().lookupAll(HtmlSourceVersionController.class);
         for(HtmlSourceVersionController c : controllers) {
-            HtmlVersion found = c.getSourceCodeVersion(source, detectedVersion);
+            HtmlVersion found = c.getSourceCodeVersion(analyzerResult, detectedVersion);
             if(found != null) {
                 return found;
             }

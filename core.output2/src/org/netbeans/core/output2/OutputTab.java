@@ -480,10 +480,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             }
             fd.setModal(true);
             fd.setVisible(true);
-            String s = fd.getDirectory() + fd.getFile();
-            f = new File(s);
-            if (f.exists() && f.isDirectory()) {
-                f = null;
+            if (fd.getFile() != null && fd.getDirectory() != null) {
+                String s = fd.getDirectory() + fd.getFile();
+                f = new File(s);
+                if (f.exists() && f.isDirectory()) {
+                    f = null;
+                }
             }
         } else {
             JFileChooser jfc = new JFileChooser();

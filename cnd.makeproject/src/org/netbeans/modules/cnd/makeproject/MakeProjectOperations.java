@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -195,12 +196,18 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
         project.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+        configurationDescriptor.setModified(); // IZ 186029
     }
 
     @Override
     public void notifyRenaming() throws IOException {
         LOGGER.log(Level.FINE, "notify Renaming MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
         project.save();
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+        configurationDescriptor.setModified(); // IZ 186029
     }
 
     @Override

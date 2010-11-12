@@ -42,10 +42,8 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.codehaus.plexus.util.IOUtil;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.util.MissingResourceException;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -54,10 +52,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,29 +67,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.execute.ActionToGoalUtils;
-import org.netbeans.modules.maven.options.MavenVersionSettings;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.model.pom.BuildBase;
-import org.netbeans.modules.maven.model.pom.Configuration;
-import org.netbeans.modules.maven.model.pom.POMComponent;
-import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMQName;
-import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,19 +88,6 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint 
  */
 public class RunJarPanel extends javax.swing.JPanel {
-    /**deprecated items
-     */
-    private static final String ARTFACTID_JAR = "maven-jar-plugin";//NOI18N
-    private static final String ARITFACTID_ASSEMBLY = "maven-assembly-plugin";//NOI18N
-    private static final String DEPRECATED_RUN_PARAMS = "netbeans.jar.run.params"; //NOI18N
-    private static final String DEPRECATED_RUN_WORKDIR = "netbeans.jar.run.workdir"; //NOI18N
-    private static final String DEPRECATED_RUN_JVM_PARAMS = "netbeans.jar.run.jvmparams"; //NOI18N
-
-    private boolean isDeprecatedRun = false;
-    private boolean isDeprecatedDebug = false;
-    private boolean isDeprecatedProfile = false;
-    private org.netbeans.modules.maven.model.pom.Plugin jarPlugin;
-    private org.netbeans.modules.maven.model.pom.Plugin assemblyPlugin;
     
     private boolean isCurrentRun = true;
     private boolean isCurrentDebug = true;
@@ -222,35 +189,6 @@ public class RunJarPanel extends javax.swing.JPanel {
         txtWorkDir.getDocument().removeDocumentListener(docListener);
     }
     
-
-    /**
-     * @deprecated 
-     */
-    private @Deprecated void applyDeprecatedExternalChanges() throws MissingResourceException {
-        File assDir = new File(new File(new File(project.getOriginalMavenProject().getBasedir(), "src"), "main"), "assemblies"); //NOI18N
-        if (!assDir.exists()) {
-            assDir.mkdirs();
-        }
-        File assembly = new File(assDir, "netbeans-run.xml"); //NOI18N
-        if (!assembly.exists()) {
-            InputStream instr = null;
-            OutputStream outstr = null;
-            try {
-                assembly.createNewFile();
-                instr = getClass().getResourceAsStream("/org/netbeans/modules/maven/execute/netbeans-run.xml"); //NOI18N
-                outstr = new FileOutputStream(assembly);
-                IOUtil.copy(instr, outstr);
-            } catch (IOException exc) {
-                ErrorManager.getDefault().notify(exc);
-                NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(RunJarPanel.class, "Err_CannotCreate", assembly));
-                DialogDisplayer.getDefault().notify(nd);
-            } finally {
-                IOUtil.close(instr);
-                IOUtil.close(outstr);
-            }
-        }
-    }
-    
     private void initValues() {
         run = null;
         debug = null;
@@ -309,53 +247,6 @@ public class RunJarPanel extends javax.swing.JPanel {
                 oldParams = splitParams(params);
             } else {
                 oldAllParams = "";
-            }
-        } else {
-            isDeprecatedRun = checkDeprecatedMapping(run);
-            isDeprecatedDebug = checkDeprecatedMapping(debug);
-            isDeprecatedProfile = checkDeprecatedMapping(profile);
-            if (isDeprecatedDebug || isDeprecatedRun || isDeprecatedProfile) {
-                org.netbeans.modules.maven.model.pom.Profile publicProfile = handle.getNetbeansPublicProfile(false);
-                jarPlugin = null;
-                assemblyPlugin = null;
-                if (publicProfile != null && publicProfile.getBuildBase() != null) {
-                    org.netbeans.modules.maven.model.pom.BuildBase bld = publicProfile.getBuildBase();
-                    List<org.netbeans.modules.maven.model.pom.Plugin> plugins = bld.getPlugins();
-                    for (org.netbeans.modules.maven.model.pom.Plugin elem : plugins) {
-                        if (ARTFACTID_JAR.equals(elem.getArtifactId())) { //NOI18N
-                            jarPlugin = elem;
-                        }
-                        if (ARITFACTID_ASSEMBLY.equals(elem.getArtifactId())) { //NOI18N
-                            assemblyPlugin = elem;
-                        }
-                    }
-                }
-                if (jarPlugin != null) {
-                    Xpp3Dom conf = (Xpp3Dom)jarPlugin.getConfiguration();
-                    Xpp3Dom archive = conf.getChild("archive"); //NOI18N
-                    if (archive != null) {
-                        Xpp3Dom manifest = archive.getChild("manifest"); //NOI18N
-                        if (manifest != null) {
-                            Xpp3Dom mainClass = manifest.getChild("mainClass"); //NOI18N
-                            if (mainClass != null) {
-                                oldMainClass = mainClass.getValue();
-                            }
-                        }
-                    }
-                }
-                if (isDeprecatedRun) {
-                    oldParams = run.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
-                    oldWorkDir = run.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
-                    oldVMParams = run.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
-                } else if (isDeprecatedDebug) {
-                    oldParams = debug.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
-                    oldWorkDir = debug.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
-                    oldVMParams = debug.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
-                } else if (isDeprecatedProfile) {
-                    oldParams = profile.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
-                    oldWorkDir = profile.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
-                    oldVMParams = profile.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
-                }
             }
         }
         
@@ -442,59 +333,59 @@ public class RunJarPanel extends javax.swing.JPanel {
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblWorkDir)
-                    .add(lblVMOptions)
-                    .add(lblArguments)
-                    .add(lblConfiguration)
-                    .add(lblMainClass))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .add(txtArguments, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .add(comConfiguration, 0, 225, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnWorkDir)
-                    .add(btnMainClass)))
-            .add(layout.createSequentialGroup()
-                .add(128, 128, 128)
-                .add(lblHint)
-                .addContainerGap(208, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblWorkDir)
+                    .addComponent(lblVMOptions)
+                    .addComponent(lblArguments)
+                    .addComponent(lblConfiguration)
+                    .addComponent(lblMainClass))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtVMOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(txtWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(txtArguments, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(txtMainClass, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(comConfiguration, 0, 225, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnWorkDir)
+                    .addComponent(btnMainClass)))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(128, 128, 128)
+                .addComponent(lblHint)
+                .addContainerGap(246, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblConfiguration)
-                    .add(comConfiguration, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblMainClass)
-                    .add(btnMainClass)
-                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblArguments)
-                    .add(txtArguments, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblWorkDir)
-                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnWorkDir))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblVMOptions)
-                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblHint)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblConfiguration)
+                    .addComponent(comConfiguration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblMainClass)
+                    .addComponent(btnMainClass)
+                    .addComponent(txtMainClass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblArguments)
+                    .addComponent(txtArguments, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblWorkDir)
+                    .addComponent(txtWorkDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnWorkDir))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblVMOptions)
+                    .addComponent(txtVMOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint)
                 .addContainerGap(139, Short.MAX_VALUE))
         );
 
@@ -525,16 +416,6 @@ public class RunJarPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnWorkDirActionPerformed
 
-    void applyExternalChanges() {
-        String newMainClass = txtMainClass.getText().trim();
-        if (!newMainClass.equals(oldMainClass)) {
-            if (isDeprecatedRun || isDeprecatedDebug) {
-                applyDeprecatedExternalChanges();
-            }
-        }
-        
-    }
-    
     void applyChanges() {
         String newMainClass = txtMainClass.getText().trim();
         String newParams = txtArguments.getText().trim();
@@ -596,89 +477,9 @@ public class RunJarPanel extends javax.swing.JPanel {
                     handle.markAsModified(a2gm);
                 }
             }
-        } else if (isDeprecatedRun || isDeprecatedDebug || isDeprecatedProfile) {
-            if (!newMainClass.equals(oldMainClass)) {
-                jarPlugin = checkJarPlugin(jarPlugin, newMainClass);
-                assemblyPlugin = checkAssemblyPlugin(assemblyPlugin);
-                handle.markAsModified(handle.getPOMModel());
-            }
-            if (!newParams.equals(oldParams)) {
-                if (isDeprecatedRun) {
-                    run.getProperties().setProperty(DEPRECATED_RUN_PARAMS, newParams);
-                    ModelHandle.setUserActionMapping(run, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedDebug) {
-                    debug.getProperties().setProperty(DEPRECATED_RUN_PARAMS, newParams);
-                    ModelHandle.setUserActionMapping(debug, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedProfile) {
-                    profile.getProperties().setProperty(DEPRECATED_RUN_PARAMS, newParams);
-                    ModelHandle.setUserActionMapping(profile, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-            }
-            if (!newVMParams.equals(oldVMParams)) {
-                if (isDeprecatedRun) {
-                    run.getProperties().setProperty(DEPRECATED_RUN_JVM_PARAMS, newVMParams);
-                    ModelHandle.setUserActionMapping(run, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedDebug) {
-                    debug.getProperties().setProperty(DEPRECATED_RUN_JVM_PARAMS, newVMParams);
-                    ModelHandle.setUserActionMapping(debug, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedProfile) {
-                    profile.getProperties().setProperty(DEPRECATED_RUN_JVM_PARAMS, newVMParams);
-                    ModelHandle.setUserActionMapping(profile, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-            }
-            if (!newWorkDir.equals(oldWorkDir)) {
-                if (isDeprecatedRun) {
-                    run.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
-                    ModelHandle.setUserActionMapping(run, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedDebug) {
-                    debug.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
-                    ModelHandle.setUserActionMapping(debug, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                if (isDeprecatedProfile) {
-                    profile.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
-                    ModelHandle.setUserActionMapping(profile, a2gm);
-                    handle.markAsModified(a2gm);
-                }
-                //MEVENIDE-599
-                NetbeansActionMapping[] activeCustomMappings = ActionToGoalUtils.getActiveCustomMappings(project);
-                for (NetbeansActionMapping actionMapping : activeCustomMappings) {
-                    if (actionMapping.getProperties().getProperty(DEPRECATED_RUN_WORKDIR) != null) {
-                        actionMapping.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
-                        ModelHandle.setUserActionMapping(actionMapping, a2gm);
-                        handle.markAsModified(a2gm);
-                    }
-                }
-            }
         }
     }
 
-    private boolean checkDeprecatedMapping(NetbeansActionMapping map) {
-        if (map == null || map.getGoals() == null) {
-            return false; //#164323
-        }
-        Iterator it = map.getGoals().iterator();
-        while (it.hasNext()) {
-            String goal = (String) it.next();
-            if (goal.indexOf("org.codehaus.mevenide:netbeans-run-plugin") > -1) { //NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private boolean checkNewMapping(NetbeansActionMapping map) {
         if (map == null || map.getGoals() == null) {
             return false; //#164323
@@ -694,90 +495,6 @@ public class RunJarPanel extends javax.swing.JPanel {
         return false;
     }
     
-
-    /**
-     * @deprecated 
-     */
-    private @Deprecated Plugin checkJarPlugin(Plugin jarPlugin, String val) {
-        if (jarPlugin == null) {
-            jarPlugin = handle.getPOMModel().getFactory().createPlugin();
-            jarPlugin.setArtifactId(ARTFACTID_JAR); 
-            jarPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
-            jarPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_JAR));
-            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
-            if (base == null) {
-                base = handle.getPOMModel().getFactory().createBuildBase();
-                handle.getNetbeansPublicProfile().setBuildBase(base);
-            }
-            base.addPlugin(jarPlugin);
-        }
-        Configuration config = jarPlugin.getConfiguration();
-        if (config == null) {
-            config = handle.getPOMModel().getFactory().createConfiguration();
-            jarPlugin.setConfiguration(config);
-        }
-        POMExtensibilityElement manifest = getOrCreateChild(getOrCreateChild(config, "achive"), "manifest");
-        getOrCreateChild(manifest, "addClasspath").setElementText("true");
-        getOrCreateChild(manifest, "classpathPrefix").setElementText("lib"); //NOI18N
-        getOrCreateChild(manifest, "mainClass").setElementText(val); //NOI18N
-        return jarPlugin;
-    }
-
-    /**
-     * @deprecated 
-     */
-    private @Deprecated Plugin checkAssemblyPlugin(Plugin assPlugin) {
-        POMModel model = handle.getPOMModel();
-        if (assPlugin == null) {
-            assPlugin = model.getFactory().createPlugin();
-            assPlugin.setArtifactId(ARITFACTID_ASSEMBLY); 
-            assPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
-            assPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_ASSEMBLY));
-            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
-            if (base == null) {
-                base = handle.getPOMModel().getFactory().createBuildBase();
-                handle.getNetbeansPublicProfile().setBuildBase(base);
-            }
-            base.addPlugin(assPlugin);
-        }
-        PluginExecution exec = assPlugin.findExecutionById("nb"); //NOI18N
-        if (exec == null) {
-            exec = model.getFactory().createExecution();
-            exec.setId("nb"); //NOI18N
-            assPlugin.addExecution(exec);
-        }
-        exec.setPhase("package"); //NOI18N
-        List<String> goals = exec.getGoals();
-        if (goals == null || !goals.contains("directory-single")) {
-            exec.addGoal("directory-single"); //NOI18N
-        }
-
-        Configuration config = assPlugin.getConfiguration();
-        if (config == null) {
-            config = handle.getPOMModel().getFactory().createConfiguration();
-            assPlugin.setConfiguration(config);
-        }
-
-        getOrCreateChild(config, "descriptor").setElementText("${basedir}/src/main/assemblies/netbeans-run.xml"); //NOI18N
-        getOrCreateChild(config, "finalName").setElementText("executable"); //NOI18N
-        
-        return assPlugin;
-    }
-    
-    private POMExtensibilityElement getOrCreateChild(POMComponent parent, String name) {
-        List<POMExtensibilityElement> childs = parent.getChildren(POMExtensibilityElement.class);
-        if (childs == null) {
-            for (POMExtensibilityElement el : childs) {
-                if (name.equals(el.getQName().getLocalPart())) {
-                    return el;
-                }
-            }
-        }
-        POMExtensibilityElement el = handle.getPOMModel().getFactory().createPOMExtensibilityElement(POMQName.createQName(name));
-        parent.addExtensibilityElement(el);
-        return el;
-    }
-
     /**
      * used by quickrun configuration.
      * @param argline

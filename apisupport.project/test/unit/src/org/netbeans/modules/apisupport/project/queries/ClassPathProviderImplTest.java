@@ -951,7 +951,9 @@ public class ClassPathProviderImplTest extends TestBase {
         assertTrue("Classes dir of testing project should exist", prj.getClassesDirectory().exists());
         TestAntLogger.getDefault().setEnabled(false);
         
-        ClassPath cp = ClassPath.getClassPath(prj.getProjectDirectory().getFileObject("build/classes"), ClassPath.EXECUTE);
+        FileObject classes = prj.getProjectDirectory().getFileObject("build/classes");
+        ClassPath cp = ClassPath.getClassPath(classes, ClassPath.EXECUTE);
+        assertNotNull("have exec CP for " + classes, cp);
         Set<String> expectedRoots = new TreeSet<String>();
         expectedRoots.add(FileUtil.urlForArchiveOrDir(prj.getClassesDirectory()).toExternalForm());
         assertEquals("right compiled EXECUTE classpath", expectedRoots, urlsOfCp(cp));

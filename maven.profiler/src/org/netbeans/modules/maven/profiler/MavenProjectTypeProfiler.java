@@ -53,6 +53,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -60,7 +61,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jiri Sedlacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+                        projectType="org-netbeans-modules-maven")
 public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     
     private ProfilingSettings lastProfilingSettings;

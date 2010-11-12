@@ -190,11 +190,11 @@ final class MatchingObject
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
-            assert e.getSource() == (DataObject) getDataObject();
-            
-            final DataObject dataObj = (DataObject) getDataObject();
-            dataObj.removePropertyChangeListener(this);
-            
+            final DataObject dataObject = (DataObject) getDataObject();
+            if(dataObject != null) {
+                assert e.getSource() == dataObject;
+                dataObject.removePropertyChangeListener(this);
+            }
             resultModel.objectBecameInvalid(this);
         }
     }
@@ -207,7 +207,8 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        return ((DataObject) getDataObject()).isValid();
+        DataObject data = getDataObject();
+        return valid && data != null ? data.isValid() : false; // #190819
     }
     
     FileObject getFileObject() {
@@ -310,14 +311,17 @@ final class MatchingObject
     /**
      */
     boolean isSubnodeSelected(int index) {
-        // #177812
-        assert (matchesSelection == null)
-               || ((index >= 0) && (index < matchesSelection.length)) :
-               "Illegal index=" + index + "in the case matchesSelection" +
-               ((matchesSelection == null) ? "=null" :
-                   ".length=" + matchesSelection.length); // NOI18N
-        return (matchesSelection == null) ? selected
-                                         : matchesSelection[index];
+        // See #189617, #177812, #129232
+        if(matchesSelection == null) {
+            return selected;
+        }
+        if((index >= 0) && (index < matchesSelection.length)) {
+            return matchesSelection[index];
+        }
+        LOG.log(Level.FINE,
+          "Illegal index={0} in the case matchesSelection.length={1}", // NOI18N
+          new Object[] { index, matchesSelection.length });
+        return false; // An associated checkbox won't be selected.
     }
     
     /**
@@ -465,7 +469,7 @@ final class MatchingObject
             throw new IOException("Unknown object in search: " +
                                   object);// NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            valid = false;
             return null;
         }
     }

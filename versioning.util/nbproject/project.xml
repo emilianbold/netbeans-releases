@@ -15,6 +15,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.spellchecker.apimodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -268,6 +276,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
+                <friend>org.netbeans.modules.git</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.perforce</friend>
@@ -283,6 +292,8 @@
                 <package>org.netbeans.modules.versioning.historystore</package>
                 <package>org.netbeans.modules.versioning.hooks</package>
                 <package>org.netbeans.modules.versioning.util</package>
+                <package>org.netbeans.modules.versioning.util.common</package>
+                <package>org.netbeans.modules.versioning.util.status</package>
             </friend-packages>
         </data>
     </configuration>

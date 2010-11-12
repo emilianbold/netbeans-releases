@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;

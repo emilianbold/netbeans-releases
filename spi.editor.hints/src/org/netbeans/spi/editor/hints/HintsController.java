@@ -53,7 +53,7 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
- * One of the main etry points for the Editor Hints SPI. Call one of the
+ * One of the main entry points for the Editor Hints SPI. Call one of the
  * setErrors method to change the hints on the document.
  * @author Jan Lahoda
  */

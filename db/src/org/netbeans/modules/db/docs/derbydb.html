@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<HTML>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <TITLE>Connecting to a Java DB Database</TITLE>
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</HEAD>
+<BODY>
+<h2>Connecting to a Java DB Database</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Java DB database is Sun's supported distribution of the open source Apache Derby database.
+Java DB is a fully transactional, secure, standards-based database server, written 
+  fully in the Java programming language, and fully supports SQL, JDBC API, and Java EE technology. 
+  The Java DB database server is bundled with the Glassfish application server.  </p>
+<p>If you install the GlassFish application server during the IDE installation, 
+  the Java DB database server is automatically registered in the IDE.</p>
+<p><b>To enable the Java DB database server in the IDE, do one of the following:</b></p>
+<ul>
+  <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Register 
+    an instance of the Glassfish application server</a> . This registers 
+    the installation of the Java DB database server that is packaged with the application 
+    server. The connection to the sample Java DB database is automatically displayed 
+    in the Services window. The default user name and password for the sample database
+    is <tt>app</tt>.</li>
+  <li>Register an existing Java DB or Apache Derby installation. 
+  If you already have one of these database servers installed on your computer, 
+  you can register the database with the IDE by doing the following:<ol><li>In the Services window, right-click the Java DB node and choose Properties. </li>
+      <li>In the dialog box, set the location of the Java DB installation directory.</li>
+      <li>Set the folder where your Java DB databases are stored in the Database Location property and click OK. </li>
+      <li> In the Services window, right-click the Java DB node and choose Start Server.</li>
+  </ol>
+  </li>
+</ul>
+<p>Once your Java DB database is registered with the IDE,
+  the Java DB Database menu item appears under the Databases Node in the Services window.
+This menu item enables you to easily start and stop the Java DB database server and to create a new database.</p>
+<p><b>To create a new Java DB database:</b></p>
+<ol>
+  <li>In the Services window, right-click the Java DB node and choose Create Database.</li>
+    <li>In the Create Java DB Database dialog box, enter a name for the database, a user name, and a password.
+    <p>By default, the IDE creates the database in the <tt>.netbeans-derby</tt> folder of your home directory. 
+        To change the default location, click Properties in the Create Java DB Database dialog box, or in the Services window, right-click the Java DB node and choose Properties. Type the new database location in the appropriate field.</p>
+    </li>
+</ol>
+<p><b>To connect to an existing Java DB database:</b> </p>
+<ol>
+  <li>In the Services window, right-click the Databases node and choose New Connection.</li>
+  <li>In the Locate Driver step of the New Connection wizard, choose one of the following Java DB drivers from the drop-down menu: 
+    <ul>
+      <li><b>Java DB (Embedded).</b> Use this driver when you are sure your application will access 
+      the database from a single JVM. A typical example of this scenario is a single-user 
+      Swing JDBC application using a Java DB database as a data store.</li>
+      <li><b>Java DB (Network).</b> Use this driver when you need to connect to the database 
+        from multiple JVMs. An example of this scenario is when you need to connect 
+        from the IDE and from a Java EE application on the application server. Using 
+        the network driver, you can also access the database from remote computers.</li>
+    </ul>
+  </li>
+  <li>In the <a href="csh_newconnectdb.html">Customize Connection dialog box</a> of the New Connection wizard, enter the database name to which you want to connect. </li>
+  <li>Provide the database user name and password. </li>
+  <li>(Optional) Click Test Connection to see if the connection can be established. </li>
+  <li>Click OK. The IDE displays the connection to the database under the Databases 
+    node in the Services window.</li>
+</ol>
+<p><b>Notes:</b></p>
+<ul>
+  <li>Selecting Remember Password will store the password for the current IDE 
+    session. If left unselected, a dialog box appears prompting you for the password 
+    every time you connect to the database.</li>
+    <li>The URL for the sample database is <tt>jdbc:derby://localhost:1527/sample</tt>.</li>
+    <li>The default location for the sample database is in the <tt>.netbeans-derby</tt> directory in your home directory.</li>
+  <li>To change the default location for the Java DB database directory, in the Services winow, right-click the Java DB node in the Services window and choose Properties. Enter the new location. </li>
+</ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd> <a href="connectdb.html">Connecting to a Database</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+    <tr><td>&nbsp;</td></tr>
+</table>
+</body>
+
+</html>

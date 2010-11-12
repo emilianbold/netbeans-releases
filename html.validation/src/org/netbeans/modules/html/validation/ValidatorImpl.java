@@ -42,7 +42,14 @@
 
 package org.netbeans.modules.html.validation;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.ValidationResult;
@@ -57,18 +64,38 @@ import org.xml.sax.SAXException;
 @ServiceProvider(service=Validator.class, position=10)
 public class ValidatorImpl implements Validator {
 
+    private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
+    private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
+
     @Override
     public ValidationResult validate(ValidationContext context) throws ValidationException {
         assert canValidate(context.getVersion());
         
         try {
+            ValidationTransaction validatorTransaction = 
+                    ValidationTransaction.create(context.getVersion()); //NOI18N
 
-            ValidationTransaction validatorTransaction = ValidationTransaction.getInstance();
+//            //simulate the "in body" mode if the code is a fragment
+//            if(context.getSyntaxAnalyzerResult().getDetectedHtmlVersion() == null) {
+//                validatorTransaction.setBodyFragmentContextMode(true);
+//            }
 
-            String source = context.getSource();
+            String source = maskTemplatingMarks(context.getSource());
             validatorTransaction.validateCode(source);
 
-            return new ValidationResult(this, context, validatorTransaction.getFoundProblems(), validatorTransaction.isSuccess());
+            Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
+            
+            if(context.getSyntaxAnalyzerResult().getDetectedHtmlVersion() == null) {
+                //1. unknown doctype, the HtmlSourceVersionQuery is used
+                //some of the "missing doctype" errors should be suppressed
+
+                //2. the code might be just a fragment of code which usually belongs to the body of the
+                //complete document. In such case the Error: Required children missing from element "head"
+                //should be filtered as well
+                filterCodeFragmentProblems(context, problems);
+            }
+
+            return new ValidationResult(this, context, problems, problems.isEmpty());
 
         } catch (SAXException ex) {
             throw new ValidationException(ex);
@@ -85,11 +112,48 @@ public class ValidatorImpl implements Validator {
     //XXX the validator can also validate html4, but for now such validation is done by the old SGML parser
     public boolean canValidate(HtmlVersion version) {
         switch(version) {
+            case HTML41_FRAMESET:
+            case HTML41_STRICT:
+            case HTML41_TRANSATIONAL:
+            case XHTML10_FRAMESET:
+            case XHTML10_TRANSATIONAL:
+            case XHTML10_STICT:
             case HTML5:
+            case XHTML5:
                 return true;
             default:
                 return false;
         }
     }
+
+    private void filterCodeFragmentProblems(ValidationContext context, Collection<ProblemDescription> problems) {
+        for(Iterator<ProblemDescription> itr = problems.iterator(); itr.hasNext();) {
+            ProblemDescription problem = itr.next();
+            if(problem.getText().startsWith("Error: Start tag seen without seeing a doctype first.")
+                    || (problem.getText().startsWith("Error: Required children missing from element \"head\"") && !containsHeadElement(context)) ) {
+                itr.remove();
+            }
+        }
+    }
+
+    private boolean containsHeadElement(ValidationContext context) {
+        List<SyntaxElement> head = context.getSyntaxAnalyzerResult().getElements().items();
+        //limit the search to the beginning of the file
+        int limit = Math.max(head.size(), 20);
+        for(SyntaxElement se : head) {
+            if(limit-- == 0) {
+                break;
+            }
+            if(se.type() == SyntaxElement.TYPE_TAG && ((SyntaxElement.Named)se).getName().equalsIgnoreCase("head")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static String maskTemplatingMarks(String code) {
+        return TEMPLATING_MARKS_PATTERN.matcher(code).replaceAll(TEMPLATING_MARKS_MASK);
+    }
+
 
 }

@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,8 +55,11 @@ import javax.swing.Action;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 /**
@@ -67,10 +71,13 @@ public class DoxygenDocumentation {
     private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]?", Pattern.MULTILINE); // NOI18N
     private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
-    static String doxygen2HTML(String doxygen) {
+    static String doxygen2HTML(String doxygen, CppTokenId kind) {
         doxygen = doxygen.substring(3, doxygen.length() - 2);
         doxygen = STRIP_STARS.matcher(doxygen).replaceAll("");
         doxygen = doxygen.trim();
+        if (kind == CppTokenId.BLOCK_COMMENT) {
+            doxygen = "\\verbatim\n"+doxygen+"\n\\endverbatim"; // NOI18N
+        }
 
         StringBuilder output = new StringBuilder();
         List<String> wordEnd = new LinkedList<String>();
@@ -200,45 +207,103 @@ public class DoxygenDocumentation {
         WORD, LINE, PAR, NONE;
     }
 
-    public static CompletionDocumentation create(CsmObject csmObject) {
+    public static CompletionDocumentationImpl create(CsmObject csmObject) {
         if (!(csmObject instanceof CsmOffsetable)) {
             return null;
         }
 
+        List<DocCandidate> list = new ArrayList<DocCandidate>();
+
+        getDocText(csmObject, list);
+        if (list.isEmpty() ||  getBestDoc(list).kind != CppTokenId.DOXYGEN_COMMENT) {
+            if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
+                CsmFunction fun = (CsmFunction) csmObject;
+                CsmFunctionDefinition definition = fun.getDefinition();
+                if (definition != null && !definition.equals(fun)) {
+                    getDocText(definition, list);
+                }
+            }
+        }
+
+        if (list.isEmpty()) {
+            return null;
+        }
+        DocCandidate bestDoc = getBestDoc(list);
+        String htmlDocText = doxygen2HTML(bestDoc.text, bestDoc.kind);
+
+        return new CompletionDocumentationImpl(htmlDocText, bestDoc.kind);
+    }
+
+    private static DocCandidate getBestDoc(List<DocCandidate> list) {
+        DocCandidate candidate = null;
+        for(DocCandidate doc : list) {
+            if (doc.kind == CppTokenId.DOXYGEN_COMMENT) {
+                return doc;
+            } else if (doc.kind == CppTokenId.BLOCK_COMMENT) {
+                if (candidate == null || candidate.text.length() < doc.text.length()) {
+                    candidate = doc;
+                }
+            }
+        }
+        return candidate;
+    }
+
+    private static void getDocText(CsmObject csmObject, List<DocCandidate> list){
         CsmOffsetable csmOffsetable = (CsmOffsetable) csmObject;
         TokenHierarchy<?> h = TokenHierarchy.create(csmOffsetable.getContainingFile().getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
         ts.move(csmOffsetable.getStartOffset());
 
-        String docText = null;
-
         OUTER:
         while (ts.movePrevious()) {
             switch (ts.token().id()) {
                 case LINE_COMMENT:
-                case BLOCK_COMMENT:
                 case WHITESPACE:
                 case NEW_LINE:
                     continue;
+                case BLOCK_COMMENT:
+                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                    continue;
                 case DOXYGEN_COMMENT:
-                    docText = ts.token().text().toString();
+                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
                     break OUTER;
                 case SEMICOLON:
-                case RBRACKET:
+                case RBRACE:
+                case PREPROCESSOR_DIRECTIVE:
                     break OUTER;
                 default:
                     continue;
             }
         }
-
-        if (docText == null) {
-            return null;
+        if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+            // K&K does not supported by model
+            //CsmFunctionDefinition def = (CsmFunctionDefinition) csmObject;
+            //CsmFunctionParameterList parameterList = def.getParameterList();
+            //CsmParameterList<CsmKnRName> kernighanAndRitchieParameterList = parameterList.getKernighanAndRitchieParameterList();
+            //if (kernighanAndRitchieParameterList != null) {
+                ts.move(csmOffsetable.getStartOffset());
+                OUTER2:
+                while (ts.moveNext()) {
+                    switch (ts.token().id()) {
+                        case LINE_COMMENT:
+                        case WHITESPACE:
+                        case NEW_LINE:
+                            continue;
+                        case BLOCK_COMMENT:
+                            list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                            continue;
+                        case DOXYGEN_COMMENT:
+                            list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                            break OUTER2;
+                        case LBRACE:
+                            break OUTER2;
+                        default:
+                            continue;
+                    }
+                }
+            //}
         }
-
-        String htmlDocText = doxygen2HTML(docText);
-
-        return new CompletionDocumentationImpl(htmlDocText);
     }
 
     static Collection<Token> lex(String text) {
@@ -343,12 +408,18 @@ public class DoxygenDocumentation {
         COMMAND, WHITESPACE, PAR_END, LINE_END, WORD//, LINE_START;
     }
 
-    private static final class CompletionDocumentationImpl implements CompletionDocumentation {
+    public static final class CompletionDocumentationImpl implements CompletionDocumentation {
 
         private final String text;
+        private final CppTokenId kind;
 
-        public CompletionDocumentationImpl(String text) {
+        public CompletionDocumentationImpl(String text, CppTokenId kind) {
+            this.kind = kind;
             this.text = text;
+        }
+
+        public CppTokenId getKind() {
+            return kind;
         }
 
         @Override
@@ -369,6 +440,16 @@ public class DoxygenDocumentation {
         @Override
         public Action getGotoSourceAction() {
             return null;
+        }
+    }
+
+    private static final class DocCandidate {
+        private final String text;
+        private final CppTokenId kind;
+
+        public DocCandidate(String text, CppTokenId kind) {
+            this.text = text;
+            this.kind = kind;
         }
     }
 }

@@ -57,15 +57,20 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * Implements condition of kind CsmCondition.Kind.DECLARATION
  * @author Vladimir Kvashin
  */
-public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
+public final class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
     
-    private VariableImpl declaration;
+    private VariableImpl<?> declaration;
     
-    public ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
+    private ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
         initDeclaration(ast, scope);
     }
 
+    public static ConditionDeclarationImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ConditionDeclarationImpl(ast, file, scope);
+    }
+
+    @Override
     public CsmCondition.Kind getKind() {
         return CsmCondition.Kind.DECLARATION;
     }
@@ -74,7 +79,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     private void initDeclaration(AST node, final CsmScope scope) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
             @Override
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern,
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
 		    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope passedScope) {
 		
                 ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, _extern,
@@ -91,14 +96,17 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
         renderer.renderVariable(node, null, null, false);
     }
 
+    @Override
     public CsmVariable getDeclaration() {
         return declaration;
     }
 
+    @Override
     public CsmExpression getExpression() {
         return null;
     }
 
+    @Override
     public CsmScope getScope() {
         return (declaration == null) ? getContainingFile() : declaration.getScope();
     }

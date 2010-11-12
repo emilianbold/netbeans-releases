@@ -974,20 +974,17 @@ public final class XMLFileSystem extends AbstractFileSystem {
         public InputStream getInputStream(String name)
         throws java.io.FileNotFoundException {
             InputStream is = null;
+            IOException ex = null;
 
             if (content == null) {
                 return new ByteArrayInputStream(new byte[] {  });
             }
 
             if (content instanceof String) {
-                URL absURL = createAbsoluteUrl(name);
-
                 try {
-                    is = absURL.openStream();
-                } catch (IOException iox) {
-                    FileNotFoundException x = new FileNotFoundException(name);
-                    ExternalUtil.copyAnnotation(x, iox);
-                    throw x;
+                    is = createAbsoluteConnection(name).getInputStream();
+                } catch (IOException x) {
+                    ex = x;
                 }
             }
 
@@ -996,10 +993,49 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
 
             if (is == null) {
-                throw new FileNotFoundException(name);
+                FileNotFoundException fnfe = new FileNotFoundException(name);
+                if (ex != null) {
+                    fnfe.initCause(ex);
+                }
+                throw fnfe;
             }
 
             return is;
+        }
+        
+        private URLConnection createAbsoluteConnection(String name) throws FileNotFoundException {
+            URLConnection conn = null;
+            IOException ex = null;
+            
+            if (!(content instanceof String)) {
+                return null;
+            }
+            String uri = (String) content;
+            URL[] uc = getLayers();
+            if (uc != null) {
+                for (URL u : uc) {
+                    try {
+                        conn = new URL(u, uri).openConnection();
+                        conn.connect();
+                        break;
+                    } catch (IOException iox) {
+                        conn = null;
+                        ex = iox;
+                    }
+
+                }
+            }
+            if (conn == null) {
+                try {
+                    conn = new URL(uri).openConnection();
+                    conn.connect();
+                } catch (IOException iox) {
+                    FileNotFoundException x = new FileNotFoundException(name);
+                    ExternalUtil.copyAnnotation(x, iox);
+                    throw x;
+                }
+            }
+            return conn;
         }
 
         private URL createAbsoluteUrl(String name) throws java.io.FileNotFoundException {
@@ -1033,9 +1069,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
             if (content instanceof String) {
                 try {
-                    URL absURL = createAbsoluteUrl(name);
-                    URLConnection urlConnection = absURL.openConnection();
-
+                    URLConnection urlConnection = createAbsoluteConnection(name);
                     try {
                         return urlConnection.getContentLength();
                     } finally {

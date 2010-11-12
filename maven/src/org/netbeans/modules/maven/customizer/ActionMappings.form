@@ -16,47 +16,48 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane2" alignment="0" pref="609" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="668" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
-                          <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                           <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
                           <Component id="lblGoals" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblMappings" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblDirectory" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtProfiles" pref="487" max="32767" attributes="2"/>
-                          <Component id="txtGoals" alignment="0" pref="487" max="32767" attributes="2"/>
+                          <Component id="txtGoals" alignment="0" pref="532" max="32767" attributes="2"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane1" pref="377" max="32767" attributes="1"/>
+                              <Component id="jScrollPane1" pref="392" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="comConfiguration" pref="389" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="txtProfiles" pref="532" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="487" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="comConfiguration" pref="344" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="txtDirectory" pref="288" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="btnDirectory" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jScrollPane3" alignment="0" pref="532" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -86,12 +87,6 @@
                   <Component id="lblGoals" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtGoals" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lblDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="txtDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblProfiles" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -104,14 +99,14 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane3" pref="53" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" pref="46" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cbRecursively" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbBuildWithDeps" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" pref="105" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -312,41 +307,6 @@
           <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.cbBuildWithDeps.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lblDirectory">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="txtDirectory"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.lblDirectory.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="txtDirectory">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.txtDirectory.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnDirectory">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.btnDirectory.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.btnDirectory.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDirectoryActionPerformed"/>
-      </Events>
     </Component>
   </SubComponents>
 </Form>

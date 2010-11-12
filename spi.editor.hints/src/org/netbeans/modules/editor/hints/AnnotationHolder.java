@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -84,10 +84,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -104,25 +107,34 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
+public final class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
 
     private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
     
-    final static Map<Severity, AttributeSet> COLORINGS;
+    // mimte-type --> coloring
+    private static Map<String, Map<Severity, AttributeSet>> COLORINGS =
+        Collections.synchronizedMap(new HashMap<String, Map<Severity, AttributeSet>>());
+    // mime-type --> listener
+    private static Map<String, LookupListener> COLORINGS_LISTENERS =
+        Collections.synchronizedMap(new HashMap<String, LookupListener>());
 
-    static {
-        COLORINGS = new EnumMap<Severity, AttributeSet>(Severity.class);
-        COLORINGS.put(Severity.ERROR, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.WARNING, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.VERIFIER, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.HINT, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
-    };
+    private static final AttributeSet DEFUALT_ERROR =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00));
+    private static final AttributeSet DEFUALT_WARNING =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00));
+    private static final AttributeSet DEFUALT_VERIFIER =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55));
+    private static final AttributeSet TOOLTIP =
+            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver());
 
     private Map<ErrorDescription, List<Position>> errors2Lines;
     private Map<Position, List<ErrorDescription>> line2Errors;
@@ -150,7 +162,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 if (editorCookie == null) {
                     LOG.log(Level.WARNING,
-                            "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file)); //NOI18N
+                            "No EditorCookie.Observable for file: {0}", FileUtil.getFileDisplayName(file)); //NOI18N
                 } else {
                     Document doc = editorCookie.getDocument();
 
@@ -167,6 +179,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         }
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc, EditorCookie.Observable editorCookie) {
         if (file == null)
             return ;
@@ -304,6 +317,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             if (line == null)
                 return ;
 
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset() + e.getLength());
+
+            if (endOffset < line.getOffset())
+                return;
+
             List<ErrorDescription> eds = getErrorsForLine(line, false);
 
             if (eds == null)
@@ -330,7 +348,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 getBag(doc).removeHighlights(rowStart, rowEnd, false);
             } catch (BadLocationException ex) {
-                throw (IOException) new IOException().initCause(ex);
+                throw new IOException(ex);
             }
 
             for (Position lineToken : modifiedLines) {
@@ -353,7 +371,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             while (current == null) {
                 index = findPositionGE(startOffset);
 
-                if (knownPositions.size() == 0) {
+                if (knownPositions.isEmpty()) {
                     break;
                 }
                 if (index == knownPositions.size()) {
@@ -366,6 +384,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 //nothing to do:
                 return;
             }
+
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset());
+
+            if (endOffset < current.getOffset())
+                return;
 
             assert index != (-1);
 
@@ -488,7 +511,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         doc.render(new Runnable() {
             public void run() {
-                synchronized (this) {
+                synchronized (AnnotationHolder.this) {
                     try {
                         if (doc.getLength() == 0) {
                             return ;
@@ -695,7 +718,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 bag.addAllHighlights(computeHighlights(doc, errorDescriptions).getHighlights(rowHighlightStart, rowHighlightEnd));
             }
         } catch (BadLocationException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         }
     }
 
@@ -723,7 +746,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     endOffset = beginOffset;
                     beginOffset = swap;
 
-                    LOG.warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString()); //NOI18N
+                    LOG.log(Level.WARNING, "Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: {0}", e.toString()); //NOI18N
                 }
 
                 int[] h = new int[] {beginOffset, endOffset};
@@ -758,7 +781,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             for (int[] h : currentHighlights) {
                 if (h[0] <= h[1]) {
-                    bag.addHighlight(h[0], h[1], COLORINGS.get(s));
+                    bag.addHighlight(h[0], h[1], getColoring(s, doc));
                 } else {
                     //see issue #112566
                     StringBuilder sb = new StringBuilder();
@@ -781,7 +804,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         sb.append("]"); //NOI18N
                     }
 
-                    LOG.warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString()); //NOI18N
+                    LOG.log(Level.WARNING, "Incorrect highlight computed, please reopen issue #112566 and attach the following output: {0}", sb.toString()); //NOI18N
                 }
             }
         }
@@ -789,6 +812,70 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         return bag;
     }
 
+    static AttributeSet getColoring(Severity s, Document d) {
+        final String mimeType = DocumentUtilities.getMimeType(d);
+        Map<Severity, AttributeSet> coloring = COLORINGS.get(mimeType);
+        if (coloring == null) {
+            coloring = new EnumMap<Severity, AttributeSet>(Severity.class);
+            Lookup lookup = MimeLookup.getLookup(mimeType);
+            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
+            
+            LookupListener lookupListener = COLORINGS_LISTENERS.get(mimeType);
+            if (lookupListener == null) {
+                lookupListener = new LookupListener() {
+                    @Override
+                    public void resultChanged(LookupEvent ev) {
+                        COLORINGS.remove(mimeType);
+                    }
+                };
+                COLORINGS_LISTENERS.put(mimeType, lookupListener);
+                result.addLookupListener(
+                    WeakListeners.create(
+                        LookupListener.class,
+                        lookupListener,
+                        result
+                    )
+                );
+            }
+            final Iterator<? extends FontColorSettings> it = result.allInstances().iterator();
+            AttributeSet error;
+            AttributeSet warning;
+            AttributeSet verifier;
+            if (it.hasNext()) {
+                FontColorSettings fcs = it.next();
+                AttributeSet attributes = fcs.getTokenFontColors("errors"); // NOI18N
+                if (attributes != null) {
+                    error = attributes;
+                } else {
+                    attributes = fcs.getTokenFontColors("error"); // NOI18N
+                    if (attributes != null) {
+                        error = attributes;
+                    } else {
+                        error = DEFUALT_ERROR;
+                    }
+                }
+                attributes = fcs.getTokenFontColors("warning"); // NOI18N
+                if (attributes != null) {
+                    warning = attributes;
+                    verifier = attributes;
+                } else {
+                    warning = DEFUALT_WARNING;
+                    verifier = DEFUALT_VERIFIER;
+                }
+            } else {
+                error = DEFUALT_ERROR;
+                warning = DEFUALT_WARNING;
+                verifier = DEFUALT_VERIFIER;
+            }
+            coloring.put(Severity.ERROR, AttributesUtilities.createComposite(error, TOOLTIP));
+            coloring.put(Severity.WARNING, AttributesUtilities.createComposite(warning, TOOLTIP));
+            coloring.put(Severity.VERIFIER, AttributesUtilities.createComposite(verifier, TOOLTIP));
+            coloring.put(Severity.HINT, TOOLTIP);
+            COLORINGS.put(mimeType, coloring);
+        }
+        return coloring.get(s);
+    }
+    
     private static int detectCollisions(int[] h1, int[] h2) {
         if (h2[1] < h1[0])
             return 0;//no collision
@@ -905,7 +992,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             updateVisibleRanges();
         } catch (BadLocationException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         } finally {
             long end = System.currentTimeMillis();
             Logger.getLogger("TIMER").log(Level.FINE, "Errors update for " + layer, //NOI18N
@@ -1052,7 +1139,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             while (current == null) {
                 index = findPositionGE(startOffset);
 
-                if (knownPositions.size() == 0) {
+                if (knownPositions.isEmpty()) {
                     break;
                 }
                 if (index == knownPositions.size()) {
@@ -1137,8 +1224,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         public int compare(Object o1, Object o2) {
             int left = -1;
 
-            if (o1 instanceof Reference) {
-                Position value = (Position) ((Reference) o1).get();
+            if (o1 instanceof Reference<?>) {
+                Position value = (Position) ((Reference<?>) o1).get();
 
                 if (value == null) {
                     //already collected...
@@ -1158,8 +1245,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             int right = -1;
 
-            if (o2 instanceof Reference) {
-                Position value = (Position) ((Reference) o2).get();
+            if (o2 instanceof Reference<?>) {
+                Position value = (Position) ((Reference<?>) o2).get();
 
                 if (value == null) {
                     //already collected...
@@ -1201,12 +1288,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                             return;
                         }
 
-                        AnnotationHolder h = AnnotationHolder.getInstance(((DataObject) source).getPrimaryFile());
+                        FileObject file = ((DataObject) source).getPrimaryFile();
+                        AnnotationHolder h = AnnotationHolder.getInstance(file);
 
                         if (h == null) {
                             LOG.log(Level.INFO,
-                                    "File: " + ((DataObject) source).getPrimaryFile().getPath() + // NOI18N
-                                    "\nStartOffset: " + startOffset); // NOI18N
+                                    "File: {0}\nStartOffset: {1}", new Object[]{file.getPath(), startOffset}); // NOI18N
                             return;
                         }
 

@@ -78,7 +78,8 @@ public final class APTDefineNode extends APTMacroBaseNode
     private static final byte IN_PARAMS = 2;
     private static final byte IN_BODY = 3;
     private static final byte IN_BODY_AFTER_SHARP = 4;
-    private static final byte ERROR = 5;
+    private static final byte IN_BODY_AFTER_LPAREN_AND_SHARP = 5;
+    private static final byte ERROR = 6;
     
     /** Copy constructor */
     /**package*/APTDefineNode(APTDefineNode orig) {
@@ -215,10 +216,15 @@ public final class APTDefineNode extends APTMacroBaseNode
                     // check for errors:
                     if (token.getType() == APTTokenTypes.SHARP) {
                         stateAndHashCode = IN_BODY_AFTER_SHARP;
+                        // there is a special case of escaping sharp by putting it between parens like '(#)'
+                        if (bodyTokens.size() > 0 && bodyTokens.get(bodyTokens.size() - 1).getType() == APTTokenTypes.LPAREN) {
+                            stateAndHashCode = IN_BODY_AFTER_LPAREN_AND_SHARP;
+                        }
                     }
                     bodyTokens.add(token);
                     break;
                 }
+                case IN_BODY_AFTER_LPAREN_AND_SHARP:
                 case IN_BODY_AFTER_SHARP:
                 {
                     bodyTokens.add(token);
@@ -229,8 +235,13 @@ public final class APTDefineNode extends APTMacroBaseNode
                         // error check: token after # must be parameter
                         stateAndHashCode = isInParamList(token) ? IN_BODY : ERROR;
                     } else {
-                        // only id is accepted after #
-                        stateAndHashCode = ERROR;
+                        // special case is '(#)' - sharp between parens
+                        if (stateAndHashCode == IN_BODY_AFTER_LPAREN_AND_SHARP && token.getType() == APTTokenTypes.RPAREN) {
+                            stateAndHashCode = IN_BODY;
+                        } else {
+                            // only id is accepted after #
+                            stateAndHashCode = ERROR;
+                        }
                     }                   
                     if (stateAndHashCode == ERROR) {
                         if (DebugUtils.STANDALONE) {

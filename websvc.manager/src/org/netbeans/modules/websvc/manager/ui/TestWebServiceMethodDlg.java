@@ -43,9 +43,7 @@
  */
 package org.netbeans.modules.websvc.manager.ui;
 
-//import com.sun.tools.ws.processor.model.java.JavaMethod;
-//import com.sun.tools.ws.processor.model.java.JavaParameter;
-//import com.sun.tools.ws.processor.model.java.JavaType;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -63,7 +61,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
-import java.util.LinkedList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -82,9 +79,9 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.TypeUtil;
-import org.netbeans.modules.websvc.manager.swing.outline.DefaultOutlineModel;
-import org.netbeans.modules.websvc.manager.swing.outline.Outline;
-import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
+import org.netbeans.swing.outline.DefaultOutlineModel;
+import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.OutlineModel;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -420,8 +417,23 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         methodThread.start();
     }
+    
+    public void methodFinished(final Object inReturnedObject,final LinkedList inParamList) {
+        if ( SwingUtilities.isEventDispatchThread()){
+            doMethodFinished(inReturnedObject, inParamList);
+        }
+        else {
+            SwingUtilities.invokeLater( new Runnable() {
+                
+                @Override
+                public void run() {
+                    doMethodFinished(inReturnedObject, inParamList);
+                }
+            });
+        }
+    }
 
-    public void methodFinished(Object inReturnedObject,LinkedList inParamList) {
+    private void doMethodFinished(Object inReturnedObject,LinkedList inParamList) {
         dialog.setCursor(normalCursor);
 
         showResults(inReturnedObject);
@@ -449,7 +461,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * Update the table since we may have changed some tree node values.
          */
-        parameterOutline.tableChanged(new TableModelEvent((TableModel)parameterOutline.getOutlineModel().getRowNodeModel()));
+        parameterOutline.tableChanged(new TableModelEvent(parameterOutline.getOutlineModel()));
 
     }
 
@@ -580,9 +592,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         this.getResultRootNode().add(node);
 
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
-        ResultRowModel rowModel = new ResultRowModel();
-        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME")); // NOI18N
+        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,
+                rowModel, false,NbBundle.getMessage(this.getClass(), 
+                "TYPE_COLUMN_NAME"));
         Outline returnOutline = new Outline(outlineModel);
         ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
         returnOutline.setDefaultEditor(Object.class,cellEditor);
@@ -630,8 +642,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
         rowModel = new TypeRowModel(this.getRuntimeClassLoader());
-        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME"));
+        OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(
+                treeModel,rowModel, false,NbBundle.getMessage(this.getClass(), 
+                "TYPE_COLUMN_NAME"));       // NOI18N
         Outline returnOutline = new Outline(outlineModel);
         TypeCellEditor cellEditor = new TypeCellEditor(getRuntimeClassLoader());
         returnOutline.setDefaultEditor(Object.class,cellEditor);

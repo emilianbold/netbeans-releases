@@ -265,9 +265,15 @@ abstract class KenaiRepositories {
             KenaiProject kenaiProject = null;
             try {
                 if(BugtrackingUtil.isNbRepository(url)) {
-                    OwnerInfo owner = KenaiUtil.getKenaiAccessor().getOwnerInfo(FileUtil.toFile(p.getProjectDirectory()));
-                    if(owner != null) {
-                        kenaiProject = KenaiUtil.getKenaiProject(url, owner.getOwner());
+                    KenaiAccessor kenaiAccessor = KenaiUtil.getKenaiAccessor();
+                    if(kenaiAccessor != null) {
+                        OwnerInfo owner = kenaiAccessor.getOwnerInfo(FileUtil.toFile(p.getProjectDirectory()));
+                        if(owner != null) {
+                            kenaiProject = KenaiUtil.getKenaiProject(url, owner.getOwner());
+                        }
+                    } else {
+                        // might be deactivated
+                        BugtrackingManager.LOG.fine("kenai accessor not available");
                     }
                 } else {
                     kenaiProject = KenaiUtil.getKenaiProjectForRepository(url);

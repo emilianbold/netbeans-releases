@@ -70,6 +70,10 @@ public final class LazyTryCatchStatementImpl extends LazyStatementImpl implement
         assert (ast.getType() == CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY);
     }
 
+    public static LazyTryCatchStatementImpl create(AST ast, CsmFile file, CsmFunction scope) {
+        return new LazyTryCatchStatementImpl(ast, file, scope);
+    }
+
     @Override
     protected AST resolveLazyStatement(TokenStream tokenStream) {
         int flags = CPPParserEx.CPP_CPLUSPLUS;

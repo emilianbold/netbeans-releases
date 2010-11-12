@@ -63,8 +63,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -89,6 +90,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -332,7 +334,7 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-        
+
         private InputOutput getIOTab(String name, boolean reuse) {
             Action[] actions = getActions(name);
             InputOutput tab;
@@ -425,14 +427,15 @@ public class ProjectActionSupport {
                 progressHandle.finish();
                 return;
             }
+            Type type = pae.getType();
 
             // Validate executable
-            if (pae.getType() == PredefinedType.RUN
-                    || pae.getType() == PredefinedType.DEBUG
-                    || pae.getType() == PredefinedType.DEBUG_STEPINTO
-                    || pae.getType() == PredefinedType.CHECK_EXECUTABLE
-                    || pae.getType() == PredefinedType.CUSTOM_ACTION) {
-                if (!checkExecutable(pae) || pae.getType() == PredefinedType.CHECK_EXECUTABLE) {
+            if (type == PredefinedType.RUN
+                    || type == PredefinedType.DEBUG
+                    || type == PredefinedType.DEBUG_STEPINTO
+                    || type == PredefinedType.CHECK_EXECUTABLE
+                    || type == PredefinedType.CUSTOM_ACTION) {
+                if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
@@ -440,13 +443,32 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             int consoleType = pae.getProfile().getConsoleType().getValue();
+            // Always show build log in regular output (IZ 191555)
+            // and the same for test run
+            // 191589 -  Regression in "C/C++ Unit Tests" framework
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN
+                    || type == PredefinedType.BUILD_TESTS || type == PredefinedType.TEST) {
+                if (consoleType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    // how can it be?
+                    // PAE creation already checked consoleType
+                    // probably someone dinamically changed profile
+                    assert false : "action " + type + " can not be run in " + pae.getProfile().getConsoleType().getName() + ". Use OutputWindow";
+                }
+                consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            }
+            
+            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                consoleType = RunProfile.getDefaultConsoleType();
+            }
             if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                 io = getRunIO(pae, reuseTabs);
                 if (io == null) {
                     io = ioTab;
+                } else if (io != ioTab && ioTab != null) {
+                    ioTab.getOut().close();
                 }
             }
-            if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
+            if (type == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
                 customHandler.execute(io);
             } else {
@@ -457,7 +479,7 @@ public class ProjectActionSupport {
                 //}
                 boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
+                    if (factory.canHandle(type, pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
                         handler.execute(io);
@@ -570,7 +592,8 @@ public class ProjectActionSupport {
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
                     executable = CndPathUtilitities.naturalize(executable);
-                    executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
                     executable = CndPathUtilitities.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
@@ -613,7 +636,7 @@ public class ProjectActionSupport {
                 if (conf != null && !conf.getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
-                        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                        PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
                         executable = mapper.getRemotePath(executable, true);
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
@@ -624,8 +647,8 @@ public class ProjectActionSupport {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
                     File file = new File(executable);
-                    if (!file.exists()) {
-                        file = new File(executable + ".exe"); // NOI18N
+                    if (!file.exists() && Utilities.isWindows()) {
+                        file = CndFileUtils.createLocalFile(executable + ".exe"); // NOI18N
                     }
                     if (!file.exists() || file.isDirectory()) {
                         ok = false;

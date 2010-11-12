@@ -96,6 +96,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
+import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -128,7 +130,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    public InjectablesPanel(final ElementHandle<? extends Element> var, 
+    public InjectablesPanel(final Object[] subject, 
             MetadataModel<WebBeansModel> metaModel, final WebBeansModel model,
             JavaHierarchyModel treeModel ) 
     {
@@ -160,7 +162,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
                     @Override
                     public Void run( WebBeansModel model ) throws Exception {
-                        initCDIContext( var, model  );
+                        initCDIContext( subject, model  );
                         return null;
                     }
                 });
@@ -175,7 +177,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
             }
         }
         else {
-            initCDIContext( var, model );
+            initCDIContext( subject, model );
         }
         
 
@@ -278,14 +280,14 @@ public class InjectablesPanel extends javax.swing.JPanel {
     /*
      * Normally the subject element is injection point.
      * In this case this method returns exactly injection point element
-     * from its handle as context.
+     * from its context.
      * Subclasses could override this behavior to return some other 
      * element . This element will be used for showing type and qualifiers. 
      */
-    protected Element getSubjectElement ( ElementHandle<? extends Element> context , 
+    protected Element getSubjectElement ( Element context , 
             WebBeansModel model)
     {
-        return context.resolve( model.getCompilationController() );
+        return context;
     }
     
     private void enterBusy() {
@@ -482,10 +484,16 @@ public class InjectablesPanel extends javax.swing.JPanel {
     }
     
 
-    private void initCDIContext( ElementHandle<? extends Element> handle,
-            WebBeansModel model )
-    {
-        Element context = getSubjectElement(handle, model);
+    private void initCDIContext( Object[] subject, WebBeansModel model ) {
+        Element element = null;
+        if ( subject[2] == InspectActionId.INJECTABLES ){
+            element = WebBeansActionHelper.findVariable(model, subject);
+        }
+        else {
+            element = ((ElementHandle<?>)subject[0]).resolve( 
+                    model.getCompilationController());
+        }
+        Element context = getSubjectElement(element, model);
         if ( context == null ){
             return;
         }

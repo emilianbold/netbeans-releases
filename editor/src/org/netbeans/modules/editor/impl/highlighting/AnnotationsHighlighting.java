@@ -86,6 +86,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
             this.annotations.addAnnotationsListener(WeakListeners.create(Annotations.AnnotationsListener.class, this, this.annotations));
             this.bag = new OffsetsBag(document, true);
             this.bag.addHighlightsChangeListener(this);
+            changedAll();
         } else {
             this.document = null;
             this.annotations = null;

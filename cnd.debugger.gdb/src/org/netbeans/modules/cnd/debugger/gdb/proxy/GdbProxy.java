@@ -337,18 +337,12 @@ public class GdbProxy {
      *
      * @param programParameters - command line options for the program
      */
-    public CommandBuffer exec_run(String programParameters) {
-        return engine.sendCommandEx("-exec-run " + programParameters); // NOI18N
+    public CommandBuffer exec_run() {
+        return engine.sendCommandEx("-exec-run"); // NOI18N
     }
 
-    /**
-     * Send "-exec-run" to the debugger
-     * This command starts execution of the inferior from the beginning.
-     * The inferior executes until either a breakpoint is encountered or
-     * the program exits.
-     */
-    public void exec_run() {
-        exec_run("");
+    public CommandBuffer exec_arguments(String args) {
+        return engine.sendCommandEx("-exec-arguments " + args); // NOI18N
     }
 
     /**

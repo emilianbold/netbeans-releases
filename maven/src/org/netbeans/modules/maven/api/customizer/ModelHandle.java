@@ -56,11 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.model.pom.Activation;
-import org.netbeans.modules.maven.model.pom.ActivationProperty;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Profile;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,20 +73,12 @@ public final class ModelHandle {
     public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
     public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
     
-    public static final String PROFILE_PUBLIC = "netbeans-public"; //NOI18N
-    public static final String PROFILE_PRIVATE = "netbeans-private"; //NOI18N
-    public static final String PROPERTY_PROFILE = "netbeans.execution"; //NOI18N
-
     private final MavenProjectPropsImpl auxiliaryProps;
     private final POMModel model;
     private final MavenProject project;
-    private final ProfilesModel profiles;
     private final Map<String, ActionToGoalMapping> mappings;
     private final Map<ActionToGoalMapping, Boolean> modMappings;
-    private Profile publicProfile;
-    private org.netbeans.modules.maven.model.profile.Profile privateProfile;
     private List<Configuration> configurations;
-    private boolean modProfiles = false;
     private boolean modModel = false;
     private boolean modConfig = false;
     private Configuration active;
@@ -103,13 +91,13 @@ public final class ModelHandle {
     
     static class AccessorImpl extends CustomizerProviderImpl.ModelAccessor {
         
-         public ModelHandle createHandle(POMModel model, ProfilesModel prof,
+         public @Override ModelHandle createHandle(POMModel model,
                                         MavenProject proj, 
                                         Map<String, ActionToGoalMapping> mapp, 
                                         List<ModelHandle.Configuration> configs,
                                         ModelHandle.Configuration active,
                                         MavenProjectPropsImpl auxProps) {
-            return new ModelHandle(model, prof, proj, mapp, configs, active, auxProps);
+            return new ModelHandle(model, proj, mapp, configs, active, auxProps);
         }
         
          public void assign() {
@@ -120,14 +108,12 @@ public final class ModelHandle {
     
     }
     
-    /** Creates a new instance of ModelHandle */
-    private ModelHandle(POMModel mdl, ProfilesModel profile, MavenProject proj,
+    private ModelHandle(POMModel mdl, MavenProject proj,
                         Map<String, ActionToGoalMapping> mappings,
                         List<Configuration> configs, Configuration active,
                         MavenProjectPropsImpl auxProps) {
         model = mdl;
         project = proj;
-        this.profiles = profile;
         this.mappings = mappings;
         this.modMappings = new HashMap<ActionToGoalMapping, Boolean>();
         for (ActionToGoalMapping map : mappings.values()) {
@@ -144,93 +130,6 @@ public final class ModelHandle {
      */
     public POMModel getPOMModel() {
         return model;
-    }
-    
-    /**
-     * profiles.xml model
-     * @return 
-     */
-    public ProfilesModel getProfileModel() {
-        return profiles;
-    }
-    
-    /**
-     * warning: can update the model, for non-updating one for use in value getters
-     * use getNetbeansPublicProfile(false)
-     * @return
-     */
-    public Profile getNetbeansPublicProfile() {
-        return getNetbeansPublicProfile(true);
-    }
-    
-    public Profile getNetbeansPublicProfile(boolean addIfNotPresent) {
-        if (publicProfile == null) {
-            List<Profile> lst = model.getProject().getProfiles();
-            if (lst != null) {
-                for (Profile profile : lst) {
-                    if (PROFILE_PUBLIC.equals(profile.getId())) {
-                        publicProfile = profile;
-                        break;
-                    }
-                }
-            }
-            if (publicProfile == null && addIfNotPresent) {
-                publicProfile = model.getFactory().createProfile();
-                publicProfile.setId(PROFILE_PUBLIC);
-                Activation act = model.getFactory().createActivation();
-                ActivationProperty prop = model.getFactory().createActivationProperty();
-                prop.setName(PROPERTY_PROFILE);
-                prop.setValue("true"); //NOI18N
-                act.setActivationProperty(prop);
-                publicProfile.setActivation(act);
-                publicProfile.setBuildBase(model.getFactory().createBuildBase());
-                model.getProject().addProfile(publicProfile);
-                markAsModified(model);
-            }
-        }
-        if (publicProfile == null && !addIfNotPresent) {
-            return model.getFactory().createProfile();
-        }
-        return publicProfile;
-    }
-    /**
-     * warning: can update the model, for non-updating one for use in value getters
-     * use getNetbeansPrivateProfile(false)
-     * @return 
-     */
-    public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile() {
-        return getNetbeansPrivateProfile(true);
-    }
-    
-    public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile(boolean addIfNotPresent) {
-        if (privateProfile == null) {
-            List<org.netbeans.modules.maven.model.profile.Profile> lst = profiles.getProfilesRoot().getProfiles();
-            if (lst != null) {
-                for (org.netbeans.modules.maven.model.profile.Profile profile : lst) {
-                    if (PROFILE_PRIVATE.equals(profile.getId())) {
-                        privateProfile = profile;
-                        break;
-                    }
-                }
-            }
-            if (privateProfile == null && addIfNotPresent) {
-                privateProfile = profiles.getFactory().createProfile();
-                privateProfile.setId(PROFILE_PRIVATE);
-                org.netbeans.modules.maven.model.profile.Activation act = profiles.getFactory().createActivation();
-                org.netbeans.modules.maven.model.profile.ActivationProperty prop = profiles.getFactory().createActivationProperty();
-                prop.setName(PROPERTY_PROFILE);
-                prop.setValue("true"); //NOI18N
-                act.setActivationProperty(prop);
-                privateProfile.setActivation(act);
-                profiles.getProfilesRoot().addProfile(privateProfile);
-                markAsModified(profiles);
-            }
-        }
-        if (privateProfile == null && !addIfNotPresent) {
-            // just return something to prevent npes.. won't be live though..
-            return profiles.getFactory().createProfile();
-        }
-        return privateProfile;
     }
     
     /**
@@ -317,22 +216,6 @@ public final class ModelHandle {
     public static NetbeansActionMapping getActiveMapping(String action, Project project) {
         return ActionToGoalUtils.getActiveMapping(action, project, null);
     }
-
-    /**
-     * @deprecated will not set the value, configurations are always enbled now.
-     * @param bool
-     */
-    @Deprecated
-    public void setConfigurationsEnabled(boolean bool) {
-    }
-    
-    /**
-     * @deprecated configurations are always enbled now.
-     */
-    @Deprecated
-    public boolean isConfigurationsEnabled() {
-        return true;
-    }
     
     public List<Configuration> getConfigurations() {
         return configurations;
@@ -365,8 +248,6 @@ public final class ModelHandle {
     public boolean isModified(Object obj) {
         if (modMappings.containsKey(obj)) {
             return modMappings.get(obj); 
-        } else if (obj == profiles) {
-            return modProfiles;
         } else if (obj == model) {
             return modModel;
         } else if (obj == configurations || configurations.contains(obj)) {
@@ -378,13 +259,11 @@ public final class ModelHandle {
     /**
      * always after modifying the models, mark them as modified.
      * without the marking, the particular file will not be saved.
-     * @param obj either getPOMModel(), getActionMappings() or getProfileModel()
+     * @param obj either getPOMModel() or getActionMappings()
      */ 
     public void markAsModified(Object obj) {
         if (modMappings.containsKey(obj)) {
             modMappings.put((ActionToGoalMapping)obj, Boolean.TRUE);
-        } else if (obj == profiles) {
-            modProfiles = true;
         } else if (obj == model) {
             modModel = true;
         } else if (obj == configurations || configurations.contains(obj)) {
@@ -398,7 +277,6 @@ public final class ModelHandle {
     public static Configuration createProfileConfiguration(String id) {
         Configuration conf = new Configuration();
         conf.setId(id);
-        conf.setDisplayName(id);
         conf.setProfileBased(true);
         return conf;
     }
@@ -406,7 +284,6 @@ public final class ModelHandle {
     public static Configuration createDefaultConfiguration() {
         Configuration conf = new Configuration();
         conf.setId(M2Configuration.DEFAULT);
-        conf.setDisplayName(org.openide.util.NbBundle.getMessage(ModelHandle.class, "TXT_DefautlConfig"));
         conf.setDefault(true);
         return conf;
     }
@@ -414,7 +291,6 @@ public final class ModelHandle {
     public static Configuration createCustomConfiguration(String id) {
         Configuration conf = new Configuration();
         conf.setId(id);
-        conf.setDisplayName(id);
         return conf;
     }
     
@@ -427,7 +303,6 @@ public final class ModelHandle {
         private boolean profileBased = false;
         private boolean defaul = false;
 
-        private String displayName;
         private List<String> activatedProfiles;
         private boolean shared = false;
         
@@ -464,13 +339,6 @@ public final class ModelHandle {
                 return NbBundle.getMessage(ModelHandle.class, "CustomConfig1", id, Arrays.toString(getActivatedProfiles().toArray()));
             }
             return NbBundle.getMessage(ModelHandle.class, "CustomConfig2", id);
-        }
-
-        public void setDisplayName(String displayName) {
-            if (isProfileBased()) {
-                return;
-            }
-            this.displayName = displayName;
         }
 
         public String getId() {

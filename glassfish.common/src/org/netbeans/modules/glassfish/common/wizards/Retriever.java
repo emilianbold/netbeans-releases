@@ -166,6 +166,7 @@ public class Retriever implements Runnable {
     private volatile boolean shutdown;
     private volatile int status;
     
+    @Override
     public void run() {
         // Set name of thread for easier debugging in case of deadlocks, etc.
         Thread.currentThread().setName("Downloader"); // NOI18N
@@ -185,7 +186,7 @@ public class Retriever implements Runnable {
             setDownloadState(STATUS_CONNECTING);
             targetUrl = new URL(getDownloadLocation());
 
-            Logger.getLogger("glassfish").fine("Downloading from " + targetUrl); // NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "Downloading from {0}", targetUrl); // NOI18N
             connection = targetUrl.openConnection();
             connection.setConnectTimeout(ZIP_DOWNLOAD_TIMEOUT);
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
@@ -213,9 +214,9 @@ public class Retriever implements Runnable {
             setDownloadState(STATUS_FAILED, "Badly formed URL", ex); // NOI18N
         } catch(IOException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
-            Logger.getLogger("glassfish").log(Level.FINE, "backupDir =="+backupDir);  //NOI18N
-            Logger.getLogger("glassfish").log(Level.FINE, "connection == "+connection);  //NOI18N
-            Logger.getLogger("glassfish").log(Level.FINE, "in == "+in);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "backupDir =={0}", backupDir);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "connection == {0}", connection);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "in == {0}", in);  //NOI18N
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
             updateMessage(
                     in != null ?
@@ -249,7 +250,7 @@ public class Retriever implements Runnable {
             while(tries++ < LOCATION_TRIES) {
                 try {
                     URL url = new URL(locationUrl);
-                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get download URL suffix from " + url); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINE, "Attempt {0} to get download URL suffix from {1}", new Object[]{tries, url}); // NOI18N
                     conn = url.openConnection();
                     conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
@@ -317,7 +318,6 @@ public class Retriever implements Runnable {
                         long lastUpdate = 1;
                         while(!shutdown && (len = entryStream.read(buffer)) >= 0) {
                             bytesRead += len;
-                            totalBytesRead += len;
                             long update = System.currentTimeMillis() / 333;
                             if(update != lastUpdate) {
                                 if (filelen < 1) {
@@ -337,6 +337,7 @@ public class Retriever implements Runnable {
                             try { os.close(); } catch(IOException ex) { }
                         }
                     }
+                    totalBytesRead += entry.getCompressedSize();
                 }
             }
         } finally {

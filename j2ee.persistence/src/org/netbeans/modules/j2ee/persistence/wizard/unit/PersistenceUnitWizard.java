@@ -243,6 +243,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
             punit.setTransactionType("RESOURCE_LOCAL");
+            // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            // See issue 142575 - desc 10, and issue 180810
+            if (!Util.isJavaSE(project)) {
+                punit.setExcludeUnlistedClasses(false);
+            }
         }
         useModelgen = punit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit;
         // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>

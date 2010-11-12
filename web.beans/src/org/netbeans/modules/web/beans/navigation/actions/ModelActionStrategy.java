@@ -53,9 +53,9 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-interface ModelActionStrategy {
+public interface ModelActionStrategy {
 
-    enum InspectActionId {
+    public enum InspectActionId {
         OBSERVERS,
         EVENTS,
         INJECTABLES;

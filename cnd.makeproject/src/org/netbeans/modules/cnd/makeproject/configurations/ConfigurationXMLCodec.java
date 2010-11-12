@@ -49,7 +49,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -80,7 +85,10 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -95,7 +103,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String tag;
     private FileObject projectDirectory;
     private int descriptorVersion = -1;
-    private MakeConfigurationDescriptor projectDescriptor;
+    private final MakeConfigurationDescriptor projectDescriptor;
+    private final RemoteProject remoteProject;
     private List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
@@ -129,6 +138,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         this.tag = tag;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
+        this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
         this.relativeOffset = relativeOffset;
     }
 
@@ -256,6 +266,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+                    String flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
+                    if (flavor != null) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.values()[Integer.parseInt(flavor)]);
+                    }
                 }
             } else {
                 System.err.println("Not found item: " + path);
@@ -429,6 +443,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
                     ExecutionEnvironmentFactory.fromUniqueID(currentText));
+        } else if (element.equals(FIXED_SYNC_FACTORY_ELEMENT)) {
+            RemoteSyncFactory fixedSyncFactory = RemoteSyncFactory.fromID(currentText);
+            CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N
+            ((MakeConfiguration) currentConf).setFixedRemoteSyncFactory(fixedSyncFactory);
+        } else if (element.equals(REMOTE_MODE_ELEMENT)) {
+            // XXX:fullRemote: move to project-level
+            RemoteProject.Mode mode = RemoteProject.Mode.valueOf(currentText);
+            CndUtils.assertNotNull(mode, "Can not restore remote mode " + currentText); //NOI18N
+            ((MakeConfiguration) currentConf).setRemoteMode(mode);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
                 return; // ignore
@@ -500,7 +523,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getOutput().setValue(path);
         } else if (element.equals(FOLDER_PATH_ELEMENT)) { // FIXUP: < version 5
-            currentFolder.addItem(new Item(getString(currentText)));
+            currentFolder.addItem(createItem(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
@@ -518,14 +541,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
-            currentFolder.addItem(new Item(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ITEM_NAME_ELEMENT)) {
             String path = currentFolder.getRootPath() + '/' + currentText;
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));
-            currentFolder.addItem(new Item(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
             currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
@@ -862,6 +885,24 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
     }
 
+    private Item createItem(String path) {
+        Project project = projectDescriptor.getProject();
+        FileObject projectDirFO = project.getProjectDirectory();
+        if (!path.startsWith("/")) { // NOI18N
+            return new Item(path); //XXX:fullRemote
+        }
+        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
+            if (itemFO == null) {
+                return new Item(path); //XXX:fullRemote
+            } else {
+                return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
+            }
+        } else {
+            return new Item(path); //XXX:fullRemote convert this to use of file items as well
+        }
+    }
+
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) // NOI18N
         {
@@ -890,5 +931,37 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             return s;
         }
         return res;
+    }
+
+    @Override
+    protected void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+        xes.elementOpen(TOOLS_SET_ELEMENT);
+        RemoteSyncFactory fixedSyncFactory = makeConfiguration.getFixedRemoteSyncFactory();
+        if (fixedSyncFactory != null) {
+            xes.element(FIXED_SYNC_FACTORY_ELEMENT, fixedSyncFactory.getID());
+        }
+        // XXX:fullRemote: move to project-level
+        xes.element(REMOTE_MODE_ELEMENT, makeConfiguration.getRemoteMode().name());
+        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
+        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
+            xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
+        }
+        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault()) {
+            xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
+        }
+        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault()) {
+            xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
+        }
+        if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
+            xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
+        }
+        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
+        if (makeConfiguration.getDependencyChecking().getModified()) {
+            xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
+        }
+        if (makeConfiguration.getRebuildPropChanged().getModified()) {
+            xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
+        }
+        xes.elementClose(TOOLS_SET_ELEMENT);
     }
 }

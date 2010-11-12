@@ -44,7 +44,10 @@
 package org.netbeans.modules.cnd.api.model.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -82,6 +85,10 @@ public final class CsmTracer {
         this.printStream = printStream;
     }
 
+    public CsmTracer(Writer writer) {
+        this.printStream = new PrintStream(new WriterOutputStream(writer));
+    }
+    
     public void setDeep(boolean deep) {
         this.deep = deep;
     }
@@ -956,6 +963,17 @@ public final class CsmTracer {
                 sb.append(' ');
                 sb.append(getBriefClassName(member));
                 print(sb.toString());
+                // special check for inner classes with external class definitions
+                if (member.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) {
+                    final CsmClassForwardDeclaration fwdClass = (CsmClassForwardDeclaration) member;
+                    CsmClass csmClass = fwdClass.getCsmClass();
+                    if (csmClass != null && cls.equals(csmClass.getScope())) {
+                        indent();
+                        dumpModel(csmClass);
+                        unindent();
+                        continue;
+                    }
+                }            
             }
         }
         unindent();
@@ -1110,4 +1128,35 @@ public final class CsmTracer {
             }
         }
     }
+    
+    private final static class WriterOutputStream extends OutputStream {
+
+        private final Writer writer;
+
+        public WriterOutputStream(Writer writer) {
+            this.writer = writer;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            // It's tempting to use writer.write((char) b), but that may get the encoding wrong  
+            // This is inefficient, but it works  
+            write(new byte[]{(byte) b}, 0, 1);
+        }
+
+        @Override
+        public void write(byte b[], int off, int len) throws IOException {
+            writer.write(new String(b, off, len));
+        }
+
+        @Override
+        public void flush() throws IOException {
+            writer.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            writer.close();
+        }
+    }    
 }

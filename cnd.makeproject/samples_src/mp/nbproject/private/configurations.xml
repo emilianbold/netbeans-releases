@@ -4,6 +4,9 @@
   <defaultConf>1</defaultConf>
   <confs>
     <conf name="Debug" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
       <runprofile version="5">
@@ -19,6 +22,9 @@
       </threadanalysis>
     </conf>
     <conf name="Debug_mp" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
       <runprofile version="5">
@@ -34,6 +40,9 @@
       </threadanalysis>
     </conf>
     <conf name="Release" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
       <runprofile version="5">
@@ -49,6 +58,9 @@
       </threadanalysis>
     </conf>
     <conf name="Release_mp" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+      </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
       <runprofile version="5">

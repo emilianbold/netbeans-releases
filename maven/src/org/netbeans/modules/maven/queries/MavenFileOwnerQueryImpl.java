@@ -174,6 +174,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             String key = groupID + ':' + artifactID; // org.apache.commons:commons-math
             String ownerURI = prefs().get(key, null);
             if (ownerURI != null) {
+                boolean stale = true;
                 try {
                     FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
                     if (projectDir != null && projectDir.isFolder()) {
@@ -188,6 +189,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                                         return p;
                                     } else {
                                         LOG.log(Level.FINE, "Mismatch on version {0} in {1}", new Object[] {model.getVersion(), ownerURI});
+                                        stale = false; // we merely remembered another version
                                     }
                                 } else {
                                     LOG.log(Level.FINE, "Mismatch on group and/or artifact ID in {0}", ownerURI);
@@ -206,7 +208,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                 } catch (URISyntaxException x) {
                     LOG.log(Level.INFO, null, x);
                 }
-                prefs().remove(key); // stale
+                if (stale) {
+                    prefs().remove(key); // stale
+                }
             } else {
                 LOG.log(Level.FINE, "No known owner for {0}", key);
             }

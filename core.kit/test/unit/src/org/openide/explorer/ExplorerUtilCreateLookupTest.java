@@ -55,7 +55,7 @@ import org.openide.nodes.*;
  *
  * @author Jaroslav Tulach
  */
-public class ExplorerUtilCreateLookupTest extends org.openide.windows.TopComponentGetLookupTest {
+public class ExplorerUtilCreateLookupTest extends org.openide.explorer.windows.TopComponentGetLookupTest {
     public ExplorerUtilCreateLookupTest(String testName) {
         super(testName);
     }
@@ -96,6 +96,7 @@ public class ExplorerUtilCreateLookupTest extends org.openide.windows.TopCompone
         ExTC e = new ExTC ();
         
         top = e;
+        get = e;
         lookup = ExplorerUtils.createLookup (e.em, e.getActionMap ());
     }
     

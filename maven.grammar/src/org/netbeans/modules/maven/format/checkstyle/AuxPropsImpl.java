@@ -40,7 +40,6 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
 package org.netbeans.modules.maven.format.checkstyle;
 
 import org.codehaus.plexus.util.IOUtil;
@@ -57,15 +56,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -73,7 +71,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -83,7 +81,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
-@org.netbeans.spi.project.ProjectServiceProvider(projectType="org-netbeans-modules-maven", service=AuxiliaryProperties.class)
+@ProjectServiceProvider(projectType="org-netbeans-modules-maven", service=AuxiliaryProperties.class)
 public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener {
     private final Project project;
 
@@ -103,18 +101,26 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         NbMavenProject.addPropertyChangeListener(prj, this);
     }
 
+    private FileObject cacheDir() throws IOException {
+        return ProjectUtils.getCacheDirectory(project, AuxPropsImpl.class);
+    }
+
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
         assert Thread.holdsLock(this);
-        CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
-        return FileUtil.copyFile(fo, prov.getCacheDirectory(), "checkstyle-checker", "xml");
+        FileObject cacheDir = cacheDir();
+        FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
+        if (file != null) {
+            file.delete();
+        }
+        return FileUtil.copyFile(fo, cacheDir, "checkstyle-checker", "xml");
     }
 
     private FileObject copyToCacheDir(InputStream in) throws IOException {
         assert Thread.holdsLock(this);
-        CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
-        FileObject file = prov.getCacheDirectory().getFileObject("checkstyle-checker", "xml");
+        FileObject cacheDir = cacheDir();
+        FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
         if (file == null) {
-            file = prov.getCacheDirectory().createData("checkstyle-checker", "xml");
+            file = cacheDir.createData("checkstyle-checker", "xml");
         }
         InputStream inst = in;
         OutputStream outst = null;
@@ -130,8 +136,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
     private Properties convert() {
         try {
-            CacheDirectoryProvider prov = project.getLookup().lookup(CacheDirectoryProvider.class);
-            FileObject cachedFile = prov.getCacheDirectory().getFileObject("checkstyle-checker", "xml");
+            FileObject cachedFile = cacheDir().getFileObject("checkstyle-checker.xml");
             boolean hasCached = cachedFile != null && cache != null;
             ModuleConvertor mc = new ModuleConvertor();
             FileObject fo = project.getProjectDirectory().getFileObject("target/checkstyle-checker.xml");
@@ -170,7 +175,9 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                         FileObject root = FileUtil.getArchiveRoot(fileFO);
                                         if (root != null) {
                                             fo = root.getFileObject(loc);
-                                            if (fo != null) break;
+                                            if (fo != null) {
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -223,13 +230,10 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     static boolean definesCheckStyle(MavenProject prj) {
-        if (prj.getReportPlugins() != null) {
-            for (Object obj : prj.getReportPlugins()) {
-                ReportPlugin plug = (ReportPlugin) obj;
-                if (Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId()) &&
-                        Constants.PLUGIN_CHECKSTYLE.equals(plug.getArtifactId())) { //NOI18N
-                    return true;
-                }
+        for (ReportPlugin plug : prj.getReportPlugins()) {
+            if (Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId()) &&
+                    Constants.PLUGIN_CHECKSTYLE.equals(plug.getArtifactId())) { //NOI18N
+                return true;
             }
         }
         return false;
@@ -251,7 +255,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                 final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
 
                 //TODO: check alternative for deprecated maven components
-                final MavenProjectBuilder builder = (MavenProjectBuilder) online.lookupComponent(MavenProjectBuilder.class);
+                final MavenProjectBuilder builder = online.lookupComponent(MavenProjectBuilder.class);
                 assert builder !=null : "MavenProjectBuilder component not found in maven";
 
                 for (Dependency d : deps) {
@@ -283,15 +287,17 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return cpFiles;
     }
 
-    synchronized Properties getCache() {
+    Properties getCache() {
+        String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+        synchronized (this) {
         if (cache == null || recheck) {
-            String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
             if (enabled != null && Boolean.parseBoolean(enabled)) {
                 cache = convert();
             } else {
                 cache = new Properties();
             }
             recheck = false;
+        }
         }
         return cache;
     }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
+import com.sun.jmx.remote.internal.ArrayQueue;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -68,7 +70,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public String getBeanClass(String beanName, FileObject context) {
-        for (FacesManagedBean bean : getManagedBeans(context)) {
+        for (FacesManagedBean bean : getJsfManagedBeans(context)) {
             if (bean.getManagedBeanName().equals(beanName)) {
                 return bean.getManagedBeanClass();
             }
@@ -78,7 +80,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public String getBeanName(String clazz, FileObject context) {
-        for (FacesManagedBean bean : getManagedBeans(context)) {
+        for (FacesManagedBean bean : getJsfManagedBeans(context)) {
             if (bean.getManagedBeanClass().equals(clazz)) {
                 return bean.getManagedBeanName();
             }
@@ -88,7 +90,50 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public String getReferredExpression(Snapshot snapshot, final int offset) {
-        final String[] result = new String[1];
+        List<JsfVariableContext> allJsfVariables = getAllJsfVariables(snapshot, offset);
+        return allJsfVariables.isEmpty() ? null : allJsfVariables.get(0).getVariableValue();
+    }
+
+    @Override
+    public List<VariableInfo> getManagedBeans(FileObject context) {
+        List<FacesManagedBean> beans = getJsfManagedBeans(context);
+        List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
+        for (FacesManagedBean bean : beans) {
+            result.add(new VariableInfo(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+        }
+        return result;
+    }
+
+    @Override
+    public List<VariableInfo> getVariables(Snapshot snapshot, final int offset) {
+        List<JsfVariableContext> allJsfVariables = getAllJsfVariables(snapshot, offset);
+        List<VariableInfo> result = new ArrayList<VariableInfo>(allJsfVariables.size());
+        for (JsfVariableContext jsfVariable : allJsfVariables) {
+            result.add(new VariableInfo(jsfVariable.getVariableName(), jsfVariable.getVariableValue()));
+        }
+        return result;
+    }
+
+    @Override
+    public List<VariableInfo> getBeansInScope(String scope, FileObject context) {
+       List<VariableInfo> result = new ArrayList<VariableInfo>();
+       for (FacesManagedBean bean : getJsfManagedBeans(context)) {
+           if (scope.equals(bean.getManagedBeanScopeString())) {
+                result.add(new VariableInfo(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+           }
+       }
+       return result;
+    }
+
+    private List<FacesManagedBean> getJsfManagedBeans(FileObject context) {
+        WebModule webModule = WebModule.getWebModule(context);
+        return webModule != null 
+                ? JSFBeanCache.getBeans(webModule)
+                : Collections.<FacesManagedBean>emptyList();
+    }
+
+    private List<JsfVariableContext> getAllJsfVariables(Snapshot snapshot, final int offset) {
+        final List<JsfVariableContext> result = new ArrayList<JsfVariableContext>();
         try {
             ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
 
@@ -99,21 +144,15 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                     if (parseResult instanceof HtmlParserResult) {
                         JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) parseResult);
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(offset, false);
-                        result[0] = contexts.isEmpty() ? null : contexts.get(0).getVariableValue();
-                        return;
+                        result.addAll(contexts);
                     }
                 }
             });
         } catch (ParseException e) {
             Exceptions.printStackTrace(e);
         }
-        return result[0];
+        return result;
     }
 
-    private List<FacesManagedBean> getManagedBeans(FileObject context) {
-        WebModule webModule = WebModule.getWebModule(context);
-        return webModule != null 
-                ? JSFBeanCache.getBeans(webModule)
-                : Collections.<FacesManagedBean>emptyList();
-    }
+
 }

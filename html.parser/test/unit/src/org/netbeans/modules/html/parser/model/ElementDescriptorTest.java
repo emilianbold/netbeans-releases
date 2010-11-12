@@ -42,8 +42,15 @@
 
 package org.netbeans.modules.html.parser.model;
 
+import java.net.URL;
 import java.util.Collection;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.Documentation;
+import org.netbeans.modules.html.parser.HtmlTagProvider;
 
 /**
  *
@@ -55,6 +62,14 @@ public class ElementDescriptorTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Documentation.setupDocumentationForUnitTests();
+    }
+
+
+
     public void testNamePattern() {
         assertEquals("title", Attribute.parseName("title"));
         assertEquals("href", Attribute.parseName("attr-link-href"));
@@ -65,10 +80,7 @@ public class ElementDescriptorTest extends NbTestCase {
         ElementDescriptor body = ElementDescriptor.forName("body");
         assertNotNull(body);
 
-        Link link = body.getNameLink();
-        assertNotNull(link);
-
-        assertEquals("body", link.getName());
+        assertEquals("body", body.getName());
 
         Collection<ElementDescriptor> directChildren = body.getChildrenElements();
         assertNotNull(directChildren);
@@ -85,10 +97,7 @@ public class ElementDescriptorTest extends NbTestCase {
         ElementDescriptor html = ElementDescriptor.forName("html");
         assertNotNull(html);
 
-        Link link = html.getNameLink();
-        assertNotNull(link);
-
-        assertEquals("html", link.getName());
+        assertEquals("html", html.getName());
 
         Collection<ElementDescriptor> directChildren = html.getChildrenElements();
         assertNotNull(directChildren);
@@ -106,10 +115,7 @@ public class ElementDescriptorTest extends NbTestCase {
         ElementDescriptor head = ElementDescriptor.forName("head");
         assertNotNull(head);
 
-        Link link = head.getNameLink();
-        assertNotNull(link);
-
-        assertEquals("head", link.getName());
+        assertEquals("head", head.getName());
 
         Collection<ElementDescriptor> directChildren = head.getChildrenElements();
         assertNotNull(directChildren);
@@ -133,5 +139,84 @@ public class ElementDescriptorTest extends NbTestCase {
         assertNotNull(title);
         assertFalse(title.isEmpty());
     }
-  
+
+    public void testMathML() {
+        ElementDescriptor math = ElementDescriptor.forName("math");
+        assertNotNull(math);
+
+        assertEquals("math", math.getName());
+        Collection<ContentType> cats = math.getCategoryTypes();
+
+        assertTrue(cats.contains(ContentType.EMBEDDED));
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertTrue(cats.contains(ContentType.PHRASING));
+    }
+
+    public void testSVG() {
+        ElementDescriptor math = ElementDescriptor.forName("ellipse");
+        assertNotNull(math);
+
+        assertEquals("ellipse", math.getName());
+        Collection<ContentType> cats = math.getCategoryTypes();
+
+        assertTrue(cats.contains(ContentType.EMBEDDED));
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertTrue(cats.contains(ContentType.PHRASING));
+
+    }
+
+    public void testAnnotation_XML() {
+        ElementDescriptor e = ElementDescriptor.forName("annotation_xml");
+        assertNotNull(e);
+
+        assertEquals("annotation-xml", e.getName());
+        assertSame(HtmlTagType.MATHML, e.getTagType());
+
+    }
+
+    public void testAttributes() {
+        Collection<String> attrs = ElementDescriptor.getAttrNamesForElement("div"); //only global attrs
+
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
+
+        attrs = ElementDescriptor.getAttrNamesForElement("meta"); //some specific attrs as well
+
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+        assertTrue(attrs.contains("http-equiv"));
+
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
+    }
+
+    public void testAllElementsHasHelpContent() {
+        for(ElementDescriptor d : ElementDescriptor.values()) {
+            if(d.getTagType() != HtmlTagType.HTML) {
+                continue;
+            }
+//            System.err.println("tag: " + d.getName());
+            HtmlTag tag = HtmlTagProvider.getTagForElement(d.getName());
+            assertNotNull(tag);
+
+            HelpItem item = tag.getHelp();
+            assertNotNull(item);
+
+            URL helpUrl = item.getHelpURL();
+            assertNotNull(helpUrl);
+
+            HelpResolver resolver = item.getHelpResolver();
+            assertNotNull(resolver);
+
+            String helpContent = resolver.getHelpContent(helpUrl);
+            assertNotNull(String.format("No help content for tag %s, help url is %s ", d.getName(), helpUrl.toExternalForm()), helpContent);
+
+        }
+    }
+
 }

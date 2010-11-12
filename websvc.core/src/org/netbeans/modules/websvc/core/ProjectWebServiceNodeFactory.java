@@ -197,8 +197,9 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         private void initView() {
-            if(view==null)
+            if(view==null){
                 view = ProjectWebServiceView.getProjectWebServiceView(project);
+            }
         }
 
         private Lookup createLookup(Project project, PrivilegedTemplates privilegedTemplates) {

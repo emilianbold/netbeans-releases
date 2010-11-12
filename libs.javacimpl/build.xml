@@ -45,4 +45,17 @@ made subject to such option by the copyright holder.
 -->
 <project name="libs.javacimpl" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="-check-nb-javac-exists">
+        <available property="nb-javac.exists" file="../nb-javac/make"/>
+    </target>
+    <target name="-release.files-build-javac" if="nb-javac.exists">
+        <ant dir="../nb-javac/make/netbeans/nb-javac" target="jar" inheritAll="false"/>
+        <copy file="../nb-javac/make/netbeans/nb-javac/dist/javac-impl.jar" tofile="external/javac-impl-nb-7.0-b07.jar" overwrite="true"/>
+        <property name="release.files.extra" value="modules/ext/javac-impl-nb-7.0-b07.jar"/>
+    </target>
+    <target name="-release.files-delegate" unless="nb-javac.exists">
+        <antcall target="projectized.-release.files" />
+        <property name="release.files.extra" value="modules/ext/javac-impl-nb-7.0-b07.jar"/>
+    </target>
+    <target name="-release.files" depends="-check-nb-javac-exists,-release.files-build-javac,-release.files-delegate" />
 </project>

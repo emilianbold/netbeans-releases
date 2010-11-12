@@ -161,6 +161,16 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                             initializeWithDbConnections();
                             // notify user about result of server selection:
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DatabaseTablesPanel.class, "WRN_Server_Does_Not_Support_DS")));
+                        } else {
+                            // #190671 - because of hacks around server set in maven
+                            // listen and update data sources after server was set here again.
+                            // In theory this should not be necessary and
+                            // j2ee.common.DatasourceUIHelper.performServerSelection should have done
+                            // everything necessary but often at that time
+                            // PersistenceProviderSupplier.supportsDefaultProvider() is still false
+                            // (server change was not propagated there yet). In worst case combo model will be set twice:
+                            datasourceComboBox.setModel(new DefaultComboBoxModel());
+                            initializeWithDatasources();
                         }
                     }
             }
@@ -188,11 +198,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
             DBSchemaUISupport.connect(dbschemaComboBox, dbschemaFileList);
             boolean hasDBSchemas = (dbschemaComboBox.getItemCount() > 0 && dbschemaComboBox.getItemAt(0) instanceof FileObject);
-            if (!hasDBSchemas) {
-                dbschemaRadioButton.setEnabled(hasDBSchemas);
-                dbschemaComboBox.setEnabled(hasDBSchemas);
-            }
 
+            dbschemaRadioButton.setEnabled(hasDBSchemas);
+            dbschemaComboBox.setEnabled(hasDBSchemas);
+            dbschemaRadioButton.setVisible(hasDBSchemas);
+            dbschemaComboBox.setVisible(hasDBSchemas);
+            
             selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
         } 
 
@@ -801,8 +812,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
-                    .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
+                    .add(dbschemaComboBox, 0, 423, Short.MAX_VALUE)
+                    .add(datasourceComboBox, 0, 423, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );

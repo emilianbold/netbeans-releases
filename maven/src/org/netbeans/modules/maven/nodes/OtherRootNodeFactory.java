@@ -83,6 +83,7 @@ public class OtherRootNodeFactory implements NodeFactory {
     
     private static class NList extends AbstractMavenNodeList<String> implements PropertyChangeListener, FileChangeListener {
         private NbMavenProjectImpl project;
+        private final FileChangeListener fcl = FileUtil.weakFileChangeListener(this, null);
         NList(NbMavenProjectImpl prj) {
             project = prj;
         }
@@ -135,7 +136,7 @@ public class OtherRootNodeFactory implements NodeFactory {
         @Override
         public void addNotify() {
             NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-            NbMavenProject.addPropertyChangeListener(project, this);
+            watch.addPropertyChangeListener(this);
             watch.addWatchedPath(MAIN); //NOI18N
             watch.addWatchedPath(TEST); //NOI18N    
             checkFileObject(MAIN);
@@ -145,24 +146,24 @@ public class OtherRootNodeFactory implements NodeFactory {
         @Override
         public void removeNotify() {
             NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-            NbMavenProject.removePropertyChangeListener(project, this);
+            watch.removePropertyChangeListener(this);
             watch.removeWatchedPath(MAIN); //NOI18N
             watch.removeWatchedPath(TEST); //NOI18N            
             FileObject fo = project.getProjectDirectory().getFileObject(MAIN);
             if (fo != null) {
-                fo.removeFileChangeListener(this);
+                fo.removeFileChangeListener(fcl);
             }
             fo = project.getProjectDirectory().getFileObject(TEST);
             if (fo != null) {
-                fo.removeFileChangeListener(this);
+                fo.removeFileChangeListener(fcl);
             }
         }
         
         private void checkFileObject(String path) {
             FileObject fo = project.getProjectDirectory().getFileObject(path);
             if (fo != null) {
-                fo.removeFileChangeListener(this);
-                fo.addFileChangeListener(this);
+                fo.removeFileChangeListener(fcl);
+                fo.addFileChangeListener(fcl);
             }
         }
 

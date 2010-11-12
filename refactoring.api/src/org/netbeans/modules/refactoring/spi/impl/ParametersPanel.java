@@ -378,8 +378,24 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //inputState != currentState means, that panels changed and dialog will not be closed
                 LOGGER.log(Level.FINEST, "refactor - inputState={0}, currentState={1}", new Object[] {inputState, currentState});
                 if (inputState == currentState) {
+                    final RefactoringSession session = getResult();
+
+                    if (session!=null && !previewAll && currentState != POST_CHECK && (APIAccessor.DEFAULT.hasChangesInGuardedBlocks(session) || APIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session))) {
+                        currentState = POST_CHECK;
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                placeErrorPanel(new Problem(false, NbBundle.getMessage(ParametersPanel.class, 
+                                        APIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session) ?
+                                            "LBL_CannotRefactorReadOnlyFile":
+                                            "LBL_CannotRefactorGuardedBlock")));
+                            }
+                        });
+                        return;
+                    }
+
                     try {
-                        RefactoringSession session = getResult();
                         if (!previewAll && session != null) {
                             UndoWatcher.watch(session, ParametersPanel.this);
                             session.addProgressListener(ParametersPanel.this);
@@ -534,6 +550,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (!(customComponent==null && !rui.hasParameters() && !APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())))
             dialog.setVisible(true);
         dialog.dispose();
+        dialog = null;
         descriptor.setMessage("");
         
         if (rui != null) { 

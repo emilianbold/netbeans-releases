@@ -43,6 +43,7 @@
 package org.netbeans.html.api.validation;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -54,11 +55,13 @@ public final class ValidationContext {
     private String source;
     private FileObject file;
     private HtmlVersion version;
+    private SyntaxAnalyzerResult result;
 
-    public ValidationContext(String source, HtmlVersion version, FileObject file) {
+    public ValidationContext(String source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
         this.source = source;
         this.file = file;
         this.version = version;
+        this.result = result;
     }
 
     public FileObject getFile() {
@@ -73,4 +76,8 @@ public final class ValidationContext {
         return version;
     }
 
+    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
+        return result;
+    }
+    
 }

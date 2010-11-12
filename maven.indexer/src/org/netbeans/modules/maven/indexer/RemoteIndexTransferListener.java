@@ -52,9 +52,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -65,11 +62,6 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     private ProgressHandle handle;
     private RepositoryInfo info;
     private int lastunit;/*last work unit*/
-    /*Debug*/
-
-    private boolean debug;
-    private InputOutput io;
-    private OutputWriter writer;
     private int units;
 
     private final AtomicBoolean canceled = new AtomicBoolean();
@@ -82,10 +74,10 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         this.info = info;
         Cancellation.register(this);
 
-        if (debug) {
-            io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
-            writer = io.getOut();
-        }
+//        if (debug) {
+//            io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
+//            writer = io.getOut();
+//        }
     }
 
     public void transferInitiated(TransferEvent arg0) {
@@ -101,10 +93,10 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
         this.units = (int) contentLength / 1024;
         handle.start(units);
-        if (debug) {
-            writer.println("File Size :" + (int) contentLength / 1024);//NII18N
-
-        }
+//        if (debug) {
+//            writer.println("File Size :" + (int) contentLength / 1024);//NII18N
+//
+//        }
     }
 
     public @Override boolean cancel() {
@@ -117,36 +109,36 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         }
         int work = arg2 / 1024;
         if (handle != null) {
-            handle.progress(Math.min(units, lastunit += work));
+            handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
         }
-        if (debug) {
-            writer.println("Units completed :" + lastunit);//NII18N
-
-        }
+//        if (debug) {
+//            writer.println("Units completed :" + lastunit);//NII18N
+//
+//        }
     }
 
     public void transferCompleted(TransferEvent arg0) {
-        if (debug) {
-            writer.println("Completed");//NII18N
-
-        }
+//        if (debug) {
+//            writer.println("Completed");//NII18N
+//
+//        }
     }
 
     public void transferError(TransferEvent arg0) {
 
-        if (debug) {
-            writer.println("Finish with Errors");//NII18N
-
-        }
+//        if (debug) {
+//            writer.println("Finish with Errors");//NII18N
+//
+//        }
     }
 
     public void debug(String arg0) {
         if (canceled.get()) {
             throw new Cancellation();
         }
-        if (debug) {
-            writer.println(arg0);
-        }
+//        if (debug) {
+//            writer.println(arg0);
+//        }
     }
 
     static void addToActive (Thread t) {

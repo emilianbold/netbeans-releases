@@ -817,6 +817,9 @@ final class NbInstaller extends ModuleInstaller {
                     }
                 }
             }
+            if (!checkBootDelegation(pkg)) {
+                return false;
+            }
         }
         if (LOG.isLoggable(Level.FINER) && /* otherwise ClassCircularityError on LogRecord*/!pkg.equals("java/util/logging/")) {
             LOG.finer("Delegating resource " + pkg + " from " + parent + " for " + m.getCodeNameBase());
@@ -837,6 +840,35 @@ final class NbInstaller extends ModuleInstaller {
                             return false;
                         }
                     }
+                }
+            }
+        }
+        return checkBootDelegation(pkg);
+    }
+    
+    private boolean checkBootDelegation(String pkg) {
+        String del = System.getProperty("netbeans.bootdelegation"); // NOI18N
+        if (del != null) {
+            if (!pkg.startsWith("java/")) {
+                boolean allowed = false;
+                for (String s : del.split(",")) {
+                    s = s.trim();
+                    if (s.endsWith(".*")) {
+                        s = s.substring(0, s.length() - 2).replace('.', '/') + '/';
+                        if (pkg.startsWith(s) && pkg.length() > s.length()) {
+                            allowed = true;
+                            break;
+                        }
+                    } else {
+                        s = s.replace('.', '/') + '/';
+                        if (pkg.equals(s)) {
+                            allowed = true;
+                            break;
+                        }
+                    }
+                }
+                if (!allowed) {
+                    return false;
                 }
             }
         }

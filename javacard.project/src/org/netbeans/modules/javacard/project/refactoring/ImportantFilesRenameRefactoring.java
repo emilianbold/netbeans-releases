@@ -56,6 +56,7 @@ import java.net.URL;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -124,7 +125,7 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
 
         // 2. Check if this is the case of renaming a class 
         TreePathHandle tpHandle = lookup.lookup(TreePathHandle.class);
-        if (tpHandle != null && tpHandle.getKind() == Tree.Kind.CLASS) {
+        if (tpHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(tpHandle.getKind())) {
             FileObject classSourceFO = tpHandle.getFileObject();
             if (classSourceFO != null) {
                 project = JCProject.getOwnerProjectOf(classSourceFO);

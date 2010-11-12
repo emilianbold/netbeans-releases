@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
+import org.netbeans.modules.versioning.util.Utils;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
@@ -124,7 +125,7 @@ public class CloneAction extends ContextAction {
         
         // Get unused Clone Folder name
         File tmp = root.getParentFile();
-        File projFile = HgUtils.getProjectFile(context);
+        File projFile = Utils.getProjectFile(context);
         String folderName = root.getName();
         Boolean projIsRepos = true;
         if (!root.equals(projFile))  {

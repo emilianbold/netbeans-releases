@@ -48,17 +48,19 @@ import java.util.Iterator;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.xml.sax.SAXException;
 
 /**
@@ -72,10 +74,15 @@ public class Html5ParserTest extends NbTestCase {
     }
 
     public static Test suite() {
-        AstNodeTreeBuilder.DEBUG = true;
+        String testName = "testDivLogicalEndAtTheEOF";
+
+        System.err.println("Only " + testName + " test is going to be run!!!!");
+        System.err.println("******************************************************\n");
+
+//        AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testaParseErrorneousHeadContent"));
+        suite.addTest(new Html5ParserTest(testName));
         return suite;
     }
 
@@ -91,25 +98,64 @@ public class Html5ParserTest extends NbTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-        AstNodeTreeBuilder.DEBUG_STATES = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
         assertNotNull(root);
-        AstNodeUtils.dumpTree(result.root());
+//        AstNodeUtils.dumpTree(result.root());
 
-        Collection<ProblemDescription> problems = result.getProblems();
-        for(ProblemDescription pd : problems) {
-            System.out.println(pd);
-        }
-
-        AstNode leaf = AstNodeUtils.findDescendant(root, 48, true);
-
-        System.out.println("leaf="+leaf);
+//        Collection<ProblemDescription> problems = result.getProblems();
+//        for(ProblemDescription pd : problems) {
+//            System.out.println(pd);
+//        }
 
     }
 
+    public void testSimpleDocument() throws ParseException {
+        String code = "<!doctype html><html><head><title>x</title></head><body><div onclick=\"alert();\"/></body></html>";
+        //             012345678901234567890123456789012345678901234567890123456789012345678 901234567 8901234567890123456789
+        //             0         1         2         3         4         5         6          7          8         9
+
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+//        AstNodeUtils.dumpTree(result.root());
+
+        AstNode html = AstNodeUtils.query(root, "html");
+        assertEquals("html", html.name());
+        assertEquals(15, html.startOffset());
+        assertEquals(21, html.endOffset());
+        assertEquals(15, html.logicalStartOffset());
+        assertEquals(95, html.logicalEndOffset());
+
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertEquals("body", body.name());
+        assertEquals(50, body.startOffset());
+        assertEquals(56, body.endOffset());
+        assertEquals(50, body.logicalStartOffset());
+        assertEquals(88, body.logicalEndOffset());
+
+        AstNode bodyEndTag = body.getMatchingTag();
+        assertNotNull(bodyEndTag);
+        assertSame(body, bodyEndTag.getMatchingTag());
+        assertSame(bodyEndTag, body.getMatchingTag());
+
+        AstNode title = AstNodeUtils.query(root, "html/head/title");
+        assertEquals("title", title.name());
+        assertEquals(27, title.startOffset());
+        assertEquals(34, title.endOffset());
+        assertEquals(27, title.logicalStartOffset());
+        assertEquals(43, title.logicalEndOffset());
+
+        AstNode titleEndTag = title.getMatchingTag();
+        assertNotNull(titleEndTag);
+        assertSame(title, titleEndTag.getMatchingTag());
+        assertSame(titleEndTag, title.getMatchingTag());
 
 
+
+    }
 
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
@@ -147,33 +193,34 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals("alert()", attr.value());
     }
 
-    public void testProblemsReporting() throws ParseException {
-        HtmlParseResult result = parse("<!DOCTYPE html></section>");
-        //                              012345678901234567890123456789
-        //                              0         1         2
-        Collection<ProblemDescription> problems = result.getProblems();
-
-        assertEquals(1, problems.size());
-        ProblemDescription p = problems.iterator().next();
-
-        assertEquals(ProblemDescription.ERROR, p.getType());
-        assertEquals("nokey", p.getKey()); //XXX fix that
-        assertEquals("Stray end tag “section”.", p.getText());
-        assertEquals(15, p.getFrom());
-        assertEquals(25, p.getTo());
-
-    }
-
+//    public void testProblemsReporting() throws ParseException {
+//        HtmlParseResult result = parse("<!DOCTYPE html></section>");
+//        //                              012345678901234567890123456789
+//        //                              0         1         2
+//        Collection<ProblemDescription> problems = result.getProblems();
+//
+//        assertEquals(1, problems.size());
+//        ProblemDescription p = problems.iterator().next();
+//
+//        assertEquals(ProblemDescription.ERROR, p.getType());
+//        assertEquals("nokey", p.getKey()); //XXX fix that
+//        assertEquals("Stray end tag “section”.", p.getText());
+//        assertEquals(15, p.getFrom());
+//        assertEquals(25, p.getTo());
+//
+//    }
     public void testStyle() throws ParseException {
-        String code = "<!DOCTYPE html>\n"
-                + "<style type=\"text/css\">\n"
-                + "@import \"resources2/ezcompik/newcss2moje.css\";\n"
-                + "</style>\n";
+        String code = "<!DOCTYPE html>\n<style type=\"text/css\">\n@import \"resources2/ezcompik/newcss2moje.css\";\n</style>\n";
+        //             0123456789012345 67890123456 7890123456 789 012345678 90123456789012345678 90123456789012 345678901 23456789
+        //             0         1          2          3           4          5         6          7          8           9
 
 //        AstNodeTreeBuilder.DEBUG = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
         assertNotNull(root);
+//        AstNodeUtils.dumpTree(result.root());
+
         AstNode head = AstNodeUtils.query(root, "html/head");
         assertNotNull(head);
         assertEquals(2, head.children().size());
@@ -181,7 +228,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(styleOpenTag);
         assertEquals(16, styleOpenTag.startOffset());
-        assertEquals(39, styleOpenTag.endOffset());
+        assertEquals(38, styleOpenTag.endOffset());
 
         AstNode styleEndTag = head.children().get(1);
         assertNotNull(styleEndTag);
@@ -189,9 +236,8 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(95, styleEndTag.endOffset());
 
         assertSame(styleEndTag, styleOpenTag.getMatchingTag());
-        assertEquals(95, styleOpenTag.getLogicalRange()[1]);
+//        assertEquals(95, styleOpenTag.getLogicalRange()[1]);
 
-//        AstNodeUtils.dumpTree(result.root());
     }
 
     public void testParseUnfinishedCode() throws ParseException {
@@ -252,7 +298,7 @@ public class Html5ParserTest extends NbTestCase {
                 + "</html>");
         AstNode root = result.root();
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         assertNotNull(root);
         AstNode htmlOpen = AstNodeUtils.query(root, "html");
@@ -410,12 +456,13 @@ public class Html5ParserTest extends NbTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-//        System.out.println("code len = " + code.length());
 
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
 
         assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
         assertNotNull(body);
@@ -426,7 +473,6 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(6190, bodyEnd.startOffset());
         assertEquals(6197, bodyEnd.endOffset());
 
-//        AstNodeUtils.dumpTree(root);
     }
 
     public void test_A_TagProblem() throws ParseException {
@@ -491,7 +537,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(body.parent());
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
     }
 
     public void testUnclosedTitleTag() throws ParseException {
@@ -513,12 +559,27 @@ public class Html5ParserTest extends NbTestCase {
         AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
         assertNotNull(title);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         //FAILING - http://netbeans.org/bugzilla/show_bug.cgi?id=190183
-        
+
 //        assertTrue(title.logicalEndOffset() != -1);
 
+    }
+
+    public void testOnlyDivInFile() throws ParseException {
+        String code = "<!doctype html><html><head><title>x</title></head><body><di </body></html>";
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testMaskTemplatingMarksPattern() throws ParseException {
+        String code = "@@@<div> @@@ </div>";
+        assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
@@ -528,6 +589,109 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result);
 
         return result;
+    }
+
+    public void testHtml5Model() throws ParseException {
+        String code = "<!doctype html><title>hi</title>";
+        HtmlParseResult result = parse(code);
+
+        HtmlModel model = result.model();
+        assertNotNull(model);
+        assertEquals("html5model", model.getModelId());
+
+        Collection<HtmlTag> all = model.getAllTags();
+        assertNotNull(all);
+        assertEquals(ElementDescriptor.values().length, all.size());
+
+        HtmlTag table = HtmlTagProvider.getTagForElement("table");
+        assertNotNull(table);
+
+        assertTrue(all.contains(table));
+
+        //try to modify the unmodifiable collection
+        try {
+            all.remove(table);
+            assertTrue("The tags collection can be modified!", false);
+        } catch (UnsupportedOperationException t) {
+            //ok
+        }
+
+
+    }
+
+    //unknown node 't' has no parent set
+    public void testParseUnknownElementInTable() throws ParseException {
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head><title></title></head>"
+                + "<body>"
+                + "<table>"
+                + "<t>"
+                + "</table>"
+                + "</body>"
+                + "</html>";
+//      AstNodeTreeBuilder.DEBUG = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+//      AstNodeUtils.dumpTree(root);
+
+        //the 't' node is foster parented, so it goes to the table's parent, not table itself
+        AstNode t = AstNodeUtils.query(root, "html/body/t");
+        assertNotNull(t);
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertNotNull(body);
+
+        assertEquals(body, t.parent());
+
+    }
+
+    public void testDivLogicalEndAtTheEOF() throws ParseException {
+        String code = "<!doctype html><div><div></div>";
+        //             0123456789012345678901234567890123456789
+        //                                           ^
+//        AstNodeTreeBuilder.DEBUG = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+//        AstNodeUtils.dumpTree(root);
+
+        //the 't' node is foster parented, so it goes to the table's parent, not table itself
+        AstNode div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+
+        assertEquals(30, div.logicalEndOffset());
+
+        code = "<!doctype html><div><div></</div>";
+        //      0123456789012345678901234567890123456789
+        //                                      ^
+//        AstNodeTreeBuilder.DEBUG = true;
+        result = parse(code);
+        root = result.root();
+
+//        AstNodeUtils.dumpTree(root);
+
+        //the 't' node is foster parented, so it goes to the table's parent, not table itself
+        div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+
+        assertEquals(32, div.logicalEndOffset());
+
+          code = "<!doctype html><div></";
+        //        0123456789012345678901234567890123456789
+        //                             ^
+//        AstNodeTreeBuilder.DEBUG = true;
+        result = parse(code);
+        root = result.root();
+
+//        AstNodeUtils.dumpTree(root);
+
+        //the 't' node is foster parented, so it goes to the table's parent, not table itself
+        div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+
+        assertEquals(21, div.logicalEndOffset());
+
     }
 
     private static class HtmlTagImpl implements HtmlTag {
@@ -597,6 +761,8 @@ public class Html5ParserTest extends NbTestCase {
             return Collections.emptyList();
         }
 
-
+        public HelpItem getHelp() {
+            return null;
+        }
     }
 }

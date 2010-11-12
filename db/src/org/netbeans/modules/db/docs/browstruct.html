@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>Browsing Database Structures</title>
+
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+
+
+        <h2>Browsing Database Structures</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+
+        <p>Databases consist of tables, views and stored procedures, each of which represents  a list of columns. </p>
+        <p>When a connection is established, you can expand the database connection node (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;) to see the subnodes representing tables, views, and procedures. </p>
+
+        <p><b>To browse a table:</b> </p>
+        <ol>
+            <li>In the Services window, expand the node for a connected database.</li>
+            <li>Right-click the Tables node to reveal the individual tables.</li>
+            <li>Expand the Tables node to reveal the individual tables.</li>
+            <li>Expand a table node (&nbsp;<img src="images/table.gif" width="16" height="16" alt="table node">&nbsp;)
+            to see the table's columns, an Indexes node and Foreign keys node.</li>
+        </ol>
+
+        <h4>Columns</h4>
+        <p>The following table lists Services window icons and their descriptions.</p>
+
+        <table width="50%" border="1">
+            <tr> 
+                <th scope="col" width="27%"><b>Icon </b></th>
+                <th scope="col" width="73%"><b>Description</b></th>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/table.gif" width="16" height="16"></td>
+                <td width="73%">Table</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/column.gif" width="16" height="16"></td>
+                <td width="73%">Column</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/columnPrimary.gif" width="16" height="16"></td>
+                <td width="73%">Column (Primary key)</td>
+            </tr>
+
+            <tr> 
+                <td width="27%" height="22"><img src="images/columnIndex.gif" width="16" height="16"></td>
+                <td width="73%" height="22">Column (Unique key)</td>
+            </tr>
+
+            <tr> 
+                <td width="27%" height="22"><img src="images/index.gif" width="16" height="16"></td>
+                <td width="73%" height="22">Index</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/foreignKey.gif" width="16" height="16"></td>
+                <td width="73%">Foreign key</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/columnForeign.gif" width="16" height="16"></td>
+                <td width="73%">Column in foreign key</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/view.gif" width="16" height="16"></td>
+                <td width="73%">View</td>
+            </tr>
+
+        </table>
+
+
+        <h4>Indexes</h4>
+        <p>Click on an index node to see the list of the columns contained by that index.</p>
+
+        <h4>Foreign Keys</h4>
+        <p>Click on a foreign key node to see the list of the columns contained by that foreign key. 
+        A foreign key contains columns that reference another table's columns (usually primary keys).</p>
+
+        <h4> <b>Views</b></h4>
+        <p>Click the Views node to see the views on a given database.<br>
+        View columns are dimmed to indicate that you cannot change the physical characteristics 
+        of the columns in a view. However, you can change a view by dropping the view 
+        and subsequently recreating it.</p>
+
+        <h4>Procedures</h4>
+        <p>Select a Procedures node to view stored procedure names and their <tt>in</tt> 
+        and <tt>out</tt> parameters.</p> 
+
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+            <dd>      <a href="viewdata.html">Viewing Data in a Database Table</a></dd>
+        </dl>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+
+</html>
+
+
+

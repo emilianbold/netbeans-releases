@@ -513,7 +513,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             //copy forwardToJSF.jsp
                             if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
                                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, FORWARD_JSF));
+                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
                                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                                 content = content.replaceAll("__ENCODING__", encoding.name());
                                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N

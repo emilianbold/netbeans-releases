@@ -212,12 +212,13 @@ public class Utils {
     public static Reader getDocumentReader(final Document doc) {
         final String[] str = new String[1];
         Runnable run = new Runnable() {
+            @Override
             public void run () {
                 try {
                     str[0] = doc.getText(0, doc.getLength());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    VersioningManager.LOG.log(Level.WARNING, null, e);
                 }
             }
         };
@@ -335,10 +336,10 @@ public class Utils {
             for (StackTraceElement e : stElements) {
                 if (i++ > 1) {
                     if (i == 8) {
-                        sb.append("...\n");                         //NOI18N
+                        sb.append("...\n");                         // NOI18N
                         break;
                     } else {
-                        sb.append(e.toString() + "\n");             //NOI18N
+                        sb.append(e.toString()).append("\n");       // NOI18N
                     }
                 }
             }

@@ -44,20 +44,11 @@ package org.netbeans.modules.maven.options;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
-import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -67,7 +58,9 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     id=MavenOptionController.OPTIONS_SUBPATH,
-    displayName="#TIT_Maven_Category"
+    displayName="#TIT_Maven_Category",
+    keywords="#KW_MavenOptions",
+    keywordsCategory="Advanced/Maven"
 //    toolTip="#TIP_Maven_Category"
 )
 public class MavenOptionController extends OptionsPanelController {

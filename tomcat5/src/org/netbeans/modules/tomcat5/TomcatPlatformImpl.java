@@ -56,7 +56,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -70,7 +70,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Stepan Herold
  */
-public class TomcatPlatformImpl extends J2eePlatformImpl {
+public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     
     private static final String WSCOMPILE_LIBS[] = new String[] {
         "jaxrpc/lib/jaxrpc-api.jar",        // NOI18N
@@ -198,12 +198,28 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         return ImageUtilities.loadImage(ICON);
     }
     
+    @Override
     public File[] getPlatformRoots() {
         if (tp.getCatalinaBase() != null) {
             return new File[] {tp.getCatalinaHome(), tp.getCatalinaBase()};
         } else {
             return new File[] {tp.getCatalinaHome()};
         }
+    }
+
+    @Override
+    public File getServerHome() {
+        return tp.getCatalinaHome();
+    }
+    
+    @Override
+    public File getDomainHome() {
+        return tp.getCatalinaBase();
+    }
+
+    @Override
+    public File getMiddlewareHome() {
+        return null;
     }
     
     public File[] getToolClasspathEntries(String toolName) {

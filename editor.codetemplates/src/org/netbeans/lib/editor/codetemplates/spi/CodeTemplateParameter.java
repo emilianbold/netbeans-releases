@@ -86,6 +86,10 @@ public final class CodeTemplateParameter {
 
     public static final String SELECTION_PARAMETER_NAME = "selection"; // NOI18N
 
+    public static final String NO_FORMAT_PARAMETER_NAME = "no-format"; // NOI18N
+
+    public static final String NO_INDENT_PARAMETER_NAME = "no-indent"; // NOI18N
+
     public static final String LINE_HINT_NAME = "line"; // NOI18N
 
     /**

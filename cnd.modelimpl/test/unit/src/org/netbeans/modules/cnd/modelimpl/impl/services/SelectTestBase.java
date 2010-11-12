@@ -107,7 +107,9 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                 CharSequence qName = decl.getQualifiedName();
                 if (TRACE) { System.err.printf("Seearching for funcion %s\n", func); }
                 Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qName);
-                assertTrue("Function " + qName.toString() + " not found", iter.hasNext());
+                assertTrue("Function " + qName.toString() + 
+                        " from " + func.getContainingFile().getAbsolutePath() + ":" + func.getStartPosition() + 
+                        " not found in project " + project.getName(), iter.hasNext());
             }
         }
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {

@@ -53,13 +53,12 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.tools.ant.types.Parameter;
 
-import org.netbeans.junit.NbTestCase;
 
 /** Check behaviour of ModuleStateSelector.
  *
  * @author Jaroslav Tulach
  */
-public class ModuleStateSelectorTest extends NbTestCase {
+public class ModuleStateSelectorTest extends TestBase {
     private ModuleStateSelector selector;
     
     public ModuleStateSelectorTest(String testName) {
@@ -68,6 +67,7 @@ public class ModuleStateSelectorTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         selector = new ModuleStateSelector();
     }
 
@@ -76,7 +76,7 @@ public class ModuleStateSelectorTest extends NbTestCase {
         cfg.mkdirs();
         assertTrue("Created", cfg.isDirectory());
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar("org.my.module", new String[0], m);
         
@@ -112,7 +112,7 @@ public class ModuleStateSelectorTest extends NbTestCase {
         cfg.mkdirs();
         assertTrue("Created", cfg.isDirectory());
 
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module/1");
         File aModule = generateJar("org.my.module", new String[0], m);
 
@@ -143,7 +143,7 @@ public class ModuleStateSelectorTest extends NbTestCase {
         assertTrue("module accepted", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
     }
     
-    private final File createNewJarFile (String cnb) throws IOException {
+    private File createNewJarFile (String cnb) throws IOException {
         File f = new File (new File(this.getWorkDir(), "modules"), cnb.replace('.', '-') + ".jar");
         f.delete();
         f.deleteOnExit();

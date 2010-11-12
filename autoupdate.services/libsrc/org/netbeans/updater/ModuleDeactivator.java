@@ -46,6 +46,7 @@ package org.netbeans.updater;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 /**
@@ -142,10 +143,8 @@ public final class ModuleDeactivator extends Object {
             } finally {
                 if (writer != null) writer.close ();
             }
-        } catch (FileNotFoundException fnfe) {
-            System.out.println("Error: Writing " + file + " throws " + fnfe);
         } catch (IOException ioe) {
-            System.out.println("Error: Writing " + file + " throws " + ioe);
+            XMLUtil.LOG.log(Level.SEVERE, "Cannot write " + file, ioe);
         }
     }
     
@@ -166,10 +165,8 @@ public final class ModuleDeactivator extends Object {
             } finally {
                 if (reader != null) reader.close ();
             }
-        } catch (FileNotFoundException fnfe) {
-            System.out.println("Error: Reading " + file + " throws " + fnfe);
         } catch (IOException ioe) {
-            System.out.println("Error: Reading " + file + " throws " + ioe);
+            XMLUtil.LOG.log(Level.SEVERE, "Cannot read " + file, ioe);
         }
             
         return fileData == null ? "" : fileData.toString ();

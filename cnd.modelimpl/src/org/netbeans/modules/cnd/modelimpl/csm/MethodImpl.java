@@ -64,12 +64,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
     private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
 
-    public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        this(ast, cls, visibility, true, true);
-    }
-
-    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
-        super(ast, cls.getContainingFile(), cls, false, global);
+    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls.getContainingFile(), null, cls, nameHolder, global);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);
@@ -86,19 +82,27 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                     break;
             }
         }
-        if (register) {
-            registerInProject();
-        }
     }
 
+    public static<T> MethodImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        MethodImpl<T> methodImpl = new MethodImpl<T>(ast, cls, visibility, nameHolder, register);
+        postObjectCreateRegistration(register, methodImpl);
+        nameHolder.addReference(cls.getContainingFile(), methodImpl);
+        return methodImpl;
+    }
+
+    @Override
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
 
+    @Override
     public boolean isAbstract() {
         return hasFlags(ABSTRACT);
     }
@@ -115,10 +119,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         setFlags(EXPLICIT, _explicit);
     }
 
+    @Override
     public boolean isExplicit() {
         return hasFlags(EXPLICIT);
     }
 
+    @Override
     public boolean isVirtual() {
         //TODO: implement!
         // returns direct "virtual" keyword presence

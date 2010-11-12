@@ -358,27 +358,9 @@ public class J2MEActionProvider implements ActionProvider {
     public boolean isActionEnabled( @SuppressWarnings("unused") final String command,
             final Lookup context ) {
         if (COMMAND_RUN_WITH.equals(command)) {
-            //Temporary workaround for http://www.netbeans.org/issues/show_bug.cgi?id=151778 -
-            //disable Run With on CDC projects
-            Collection<? extends Project> projects = context.lookupAll(Project.class);
-            for (Project p : projects) {
-                J2MEProject meProj = p.getLookup().lookup(J2MEProject.class); //wrapping
-                if (meProj == null) { //multi-selection of heterogenous types
-                    System.err.println("No J2MEProject in " + p + " lookup contents " + p.getLookup().lookupAll(Object.class));
-                    return false;
-                }
-                EditableProperties props = meProj.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                if (props != null) {
-                    String trig = props.getProperty("platform.trigger"); //NOI18N
-                    if ("CDC".equals(trig)) { //NOI18N
-                        System.err.println("Found CDC trigger: " + trig);
-                        return false;
-                    }
-                } else {
-                    System.err.println("No props, bail");
-                    return false;
-                }
-            }
+            ProjectConfigurationsHelper confs = project.getConfigurationHelper();
+            String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getDisplayName() : null;
+            return !"CDC".equals(evaluateProperty(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH), "platform.trigger", activeConfiguration)); //NOI18N
         }
         return true;
     }

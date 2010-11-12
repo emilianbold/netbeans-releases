@@ -50,10 +50,12 @@ import java.util.Collection;
  */
 public interface HtmlModel {
 
+    public String getModelId();
+
     public Collection<HtmlTag> getAllTags();
 
     public HtmlTag getTag(String tagName);
 
     public Collection<? extends NamedCharRef> getNamedCharacterReferences();
-    
+
 }

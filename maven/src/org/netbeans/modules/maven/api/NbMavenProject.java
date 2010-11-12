@@ -199,7 +199,7 @@ public final class NbMavenProject {
                         hndl.start();
                         MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
-                        req.setTransferListener(new ProgressTransferListener());
+                        req.setTransferListener(ProgressTransferListener.activeListener());
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;

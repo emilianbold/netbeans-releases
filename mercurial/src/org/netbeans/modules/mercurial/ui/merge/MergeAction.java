@@ -51,6 +51,8 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -59,8 +61,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 
 /**
  * Merge action for mercurial:
@@ -69,6 +71,8 @@ import org.openide.util.Utilities;
  * @author John Rice
  */
 public class MergeAction extends ContextAction {
+
+    private static final Logger LOG = Logger.getLogger(MergeAction.class.getName());
 
     @Override
     protected boolean enable(Node[] nodes) {
@@ -193,19 +197,18 @@ public class MergeAction extends ContextAction {
                         "MSG_MERGE_FAILED")); // NOI18N
                 break;
             }
-            if (HgCommand.isMergeConflictMsg(line)) {
+            String filepath = null;
+            if (HgCommand.isMergeFailedMsg(line)) {
                 bConflicts = true;
-                String filepath = null;
-                if (Utilities.isWindows()) {
-                    filepath = line.substring(
-                            HgCommand.HG_MERGE_CONFLICT_WIN1_ERR.length(),
-                            line.length() - HgCommand.HG_MERGE_CONFLICT_WIN2_ERR.length()).trim().replace("/", "\\"); // NOI18N
-                    filepath = root.getAbsolutePath() + File.separator + filepath;
-                } else {
-                    filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
-                }
+                filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED2_ERR.length()).trim().replace("/", File.separator); // NOI18N
+                filepath = root.getAbsolutePath() + File.separator + filepath;
+            } else if (HgCommand.isConflictDetectedInMsg(line)) {
+                bConflicts = true;
+                filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
+            }
+            if (filepath != null) {
+                LOG.log(Level.FINER, "File {0} in conflict", filepath);
                 logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
-                HgCommand.createConflictFile(filepath);
             }
 
             if (HgCommand.isMergeUnavailableMsg(line)) {
@@ -221,8 +224,9 @@ public class MergeAction extends ContextAction {
         }
 
         if (bConflicts) {
-            logger.outputInRed(NbBundle.getMessage(MergeAction.class,
-                    "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
+            LOG.log(Level.FINER, "Conflicts detected: {0}", root);
+            logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
+            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(MergeAction.class, "MSG_Merge.ConflictsCreated"))); //NOI18N
         }
         if (!bMergeFailed && !bConflicts && bDone) {
             logger.outputInRed(NbBundle.getMessage(MergeAction.class,

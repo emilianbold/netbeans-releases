@@ -46,107 +46,72 @@ package org.netbeans.modules.javahelp;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import org.openide.loaders.DataObject;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import javax.help.HelpSet;
-import javax.help.HelpSetException;
-
 import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.XMLDataObject;
+
+import org.openide.loaders.Environment;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.InputSource;
 
 /** An XML processor for help set references.
  * Provides an instance of javax.swing.HelpSet.
  * @author Jesse Glick
  */
-public final class HelpSetProcessor implements XMLDataObject.Processor, InstanceCookie.Of {
+public final class HelpSetProcessor implements Environment.Provider {
     
     /** "context" for merge attribute on helpsets
      */    
-    public static final String HELPSET_MERGE_CONTEXT = "OpenIDE"; // NOI18N
+    private static final String HELPSET_MERGE_CONTEXT = "OpenIDE"; // NOI18N
     
     /** attribute (type Boolean) on helpsets indicating
      * whether they should be merged into the master or
      * not; by default, true
      */    
-    public static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
+    private static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
     
-    /** the XML file being parsed
-     */
-    private XMLDataObject xml;
-    
-    /** the cached help set
-     */
-    private HelpSet hs;
-    
-    /** Bind to an XML file.
-     * @param xml the file
-     */
-    public void attachTo(XMLDataObject xml) {
-        if (this.xml == xml) return;
-        hs = null;
-        // XXX this is called way too often, why?
-        this.xml = xml;
-        Installer.log.fine("processing help set ref: " + xml.getPrimaryFile());
-    }
-    
-    /** The class being produced.
-     * @throws IOException doesn't
-     * @throws ClassNotFoundException doesn't
-     * @return the class of helpsets
-     */
-    public Class instanceClass() throws IOException, ClassNotFoundException {
-        return HelpSet.class;
-    }
-    
-    /** Get the name of the produced class.
-     * @return the class of helpsets
-     */
-    public String instanceName() {
-        return "javax.help.HelpSet"; // NOI18N
-    }
-    
-    /** Test whether a given superclass will be produced.
-     * @param type the superclass
-     * @return true if it is HelpSet
-     */
-    public boolean instanceOf(Class type) {
-        return type == HelpSet.class;
-    }
-    
-    /** Create the help set.
-     * @throws IOException if there was a problem parsing the XML
-     * of the helpset file or otherwise producing
-     * the helpset from its resource
-     * @throws ClassNotFoundException doesn't
-     * @return the help set
-     */
-    public synchronized Object instanceCreate() throws IOException, ClassNotFoundException {
-        if (hs == null) {
-            Installer.log.fine("creating help set from ref: " + xml.getPrimaryFile());
-            try {
-                Document doc = xml.getDocument();
-                Element el = doc.getDocumentElement();
-                if (! el.getNodeName().equals("helpsetref")) throw new IOException(); // NOI18N
-                String url = el.getAttribute("url"); // NOI18N
-                if (url == null || url.equals("")) throw new IOException("no url attr on <helpsetref>! doc.class=" + doc.getClass().getName() + " doc.documentElement=" + el); // NOI18N
-                String mergeS = el.getAttribute("merge"); // NOI18N
-                boolean merge = (mergeS == null) || mergeS.equals("") || // NOI18N
-                Boolean.valueOf(mergeS).booleanValue();
-                // Make sure nbdocs: protocol is ready:
-                Object ignore = NbDocsStreamHandler.class; // DO NOT DELETE THIS LINE
-                hs = new HelpSet(((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)), new URL(url));
-                hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
-            } catch (SAXException saxe) {
-                throw (IOException) new IOException(saxe.toString()).initCause(saxe);
-            } catch (HelpSetException hse) {
-                throw (IOException) new IOException(hse.toString()).initCause(hse);
+    public @Override Lookup getEnvironment(final DataObject obj) {
+        Installer.log.log(Level.FINE, "creating help set from ref: {0}", obj.getPrimaryFile());
+        return Lookups.singleton(new InstanceCookie() {
+            public @Override String instanceName() {
+                return obj.getName();
             }
-        }
-        return hs;
+            public @Override Class<?> instanceClass() throws IOException, ClassNotFoundException {
+                return HelpSet.class;
+            }
+            public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
+                try {
+                    Document doc = XMLUtil.parse(new InputSource(obj.getPrimaryFile().getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                    Element el = doc.getDocumentElement();
+                    if (!el.getNodeName().equals("helpsetref")) { // NOI18N
+                        throw new IOException();
+                    }
+                    String url = el.getAttribute("url"); // NOI18N
+                    if (url == null || url.isEmpty()) {
+                        throw new IOException("no url attr on <helpsetref>! doc.class=" + doc.getClass().getName() + " doc.documentElement=" + el);
+                    }
+                    String mergeS = el.getAttribute("merge"); // NOI18N
+                    boolean merge = mergeS.isEmpty() || Boolean.valueOf(mergeS);
+                    // Make sure nbdocs: protocol is ready:
+                    Object ignore = NbDocsStreamHandler.class; // DO NOT DELETE THIS LINE
+                    HelpSet hs = new HelpSet(Lookup.getDefault().lookup(ClassLoader.class), new URL(url));
+                    hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge);
+                    return hs;
+                } catch (IOException x) {
+                    throw x;
+                } catch (Exception x) {
+                    throw new IOException(x);
+                }
+            }
+        });
     }
     
 }

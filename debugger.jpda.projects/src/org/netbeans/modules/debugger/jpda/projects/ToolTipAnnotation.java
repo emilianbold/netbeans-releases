@@ -433,7 +433,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             isValid[0] = false;
                             return;
                         }
-                        if (kind == Tree.Kind.CLASS && className[0].length() == 0) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(kind) && className[0].length() == 0) {
                             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
                             className[0] = ElementUtilities.getBinaryName(typeElement);
                         }

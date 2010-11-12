@@ -787,35 +787,50 @@ public class JpaControllerUtil {
             for (ExecutableElement pkMethod : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
                 String pkMethodName = pkMethod.getSimpleName().toString();
                 if (pkMethodName.startsWith("get")) {
-                    Element pkFieldElement = isFieldAccess ? guessField(pkMethod) : pkMethod;
-                    AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
-                    if (columnAnnotation != null) {
-                        String columnName = findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
-                        if (columnName != null) {
+                    String columnName = guessColumnName(pkMethod);
+                    if(columnName != null && columnName.length()>0){
                             pkAccessorMethodToColumnName.put(pkMethod, columnName);
-                            columnNameToAccessorString.put(columnName, 
-                                    idGetterElement.getSimpleName().toString() + "()." + 
+                            columnNameToAccessorString.put(columnName,
+                                    idGetterElement.getSimpleName().toString() + "()." +
                                     pkMethod.getSimpleName() + "()");
-                        }
                     }
                 }
                 else if(pkMethodName.startsWith("set"))
                 {
                     Element pkFieldElement = isFieldAccess ? guessField(pkMethod) : guessGetter(pkMethod);
                     if(pkFieldElement != null) {//we do not need setters not associated with fields/properties
-                        AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
-                        if (columnAnnotation != null) {
-                            String columnName = findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
-                            if (columnName != null) {
-                                pkSetterMethodToColumnName.put(pkMethod, columnName);
-                                columnNameToSetterString.put(columnName,
-                                        idGetterElement.getSimpleName().toString() + "()." +
-                                        pkMethod.getSimpleName() + "()");
-                            }
+                        String columnName = guessColumnName(pkMethod);
+                        if (columnName != null && columnName.length()>0) {
+                            pkSetterMethodToColumnName.put(pkMethod, columnName);
+                            columnNameToSetterString.put(columnName,
+                                    idGetterElement.getSimpleName().toString() + "()." +
+                                    pkMethod.getSimpleName() + "()");
                         }
                     }
                 }
             }
+        }
+
+        private String guessColumnName(ExecutableElement pkMethod){
+            Element pkFieldvariable = guessField(pkMethod);
+            Element pkFieldElement = isFieldAccess ? pkFieldvariable : guessGetter(pkMethod);
+            if(pkFieldElement == null) return null;//something is missed, may be getter name do not match variable name, see #190854
+            String pkMethodName = pkMethod.getSimpleName().toString();
+            String columnName = null;
+            AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
+            if (columnAnnotation != null) {
+                columnName = findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
+            }
+            if(columnName == null){
+                //it's not necessary to annotate with @Column and have name also, it;s optional in JPA1.0/2.0 and may be later
+                if(pkFieldvariable.getModifiers().contains(Modifier.TRANSIENT)) return null;//do not store transient fields
+                if(isFieldAccess) {
+                    columnName = pkFieldvariable.getSimpleName().toString().toUpperCase();
+                } else {
+                    columnName = pkMethodName.substring(3).toUpperCase();
+                }
+            }
+            return columnName;
         }
         
         private void populateJoinColumnNameMaps(ExecutableElement m, String columnAnnotationFqn, AnnotationMirror columnAnnotation) {

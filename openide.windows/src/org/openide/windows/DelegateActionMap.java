@@ -43,11 +43,18 @@
  */
 package org.openide.windows;
 
+import java.awt.Component;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
+import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 
 
 // This is almost copy of org.openide.util.UtilitiesCompositeActionMap.
@@ -79,7 +86,7 @@ final class DelegateActionMap extends ActionMap {
 
     @Override
     public Action get(Object key) {
-        javax.swing.ActionMap m;
+        ActionMap m;
 
         if (delegate == null) {
             JComponent comp = getComponent();
@@ -100,7 +107,7 @@ final class DelegateActionMap extends ActionMap {
             }
         }
 
-        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        Component owner = GlobalActionContextImpl.findFocusOwner();
         Action found = null;
 
         while ((owner != null) && (owner != getComponent())) {
@@ -129,10 +136,10 @@ final class DelegateActionMap extends ActionMap {
     }
 
     private Object[] keys(boolean all) {
-        java.util.Set<Object> keys = new java.util.HashSet<Object>();
+        Set<Object> keys = new HashSet<Object>();
 
         
-        javax.swing.ActionMap m;
+        ActionMap m;
 
         if (delegate == null) {
             JComponent comp = getComponent();
@@ -146,17 +153,37 @@ final class DelegateActionMap extends ActionMap {
         }
 
         if (m != null) {
-            java.util.List<Object> l;
+            List<Object> l;
 
             if (all) {
-                l = java.util.Arrays.asList(m.allKeys());
+                l = Arrays.asList(m.allKeys());
             } else {
-                l = java.util.Arrays.asList(m.keys());
+                l = Arrays.asList(m.keys());
             }
 
             keys.addAll(l);
         }
-
+        
+        Component owner = GlobalActionContextImpl.findFocusOwner();
+        List<JComponent> hierarchy = new ArrayList<JComponent>();
+        while ((owner != null) && (owner != getComponent())) {
+            if (owner instanceof JComponent) {
+                hierarchy.add((JComponent)owner);
+            }
+            owner = owner.getParent();
+        }
+        if (owner == getComponent()) {
+            for (JComponent c : hierarchy) {
+                ActionMap am = c.getActionMap();
+                if (am == null) {
+                    continue;
+                }
+                Object[] fk = all ? am.allKeys() : am.keys();
+                if (fk != null) {
+                    keys.addAll(Arrays.asList(fk));
+                }
+            }
+        }
         return keys.toArray();
     }
 
@@ -174,7 +201,7 @@ final class DelegateActionMap extends ActionMap {
     public void setParent(ActionMap map) {
         if (delegate != null) {
             delegate.setParent(map);
-            org.netbeans.modules.openide.windows.GlobalActionContextImpl.blickActionMap(new ActionMap());
+            GlobalActionContextImpl.blickActionMap(new ActionMap());
         }
     }
 

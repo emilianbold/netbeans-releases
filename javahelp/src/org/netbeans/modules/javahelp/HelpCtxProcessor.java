@@ -47,121 +47,69 @@ package org.netbeans.modules.javahelp;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.*;
-import java.io.ByteArrayInputStream;
+import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.xml.sax.*;
-
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-
 import org.netbeans.api.javahelp.Help;
+import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.Environment;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /** XML processor for help context links.
  * The associated instance makes it suitable for
  * inclusion in a menu or toolbar.
  * @author Jesse Glick
  */
-public final class HelpCtxProcessor implements XMLDataObject.Processor, InstanceCookie.Of {
+public final class HelpCtxProcessor implements Environment.Provider {
     
     private static Help findHelp() {
-        return (Help)Lookup.getDefault().lookup(Help.class);
+        return Lookup.getDefault().lookup(Help.class);
     }
     
-    /** the XML file being parsed
-     */
-    private XMLDataObject xml;
-    
-    /** the cached action
-     */
-    private Action p;
-    
-    /** Bind to an XML file.
-     * @param xml the file to parse
-     */
-    public void attachTo(XMLDataObject xml) {
-        this.xml = xml;
-        Installer.log.fine("processing help context ref: " + xml.getPrimaryFile());
-    }
-    
-    /** Get the class produced.
-     * @throws IOException doesn't
-     * @throws ClassNotFoundException doesn't
-     * @return the presenter class
-     */
-    public Class instanceClass() throws IOException, ClassNotFoundException {
-        return ShortcutAction.class;
-    }
-    
-    /** Get the name of the class produced.
-     * @return the name of the presenter class
-     */
-    public String instanceName() {
-        return "org.netbeans.modules.javahelp.HelpCtxProcessor$ShortcutAction"; // NOI18N
-    }
-    
-    /** Test if this instance is of a suitable type.
-     * @param type some superclass
-     * @return true if it can be assigned to the desired superclass
-     */
-    public boolean instanceOf(Class type) {
-        return type == Action.class;
-    }
-    
-    /** Create the presenter.
-     * @throws IOException doesn't
-     * @throws ClassNotFoundException doesn't
-     * @return the new presenter
-     */
-    public Object instanceCreate() throws IOException, ClassNotFoundException {
-        if (p != null)
-            return p;
-        
-        Installer.log.fine("creating help context presenter from " + xml.getPrimaryFile());
-        
-        EntityResolver resolver = new EntityResolver() {
-            public InputSource resolveEntity(String pubid, String sysid) {
-                return new InputSource(new ByteArrayInputStream(new byte[0]));
+    public @Override Lookup getEnvironment(final DataObject obj) {
+        Installer.log.log(Level.FINE, "creating help context presenter from {0}", obj.getPrimaryFile());
+        return Lookups.singleton(new InstanceCookie() {
+            public @Override String instanceName() {
+                return obj.getName();
             }
-        };
-        
-        HandlerBase handler = new HandlerBase() {
-            public void startElement(String name, AttributeList amap) throws SAXException {
-                if ("helpctx".equals(name)) { // NOI18N
-                    String id = amap.getValue("id"); // NOI18N
-                    String showmaster = amap.getValue("showmaster"); // NOI18N
-                    if (id != null && !"".equals(id)) { // NOI18N
-                        p = new ShortcutAction(xml, id, Boolean.valueOf(showmaster).booleanValue());
+            public @Override Class<?> instanceClass() throws IOException, ClassNotFoundException {
+                return Action.class;
+            }
+            public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
+                try {
+                    Document doc = XMLUtil.parse(new InputSource(obj.getPrimaryFile().getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                    Element el = doc.getDocumentElement();
+                    if (!el.getNodeName().equals("helpctx")) { // NOI18N
+                        throw new IOException();
                     }
+                    return new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                } catch (IOException x) {
+                    throw x;
+                } catch (Exception x) {
+                    throw new IOException(x);
                 }
             }
-        };
-        
-        Parser parser = xml.createParser();
-        parser.setEntityResolver(resolver);
-        parser.setDocumentHandler(handler);
-        
-        try {
-            parser.parse(new InputSource(xml.getPrimaryFile().getInputStream()));
-        } catch (SAXException saxe) {
-            throw (IOException) new IOException(saxe.toString()).initCause(saxe);
-        }
-        
-        if (p == null) {
-            throw new IOException("No <helpctx> element in " + xml.getPrimaryFile()); // NOI18N
-        }
-        
-        return p;
+        });
     }
     
     /** The presenter to be shown in a menu, e.g.
@@ -170,7 +118,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         
         /** associated XML file representing it
          */
-        private final XMLDataObject obj;
+        private final DataObject obj;
         
         /** the cached help context
          */
@@ -183,12 +131,12 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         /** Create a new presenter.
          * @param obj XML file describing it
          */
-        public ShortcutAction(XMLDataObject obj, String helpID, boolean showmaster) {
+        public ShortcutAction(DataObject obj, String helpID, boolean showmaster) {
             this.obj = obj;
             this.helpID = helpID;
             this.showmaster = showmaster;
-            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-            Installer.log.fine("new ShortcutAction: " + obj + " " + helpID + " showmaster=" + showmaster);
+            putValue("noIconInMenu", true); // NOI18N
+            Installer.log.log(Level.FINE, "new ShortcutAction: {0} {1} showmaster={2}", new Object[] {obj, helpID, showmaster});
             updateText();
             updateIcon();
             updateEnabled();
@@ -197,16 +145,18 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
                 n.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener (this, n));
             }
             Help h = findHelp();
-            if (h != null) h.addChangeListener(org.openide.util.WeakListeners.change (this, h));
+            if (h != null) {
+                h.addChangeListener(WeakListeners.change(this, h));
+            }
         }
         
         /** Show the help.
          * @param actionEvent ignored
          */
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             Help h = findHelp();
             if (h != null) {
-                Installer.log.fine("ShortcutAction.actionPerformed: " + helpID + " showmaster=" + showmaster);
+                Installer.log.log(Level.FINE, "ShortcutAction.actionPerformed: {0} showmaster={1}", new Object[] {helpID, showmaster});
                 h.showHelp(new HelpCtx(helpID), showmaster);
             } else {
                 Toolkit.getDefaultToolkit().beep();
@@ -217,7 +167,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
          * Help for the shortcut itself is generic.
          * @return a neutral help context - welcome page
          */
-        public HelpCtx getHelpCtx() {
+        public @Override HelpCtx getHelpCtx() {
             // #23565:
             return new HelpCtx("ide.welcome"); // NOI18N
         }
@@ -225,7 +175,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         /** Help sets may have changed.
          * @param changeEvent ignore
          */
-        public void stateChanged(ChangeEvent e) {
+        public @Override void stateChanged(ChangeEvent e) {
             updateEnabled();
         }
         
@@ -233,9 +183,11 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
          * @param ev event indicating whether the change
          * was of display name, icon, or other
          */
-        public void propertyChange(PropertyChangeEvent ev) {
+        public @Override void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
-            if (!obj.isValid()) return;
+            if (!obj.isValid()) {
+                return;
+            }
             if (prop == null || prop.equals(Node.PROP_NAME) || prop.equals(Node.PROP_DISPLAY_NAME)) {
                 updateText();
             }
@@ -276,17 +228,17 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             if (valid != null) {
                 setEnabled(valid.booleanValue());
             }
-            Installer.log.fine("enabled: xml=" + obj.getPrimaryFile() + " id=" + helpID + " enabled=" + valid);
+            Installer.log.log(Level.FINE, "enabled: xml={0} id={1} enabled={2}", new Object[] {obj.getPrimaryFile(), helpID, valid});
         }
 
-        public void nodeDestroyed(NodeEvent ev) {
+        public @Override void nodeDestroyed(NodeEvent ev) {
             setEnabled(false);
             updateText();
         }
         
-        public void childrenAdded(NodeMemberEvent ev) {}
-        public void childrenRemoved(NodeMemberEvent ev) {}
-        public void childrenReordered(NodeReorderEvent ev) {}
+        public @Override void childrenAdded(NodeMemberEvent ev) {}
+        public @Override void childrenRemoved(NodeMemberEvent ev) {}
+        public @Override void childrenReordered(NodeReorderEvent ev) {}
         
     }
     

@@ -184,9 +184,12 @@ public class JiraConfiguration {
     }
 
     public Component getComponentById(String projectId, String componentId) {
-        for (Component component : getComponents(projectId)) {
-            if (componentId.equals(component.getId())) {
-                return component;
+        Component[] components = getComponents(projectId);
+        if(components != null) {
+            for (Component component : components) {
+                if (componentId.equals(component.getId())) {
+                    return component;
+                }
             }
         }
         return null;
@@ -203,9 +206,12 @@ public class JiraConfiguration {
     }
 
     public Version getVersionById(String projectId, String versionId) {
-        for (Version version : getVersions(projectId)) {
-            if (versionId.equals(version.getId())) {
-                return version;
+        Version[] versions = getVersions(projectId);
+        if(versions != null) { 
+            for (Version version : versions) {
+                if (versionId.equals(version.getId())) {
+                    return version;
+                }
             }
         }
         return null;

@@ -162,7 +162,7 @@ public class AID {
                             Portability.getString(
                             "RID_is_not_5_bytes_long")); //NOI18N
                 }
-                if (PIX.length() > 11) {
+                if (PIX.length() > 22) { //11 bytes is 22 hexadecimal digits
                     throw new IllegalArgumentException(
                             Portability.getString(
                             "Pix_too_long_-_must_be_0-11_bytes")); //NOI18N

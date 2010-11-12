@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,6 +69,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -76,6 +79,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -92,22 +96,33 @@ public class MakeSampleProjectGenerator {
 
     private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
+    private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
 
     private MakeSampleProjectGenerator() {
     }
 
     /*package*/ static Set<DataObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String mainProject = (String) template.getAttribute("mainProjectLocation"); // NOI18N
+        if (mainProject != null && mainProject.length() > 0) {
+            prjParams.setMainProject(mainProject);
+        }
         String subProjects = (String) template.getAttribute("subProjectLocations"); // NOI18N
+        if (subProjects != null && subProjects.length() > 0) {
+            prjParams.setSubProjects(subProjects);
+        }
+        String postCreationClassName = (String) template.getAttribute("postProjectCreationClassName"); // NOI18N
+        if (postCreationClassName != null && postCreationClassName.length() > 0) {
+            prjParams.setPostCreationClassName(postCreationClassName);
+        }
         if (mainProject != null) {
             File parentFolderLocation = prjParams.getProjectFolder();
-            File mainProjectLocation = new File(parentFolderLocation, mainProject);
+            File mainProjectLocation = CndFileUtils.createLocalFile(parentFolderLocation, mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
-                    subProjectsFiles.add(new File(parentFolderLocation, st.nextToken()));
+                    subProjectsFiles.add(CndFileUtils.createLocalFile(parentFolderLocation, st.nextToken()));
                 }
                 subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
@@ -120,7 +135,7 @@ public class MakeSampleProjectGenerator {
     private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
-            File prjFile = FileUtil.toFile(prjLoc);
+            File prjFile = FileUtil.toFile(prjLoc); // File & FileUtil are ok here - projects are always local
             if (prjFile != null) {
                 // we can not refresh full system as was done orriginally for IZ124952
                 // prjLoc.getFileSystem().refresh(false); // IZ124952
@@ -140,68 +155,112 @@ public class MakeSampleProjectGenerator {
             // Change working dir and default conf in 'projectDescriptor.xml'
             //String workingDir = projectLocation.getPath();
 //            String systemOs = getCurrentSystemOs();
-            projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
-            doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-            //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-//            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            String hostUID = prjParams.getHostUID();
-            ExecutionEnvironment env = null;
-            if (hostUID != null) {
-                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            }
-            env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
-            String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
-            CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
-            int platform = compilerSetManager.getPlatform();
-            CompilerSet compilerSet = prjParams.getToolchain();
-            compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
-            String variant = null;
-            String csVariant = "GNU|GNU"; // NOI18N
-            if (compilerSet != null) {
-                variant = MakeConfiguration.getVariant(compilerSet, platform);
-                csVariant = compilerSet.getName();
-                if (compilerSet.getCompilerFlavor() != null) {
-                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+            FileObject pfo = prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE);
+            if (pfo != null) {
+                projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
+                doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
+    //            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
+                String hostUID = prjParams.getHostUID();
+                ExecutionEnvironment env = null;
+                if (hostUID != null) {
+                    env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
                 }
-            }
-            changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
-            changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
-            changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
+                String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
+                CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
+                int platform = compilerSetManager.getPlatform();
+                CompilerSet compilerSet = prjParams.getToolchain();
+                compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
+                String variant = null;
+                String csVariant = "GNU|GNU"; // NOI18N
+                if (compilerSet != null) {
+                    variant = MakeConfiguration.getVariant(compilerSet, platform);
+                    csVariant = compilerSet.getName();
+                    if (compilerSet.getCompilerFlavor() != null) {
+                        csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+                    }
                 }
-            }
-            if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
+                changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
                 }
-            } else {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                } else {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
                 }
+                saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
+                FileObject privateConfiguration = prjLoc.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+                if (privateConfiguration != null) {
+                    projXml = FileUtil.toFile(privateConfiguration);
+                    doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                    changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                    saveXml(doc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
+                }
+                recordCreateSampleProject(env);
             }
-            //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
-            saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
-            recordCreateSampleProject(env);
+
+//            // Custom post-creation process
+//            PostProjectCreationProcessor ppcp = null;
+//            String postCreationClassName = prjParams.getPostCreationClassName();
+//            if (postCreationClassName != null && postCreationClassName.length() > 0) {
+//                Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
+//                for (PostProjectCreationProcessor instance : col) {
+//                    if (postCreationClassName.equals(instance.getClass().getName())) {
+//                        ppcp = instance;
+//                        break;
+//                    }
+//                }
+//                if (ppcp != null) {
+//                    ppcp.postProcess(prjLoc, prjParams);
+//                }
+//            }
+
         } catch (Exception e) {
             IOException ex = new IOException(e);
             throw ex;
+        }
+    }
+
+    private static void customPostProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) {
+        // Custom post-creation process
+        PostProjectCreationProcessor ppcp = null;
+        String postCreationClassName = prjParams.getPostCreationClassName();
+        if (postCreationClassName != null && postCreationClassName.length() > 0) {
+            Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
+            for (PostProjectCreationProcessor instance : col) {
+                if (postCreationClassName.equals(instance.getClass().getName())) {
+                    ppcp = instance;
+                    break;
+                }
+            }
+            if (ppcp != null) {
+                ppcp.postProcess(prjLoc, prjParams);
+            }
         }
     }
 
@@ -250,9 +309,10 @@ public class MakeSampleProjectGenerator {
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         FileObject prjLoc;
         unzip(inputStream, prjParams.getProjectFolder());
-        prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
+        prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
 
         postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
 
         prjLoc.refresh(false);
 
@@ -262,7 +322,7 @@ public class MakeSampleProjectGenerator {
     private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         try {
             FileObject prjLoc = null;
-            prjLoc = FileUtil.toFileObject(projectFile);
+            prjLoc = CndFileUtils.toFileObject(projectFile);
             postProcessProject(prjLoc, null, prjParams);
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
@@ -281,6 +341,8 @@ public class MakeSampleProjectGenerator {
                 addToSet(set, subProjectLocations[i], prjParams);
             }
         }
+        FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
+        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         return new LinkedHashSet<DataObject>(set);
     }
 
@@ -334,7 +396,7 @@ public class MakeSampleProjectGenerator {
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
-                File f = new File(targetFolder, ent.getName());
+                File f = CndFileUtils.createLocalFile(targetFolder, ent.getName());
                 if (ent.isDirectory()) {
                     FileUtil.createFolder(f);//f.mkdirs();
                 } else {

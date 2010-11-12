@@ -56,10 +56,14 @@
 package org.netbeans.modules.cnd.api.model.xref;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
+import org.openide.util.CharSequences;
 
 /**
  * some help methods to support CsmReference objects
@@ -100,5 +104,29 @@ public final class CsmReferenceSupport {
             out = ref.getText();
         }
         return out;
+    }
+    
+    public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
+        if (checkDecl.equals(targetDecl)) {
+            return true;
+        } else if (CsmKindUtilities.isConstructor(checkDecl)) {
+            return false;
+        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
+            CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
+            CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
+            if (fqnCheck.equals(fqnTarget)) {
+                if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
+                    // we treat const and non-const functions as the same
+                    fqnCheck = ((CsmFunction) checkDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
+                    fqnTarget = ((CsmFunction) targetDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
+                    if (fqnCheck.equals(fqnTarget)) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }            
+        }
+        return false;
     }
 }

@@ -44,13 +44,19 @@
 
 package org.netbeans.modules.web.beans.wizard;
 
+import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -60,6 +66,7 @@ import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.netbeans.spi.project.ui.templates.support.Templates.SimpleTargetChooserBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -67,16 +74,28 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * A template wizard operator for new beans.xml
  */
 public class BeansXmlIterator implements TemplateWizard.Iterator {
+    
+    private enum J2eeProjectType {
+        WAR,
+        JAR,
+        CAR
+    }
+
+    private static final String WEB_INF = "WEB-INF";        // NOI18N
+    private static final String META_INF = "META-INF";        // NOI18N
+    
     private int index;
     private static final String defaultName = "beans";   //NOI18N
 
     private transient WizardDescriptor.Panel[] panels;
+    private transient J2eeProjectType type;
 
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         String targetName = Templates.getTargetName(wizard);
@@ -93,10 +112,33 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wizard) {
         WizardDescriptor.Panel folderPanel;
         Project project = Templates.getProject( wizard );
+        
+        FileObject  targetFolder = getTargetFolder(project);
+        
         Sources sources = project.getLookup().lookup(Sources.class);
-        SourceGroup[] webGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
-        folderPanel = Templates.createSimpleTargetChooser(project, webGroups);
-
+        SourceGroup[] sourceGroups; 
+        String parentFolder  = null;
+        if ( type == J2eeProjectType.WAR){
+            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            if ( targetFolder.getFileObject(defaultName+".xml")!=null){
+                parentFolder = WEB_INF;
+            }
+        }
+        else {
+            if ( type != null && 
+                    targetFolder.getFileObject(defaultName+".xml")!=null )
+            {
+                parentFolder = targetFolder.getName();
+            }
+            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        }
+        
+        SimpleTargetChooserBuilder builder = Templates.
+                buildSimpleTargetChooser(project, sourceGroups);
+        
+        builder = builder.bottomPanel( new FakePanel(parentFolder));
+        folderPanel = builder.create();
+        
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
         // Creating steps.
@@ -117,7 +159,7 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         }
 
         Templates.setTargetName(wizard, defaultName);
-        Templates.setTargetFolder(wizard, getTargetFolder(project));
+        Templates.setTargetFolder(wizard, targetFolder );
     }
 
     private FileObject getTargetFolder(Project project) {
@@ -126,25 +168,47 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
             FileObject webInf = wm.getWebInf();
             if (webInf == null) {
                 try {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            type = J2eeProjectType.WAR;
             return webInf;
-        } else {
+        } 
+        else {
             EjbJar ejbs[] = EjbJar.getEjbJars(project);
             if (ejbs.length > 0) {
+                type = J2eeProjectType.JAR;
                 return ejbs[0].getMetaInf();
             } else {
                 Car cars[] = Car.getCars(project);
                 if (cars.length > 0) {
+                    type = J2eeProjectType.CAR;
                     return cars[0].getMetaInf();
-                } else {
-                    return project.getProjectDirectory();
-                }
+                } 
             }
         }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if ( sourceGroups.length >0 ){
+            FileObject metaInf = sourceGroups[0].getRootFolder().getFileObject( 
+                    META_INF );
+            if ( metaInf == null ){
+                try {
+                    metaInf = FileUtil.createFolder(
+                        sourceGroups[0].getRootFolder(), META_INF);
+                }
+                catch( IOException e ){
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            if ( metaInf != null ){
+                return metaInf;
+            }
+        }
+        return project.getProjectDirectory();
     }
 
     public void uninitialize(TemplateWizard wiz) {
@@ -204,5 +268,51 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         return res;
     }
 
+    static class FakePanel implements Panel {
+        
+        private String folder ;
+        
+        FakePanel(String folder ){
+            this.folder = folder;
+        }
+
+        @Override
+        public Component getComponent() {
+            return new JPanel();
+        }
+
+        @Override
+        public HelpCtx getHelp() {
+            return null;
+        }
+
+        @Override
+        public void readSettings(Object settings) {
+            if ( folder!=null ){
+                ((WizardDescriptor)settings).putProperty(
+                        WizardDescriptor.PROP_ERROR_MESSAGE, 
+                        NbBundle.getMessage( BeansXmlIterator.class ,
+                                "ERR_BeansAlreadyExists", folder));
+            }
+        }
+
+        @Override
+        public void storeSettings(Object settings) {
+        }
+
+        @Override
+        public boolean isValid() {
+            return folder == null;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+        }
+        
+    }
 
 }

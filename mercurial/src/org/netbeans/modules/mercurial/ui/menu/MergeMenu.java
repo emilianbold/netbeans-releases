@@ -63,8 +63,8 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 public class MergeMenu extends DynamicMenu {
     private boolean bShowMarkAsResolved;
 
-    public MergeMenu(VCSContext ctx, boolean bShowMarkAsResolved) {
-        super(ctx, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+    public MergeMenu(boolean bShowMarkAsResolved) {
+        super(NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
         this.bShowMarkAsResolved = bShowMarkAsResolved;
     }
 

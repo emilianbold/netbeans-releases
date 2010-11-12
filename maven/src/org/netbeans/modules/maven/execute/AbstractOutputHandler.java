@@ -297,7 +297,7 @@ public abstract class AbstractOutputHandler {
                     visitor.setColor(Color.GRAY);
                     break;
                 case WARNING:
-                    visitor.setColor(Color.ORANGE);
+                    visitor.setColor(Color.ORANGE.darker());
                     break;
                 case ERROR:
                     visitor.setColor(Color.RED);

@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
@@ -55,6 +58,8 @@ public class CallGraphState {
     private CallModel model;
     private CallGraphScene scene;
     private Action[] actions;
+    private Map<Function, Boolean> calleesExpanded = new ConcurrentHashMap<Function, Boolean>();
+    private Map<Function, Boolean> callersExpanded = new ConcurrentHashMap<Function, Boolean>();
     
     public CallGraphState(CallModel model, CallGraphScene scene, Action[] actions){
         this.model = model;
@@ -62,8 +67,12 @@ public class CallGraphState {
         this.actions = actions;
     }
 
-    public CallModel getModel() {
-        return model;
+    public List<Call> getCallers(Function declaration) {
+        return model.getCallers(declaration);
+    }
+
+    public List<Call> getCallees(Function definition) {
+        return model.getCallees(definition);
     }
 
     public void doLayout(){
@@ -82,6 +91,30 @@ public class CallGraphState {
         if (scene != null) {
             scene.addFunctionToScene(element);
         }
+    }
+
+    public void setCalleesExpanded(Function element, boolean expanded) {
+        calleesExpanded.put(element, expanded);
+    }
+
+    public boolean isCalleesExpanded(Function element) {
+        Boolean expanded = calleesExpanded.get(element);
+        if (expanded == null) {
+            return false;
+        }
+        return expanded;
+    }
+
+    public void setCallersExpanded(Function element, boolean expanded) {
+        callersExpanded.put(element, expanded);
+    }
+
+    public boolean isCallersExpanded(Function element) {
+        Boolean expanded = callersExpanded.get(element);
+        if (expanded == null) {
+            return false;
+        }
+        return expanded;
     }
 
     public Action[] getActions() {

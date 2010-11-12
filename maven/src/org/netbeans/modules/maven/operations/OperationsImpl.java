@@ -92,7 +92,6 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(projectDirectory, "pom.xml", files); // NOI18N
-        addFile(projectDirectory, "profiles.xml", files); // NOI18N
         addFile(projectDirectory, "nbactions.xml", files); //NOI18N
         addFile(projectDirectory, "nb-configuration.xml", files); //NOI18N
         

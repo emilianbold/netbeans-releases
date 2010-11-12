@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -55,9 +56,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -86,12 +87,41 @@ import org.openide.util.RequestProcessor;
  */
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String CP_SELECTED = "wasSelected"; //NOI18N
+    private static final String SEPARATOR = "SEPARATOR";
+    private static final String BUNDLED_RUNTIME_VERSION =
+            MavenSettings.getCommandLineMavenVersion(MavenSettings.getDefaultMavenHome());
+    private static final int RUNTIME_COUNT_LIMIT = 5;
     private boolean changed;
     private boolean valid;
     private ActionListener listener;
     private DocumentListener docList;
     private MavenOptionController controller;
     private TextValueCompleter completer;
+    private ActionListener   listItemChangedListener;
+    private List<String>       userDefinedMavenRuntimes = new ArrayList<String>();
+    private List<String>       predefinedRuntimes = new ArrayList<String>();
+    private DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
+    private String             mavenRuntimeHome = null;
+    private int                lastSelected = -1;
+
+    private static class ComboBoxRenderer extends DefaultListCellRenderer {
+
+        private JSeparator separator;
+
+        public ComboBoxRenderer() {
+            super();
+            separator = new JSeparator(JSeparator.HORIZONTAL);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            if (SEPARATOR.equals(value)) {
+                return separator;
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    };
 
     /** Creates new form SettingsPanel */
     SettingsPanel(MavenOptionController controller) {
@@ -101,6 +131,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         comBinaries.setModel(new DefaultComboBoxModel(downloads));
         comJavadoc.setModel(new DefaultComboBoxModel(downloads));
         comSource.setModel(new DefaultComboBoxModel(downloads));
+        comMavenHome.setModel(mavenHomeDataModel);
 
         ListCellRenderer rend = new DefaultListCellRenderer() {
             @Override
@@ -119,17 +150,35 @@ public class SettingsPanel extends javax.swing.JPanel {
         comBinaries.setRenderer(rend);
         comSource.setRenderer(rend);
         comJavadoc.setRenderer(rend);
+        comMavenHome.setRenderer(new ComboBoxRenderer());
 
         this.controller = controller;
-        docList = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                documentChanged(e);
-            }
-            public void removeUpdate(DocumentEvent e) {
-                documentChanged(e);
-            }
-            public void changedUpdate(DocumentEvent e) {
-                documentChanged(e);
+        listItemChangedListener = new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (SEPARATOR.equals(comMavenHome.getSelectedItem())) {
+                    comMavenHome.setSelectedIndex(lastSelected);
+                    return;
+                }
+                
+                int selected = comMavenHome.getSelectedIndex();
+                if (selected == mavenHomeDataModel.getSize() - 1) {
+                    // browse
+                    comMavenHome.setSelectedIndex(lastSelected);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            browseAddNewRuntime();
+                        }
+                        
+                    });
+                    return;
+                }
+                
+                listDataChanged();
+                lastSelected = selected;
             }
         };
         initValues();
@@ -179,43 +228,64 @@ public class SettingsPanel extends javax.swing.JPanel {
         return Arrays.asList(AVAILABLE_OPTIONS);
     }
 
-    private void initExternalVersion()
-    {
-        String path = txtCommandLine.getText().trim();
-        File root = new File(path);
-        String version = MavenSettings.getCommandLineMavenVersion(root);
-        if (version != null) {
-            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion2", version));
-        } else {
-            //add red color..
-            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
-        }
-    }
-    
     private void initValues() {
         comIndex.setSelectedIndex(0);
         cbSnapshots.setSelected(true);
     }
     
-    private void documentChanged(DocumentEvent e) {
+    private String getSelectedRuntime(int selected) {
+        if (selected < 0) {
+            return null;
+        }
+        
+        if (selected < predefinedRuntimes.size()) {
+            return predefinedRuntimes.get(selected);
+
+        } else if (!userDefinedMavenRuntimes.isEmpty() &&
+                selected - predefinedRuntimes.size() <= userDefinedMavenRuntimes.size()) {
+            return userDefinedMavenRuntimes.get(selected - 1 - predefinedRuntimes.size());
+        }
+        
+        return null;
+    }
+    
+    private void listDataChanged() {
         changed = true;
         boolean oldvalid = valid;
-        if (txtCommandLine.getText().trim().length() > 0) {
-            File fil = new File(txtCommandLine.getText());
-            if (fil.exists() && new File(fil, "bin" + File.separator + "mvn").exists()) { //NOI18N
+        int selected = comMavenHome.getSelectedIndex();
+        String path = getSelectedRuntime(selected);
+        if (path != null) {
+            path = path.trim();
+            if ("".equals(path)) {
+                path = null;
                 valid = true;
-            } else {
-                valid = false;
+                lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion2", BUNDLED_RUNTIME_VERSION));
             }
-        } else {
-            valid = true;
         }
+
+        if (path != null) {
+            path = path.trim();
+            File fil = new File(path);
+            String ver = null;
+            if (fil.exists() && new File(fil, "bin" + File.separator + "mvn").exists()) { //NOI18N
+                ver = MavenSettings.getCommandLineMavenVersion(new File(path));
+            }
+
+            if (ver != null) {
+                lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion2", ver));
+                valid = true;
+
+            } else {
+                lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
+            }
+        }
+
+        mavenRuntimeHome = path;
         if (oldvalid != valid) {
             controller.firePropChange(MavenOptionController.PROP_VALID, Boolean.valueOf(oldvalid), Boolean.valueOf(valid));
         }
-        initExternalVersion();
     }
-    
+
     private ComboBoxModel createComboModel() {
         return new DefaultComboBoxModel(
                 new String[] { 
@@ -238,9 +308,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         bgPlugins = new javax.swing.ButtonGroup();
         bgFailure = new javax.swing.ButtonGroup();
         lblCommandLine = new javax.swing.JLabel();
-        txtCommandLine = new javax.swing.JTextField();
-        btnCommandLine = new javax.swing.JButton();
-        btnDefault = new javax.swing.JButton();
         lblExternalVersion = new javax.swing.JLabel();
         lblOptions = new javax.swing.JLabel();
         txtOptions = new javax.swing.JTextField();
@@ -262,22 +329,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
         cbSnapshots = new javax.swing.JCheckBox();
+        comMavenHome = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnCommandLine.text")); // NOI18N
-        btnCommandLine.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCommandLineActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnDefault, NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnDefault.text")); // NOI18N
-        btnDefault.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDefaultActionPerformed(evt);
-            }
-        });
 
         org.openide.awt.Mnemonics.setLocalizedText(lblOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOptions.text")); // NOI18N
 
@@ -333,111 +387,106 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSnapshots, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbSnapshots.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblCommandLine)
-                            .add(lblOptions)
-                            .add(lblLocalRepository))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnCommandLine)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnDefault))
-                            .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(comSource, 0, 387, Short.MAX_VALUE)
-                                    .add(comJavadoc, 0, 387, Short.MAX_VALUE)
-                                    .add(comBinaries, 0, 387, Short.MAX_VALUE)
-                                    .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                                    .add(txtOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(btnLocalRepository)
-                                    .add(btnOptions)))
-                            .add(cbSkipTests)))
-                    .add(jLabel1)
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblJavadoc)
-                            .add(lblBinaries)
-                            .add(lblSource)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE))
-                        .add(106, 106, 106))
-                    .add(btnGoals)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(lblIndex)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbSnapshots)
-                            .add(comIndex, 0, 396, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnIndex)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblCommandLine)
+                            .addComponent(lblOptions)
+                            .addComponent(lblLocalRepository))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(comSource, 0, 412, Short.MAX_VALUE)
+                                    .addComponent(comJavadoc, 0, 412, Short.MAX_VALUE)
+                                    .addComponent(comBinaries, 0, 412, Short.MAX_VALUE)
+                                    .addComponent(txtLocalRepository, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                                    .addComponent(txtOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnLocalRepository)
+                                    .addComponent(btnOptions)))
+                            .addComponent(cbSkipTests)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(comMavenHome, 0, 403, Short.MAX_VALUE)
+                                .addGap(122, 122, 122))))
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblJavadoc)
+                            .addComponent(lblBinaries)
+                            .addComponent(lblSource)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE))
+                        .addGap(106, 106, 106))
+                    .addComponent(btnGoals)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(lblIndex)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbSnapshots)
+                            .addComponent(comIndex, 0, 421, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIndex)))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {btnCommandLine, btnIndex, btnLocalRepository, btnOptions}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnIndex, btnLocalRepository, btnOptions});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(6, 6, 6)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblCommandLine)
-                    .add(txtCommandLine, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnDefault)
-                    .add(btnCommandLine))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblOptions)
-                    .add(txtOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnOptions))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbSkipTests)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnLocalRepository)
-                    .add(lblLocalRepository))
-                .add(16, 16, 16)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblBinaries)
-                    .add(comBinaries, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblJavadoc)
-                    .add(comJavadoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblSource)
-                    .add(comSource, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(btnGoals)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(btnIndex)
-                    .add(lblIndex)
-                    .add(comIndex, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbSnapshots)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblCommandLine)
+                    .addComponent(comMavenHome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblExternalVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblOptions)
+                    .addComponent(txtOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnOptions))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbSkipTests)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtLocalRepository, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnLocalRepository)
+                    .addComponent(lblLocalRepository))
+                .addGap(16, 16, 16)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblBinaries)
+                    .addComponent(comBinaries, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblJavadoc)
+                    .addComponent(comJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSource)
+                    .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnGoals)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnIndex)
+                    .addComponent(lblIndex)
+                    .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbSnapshots)
+                .addContainerGap(23, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -481,29 +530,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnLocalRepositoryActionPerformed
 
-    private void btnCommandLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCommandLineActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Select2"));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        String path = txtCommandLine.getText();
-        if (path.trim().length() == 0) {
-            path = new File(System.getProperty("user.home")).getAbsolutePath(); //NOI18N
-        }
-        if (path.length() > 0) {
-            File f = new File(path);
-            if (f.exists()) {
-                chooser.setSelectedFile(f);
-            }
-        }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectDir = chooser.getSelectedFile();
-            txtCommandLine.setText(FileUtil.normalizeFile(projectDir).getAbsolutePath());
-        }
-        
-    }//GEN-LAST:event_btnCommandLineActionPerformed
-
     private void btnGoalsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGoalsActionPerformed
         NbGlobalActionGoalProvider provider = null;
         for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
@@ -538,18 +564,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
     }//GEN-LAST:event_btnOptionsActionPerformed
-
-    private void btnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultActionPerformed
-        txtCommandLine.setText(MavenSettings.getDefaultMavenHome().getAbsolutePath());
-    }//GEN-LAST:event_btnDefaultActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgChecksums;
     private javax.swing.ButtonGroup bgFailure;
     private javax.swing.ButtonGroup bgPlugins;
-    private javax.swing.JButton btnCommandLine;
-    private javax.swing.JButton btnDefault;
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnLocalRepository;
@@ -559,6 +579,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JComboBox comJavadoc;
+    private javax.swing.JComboBox comMavenHome;
     private javax.swing.JComboBox comSource;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
@@ -570,18 +591,92 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblLocalRepository;
     private javax.swing.JLabel lblOptions;
     private javax.swing.JLabel lblSource;
-    private javax.swing.JTextField txtCommandLine;
     private javax.swing.JTextField txtLocalRepository;
     private javax.swing.JTextField txtOptions;
     // End of variables declaration//GEN-END:variables
     
+    private void browseAddNewRuntime() {
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Select2"));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
+        int selected = comMavenHome.getSelectedIndex();
+        String path = getSelectedRuntime(selected);
+        if (path == null || path.trim().length() == 0) {
+            path = new File(System.getProperty("user.home")).getAbsolutePath(); //NOI18N
+        }
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists()) {
+                chooser.setSelectedFile(f);
+            }
+        }
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File projectDir = chooser.getSelectedFile();
+            String newRuntimePath = FileUtil.normalizeFile(projectDir).getAbsolutePath();
+            boolean existed = false;
+            List<String> runtimes = new ArrayList<String>();
+            runtimes.addAll(predefinedRuntimes);
+            runtimes.addAll(userDefinedMavenRuntimes);
+            for (String runtime : runtimes) {
+                if (runtime.equals(newRuntimePath)) {
+                    existed = true;
+                }
+            }
+            if (!existed) {
+                // do not add duplicated directory
+                if (userDefinedMavenRuntimes.isEmpty()) {
+                    mavenHomeDataModel.insertElementAt(SEPARATOR, predefinedRuntimes.size());
+                }
+                userDefinedMavenRuntimes.add(newRuntimePath);
+                mavenHomeDataModel.insertElementAt(newRuntimePath, runtimes.size() + 1);
+            }
+            comMavenHome.setSelectedItem(newRuntimePath);
+        }
+    }
+    
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
-        txtCommandLine.getDocument().removeDocumentListener(docList);
+
+        predefinedRuntimes.clear();
+        predefinedRuntimes.add("");
+        String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
+        if (defaultExternalMavenRuntime != null) {
+            predefinedRuntimes.add(defaultExternalMavenRuntime);
+        }
+        userDefinedMavenRuntimes.clear();
+        userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
+        comMavenHome.removeActionListener(listItemChangedListener);
+        mavenHomeDataModel.removeAllElements();
         File command = MavenSettings.getDefault().getMavenHome();
-        txtCommandLine.setText(command != null ? command.getAbsolutePath() : ""); //NOI18N
-        initExternalVersion();
-        txtCommandLine.getDocument().addDocumentListener(docList);
+        String bundled = null;
+        for (String runtime : predefinedRuntimes) {
+            boolean bundledRuntime = runtime.isEmpty();
+            String desc = org.openide.util.NbBundle.getMessage(SettingsPanel.class,
+                    bundledRuntime ? "MAVEN_RUNTIME_Bundled" : "MAVEN_RUNTIME_External",
+                    new Object[]{runtime,
+                    bundledRuntime ? BUNDLED_RUNTIME_VERSION : MavenSettings.getCommandLineMavenVersion(new File(runtime))}); // NOI18N
+            mavenHomeDataModel.addElement(desc);
+        }
+        
+        if (!userDefinedMavenRuntimes.isEmpty()) {
+            mavenHomeDataModel.addElement(SEPARATOR);
+            for (String runtime : userDefinedMavenRuntimes) {
+                String desc = org.openide.util.NbBundle.getMessage(SettingsPanel.class,
+                        "MAVEN_RUNTIME_External",
+                        new Object[]{runtime, MavenSettings.getCommandLineMavenVersion(new File(runtime))}); // NOI18N
+                mavenHomeDataModel.addElement(desc);
+            }
+        }
+        
+        mavenHomeDataModel.addElement(SEPARATOR);
+        mavenHomeDataModel.addElement(org.openide.util.NbBundle.getMessage(SettingsPanel.class,
+                    "MAVEN_RUNTIME_Browse"));
+        comMavenHome.setSelectedItem(command != null ? command.getAbsolutePath() : bundled); //NOI18N
+        listDataChanged();
+        lastSelected = comMavenHome.getSelectedIndex();
+        comMavenHome.addActionListener(listItemChangedListener);
         
         cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
@@ -598,9 +693,24 @@ public class SettingsPanel extends javax.swing.JPanel {
     public void applyValues() {
         MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
         MavenSettings.getDefault().setCustomLocalRepository(((MyJTextField)txtLocalRepository).getRealText());
-        String cl = txtCommandLine.getText().trim();
+        
+        // remember only user-defined runtimes of RUNTIME_COUNT_LIMIT count at the most
+        List<String> runtimes = new ArrayList<String>();
+        for (int i = 0; i < userDefinedMavenRuntimes.size() && i < RUNTIME_COUNT_LIMIT; ++i) {
+            runtimes.add(0, userDefinedMavenRuntimes.get(userDefinedMavenRuntimes.size() - 1 - i));
+        }
+        int selected = comMavenHome.getSelectedIndex() - predefinedRuntimes.size() - 1;
+        if (selected >= 0 && runtimes.size() == RUNTIME_COUNT_LIMIT &&
+                userDefinedMavenRuntimes.size() - RUNTIME_COUNT_LIMIT > selected) {
+            runtimes.set(0, userDefinedMavenRuntimes.get(selected));
+        }
+        if (predefinedRuntimes.size() > 1) {
+            runtimes.add(0, predefinedRuntimes.get(1));
+        }
+        MavenSettings.getDefault().setMavenRuntimes(runtimes);
+        String cl = mavenRuntimeHome;
         //MEVENIDE-553
-        File command = cl.isEmpty() ? null : new File(cl);
+        File command = (cl == null || cl.isEmpty()) ? null : new File(cl);
         if (command != null && command.isDirectory()) {
             MavenSettings.getDefault().setMavenHome(command);
         } else {

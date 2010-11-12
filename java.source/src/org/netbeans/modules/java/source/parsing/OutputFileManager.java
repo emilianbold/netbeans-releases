@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -256,7 +255,7 @@ public class OutputFileManager extends CachingFileManager {
         return sibling == null ? getClassFolderForApt(baseName) : getClassFolderForApt(sibling.toUri().toURL());
     }
 
-    private File getClassFolderForApt(final @NotNull URL surl) {
+    private File getClassFolderForApt(final @NonNull URL surl) {
         for (ClassPath.Entry entry : apt.entries()) {
             if (FileObjects.isParentOf(entry.getURL(), surl)) {
                 final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());

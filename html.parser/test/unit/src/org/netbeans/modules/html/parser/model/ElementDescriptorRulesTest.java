@@ -66,25 +66,25 @@ public class ElementDescriptorRulesTest extends NbTestCase {
         assertTrue(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(tbody));
     }
 
-    public void testMathMLTags() {
-
-        ElementName sin = ElementName.SIN;
-        assertNull(ElementDescriptor.forElementName(sin));
-
-        assertTrue(ElementDescriptorRules.MATHML_TAG_NAMES.contains(sin.name));
-        assertFalse(ElementDescriptorRules.SVG_TAG_NAMES.contains(sin.name));
-        
-    }
-
-    public void testSVGTags() {
-
-        ElementName svg = ElementName.SVG;
-        assertNull(ElementDescriptor.forElementName(svg));
-
-        assertTrue(ElementDescriptorRules.SVG_TAG_NAMES.contains(svg.name));
-        assertFalse(ElementDescriptorRules.MATHML_TAG_NAMES.contains(svg.name));
-
-    }
+//    public void testMathMLTags() {
+//
+//        ElementName sin = ElementName.SIN;
+//        assertNull(ElementDescriptor.forElementName(sin));
+//
+//        assertTrue(ElementDescriptorRules.MATHML_TAG_NAMES.contains(sin.name));
+//        assertFalse(ElementDescriptorRules.SVG_TAG_NAMES.contains(sin.name));
+//
+//    }
+//
+//    public void testSVGTags() {
+//
+//        ElementName svg = ElementName.SVG;
+//        assertNull(ElementDescriptor.forElementName(svg));
+//
+//        assertTrue(ElementDescriptorRules.SVG_TAG_NAMES.contains(svg.name));
+//        assertFalse(ElementDescriptorRules.MATHML_TAG_NAMES.contains(svg.name));
+//
+//    }
     
 
 }

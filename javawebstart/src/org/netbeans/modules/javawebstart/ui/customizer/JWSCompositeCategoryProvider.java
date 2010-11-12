@@ -200,25 +200,26 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 writer.println("        <homepage href=\"${APPLICATION.HOMEPAGE}\"/>");
                 writer.println("        <description>${APPLICATION.DESC}</description>");
                 writer.println("        <description kind=\"short\">${APPLICATION.DESC.SHORT}</description>");
-                writer.println("<!--${JNLP.ICONS}-->");
+                writer.println("        <!--${JNLP.ICONS}-->");
+                writer.println("        <!--${JNLP.OFFLINE.ALLOWED}-->");
                 writer.println("    </information>");
-                writer.println("<!--${JNLP.UPDATE}-->");
-                writer.println("<!--${JNLP.SECURITY}-->");
+                writer.println("    <!--${JNLP.UPDATE}-->");
+                writer.println("    <!--${JNLP.SECURITY}-->");
                 writer.println("    <resources>");
-                writer.println("<!--${JNLP.RESOURCES.RUNTIME}-->");
-                writer.println("<!--${JNLP.RESOURCES.MAIN.JAR}-->");
-                writer.println("<!--${JNLP.RESOURCES.JARS}-->");
-                writer.println("<!--${JNLP.RESOURCES.EXTENSIONS}-->");
+                writer.println("        <!--${JNLP.RESOURCES.RUNTIME}-->");
+                writer.println("        <!--${JNLP.RESOURCES.MAIN.JAR}-->");
+                writer.println("        <!--${JNLP.RESOURCES.JARS}-->");
+                writer.println("        <!--${JNLP.RESOURCES.EXTENSIONS}-->");
                 writer.println("    </resources>");
                 // type of descriptor
                 if (desc.equals(JWSProjectProperties.DescType.application)) {
                     writer.println("    <application-desc main-class=\"${jnlp.main.class}\">");
-                    writer.println("<!--${JNLP.APPLICATION.ARGS}-->");
+                    writer.println("        <!--${JNLP.APPLICATION.ARGS}-->");
                     writer.println("    </application-desc>");
                 } else if (desc.equals(JWSProjectProperties.DescType.applet)) {
                     writer.println("    <applet-desc main-class=\"${jnlp.main.class}\" name=\"${APPLICATION.TITLE}\"\n" +
                         "        width=\"${jnlp.applet.width}\" height=\"${jnlp.applet.height}\">");
-                    writer.println("<!--${JNLP.APPLET.PARAMS}-->");
+                    writer.println("        <!--${JNLP.APPLET.PARAMS}-->");
                     writer.println("    </applet-desc>");
                 } else if (desc.equals(JWSProjectProperties.DescType.component)) {
                     writer.println("    <component-desc/>");
@@ -395,6 +396,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 if (extender.getExtension("jws") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile); // NOI18N
                     ext.addDependency("jar", "jnlp"); // NOI18N
+                    ext.addDependency("-post-jar", "jnlp"); //NOI18N
                 }
                 ProjectManager.getDefault().saveProject(proj);
             } else {

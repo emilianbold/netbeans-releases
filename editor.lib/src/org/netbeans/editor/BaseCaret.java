@@ -110,6 +110,9 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.openide.util.WeakListeners;
 
 /**
@@ -119,6 +122,7 @@ import org.openide.util.WeakListeners;
 * @version 1.00
 */
 
+@SuppressWarnings("ClassWithMultipleLoggers")
 public class BaseCaret implements Caret,
 MouseListener, MouseMotionListener, PropertyChangeListener,
 DocumentListener, ActionListener, 
@@ -139,6 +143,9 @@ AtomicLockListener, FoldHierarchyListener {
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
     
+    // -J-Dorg.netbeans.editor.BaseCaret.EDT.level=FINE - check that setDot() and other operations in EDT only
+    private static final Logger LOG_EDT = Logger.getLogger(BaseCaret.class.getName() + ".EDT");
+
     static {
         // Compatibility debugging flags mapping to logger levels
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
@@ -235,8 +242,6 @@ AtomicLockListener, FoldHierarchyListener {
     */
     protected Color textBackColor;
 
-    private transient FocusListener focusListener;
-
     /** Whether the text is being modified under atomic lock.
      * If so just one caret change is fired at the end of all modifications.
      */
@@ -261,7 +266,7 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private boolean updateAfterFoldHierarchyChange;
     private FoldHierarchyListener weakFHListener;
-
+    
     /**
      * Whether at least one typing change occurred during possibly several atomic operations.
      */
@@ -286,6 +291,7 @@ AtomicLockListener, FoldHierarchyListener {
     };
     private PreferenceChangeListener weakPrefsListener = null;
     
+    private boolean caretUpdatePending;
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
@@ -406,6 +412,7 @@ AtomicLockListener, FoldHierarchyListener {
         component.addFocusListener(listenerImpl);
         component.addMouseListener(this);
         component.addMouseMotionListener(this);
+        ViewHierarchy.get(component).addViewHierarchyListener(listenerImpl);
 
         EditorUI editorUI = Utilities.getEditorUI(component);
         editorUI.addPropertyChangeListener( this );
@@ -448,6 +455,8 @@ AtomicLockListener, FoldHierarchyListener {
         c.removeFocusListener(listenerImpl);
         c.removeMouseListener(this);
         c.removeMouseMotionListener(this);
+        ViewHierarchy.get(c).removeViewHierarchyListener(listenerImpl);
+
         
         EditorUI editorUI = Utilities.getEditorUI(c);
         editorUI.removePropertyChangeListener(this);
@@ -648,6 +657,7 @@ AtomicLockListener, FoldHierarchyListener {
      *  scrolled to the position of the caret.
      */
     protected void update(boolean scrollViewToCaret) {
+        caretUpdatePending = false;
         JTextComponent c = component;
         if (c != null) {
             BaseTextUI ui = (BaseTextUI)c.getUI();
@@ -1054,6 +1064,12 @@ AtomicLockListener, FoldHierarchyListener {
      */
     
     public void setDot(int offset, Rectangle scrollRect, int scrollPolicy, boolean expandFold) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseCaret.setDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
@@ -1146,6 +1162,12 @@ AtomicLockListener, FoldHierarchyListener {
      * @deprecated use #setDot(int) preceded by <code>JComponent.scrollRectToVisible()</code>.
      */
     public void moveDot(int offset, Rectangle scrollRect, int scrollPolicy) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseCaret.moveDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
@@ -1636,8 +1658,20 @@ AtomicLockListener, FoldHierarchyListener {
         });
     }
     
+    void scheduleCaretUpdate() {
+        if (!caretUpdatePending) {
+            caretUpdatePending = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update(false);
+                }
+            });
+        }
+    }
+    
     private class ListenerImpl extends ComponentAdapter
-    implements FocusListener {
+    implements FocusListener, ViewHierarchyListener {
 
         ListenerImpl() {
         }
@@ -1731,6 +1765,13 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
 
+        @Override
+        public void viewHierarchyChanged(ViewHierarchyEvent evt) {
+            if (getDot() >= evt.affectedStartOffset()) {
+                scheduleCaretUpdate();
+            }
+        }
+        
     } // End of ListenerImpl class
 
     public final void refresh() {

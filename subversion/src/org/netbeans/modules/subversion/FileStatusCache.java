@@ -379,7 +379,7 @@ public class FileStatusCache {
 
     private Set<File> listFilesIntern(File[] roots, int includeStatus, boolean recursively) {
         if(roots == null || roots.length == 0) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         Set<File> ret = new HashSet<File>();
         for (File root : roots) {

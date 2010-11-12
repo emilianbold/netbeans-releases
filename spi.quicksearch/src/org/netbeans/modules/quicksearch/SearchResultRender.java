@@ -42,6 +42,7 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -57,6 +58,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.Utilities;
 
 /**
@@ -64,8 +66,6 @@ import org.openide.util.Utilities;
  * @author Jan Becicka
  */
 class SearchResultRender extends JLabel implements ListCellRenderer {
-
-    private static final boolean IS_GTK = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private QuickSearchPopup popup;
 
@@ -78,6 +78,10 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
     private JPanel dividerLine;
 
     private JPanel itemPanel;
+
+    private JPanel itemLinePanel;
+
+    private JLabel cutLabel;
 
     public SearchResultRender (QuickSearchPopup popup) {
         super();
@@ -93,7 +97,6 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         ItemResult ir = (ItemResult) value;
         List<? extends KeyStroke> shortcut = ir.getShortcut();
         resultLabel.setText(ir.getDisplayName());
-        truncateLabel(resultLabel);
         if (shortcut != null && shortcut.size() > 0 && shortcut.get(0) != null) {
             // TBD - display multi shortcuts
             shortcutLabel.setText(getKeyStrokeAsText(shortcut.get(0)));
@@ -112,26 +115,41 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             categoryLabel.setText("");
             rendererComponent.remove(dividerLine);
         }
-
         categoryLabel.setPreferredSize(new Dimension(popup.getCategoryWidth(),
                 categoryLabel.getPreferredSize().height));
         itemPanel.setPreferredSize(new Dimension(popup.getResultWidth(),
                 itemPanel.getPreferredSize().height));
+
+        if ( isCut(ir.getDisplayName(), resultLabel.getWidth()) ) {
+            itemLinePanel.add(cutLabel, BorderLayout.EAST);
+        } else {
+            itemLinePanel.remove(cutLabel);
+        }
 
         if (isSelected) {
             resultLabel.setBackground(list.getSelectionBackground());
             resultLabel.setForeground(list.getSelectionForeground());
             shortcutLabel.setBackground(list.getSelectionBackground());
             shortcutLabel.setForeground(list.getSelectionForeground());
+            cutLabel.setBackground(list.getSelectionBackground());
+            cutLabel.setForeground(list.getSelectionForeground());
         } else {
             resultLabel.setBackground(QuickSearchComboBar.getResultBackground());
             resultLabel.setForeground(list.getForeground());
             shortcutLabel.setBackground(QuickSearchComboBar.getResultBackground());
             shortcutLabel.setForeground(list.getForeground());
+            cutLabel.setBackground(QuickSearchComboBar.getResultBackground());
+            cutLabel.setForeground(list.getForeground());
         }
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
             rendererComponent.setOpaque(false);
+
         return rendererComponent;
+    }
+
+    private boolean isCut (String text, int realWidth) {
+        double width = HtmlRenderer.renderHTML(text, resultLabel.getGraphics(), 0, 10, Integer.MAX_VALUE, 20, resultLabel.getFont(), Color.BLACK, HtmlRenderer.STYLE_CLIP, false);
+        return ((int)width) > (realWidth-4);
     }
 
     private void configRenderer () {
@@ -140,7 +158,9 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         categoryLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
         categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
 
-        resultLabel = new JLabel();
+        resultLabel = HtmlRenderer.createLabel();
+        ((HtmlRenderer.Renderer)resultLabel).setHtml(true);
+        ((HtmlRenderer.Renderer)resultLabel).setRenderStyle(HtmlRenderer.STYLE_CLIP);
         resultLabel.setOpaque(true);
         resultLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
 
@@ -148,11 +168,21 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         shortcutLabel.setOpaque(true);
         shortcutLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
 
+        cutLabel = new JLabel("...");
+        cutLabel.setOpaque(true);
+        cutLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
+
+        itemLinePanel = new JPanel();
+        itemLinePanel.setBackground(QuickSearchComboBar.getResultBackground());
+        itemLinePanel.setLayout(new BorderLayout());
+        itemLinePanel.add(resultLabel, BorderLayout.CENTER);
+
+
         itemPanel = new JPanel();
         itemPanel.setBackground(QuickSearchComboBar.getResultBackground());
         itemPanel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 3));
         itemPanel.setLayout(new BorderLayout());
-        itemPanel.add(resultLabel, BorderLayout.CENTER);
+        itemPanel.add(itemLinePanel, BorderLayout.CENTER);
 
         dividerLine = new JPanel();
         dividerLine.setBackground(QuickSearchComboBar.getPopupBorderColor());
@@ -201,27 +231,4 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         String osName = System.getProperty ("os.name");
         return osName != null && osName.startsWith ("SunOS");
     }
-
-
-    /** Truncate text and put "..." at the end if text exceeds given JLabel
-     * coordinates - workaround fo JLabel inability to truncate html
-     */
-    private static void truncateLabel (JLabel label) {
-        String text = label.getText();
-
-        // no need to truncate non html text, JLabel will do it itself
-        if (!text.startsWith("<html>")) {
-            return;
-        }
-
-        int prefWidth = label.getPreferredSize().width;
-        int curWidth = label.getWidth();
-        if (curWidth > 0 && prefWidth > curWidth) {
-            // get rid of html, JLabel will then correctly put "..." at the end
-            label.setText(text.replaceAll("<.*?>", ""));
-        }
-
-    }
-
-
 }

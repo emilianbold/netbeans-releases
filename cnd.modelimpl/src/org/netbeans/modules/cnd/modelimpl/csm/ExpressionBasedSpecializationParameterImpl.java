@@ -72,18 +72,21 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nick Krasilnikov
  */
-public class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
+public final class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
 
     private final CharSequence expression;
 
-    public ExpressionBasedSpecializationParameterImpl(CsmExpressionStatement expression, CsmFile file, int start, int end) {
-        super(file, start, end);
-        this.expression = NameCache.getManager().getString(expression.getText());
-    }
-
-    public ExpressionBasedSpecializationParameterImpl(String expression, CsmFile file, int start, int end) {
+    private ExpressionBasedSpecializationParameterImpl(CharSequence expression, CsmFile file, int start, int end) {
         super(file, start, end);
         this.expression = NameCache.getManager().getString(expression);
+    }
+
+    public static ExpressionBasedSpecializationParameterImpl create(CsmExpressionStatement expression, CsmFile file, int start, int end) {
+        return new ExpressionBasedSpecializationParameterImpl(expression.getText(), file, start, end);
+    }
+
+    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmFile file, int start, int end) {
+        return new ExpressionBasedSpecializationParameterImpl(expression, file, start, end);
     }
 
     @Override

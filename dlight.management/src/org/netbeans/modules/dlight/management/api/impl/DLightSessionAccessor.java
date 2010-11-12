@@ -77,4 +77,5 @@ public abstract class DLightSessionAccessor {
 
     public abstract boolean isUsingSharedStorage(DLightSession session);
     public abstract String getSharedStorageUniqueKey(DLightSession session);
+    public abstract SessionDataFiltersSupport getSessionDataFiltersSupport(DLightSession session);
 }

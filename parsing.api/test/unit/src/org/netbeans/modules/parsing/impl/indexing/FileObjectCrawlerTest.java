@@ -174,8 +174,8 @@ public class FileObjectCrawlerTest extends NbTestCase {
         assertCollectedFiles("There should be no files in " + root, crawler2.getAllResources());
 
         FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
-        assertCollectedFiles("There should be no files in " + root, crawler1.getAllResources());
-        assertCollectedFiles("All files in " + root + " should be deleted", crawler1.getDeletedResources());
+        assertCollectedFiles("There should be no files in " + root, crawler3.getAllResources());
+        assertCollectedFiles("All files in " + root + " should be deleted", crawler3.getDeletedResources());
     }
 
     protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {

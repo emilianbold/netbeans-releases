@@ -81,7 +81,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.2</specification-version>
+                        <specification-version>0.67</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -284,6 +284,7 @@
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.javafx.project</friend>
+                <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.projectimport</friend>

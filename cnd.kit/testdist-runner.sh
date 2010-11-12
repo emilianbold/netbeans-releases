@@ -28,6 +28,8 @@
 #   and native execution.
 # ANT (optional)
 #   Path to ant executable. By default "ant".
+# STABLE_ONLY (optional)
+#   if false then also run tests marked as "RandomlyFails"
 
 if [ -z "${WORKSPACE}" ]; then
     echo "WORKSPACE is not set!"
@@ -46,6 +48,8 @@ if [ -n "${GET}" ]; then
     unzip -qo testdist.zip
 fi
 
+STABLE_ONLY=${STABLE_ONLY:-true}
+
 cd "${WORKSPACE}/unit"
 MODULES=${MODULES:-`ls -d dlight/* cnd/* ide/*terminal* ide/*nativeex* | paste -s -d : -`}
 cd "${WORKSPACE}"
@@ -55,4 +59,9 @@ ${ANT:-ant} -f "${WORKSPACE}/all-tests.xml" \
 -Dmodules.list="${MODULES}" \
 -Dtest.disable.fails=true \
 -Dtest.dist.timeout=1000000 \
--Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} $*"
+-Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m \
+-Dnetbeans.keyring.no.master=true \
+-Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} \
+-Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} \
+-Dignore.random.failures=${STABLE_ONLY} \
+$*"

@@ -52,6 +52,10 @@ import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.LookupListener;
+import org.openide.util.LookupEvent;
+import org.openide.loaders.DataObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -66,28 +70,72 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;
 
-    private static ClassMemberPanel INSTANCE;   //Always accessed in event dispatch thread
+    private static ClassMemberPanel INSTANCE;  //Apparently not accessed in event dispatch thread in CaretListeningTask
+
+    private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanel.class.getName(),1);
     
+    //Bugfix BZ#191289 - switching between files doesn't change navigator content
+    private Lookup.Result selection;
+    private final LookupListener selectionListener = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            if(selection == null)
+                return;
+            ClassMemberNavigatorSourceFactory f = ClassMemberNavigatorSourceFactory.getInstance();
+            if (f != null)
+                f.firePropertyChangeEvent();
+        }
+    };
+
+
     public ClassMemberPanel() {
     }
 
-    public void panelActivated(Lookup context) {
+    @Override
+    public void panelActivated(final Lookup context) {
         assert context != null;
         INSTANCE = this;
-        // System.out.println("Panel Activated");
-        FileObject fileObject = context.lookup(FileObject.class);
-        Language language = null;
-        if (fileObject != null) {
-            language = LanguageRegistry.getInstance().getLanguageByMimeType(fileObject.getMIMEType());
-        }
-        ClassMemberNavigatorSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI(language));
         getClassMemberPanelUI().showWaitNode();
+
+        //Bugfix BZ#191289 - switching between files doesn't change navigator content
+        selection = context.lookup(new Lookup.Template(DataObject.class));
+        selection.addLookupListener(selectionListener);
+
+        RP.post( new Runnable () {
+            @Override
+            public void run () {
+                FileObject fileObject = context.lookup(FileObject.class);
+                Language language = null;
+                if (fileObject != null) {
+                    language = LanguageRegistry.getInstance().getLanguageByMimeType(fileObject.getMIMEType());
+                }
+                ClassMemberNavigatorSourceFactory f = ClassMemberNavigatorSourceFactory.getInstance();
+                if (f != null) {
+                    f.setLookup(context, getClassMemberPanelUI(language));
+                }
+            }
+        });
     }
 
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
-        ClassMemberNavigatorSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
         INSTANCE = null;
+
+        //Bugfix BZ#191289 - switching between files doesn't change navigator content
+        if(selection != null) {
+            selection.removeLookupListener(selectionListener);
+            selection = null;
+        }
+
+        //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
+        RP.post( new Runnable () {
+            @Override
+            public void run () {
+                ClassMemberNavigatorSourceFactory f = ClassMemberNavigatorSourceFactory.getInstance();
+                if (f != null) {
+                    f.setLookup(Lookup.EMPTY, null);
+                }
+            }
+        });
     }
 
     public Lookup getLookup() {

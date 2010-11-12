@@ -44,6 +44,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -58,7 +59,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
 
     private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
     
-    private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.CLASS);
+    private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ANNOTATION_TYPE);
     
     public AnnotationAsSuperInterface() {
         super( true, true, HintSeverity.WARNING, "AnnotationAsSuperInterface");
@@ -72,7 +73,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
         
         Tree node = treePath.getLeaf();
 
-        if ( node.getKind() != Tree.Kind.CLASS ) {
+        if (node.getKind() != Tree.Kind.ANNOTATION_TYPE) {
             return null;
         }
         

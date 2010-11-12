@@ -44,6 +44,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -57,9 +58,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
 import javax.swing.text.Document;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.BadLocationException;
@@ -74,7 +77,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
@@ -810,6 +817,38 @@ public class BaseKit extends DefaultEditorKit {
         
         c.setKeymap(keymap);
         
+        c.addAncestorListener(new AncestorListener() {
+            private JScrollPane scrollPane;
+            private InputMap origMap;
+            int condition = JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
+
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                Component c = (Component) event.getSource();
+                Component parent;
+                if ((parent = c.getParent()) instanceof JViewport) {
+                    c = parent;
+                    if ((parent = c.getParent()) instanceof JScrollPane) {
+                        scrollPane = (JScrollPane) parent;
+                        origMap = scrollPane.getInputMap(condition);
+                        scrollPane.setInputMap(condition, null);
+                    }
+                }
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+                if (scrollPane != null && scrollPane.getInputMap(condition) == null) {
+                    // Restore original input map
+                    scrollPane.setInputMap(condition, origMap);
+                }
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
+        
         executeInstallActions(c);
     }
 
@@ -1041,7 +1080,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public DefaultKeyTypedAction() {
             // Construct with defaultKeyTypedAction name to retain full compatibility for extending actions
-            super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
+            super(defaultKeyTypedAction, CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
             LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
@@ -1068,6 +1107,11 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
+                // reset magic caret position
+                if (target.getCaret() != null) {
+                    target.getCaret().setMagicCaretPosition(null);
+                }
+                
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
                 if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
@@ -1347,6 +1391,8 @@ public class BaseKit extends DefaultEditorKit {
             BaseDocument doc = (BaseDocument) target.getDocument();
             DocumentUtilities.setTypingModification(doc, true);
             try {
+                String selectedText = target.getSelectedText();
+                int origDot = target.getCaretPosition();
                 target.replaceSelection(""); // NOI18N
                 Caret caret = target.getCaret();
                 Object cookie = beforeBreak(target, doc, caret);
@@ -1356,7 +1402,7 @@ public class BaseKit extends DefaultEditorKit {
                 assert cookie instanceof Integer || dotPos == insertionOffset :
                             "dotPos=" + dotPos + " != " +          //NOI18N
                             "insertionOffset=" + insertionOffset + //NOI18N
-                            "cookie=" + cookie;                    //NOI18N
+                            " cookie=" + cookie + " selectedText='" + selectedText + "' origDot=" + origDot;                    //NOI18N
                 doc.insertString(dotPos, insertionText, null);
                 dotPos += caretPosition != -1 ? caretPosition :
                           breakInsertPosition != -1 ? breakInsertPosition + 1 :
@@ -1384,11 +1430,8 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         private int computeInsertionOffset(Caret caret) {
-            if (Utilities.isSelectionShowing(caret)) {
-                return Math.min(caret.getMark(), caret.getDot());
-            } else {
-                return caret.getDot();
-            }
+            // If selection is present return begining of selection
+            return Math.min(caret.getMark(), caret.getDot());
         }
         
     } // End of InsertBreakAction class
@@ -1463,69 +1506,60 @@ public class BaseKit extends DefaultEditorKit {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomicAsUser (new Runnable () {
-                    public void run () {
-                        DocumentUtilities.setTypingModification(doc, true);
-                        try {
-                        if (Utilities.isSelectionShowing(caret)) { // block selected
+                final Indent indenter = Indent.get(doc);
+                indenter.lock();
+                try {
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
-                            } catch (GuardedException e) {
-                                target.getToolkit().beep();
-                            } catch (BadLocationException e) {
-                                e.printStackTrace();
-                            }
-                        } else { // no selected text
-                            int dotPos = caret.getDot();
-                            int caretCol;
-                            // find caret column
-                            try {
-                                caretCol = doc.getVisColFromPos(dotPos);
-                            } catch (BadLocationException e) {
-                                LOG.log(Level.WARNING, null, e);
-                                caretCol = 0;
-                            }
-
-                            try {
-                                // find indent of the first previous non-white row
-                                int upperCol = Utilities.getRowIndent(doc, dotPos, false);
-                                if (upperCol == -1) { // no prev line with  indent
-                                    upperCol = 0;
-                                }
-                                // is there any char on this line before cursor?
-                                int indent = Utilities.getRowIndent(doc, dotPos);
-                                // test whether we should indent
-                                if (indent == -1) {
-                                    if (upperCol > caretCol) { // upper indent is greater
-                                        indent = upperCol;
-                                    } else { // simulate insert tab by changing indent
-                                        indent = Utilities.getNextTabColumn(doc, dotPos);
+                                if (Utilities.isSelectionShowing(caret)) { // block selected
+                                    try {
+                                        changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
                                     }
+                                } else { // no selected text
+                                    int dotPos = caret.getDot();
+                                    try {
+                                        // is there any char on this line before cursor?
+                                        int indent = Utilities.getRowIndent(doc, dotPos);
+                                        // test whether we should indent
+                                        if (indent == -1) {
+                                            // find caret column
+                                            int caretCol = Utilities.getVisualColumn(doc, dotPos);
+                                            // find next tab column
+                                            int nextTabCol = Utilities.getNextTabColumn(doc, dotPos);                                        
 
-                                    // Fix of #32240 - #1 of 2
-                                    int rowStart = Utilities.getRowStart(doc, dotPos);
+                                            indenter.reindent(dotPos);                                        
 
-                                    changeRowIndent(doc, dotPos, indent);
-
-                                    // Fix of #32240 - #2 of 2
-                                    int newDotPos = doc.getOffsetFromVisCol(indent, rowStart);
-                                    if (newDotPos >= 0) {
-                                        caret.setDot(newDotPos);
+                                            dotPos = caret.getDot();
+                                            int newCaretCol = Utilities.getVisualColumn(doc, dotPos);
+                                            if (newCaretCol <= caretCol) {
+                                                // find indent of the first previous non-white row
+                                                int upperCol = Utilities.getRowIndent(doc, dotPos, false);
+                                                changeRowIndent(doc, dotPos, upperCol > nextTabCol ? upperCol : nextTabCol);
+                                                // Fix of #32240
+                                                caret.setDot(Utilities.getRowEnd(doc, dotPos));
+                                            }
+                                        } else { // already chars on the line
+                                            insertTabString(doc, dotPos);
+                                        }
+                                    } catch (BadLocationException e) {
+                                        // use the same pos
+                                        LOG.log(Level.WARNING, null, e);
                                     }
-
-                                } else { // already chars on the line
-                                    insertTabString(doc, dotPos);
-
                                 }
-                            } catch (BadLocationException e) {
-                                // use the same pos
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
-                        } finally {
-                            DocumentUtilities.setTypingModification(doc, false);
-                        }
-                    }
-                });
+                    });
+                } finally {
+                    indenter.unlock();
+                }
             }
         }
     }
@@ -1716,7 +1750,7 @@ public class BaseKit extends DefaultEditorKit {
                     
                     try {
                         removedChar = nextChar ? 
-                        dot < doc.getLength() - 1 ? doc.getChars(dot, 1) : null : 
+                        dot < doc.getLength() ? doc.getChars(dot, 1) : null : 
                         dot > 0 ? doc.getChars(dot - 1, 1) : null;
                     } catch (BadLocationException ble) {
                         target.getToolkit().beep();

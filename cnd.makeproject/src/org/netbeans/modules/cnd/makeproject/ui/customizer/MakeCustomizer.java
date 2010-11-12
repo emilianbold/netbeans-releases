@@ -197,10 +197,9 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         setPreferredSize(new java.awt.Dimension(800, 500));
         setLayout(new java.awt.GridBagLayout());
 
-        categoryLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CATEGORIES_LABEL_MN").charAt(0));
         categoryLabel.setLabelFor(categoryPanel);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle"); // NOI18N
-        categoryLabel.setText(bundle.getString("CATEGORIES_LABEL_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, bundle.getString("CATEGORIES_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -240,8 +239,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         configurationPanel.add(configurationComboBox, new java.awt.GridBagConstraints());
         configurationPanel.add(allConfigurationComboBox, new java.awt.GridBagConstraints());
 
-        configurationsButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CONFIGURATIONS_BUTTON_MNE").charAt(0));
-        configurationsButton.setText(bundle.getString("CONFIGURATIONS_BUTTON_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configurationsButton, bundle.getString("CONFIGURATIONS_BUTTON_LBL")); // NOI18N
         configurationsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configurationsButtonActionPerformed(evt);

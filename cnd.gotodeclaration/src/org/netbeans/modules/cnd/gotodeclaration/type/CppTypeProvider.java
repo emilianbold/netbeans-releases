@@ -34,6 +34,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -68,7 +69,6 @@ public class CppTypeProvider implements TypeProvider {
         return NbBundle.getMessage(CppTypeProvider.class, "TYPE_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-//    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type) {
     @Override
     public void computeTypeNames(Context context, Result res) {
         isCancelled = false;
@@ -78,14 +78,8 @@ public class CppTypeProvider implements TypeProvider {
 	
 	if( TRACE ) System.err.printf("CppTypeProvider.getTypeNames(%s, %s, %s)\n", project, text, type);
 	
-	
-	
-	CsmSelect.CsmFilter filter = org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory.createNameFilter(text, type);
+	CsmSelect.CsmFilter filter = createTypeFilter();
 	NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
-	if( filter == null) {
-	    return;
-	}
-        
 	if( project == null ) {
             Collection<CsmProject> csmProjects = CsmModelAccessor.getModel().projects();
 	    if( ! csmProjects.isEmpty() ) {
@@ -104,8 +98,7 @@ public class CppTypeProvider implements TypeProvider {
                 }
                 res.addResult(new ArrayList<TypeDescriptor>(result));
 	    }
-	}
-	else {
+	} else {
 	    Set<TypeDescriptor> result = new HashSet<TypeDescriptor>();
             CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
 	    processProject(csmProject, result, filter, matcher);
@@ -174,13 +167,17 @@ public class CppTypeProvider implements TypeProvider {
             case CLASS:
             case UNION:
             case STRUCT:
-                CsmClass cls = (CsmClass) decl;
-                result.add(createTypeDescriptor(cls));
-                if( ! isCancelled ) {
-                    for( CsmMember member : cls.getMembers() ) {
-                        if( ! isCancelled ) {
-                            if (matcher.accept(member.getName().toString())) {
-                                processDeclaration(member, result, matcher);
+                if(!isCancelled) {
+                    CsmClass cls = (CsmClass) decl;
+                    if (!CsmClassifierResolver.getDefault().isForwardClass(cls)) {
+                        if (matcher.accept(decl.getName().toString())) {
+                            result.add(createTypeDescriptor(cls));
+                        }
+                        for( CsmMember member : cls.getMembers() ) {
+                            if( ! isCancelled ) {
+                                if (matcher.accept(member.getName().toString())) {
+                                    processDeclaration(member, result, matcher);
+                                }
                             }
                         }
                     }
@@ -188,27 +185,21 @@ public class CppTypeProvider implements TypeProvider {
                 break;
             case ENUM:
             case TYPEDEF:
-                result.add(createTypeDescriptor((CsmClassifier) decl));
-                break;
-            case BUILT_IN:
-            case ENUMERATOR:
-            case MACRO:
-            case VARIABLE:
-            case VARIABLE_DEFINITION:
-            case FUNCTION:
-            case FUNCTION_DEFINITION:
-            case TEMPLATE_SPECIALIZATION:
-            case ASM:
-            case TEMPLATE_DECLARATION:
-            case NAMESPACE_DEFINITION:
-            case NAMESPACE_ALIAS:
-            case USING_DIRECTIVE:
-            case USING_DECLARATION:
-            case CLASS_FORWARD_DECLARATION:
-            case CLASS_FRIEND_DECLARATION:
-            case FUNCTION_FRIEND:
-            case FUNCTION_FRIEND_DEFINITION:
+                if(!isCancelled) {
+                    if (matcher.accept(decl.getName().toString())) {
+                        result.add(createTypeDescriptor((CsmClassifier) decl));
+                    }
+                }
                 break;
         }
     }    
+
+    private CsmSelect.CsmFilter createTypeFilter() {
+        return CsmSelect.getFilterBuilder().createKindFilter(
+                CsmDeclaration.Kind.CLASS,
+                CsmDeclaration.Kind.STRUCT,
+                CsmDeclaration.Kind.UNION,
+                CsmDeclaration.Kind.ENUM,
+                CsmDeclaration.Kind.TYPEDEF);
+    }
 }

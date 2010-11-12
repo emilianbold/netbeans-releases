@@ -570,6 +570,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitTopLevel(JCCompilationUnit tree) {
+        printAnnotations(tree.getPackageAnnotations());
         printPackage(tree.pid);
         List<JCTree> l = tree.defs;
         ArrayList<JCImport> imports = new ArrayList<JCImport>();
@@ -577,7 +578,7 @@ public final class VeryPretty extends JCTree.Visitor {
             imports.add((JCImport) l.head);
             l = l.tail;
         }
-        printImportsBlock(imports);
+        printImportsBlock(imports, !l.isEmpty());
 	while (l.nonEmpty()) {
             printStat(l.head, true, false);
             newline();
@@ -1033,6 +1034,19 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitTry(JCTry tree) {
 	print("try");
+        if (!tree.getResources().isEmpty()) {
+            print(" ("); //XXX: space should be according to the code style!
+            for (Iterator<? extends JCTree> it = tree.getResources().iterator(); it.hasNext();) {
+                JCTree r = it.next();
+                //XXX: disabling copying of original text, as the ending ';' needs to be removed in some cases.
+                oldTrees.remove(r);
+                printPrecedingComments(r, false);
+                printExpr(r, 0);
+                printTrailingComments(r, false);
+                if (it.hasNext()) print(";");
+            }
+            print(") "); //XXX: space should be according to the code style!
+        }
 	printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceBeforeTryLeftBrace());
 	for (List < JCCatch > l = tree.catchers; l.nonEmpty(); l = l.tail)
 	    printStat(l.head);
@@ -1457,6 +1471,17 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
+    public void visitTypeDisjoint(JCTypeDisjoint that) {
+        boolean first = true;
+
+        for (JCExpression c : that.getTypeComponents()) {
+            if (!first) print(" | ");
+            print(c);
+            first = false;
+        }
+    }
+
+    @Override
     public void visitTypeTest(JCInstanceOf tree) {
 	printExpr(tree.expr, TreeInfo.ordPrec);
 	print(" instanceof ");
@@ -1649,7 +1674,10 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         int n = 0;
         switch (tree.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 n = before ? cs.getBlankLinesBeforeClass() : cs.getBlankLinesAfterClass();
         	if (((JCClassDecl) tree).defs.nonEmpty() && !before) {
                     n = 0;
@@ -1879,7 +1907,7 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    public void printImportsBlock(java.util.List<? extends JCTree> imports) {
+    public void printImportsBlock(java.util.List<? extends JCTree> imports, boolean maybeAppendNewLine) {
         boolean hasImports = !imports.isEmpty();
         if (hasImports) {
             blankLines(cs.getBlankLinesBeforeImports());
@@ -1888,7 +1916,7 @@ public final class VeryPretty extends JCTree.Visitor {
             printStat(importStat);
             newline();
         }
-        if (hasImports) {
+        if (hasImports && maybeAppendNewLine) {
             blankLines(cs.getBlankLinesAfterImports());
         }
     }

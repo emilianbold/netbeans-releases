@@ -117,7 +117,7 @@ public class GeneratorUtils {
     }
     
     public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TreeUtilities tu = copy.getTreeUtilities();
         int idx = 0;
         for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
@@ -129,7 +129,7 @@ public class GeneratorUtils {
     }
 
     public static ClassTree insertMethodAfter(WorkingCopy copy, TreePath path, MethodTree member, MethodTree precedingMethod) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TreeUtilities tu = copy.getTreeUtilities();
         int idx = 0;
         for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
@@ -241,7 +241,7 @@ public class GeneratorUtils {
     }
 
     public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
@@ -257,7 +257,7 @@ public class GeneratorUtils {
     }
     
     public static void generateAbstractMethodImplementations(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
@@ -271,7 +271,7 @@ public class GeneratorUtils {
     }
     
     public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
@@ -281,7 +281,7 @@ public class GeneratorUtils {
     }
     
     public static void generateMethodOverrides(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
@@ -295,7 +295,7 @@ public class GeneratorUtils {
     }
     
     public static void generateMethodOverride(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
@@ -326,7 +326,7 @@ public class GeneratorUtils {
     }
     
     public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
@@ -626,7 +626,10 @@ public class GeneratorUtils {
             int ret = 0;
             ModifiersTree modifiers = null;
             switch (tree.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 ret = 400;
                 modifiers = ((ClassTree)tree).getModifiers();
                 break;
@@ -660,7 +663,10 @@ public class GeneratorUtils {
         
         private static String getSortText(Tree tree) {
             switch (tree.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 return ((ClassTree)tree).getSimpleName().toString();
             case METHOD:
                 MethodTree mt = (MethodTree)tree;

@@ -114,22 +114,38 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         this.libraryStorageArea = (libraryStorageArea != null ? libraryStorageArea : LibrariesModel.GLOBAL_AREA);
         initComponents();
         postInitComponents ();
-        expandTree();
     }
     
     private void expandTree() {
-        // get first library node
-        Node[] n1 = getExplorerManager().getRootContext().getChildren().getNodes();
-        if (n1.length != 0) { //#130730 in case there are no LibraryTypeProviders in LibraryTypeRegistry.getDefault().getLibraryTypeProviders()
-            Node[] n = n1[0].getChildren().getNodes();
-            if (n.length != 0) {
+        expandAllNodes(this.libraries,this.getExplorerManager().getRootContext());
+        //Select first library if nothing selected
+        if (this.getExplorerManager().getSelectedNodes().length == 0) {
+            final Node firstLibraryNode = findFirstLibrary(getExplorerManager().getRootContext());
+            if (firstLibraryNode != null) {
                 try {
-                    getExplorerManager().setSelectedNodes(new Node[]{n[0]});
+                    getExplorerManager().setSelectedNodes(new Node[] {firstLibraryNode});
                 } catch (PropertyVetoException ex) {
-                    // OK to ignore - it is just selection initialization
+                    //Ignore - just don't select
                 }
             }
         }
+    }
+    
+    private static Node findFirstLibrary(final Node node) {
+        if (node == null) {
+            return null;
+        }
+        if (node.getLookup().lookup(LibraryImplementation.class)!=null) {
+            return node;
+        }
+        final Node[] subNodes = node.getChildren().getNodes(true);
+        for (Node subNode : subNodes) {
+            Node result = findFirstLibrary(subNode);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
     
     public void setLibraryStorageArea(LibraryStorageArea libraryStorageArea) {
@@ -196,22 +212,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
 
     public void addNotify() {
         super.addNotify();
-        expandAllNodes(this.libraries,this.getExplorerManager().getRootContext());
-        //Select first library if nothing selected
-        if (this.getExplorerManager().getSelectedNodes().length == 0) {
-            SELECTED: for (Node areaNode : getExplorerManager().getRootContext().getChildren().getNodes(true)) {
-                for (Node typeNode : areaNode.getChildren().getNodes(true)) {
-                    for (Node libNode : typeNode.getChildren().getNodes(true)) {
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[] {libNode});
-                        } catch (PropertyVetoException e) {
-                            //Ignore it
-                        }
-                        break SELECTED;
-                    }
-                }
-            }
-        }
+        expandTree();
         this.libraries.requestFocus();
     }    
     

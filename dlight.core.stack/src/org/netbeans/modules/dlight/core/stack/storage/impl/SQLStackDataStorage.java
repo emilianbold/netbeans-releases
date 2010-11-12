@@ -53,13 +53,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -81,10 +78,12 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
+import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackRequestsProvider.AddFunctionRequest;
+import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackRequestsProvider.AddNodeRequest;
 import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
@@ -94,6 +93,9 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLRequest;
+import org.netbeans.modules.dlight.spi.support.SQLRequestsProcessor;
+import org.netbeans.modules.dlight.spi.support.SQLStatementsCache;
 import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -104,35 +106,32 @@ import org.openide.util.Lookup;
  */
 public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
 
-    private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
-    private final Map<String, PreparedStatement> stmtCache;
-    private CppSymbolDemangler demangler = null;
-    private ServiceInfoDataStorage serviceInfoDataStorage;
     private final Map<CharSequence, Long> funcCache;
     private final Map<NodeCacheKey, Long> nodeCache;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private MetricsCache metricsCache;
+    private SQLRequestsProcessor requestsProcessor;
+    private SQLStackRequestsProvider requestsProvider;
+    private SQLStatementsCache stmtCache;
+    private SQLDataStorage sqlStorage;
+    private CppSymbolDemangler demangler;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
     private long funcIdSequence;
     private long nodeIdSequence;
-    private final ExecutorThread executor;
-    private boolean isRunning = true;    
 
     public SQLStackDataStorage() {
-        this.tableMetadatas = new ArrayList<DataTableMetadata>();
+        tableMetadatas = new ArrayList<DataTableMetadata>();
         funcCache = new HashMap<CharSequence, Long>();
         nodeCache = new HashMap<NodeCacheKey, Long>();
         funcIdSequence = 0;
         nodeIdSequence = 0;
-        executor = new ExecutorThread();
-        executor.setPriority(Thread.MIN_PRIORITY);
-        executor.start();
-        this.stmtCache = new ConcurrentHashMap<String, PreparedStatement>();
     }
 
     @Override
     public void syncAddData(String tableName, List<DataRow> data) {
         addData(tableName, data);
     }
-
 
     @Override
     public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
@@ -156,14 +155,21 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     @Override
-    public void attachTo(DataStorage storage) {
+    public synchronized void attachTo(DataStorage storage) {
+        if (sqlStorage != null) {
+            throw new IllegalStateException("Already attached"); // NOI18N
+        }
+
         this.sqlStorage = (SQLDataStorage) storage;
+        stmtCache = SQLStatementsCache.getFor(sqlStorage);
+        metricsCache = new MetricsCache();
+        requestsProvider = new SQLStackRequestsProvider(stmtCache, metricsCache);
+        requestsProcessor = sqlStorage.getRequestsProcessor();
+
         try {
             initTables();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -205,37 +211,32 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     // For tests ... 
     public boolean shutdown(boolean shutdownSqlStorage) {
         boolean result = shutdown();
-        
+
         if (shutdownSqlStorage) {
             result = sqlStorage.shutdown() && result;
         }
 
         return result;
     }
-    
+
     @Override
     public boolean shutdown() {
-        isRunning = false;
-        funcCache.clear();
-        nodeCache.clear();
-        for (PreparedStatement stmt : stmtCache.values()) {
+        if (closed.compareAndSet(false, true)) {
+            funcCache.clear();
+            nodeCache.clear();
+            metricsCache = null;
+            requestsProvider = null;
+
             try {
-                stmt.close();
+                stmtCache.close();
             } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
             }
+
+            stmtCache = null;
         }
-        stmtCache.clear();
+
         return true;
-    }
-
-
-    private synchronized PreparedStatement getPreparedStatement(String sql) throws SQLException {
-        PreparedStatement stmt = stmtCache.get(sql);
-        if (stmt == null) {
-            stmt = sqlStorage.prepareStatement(sql);
-            stmtCache.put(sql, stmt);
-        }
-        return stmt;
     }
 
     private void initTables() throws SQLException, IOException {
@@ -275,11 +276,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         for (int i = 0; i < stack.size(); ++i) {
             boolean isLeaf = i + 1 == stack.size();
             CharSequence funcName = stack.get(i);
-            SourceFileInfo sourceFile = FunctionNameUtils.getSourceFileInfo(funcName.toString());            
-            long funcId = generateFuncId(funcName, sourceFile);            
+            SourceFileInfo sourceFile = FunctionNameUtils.getSourceFileInfo(funcName.toString());
+            long funcId = generateFuncId(funcName, sourceFile);
             updateMetrics(funcId, false, timestamp, duration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
-            long nodeId = generateNodeId(callerId, funcId, getOffset(funcName), sourceFile == null ? -1 : sourceFile.getLine() );
+            long nodeId = generateNodeId(callerId, funcId, getOffset(funcName), sourceFile == null ? -1 : sourceFile.getLine());
             updateMetrics(nodeId, true, timestamp, duration, true, isLeaf);
             callerId = nodeId;
         }
@@ -287,11 +288,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     public void flush() {
-        try {
-            executor.flush();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
+        requestsProcessor.flush();
     }
 
     @Override
@@ -352,7 +349,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         try {
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
-            PreparedStatement select = getPreparedStatement(
+            PreparedStatement select = stmtCache.getPreparedStatement(
                     "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, " //NOI18N
                     + "SUM(FuncMetricAggr.time_excl) AS time_excl, SourceFiles.source_file " + //NOI18N
                     " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
@@ -427,7 +424,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                         }
                     }
                     String funcName = rs.getString(functionColumnName);
-                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), 
+                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID),
                             funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
                 }
             } finally {
@@ -445,18 +442,19 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
 ////////////////////////////////////////////////////////////////////////////////
     private void updateMetrics(long id, boolean funcOrNode, long timestamp, long duration, boolean addIncl, boolean addExcl) {
-        if (0 < duration) {
-            UpdateMetrics cmd = new UpdateMetrics();
-            cmd.objId = id;
-            cmd.bucketId = timeToBucketId(timestamp);
-            cmd.funcOrNode = funcOrNode;
-            if (addIncl) {
-                cmd.cpuTimeInclusive = duration;
+        if (duration > 0) {
+            long bucket = timeToBucketId(timestamp);
+            SQLRequest request;
+
+            if (funcOrNode) {
+                metricsCache.updateNodeMetrics(id, bucket, duration, addIncl, addExcl);
+                request = requestsProvider.updateNodeMetrics(id, bucket);
+            } else {
+                metricsCache.updateFunctionMetrics(id, bucket, duration, addIncl, addExcl);
+                request = requestsProvider.updateFunctionMetrics(id, bucket);
             }
-            if (addExcl) {
-                cmd.cpuTimeExclusive = duration;
-            }
-            executor.submitCommand(cmd);
+
+            requestsProcessor.queueRequest(request);
         }
     }
 
@@ -466,13 +464,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             Long nodeId = nodeCache.get(cacheKey);
             if (nodeId == null) {
                 nodeId = ++nodeIdSequence;
-                AddNode cmd = new AddNode();
-                cmd.id = nodeId;
-                cmd.callerId = callerId;
-                cmd.funcId = funcId;
-                cmd.offset = offset;
-                cmd.lineNumber = lineNumber;
-                executor.submitCommand(cmd);
+                AddNodeRequest cmd = requestsProvider.addNode(nodeId, callerId, funcId, offset, lineNumber);
+                requestsProcessor.queueRequest(cmd);
                 nodeCache.put(cacheKey, nodeId);
             }
             return nodeId;
@@ -483,25 +476,32 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         // Need an immutable copy of fname. Otherwise will use
         // wrong key in funcCache (mutuable fname)
         String funcName = fname.toString();
+        String fullFuncName = funcName;
         int source_file_index = -1;
         //check if there is a source file name information        
-        if (sourceFileInfo != null && sourceFileInfo.getFileName() != null){
+        if (sourceFileInfo != null && sourceFileInfo.getFileName() != null) {
+            //funcName = FunctionNameUtils.getFullFunctionName(funcName);
+            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+            if (0 <= plusPos) {
+                funcName = funcName.substring(0, plusPos);
+            }
+
             try {
-                PreparedStatement ps = getPreparedStatement(
+                PreparedStatement ps = stmtCache.getPreparedStatement(
                         "SELECT id from SourceFiles where source_file=?"); // NOI18N
                 ps.setString(1, sourceFileInfo.getFileName());
                 ResultSet rs = ps.executeQuery();
-                if (rs != null && rs.next()){
+                if (rs != null && rs.next()) {
                     //get the id
                     source_file_index = rs.getInt("id"); //NOI18N
-                }else{
-                    PreparedStatement stmt = getPreparedStatement(
+                } else {
+                    PreparedStatement stmt = stmtCache.getPreparedStatement(
                             "INSERT INTO SourceFiles (source_file) VALUES (?)"); // NOI18N
                     stmt.setString(1, sourceFileInfo.getFileName());
-                    int r = stmt.executeUpdate();                    
-                    if (r > 0){
+                    int r = stmt.executeUpdate();
+                    if (r > 0) {
                         ResultSet generatedKeys = stmt.getGeneratedKeys();
-                        if (generatedKeys != null && generatedKeys.next() && generatedKeys.getMetaData().getColumnCount() > 0){
+                        if (generatedKeys != null && generatedKeys.next() && generatedKeys.getMetaData().getColumnCount() > 0) {
                             source_file_index = generatedKeys.getInt(1);
                         }
                     }
@@ -509,24 +509,26 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } else {
+            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+            if (0 <= plusPos) {
+                funcName = funcName.substring(0, plusPos);
+            }
+            fullFuncName = funcName;
         }
 
-        
         synchronized (funcCache) {
             Long funcId = funcCache.get(funcName);
             if (funcId == null) {
                 funcId = ++funcIdSequence;
-                AddFunction cmd = new AddFunction();
-                cmd.id = funcId;
-                cmd.name = funcName;
-                cmd.sourceFileIndex = source_file_index;
-                executor.submitCommand(cmd);
+                AddFunctionRequest cmd = requestsProvider.addFunction(funcId, funcName, source_file_index, fullFuncName);
+                requestsProcessor.queueRequest(cmd);
                 funcCache.put(funcName, funcId);
             }
             return funcId;
         }
     }
-            
+
     private long getOffset(CharSequence cs) {
         int plusPos = lastIndexOf(cs, '+'); // NOI18N
         if (0 <= plusPos) {
@@ -600,7 +602,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
-        PreparedStatement s = getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        PreparedStatement s = stmtCache.getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
         s.setInt(1, threadId);
         s.setLong(2, timestamp);
         ResultSet rs = s.executeQuery();
@@ -767,8 +769,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         ThreadSnapshot found = null;
         long foundTimeSamp = -1;
         for (ThreadSnapshot dump : res) {
-            if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                    query.getPreferredState() == getTrueState(dump, query)) {
+            if (query.getThreadID() == dump.getThreadInfo().getThreadId()
+                    && query.getPreferredState() == getTrueState(dump, query)) {
                 found = dump;
                 foundTimeSamp = found.getTimestamp();
                 break;
@@ -782,8 +784,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             long foundAny = -1;
             for (ThreadSnapshot dump : res2) {
                 foundAny = dump.getTimestamp();
-                if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                        query.getPreferredState() == getTrueState(dump, query)) {
+                if (query.getThreadID() == dump.getThreadInfo().getThreadId()
+                        && query.getPreferredState() == getTrueState(dump, query)) {
                     found = dump;
                     foundTimeSamp = middle;
                     break;
@@ -796,8 +798,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 res2 = getThreadSnapshots(new ThreadSnapshotQuery(query.isFullMode(), time, threads));
                 for (ThreadSnapshot dump : res2) {
                     foundAny = dump.getTimestamp();
-                    if (query.getThreadID() == dump.getThreadInfo().getThreadId() &&
-                            query.getPreferredState() == getTrueState(dump, query)) {
+                    if (query.getThreadID() == dump.getThreadInfo().getThreadId()
+                            && query.getPreferredState() == getTrueState(dump, query)) {
                         found = dump;
                         foundTimeSamp = middle;
                         break;
@@ -859,8 +861,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         try {
             long nodeID = stackId;
             while (0 < nodeID) {
-                PreparedStatement ps = getPreparedStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name, SourceFiles.source_file " + // NOI18N
+                PreparedStatement ps = stmtCache.getPreparedStatement(
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
                         "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N
                         "WHERE node_id = ?"); // NOI18N
                 ps.setLong(1, nodeID);
@@ -869,7 +871,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 try {
                     if (rs.next()) {
                         String funcName = rs.getString(5);
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName, rs.getString(6));
+                        String fullFuncName = rs.getString(6);
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, rs.getString(7));
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
                     } else {
@@ -908,19 +911,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     private static long timeToBucketId(long timestamp) {
         return timestamp / 1000 / 1000 / 1000;  // bucket is 1 second
     }
-    /**
-     * Maximal string length that underlying database can store.
-     * Must match the numbers in schema.sql.
-     */
-    private static final int MAX_STRING_LENGTH = 16384;
-
-    private static String truncateString(String str) {
-        if (str.length() <= MAX_STRING_LENGTH) {
-            return str;
-        } else {
-            return str.substring(0, MAX_STRING_LENGTH - 3) + "..."; // NOI18N
-        }
-    }
 
 ////////////////////////////////////////////////////////////////////////////////
     private static class NodeCacheKey {
@@ -958,15 +948,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         private final String module_name;
         private final String module_offset;
         private final String source_file;
-        
-        
-        public FunctionImpl(long id, String name, String qualifiedName){
-            this(id, name, qualifiedName, FunctionNameUtils.getFunctionModule(qualifiedName), FunctionNameUtils.getFunctionModuleOffset(qualifiedName), 
+
+        public FunctionImpl(long id, String name, String qualifiedName) {
+            this(id, name, qualifiedName, FunctionNameUtils.getFunctionModule(qualifiedName), FunctionNameUtils.getFunctionModuleOffset(qualifiedName),
                     FunctionNameUtils.getSourceFileInfo(qualifiedName) == null ? null : FunctionNameUtils.getSourceFileInfo(qualifiedName).getFileName());
-        }        
-        
-        public FunctionImpl(long id, String name, String qualifiedName, String source_file){
-            this(id, name, qualifiedName,  FunctionNameUtils.getFunctionModule(qualifiedName), 
+        }
+
+        public FunctionImpl(long id, String name, String qualifiedName, String source_file) {
+            this(id, name, qualifiedName, FunctionNameUtils.getFunctionModule(qualifiedName),
                     FunctionNameUtils.getFunctionModuleOffset(qualifiedName), source_file);
         }
 
@@ -975,9 +964,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.name = name;
             this.quilifiedName = qualifiedName;
             this.module_name = module_name;
-            this.module_offset  = module_offset;
+            this.module_offset = module_offset;
             this.source_file = source_file;
-            
         }
 
         public long getId() {
@@ -1013,6 +1001,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             return FunctionNameUtils.getFunctionModule(name);
         }
 
+        String getFullName() {
+            return FunctionNameUtils.getFullFunctionName(quilifiedName);
+        }
+
         @Override
         public String getModuleOffset() {
             return module_offset;
@@ -1022,6 +1014,24 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         public String getSourceFile() {
             return source_file;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof FunctionImpl)) {
+                return false;
+            }
+
+            FunctionImpl that = (FunctionImpl) obj;
+            return (this.id == that.id && this.getFullName().equals(that.getFullName()));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 29 * hash + (this.getFullName() != null ? this.getFullName().hashCode() : 0);
+            hash = 29 * hash + (int) (this.id ^ (this.id >>> 32));
+            return hash;
+        }
     }
 
     protected static class FunctionCallImpl extends FunctionCallWithMetric {
@@ -1029,22 +1039,24 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         private final Map<FunctionMetric, Object> metrics;
         private final int lineNumber;
 
-        FunctionCallImpl(Function function, long offset,  Map<FunctionMetric, Object> metrics) {
+        FunctionCallImpl(Function function, long offset, Map<FunctionMetric, Object> metrics) {
             super(function, offset);
             this.metrics = metrics;
             SourceFileInfo sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
             lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
-            
+            setLineNumber(lineNumber);
+
         }
 
-        FunctionCallImpl(Function function, Map<FunctionMetric,  Object> metrics) {
+        FunctionCallImpl(Function function, Map<FunctionMetric, Object> metrics) {
             this(function, 0, metrics);
         }
 
         @Override
         public String getDisplayedName() {
-            if (hasLineNumber()){
-                return FunctionNameUtils.getFunctionName(getFunction().getName()) + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
+            if (hasLineNumber()) {
+                return FunctionNameUtils.getFunctionName(getFunction().getSignature());
+                //+ "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
             }
             return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
@@ -1085,216 +1097,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
         @Override
         public int getLineNumber() {
-            
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
-        }
-    }
-    
-    private static class AddSourceFileInfo{
-        public long  id;
-        public CharSequence sourceFile;
-    }
 
-    private static class AddFunction {
-
-        public long id;
-        public CharSequence name;
-        public int sourceFileIndex;
-//        public CharSequence full_name;
-    }
-
-    private static class AddNode {
-
-        public long id;
-        public long callerId;
-        public long funcId;
-        public long offset;
-        public int lineNumber;
-    }
-
-    private static class UpdateMetrics {
-
-        public boolean funcOrNode; // false => func, true => node
-        public long objId;
-        public long bucketId;
-        public long cpuTimeInclusive;
-        public long cpuTimeExclusive;
-
-        public void add(UpdateMetrics delta) {
-            cpuTimeInclusive += delta.cpuTimeInclusive;
-            cpuTimeExclusive += delta.cpuTimeExclusive;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append(funcOrNode ? "func" : "node"); // NOI18N
-            buf.append(" id=").append(objId); // NOI18N
-            buf.append(": time_incl+=").append(cpuTimeInclusive); // NOI18N
-            buf.append(", time_excl+=").append(cpuTimeExclusive); // NOI18N
-            return buf.toString();
-        }
-    }
-
-    private class ExecutorThread extends Thread {
-
-        private static final int MAX_COMMANDS = 5000;
-        private static final long SLEEP_INTERVAL = 200L;
-        private final LinkedBlockingQueue<Object> queue;
-
-        public ExecutorThread() {
-            setName("DLIGTH: SQLStackStorage executor thread"); // NOI18N
-            queue = new LinkedBlockingQueue<Object>();
-        }
-
-        public void submitCommand(Object cmd) {
-            queue.offer(cmd);
-        }
-
-        public synchronized void flush() throws InterruptedException {
-            // Proper synchronization is needed to guarantee that
-            // queue.isEmpty() is checked either before commands are
-            // taken from the queue, or after they are executed.
-            while (!queue.isEmpty()) {
-                wait();
-            }
-        }
-
-        @Override
-        public void run() {
-            try {
-                Map<Long, UpdateMetrics> funcMetrics = new HashMap<Long, UpdateMetrics>();
-                Map<Long, UpdateMetrics> nodeMetrics = new HashMap<Long, UpdateMetrics>();
-                List<Object> cmds = new LinkedList<Object>();
-                while (isRunning) {
-                    // Taking commands from queue and executing them should be one atomic action.
-                    synchronized (this) {
-                        queue.drainTo(cmds, MAX_COMMANDS);
-
-                        // first pass: collect metrics
-                        Iterator<Object> cmdIterator = cmds.iterator();
-                        while (cmdIterator.hasNext()) {
-                            if (!isRunning) {
-                                return;
-                            }
-                            Object cmd = cmdIterator.next();
-                            if (cmd instanceof UpdateMetrics) {
-                                UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
-                                Map<Long, UpdateMetrics> map = updateMetricsCmd.funcOrNode ? nodeMetrics : funcMetrics;
-                                UpdateMetrics original = map.get(updateMetricsCmd.objId);
-                                if (original == null) {
-                                    map.put(updateMetricsCmd.objId, updateMetricsCmd);
-                                } else {
-                                    original.add(updateMetricsCmd);
-                                }
-                                cmdIterator.remove();
-                            }
-                        }
-
-                        // second pass: insert new functions/nodes
-                        cmdIterator = cmds.iterator();
-                        while (cmdIterator.hasNext()) {
-                            if (!isRunning) {
-                                return;
-                            }
-                            Object cmd = cmdIterator.next();
-                            try {
-                                if (cmd instanceof AddSourceFileInfo) {
-                                    AddSourceFileInfo addSourceFileInfo = (AddSourceFileInfo) cmd;
-                                    //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO SourceFiles (source_file) " //NOI18N
-                                            + "VALUES ( ?)"); //NOI18N
-                                    stmt.setString(1, truncateString(addSourceFileInfo.sourceFile.toString()));
-                                    stmt.executeUpdate();
-                                    
-                                } else if(cmd instanceof AddFunction) {
-                                    AddFunction addFunctionCmd = (AddFunction) cmd;
-                                    //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, " //NOI18N
-                                            + "func_source_file_id) " //NOI18N
-                                            + "VALUES (?, ?, ?, ?)"); //NOI18N
-                                    stmt.setLong(1, addFunctionCmd.id);
-                                    stmt.setString(2, truncateString(addFunctionCmd.name.toString()));
-                                    stmt.setString(3, truncateString(addFunctionCmd.name.toString()));
-                                    stmt.setInt(4, addFunctionCmd.sourceFileIndex);
-                                    stmt.executeUpdate();
-                                } else if (cmd instanceof AddNode) {
-                                    AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, " //NOI18N
-                                            + "time_incl, time_excl, line_number) " //NOI18N
-                                            + "VALUES (?, ?, ?, ?, ?, ?, ?)"); //NOI18N
-                                    stmt.setLong(1, addNodeCmd.id);
-                                    stmt.setLong(2, addNodeCmd.callerId);
-                                    stmt.setLong(3, addNodeCmd.funcId);
-                                    stmt.setLong(4, addNodeCmd.offset);
-                                    stmt.setInt(5, addNodeCmd.lineNumber);
-                                    UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
-                                    if (metrics == null) {
-                                        stmt.setLong(5, 0);
-                                        stmt.setLong(6, 0);
-                                    } else {
-                                        stmt.setLong(5, metrics.cpuTimeInclusive);
-                                        stmt.setLong(6, metrics.cpuTimeExclusive);
-                                    }
-                                    stmt.setInt(7, addNodeCmd.lineNumber);
-                                    stmt.executeUpdate();
-                                }
-                            } catch (SQLException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        cmds.clear();
-
-                        // third pass: record metrics
-                        for (UpdateMetrics cmd : funcMetrics.values()) {
-                            try {
-                                PreparedStatement stmt = getPreparedStatement("SELECT func_id, bucket_id, time_incl, time_excl FROM FuncMetricAggr WHERE func_id = ? AND bucket_id = ? FOR UPDATE"); //NOI18N
-                                stmt.setLong(1, cmd.objId);
-                                stmt.setLong(2, cmd.bucketId);
-                                ResultSet rs = stmt.executeQuery();
-                                try {
-                                    if (rs.next()) {
-                                        rs.updateLong(3, rs.getLong(3) + cmd.cpuTimeInclusive);
-                                        rs.updateLong(4, rs.getLong(4) + cmd.cpuTimeExclusive);
-                                        rs.updateRow();
-                                    } else {
-                                        rs.moveToInsertRow();
-                                        rs.updateLong(1, cmd.objId);
-                                        rs.updateLong(2, cmd.bucketId);
-                                        rs.updateLong(3, cmd.cpuTimeInclusive);
-                                        rs.updateLong(4, cmd.cpuTimeExclusive);
-                                        rs.insertRow();
-                                    }
-                                } finally {
-                                    rs.close();
-                                }
-                            } catch (SQLException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        funcMetrics.clear();
-
-                        for (UpdateMetrics cmd : nodeMetrics.values()) {
-                            try {
-                                PreparedStatement stmt = getPreparedStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?"); //NOI18N
-                                stmt.setLong(1, cmd.cpuTimeInclusive);
-                                stmt.setLong(2, cmd.cpuTimeExclusive);
-                                stmt.setLong(3, cmd.objId);
-                                stmt.executeUpdate();
-                            } catch (SQLException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        nodeMetrics.clear();
-
-                        notifyAll();
-                    }
-
-                    Thread.sleep(SLEEP_INTERVAL);
-                }
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
+            return lineNumber;
         }
     }
 }

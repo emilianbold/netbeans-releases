@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;

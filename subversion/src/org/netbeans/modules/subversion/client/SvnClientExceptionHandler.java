@@ -205,7 +205,10 @@ public class SvnClientExceptionHandler {
 
     private boolean handleRepositoryConnectError() throws SVNClientException {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
-
+        if (url == null) {
+            // god knows why this can happen
+            return false;
+        }
 
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
@@ -637,6 +640,7 @@ public class SvnClientExceptionHandler {
                msg.indexOf("authentication cancelled") > - 1 ||                             // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
+               msg.contains("user canceled dialog") ||                                      // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 

@@ -53,6 +53,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
@@ -64,6 +65,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -114,12 +116,21 @@ public class SourceMultiViewElement extends CloneableEditor
                     CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
                        public void run(WorkingCopy workingCopy) throws java.io.IOException {
                             workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement webSvc = SourceUtils.
+                                getPublicTopLevelElement(workingCopy);
+                            
                             Element element = handle.resolve(workingCopy);
                             SourcePositions srcPos = workingCopy.getTrees().getSourcePositions();
                             int position = -1;
                             // use visitor approach later
                             switch(element.getKind()) {
                             case METHOD:
+                                Element webServiceMethod = workingCopy.
+                                getElementUtilities().getImplementationOf(
+                                        (ExecutableElement)element, webSvc);
+                                if ( webServiceMethod instanceof ExecutableElement ){
+                                    element = (ExecutableElement)webServiceMethod;
+                                }
                                 MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement)element);
                                 BlockTree methodBody = methodTree.getBody();
                                 Tree tree = methodBody;

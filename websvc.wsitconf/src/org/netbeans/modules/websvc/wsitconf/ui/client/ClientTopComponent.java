@@ -147,7 +147,8 @@ public class ClientTopComponent extends TopComponent {
             if (client != null) {
                 s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
             }
-            mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s.getPorts());
+            mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, 
+                    s==null ? null : s.getPorts());
         } else {
             mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, null);
         }

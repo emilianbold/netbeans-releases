@@ -78,6 +78,7 @@ public class DbSchemaEjbGenerator {
     private List relations = new ArrayList();
     private SchemaElement schemaElement;
     private Set<String> tablesReferecedByOtherTables;
+    private Set<String> primaryKeyIsForeignKeyTables;
     private final CollectionType colectionType;
     private final static Logger LOGGER = Logger.getLogger(DbSchemaEjbGenerator.class.getName());
     private boolean useColumNamesInRelations = false;
@@ -108,6 +109,7 @@ public class DbSchemaEjbGenerator {
         //warningMessages = new ArrayList<String>();
 
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
+        primaryKeyIsForeignKeyTables = getTablesReferencesOtherTablesWithPrimaryKeyMatch(schemaElement);
         buildCMPSet();
     }
     /**
@@ -125,6 +127,36 @@ public class DbSchemaEjbGenerator {
             }
         }
         
+        return tableNames;
+    }
+    /**
+     *
+     * @param schemaElement The schema
+     * @return A set of tables that reference another tables with primary key to promary key reference
+     */
+    public static Set<String> getTablesReferencesOtherTablesWithPrimaryKeyMatch(SchemaElement schemaElement) {
+        Set<String> tableNames = new HashSet<String>();
+        TableElement[] allTables = schemaElement.getTables();
+        for(int i = 0; i < allTables.length; i ++ ) {
+            TableElement table0 = allTables[i];
+            UniqueKeyElement pk0 = table0.getPrimaryKey();
+            if(pk0 != null){//it may be join table or other without pk
+                ForeignKeyElement[] fkElements = table0.getForeignKeys();
+                for(int fkix = 0; fkix < fkElements.length; fkix ++ ) {
+                    ForeignKeyElement fk = fkElements[fkix];
+                    TableElement table = fk.getReferencedTable();
+                    UniqueKeyElement pk = table.getPrimaryKey();
+                    //at first step support 1-1 keys (no composite yet).
+                    if(pk != null && 1 == pk0.getColumns().length && fk.getLocalColumns().length == 1 && pk.getColumns().length==1){
+                        if(fk.getLocalColumns()[0].equals(pk0.getColumns()[0])){
+                            tableNames.add(table0.getName().getName());
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
         return tableNames;
     }
     
@@ -440,6 +472,10 @@ public class DbSchemaEjbGenerator {
         EntityMember m = EntityMember.create(column);
         m.setPrimaryKey(inPk, pkField);
         EntityClass bean = getBean(column.getDeclaringTable().getName().getName());
+        if(primaryKeyIsForeignKeyTables.contains(column.getDeclaringTable().getName().getName())){
+            //derived id usage candidate
+            bean.setDerivedIdCandidate(true);
+        }
         m.setMemberName(uniqueAlgorithm(getFieldNames(bean), m.getMemberName(), null));
         bean.getFields().add(m);
     }
@@ -528,7 +564,6 @@ public class DbSchemaEjbGenerator {
             UniqueKeyElement pk = getPrimaryOrCandidateKey(table);
             ForeignKeyElement[] fkeys = table.getForeignKeys();
             //sometimes database may contain duplicating foreign keys (or it may be an issue in db schema generation)
-            //TODO: uncomment to fix issue 177341
             fkeys = removeDuplicateFK(fkeys);
 
             for (int col = 0; col < cols.length; col++) {

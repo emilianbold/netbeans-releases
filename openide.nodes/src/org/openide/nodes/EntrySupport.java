@@ -1351,9 +1351,14 @@ abstract class EntrySupport {
                 LOGGER.finer("    visibleEntries size: " + notNull(visibleEntries).size() + " data:" + visibleEntries); // NOI18N
                 LOGGER.finer("    entryToInfo size: " + entryToInfo.size()); // NOI18N
             }
-
+            
+            int entriesSize = 0;
+            int entryToInfoSize = 0;
+            assert (entriesSize = entries.size()) >= 0;
+            assert (entryToInfoSize = entryToInfo.size()) >= 0;
             assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() // NOI18N
-                    + "; vis. entries: " + notNull(visibleEntries).size() + "; Infos: " + entryToInfo.size(); // NOI18N
+                    + "; vis. entries: " + notNull(visibleEntries).size() + "; Infos: " + entryToInfo.size() // NOI18N
+                    + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize; // NOI18N
 
             if (!mustNotifySetEntries && !inited) {
                 entries = new ArrayList<Entry>(newEntries);

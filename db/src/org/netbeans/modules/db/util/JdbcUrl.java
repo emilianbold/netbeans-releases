@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.util;
@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
  * 
  * @author David Van Couvering
  */
+@SuppressWarnings("StaticNonFinalUsedInInitialization")
 public class JdbcUrl extends HashMap<String, String> {
     private JDBCDriver driver;
     private String url;
@@ -703,6 +704,16 @@ public class JdbcUrl extends HashMap<String, String> {
                 return "";
             }
         }
-    } 
+    }
+
+    @Override
+    public String toString() {
+        return "JdbcUrl[name='" + name + // NOI18N
+                "',displayName='" + displayName + // NOI18N
+                "',className='" + className + // NOI18N
+                "',type='" + type + // NOI18N
+                "',urlTemplate='" + urlTemplate + // NOI18N
+                "'parseUrl,=" + parseUrl + "]"; // NOI18N
+    }
     
 }

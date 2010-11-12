@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import java.util.Map.Entry;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
@@ -123,7 +124,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
             if (component == null || controller == null || path == null)
                 return ret;
             try {
@@ -345,7 +346,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                             int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                             ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
                             if( generateEquals ) {
@@ -383,7 +384,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();

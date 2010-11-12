@@ -62,6 +62,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -81,25 +83,26 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     public void testAnnotationsIndexed() throws Exception {
-        ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
+            @Override
             public Void run() throws IOException, InterruptedException {
                 FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
                 FileObject indexDir = workDir.createFolder("index");
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                final Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
+                final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
                 BinaryAnalyser a = new BinaryAnalyser(new ClassIndexImpl.Writer() {
                     @Override
                     public void clear() throws IOException {
                         index.clear();
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
-                        index.store(refs, topLevels);
+                    public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
+                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
-                        index.store(refs, toDelete);
+                    public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                        index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
                     }
                 }, getWorkDir());
 
@@ -120,23 +123,23 @@ public class BinaryAnalyserTest extends NbTestCase {
     public void testCRCDiff () throws Exception {
         final List<Pair<ElementHandle<TypeElement>,Long>> first = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
         final List<Pair<ElementHandle<TypeElement>,Long>> second = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
-        BinaryAnalyser.Changes c = BinaryAnalyser.diff(first, second);
+        BinaryAnalyser.Changes c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
         first.add(create("test/afirst",10));
         first.add(create("test/bsecond",10));
         first.add(create("test/cthird",10));
-        c = BinaryAnalyser.diff(first, first);
+        c = BinaryAnalyser.diff(first, first, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.removed.size());
         assertEquals((create("test/afirst", "test/bsecond", "test/cthird")), c.removed);
-        c = BinaryAnalyser.diff(second, first);
+        c = BinaryAnalyser.diff(second, first, false);
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.added.size());
@@ -147,7 +150,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         second.add(create("test/cthird",10));
         second.add(create("test/efifth",10));
         second.add(create("test/fsixth",10));
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.added.size());
         assertEquals((create("test/bsecond_and_half", "test/efifth", "test/fsixth")), c.added);
@@ -158,7 +161,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         second.add(create("test/bsecond",15));
         second.add(create("test/cthird",10));
         second.add(create("test/dfourth",15));
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertEquals(2,c.changed.size());
@@ -180,10 +183,11 @@ public class BinaryAnalyserTest extends NbTestCase {
     private void assertReference(Index index, String refered, String... in) throws IOException, InterruptedException {
         final Set<String> result = new HashSet<String>();
         index.query(
-                new Query[] {QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD)},
-                DocumentUtil.declaredTypesFieldSelector(),
+                result,
                 DocumentUtil.binaryNameConvertor(),
-                result);
+                DocumentUtil.declaredTypesFieldSelector(),
+                null,
+                QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         assertTrue(result.containsAll(Arrays.asList(in)));
     }
 

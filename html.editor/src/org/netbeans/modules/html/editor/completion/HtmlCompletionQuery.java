@@ -59,10 +59,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
@@ -220,6 +218,12 @@ public class HtmlCompletionQuery extends UserTask {
         Snapshot snapshot = parserResult.getSnapshot();
         String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
+        
+        //in some cases the embedded offset cannot be mapped, then we can do very less
+        if(astOffset == -1) {
+            return null;
+        }
+
         lowerCase = usesLowerCase(parserResult, astOffset);
         HtmlVersion version = parserResult.getHtmlVersion();
         isXHtml = version.isXhtml();
@@ -294,7 +298,14 @@ public class HtmlCompletionQuery extends UserTask {
         //different approach - simply build a nesting tree of tag from the
         //actual position to the root by using the lexical syntax elements
         boolean useHtmlParseResult = true;
-        if(version == HtmlVersion.HTML5) {
+        if(version == HtmlVersion.HTML5 
+                || version == HtmlVersion.XHTML5
+                || version == HtmlVersion.XHTML10_FRAMESET
+                || version == HtmlVersion.XHTML10_STICT
+                || version == HtmlVersion.XHTML10_TRANSATIONAL
+                || version == HtmlVersion.HTML41_FRAMESET
+                || version == HtmlVersion.HTML41_STRICT
+                || version == HtmlVersion.HTML41_TRANSATIONAL) {
             for(ProblemDescription pd : htmlResult.getProblems()) {
                 if(pd.getType() > ProblemDescription.WARNING) {
                     useHtmlParseResult = false;
@@ -320,7 +331,15 @@ public class HtmlCompletionQuery extends UserTask {
             if(node == null) {
                 return null;
             }
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+            
         }
+
 
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
@@ -697,11 +716,12 @@ public class HtmlCompletionQuery extends UserTask {
 
     List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible, Collection<HtmlTag> all) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(possible.size());
-        all.removeAll(possible); //remove possible elements
+        Set<HtmlTag> allmodifiable = new HashSet<HtmlTag>(all);
+        allmodifiable.removeAll(possible); //remove possible elements
         for (HtmlTag e : possible) {
             result.add(item4HtmlTag(e, offset, true));
         }
-        for (HtmlTag e : all) {
+        for (HtmlTag e : allmodifiable) {
             result.add(item4HtmlTag(e, offset, false));
         }
         return result;
@@ -710,7 +730,7 @@ public class HtmlCompletionQuery extends UserTask {
     private HtmlCompletionItem item4HtmlTag(HtmlTag e, int offset, boolean possible) {
         String name = e.getName();
         name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
-        return HtmlCompletionItem.createTag(name, offset, name, possible);
+        return HtmlCompletionItem.createTag(e, name, offset, name, possible);
     }
 
     Collection<CompletionItem> translateAttribs(int offset, Collection<HtmlTagAttribute> attribs, HtmlTag tag) {
@@ -723,7 +743,7 @@ public class HtmlCompletionQuery extends UserTask {
                     result.add(HtmlCompletionItem.createBooleanAttribute(name, offset, attrib.isRequired(), tagName + name));
                     break;
                 default:
-                    result.add(HtmlCompletionItem.createAttribute(name, offset, attrib.isRequired(), tagName + name));
+                    result.add(HtmlCompletionItem.createAttribute(attrib, name, offset, attrib.isRequired(), tagName + name));
                     break;
             }
         }

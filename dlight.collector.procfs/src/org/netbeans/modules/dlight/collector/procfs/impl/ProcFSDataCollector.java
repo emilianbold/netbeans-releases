@@ -65,7 +65,6 @@ import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables.msa;
 import org.netbeans.modules.dlight.procfs.api.LWPUsage;
@@ -82,10 +81,12 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
+import org.openide.util.Exceptions;
 
 public class ProcFSDataCollector
         extends IndicatorDataProvider<ProcFSDCConfiguration>
@@ -233,6 +234,16 @@ public class ProcFSDataCollector
         if (mainLoop != null) {
             mainLoop.cancel();
             mainLoop = null;
+
+            try {
+                if (insertMSAStatement != null) {
+                    insertMSAStatement.close();
+                    insertMSAStatement = null;
+                }
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
         }
     }
 

@@ -46,15 +46,11 @@ package org.netbeans.core.multiview;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**

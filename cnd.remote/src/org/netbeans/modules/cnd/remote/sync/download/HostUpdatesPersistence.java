@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -25,7 +26,7 @@ class HostUpdatesPersistence {
         data = new Properties();
         String dataFileName = "downloads-" + executionEnvironment.getHost() + '-' + executionEnvironment.getUser() + '-' + executionEnvironment.getSSHPort(); // NOI18N
         //NOI18N
-        dataFile = new File(privProjectStorageDir, dataFileName);
+        dataFile = CndFileUtils.createLocalFile(privProjectStorageDir, dataFileName);
         try {
             load();
             if (!VERSION.equals(data.get(VERSION_KEY))) {

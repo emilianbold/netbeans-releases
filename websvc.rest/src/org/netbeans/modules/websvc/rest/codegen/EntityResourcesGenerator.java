@@ -44,26 +44,36 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
@@ -145,8 +155,11 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         Constants.XML_ELEMENT,
         Constants.XML_TRANSIENT,
         Constants.XML_ATTRIBUTE,
-        Constants.ARRAY_LIST_TYPE
+        Constants.ARRAY_LIST_TYPE,
+        Constants.SET_TYPE,
+        Constants.HASH_SET_TYPE
     };
+    
     private static final String[] ITEM_CONVERTER_IMPORTS = {
         Constants.XML_ROOT_ELEMENT,
         Constants.XML_ELEMENT,
@@ -155,6 +168,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         RestConstants.URI_BUILDER,
         Constants.ENTITY_MANAGER_TYPE
     };
+    
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
             MimeType.JSON.value() + "\"}";        //NOI18N
 
@@ -537,7 +551,13 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                     modifiedTree = addGetItemsMethod(copy, modifiedTree, bean);
                     modifiedTree = addSetItemsMethod(copy, modifiedTree, bean);
                     modifiedTree = addGetUriMethod(copy, modifiedTree);
-                    modifiedTree = addContainerConverterGetEntitiesMethod(copy, modifiedTree, bean);
+                    modifiedTree = addContainerConverterGetEntitiesMethod(copy, 
+                            modifiedTree, bean);
+                    GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                    modifiedTree = addContainerConverterEqualsMethod(copy, genUtils, 
+                            modifiedTree, bean);
+                    modifiedTree = addContainerConverterHashCodeMethod(copy, genUtils, 
+                            modifiedTree, bean);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -608,6 +628,13 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                     modifiedTree = addSetUriMethod(copy, modifiedTree);
                     modifiedTree = addItemConverterGetEntityMethod(copy, modifiedTree, bean);
                     modifiedTree = addItemConverterResolveEntityMethod(copy, modifiedTree, bean);
+                    
+                    GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                    modifiedTree = addItemConverterEqualsMethod(copy, genUtils, 
+                            modifiedTree, bean);
+                    modifiedTree = addItemConverterHashCodeMethod(copy, genUtils, 
+                            modifiedTree, bean);
+                    
                     copy.rewrite(tree, modifiedTree);
                 }
             });
@@ -616,6 +643,154 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    private ClassTree addContainerConverterEqualsMethod(WorkingCopy copy,
+            GenerationUtils genUtils, ClassTree tree, EntityResourceBean bean) 
+    {
+        String simpleClassName = getConverterName(bean);
+        StringBuilder body = new StringBuilder("{");// NOI18N
+        body.append("if (!(object instanceof "); // NOI18N
+        body.append(simpleClassName + ")) {return false;}"); // NOI18N
+        body.append(simpleClassName + " other = (" + simpleClassName + ")object;"); // NOI18N
+        
+        // uri
+        body.append( createEqualsLineForField("uri").toString());   // NOI18N
+        // expandLevel
+        body.append("if (this.expandLevel  != other.expandLevel ) return false;"); // NOI18N
+        // items
+        body.append( " if ( this.items.size() != other.items.size()) return false;");
+        
+        body.append( "Set<");             // NOI18N
+        body.append( getItemConverterName(bean) );
+        body.append( "> itemSet = new ");           // NOI18N
+        body.append( "HashSet<");         // NOI18N
+        body.append( getItemConverterName(bean) );
+        body.append( ">(" );                         // NOI18N
+        body.append( "this.items);");                // NOI18N
+        body.append( " if ( !itemSet.containsAll(other.items)) return false;");// NOI18N
+        
+        
+        body.append("return true;"); // NOI18N
+        body.append("}"); // NOI18N
+        TreeMaker make = copy.getTreeMaker();
+        TypeElement typeElement = SourceUtils.getPublicTopLevelElement(copy);
+        MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
+                Collections.singletonList(
+                        genUtils.createAnnotation("java.lang.Override"))), 
+                "equals",
+                make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree>emptyList(),
+                Collections.singletonList(
+                        genUtils.createVariable(typeElement, "object", 
+                                "java.lang.Object")),
+                Collections.<ExpressionTree>emptyList(), body.toString(), null);        // NOI18N
+        
+        return copy.getTreeMaker().addClassMember(tree, method);
+        
+    }
+    
+    private ClassTree addContainerConverterHashCodeMethod(WorkingCopy copy,
+            GenerationUtils genUtils, ClassTree tree, EntityResourceBean bean) 
+    {
+        StringBuilder body = new StringBuilder("{");    // NOI18N
+        body.append("int hash = uri==null? 0 : uri.hashCode();"); // NOI18N
+        
+        body.append( "hash = 37*hash +expandLevel;" );    // NOI18N
+        
+        body.append("for( ");                             // NOI18N
+        body.append(getItemConverterName(bean));
+        body.append(" item : this.items ){ hash = 37*hash +item.hashCode(); }");// NOI18N
+        
+        body.append( "return hash; }");                    // NOI18N
+        TreeMaker make = copy.getTreeMaker();
+        MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
+                Collections.singletonList(
+                        genUtils.createAnnotation("java.lang.Override"))), 
+                "hashCode",
+                make.PrimitiveType(TypeKind.INT), 
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<com.sun.source.tree.VariableTree>emptyList(), 
+                Collections.<ExpressionTree>emptyList(), body.toString(), null);// NOI18N
+       
+        return copy.getTreeMaker().addClassMember(tree, method );
+    }
+    
+    private ClassTree addItemConverterEqualsMethod(WorkingCopy copy,
+            GenerationUtils genUtils, ClassTree tree, EntityResourceBean bean) 
+    {
+        return copy.getTreeMaker().addClassMember(tree, createEqualsMethod(
+                getConverterName(bean) , copy, genUtils));
+        
+    }
+    
+    private ClassTree addItemConverterHashCodeMethod(WorkingCopy copy,
+            GenerationUtils genUtils, ClassTree tree, EntityResourceBean bean) 
+    {
+        StringBuilder body = new StringBuilder("{");    // NOI18N
+        body.append("int hash = uri==null? 0 : uri.hashCode();"); // NOI18N
+        
+        body.append( "if (expandLevel  <= 0 ) return hash +37*expandLevel;" );    // NOI18N
+        body.append( "return hash+37*(expandLevel + 37*(entity==null? 0 : entity.hashCode()));");// NOI18N
+        
+        body.append("}");                               // NOI18N
+        TreeMaker make = copy.getTreeMaker();
+        MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
+                Collections.singletonList(
+                        genUtils.createAnnotation("java.lang.Override"))), 
+                "hashCode",
+                make.PrimitiveType(TypeKind.INT), 
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<com.sun.source.tree.VariableTree>emptyList(), 
+                Collections.<ExpressionTree>emptyList(), body.toString(), null);// NOI18N
+        
+        return copy.getTreeMaker().addClassMember(tree, method );
+        
+    }
+    
+    private MethodTree createEqualsMethod(String simpleClassName, 
+            WorkingCopy copy, GenerationUtils genUtils) 
+    {
+        StringBuilder body = new StringBuilder("{");// NOI18N
+        body.append("if (!(object instanceof "); // NOI18N
+        body.append(simpleClassName + ")) {return false;}"); // NOI18N
+        body.append(simpleClassName + " other = (" + simpleClassName + ")object;"); // NOI18N
+        
+        // uri
+        body.append( createEqualsLineForField("uri").toString());   // NOI18N
+        // expandLevel
+        body.append("if (this.expandLevel  != other.expandLevel ) return false;"); // NOI18N
+        body.append("if (expandLevel  <= 0 ) return true;");
+        // entity
+        body.append( createEqualsLineForField("entity").toString());   // NOI18N
+        
+        body.append("return true;"); // NOI18N
+        body.append("}"); // NOI18N
+        TreeMaker make = copy.getTreeMaker();
+        TypeElement typeElement = SourceUtils.getPublicTopLevelElement(copy);
+        return make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
+                Collections.singletonList(
+                        genUtils.createAnnotation("java.lang.Override"))), 
+                "equals",
+                make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree>emptyList(),
+                Collections.singletonList(
+                        genUtils.createVariable(typeElement, "object", 
+                                "java.lang.Object")),
+                Collections.<ExpressionTree>emptyList(), body.toString(), null);        // NOI18N
+    }
+    
+    private String createEqualsLineForField(String field){
+        StringBuilder builder = new StringBuilder("if ((this.");        //NOI18N
+        builder.append( field);
+        builder.append(" == null && other.");                           // NOI18N
+        builder.append( field); 
+        builder.append( " != null) || (this.");                         // NOI18N
+        builder.append( field);
+        builder.append( " != null && !this.");                          // NOI18N
+        builder.append( field);
+        builder.append( ".equals(other." );                             // NOI18N
+        builder.append( field); 
+        builder.append( ")) return false;");                            // NOI18N
+        return builder.toString();
     }
 
     private String[] getContainerResourceImports(EntityResourceBean bean) {
@@ -656,6 +831,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
             if (subBean.isContainer()) {
                 classes.add(resource.getFieldInfo().getType());
+                String typeArg = resource.getFieldInfo().getTypeArg();
+                if ( typeArg  != null ){
+                    classes.add( typeArg );
+                }
             } else {
                 //Only add non java.lang types.
                 String type = getIdFieldType(subBean);

@@ -131,6 +131,8 @@ public abstract class RefactoringGlobalAction extends NodeAction {
     
     protected abstract boolean enable(Lookup context);
     
+    protected abstract boolean applicable(Lookup context);
+
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
     }
@@ -154,6 +156,9 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         }
         
         public Object getValue(String arg0) {
+            if ("applicable".equals(arg0)) { //NOI18N
+                return RefactoringGlobalAction.this.applicable(context);
+            }
             return RefactoringGlobalAction.this.getValue(arg0);
         }
         

@@ -56,10 +56,10 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.UserQuestionException;
 
 /**
  * utils to help work with CND editor and other core objects
@@ -77,6 +77,7 @@ public class CndCoreTestUtils {
         final JEditorPane editor[] = new JEditorPane[] {null};
         try {
             Runnable test = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         JEditorPane pane = getAnEditorPane(dob);
@@ -104,14 +105,7 @@ public class CndCoreTestUtils {
             throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
-        StyledDocument doc = null;
-        try {
-            doc = cookie.openDocument();
-        } catch (UserQuestionException ex) {
-            ex.confirmed();
-            doc = cookie.openDocument();
-        }
-        
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
     

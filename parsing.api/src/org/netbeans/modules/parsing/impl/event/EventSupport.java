@@ -104,6 +104,7 @@ public final class EventSupport {
     private ChangeListener parserListener;
     
     private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
+        @Override
         public void run() {
             resetStateImpl();
         }
@@ -136,7 +137,7 @@ public final class EventSupport {
                             parser.addChangeListener(parserListener);
                         }
                     } catch (DataObjectNotFoundException e) {
-                        LOGGER.warning("Ignoring events non existent file: " + FileUtil.getFileDisplayName(fo));     //NOI18N
+                        LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
                     }
                 }
                 initialized = true;
@@ -153,12 +154,12 @@ public final class EventSupport {
         if (invalidate) {
             flags.add(SourceFlags.INVALID);
             flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            SourceAccessor.getINSTANCE().setSourceModification (source, startOffset, endOffset);
         }
+        SourceAccessor.getINSTANCE().setSourceModification (source, invalidate, startOffset, endOffset);
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
 
-        if (!editorRegistryListener.k24.get()) {
+        if (!EditorRegistryListener.k24.get()) {
             resetTask.schedule(TaskProcessor.reparseDelay);
         }
     }
@@ -170,7 +171,7 @@ public final class EventSupport {
     public static void releaseCompletionCondition() {
         assert SwingUtilities.isEventDispatchThread();
         assert validRCCCaller();
-        final boolean wask24 = editorRegistryListener.k24.getAndSet(false);
+        final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);
         if (wask24) {
             TaskProcessor.resetStateImpl(null);
         }
@@ -196,7 +197,7 @@ public final class EventSupport {
      *
      */
     private void resetStateImpl() {
-        if (!editorRegistryListener.k24.get()) {
+        if (!EditorRegistryListener.k24.get()) {
             //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
             final boolean reschedule = SourceAccessor.getINSTANCE().testFlag (source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
             if (reschedule) {
@@ -221,6 +222,7 @@ public final class EventSupport {
         private EditorCookie.Observable ec;
         private TokenHierarchyListener lexListener;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
             assert ec != null;
             this.ec = ec;
@@ -232,6 +234,7 @@ public final class EventSupport {
             }
         }
 
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 Object old = evt.getOldValue();                
@@ -249,6 +252,7 @@ public final class EventSupport {
             }
         }
         
+        @Override
         public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
             resetState (true, evt.affectedStartOffset (), evt.affectedEndOffset ());
         }
@@ -256,6 +260,7 @@ public final class EventSupport {
     
     private class ParserListener implements ChangeListener {
         
+        @Override
         public void stateChanged(final ChangeEvent e) {
             resetState(true, -1, -1);
         }
@@ -280,6 +285,7 @@ public final class EventSupport {
         private final FileObject fobj;
         private PropertyChangeListener wlistener;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public DataObjectListener(final DataObject dobj) {            
             this.dobj = dobj;
             this.fobj = dobj.getPrimaryFile();
@@ -287,6 +293,7 @@ public final class EventSupport {
             this.dobj.addPropertyChangeListener(wlistener);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent pce) {
             DataObject invalidDO = (DataObject) pce.getSource();
             if (invalidDO != dobj)
@@ -300,7 +307,8 @@ public final class EventSupport {
         }
         
         private void handleInvalidDataObject(final DataObject invalidDO) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     handleInvalidDataObjectImpl(invalidDO);
                 }
@@ -341,6 +349,7 @@ public final class EventSupport {
         
         private EditorRegistryListener () {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     editorRegistryChanged();
                 }
@@ -375,6 +384,7 @@ public final class EventSupport {
             }
         }
         
+        @Override
         public void caretUpdate(final CaretEvent event) {
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != null) {
@@ -389,6 +399,7 @@ public final class EventSupport {
             }
         }
 
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if ("completion-active".equals(propName)) { //NOI18N

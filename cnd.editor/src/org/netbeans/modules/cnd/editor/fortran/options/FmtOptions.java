@@ -133,6 +133,7 @@ public class FmtOptions {
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
+    private static final String FALSE = "false";      // NOI18N
     
     private static Map<String,String> defaults;
     

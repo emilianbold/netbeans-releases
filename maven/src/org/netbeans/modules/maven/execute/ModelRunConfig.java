@@ -44,8 +44,10 @@ package org.netbeans.modules.maven.execute;
 
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * run configuration backed up by model
@@ -55,22 +57,22 @@ public final class ModelRunConfig extends BeanRunConfig {
     
     private NetbeansActionMapping model;
     
-    /** Creates a new instance of ModelRunConfig */
-    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile) {
+    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup) {
         model = mod;
         NbMavenProjectImpl nbprj = proj.getLookup().lookup(NbMavenProjectImpl.class);
         setProject(nbprj);
-        setExecutionName(nbprj.getName());
-        setTaskDisplayName(nbprj.getName());
+        String label = ProjectUtils.getInformation(proj).getDisplayName();
+        setExecutionName(label);
+        setTaskDisplayName(label);
         setProperties(model.getProperties());
         setGoals(model.getGoals());
-        setExecutionDirectory(ActionToGoalUtils.resolveProjectEecutionBasedir(mod, proj));
+        setExecutionDirectory(ActionToGoalUtils.resolveProjectExecutionBasedir(mod, proj));
         setRecursive(mod.isRecursive());
         setActivatedProfiles(mod.getActivatedProfiles());
         setActionName(actionName);
         setFileObject(selectedFile);
         if (mod.getPreAction() != null) {
-            setPreExecutionActionName(mod.getPreAction());
+            setPreExecution(ActionToGoalUtils.createRunConfig(mod.getPreAction(), nbprj, lookup));
         }
         String react = mod.getReactor();
         if (react != null) {

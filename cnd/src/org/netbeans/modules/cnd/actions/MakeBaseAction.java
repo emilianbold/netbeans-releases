@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,7 +74,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.IOProvider;
@@ -136,7 +137,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         DataObject dataObject = node.getCookie(DataObject.class);
         final FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = FileUtil.toFile(fileObject);
+        File makefile = CndFileUtils.toFile(fileObject);
         // Build directory
         String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
         // Executable
@@ -149,15 +150,15 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
+            trace("Run folder folder is null"); //NOI18N
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
-        traceExecutable(executable, buildDir, args, envMap);
 
         if (inputOutput == null) {
             // Tab Name
@@ -174,9 +175,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
+                trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
             }
         }
+        traceExecutable(executable, buildDir, args, envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
                 new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), syncWorker); // NOI18N
@@ -194,7 +197,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
                 inputVisible(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 inputOutput(inputOutput).
                 outLineBased(true).
                 postExecution(processChangeListener).

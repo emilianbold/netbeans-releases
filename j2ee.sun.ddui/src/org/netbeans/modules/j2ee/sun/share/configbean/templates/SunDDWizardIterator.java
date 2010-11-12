@@ -49,10 +49,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -126,6 +129,12 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
             Project p = wizardPanel.getProject();
             J2eeModuleProvider mod = p.getLookup().lookup(J2eeModuleProvider.class);
             if (null != mod) {
+                String cr = "/";
+                try {
+                    cr = mod.getConfigSupport().getWebContextRoot();
+                } catch (ConfigurationException ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO,"",ex);
+                }
                 FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(mod.getJ2eeModule(), sunDDFileName);
             if(sunDDTemplate != null) {
                 FileSystem fs = configFolder.getFileSystem();
@@ -139,13 +148,20 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
                     if(config != null) {
                         // Set version of target configuration file we just saved to maximum supported version.
                         config.setAppServerVersion(config.getMaxASVersion());
+                        if (null != cr) {
+                                try {
+                                    config.setContextRoot(cr);
+                                } catch (ConfigurationException ex) {
+                                    Logger.getLogger(this.getClass().getName()).log(Level.INFO,"",ex);
+                                }
+                        }
                     } else {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(
                                 NbBundle.getMessage(SunDDWizardIterator.class,"ERR_NoDeploymentConfiguration"), // NOI18N
                                 NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
                     }
-                    result = Collections.singleton(creator.getResult());
+                            result = Collections.singleton(creator.getResult());
                 } else {
                     NotifyDescriptor nd = new NotifyDescriptor.Message(
                             NbBundle.getMessage(SunDDWizardIterator.class,"ERR_FileCreationFailed", sunDDFileName), // NOI18N

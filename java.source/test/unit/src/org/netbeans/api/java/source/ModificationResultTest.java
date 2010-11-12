@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,17 +44,23 @@
 
 package org.netbeans.api.java.source;
 
-import java.io.OutputStream;
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.TestUtil;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -74,18 +80,6 @@ public class ModificationResultTest extends NbTestCase {
         super(name);
     }
     
-    private void writeIntoFile(FileObject file, String what) throws Exception {
-        FileLock lock = file.lock();
-        OutputStream out = file.getOutputStream(lock);
-        
-        try {
-            out.write(what.getBytes());
-        } finally {
-            out.close();
-            lock.releaseLock();
-        }
-    }
-    
     private FileObject testFile;
     private CloneableEditorSupport ces;
     
@@ -94,7 +88,7 @@ public class ModificationResultTest extends NbTestCase {
         FileObject root = fs.getRoot();
         testFile = FileUtil.createData(root, "test/test.java");
         
-        writeIntoFile(testFile, "test\ntest\ntest\n");
+        TestUtilities.copyStringToFile(testFile, "test\ntest\ntest\n");
         
         DataObject od = DataObject.find(testFile);
         
@@ -115,12 +109,26 @@ public class ModificationResultTest extends NbTestCase {
         return result;
     }
     
+    private ModificationResult prepareInsertResultFiltered() throws Exception {
+        PositionRef start1 = ces.createPositionRef(4, Bias.Forward);
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start1, start1, "", "new-test1\n");
+        PositionRef start2 = ces.createPositionRef(8, Bias.Forward);
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n");
+
+        ModificationResult result = new ModificationResult(null);
+
+        result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
+        result.diffs.put(testFile, Arrays.asList(diff1, diff2));
+
+        return result;
+    }
+
     private void performTestToFile(String creator) throws Exception {
         prepareTest();
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         result.commit();
         
@@ -136,9 +144,9 @@ public class ModificationResultTest extends NbTestCase {
         
         Document doc = ces.openDocument();
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         result.commit();
         
@@ -154,9 +162,9 @@ public class ModificationResultTest extends NbTestCase {
         
         NbDocument.markGuarded(doc, 4, 6);
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         for (FileObject fo : result.getModifiedFileObjects()) {
             for (ModificationResult.Difference diff : result.getDifferences(fo)) {
@@ -172,6 +180,32 @@ public class ModificationResultTest extends NbTestCase {
         compareReferenceFiles();
     }
     
+    private void performTestToFileNoDocumentOpen(String creator) throws Exception {
+        prepareTest();
+
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
+
+        ModificationResult result = (ModificationResult) m.invoke(this);
+
+        result.commit();
+
+        ref(testFile.asText());
+
+        compareReferenceFiles();
+    }
+
+    private void performTestToResultingSource(String creator) throws Exception {
+        prepareTest();
+
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
+
+        ModificationResult result = (ModificationResult) m.invoke(this);
+
+        ref(result.getResultingSource(testFile));
+
+        compareReferenceFiles();
+    }
+
     private ModificationResult prepareRemoveResult() throws Exception {
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
         PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
@@ -270,5 +304,94 @@ public class ModificationResultTest extends NbTestCase {
             //correct exception
         }
     }
-    
+
+    public void testFilteringCommitToFile189203a() throws Exception {
+        TestUtil.setJavaFileFilter(new JavaFileFilterImplementationImpl());
+        try {
+            performTestToFileNoDocumentOpen("prepareInsertResultFiltered");
+        } finally {
+            TestUtil.setJavaFileFilter(null);
+        }
+    }
+
+    public void testFilteringCommitToFile189203b() throws Exception {
+        TestUtil.setJavaFileFilter(new JavaFileFilterImplementationImpl());
+        try {
+            performTestToResultingSource("prepareInsertResultFiltered");
+        } finally {
+            TestUtil.setJavaFileFilter(null);
+        }
+    }
+
+    private static final class JavaFileFilterImplementationImpl implements JavaFileFilterImplementation {
+
+        @Override
+        public Reader filterReader(final Reader r) {
+            try {
+                char[] data = readFully(r);
+                int j = 0;
+                for (int i = 1; i < data.length; i++) {
+                    if (data[i - 1] != '\n') {
+                        data[j++] = data[i];
+                    }
+                }
+                return new CharArrayReader(data, 0, j) {
+                    @Override
+                    public void close() {
+                        super.close();
+                        try {
+                            r.close();
+                        } catch (IOException ex) {
+                            throw new IllegalStateException(ex);
+                        }
+                    }
+                };
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        @Override
+        public CharSequence filterCharSequence(CharSequence charSequence) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Writer filterWriter(final Writer w) {
+            return new CharArrayWriter() {
+                @Override
+                public void close() {
+                    try {
+                        super.close();
+                        for (String line : new String(toCharArray()).split("\n")) {
+                            w.write("t" + line);
+                            w.write(System.getProperty("line.separator"));
+                        }
+                        w.close();
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {}
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {}
+
+    }
+
+    private static char[] readFully(Reader reader) throws IOException {
+        CharArrayWriter baos = new CharArrayWriter();
+        int r;
+
+        while ((r = reader.read()) != (-1)) {
+            baos.append((char) r);
+        }
+
+        return baos.toCharArray();
+    }
+
 }

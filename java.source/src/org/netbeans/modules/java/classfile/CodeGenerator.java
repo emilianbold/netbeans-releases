@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -94,6 +95,7 @@ public class CodeGenerator {
 
     private static final Logger LOG = Logger.getLogger(CodeGenerator.class.getName());
     private static final Set<ElementKind> UNUSABLE_KINDS = EnumSet.of(ElementKind.PACKAGE);
+    private static final String HASH_ATTRIBUTE_NAME = "origin-hash";
 
     public static FileObject generateCode(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpenHandle) {
 	if (UNUSABLE_KINDS.contains(toOpenHandle.getKind())) {
@@ -154,9 +156,22 @@ public class CodeGenerator {
                     final String path = te.getQualifiedName().toString().replace('.', '/') + ".java";   //NOI18N
                     final FileObject source = sourceRootFO.getFileObject(path);
 
+                    MessageDigest md = MessageDigest.getInstance("MD5");
+                    byte[] hashBytes = md.digest(resource.asBytes());
+                    StringBuilder hashBuilder = new StringBuilder();
+
+                    for (byte b : hashBytes) {
+                        hashBuilder.append(String.format("%02X", b));
+                    }
+
+                    String hash = hashBuilder.toString();
+
                     if (source != null) {
                         result[0] = source;
-                        if (source.lastModified().compareTo(resource.lastModified())>=0) {
+
+                        String existingHash = (String) source.getAttribute(HASH_ATTRIBUTE_NAME);
+                        
+                        if (hash.equals(existingHash)) {
                             LOG.fine(FileUtil.getFileDisplayName(source) + " is up to date, reusing from cache.");  //NOI18N
                             return;
                         }
@@ -169,6 +184,9 @@ public class CodeGenerator {
                     } else {
                         LOG.fine(FileUtil.getFileDisplayName(source) + " is not up to date, regenerating.");  //NOI18N
                     }
+
+                    result[0].setAttribute(HASH_ATTRIBUTE_NAME, hash);
+                    
                     sourceGenerated[0] = true;
                 }
             });

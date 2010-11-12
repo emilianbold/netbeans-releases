@@ -83,7 +83,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
     private static final String URL_ASSEMBLY_1_1_1 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.1.1.xsd"; // NOI18N
     private static final String URL_ARCHETYPE_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/archetype-1.0.0.xsd"; // NOI18N
     private static final String URL_ARCHETYPE_CATALOG_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/archetype-catalog-1.0.0.xsd"; // NOI18N
-    private static final String URL_ARCHETYPE_DESCRIPTOR_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/archetype-desriptor-1.0.0.xsd"; // NOI18N
+    private static final String URL_ARCHETYPE_DESCRIPTOR_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/archetype-descriptor-1.0.0.xsd"; // NOI18N
     
     /** Creates a new instance of MavenCatalog */
     public MavenCatalog() {

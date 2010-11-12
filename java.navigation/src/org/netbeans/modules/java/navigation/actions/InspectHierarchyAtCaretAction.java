@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import java.io.IOException;
+import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -229,6 +230,28 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                     }
                                                 });
                                             }
+                                        }
+                                    }
+                                    else {
+                                        final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
+                                        final String fileName = elementFileObject.getName();
+                                        TypeElement preferredElement = topLevels.isEmpty() ? null : topLevels.get(0);
+                                        for (TypeElement te : topLevels) {
+                                            if (fileName.contentEquals(te.getSimpleName())) {
+                                                preferredElement = te;
+                                            }
+                                        }
+                                        if (preferredElement != null) {
+                                            final Element _element = preferredElement;
+                                                SwingUtilities.invokeLater (new Runnable () {
+                                                    public void run () {
+                                                        JavaHierarchy.show (
+                                                            elementFileObject,
+                                                            new Element[] {_element},
+                                                            compilationController
+                                                        );
+                                                    }
+                                                });
                                         }
                                     }
                                 }

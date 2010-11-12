@@ -59,9 +59,11 @@ import org.netbeans.modules.clearcase.util.ClearcaseUtils;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -318,7 +320,7 @@ public class FileStatusCache {
         for(FileEntry fs : statusValues) {            
             FileInformation fiNew = createFileInformation(fs);
             try {
-                newDirMap.put(fs.getFile().getCanonicalFile(), fiNew);            
+                newDirMap.put(normalizeFile(fs.getFile()), fiNew);
             } catch (IOException ioe) {
                 Clearcase.LOG.log(Level.SEVERE, null, ioe);
             }
@@ -326,8 +328,8 @@ public class FileStatusCache {
         
         put(dir, newDirMap);
         FileInformation fi = null;        
-        try {        
-            fi = newDirMap.get(file.getCanonicalFile());
+        try {
+            fi = newDirMap.get(normalizeFile(file));
         } catch (IOException ioe) {
             Clearcase.LOG.log(Level.SEVERE, null, ioe);
         }
@@ -437,6 +439,10 @@ public class FileStatusCache {
         return filesToRefreshTask;
     }   
 
+    private File normalizeFile(File file) throws IOException {
+        return FileUtil.normalizeFile(file);
+    }
+
     private synchronized void put(File dir, Map<File, FileInformation> newDirMap) {
         statusMap.put(dir, newDirMap);
     }
@@ -475,8 +481,8 @@ public class FileStatusCache {
             FileInformation newInfo;
             FileInformation oldInfo;
             try {
-                newInfo = newDirMap.get(file.getCanonicalFile());
-                oldInfo = oldDirMap != null ? oldDirMap.get(file.getCanonicalFile()) : null;                
+                newInfo = newDirMap.get(normalizeFile(file));
+                oldInfo = oldDirMap != null ? oldDirMap.get(normalizeFile(file)) : null;
                 fireFileStatusChanged(file, oldInfo, newInfo, force);
             } catch (IOException ex) {
                 Clearcase.LOG.log(Level.SEVERE, null, ex);
@@ -490,7 +496,7 @@ public class FileStatusCache {
             if(newInfo == null) {
                 FileInformation oldInfo;
                 try {
-                    oldInfo = oldDirMap.get(file.getCanonicalFile());
+                    oldInfo = oldDirMap.get(normalizeFile(file));
                     fireFileStatusChanged(file, oldInfo, newInfo, force);    
                 } catch (IOException ex) {
                     Clearcase.LOG.log(Level.SEVERE, null, ex);

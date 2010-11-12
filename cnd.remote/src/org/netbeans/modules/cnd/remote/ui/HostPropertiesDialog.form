@@ -19,11 +19,11 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="connectionPanel" alignment="0" pref="459" max="32767" attributes="2"/>
+                  <Component id="connectionPanel" alignment="0" pref="477" max="32767" attributes="2"/>
                   <Component id="serverRecordPanel" alignment="0" max="32767" attributes="2"/>
                   <Group type="102" attributes="0">
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                      <Component id="errorLabel" pref="447" max="32767" attributes="0"/>
+                      <Component id="errorLabel" min="-2" pref="465" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -72,8 +72,8 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cbSync" pref="319" max="32767" attributes="2"/>
-                              <Component id="tfName" alignment="0" pref="319" max="32767" attributes="2"/>
+                              <Component id="cbSync" pref="323" max="32767" attributes="2"/>
+                              <Component id="tfName" alignment="0" pref="323" max="32767" attributes="2"/>
                           </Group>
                           <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       </Group>
@@ -136,9 +136,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.cbX11.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <AuxValues>

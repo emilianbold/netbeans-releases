@@ -94,6 +94,8 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
  */
 public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.Provider, PropertyChangeListener {
     
+    private static final RequestProcessor RP = new RequestProcessor(ServicesPanel.class);
+
     private final String INVALID_OPERATION  = "TXT_InvalidOperation";//NOI18N
     private final String INVALID_OPERATION_NULL_PARAM = "TXT_InvalidOperationNoParam";//NOI18N
     
@@ -107,7 +109,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             updateTree();
         }
     });
-    private final RequestProcessor.Task changeTask = RequestProcessor.getDefault().create(new Runnable() {
+    private final RequestProcessor.Task changeTask = RP.create(new Runnable() {
         public void run() {
             selectionChanged();
         }

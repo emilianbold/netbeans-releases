@@ -43,21 +43,18 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -78,9 +75,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         
         if (path != null && path.getLeaf().getKind() == Kind.TYPE_CAST) {
-            TreePathHandle handle = TreePathHandle.create(path, info);
-            
-            return Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), handle));
+            return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, path)));
         }
         
         return Collections.<Fix>emptyList();
@@ -102,36 +97,32 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         return NbBundle.getMessage(RemoveUselessCast.class, "DSC_Remove_Useless_Cast_Fix");
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
         
-        private JavaSource js;
-        private TreePathHandle handle;
-
-        public FixImpl(JavaSource js, TreePathHandle handle) {
-            this.js = js;
-            this.handle = handle;
+        public FixImpl(CompilationInfo info, TreePath path) {
+            super(info, path);
         }
 
         public String getText() {
             return NbBundle.getMessage(RemoveUselessCast.class, "LBL_FIX_Remove_redundant_cast");
         }
         
-        public ChangeInfo implement() throws IOException {
-            js.runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(Phase.RESOLVED);
-                    TreePath path = handle.resolve(copy);
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath path, UpgradeUICallback callback) {
+            TypeCastTree tct = (TypeCastTree) path.getLeaf();
+            ExpressionTree expression = tct.getExpression();
 
-                    if (path != null) {
-                        TypeCastTree tct = (TypeCastTree) path.getLeaf();
+            while (expression.getKind() == Kind.PARENTHESIZED
+                   && !requiresParenthesis(((ParenthesizedTree) expression).getExpression(), tct, path.getParentPath().getLeaf())) {
+                expression = ((ParenthesizedTree) expression).getExpression();
+            }
 
-                        copy.rewrite(tct, tct.getExpression());
-                    }
-                }
+            while (path.getParentPath().getLeaf().getKind() == Kind.PARENTHESIZED
+                   && !requiresParenthesis(expression, path.getLeaf(), path.getParentPath().getParentPath().getLeaf())) {
+                path = path.getParentPath();
+            }
 
-            }).commit();
-            
-            return null;
+            wc.rewrite(path.getLeaf(), expression);
         }
     }
 }

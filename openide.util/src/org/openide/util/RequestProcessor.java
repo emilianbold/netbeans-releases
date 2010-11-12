@@ -220,6 +220,10 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** If the RP was stopped, this variable will be set, every new post()
      * will throw an exception and no task will be processed any further */
     volatile boolean stopped = false;
+    
+    /** Flag indicating that awaiting tasks should be executed although
+     * RP is in stopped state (rejecting new tasks) */
+    volatile boolean finishAwaitingTasks = false;
 
     /** The lock covering following five fields. They should be accessed
      * only while having this lock held. */
@@ -654,7 +658,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     Task askForWork(Processor worker, String debug) {
-        if (stopped || queue.isEmpty()) { // no more work in this burst, return him
+        if (queue.isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
             running--;
@@ -682,7 +686,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
             throw new IllegalStateException ("Cannot shut down the default " + //NOI18N
                     "request processor"); //NOI18N
         }
-        stop();
+        stopped = true;
+        finishAwaitingTasks = true;
     }
 
     /**
@@ -954,13 +959,13 @@ outer:  do {
                     throw new NullPointerException ("Contains null tasks: " +  //NOI18N
                             tasks);
                 }
-                Callable<T> delegate = new WaitableCallable(c, ref, wait);
+                Callable<T> delegate = new WaitableCallable<T>(c, ref, wait);
                 result.add (submit(delegate));
             }
             wait.await(timeout, unit);
         } finally {
             for (Future<T> f : result) {
-                RPFutureTask ft = (RPFutureTask) f;
+                RPFutureTask<?> ft = (RPFutureTask) f;
                 ft.cancel(true);
             }
         }
@@ -1052,8 +1057,8 @@ outer:  do {
             throw new RejectedExecutionException("Request Processor already " + //NOI18N
                     "stopped"); //NOI18N
         }
-        long initialDelayMillis = unit.convert(initialDelay, TimeUnit.MILLISECONDS);
-        long periodMillis = unit.convert(period, TimeUnit.MILLISECONDS);
+        long initialDelayMillis = TimeUnit.MILLISECONDS.convert(initialDelay, unit);
+        long periodMillis = TimeUnit.MILLISECONDS.convert(period, unit);
 
         TaskFutureWrapper wrap = fixedDelay ? 
             new FixedDelayTask(command, initialDelayMillis, periodMillis) :
@@ -1199,7 +1204,6 @@ outer:  do {
     }
 
     private static final class FixedDelayTask extends TaskFutureWrapper {
-        private volatile boolean firstRun = true;
         private final AtomicLong nextRunTime = new AtomicLong();
         FixedDelayTask(Runnable run, long initialDelay, long period)  {
             super (run, initialDelay, period);
@@ -1227,16 +1231,9 @@ outer:  do {
         }
 
         private void reschedule() {
-            long delay;
-            if (firstRun) {
-                delay = initialDelay;
-            } else {
-                delay = period;
-            }
-            nextRunTime.set(System.currentTimeMillis() + delay);
-            firstRun = false;
+            nextRunTime.set(System.currentTimeMillis() + period);
             if (!fini()) {
-                t.schedule((int) delay);
+                t.schedule((int) period);
             }
         }
     }
@@ -1956,7 +1953,9 @@ outer:  do {
                     // need the same sync as interruptTask
                     synchronized (current.processorLock) {
                         todo = current.askForWork(this, debug);
-                        if (todo == null) break;
+                        if (todo == null) {
+                            break;
+                        }
                     }
                     setPrio(todo.getPriority());
 

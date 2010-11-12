@@ -78,6 +78,9 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -399,6 +402,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         changeSupport.fireChange();
     }
 
+    @ActionID(id = "org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$BrokenLinksActionFactory", category = "Project")
+    @ActionRegistration(displayName = "#LBL_Fix_Broken_Links_Action")
+    @ActionReference(position = 2600, path = "Projects/org-netbeans-modules-java-j2seproject/Actions")
     public static final class BrokenLinksActionFactory extends AbstractAction implements ContextAwareAction {
 
         /** for layer registration */

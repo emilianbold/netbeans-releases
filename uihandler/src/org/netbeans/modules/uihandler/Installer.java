@@ -2114,19 +2114,23 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         private void showProfilerSnapshot(ActionEvent e){
+             File tempFile = null;
              try {
-                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
-                OutputStream os = fo.getOutputStream();
+                tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
+                OutputStream os = new FileOutputStream(tempFile);
                 os.write(slownData.getNpsContent());
                 os.close();
+                FileObject fo = FileUtil.toFileObject(tempFile);
                 final Node obj = DataObject.find(fo).getNodeDelegate();
                 Action a = obj.getPreferredAction();
                 if (a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
                 }
-                 a.actionPerformed(e);
+                a.actionPerformed(e);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                if (tempFile != null) tempFile.deleteOnExit();
             }
         }
 

@@ -84,6 +84,12 @@ import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
  */
 public final class TreeUtilities {
     
+    /**{@link Kind}s that are represented by {@link ClassTree}.
+     * 
+     * @since 0.67
+     */
+    public static final Set<Kind> CLASS_TREE_KINDS = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE);
+    
     private final CompilationInfo info;
     private final CommentHandlerService handler;
     
@@ -95,20 +101,26 @@ public final class TreeUtilities {
     }
     
     /**Checks whether the given tree represents a class.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.CLASS</code> should be used instead.
      */
+    @Deprecated
     public boolean isClass(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION)) == 0;
     }
     
     /**Checks whether the given tree represents an interface.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.INTERFACE</code> should be used instead.
      */
+    @Deprecated
     public boolean isInterface(ClassTree tree) {
         final long flags = ((JCTree.JCModifiers) tree.getModifiers()).flags;
         return (flags & Flags.INTERFACE) != 0 && (flags & Flags.ANNOTATION) == 0;
     }
     
     /**Checks whether the given tree represents an enum.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.ENUM</code> should be used instead.
      */
+    @Deprecated
     public boolean isEnum(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.ENUM) != 0;
     }
@@ -121,7 +133,9 @@ public final class TreeUtilities {
     }
     
     /**Checks whether the given tree represents an annotation.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.ANNOTATION_TYPE</code> should be used instead.
      */
+    @Deprecated
     public boolean isAnnotation(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.ANNOTATION) != 0;
     }
@@ -305,7 +319,7 @@ public final class TreeUtilities {
                 case GTGTGT:
                 case GTGT:
                 case GT:
-                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || path.getLeaf().getKind() == Tree.Kind.CLASS || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
+                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
@@ -352,6 +366,22 @@ public final class TreeUtilities {
                     return null;
             }
             return info.impl.getJavacTask().parseType(expr, scope);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
+    }
+
+    /**Parses given type in given context.
+     *
+     * @param expr type specification
+     * @param scope in which simple names should be resolved
+     * @return parsed {@link TypeMirror} or null if the given specification cannot be parsed
+     */
+    Tree parseType(String expr) {
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        try {
+            return info.impl.getJavacTask().parseType(expr);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -458,7 +488,7 @@ public final class TreeUtilities {
                 path = new TreePath(path, tree);
         }
         Scope scope = info.getTrees().getScope(path);
-        if (path.getLeaf().getKind() == Tree.Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
             TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(pos);
             while(ts.movePrevious()) {
@@ -985,7 +1015,7 @@ public final class TreeUtilities {
         }
 
         public Void visitTry(TryTree node, Set<TypeMirror> p) {
-            Set<TypeMirror> s = new HashSet<TypeMirror>();
+            Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
             scan(node.getBlock(), s);
             for (CatchTree ct : node.getCatches()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
@@ -1002,7 +1032,7 @@ public final class TreeUtilities {
         }
 
         public Void visitMethod(MethodTree node, Set<TypeMirror> p) {
-            Set<TypeMirror> s = new HashSet<TypeMirror>();
+            Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
             scan(node.getBody(), s);
             for (ExpressionTree et : node.getThrows()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), et));

@@ -157,6 +157,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.analytics.ui</friend>
                 <friend>org.netbeans.modules.csl.api</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.editor.codetemplates</friend>

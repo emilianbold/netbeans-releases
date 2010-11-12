@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
@@ -199,7 +200,18 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     private static final class ImportantFilesChildren extends Children.Keys<Object> {
         
         private List<Object> visibleFiles = null;
-        private FileChangeListener fcl;
+        private final FileChangeListener fclStrong = new FileChangeAdapter() {
+            public @Override void fileRenamed(FileRenameEvent fe) {
+                refreshKeys();
+            }
+            public @Override void fileDataCreated(FileEvent fe) {
+                refreshKeys();
+            }
+            public @Override void fileDeleted(FileEvent fe) {
+                refreshKeys();
+            }
+        };
+        private FileChangeListener fclWeak;
         
         /** Abstract location to display name. */
         private static final java.util.Map<String,String> FILES = new LinkedHashMap<String,String>();
@@ -289,19 +301,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         
         private void attachListeners() {
             try {
-                if (fcl == null) {
-                    fcl = new FileChangeAdapter() {
-                        public @Override void fileRenamed(FileRenameEvent fe) {
-                            refreshKeys();
-                        }
-                        public @Override void fileDataCreated(FileEvent fe) {
-                            refreshKeys();
-                        }
-                        public @Override void fileDeleted(FileEvent fe) {
-                            refreshKeys();
-                        }
-                    };
-                    project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
+                if (fclWeak == null) {
+                    FileSystem fs = project.getProjectDirectory().getFileSystem();
+                    fclWeak = FileUtil.weakFileChangeListener(fclStrong, fs);
+                    fs.addFileChangeListener(fclWeak);
                 }
             } catch (FileStateInvalidException e) {
                 assert false : e;
@@ -309,13 +312,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private void removeListeners() {
-            if (fcl != null) {
+            if (fclWeak != null) {
                 try {
-                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
+                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fclWeak);
                 } catch (FileStateInvalidException e) {
                     assert false : e;
                 }
-                fcl = null;
+                fclWeak = null;
             }
         }
         

@@ -45,9 +45,10 @@ package org.netbeans.modules.maven.hints.pom;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -101,24 +102,24 @@ public class ReleaseVersionErrorCustomizer extends javax.swing.JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(cbRelease)
-                    .add(cbLatest)
-                    .add(cbSnapshot))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(cbRelease)
+                    .addComponent(cbLatest)
+                    .addComponent(cbSnapshot))
                 .addContainerGap(118, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(cbRelease)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(cbLatest)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(cbSnapshot)
+                .addComponent(cbRelease)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(cbLatest)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(cbSnapshot)
                 .addContainerGap(215, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

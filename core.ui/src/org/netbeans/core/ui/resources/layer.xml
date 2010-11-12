@@ -96,7 +96,7 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-PasteAction.instance"/>
             <file name="org-openide-actions-RedoAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
-                <attr name="undo" boolvalue="true"/>
+                <attr name="redo" boolvalue="true"/>
             </file>
             <file name="org-openide-actions-ReplaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-openide-actions-UndoAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
-                <attr name="redo" boolvalue="true"/>
+                <attr name="undo" boolvalue="true"/>
             </file>
         </folder>
 

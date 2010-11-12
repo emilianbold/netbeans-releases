@@ -260,7 +260,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
             String [] labels = (String[]) columnLabels.get(column);
-            properties[i] = new ColumnDescriptor(column, String.class, labels[0], labels[1]);  
+            properties[i] = new ColumnDescriptor(column, labels[0], labels[1]);  
         }
         tableModel.setProperties(properties);
     }
@@ -338,13 +338,13 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         return table;
     }
 
-    private static class ColumnDescriptor extends PropertySupport.ReadOnly {
+    private static class ColumnDescriptor extends PropertySupport.ReadOnly<String> {
         
-        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
+        public ColumnDescriptor(String name, String displayName, String shortDescription) {
+            super(name, String.class, displayName, shortDescription);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }

@@ -49,6 +49,8 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -58,7 +60,7 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
-    
+
     private ExplorerManager manager = new ExplorerManager();
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
@@ -72,6 +74,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
     private long lastShowWaitNodeTime = -1;
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
@@ -110,6 +113,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         add(filtersPanel, BorderLayout.SOUTH);
         
         manager.setRootContext(ElementNode.getWaitNode());
+
+        boolean expanded = NbPreferences.forModule(ClassMemberPanelUI.class).getBoolean("filtersPanelTap.expanded", true); //NOI18N
+        filtersPanel.setExpanded(expanded);
+        filtersPanel.addPropertyChangeListener(this);
     }
 
     @Override
@@ -167,7 +174,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
-            SwingUtilities.invokeLater(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
                 }
@@ -501,6 +508,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             for (Node n:(Node[])evt.getNewValue()) {
                 selectedNodes.add(n);
             }
+        } else if (TapPanel.EXPANDED_PROPERTY.equals(evt.getPropertyName())) {
+            NbPreferences.forModule(ClassMemberPanelUI.class)
+                    .putBoolean("filtersPanelTap.expanded", filtersPanel.isExpanded());
         }
     }
 }

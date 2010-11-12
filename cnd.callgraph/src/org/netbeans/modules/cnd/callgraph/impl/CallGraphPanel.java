@@ -71,13 +71,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GridGraphLayout;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -104,8 +101,11 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private boolean showGraph;
     private boolean isCalls;
     private boolean isShowOverriding;
+    private boolean isShowParameters;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
     public static final String IS_SHOW_OVERRIDING = "CallGraphIsShowOverriding"; // NOI18N
+    public static final String IS_SHOW_PARAMETERS = "CallGraphIsShowParameters"; // NOI18N
+    public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
@@ -118,6 +118,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
+        isShowParameters = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_PARAMETERS, false);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         this.showGraph = showGraph;
@@ -125,11 +126,12 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             scene = new CallGraphScene();
             actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(),
-                                   null, new ExportAction(scene, this)};
+                                   null, new ShowFunctionParameters(), new ExportAction(scene, this)};
             scene.setExportAction(actions[actions.length-1]);
         } else {
             actions = new Action[]{new RefreshAction(), new FocusOnAction(),
-                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction()};
+                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(), 
+                                   null, new ShowFunctionParameters()};
             
         }
         root = new AbstractNode(children){
@@ -205,10 +207,18 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         JComponent view = scene.createView();
         graphView.setViewportView(view);
         view.setFocusable(isCalls);
-        GraphLayout<Function,Call> layout = new GridGraphLayout<Function,Call>();
-        SceneLayout sceneLayout = LayoutFactory.createSceneGraphLayout(scene, layout);
-        scene.setLayout(sceneLayout);
-        sceneLayout.invokeLayout();
+        int aInt = NbPreferences.forModule(CallGraphPanel.class).getInt(INITIAL_LAYOUT, 0);
+        switch (aInt) {
+            case 0:
+                scene.setLayout(LayoutKind.grid);
+                break;
+            case 1:
+                scene.setLayout(LayoutKind.hierarchical);
+                break;
+            case 2:
+                scene.setLayout(LayoutKind.hierarchical_inverted);
+                break;
+        }
         graphView.setFocusable(false);
     }
     
@@ -406,6 +416,13 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         update();
     }
 
+    private void setShowParameters(boolean showParameters){
+        isShowParameters = showParameters;
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_PARAMETERS, isShowParameters);
+        updateButtons();
+        update();
+    }
+
    private void setDirection(boolean direction){
         isCalls = direction;
         NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_CALLS, isCalls);
@@ -421,18 +438,17 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     public void setModel(CallModel model) {
         this.model = model;
-        //this.isCalls = model.isCalls();
-        if (showGraph) {
-            scene.setModel(model);
-        }
         updateButtons();
         update();
     }
 
     private synchronized void update() {
+        final CallGraphState state = new CallGraphState(model, scene, actions);
+        if (showGraph) {
+            scene.setModel(state);
+        }
         if (showGraph) {
             scene.clean();
-            scene.setShowOverriding(isShowOverriding);
         }
         final Function function = model.getRoot();
         if (function != null){
@@ -442,8 +458,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     @Override
                     public void run() {
                         children.remove(children.getNodes());
-                        CallGraphState state = new CallGraphState(model, scene, actions);
-                        final Node node = new FunctionRootNode(function, state, isCalls, isShowOverriding);
+                        final Node node = new FunctionRootNode(function, state, isCalls);
                         children.add(new Node[]{node});
                         try {
                             getExplorerManager().setSelectedNodes(new Node[]{node});
@@ -595,6 +610,26 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(isShowOverriding);
+            return menuItem;
+        }
+    }
+
+    private final class ShowFunctionParameters extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowFunctionParameters() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowFunctionSignature"));  // NOI18N
+            menuItem = new JCheckBoxMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setShowParameters(!isShowParameters);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(isShowParameters);
             return menuItem;
         }
     }

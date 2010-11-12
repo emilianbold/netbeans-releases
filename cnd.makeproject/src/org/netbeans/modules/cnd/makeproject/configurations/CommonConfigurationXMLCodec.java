@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
@@ -79,6 +80,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V70 - NB 7.0
+ *   move DEVELOPMENT_SERVER_ELEMENT in private area
+ * Without changing version yet - NB 7.0
+ *   Added remoteSyncFactory
+ *   Added language flavor
  * V69 - NB 6.9
  *   Also writing source roots and configurations in project.xml
  * V68 - NB 6.9
@@ -198,7 +204,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 69;
+    public final static int CURRENT_VERSION = 70;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -224,6 +230,8 @@ public abstract class CommonConfigurationXMLCodec
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
+    protected final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
+    protected final static String REMOTE_MODE_ELEMENT = MakeProject.REMOTE_MODE; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
@@ -370,6 +378,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
         if (publicLocation) {
@@ -400,8 +409,8 @@ public abstract class CommonConfigurationXMLCodec
                         new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
                     });
 
+            writeToolsSetBlock(xes, makeConfiguration);
             if (publicLocation) {
-                writeToolsSetBlock(xes, makeConfiguration);
                 if (makeConfiguration.isQmakeConfiguration()) {
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
                 }
@@ -435,31 +444,7 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(CONFS_ELEMENT);
     }
 
-    private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
-        xes.elementOpen(TOOLS_SET_ELEMENT);
-        xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
-        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
-        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
-            xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
-        }
-        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault()) {
-            xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
-        }
-        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault()) {
-            xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
-        }
-        if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
-            xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
-        }
-        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
-        if (makeConfiguration.getDependencyChecking().getModified()) {
-            xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
-        }
-        if (makeConfiguration.getRebuildPropChanged().getModified()) {
-            xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
-        }
-        xes.elementClose(TOOLS_SET_ELEMENT);
-    }
+    protected abstract void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration);
 
     private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(COMPILE_TYPE_ELEMENT);
@@ -1013,7 +998,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> directories) {
-        if (directories.size() == 0) {
+        if (directories.isEmpty()) {
             return;
         }
         xes.elementOpen(tag);

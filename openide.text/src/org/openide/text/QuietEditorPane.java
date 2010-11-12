@@ -46,7 +46,6 @@ package org.openide.text;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -61,6 +60,10 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.InputEvent;
+import java.awt.im.InputContext;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,7 +73,6 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -247,6 +249,61 @@ final class QuietEditorPane extends JEditorPane {
     public void repaint() {
         if ((working & PAINT) != 0) {
             super.repaint();
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+
+        final InputContext currentInputContext = getInputContext();
+
+        Runnable w = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //#191248: the current component is held through InputContext.{inputMethodWindowContext,previousInputMethod}
+                    //and/or CompositionAreaHandler - trying to clear:
+                    Class<?> inputContext = Class.forName("sun.awt.im.InputContext", false, QuietEditorPane.class.getClassLoader());
+                    Field inputMethodWindowContext = inputContext.getDeclaredField("inputMethodWindowContext");
+                    Field previousInputMethod = inputContext.getDeclaredField("previousInputMethod");
+
+                    inputMethodWindowContext.setAccessible(true);
+                    previousInputMethod.setAccessible(true);
+
+                    if (currentInputContext == inputMethodWindowContext.get(null)) {
+                        inputMethodWindowContext.set(null, null);
+                        previousInputMethod.set(null, null);
+                    }
+
+                    Class<?> inputMethodContext = Class.forName("sun.awt.im.InputMethodContext", false, QuietEditorPane.class.getClassLoader());
+                    Method getCompositionAreaHandler = inputMethodContext.getDeclaredMethod("getCompositionAreaHandler", boolean.class);
+
+                    getCompositionAreaHandler.setAccessible(true);
+
+                    getCompositionAreaHandler.invoke(currentInputContext, false);
+                } catch (NoSuchFieldException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (InvocationTargetException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (NoSuchMethodException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (SecurityException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            w.run();
+        } else {
+            SwingUtilities.invokeLater(w);
         }
     }
 

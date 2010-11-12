@@ -491,8 +491,16 @@ public class GsfFoldManager implements FoldManager {
             return true;
         }
         
-        private void scan(GsfFoldManager manager, ParserResult info, TreeSet<FoldInfo> folds, Document doc, StructureScanner scanner) {
-            addTree(manager, folds, info, doc, scanner);
+        private void scan(final GsfFoldManager manager, final ParserResult info,
+            final TreeSet<FoldInfo> folds, final Document doc, final
+            StructureScanner scanner) {
+            
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    addTree(manager, folds, info, doc, scanner);
+                }
+            });
         }
         
         private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {

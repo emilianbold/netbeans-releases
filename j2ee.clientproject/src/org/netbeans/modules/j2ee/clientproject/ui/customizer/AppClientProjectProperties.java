@@ -431,7 +431,12 @@ final public class AppClientProjectProperties {
             });
             // and save the project
             if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(project);
+                project.setProjectPropertiesSave(true);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } finally {
+                    project.setProjectPropertiesSave(false);
+                }
             }
         } 
         catch (MutexException e) {
@@ -776,8 +781,8 @@ final public class AppClientProjectProperties {
         // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
-        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, root));
+        Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, roots));
 
         String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
         if (jvmOpts != null) {

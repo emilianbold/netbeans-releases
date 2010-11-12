@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,11 +70,14 @@ import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.ClassDataLoader;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -116,6 +120,12 @@ public class FileObjects {
     public static final String RES   = "res";  //NOI18N
 
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+    
+    //todo: If more clients than btrace will need this, create a SPI.
+    private static final Set<String> javaFlavorExt = new HashSet<String>();
+    static {
+        javaFlavorExt.add("btrace");    //NOI18N
+    }
 
     /** Creates a new instance of FileObjects */
     private FileObjects() {
@@ -577,11 +587,11 @@ public class FileObjects {
      * @param extension
      * @return the found kind
      */ 
-    public static JavaFileObject.Kind getKind (final String extension) {
+    public static JavaFileObject.Kind getKind (final @NullAllowed String extension) {
         if (extension == null) {
             return JavaFileObject.Kind.OTHER;
         }
-        String lcextension = extension.toLowerCase();
+        final String lcextension = extension.toLowerCase();
         if (FileObjects.JAVA.equals(lcextension)) {
                 return JavaFileObject.Kind.SOURCE;
         }
@@ -591,9 +601,12 @@ public class FileObjects {
         if (FileObjects.HTML.equals(lcextension)) {
                 return JavaFileObject.Kind.HTML;
         }
+        if (javaFlavorExt.contains(lcextension))  {
+            return JavaFileObject.Kind.SOURCE;
+        }
         return JavaFileObject.Kind.OTHER;
     }
-    
+        
     public static void deleteRecursively (final File folder) {
         assert folder != null;        
         if (folder.isDirectory()) {
@@ -606,7 +619,7 @@ public class FileObjects {
         }
         folder.delete();
     }
-    
+        
     public static abstract class Base implements InferableJavaFileObject {
 
         protected final JavaFileObject.Kind kind;
@@ -1157,6 +1170,9 @@ public class FileObjects {
         public InputStream openInputStream () throws IOException {
             try {
                 return new BufferedInputStream (FastJar.getInputStream(archiveFile, offset));
+            } catch (FileNotFoundException fnf) {
+                //No need to delegate to super (file does not exist)
+                throw fnf;
             } catch (IOException e) {
                 return super.openInputStream();
             } catch (IndexOutOfBoundsException e) {

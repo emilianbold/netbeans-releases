@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>New Connection Wizard: Customize Connection Dialog Box</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <style type="text/css">
+<!--
+.style1 {color: #FF0000}
+-->
+        </style>
+</head>
+
+    <body>
+        <h2>New Connection Wizard: Customize Connection Dialog Box</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>This dialog box enables you to supply the details to create a new database connection.
+
+        You open this dialog box by doing the following:</p>
+        <ul>
+            <li>Right-click the Databases node in the Services window and choose New Connection. Specify the driver and click Next. </li>
+            <li>Right-click a driver node under the Databases node in the Services window and choose Connect Using.</li>
+    </ul>
+
+        <p>In this dialog box, you supply the details needed to connect to a specific database.
+        Depending on the database driver you are using, you need to supply some or all of the following database connection properties. </p>
+        <ul>
+          <li><b>Driver Name.</b> Confirm that the JDBC driver you want to use is the correct one for your database. This drop-down list only contains drivers registered with the IDE. 
+            If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> at the previous step of the New Connection wizard.</li>
+          <li><strong>Host.</strong> Type the hostname for the database. Use <tt>localhost</tt> if the database is located on a local machine.</li>
+          <li><strong>Port.</strong> Type the post to be used by the database connection. Refer to the database documentation to know the default port number for your database.</li>
+          <li><strong>Database</strong>. Type the name of the database.</li>
+          <li><b>User Name.</b> Type user name for the database.</li>
+          <li><b>Password.</b> Type the password for the database.</li>
+          <li><b>Remember Password.</b> Select this if you want the IDE to remember your password.
+            If selected, you will not be prompted for the user name and password on subsequent connections to the database
+            and the Remember Password property is set to True.
+            <br>
+            To set the Remember Password property to False, right-click the database connection node
+            in the Services window and choose Properties and modify the property in the Properties window (only when the connection is in the disconnected state).          </li>
+          <li><b>JDBC URL. </b> View the JDBC URL for this connection. </li></ul>
+<p><b>Choose Database Schema</b></p>                 
+The next dialog box Choose Database Schemas is enabled only appears only if the database to which you want to connect contains existing schemas. In this dialog box, select the database schema you want to use for your connection. The Database Explorer displays only tables that use the selected schema.
+
+<dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd><a href="connectdb.html">Connecting to a Database</a></dd>
+                <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>
+    </dl>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+
+

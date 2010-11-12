@@ -114,7 +114,9 @@ public class RestConfigurationAction extends NodeAction  {
                         oldConfigType,
                         oldApplicationPath,
                         isJerseyLib,
-                        restSupport.getAntProjectHelper() != null && RestUtils.isAnnotationConfigAvailable(project));
+                        restSupport.getAntProjectHelper() != null 
+                            && RestUtils.isAnnotationConfigAvailable(project),
+                        restSupport.getServerJerseyLibrary()!=null);
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
                     NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
@@ -170,16 +172,28 @@ public class RestConfigurationAction extends NodeAction  {
                             }
                         }
                     }
-                    if (addJersey && !isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
+                    if (!isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
                         // add jersey library
-                        Library swdpLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.SWDP_LIBRARY);
-                        if (swdpLibrary != null) {
-                            FileObject srcRoot = WebRestSupport.findSourceRoot(project);
-                            if (srcRoot != null) {
-                                try {
-                                    ProjectClassPathModifier.addLibraries(new Library[] {swdpLibrary}, srcRoot, ClassPath.COMPILE);
-                                } catch(UnsupportedOperationException ex) {
-                                    Logger.getLogger(getClass().getName()).info("Can not add Jersey Library.");
+                        boolean added = false;
+                        if ( configPanel.isServerJerseyLibSelected() ){
+                            added = restSupport.addDeployableServerJerseyLibrary();
+                        }
+                        if (!added || addJersey) {
+                            Library swdpLibrary = LibraryManager.getDefault()
+                                    .getLibrary(WebRestSupport.SWDP_LIBRARY);
+                            if (swdpLibrary != null) {
+                                FileObject srcRoot = WebRestSupport
+                                        .findSourceRoot(project);
+                                if (srcRoot != null) {
+                                    try {
+                                        ProjectClassPathModifier.addLibraries(
+                                                new Library[] { swdpLibrary },
+                                                srcRoot, ClassPath.COMPILE);
+                                    }
+                                    catch (UnsupportedOperationException ex) {
+                                        Logger.getLogger(getClass().getName())
+                                                .info("Can not add Jersey Library.");
+                                    }
                                 }
                             }
                         }

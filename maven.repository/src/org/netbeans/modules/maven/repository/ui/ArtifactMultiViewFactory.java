@@ -52,12 +52,15 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.DefaultMavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Profile;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -85,7 +88,6 @@ import org.openide.DialogDisplayer;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,6 +96,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -156,7 +160,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         }
                         if (repos.size() == 0) {
                             //add central repo
-                            repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central")); //NOI18N
+                            repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositoryPreferences.REPO_CENTRAL, "central")); //NOI18N
                             //add repository form info
                             if (info != null && !"central".equals(info.getRepoId())) { //NOI18N
                                 RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
@@ -244,6 +248,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         //TODO rewrite
         MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
         assert bldr !=null : "MavenProjectBuilder component not found in maven";
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(embedder.getLocalRepository().getBasedir()));
+        embedder.lookupComponent(LegacySupport.class).setSession(new MavenSession(embedder.getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
         return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
     }
     

@@ -55,10 +55,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.spellchecker.Utilities;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -67,11 +73,24 @@ import org.openide.util.NbBundle;
  * @author David Kaspar
  */
 public class DictionaryInstallerPanel extends javax.swing.JPanel {
+    private final JButton okButton;
+
+    private final Collection<? extends String> existingLocales;
     
-    /** Creates new form JPanel */
-    public DictionaryInstallerPanel () {
+    public DictionaryInstallerPanel (JButton okButton, Collection<? extends String> existingLocales) {
+        this.okButton = okButton;
+        this.existingLocales = existingLocales;
+        
         initComponents ();
         initValues ();
+        DocumentListener l = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { updateErrors(); }
+            public void removeUpdate(DocumentEvent e) { updateErrors(); }
+            public void changedUpdate(DocumentEvent e) {}
+        };
+
+        tDictionary.getDocument().addDocumentListener(l);
+        tLocale.getDocument().addDocumentListener(l);
     }
     
     /** This method is called from within the constructor to
@@ -225,6 +244,51 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
 //            rCurrentUser.setSelected (false);
 //        }
     }
+
+    private NotificationLineSupport notifications;
+
+    void setNotifications(NotificationLineSupport notifications) {
+        this.notifications = notifications;
+        updateErrors();
+    }
+
+    private void updateErrors() {
+        if (notifications == null) return;
+        
+        notifications.clearMessages();
+        okButton.setEnabled(false);
+
+        File dictFile = new File(tDictionary.getText());
+
+        if (!dictFile.exists()) {
+            notifications.setErrorMessage(getMessage("ERR_DictionaryFileDoesNotExist"));
+            return;
+        }
+
+        if (!dictFile.isFile()) {
+            notifications.setErrorMessage(getMessage("ERR_DictionaryFileNotFile"));
+            return;
+        }
+
+        if (!dictFile.canRead()) {
+            notifications.setErrorMessage(getMessage("ERR_DictionaryFileCannotBeRead"));
+            return;
+        }
+
+        String error = SpellcheckerOptionsPanel.getErrorsForLocale(tLocale.getText());
+
+        if (error != null) {
+            notifications.setErrorMessage(getMessage(error));
+            return;
+        }
+
+        if (existingLocales.contains(tLocale.getText())) {
+            notifications.setErrorMessage(getMessage("ERR_DictionaryAlreadyExists"));
+            return;
+        }
+
+        okButton.setEnabled(true);
+    }
     
     private static final int BUFFER_LENGTH = 65536;
 
@@ -308,7 +372,7 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         }
 
         public Locale getLocale() {
-            return new Locale(targetLocale);
+            return Utilities.name2Locale(targetLocale);
         }
     }
     

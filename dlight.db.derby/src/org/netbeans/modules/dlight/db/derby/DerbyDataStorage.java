@@ -44,6 +44,7 @@ package org.netbeans.modules.dlight.db.derby;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -122,7 +123,7 @@ public class DerbyDataStorage extends SQLDataStorage {
             }
 
             dbIndex.getAndSet(newValue);
-            
+
             DLightExecutorService.submit(new Runnable() {
 
                 @Override
@@ -178,9 +179,10 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    public void connect() throws SQLException {
-        connection = DriverManager.getConnection(getDbURL());
-        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);        
+    protected final Connection doConnect() throws SQLException {
+        Connection connection = DriverManager.getConnection(getDbURL());
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        return connection;
     }
 
     @Override
@@ -264,10 +266,6 @@ public class DerbyDataStorage extends SQLDataStorage {
     public String getPrimaryKeyExpression() {
         return "PRIMARY KEY"; // NOI18N
     }
-    
-    
-    
-    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);

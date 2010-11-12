@@ -75,6 +75,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
@@ -427,11 +428,18 @@ public class HintsInvoker {
         List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
 
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
-            for (PatternDescription d : patterns.get(occ.getKey())) {
+            PATTERN_LOOP: for (PatternDescription d : patterns.get(occ.getKey())) {
                 Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
 
                 for (Entry<String, String> e : d.getConstraints().entrySet()) {
-                    constraints.put(e.getKey(), Hacks.parseFQNType(info, e.getValue()));
+                    TypeMirror designedType = Hacks.parseFQNType(info, e.getValue());
+
+                    if (designedType == null || designedType.getKind() == TypeKind.ERROR) {
+                        //will not bind to anything anyway (#190449), skip pattern:
+                        continue PATTERN_LOOP;
+                    }
+                    
+                    constraints.put(e.getKey(), designedType);
                 }
 
                 Pattern p = Pattern.compile(info, occ.getKey(), constraints, d.getImports());
@@ -600,7 +608,10 @@ public class HintsInvoker {
 
         private boolean pushSuppressWarrnings(TreePath path) {
             switch(path.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case METHOD:
                 case VARIABLE:
                     Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();

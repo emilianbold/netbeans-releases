@@ -62,7 +62,9 @@ import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 
 @OptionsPanelController.SubRegistration(
 id = "TermAdvancedOption", // NOI18N
-displayName = "#CTL_Term_options" // NOI18N
+displayName = "#CTL_Term_options", // NOI18N
+keywords="#KW_TerminalOptions", // NOI18N
+keywordsCategory="Advanced/TermAdvancedOption"// NOI18N
 //tooltip="#CTL_Term_options" // NOI18N
 )
 public final class TermAdvancedOption extends OptionsPanelController {

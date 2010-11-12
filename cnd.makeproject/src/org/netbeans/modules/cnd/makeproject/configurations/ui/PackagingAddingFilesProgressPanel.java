@@ -96,9 +96,8 @@ public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        fileLabel.setDisplayedMnemonic('f');
         fileLabel.setLabelFor(fileTextField);
-        fileLabel.setText(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.fileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.fileLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

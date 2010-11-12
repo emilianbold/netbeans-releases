@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -108,8 +109,8 @@ public class AddExistingItemAction extends NodeAction {
             return;
         }
 	String seed = null;
-	if (FileChooser.getCurrectChooserFile() != null) {
-	    seed = FileChooser.getCurrectChooserFile().getPath();
+	if (FileChooser.getCurrentChooserFile() != null) {
+	    seed = FileChooser.getCurrentChooserFile().getPath();
 	}
 	if (seed == null) {
 	    seed = projectDescriptor.getBaseDir();
@@ -171,14 +172,7 @@ public class AddExistingItemAction extends NodeAction {
                 boolean notifySources = false;
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
-                    String itemPath;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        itemPath = CndPathUtilitities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-                    } else {
-                        itemPath = files[i].getPath();
-                    }
+                    String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDir(), files[i].getPath(), project);
                     itemPath = CndPathUtilitities.normalize(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N

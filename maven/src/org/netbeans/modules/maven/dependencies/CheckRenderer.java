@@ -95,8 +95,6 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
 
             renderer.setIcon (node.getIcon());
             stringDisplayer.setEnabled(!node.isDisabled());
-            String toolTip = node.getToolTip();
-            setToolTipText(toolTip);
             if (check != null) {
                 check.setSelected(node.isSelected());
                 check.setEnabled(!node.isDisabled());

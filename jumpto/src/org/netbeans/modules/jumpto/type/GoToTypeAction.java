@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.jumpto.type;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -66,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +74,6 @@ import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -85,10 +82,9 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.jumpto.type.TypeBrowser;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -120,6 +116,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private SearchType nameKind;
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);
+    private static final RequestProcessor PROFILE_RP = new RequestProcessor("GoToTypeAction-Profile",1);
     private Worker running;
     private RequestProcessor.Task task;
     GoToPanel panel;
@@ -549,7 +546,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+    private static class Renderer extends EntitiesListCellRenderer {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -565,7 +562,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private Color fgSelectionColor;
         
         private JList jList;
-        
+
         public Renderer( JList list ) {
             
             jList = list;
@@ -651,7 +648,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 jlName.setIcon(td.getIcon());
                 jlName.setText(td.getTypeName());
                 jlPkg.setText(td.getContextName());
-                jlPrj.setText(td.getProjectName());
+                setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
 		rendererComponent.setDescriptor(td);
 //                FileObject fo = td.getFileObject();
@@ -679,7 +676,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             jList.setFixedCellWidth(jv.getExtentSize().width);
         }
 
-     }
+     } // Renderer
     
     private class DialogButtonListener implements ActionListener {
         
@@ -697,64 +694,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
     }
 
-    private class TypeComparator implements Comparator<TypeDescriptor> {
-        
-        private final String mainProjectName;
-        
-        private TypeComparator() {
-            final Project mainProject = OpenProjects.getDefault().getMainProject();
-            mainProjectName = mainProject == null ? null : ProjectUtils.getInformation(mainProject).getDisplayName();
-        }
-        
-        public int compare(TypeDescriptor t1, TypeDescriptor t2) {
-            
-            String t1Name = t1.getTypeName();
-            String t2Name = t2.getTypeName();
 
-            // if names are equal, show these from main project first
-            if (t1Name.equals(t2Name)) {
-                String t1projectName = t1.getProjectName();
-                String t2projectName = t2.getProjectName();
-                if (t1projectName != null && t2projectName != null) {
-                    // prioritize types from main project
-                    if (mainProjectName != null && t1projectName.equals(mainProjectName)) {
-                        return -1;
-                    }
-
-                    //prioritize types from any project
-                    if (!t1projectName.equals("") && t2projectName.equals("")) { // NOI18N
-                        return -1;
-                    } else {
-                        return +1;
-                    }
-                }
-
-                
-            }
-
-           int cmpr = compareStrings( t1Name, t2Name);
-           if ( cmpr != 0 ) {
-               return cmpr;
-           }
-           cmpr = compareStrings( t1.getOuterName(), t2.getOuterName() );
-           if ( cmpr != 0 ) {
-               return cmpr;
-           }
-           return compareStrings( t1.getContextName(), t2.getContextName() );
-        }
-        
-    }
-        
-    private int compareStrings(String s1, String s2) {
-        if( s1 == null ) {
-            s1 = ""; // NOI18N
-        }
-        if ( s2 == null ) {
-            s2 = ""; // NOI18N
-        }
-        return s1.compareTo( s2 );
-    }
-    
     private Profile initializeProfiling() {
         boolean assertsOn = false;
         assert assertsOn = true;
@@ -774,20 +714,25 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         if (profiler == null) {
             return null;
         }
-        return new Profile(profiler);
+        return new Profile(profiler).start();
     }
 
     private class Profile implements Runnable {
-        Object profiler;
-        boolean profiling;
         private final long time;
+        private volatile  Object profiler;
+        private volatile boolean profiling;
 
         public Profile(Object profiler) {
             time = System.currentTimeMillis();
             this.profiler = profiler;
-            RequestProcessor.getDefault().post(this, 3000); // 3s
+        }
+        
+        Profile start() {
+            PROFILE_RP.post(this, 3000); // 3s
+            return this;
         }
 
+        @Override
         public synchronized void run() {
             profiling = true;
             if (profiler instanceof Runnable) {

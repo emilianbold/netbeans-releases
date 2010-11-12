@@ -152,20 +152,11 @@ public class CompilePanel extends javax.swing.JPanel {
             }
 
             public String getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
-                    if (props != null && props.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                        val = prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
-                    }
-                }
-                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
-                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
@@ -194,20 +185,6 @@ public class CompilePanel extends javax.swing.JPanel {
                 }
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                        profprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value);
-                        if (hasConfig) {
-                            // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
                     Properties modprops = handle.getPOMModel().getProject().getProperties();
@@ -283,20 +260,11 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public JavaPlatform getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
-                    if (props != null && props.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
-                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
-                    }
-                }
-                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_JDK_PLATFORM);
                     }
-                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
                 }
@@ -322,20 +290,6 @@ public class CompilePanel extends javax.swing.JPanel {
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
-                        profprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId);
-                        if (hasConfig) {
-                            // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
                     Properties modprops = handle.getPOMModel().getProject().getProperties();
@@ -403,47 +357,47 @@ public class CompilePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDeprecate, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDeprecate.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 566, Short.MAX_VALUE)
-                    .add(cbDebug)
-                    .add(cbDeprecate)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblCompileOnSave)
-                            .add(lblJavaPlatform))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(comJavaPlatform, 0, 204, Short.MAX_VALUE)
-                            .add(comCompileOnSave, 0, 204, Short.MAX_VALUE))
-                        .add(16, 16, 16)
-                        .add(btnMngPlatform)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblHint1, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .addComponent(lblHint2, javax.swing.GroupLayout.PREFERRED_SIZE, 566, Short.MAX_VALUE)
+                    .addComponent(cbDebug)
+                    .addComponent(cbDeprecate)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblCompileOnSave)
+                            .addComponent(lblJavaPlatform))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(comJavaPlatform, 0, 204, Short.MAX_VALUE)
+                            .addComponent(comCompileOnSave, 0, 204, Short.MAX_VALUE))
+                        .addGap(16, 16, 16)
+                        .addComponent(btnMngPlatform)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblJavaPlatform)
-                    .add(comJavaPlatform, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnMngPlatform))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblCompileOnSave)
-                    .add(comCompileOnSave, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblHint1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblHint2)
-                .add(18, 18, 18)
-                .add(cbDebug)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbDeprecate)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblJavaPlatform)
+                    .addComponent(comJavaPlatform, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnMngPlatform))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblCompileOnSave)
+                    .addComponent(comCompileOnSave, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint2)
+                .addGap(18, 18, 18)
+                .addComponent(cbDebug)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbDeprecate)
                 .addContainerGap(142, Short.MAX_VALUE))
         );
 

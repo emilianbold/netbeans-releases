@@ -44,7 +44,8 @@ package org.netbeans.modules.dlight.core.stack.ui;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.openide.nodes.AbstractNode;
@@ -57,7 +58,7 @@ import org.openide.util.ImageUtilities;
  */
 final class MultipleCallStackRootNode extends AbstractNode {
 
-    private final Vector<StackRootNode> children = new Vector<StackRootNode>();
+    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
     private final Image icon = ImageUtilities.icon2Image(new MyIcon());
     private final Action prefferedAction;
 
@@ -78,6 +79,7 @@ final class MultipleCallStackRootNode extends AbstractNode {
         setChildren(new MultipleCallStackRootChildren(children));
 
     }
+    
 
     void removeAll() {
 
@@ -100,13 +102,16 @@ final class MultipleCallStackRootNode extends AbstractNode {
 //    }
     private static class MyIcon implements Icon {
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
         }
 
+        @Override
         public int getIconWidth() {
             return 10;
         }
 
+        @Override
         public int getIconHeight() {
             return 10;
         }

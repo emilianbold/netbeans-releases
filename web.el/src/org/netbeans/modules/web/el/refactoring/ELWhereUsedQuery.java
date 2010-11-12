@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -109,16 +110,17 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             return null;
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        this.typeUtilities = ELTypeUtilities.create(info);
+        this.typeUtilities = ELTypeUtilities.create(refactoring.getContext().lookup(ClasspathInfo.class));
         Element element = resolveElement(handle);
         if (element == null) {
             LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
             return null;
         }
-        if (Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind()) {
+        if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
+                && element instanceof ExecutableElement) {
             return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
-        if (Kind.CLASS == handle.getKind()) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
             return handleClass(refactoringElementsBag, handle, element);
         }
         return null;
@@ -133,7 +135,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
-                    result[0] = handle.resolveElement(info);
+                    result[0] = handle.resolveElement(cc);
                 }
             }, true);
         } catch (IOException ex) {

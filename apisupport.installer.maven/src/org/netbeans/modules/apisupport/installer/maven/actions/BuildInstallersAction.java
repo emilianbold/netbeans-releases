@@ -69,6 +69,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -84,6 +87,9 @@ import org.openide.util.Utilities;
  *
  * @author Dmitry Lipin <dlipin@netbeans.org>
  */
+@ActionID(id = "org.netbeans.modules.apisupport.installer.maven.actions.BuildInstallersAction", category = "Project")
+@ActionRegistration(displayName = "#CTL_BuildInstallers")
+@ActionReference(position = 1290, path = "Projects/org-netbeans-modules-maven/Actions")
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
     public BuildInstallersAction() {

@@ -31,14 +31,14 @@
                       </Group>
                       <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="locationComboBox" alignment="0" pref="291" max="32767" attributes="2"/>
-                          <Component id="classNameTextField" alignment="0" pref="291" max="32767" attributes="0"/>
-                          <Component id="projectTextField" alignment="0" pref="291" max="32767" attributes="0"/>
+                          <Component id="locationComboBox" alignment="0" pref="315" max="32767" attributes="2"/>
+                          <Component id="classNameTextField" alignment="0" pref="315" max="32767" attributes="0"/>
+                          <Component id="projectTextField" alignment="0" pref="315" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jPanel2" alignment="1" max="32767" attributes="1"/>
-                  <Component id="bottomPanelContainer" alignment="0" pref="396" max="32767" attributes="0"/>
-                  <Component id="targetSeparator" alignment="0" pref="396" max="32767" attributes="0"/>
+                  <Component id="bottomPanelContainer" alignment="0" pref="410" max="32767" attributes="0"/>
+                  <Component id="targetSeparator" alignment="0" pref="410" max="32767" attributes="0"/>
                   <Component id="jPanel3" alignment="0" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -64,7 +64,7 @@
                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-              <Component id="jPanel2" min="-2" pref="128" max="-2" attributes="0"/>
+              <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -87,7 +87,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="projectTextField">
@@ -164,7 +164,7 @@
                           <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="cbSourceExtension" alignment="0" min="-2" pref="94" max="-2" attributes="0"/>
-                      <Component id="fileTextField" alignment="1" pref="274" max="32767" attributes="0"/>
+                      <Component id="fileTextField" alignment="1" pref="291" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -189,7 +189,7 @@
                       <Component id="fileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="6" max="32767" attributes="0"/>
+                  <EmptySpace pref="17" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -264,7 +264,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JTextField" name="fileTextField">
@@ -299,7 +299,7 @@
                       <Group type="102" attributes="0">
                           <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="headerTextField" pref="278" max="32767" attributes="0"/>
+                          <Component id="headerTextField" pref="304" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
@@ -310,7 +310,7 @@
                           <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="1" attributes="0">
-                                  <Component id="headerFolderTextField" pref="202" max="32767" attributes="0"/>
+                                  <Component id="headerFolderTextField" pref="206" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="headerBrowseButton" min="-2" max="-2" attributes="0"/>
                               </Group>

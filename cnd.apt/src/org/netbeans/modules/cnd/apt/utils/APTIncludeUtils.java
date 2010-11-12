@@ -47,8 +47,10 @@ package org.netbeans.modules.cnd.apt.utils;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -70,21 +72,20 @@ public class APTIncludeUtils {
      */
     public static ResolvedPath resolveFilePath(String inclString, CharSequence baseFile) {
         if (baseFile != null) {
-            String folder = new File(baseFile.toString()).getParent();
-            File fileFromBasePath = new File(folder, inclString);
-            if (isExistingFile(fileFromBasePath)) {
-                String absolutePath = fileFromBasePath.getAbsolutePath();
+            String folder = CndPathUtilitities.getDirName(baseFile.toString());
+            String absolutePath = folder + File.separatorChar + inclString; //NOI18N // File - sic!
+            if (isExistingFile(absolutePath)) {
                 return new ResolvedPath(FilePathCache.getManager().getString(folder), normalize(absolutePath), absolutePath, true, 0);
             }
         }
         return null;
     }
     
-    public static ResolvedPath resolveAbsFilePath(String file) {
+    public static ResolvedPath resolveAbsFilePath(String absFile) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
-            File absFile = new File(file);
-            if (absFile.isAbsolute() && isExistingFile(absFile) ) {
-                return new ResolvedPath(FilePathCache.getManager().getString(absFile.getParent()), normalize(file), file, false, 0);
+            if (CndPathUtilitities.isPathAbsolute(absFile) && isExistingFile(absFile) ) {
+                String parent = CndPathUtilitities.getDirName(absFile);
+                return new ResolvedPath(FilePathCache.getManager().getString(parent), normalize(absFile), absFile, false, 0);
             }
         }   
         return null;
@@ -92,18 +93,19 @@ public class APTIncludeUtils {
     
     public static ResolvedPath resolveFilePath(Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
         if (Utilities.isWindows()){
-            includedFile = includedFile.replace('/', File.separatorChar);
+            includedFile = includedFile.replace('/', File.separatorChar); // File - sic!
         }
+        SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
-            if (dirPrefix.isExistingDirectory()) {
-                String prefix = dirPrefix.getAsString();
+            if (accessor.isExistingDirectory(dirPrefix)) {
+                String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;
-                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) {
+                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) { // File - sic!
                     absolutePath = prefix + includedFile;
                 } else {
-                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile);
+                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile); // File - sic!
                 }
                 if (isExistingFile(absolutePath)) {
                     return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
@@ -116,7 +118,7 @@ public class APTIncludeUtils {
                             // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
                             // system path is /System/Library/Frameworks
                             // So convert framework path
-                            absolutePath = dirPrefix.getAsString()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                            absolutePath = dirPrefix.getPath()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
                             if (isExistingFile(absolutePath)) {
                                 return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
                             }
@@ -131,10 +133,6 @@ public class APTIncludeUtils {
 
     private static String normalize(String path) {
         return CndFileUtils.normalizeAbsolutePath(path);
-    }
-
-    private static boolean isExistingFile(File file) {
-        return CndFileUtils.isExistingFile(file);
     }
 
     private static boolean isExistingFile(String filePath) {

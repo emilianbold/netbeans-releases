@@ -79,6 +79,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Parameters;
 import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
@@ -87,6 +88,8 @@ import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.CasualDiff;
+import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -109,9 +112,11 @@ public class WorkingCopy extends CompilationController {
     private boolean afterCommit = false;
     private TreeMaker treeMaker;
     private Map<Tree, Object> tree2Tag;
+    private final ElementOverlay overlay;
     
-    WorkingCopy(final CompilationInfoImpl impl) {        
+    WorkingCopy(final CompilationInfoImpl impl, ElementOverlay overlay) {
         super(impl);
+        this.overlay = overlay;
     }
 
     private synchronized void init() {
@@ -124,6 +129,10 @@ public class WorkingCopy extends CompilationController {
         externalChanges = null;
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
+
+        if (getContext().get(ElementOverlay.class) == null) {
+            getContext().put(ElementOverlay.class, overlay);
+        }
     }
     
     private Context getContext() {
@@ -358,7 +367,8 @@ public class WorkingCopy extends CompilationController {
         if (!REWRITE_WHOLE_FILE) {
             new TreePathScanner<Void, Void>() {
                 private TreePath currentParent;
-                private Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
+                private final Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
+                private final FQNComputer fqn = new FQNComputer();
 
                 private TreePath getParentPath(TreePath tp, Tree t) {
                     Tree parent = tp != null ? tp.getLeaf() : t;
@@ -402,6 +412,23 @@ public class WorkingCopy extends CompilationController {
 
                     return null;
                 }
+
+                @Override
+                public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+                    fqn.setCompilationUnit(node);
+                    return super.visitCompilationUnit(node, p);
+                }
+
+                @Override
+                public Void visitClass(ClassTree node, Void p) {
+                    String parent = fqn.getFQN();
+                    fqn.enterClass(node);
+                    overlay.registerClass(parent, fqn.getFQN(), node);
+                    super.visitClass(node, p);
+                    fqn.leaveClass();
+                    return null;
+                }
+
             }.scan(getCompilationUnit(), null);
         } else {
             TreePath topLevel = new TreePath(getCompilationUnit());
@@ -417,18 +444,17 @@ public class WorkingCopy extends CompilationController {
         boolean importsFilled = false;
 
         for (TreePath path : pathsToRewrite) {
-            Translator translator = new Translator();
             List<ClassTree> classes = new ArrayList<ClassTree>();
-            
+
             if (path.getParentPath() != null) {
-                for (Tree t : path) {
+                for (Tree t : path.getParentPath()) {
                     if (t.getKind() == Kind.COMPILATION_UNIT && !importsFilled) {
                         CompilationUnitTree cut = (CompilationUnitTree) t;
                         ia.setPackage(cut.getPackageName());
                         ia.setImports(cut.getImports());
                         importsFilled = true;
                     }
-                    if (t.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         classes.add((ClassTree) t);
                     }
                 }
@@ -508,10 +534,32 @@ public class WorkingCopy extends CompilationController {
             return null;
         }
         
+        if (externalChanges != null) {
+            for (CompilationUnitTree t : externalChanges.values()) {
+                final FQNComputer fqn = new FQNComputer();
+
+                fqn.setCompilationUnit(t);
+                overlay.registerPackage(fqn.getFQN());
+
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        String parent = fqn.getFQN();
+                        fqn.enterClass(node);
+                        overlay.registerClass(parent, fqn.getFQN(), node);
+                        super.visitClass(node, p);
+                        fqn.leaveClass();
+                        return null;
+                    }
+                }.scan(t, null);
+            }
+        }
         List<Difference> result = new LinkedList<Difference>();
         
         result.addAll(processCurrentCompilationUnit(tag2Span));
         result.addAll(processExternalCUs());
+
+        overlay.clearElementsCache();
         
         return result;
     }

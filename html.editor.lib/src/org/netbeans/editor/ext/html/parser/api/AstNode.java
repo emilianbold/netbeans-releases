@@ -84,11 +84,6 @@ public class AstNode {
     private boolean isEmpty = false;
     private Map<String, Object> properties;
 
-    //>>>experimental
-    public  int treeBuilderState;
-    public Object elementName;
-    //<<<
-
     public static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
     }
@@ -337,6 +332,10 @@ public class AstNode {
         return endOffset;
     }
 
+    public void setEndOffset(int offset) {
+        this.endOffset = offset;
+    }
+
     public int logicalStartOffset() {
         return getLogicalRange()[0];
     }
@@ -405,6 +404,7 @@ public class AstNode {
             return false; //no such node in children
         }
         children.add(idx, node);
+        node.setParent(this);
         return true;
     }
 
@@ -423,7 +423,7 @@ public class AstNode {
 
     public void removeChildren(List<AstNode> childrenList) {
         initChildren();
-        for(AstNode child : childrenList) {
+        for(AstNode child : new ArrayList<AstNode>(childrenList)) {
             removeChild(child);
         }
     }
@@ -547,11 +547,6 @@ public class AstNode {
             }
             b.deleteCharAt(b.length() - 1);
         }
-
-        b.append("; mode=");
-        b.append(treeBuilderState);
-        b.append("; ElementName=");
-        b.append(elementName);
 
         if(!getDescriptions().isEmpty()) {
             b.append("; issues:");

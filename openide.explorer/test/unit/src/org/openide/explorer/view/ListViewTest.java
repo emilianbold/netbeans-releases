@@ -66,7 +66,7 @@ public final class ListViewTest extends NbTestCase {
     public ListViewTest(String testName) {
         super(testName);
     }
-    
+
     /**
      * Tests whether the ListView doesn't try to scroll to a changed node
      * on a change event. See issue 88209
@@ -91,6 +91,7 @@ public final class ListViewTest extends NbTestCase {
         testWindow.getExplorerManager().setRootContext(root);
         
         awtRequest(new Callable<Void>() {
+            @Override
             public Void call() {
                 testWindow.pack();
                 testWindow.setVisible(true);
@@ -112,6 +113,7 @@ public final class ListViewTest extends NbTestCase {
 
         // cleanup
         awtRequest(new Callable<Void>() {
+            @Override
             public Void call() {
                 testWindow.setVisible(false);
                 return null;
@@ -129,6 +131,7 @@ public final class ListViewTest extends NbTestCase {
             super("ListView test");                                     //NOI18N
         }
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return explManager;
         }
@@ -138,6 +141,7 @@ public final class ListViewTest extends NbTestCase {
         final Object[] value = new Object[1];
         final Exception[] exc = new Exception[1];
         EventQueue.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 try {
                     value[0] = call.call();
@@ -152,6 +156,7 @@ public final class ListViewTest extends NbTestCase {
     }
     
     private class CallY implements Callable<Integer> {
+        @Override
         public Integer call() {
             return view.getViewport().getViewPosition().y;
         }

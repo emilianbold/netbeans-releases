@@ -281,7 +281,7 @@ public interface GlassfishModule {
      *   completed.
      */
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name);
+            final String name, final boolean resourcesChanged);
        
     /**
      * Redeploy the named application onto the server with a new context root
@@ -298,7 +298,7 @@ public interface GlassfishModule {
      *   completed.
      */
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name, final String contextRoot);
+            final String name, final String contextRoot, final boolean resourcesChanged);
     
     /**
      * Undeploy the named application.

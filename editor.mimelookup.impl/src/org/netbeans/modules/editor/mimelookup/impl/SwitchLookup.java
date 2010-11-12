@@ -44,22 +44,19 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbCollections;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -76,22 +73,13 @@ public class SwitchLookup extends Lookup {
 
     private final String LOCK = new String("SwitchLookup.LOCK"); //NOI18N
     
-    private MappingListener listener;
-    
-    private Map<String,UpdatableProxyLookup> classLookups = new HashMap<String,UpdatableProxyLookup>();
+    private Map<Class<?>,UpdatableProxyLookup> classLookups = new HashMap<Class<?>, UpdatableProxyLookup>();
     private Map<List<String>,Lookup> pathsLookups = new HashMap<List<String>,Lookup>();
 
-    private Map<String,ClassInfoStorage.Info> classInfos = new HashMap<String,ClassInfoStorage.Info>();
-    private Map<List<String>,Set<String>> pathsToClasses = new HashMap<List<String>,Set<String>>();
-    
     public SwitchLookup(MimePath mimePath) {
         super();
         
         this.mimePath = mimePath;
-        
-        this.listener = new MappingListener();
-        ClassInfoStorage.getInstance().addPropertyChangeListener(
-            WeakListeners.propertyChange(listener, ClassInfoStorage.getInstance()));
     }
 
     public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
@@ -102,42 +90,56 @@ public class SwitchLookup extends Lookup {
         return findLookup(clazz).lookup(clazz);
     }
 
-    private Lookup findLookup(Class clazz) {
+    private Lookup findLookup(Class<?> clazz) {
         synchronized (LOCK) {
-            String className = clazz.getName();
-            UpdatableProxyLookup lookup = classLookups.get(className);
+            UpdatableProxyLookup lookup = classLookups.get(clazz);
             if (lookup == null) {
-                // Get the the class info and remember it
-                ClassInfoStorage.Info classInfo = ClassInfoStorage.getInstance().getInfo(className);
-                classInfos.put(className, classInfo);
-                
                 // Create lookup
-                Lookup innerLookup = createLookup(classInfo);
+                Lookup innerLookup = createLookup(clazz);
                 lookup = new UpdatableProxyLookup(innerLookup);
                 
-                classLookups.put(className, lookup);
+                classLookups.put(clazz, lookup);
             }
 
             return lookup;
         }
     }
 
-    private Lookup createLookup(ClassInfoStorage.Info classInfo) {
-        List<String> paths = computePaths(mimePath, ROOT_FOLDER, classInfo.getExtraPath());
+    private Lookup createLookup(Class<?> forClass) {
+        MimeLocation loc = forClass.getAnnotation(MimeLocation.class);
+
+        if (loc == null) {
+            loc = new MimeLocation() {
+                @Override
+                public String subfolderName() {
+                    return null;
+                }
+                @Override
+                public Class<? extends InstanceProvider> instanceProviderClass() {
+                    return null;
+                }
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return MimeLocation.class;
+                }
+            };
+        }
+        List<String> paths = computePaths(mimePath, ROOT_FOLDER, loc.subfolderName());
         Lookup lookup;
         
-        if (classInfo.getInstanceProviderClass() != null) {
-            // Get a lookup for the new instance provider
-            lookup = getLookupForProvider(paths, classInfo.getInstanceProvider());
-        } else {
-            // Add the className to the list of users of the new paths
-            Set<String> pathsUsers = pathsToClasses.get(paths);
-            if (pathsUsers == null) {
-                pathsUsers = new HashSet<String>();
-                pathsToClasses.put(paths, pathsUsers);
+        if (loc.instanceProviderClass() != null && loc.instanceProviderClass() != InstanceProvider.class) {
+            try {
+                // Get a lookup for the new instance provider
+                lookup = getLookupForProvider(paths, loc.instanceProviderClass().newInstance());
+            } catch (InstantiationException ex) {
+                Exceptions.printStackTrace(ex);
+                lookup = Lookup.EMPTY;
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+                lookup = Lookup.EMPTY;
             }
-            pathsUsers.add(classInfo.getClassName());
-
+        } else {
             // Get a lookup for the new paths
             lookup = getLookupForPaths(paths);
         }
@@ -157,44 +159,6 @@ public class SwitchLookup extends Lookup {
 
     private Lookup getLookupForProvider(List<String> paths, InstanceProvider instanceProvider) {
         return new InstanceProviderLookup(paths.toArray(new String[paths.size()]), instanceProvider);
-    }
-    
-    private void rebuildLookup(String className) {
-        synchronized (LOCK) {
-            UpdatableProxyLookup classLookup = classLookups.get(className);
-            if (classLookup == null) {
-                // no lookup for the class, nothing to do
-                return;
-            }
-
-            ClassInfoStorage.Info currentClassInfo = classInfos.get(className);
-            ClassInfoStorage.Info classInfo = ClassInfoStorage.getInstance().getInfo(className);
-            
-            if (currentClassInfo.equals(classInfo)) {
-                // bogus change event, the class information hasn't changed, nothing to do
-                return;
-            }
-
-            if (currentClassInfo.getInstanceProviderClass() == null) {
-                List<String> currentPaths = computePaths(mimePath, ROOT_FOLDER, currentClassInfo.getExtraPath());
-
-                // Remove the className from the list of users of the current paths
-                Set<String> currentPathsUsers = pathsToClasses.get(currentPaths);
-                currentPathsUsers.remove(className);
-
-                if (currentPathsUsers.isEmpty()) {
-                    pathsToClasses.remove(currentPaths);
-                    pathsLookups.remove(currentPaths);
-                }
-            }
-
-            // Remember the new class info
-            classInfos.put(className, classInfo);
-    
-            // Update the classLookup
-            Lookup innerLookup = createLookup(classInfo);
-            classLookup.setLookupsEx(innerLookup);
-        }
     }
     
     private static List<String> computePaths(MimePath mimePath, String prefixPath, String suffixPath) {
@@ -245,13 +209,5 @@ public class SwitchLookup extends Lookup {
             setLookups(lookups);
         }
     } // End of UpdatableProxyLookup class
-    
-    private final class MappingListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            for (String className : NbCollections.checkedSetByFilter((Set) evt.getNewValue(), String.class, true)) {
-                rebuildLookup(className);
-            }
-        }
-    } // End of MappingListsner class
     
 }

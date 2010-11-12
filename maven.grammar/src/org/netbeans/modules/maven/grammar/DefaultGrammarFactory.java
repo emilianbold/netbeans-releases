@@ -76,9 +76,6 @@ public class DefaultGrammarFactory extends GrammarFactory {
         if (fo.getNameExt().equals("pom.xml") && owner.getProjectDirectory().equals(fo.getParent())) {
             return new MavenProjectGrammar(env);
         }
-        if (fo.getNameExt().equals("profiles.xml") && owner.getProjectDirectory().equals(fo.getParent())) {
-            return new MavenProfilesGrammar(env);
-        }
         File file = FileUtil.toFile(fo);
         if (owner.getLookup().lookup(NbMavenProject.class) != null) {
             if ("src/main/resources/META-INF/archetype.xml".equals(FileUtil.getRelativePath(owner.getProjectDirectory(), env.getFileObject()))) {

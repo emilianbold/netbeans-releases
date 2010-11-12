@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -260,9 +260,9 @@ public class CompletionTestPerformer {
     }
     
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
-        FileObject test = FileUtil.toFileObject(testFile);
+        FileObject test = CndFileUtils.toFileObject(testFile);
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), false);
-        if (test == null || csmFile == null) {
+        if (test == null || !test.isValid() || csmFile == null) {
             throw new IllegalStateException("Given test file does not exist.");
         }
         log.println("File found: " + csmFile);

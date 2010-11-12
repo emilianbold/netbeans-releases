@@ -143,7 +143,12 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         {
             return true;
         }
-        if ( isObservesParameter(element, parent, annotations, impl)){
+        /*
+         * Parameter with @Observes annotation is not plain injection point. 
+         */
+        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
+                OBSERVES_ANNOTATION, getImplementation(impl).getHelper());
+        if ( !hasObserves && isObservesParameter(element, parent, annotations, impl)){
             return true;
         }
         return impl.getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
@@ -216,7 +221,11 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         List<Element> result = new LinkedList<Element>();
         Collection<BindingQualifier> objects = impl.getNamedManager().getObjects();
         for (BindingQualifier named : objects) {
-            result.add( named.getTypeElement() );
+            TypeElement element = named.getTypeElement();
+            // filter stereotypes
+            if ( element.getKind() != ElementKind.ANNOTATION_TYPE) {
+                result.add( element );
+            }
         }
         List<Element> members = AbstractObjectProvider.getNamedMembers( 
                 impl.getHelper() );
@@ -235,7 +244,11 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
                 impl.getStereotypedManager(stereotype);
             Collection<StereotypedObject> beans = manager.getObjects();
             for (StereotypedObject bean : beans) {
-                result.add( bean.getTypeElement() );
+                TypeElement element = bean.getTypeElement();
+                // filter stereotypes
+                if ( element.getKind() != ElementKind.ANNOTATION_TYPE) {
+                    result.add( element );
+                }
             }
             List<Element> stereotypedMembers = StereotypedObjectProvider.
                 getAnnotatedMembers( stereotype, impl.getHelper());

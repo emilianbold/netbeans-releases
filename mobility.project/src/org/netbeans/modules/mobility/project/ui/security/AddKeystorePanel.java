@@ -403,7 +403,7 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
             return null;
         KeyStoreRepository.KeyStoreBean bean;
         if (add.rNew.isSelected()) {
-            String file = add.tLocation.getText() + File.separator + add.tName.getText();
+            String file = add.tLocation.getText().trim() + File.separator + add.tName.getText().trim();
             if (! file.endsWith(".ks")  &&  ! file.endsWith(".keystore")) // NOI18N
                 file += ".ks"; // NOI18N
             bean = KeyStoreRepository.getDefault().getKeyStore(file, false);
@@ -413,7 +413,7 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
                 KeyStoreRepository.getDefault().addKeyStore(bean);
             }
         } else {
-            String file = add.tFile.getText();
+            String file = add.tFile.getText().trim();
             bean = KeyStoreRepository.getDefault().getKeyStore(file, true);
         }
         return bean;

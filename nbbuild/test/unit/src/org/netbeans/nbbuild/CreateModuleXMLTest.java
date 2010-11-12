@@ -50,31 +50,25 @@ import java.util.jar.Manifest;
 import java.io.File;
 import java.io.IOException;
 
-import org.netbeans.junit.NbTestCase;
 
 /** Check behaviour of ModuleSelector.
  *
  * @author Jaroslav Tulach
  */
-public class CreateModuleXMLTest extends NbTestCase {
+public class CreateModuleXMLTest extends TestBase {
     
     public CreateModuleXMLTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        clearWorkDir();
-    }
-
     public void testIncludesAllModulesByDefault() throws Exception {
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         
         File output = new File(getWorkDir(), "output");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -88,7 +82,7 @@ public class CreateModuleXMLTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Output exists", output.exists ());
         assertTrue ("Output directory created", output.isDirectory());
@@ -100,13 +94,13 @@ public class CreateModuleXMLTest extends NbTestCase {
     }
 
     public void testGeneratesDataForDisabledModule() throws Exception {
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
 
         File output = new File(getWorkDir(), "output");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -120,7 +114,7 @@ public class CreateModuleXMLTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertTrue ("Output exists", output.exists ());
         assertTrue ("Output directory created", output.isDirectory());
@@ -132,7 +126,7 @@ public class CreateModuleXMLTest extends NbTestCase {
     }
 
     public void testGenerateUpdateTrackingMode() throws Exception {
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         m.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", "10.15");
         File aModule = generateJar(new String[0], m);
@@ -140,7 +134,7 @@ public class CreateModuleXMLTest extends NbTestCase {
         File output = new File(getWorkDir(), "output");
         File tracking = new File(getWorkDir(), "update_tracking");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -154,7 +148,7 @@ public class CreateModuleXMLTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertTrue ("Output exists", output.exists ());
         assertTrue ("Output directory created", output.isDirectory());
@@ -170,7 +164,7 @@ public class CreateModuleXMLTest extends NbTestCase {
         assertEquals("It one file", 1, arr.length);
         assertEquals("Its name reflects the code name of the module", "org-my-module.xml", arr[0].getName());
 
-        String conf = PublicPackagesInProjectizedXMLTest.readFile(arr[0]);
+        String conf = readFile(arr[0]);
 
         {
             int first = conf.indexOf("<file");
@@ -190,14 +184,16 @@ public class CreateModuleXMLTest extends NbTestCase {
     }
     
     
-    private final File createNewJarFile () throws IOException {
+    private File createNewJarFile() throws IOException {
         File dir = new File(this.getWorkDir(), "modules");
         dir.mkdirs();
         
         int i = 0;
         for (;;) {
             File f = new File (dir, i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists()) {
+                return f;
+            }
         }
     }
     

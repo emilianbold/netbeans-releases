@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.project.cases;
 
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,6 +58,10 @@ public class PkgConfigTestCase extends MakeProjectTestBase {
 
     @Test
     public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null, false, "");
+        if (Utilities.isWindows()) {
+            // configure script requires more then 10 minutes
+            return;
+        }
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, false, "");
     }
 }

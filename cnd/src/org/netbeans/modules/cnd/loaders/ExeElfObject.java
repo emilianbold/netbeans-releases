@@ -45,9 +45,9 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -125,7 +125,7 @@ public class ExeElfObject extends ExeObject {
 
     private void setExecutionFlags(FileObject fob) throws IOException {
 	if (fob != null) {
-            Runtime.getRuntime().exec("/bin/chmod +x " + FileUtil.toFile(fob).getPath()); // NOI18N
+            Runtime.getRuntime().exec("/bin/chmod +x " + CndFileUtils.toFile(fob).getPath()); // NOI18N
         }
     }
 }

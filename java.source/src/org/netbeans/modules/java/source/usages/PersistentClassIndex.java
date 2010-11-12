@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -69,6 +70,11 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.Queries;
+import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -87,16 +93,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
     //@GuardedBy("this")
     private Set<String> rootPkgCache;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
-    private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
+    private static final String REFERENCES = "refs";    // NOI18N
     
     /** Creates a new instance of ClassesAndMembersUQ */
     private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
 	    throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
-        assert indexFactory != null;
         this.cacheRoot = cacheRoot;
-        this.index = indexFactory.create(cacheRoot);
+        this.index = IndexManager.createIndex(getReferencesCacheFolder(cacheRoot), DocumentUtil.createAnalyzer());
         this.isSource = source;
     }
     
@@ -118,7 +123,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public boolean isEmpty () {
         try {
-            return ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+            return IndexManager.readAccess(new IndexManager.Action<Boolean>() {
+                @Override
                 public Boolean run() throws IOException, InterruptedException {
                     return !PersistentClassIndex.this.index.exists();
                 }
@@ -158,7 +164,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
         final Query q = DocumentUtil.binaryNameQuery(binaryName);        
         Set<String> names = new HashSet<String>();
-        index.query(new Query[]{q}, DocumentUtil.sourceNameFieldSelector(), DocumentUtil.sourceNameConvertor(), names);
+        index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
         return names.isEmpty() ? null : names.iterator().next();
     }
     
@@ -172,14 +178,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
     @Override
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void search (final String binaryName, final Set<UsageType> usageType, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
             this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
             return;
         }
         
-        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+        IndexManager.readAccess(new IndexManager.Action<Void> () {
+            @Override
             public Void run () throws IOException, InterruptedException {
                 usages(binaryName, usageType, convertor, result);
                 return null;
@@ -189,27 +196,45 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
                        
     @Override
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
-        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+        IndexManager.readAccess(new IndexManager.Action<Void> () {
             @Override
             public Void run () throws IOException, InterruptedException {
-                final Query[] queries =  QueryUtil.createQueries(
-                        Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),
+                final Query query =  Queries.createQuery(
+                        DocumentUtil.FIELD_SIMPLE_NAME,
+                        DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,
                         simpleName,
-                        kind);
-                index.query(queries,DocumentUtil.declaredTypesFieldSelector(),convertor, result);
+                        DocumentUtil.translateQueryKind(kind));
+                index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
                 return null;
             }
         });
     }
     
     @Override
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
-        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+        IndexManager.readAccess(new IndexManager.Action<Void>() {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getDeclaredElements(ident, kind, convertor, result);
+                final Query query = Queries.createTermCollectingQuery(
+                        DocumentUtil.FIELD_FEATURE_IDENTS,
+                        DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS,
+                        ident,
+                        DocumentUtil.translateQueryKind(kind));
+                index.queryDocTerms(
+                        result,
+                        convertor,
+                        new Convertor<Term, String>(){
+                            @Override
+                            public String convert(Term p) {
+                                return p.text();
+                            }
+                        },
+                        DocumentUtil.declaredTypesFieldSelector(),
+                        cancel.get(),
+                        query);
                 return null;
             }
         });                            
@@ -218,7 +243,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
-        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+        IndexManager.readAccess(new IndexManager.Action<Void>() {
             @Override
             public Void run () throws IOException, InterruptedException {
                 final boolean cacheOp = directOnly && prefix.length() == 0;
@@ -236,8 +261,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 } else {
                     collectInto = result;
                 }
-                final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
-                index.queryTerms(filter.second, filter.first, collectInto);
+                final Pair<StoppableConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
+                index.queryTerms(collectInto, filter.second, filter.first, cancel.get());
                 if (cacheOp) {
                     synchronized (PersistentClassIndex.this) {
                         if (rootPkgCache == null) {
@@ -259,12 +284,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public @Override String toString () {
         return "PersistentClassIndex["+this.root.toExternalForm()+"]";     // NOI18N
     }
-    
-    //Unit test methods
-    public static void setIndexFactory (final IndexFactory factory) {
-        indexFactory = (factory == null ? LuceneIndexFactory.getInstance() : factory);
-    }
-    
+            
     //Protected methods --------------------------------------------------------
     @Override
     protected final void close () throws IOException {
@@ -273,6 +293,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
         
     // Private methods ---------------------------------------------------------                          
+    
+    private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
+        File refRoot = new File (cacheRoot,REFERENCES);
+        if (!refRoot.exists()) {
+            refRoot.mkdir();
+        }
+        return refRoot;
+    }
     
     private void updateDirty () {
         final URL url = this.dirty;
@@ -286,10 +314,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 if (fo != null && fo.isValid()) {                                        
                     try {
                         js.runUserActionTask(new Task<CompilationController>() {
+                            @Override
                             public void run (final CompilationController controller) {
                                 try {                            
-                                    ClassIndexManager.getDefault().takeWriteLock(
-                                        new ClassIndexManager.ExceptionAction<Void>() {
+                                    IndexManager.writeAccess(
+                                        new IndexManager.Action<Void>() {
+                                        @Override
                                             public Void run () throws IOException {
                                                 if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
                                                     return null;
@@ -312,7 +342,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                                 return null;
                                             }
                                     });
-                                } catch (IndexAlreadyClosedException e) {
+                                } catch (Index.IndexClosedException e) {
                                     //A try to  store to closed index, safe to ignore.
                                     //Data will be scanned when project is reopened.
                                    LOGGER.info("Ignoring store into closed index");
@@ -331,14 +361,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 }
                 this.dirty = null;
                 final long endTime = System.currentTimeMillis();
-                LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
+                LOGGER.log(Level.FINE, "PersistentClassIndex.updateDirty took: {0} ms", (endTime-startTime));     //NOI18N
             }
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, Convertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
         final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
-        this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
+        this.index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
     }
     
     private synchronized void resetPkgCache() {        
@@ -352,14 +382,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
             index.clear();
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
+        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
             resetPkgCache();
-            index.store(refs, topLevels);
+            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), false);
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
-            index.store(refs, toDelete);
+            index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(), true);
         }
     }
     

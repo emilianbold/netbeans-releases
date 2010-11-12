@@ -101,7 +101,7 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         // name
                         TypeParameterTree tpt = clazz.getTypeParameters().get(0);

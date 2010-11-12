@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -194,15 +196,15 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         }
     }
 
-    @Test
-    public void testHelloQtWorld() throws IOException, InterruptedException, InvocationTargetException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
-        }
-    }
+//    @Test
+//    public void testHelloQtWorld() throws IOException, InterruptedException, InvocationTargetException {
+//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
+//        }
+//        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+//            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
+//        }
+//    }
 
     @Test
     public void testProfilingDemo() throws IOException, InterruptedException, InvocationTargetException {
@@ -236,8 +238,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 TemplateWizard wiz = new TemplateWizard();
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
-                wiz.putProperty("name", destdir.getName());
-                wiz.putProperty("projdir", destdir);
+                wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
                 try {
                     setRef.set(projectCreator.instantiate());
                 } catch (IOException ex) {
@@ -281,7 +283,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             FileObject projectDirFO = projectDataObject.getPrimaryFile();
             if (mainProjectDir == null) {
                 mainProjectDirFO = projectDirFO;
-                mainProjectDir = FileUtil.toFile(projectDirFO);
+                mainProjectDir = CndFileUtils.toFile(projectDirFO);
             }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
@@ -327,7 +329,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         makeActionProvider.invokeAction("build", null);
 
 //        File makefile = new File(mainProjectDir, "Makefile");
-//        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
+//        FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);
 //        assertTrue("makefileFileObject == null", makefileFileObject != null);
 //        DataObject dObj = null;
 //        try {

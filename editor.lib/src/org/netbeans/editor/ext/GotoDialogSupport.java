@@ -215,6 +215,11 @@ public class GotoDialogSupport implements ActionListener {
             try {
                 int line = Integer.parseInt(
                         (String)gotoPanel.getValue());
+
+                //issue 188976
+                if (line==0)
+                    line = 1;
+                //end of issue 188976
                 
                 BaseDocument doc = Utilities.getDocument(c);
                 if (doc != null) {

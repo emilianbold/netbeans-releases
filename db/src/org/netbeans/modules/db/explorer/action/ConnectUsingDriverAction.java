@@ -37,52 +37,30 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
-//commented out for 3.6 release, need to solve for next Studio release
-//import org.netbeans.modules.db.explorer.PointbasePlus;
-
-import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
-import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.lib.ddl.DDLException;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
+import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -120,17 +98,9 @@ public class ConnectUsingDriverAction extends BaseAction {
     
     public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {
         
-        ConnectionDialog dlg;
-        boolean advancedPanel = false;
-        boolean okPressed = false;
-
         // the most recent task passed to the RequestProcessor
         Task activeTask = null;
 
-        // the panels
-        private NewConnectionPanel basePanel = null;
-        private SchemaPanel schemaPanel = null;
-        
         private DatabaseConnection cinfo = null;
         
         public void showDialog(String driverName, String driverClass) {
@@ -143,247 +113,11 @@ public class ConnectUsingDriverAction extends BaseAction {
             return showDialog(driverName, driverClass, databaseUrl, user, password);
         }
         
-        public DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
-            String finalDriverClass = null;
-            
-            JDBCDriver[] drivers;
-            if ((null != databaseUrl) && (null != driverClass)) {
-                drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
-                finalDriverClass = driverClass;
-            } else {
-                drivers = JDBCDriverManager.getDefault().getDrivers();
-            }
-            
-            // issue 74723: select the Derby network driver by default
-            // otherwise just select the first driver
-            String selectedDriverName = null;
-            String selectedDriverClass = null;
-            if (driverName == null || driverClass == null) {
-                for (int i = 0; i < drivers.length; i++) {
-                    if (JDBCDriverSupport.isAvailable(drivers[i])) {
-                        if (selectedDriverName == null) {
-                            selectedDriverName = drivers[i].getName();
-                            selectedDriverClass = drivers[i].getClassName();
-                        }
-                        if ("org.apache.derby.jdbc.ClientDriver".equals(drivers[i].getClassName())) { // NOI18N
-                            selectedDriverName = drivers[i].getName();
-                            selectedDriverClass = drivers[i].getClassName();
-                            break;
-                        }
-                    }
-                }
-            } else {
-                selectedDriverName = driverName;
-                selectedDriverClass = driverClass;
-            }
-            
-            cinfo = new DatabaseConnection();
-            cinfo.setDriverName(selectedDriverName);
-            cinfo.setDriver(selectedDriverClass);
-            if (user != null) {
-                cinfo.setUser(user);
-            }
-            if (password != null) {
-                cinfo.setPassword(password);
-            }
-
-            if (null != databaseUrl) {
-                cinfo.setDatabase(databaseUrl);
-            }
-            
-            basePanel = new NewConnectionPanel(this, finalDriverClass, cinfo);
-            schemaPanel = new SchemaPanel(this, cinfo);
-
-            PropertyChangeListener argumentListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent event) {
-                    if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
-                        schemaPanel.setSchemas(Collections.EMPTY_LIST, ""); //NOI18N
-                        schemaPanel.resetProgress();
-                        try {
-                            Connection conn = cinfo.getConnection();
-                            if (DatabaseConnection.isVitalConnection(conn, cinfo)) {
-                                conn.close();
-                            }
-                        } catch (SQLException exc) {
-                            LOGGER.log(Level.FINE, null, exc);
-                        }
-
-                    }
-                }
-            };
-            basePanel.addPropertyChangeListener(argumentListener);
-
-            final PropertyChangeListener connectionListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent event) {
-                    if (event.getPropertyName().equals("connecting")) { // NOI18N
-                        fireConnectionStarted();
-                    }
-                    else if (event.getPropertyName().equals("failed")) { // NOI18N
-                        setConnected(false);
-                        fireConnectionFailed();
-                    }
-                    else if (event.getPropertyName().equals("connected")) { //NOI18N
-                        try {
-                            cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
-                        } catch (DatabaseException exc) {
-                            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-                            DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                            return;
-                        }
-
-                        setConnected(true);
-                        boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
-                        fireConnectionFinished();
-
-                        if (result)
-                        {
-                            cinfo.setSchema(schemaPanel.getSchema());
-                        }
-                        else {
-
-                            if (!schemaPanel.schemasAvailable())
-                            {
-                                try
-                                {
-                                    ConnectionList.getDefault().add(cinfo);
-                                }
-                                catch (DatabaseException dbe)
-                                {
-                                    LOGGER.log(Level.INFO, dbe.getLocalizedMessage(), dbe);
-                                    DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
-                                    cinfo.setConnection(null);
-                                }
-                                
-                                if (dlg != null)
-                                {
-                                    dlg.close();
-                                    return;
-                                }
-                            }
-                        }
-
-                        //switch to schema panel
-                        dlg.setSelectedComponent(schemaPanel);
-                        return;
-                        
-                    } else {
-                        okPressed = false;
-                    }
-                }
-            };
-
-            final ExceptionListener excListener = new ExceptionListener() {
-                @Override
-                public void exceptionOccurred(Exception exc) {
-                    if (exc instanceof DDLException) {
-                        LOGGER.log(Level.INFO, null, exc.getCause());
-                    } else {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-                    
-                    String message = null;
-                    if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(NbBundle.getMessage (ConnectUsingDriverAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
-                    } else {
-                        StringBuilder buffer = new StringBuilder();
-                        buffer.append(DbUtilities.formatError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
-                        if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
-                            SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
-                            while (sqlEx != null) {
-                                buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
-                                sqlEx = sqlEx.getNextException();
-                            }
-                        }
-                        message = buffer.toString();
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                }
-            };
-
-            cinfo.addPropertyChangeListener(connectionListener);
-            cinfo.addExceptionListener(excListener);
-
-            ActionListener actionListener = new ActionListener() {
-                
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                        okPressed = true;
-                        basePanel.setConnectionInfo();
-                        try {
-                            if (! DatabaseConnection.isVitalConnection(cinfo.getConnection(), cinfo)) {
-                                activeTask = cinfo.connectAsync();
-                            } else {
-                                cinfo.setSchema(schemaPanel.getSchema());
-                                ConnectionList.getDefault().add(cinfo);
-                                if (dlg != null)
-                                {
-                                    cancelActiveTask();
-                                    dlg.close();
-                                }
-                            }
-                        } catch (DatabaseException exc) {
-                            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-                            DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
-                            closeConnection();
-                        }
-                        return;
-                    }
-                    else if (event.getSource() == DialogDescriptor.CANCEL_OPTION) {
-                        if (dlg != null)
-                        {
-                            cancelActiveTask();
-                        }
-                    }
-                }
-            };
-
-            ChangeListener changeTabListener = new ChangeListener() {
-                @Override
-                public void stateChanged (ChangeEvent e) {
-                    if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
-                        advancedPanel = true;
-                        basePanel.setConnectionInfo();
-                    } else {
-                        advancedPanel = false;
-                    }
-                }
-            };
-
-            dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("new_db_save_password"), actionListener, changeTabListener);  // NOI18N
-            basePanel.setWindow(dlg.getWindow());
-            dlg.setVisible(true);
-
-            cinfo.removeExceptionListener(excListener);
-            cinfo.removePropertyChangeListener(connectionListener);
-            cinfo.fireConnectionComplete();
-            
-            return ConnectionList.getDefault().getConnection(cinfo);
+        private DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
+            AddConnectionWizard.showWizard(driverName, driverClass, databaseUrl, user, password);
+            return null;
         }
 
-//    private void removeListeners() {
-//        cinfo.removePropertyChangeListener(connectionListener);
-//        cinfo.removeExceptionListener(excListener);
-//    }
-
-        /**
-         * Cancels the current active task.
-         */
-        private void cancelActiveTask()
-        {
-            if (activeTask != null)
-            {
-                activeTask.cancel();
-                activeTask = null;
-            }
-
-            // in case a task is underway...
-            basePanel.terminateProgress();
-            schemaPanel.terminateProgress();
-        }
-        
         @Override
         public void closeConnection()
         {

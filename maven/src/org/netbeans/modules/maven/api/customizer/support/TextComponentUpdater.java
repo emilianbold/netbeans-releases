@@ -79,7 +79,7 @@ public abstract class TextComponentUpdater implements DocumentListener, Ancestor
             inherited = false;
 //            component.setBackground(DEFAULT);
             label.setFont(label.getFont().deriveFont(Font.BOLD));
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
         }
         setValue(component.getText().trim().length() == 0 ? null : component.getText());
         if (component.getText().trim().length() == 0) {
@@ -121,7 +121,7 @@ public abstract class TextComponentUpdater implements DocumentListener, Ancestor
     private void setTextFieldValue(String value, String projectValue, JTextComponent field) {
         if (value != null) {
             field.setText(value);
-            component.setToolTipText(""); //NOI18N
+            component.setToolTipText(null);
             inherited = false;
             label.setFont(label.getFont().deriveFont(Font.BOLD));
         } else if (projectValue != null) {
@@ -134,7 +134,7 @@ public abstract class TextComponentUpdater implements DocumentListener, Ancestor
             inherited = true;
         } else {
             field.setText("");//NOI18N
-            component.setToolTipText("");//NOI18N
+            component.setToolTipText(null);
             inherited = false;
             label.setFont(label.getFont().deriveFont(Font.BOLD));
         }

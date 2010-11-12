@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>Connecting to a Database</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="KEYWORDS" content="DATABASE, CONNECT">
+    </head>
+
+    <body>
+        <h2>Connecting to a Database</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>A database connection is represented by a database connection node (&nbsp;<img src="images/connection.gif">&nbsp;)
+        under the Databases node in the Services window. To connect to a database, you need to provide a valid JDBC driver for your database in the NetBeans IDE. </p>
+        <p>When you create a database connection, you supply the details needed to connect to a specific database. These details include the location of the database, which driver to use, and the username and password information.</p>     
+        <p><b>To create a new connection:</b></p>
+        <ol>
+            <li>Ensure that your database is running.</li>
+            <li>Right-click the Databases node and choose New Connection.<br>
+              Alternatively, you can initiate a connection directly from the list of registered drivers. If the database driver is already listed under the Drivers node, right-click this driver's instance node and 
+            choose Connect Using.<br>
+            <br>
+            </li>
+            <li>In the first step of the New Connection wizard, choose the driver for the database you are connecting to from the Driver drop-down list and confirm that the correct driver's file is provided in the Driver File field. Click Next. <br>
+                        You are passing the same steps when registering <a href="adddriver.html">a new driver</a> in the IDE. <br>
+          </li>
+            <li>In the Customize Connection dialog box of the New Connection  wizard, confirm that the correct driver is selected for your database. </li>
+            <li>Depending on what database you are connecting to, provide the connection details  for this database, such as database location (hostname or IP address), port, username and password, database name, service name, etc. For more information, see <br>
+             <ul> <li><a href="derbydb.html">Connecting to a Java DB Database</a></li>
+			   <li><a href="mysql.html">Using MySQL with the  IDE</a></li>
+               <li><a href="oracledb.html">Connecting to an Oracle Database XE</a>  </li>
+             </ul><br>
+			 To help you get started, the IDE fills the default details for some databases for you. If in doubt, refer to the documentation 
+                for the driver that you are using. 
+              </p>
+            </li>
+            <li>(Optional) Click the Remember Password checkbox to have the IDE remember your password.
+              
+          If selected, you will not be prompted for the user name and password on subsequent connections to the database.                </li>
+            <li>Click Test Connection to test the connection to the database.</li>
+        </ol>
+        <p>If the connection is successful, the database connection node appears as 
+        a subnode of the Databases node. The&nbsp;<img src="images/connection.gif" alt="connection"> icon indicates that the database is connected. 
+        When the database is connected, you can expand the database connection node to see the child folders 
+        representing lists of tables, views and procedures.
+        For more, see <a href="browstruct.html">Browsing Structures</a>.</p>
+        <p>If the connection 
+        attempt fails, the IDE displays a dialog box indicating it was unable to add the connection. 
+        Check the connection information for the database in the New Database Connection dialog box.</p>
+        <!--    
+        <p><b>To correct a broken connection:</b></p>
+        <ol>
+            <li>Right-click the broken database connection node and choose Properties from the 
+            contextual menu.</li>
+            <li>Enter the correct Database URL in the properties dialog box and click Close.</li>
+            <li>Right-click on the broken database connection node and choose
+            Connect from the contextual menu.</li>
+        </ol>
+-->
+        <p><b>To disconnect from the database:</b></p>
+        <ol>
+            <li>Right-click the database connection node and choose Disconnect. <br>
+              Disconnected connections are marked with the <img src="images/connectionDisconnected.gif" alt="connection" width="16" height="16"> icon. <br>
+              <p>You cannot browse the database until you reconnect to the database. </p>
+          </li></ol>
+        <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>
+                <dd><a href="derbydb.html">Connecting to a Java DB Database</a></dd>
+                <dd><a href="mysql.html">Using MySQL with the IDE</a></dd>
+                <dd><a href="oracledb.html">Connecting to an Oracle Database XE</a></dd>
+        </dl>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+
+

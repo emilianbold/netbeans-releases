@@ -41,7 +41,7 @@ if ((int) $_GET['responder'] > 0) {
         $db->Query('SELECT `id` FROM `contact` WHERE `id` > %d AND `read`=0 ORDER BY `id` ASC LIMIT 1', $_GET['responder']);
         $next = $db->Result();
         $next = $next['id'];
-?>
+        ?>
         <p><a href="<?php echo $CONFIG['base_url']; ?>control/">Voltar pra lista</a></p>
         <form action="" method="post">
             <input type="hidden" name="id" value="<?php echo $r['id']; ?>" />
@@ -58,7 +58,7 @@ if ((int) $_GET['responder'] > 0) {
                 <tr>
                     <td style="text-align:right;width:120px;">Mensagem:</td>
                     <td>
-                        <textarea style="width:100%;height:200px;" name="msg">   <?php echo "Olá ", Show($r['name'], false, false, false), ",\r\n\r\n", "\r\n\r\n--Macumbeiro Online\r\n\r\nMensagem Original (",    Show($r[ 'data'], false, false, false), "):\r\n", Show($r['mensagem'], false, false, false); ?></textarea>
+                        <textarea style="width:100%;height:200px;" name="msg"><?php echo "Olá ", Show($r['name'], false, false, false), ",\r\n\r\n", "\r\n\r\n--Macumbeiro Online\r\n\r\nMensagem Original (", Show($r['data'], false, false, false), "):\r\n", Show($r['mensagem'], false, false, false); ?></textarea>
                     </td>
                 </tr>
                 <tr>
@@ -68,58 +68,55 @@ if ((int) $_GET['responder'] > 0) {
                     <tr>
                         <td colspan="2" style="text-align:right;"><a href="<?php echo $CONFIG['base_url'], 'control/?responder=', $next; ?>">Próxima não respondida</a></td>
                     </tr>
-                    <?php } ?>
-                </table>
-            </form>
-<?php
-            } else {
-                
-                Redir($CONFIG['base_url'].'control/');
-                }
-                } else {
-                    if ((int) $_GET['deletar'] > 0) {
-                         $db->Query('UPDATE `contact` SET `read`=1 WHERE `id`=%d', $_GET['deletar']);
+                <?php } ?>
+            </table>
+        </form>
+        <?php
+    } else {
+        Redir($CONFIG['base_url'] . 'control/');
+    }
+} else {
+    if ((int) $_GET['deletar'] > 0) {
+        $db->Query('UPDATE `contact` SET `read`=1 WHERE `id`=%d', $_GET['deletar']);
 
-                        if ($db->Affected() > 0) {
-                            echo '<h3>Contato deletado</h3>';
-                                    }
-                                    }
+        if ($db->Affected() > 0) {
+            echo '<h3>Contato deletado</h3>';
+        }
+    }
 
-                                    $db->Query('SELECT `id`,`name`,SUBSTRING(`mensagem`,1,120) AS `msg`,DATE_FORMAT(`date`,"%%d/%%m/%%Y") AS `data`
+    $db->Query('SELECT `id`,`name`,SUBSTRING(`mensagem`,1,120) AS `msg`,DATE_FORMAT(`date`,"%%d/%%m/%%Y") AS `data`
 								FROM `contact`
 								WHERE `read`=0
-								ORDER BY `date` ASC,`time` ASC' );
+								ORDER BY `date` ASC,`time` ASC');
 
-                            if ($db->NumberOfRows() > 0) {
-?>
-                                <table>
-                                    <tr>
-                                        <td>Nome</td>
-                                        <td>Mensagem</td>
-                                        <td>Data</td>
-                                        <td>Ações</td>
-                                    </tr>
-                                    <?php
-                                    while ($r = $db->Result(false)) {
-                                        
-                                                
-                                    ?>
-                                                <tr>
-                                                    <td><?php echo Show($r['name']); ?></td>
-                                            <td><?php echo Show($r['msg']); ?></td>
-                                            <td><?php echo Show($r['data']); ?></td>
-                                            <td>
-                                                <a href="?responder=<?php echo $r['id']; ?>">Responder</a><br />
-                                                <a href="?deletar=<?php echo $r['id']; ?>" onclick="if(!confirm('Deseja deletar esta mensagem?')) return false;">Deletar</a>
-                                            </td>
-                                        </tr>
-<?php
-                                    }
-?>
-                                    </table>
-<?php
-                                    } else {
-                                        echo '<h3>Nenhuma mensagem a ser respondida, yay!</h3>';
-                                        }
-                                        }
+    if ($db->NumberOfRows() > 0) {
+        ?>
+        <table>
+            <tr>
+                <td>Nome</td>
+                <td>Mensagem</td>
+                <td>Data</td>
+                <td>Ações</td>
+            </tr>
+            <?php
+            while ($r = $db->Result(false)) {
+                ?>
+                <tr>
+                    <td><?php echo Show($r['name']); ?></td>
+                    <td><?php echo Show($r['msg']); ?></td>
+                    <td><?php echo Show($r['data']); ?></td>
+                    <td>
+                        <a href="?responder=<?php echo $r['id']; ?>">Responder</a><br />
+                        <a href="?deletar=<?php echo $r['id']; ?>" onclick="if(!confirm('Deseja deletar esta mensagem?')) return false;">Deletar</a>
+                    </td>
+                </tr>
+                <?php
+            }
+            ?>
+        </table>
+        <?php
+    } else {
+        echo '<h3>Nenhuma mensagem a ser respondida, yay!</h3>';
+    }
+}
 ?>

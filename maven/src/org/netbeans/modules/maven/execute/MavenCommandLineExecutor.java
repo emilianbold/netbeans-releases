@@ -56,6 +56,8 @@ import java.awt.Color;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.netbeans.api.progress.ProgressHandle;
@@ -182,7 +184,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             if (Utilities.isWindows()) { //#153101
                 processIssue153101(x, ioput);
             } else {
-                LOGGER.log(Level.WARNING , x.getMessage(), x);
+                ioput.getErr().println(x.getMessage());
             }
         } catch (InterruptedException x) {
             //TODO
@@ -264,7 +266,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
-        toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
         String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
         if (localRepo != null) {
@@ -302,7 +303,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
-            // XXX might be better to supply relative path from executionDirectory, e.g. 'war'
             toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
         }
 
@@ -413,13 +413,18 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        StringBuilder display = new StringBuilder();
+        StringBuilder display = new StringBuilder("cd ").append(clonedConfig.getExecutionDirectory()).append("; "); // NOI18N
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
             display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
+        }
+        for (Iterator<Map.Entry<String, String>> it = builder.environment().entrySet().iterator(); it.hasNext(); ) {
+            if ("M2_HOME".equals(it.next().getKey().toUpperCase(Locale.ENGLISH))) { // NOI18N
+                it.remove(); // #191374: would prevent bin/mvn from using selected installation
+            }
         }
         List<String> command = builder.command();
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
@@ -470,7 +475,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
             });
         } else {
-            LOGGER.log(Level.WARNING, x.getMessage(), x);
+            ioput.getErr().println(x.getMessage());
         }
     }
     

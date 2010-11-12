@@ -43,18 +43,13 @@
  */
 package org.netbeans.modules.cnd.testrunner.ui;
 
-import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
-import org.netbeans.modules.gsf.testrunner.api.Report;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -130,11 +125,11 @@ final class OutputUtils {
 
         // Perhaps it's an absolute path of some sort... try to resolve those
         // Absolute path? Happens for stack traces in Jython libraries and such
-        File file = new File(path);
-        if (file.isFile()) {
-            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+        if (fo != null /*paranoia*/ && fo.isValid() && fo.isData()) {
+            return fo;
         } else {
-            LOGGER.warning("Cannot resolve file for \"" + path + "\" path.");
+            LOGGER.log(Level.WARNING, "Cannot resolve file for \"{0}\" path.", path);
             return null;
         }
     }

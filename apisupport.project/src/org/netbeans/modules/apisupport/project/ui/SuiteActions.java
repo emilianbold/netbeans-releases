@@ -78,6 +78,7 @@ import org.openide.actions.FindAction;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -91,43 +92,45 @@ import org.openide.util.actions.SystemAction;
 public final class SuiteActions implements ActionProvider {
     
     static Action[] getProjectActions(SuiteProject project) {
+        NbPlatform platform = project.getPlatform(true); //true -> #96095
         List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_clean"), null));
+        List<Action> packageActions = new ArrayList<Action>();
+        packageActions.add(ProjectSensitiveActions.projectCommandAction("build-zip", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_zip"), null));
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0) { // #71631
+            packageActions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
+        }
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
+            packageActions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
+        }
+        // XXX temporary measure for BuildInstallersAction to be added; better would be to load whole context menu declaratively
+        packageActions.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-apisupport-project-suite/Actions")); // NOI18N
+        actions.add(new SubMenuAction(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_package_menu"), packageActions));
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug"), null));
         actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        actions.add(null);
-        NbPlatform platform = project.getPlatform(true); //true -> #96095
         if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V61) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_test"), null));
-            actions.add(null);
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction("build-zip", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_zip"), null));
         actions.add(null);
-        actions.add(ProjectSensitiveActions.projectCommandAction("build-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_jnlp"), null));
-        actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
-        actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
-        actions.add(null);
+        actions.add(new SubMenuAction(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_jnlp_menu"), Arrays.asList(
+            ProjectSensitiveActions.projectCommandAction("build-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_jnlp"), null),
+            ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null),
+            ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null))));
         if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0
                 /* #181143 (too slow): && platform.getModule("org.netbeans.core.osgi") != null*/) {
-            actions.add(new OSGiSubMenuAction());
-            actions.add(null);
+            actions.add(new SubMenuAction(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_osgi_menu"), Arrays.asList(
+                ProjectSensitiveActions.projectCommandAction("build-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null),
+                ProjectSensitiveActions.projectCommandAction("build-osgi-obr", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null),
+                ProjectSensitiveActions.projectCommandAction("run-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null),
+                ProjectSensitiveActions.projectCommandAction("debug-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null),
+                ProjectSensitiveActions.projectCommandAction("profile-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_profile_osgi"), null))));
         }
-        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
-            actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
-            actions.add(null);
-        }
-        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0) { // #71631
-            actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
-            actions.add(null);
-        }
-        // XXX temporary measure for BuildInstallersAction to be added; better would be to load whole context menu declaratively
-        actions.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-apisupport-project-suite/Actions")); // NOI18N
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
@@ -146,27 +149,36 @@ public final class SuiteActions implements ActionProvider {
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
-    private static class OSGiSubMenuAction extends AbstractAction implements Presenter.Popup {
-        public @Override void actionPerformed(ActionEvent e) {assert false;}
-        public @Override JMenuItem getPopupPresenter() {
-            class Menu extends JMenu implements DynamicMenuContent {
-                Menu() {super(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_osgi_menu"));}
-                public @Override JComponent[] getMenuPresenters() {return new JComponent[] {this};}
-                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {return getMenuPresenters();}
-            }
-            JMenu m = new Menu();
-            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi",
-                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null));
-            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi-obr",
-                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null));
-            m.add(ProjectSensitiveActions.projectCommandAction("run-osgi",
-                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
-            m.add(ProjectSensitiveActions.projectCommandAction("debug-osgi",
-                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null));
-            m.add(ProjectSensitiveActions.projectCommandAction("profile-osgi",
-                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_profile_osgi"), null));
-            return m;
+    // XXX shouldn't this be a factory method in o.o.awt.Actions or similar?
+    private static class SubMenuAction extends AbstractAction implements ContextAwareAction {
+        private final String label;
+        private final List<? extends Action> entries;
+        SubMenuAction(String label, List<? extends Action> entries) {
+            this.label = label;
+            this.entries = entries;
         }
+        public @Override Action createContextAwareInstance(final Lookup ctx) {
+            class A extends AbstractAction implements Presenter.Popup {
+                public @Override void actionPerformed(ActionEvent e) {assert false;}
+                public @Override JMenuItem getPopupPresenter() {
+                    class Menu extends JMenu implements DynamicMenuContent {
+                        Menu() {super(label);}
+                        public @Override JComponent[] getMenuPresenters() {return new JComponent[] {this};}
+                        public @Override JComponent[] synchMenuPresenters(JComponent[] items) {return getMenuPresenters();}
+                    }
+                    JMenu m = new Menu();
+                    for (Action entry : entries) {
+                        if (entry instanceof ContextAwareAction) {
+                            entry = ((ContextAwareAction) entry).createContextAwareInstance(ctx);
+                        }
+                        m.add(entry);
+                    }
+                    return m;
+                }
+            }
+            return new A();
+        }
+        public @Override void actionPerformed(ActionEvent e) {assert false;}
     }
     
     private final SuiteProject project;

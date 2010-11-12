@@ -51,7 +51,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -74,7 +73,6 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -259,11 +257,12 @@ public class POHImpl extends ProjectOpenedHook {
         }
         if (ids[0] == null) {
             AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-            ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
+            // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
+            String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+            ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
             if (ids[1] == null) {
                 //try checking for old values..
-                ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+                ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
             }
             if (ids[1] != null) {
                 String[] instances = Deployment.getDefault().getInstancesOfServer(ids[1]);
@@ -317,39 +316,20 @@ public class POHImpl extends ProjectOpenedHook {
                 ModelHandle handle = ModelHandleUtils.createModelHandle(prj);
                 //get rid of old settings.
                 POMModel model = handle.getPOMModel();
-                Profile prof = handle.getNetbeansPublicProfile(false);
-                if (prof != null) {
-                    Properties props = prof.getProperties();
-                    if (props != null) {
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null);
-                    }
-                }
                 if (newOne != null) {
                     Properties props = model.getProject().getProperties();
                     if (props == null) {
                         props = model.getFactory().createProperties();
                         model.getProject().setProperties(props);
                     }
-                    props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile();
-                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
-                    if (privs == null) {
-                        privs = handle.getProfileModel().getFactory().createProperties();
-                        privateProf.setProperties(privs);
-                    }
-                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne);
-                    handle.markAsModified(handle.getProfileModel());
+                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
                 } else {
                     Properties props = model.getProject().getProperties();
                     if (props != null) {
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                    }
-                    org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
-                    if (privprof != null && privprof.getProperties() != null) {
-                        privprof.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
-                        handle.markAsModified(handle.getProfileModel());
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                     }
                 }
+                prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
                 handle.markAsModified(handle.getPOMModel());
                 ModelHandleUtils.writeModelHandle(handle, prj);
             } catch (IOException ex) {
