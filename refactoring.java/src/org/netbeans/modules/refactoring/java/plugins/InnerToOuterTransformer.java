@@ -352,9 +352,46 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     isThisReferenceToOuter();
                 }
             }
+        } else if (isThisReferenceToInner()) {
+            //outer reference to inner class
+            //member needn't to be private
+            Tree tree = workingCopy.getTrees().getTree(current);
+            if (tree.getKind() == Tree.Kind.METHOD) {
+                MethodTree method = (MethodTree) tree;
+                if (method.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
+                    workingCopy.rewrite(method.getModifiers(), make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE));
+                }
+            } else if (tree.getKind() == Tree.Kind.VARIABLE) {
+                VariableTree variable = (VariableTree) tree;
+                if (variable.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
+                    workingCopy.rewrite(variable.getModifiers(), make.removeModifiersModifier(variable.getModifiers(), Modifier.PRIVATE));
+                }
+            }
+            
         }
         
         return super.visitMemberSelect(memberSelect, element);
+    }
+
+    private boolean isThisReferenceToInner() {
+        Element cur = getCurrentElement();
+        if (cur==null || cur.getKind() == ElementKind.PACKAGE)
+                return false;
+
+        Tree innerTree = workingCopy.getTrees().getTree(inner);
+
+        TreePath path = getCurrentPath();
+
+        while (path!=null) {
+            Tree t = path.getLeaf();
+            if (t == innerTree) {
+                return false;
+            }
+            path = path.getParentPath();
+        }
+
+        TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
+        return workingCopy.getTypes().isSubtype(encl.asType(), inner.asType()) ;
     }
     
     private boolean isThisReferenceToOuter() {
@@ -433,8 +470,10 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                         
                         AssignmentTree assign = make.Assignment(make.Identifier("this."+referenceName), make.Identifier(referenceName)); // NOI18N
                         BlockTree block = make.insertBlockStatement(newConstructor.getBody(), 1, make.ExpressionStatement(assign));
+                        Set<Modifier> modifiers = new HashSet(newConstructor.getModifiers().getFlags());
+                        modifiers.remove(Modifier.PRIVATE);
                         newConstructor = make.Constructor(
-                                make.Modifiers(newConstructor.getModifiers().getFlags(), newConstructor.getModifiers().getAnnotations()),
+                                make.Modifiers(modifiers,newConstructor.getModifiers().getAnnotations()),
                                 newConstructor.getTypeParameters(), 
                                 newConstructor.getParameters(),
                                 newConstructor.getThrows(),
