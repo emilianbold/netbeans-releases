@@ -128,10 +128,6 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     public GitUser getCommiter() {
         return getUser(getPanel().commiterComboBox);        
     }
-
-    public boolean isSignOff() {
-        return getPanel().signOffCheckBox.isSelected();
-    }
     
     static String getUserString(GitUser user) {
         if(user == null) return "";                                             // NOI18N
