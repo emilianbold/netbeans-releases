@@ -105,6 +105,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
@@ -778,6 +779,44 @@ abstract public class CsmCompletionQuery {
             return sup.doc2context(pos);
         }
 
+        /**
+         * 
+         * @param res
+         * @param visible [in] true/false if only visible objects should be considered
+         *               [out] contains information if type is visible
+         * @param item
+         * @return 
+         */
+        private CsmType getVariableOrClassifierType(Result res, AtomicBoolean visible, CsmCompletionExpression item) {
+            CsmType resolveType = null;
+            List<? extends CsmObject> vars = new ArrayList<CsmObject>();
+            res.addResulItemsToCol(vars);
+            CsmObject bestCandidate = null;
+            CsmIncludeResolver ir = CsmIncludeResolver.getDefault();
+            boolean onlyVisible = visible.get();
+            // type is not visible until check
+            visible.set(false);
+            boolean _const = false;
+            for (int i = 0; i < item.getTokenCount() - 1; i++) {
+                _const |= item.getTokenText(i).equals("const"); // NOI18N
+            }
+            for (CsmObject firstElem : vars) {
+                if (CsmKindUtilities.isClassifier(firstElem) || CsmKindUtilities.isVariable(firstElem)) {
+                    if (ir.isObjectVisible(contextFile, firstElem)) {
+                        resolveType = CsmCompletion.getObjectType(firstElem, _const);
+                        visible.set(true);
+                        break;
+                    } else if (!onlyVisible && bestCandidate == null) {
+                        bestCandidate = firstElem;
+                    }
+                }
+            }
+            if (resolveType == null && bestCandidate != null) {
+                resolveType = CsmCompletion.getObjectType(bestCandidate, _const);
+            }
+            return resolveType;
+        }
+
         private boolean resolve(int varPos, String var, boolean match) {
             varPos = convertOffset(varPos);
             return (compResolver.refresh() && compResolver.resolve(varPos, var, match));
@@ -1232,20 +1271,7 @@ abstract public class CsmCompletionQuery {
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                             if (resolve(varPos, var, true)) {
                                                 res = compResolver.getResult();
-                                                List<? extends CsmObject> vars = new ArrayList<CsmObject>();
-                                                res.addResulItemsToCol(vars);
-                                                for (CsmObject firstElem : vars) {
-                                                    if (CsmKindUtilities.isVariable(firstElem)) {
-                                                        CsmVariable varElem = (CsmVariable) firstElem;
-                                                        lastType = varElem.getType();
-                                                    } else if (findType && CsmKindUtilities.isClassifier(firstElem)) {
-                                                        lastType = CsmCompletion.getType((CsmClassifier) firstElem, 0, false, 0, false);
-                                                    }
-                                                    // stop on the first
-                                                    if (lastType != null) {
-                                                        break;
-                                                    }
-                                                }
+                                                lastType = getVariableOrClassifierType(res, new AtomicBoolean(false), item);
                                             }
                                         }
                                     }
@@ -1262,34 +1288,11 @@ abstract public class CsmCompletionQuery {
                                                     CompletionResolver.RESOLVE_LIB_CLASSES |
                                                     CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
                                                     CompletionResolver.RESOLVE_LOCAL_CLASSES);
-                                            boolean foundVisibleClassifier = false;
+                                            AtomicBoolean foundVisibleClassifier = new AtomicBoolean(false);
                                             if (resolve(varPos, var, true)) {
-                                                Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
-                                                if (!res.isEmpty()) {
-                                                    lastType = null;
-                                                    CsmObject classifierCandidate = null;
-                                                    for (CsmObject obj : res) {
-                                                        if (lastType == null) {
-                                                            if (CsmKindUtilities.isClassifier(obj)) {
-                                                                // remember the first
-                                                                if (classifierCandidate == null) {
-                                                                    classifierCandidate = obj;
-                                                                }
-                                                                // prefer visible classifier
-                                                                if (CsmIncludeResolver.getDefault().isObjectVisible(contextFile, obj)) {
-                                                                    lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
-                                                                    foundVisibleClassifier = true;
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    if (lastType == null && classifierCandidate != null) {
-                                                        lastType = CsmCompletion.getType((CsmClassifier) classifierCandidate, 0, false, 0, false);
-                                                    }
-                                                }
+                                                lastType = getVariableOrClassifierType(compResolver.getResult(), foundVisibleClassifier, item);
                                             }
-                                            if (!foundVisibleClassifier) {
+                                            if (!foundVisibleClassifier.get()) {
                                                 QueryScope old = compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
                                                 compResolver.setResolveTypes(
                                                         CompletionResolver.RESOLVE_GLOB_NAMESPACES |
@@ -1351,7 +1354,7 @@ abstract public class CsmCompletionQuery {
                                                     }
                                                     if (elemList != null && elemList.size() > 0) { // match found
                                                         CsmObject csmObj = (CsmObject) elemList.get(0);
-                                                        lastType = CsmCompletion.getObjectType(csmObj);
+                                                        lastType = CsmCompletion.getObjectType(csmObj, false);
                                                         staticOnly = false;
                                                     } else if (kind == ExprKind.ARROW) {
                                                     } else { // no match found
@@ -1417,7 +1420,7 @@ abstract public class CsmCompletionQuery {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
                                             CsmObject obj = res.isEmpty() ? null : (CsmObject) res.iterator().next();
-                                            lastType = CsmCompletion.getObjectType(obj);
+                                            lastType = CsmCompletion.getObjectType(obj, false);
                                             cont = (lastType != null);
                                             lastNamespace = null;
                                         }
@@ -1736,25 +1739,7 @@ abstract public class CsmCompletionQuery {
                             if (resolve(varPos, varName, openingSource)) {
                                 CompletionResolver.Result res = compResolver.getResult();
                                 if (findType) {
-                                    CsmClassifier cls = null;
-                                    Collection<CsmObject> elems = new ArrayList<CsmObject>();
-                                    res.addResulItemsToCol(elems);
-                                    for (CsmObject csmObject : elems) {
-                                        if (CsmKindUtilities.isVariable(csmObject)) {
-                                            lastType = ((CsmVariable)csmObject).getType();
-                                            break;
-                                        } else if (CsmKindUtilities.isClassifier(csmObject)) {
-                                            cls = (CsmClassifier)csmObject;
-                                            break;
-                                        }
-                                    }
-                                    if (lastType == null && cls != null) {
-                                        boolean _const = false;
-                                        for (int i = 0; i < item.getTokenCount() -1; i++) {
-                                            _const |= item.getTokenText(i).equals("const"); // NOI18N
-                                        }
-                                        lastType = CsmCompletion.getType(cls, 0, false, 0, _const);
-                                    }
+                                    lastType = getVariableOrClassifierType(res, new AtomicBoolean(false), item);
                                 }
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, varName + '*', item, varPos, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                             }
@@ -2219,12 +2204,28 @@ abstract public class CsmCompletionQuery {
             if (resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList<CsmObject>());
+                // check visibility if more than one element in collection
+                Collection<CsmClassifier> otherClassifiers = new ArrayList<CsmClassifier>();
                 for (CsmObject item : allItems) {
                     if (CsmKindUtilities.isClassifier(item)) {
-                        cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) item, contextFile);
+                        // if more than one we prefer visible
+                        if (allItems.size() > 1 && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, item)) {
+                            cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) item, contextFile);
+                        } else {
+                            // remember is only one or the first and invisible
+                            otherClassifiers.add((CsmClassifier) item);
+                        }
                     }
                     if (cls != null) {
                         break;
+                    }
+                }
+                if (cls == null) {
+                    for (CsmClassifier csmClassifier : otherClassifiers) {
+                        cls = CsmBaseUtilities.getOriginalClassifier(csmClassifier, contextFile);
+                        if (cls != null) {
+                            break;
+                        }
                     }
                 }
             }
