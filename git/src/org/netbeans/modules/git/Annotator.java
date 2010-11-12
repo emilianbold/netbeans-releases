@@ -42,18 +42,24 @@
 
 package org.netbeans.modules.git;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.git.options.AnnotationColorProvider;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
@@ -78,7 +84,7 @@ import org.openide.util.actions.SystemAction;
  * TODO: handle annotations
  * @author ondra
  */
-public class Annotator extends VCSAnnotator {
+public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
     private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.UPTODATE, Status.NEW_INDEX_WORKING_TREE,
             Status.MODIFIED_HEAD_WORKING_TREE);
@@ -279,6 +285,8 @@ public class Annotator extends VCSAnnotator {
         }
     }
 
+    private final Map<RepositoryInfo, Set<File>> filesWithRepositoryAnnotations = new WeakHashMap<RepositoryInfo, Set<File>>(3);
+    
     private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
@@ -292,6 +300,7 @@ public class Annotator extends VCSAnnotator {
             // project node or repository root
             String branchLabel = ""; //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            addFileWithRepositoryAnnotation(info, mostImportantFile);
             GitBranch branch = info.getActiveBranch();
             if (branch != null) {
                 branchLabel = branch.getName();
@@ -300,11 +309,47 @@ public class Annotator extends VCSAnnotator {
                     branchLabel += " " + branch.getId(); // NOI18N
                 }
             }
-            folderAnnotation = NbBundle.getMessage(Annotator.class, "MSG_Annotator.folderAnnotation", branchLabel); //NOI18N
+            GitRepositoryState repositoryState = info.getRepositoryState();
+            if (repositoryState != GitRepositoryState.SAFE) {
+                folderAnnotation = repositoryState.toString() + " - " + branchLabel; //NOI18N
+            } else {
+                folderAnnotation = branchLabel;
+            }
         }
 
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
         return uptodateFormat.format(new Object [] { nameHtml, folderAnnotation != null ? new StringBuilder(" [").append(folderAnnotation).append("]").toString() : "" }); // NOI18N
+    }
+
+    private void addFileWithRepositoryAnnotation (RepositoryInfo info, File file) {
+        info.removePropertyChangeListener(this);
+        synchronized (filesWithRepositoryAnnotations) {
+            Set<File> files = filesWithRepositoryAnnotations.get(info);
+            if (files == null) {
+                filesWithRepositoryAnnotations.put(info, files = new HashSet<File>());
+            }
+            files.add(file);
+        }
+        info.addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void propertyChange (final PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE) {
+            Utils.post(new Runnable() {
+                @Override
+                public void run() {
+                    RepositoryInfo info = (RepositoryInfo) evt.getSource();
+                    Set<File> filesToRefresh;
+                    synchronized (filesWithRepositoryAnnotations) {
+                        filesToRefresh = filesWithRepositoryAnnotations.remove(info);
+                    }
+                    if (filesToRefresh != null && !filesToRefresh.isEmpty()) {
+                        Git.getInstance().headChanged(filesToRefresh);
+                    }
+                }
+            }, 400);
+        }
     }
 
     public String annotateNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
