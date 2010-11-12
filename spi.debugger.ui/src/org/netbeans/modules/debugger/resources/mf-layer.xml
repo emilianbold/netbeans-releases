@@ -146,6 +146,11 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOperationAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>    
+            <file name="org-netbeans-modules-debugger-ui-actions-EvaluateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createEvaluateAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
 
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
@@ -200,6 +205,10 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
                 <attr name="position" intvalue="266"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-EvaluateAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-EvaluateAction.instance"/>
+                <attr name="position" intvalue="2600"/>
             </file>
         </folder>
         
@@ -301,6 +310,9 @@ made subject to such option by the copyright holder.
         </file>
         <file name="S-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOperationAction.instance"/>
+        </file>
+        <file name="D-F9.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-EvaluateAction.instance"/>
         </file>
     </folder>
 

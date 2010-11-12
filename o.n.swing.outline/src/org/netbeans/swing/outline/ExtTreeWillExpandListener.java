@@ -48,10 +48,10 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
 
 /** A trivial extension to TreeWillExpandListener, to allow listeners to be
- * notified if another TreeWillExpandListener vetos a pending expansion.
+ * notified if another TreeWillExpandListener vetoes a pending expansion.
  * If a TreeExpansionListener added to an instance of TreePathSupport implements
  * this interface, it will be notified by the TreePathSupport if some other
- * listener vetos expanding a node.
+ * listener vetoes expanding a node.
  * <p>
  * This interface is primarily used to avoid memory leaks if a TreeWillExpandListener
  * constructs some data structure (like a TableModelEvent that is a translation
@@ -62,7 +62,12 @@ import javax.swing.tree.ExpandVetoException;
  * @author  Tim Boudreau
  */
 public interface ExtTreeWillExpandListener extends TreeWillExpandListener {
-    
+
+    /**
+     * Called when another listener vetoes a pending expansion.
+     * @param event The vetoed event
+     * @param exception The veto exception.
+     */
     public void treeExpansionVetoed (TreeExpansionEvent event, 
         ExpandVetoException exception);
     

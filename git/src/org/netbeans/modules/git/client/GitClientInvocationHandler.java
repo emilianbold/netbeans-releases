@@ -95,7 +95,11 @@ public class GitClientInvocationHandler implements InvocationHandler {
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
      */
-    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "commit", "reset")); //NOI18N
+    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
+            "checkout", //NOI18N
+            "commit", //NOI18N
+            "remove", //NOI18N // may change state, e.g. MERGING->MERGED
+            "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 

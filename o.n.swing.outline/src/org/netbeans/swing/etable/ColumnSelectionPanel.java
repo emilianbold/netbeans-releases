@@ -283,6 +283,7 @@ class ColumnSelectionPanel extends JPanel {
             checkBox.setEnabled(etc.isHidingAllowed());
             final JCheckBoxMenuItem finalChB = checkBox;
             checkBox.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     etcm.setColumnHidden(etc,! finalChB.isSelected());
                     table.updateColumnSelectionMouseListener();
@@ -427,6 +428,7 @@ class ColumnSelectionPanel extends JPanel {
     private static class ETableColumnComparator implements Comparator<TableColumn> {
         public static final ETableColumnComparator DEFAULT = new ETableColumnComparator();
         
+        @Override
         public int compare(TableColumn o1, TableColumn o2) {
             if( o1 instanceof ETableColumn && o2 instanceof ETableColumn ) {
                 ((ETableColumn)o1).compareTo((ETableColumn)o2);

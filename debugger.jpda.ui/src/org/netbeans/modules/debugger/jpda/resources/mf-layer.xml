@@ -119,7 +119,6 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Debug">
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
-            <file name="org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
                 <!--attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -258,11 +257,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                 <attr name="position" intvalue="2500"/>
             </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-EvaluateAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
-                <attr name="position" intvalue="2600"/>
-            </file>
-            </folder>
+        </folder>
         <folder name="Window">
             <folder name="Debug">
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.shadow">
@@ -283,9 +278,6 @@ made subject to such option by the copyright holder.
         <!-- <file name="D-9.shadow">  TODO: Redefine, conflicts with Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance, defined in org.netbeans.modules.cnd.classview/1
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/>
         </file> -->
-        <file name="D-F9.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
-        </file>
     </folder>
 
     <folder name="Windows2">

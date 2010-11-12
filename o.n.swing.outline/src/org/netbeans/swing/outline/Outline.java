@@ -368,10 +368,19 @@ public class Outline extends ETable {
         return new OutlineColumn(modelIndex);
     }
 
+    /**
+     * An Outline implementation of table column.
+     */
     protected class OutlineColumn extends ETableColumn {
-        public OutlineColumn(int modleIndex) {
-            super(modleIndex, Outline.this);
+
+        /**
+         * Create a new outline column
+         * @param modelIndex The column's model index
+         */
+        public OutlineColumn(int modelIndex) {
+            super(modelIndex, Outline.this);
         }
+
         @Override
         protected Comparator<RowMapping> getRowComparator(int column, boolean ascending) {
             return new OutlineRowComparator(column, ascending);
@@ -524,11 +533,20 @@ public class Outline extends ETable {
     public boolean isExpanded (TreePath path) {
         return getTreePathSupport().isExpanded(path);
     }
-    
+
+    /**
+     * Collapse the given tree path.
+     * @param path The tree path to collapse.
+     */
     public void collapsePath (TreePath path) {
         getTreePathSupport().collapsePath (path);
     }
-    
+
+    /**
+     * Get the UI bounds of the given tree path.
+     * @param path The tree path to get the bounds for.
+     * @return The bounds.
+     */
     public Rectangle getPathBounds(TreePath path) {
         Insets i = getInsets();
         Rectangle bounds = getLayoutCache().getBounds(path, null);
@@ -539,7 +557,13 @@ public class Outline extends ETable {
         }
         return bounds;
     }   
-    
+
+    /**
+     * Find the tree path that is closest to the given position.
+     * @param x The X coordinate of the position
+     * @param y The Y coordinate of the position
+     * @return The closest tree path
+     */
     public TreePath getClosestPathForLocation(int x, int y) {
         Insets i = getInsets();
         TreePath tp;
@@ -644,7 +668,7 @@ public class Outline extends ETable {
         if (me.getClickCount() > 1) {
             return true;
         }
-        boolean noModifiers = me.getModifiersEx() == me.BUTTON1_DOWN_MASK;
+        boolean noModifiers = me.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK;
         if (lastEditPosition != null && selectedRow == row && noModifiers &&
             lastEditPosition[0] == row && lastEditPosition[1] == column) {
 
@@ -713,6 +737,14 @@ public class Outline extends ETable {
         return false;
     }
 
+    /**
+     * Configure the cell editor.
+     * This method allows to override the configuration of cell editor when cell editing is initiated.
+     * 
+     * @param editor The editor component
+     * @param row Editor's row
+     * @param column Editor's column
+     */
     protected void configureTreeCellEditor( Component editor, int row, int column ) {
         if( !(editor instanceof JComponent) ) {
             return;
@@ -766,7 +798,7 @@ public class Outline extends ETable {
         super.tableChanged(e);
 //        System.err.println("row count is " + getRowCount());
     }
-    
+
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
         if (selectionDisabled) {
@@ -837,6 +869,7 @@ public class Outline extends ETable {
     
     private class ND extends AbstractLayoutCache.NodeDimensions {
         
+        @Override
         public Rectangle getNodeDimensions(Object value, int row, int depth, 
             boolean expanded, Rectangle bounds) {
                 int wid = Outline.this.getColumnModel().getColumn(0).getPreferredWidth();
@@ -888,6 +921,7 @@ public class Outline extends ETable {
 	    timer.start();
 	}        
         
+        @Override
 	public void actionPerformed(ActionEvent ae) {
 	    if(scrollBar == null || !scrollBar.getValueIsAdjusting()) {
 		if(timer != null)
@@ -919,6 +953,7 @@ public class Outline extends ETable {
         private int nestingDepth;
         private final int ICON_TEXT_GAP = new JLabel().getIconTextGap();
         
+        @Override
         public Insets getBorderInsets(Component c) {
             insets.left = (nestingDepth *
                 DefaultOutlineCellRenderer.getNestingWidth())
@@ -930,10 +965,12 @@ public class Outline extends ETable {
             return insets;
         }
         
+        @Override
         public boolean isBorderOpaque() {
             return false;
         }
         
+        @Override
         public void paintBorder(Component c, java.awt.Graphics g, int x, int y, int width, int height) {
             int iconY;
             int iconX = nestingDepth * DefaultOutlineCellRenderer.getNestingWidth();
@@ -969,6 +1006,7 @@ public class Outline extends ETable {
             this.origAction = orig;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if( getSelectedRowCount() == 1 && isTreeColumnIndex (getSelectedColumn()) ) {
                 TreePath selPath = getLayoutCache().getPathForRow(convertRowIndexToModel (getSelectedRow ()));

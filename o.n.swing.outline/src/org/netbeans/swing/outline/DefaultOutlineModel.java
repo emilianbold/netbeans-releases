@@ -128,16 +128,32 @@ public class DefaultOutlineModel implements OutlineModel {
     }
 
     /** Create an OutlineModel using the supplied tree model and row model,
-     * specifying if it is a large-model tree */
+     * specifying if it is a large-model tree
+     * @param treeModel The tree model
+     * @param rowModel The row model
+     * @param isLargeModel <code>true</code> if it's a large model tree, <code>false</code> otherwise.
+     */
     public static OutlineModel createOutlineModel(TreeModel treeModel, RowModel rowModel, boolean isLargeModel) {
         return createOutlineModel (treeModel, rowModel, isLargeModel, null);
     }
     /** Create an OutlineModel using the supplied tree model and row model,
-     * specifying if it is a large-model tree */
+     * specifying if it is a large-model tree
+     * @param treeModel The tree model
+     * @param rowModel The row model
+     * @param isLargeModel <code>true</code> if it's a large model tree, <code>false</code> otherwise.
+     * @param nodesColumnLabel Label of the node's column
+     */
     public static OutlineModel createOutlineModel(TreeModel treeModel, RowModel rowModel, boolean isLargeModel, String nodesColumnLabel) {
         return new DefaultOutlineModel (treeModel, rowModel, isLargeModel, nodesColumnLabel);
     }
     
+    /** Create a new instance of DefaultOutlineModel using the supplied tree model and row model,
+     * specifying if it is a large-model tree
+     * @param treeModel The tree model
+     * @param rowModel The row model
+     * @param largeModel <code>true</code> if it's a large model tree, <code>false</code> otherwise.
+     * @param nodesColumnLabel Label of the node's column
+     */
     protected DefaultOutlineModel(TreeModel treeModel, RowModel rowModel, boolean largeModel, String nodesColumnLabel) {
         this( treeModel, new ProxyTableModel(rowModel), largeModel, nodesColumnLabel );
     }
@@ -145,7 +161,12 @@ public class DefaultOutlineModel implements OutlineModel {
     /** Creates a new instance of DefaultOutlineModel.  <strong><b>Note</b> 
      * Do not fire table structure changes from the wrapped TableModel (value
      * changes are okay).  Changes that affect the number of rows must come
-     * from the TreeModel.   */
+     * from the TreeModel.
+     * @param treeModel The tree model
+     * @param tableModel The table model
+     * @param largeModel <code>true</code> if it's a large model tree, <code>false</code> otherwise.
+     * @param nodesColumnLabel Label of the node's column
+     */
     protected DefaultOutlineModel(TreeModel treeModel, TableModel tableModel, boolean largeModel, String nodesColumnLabel) {
         this.treeModel = treeModel;
         this.tableModel = tableModel;
@@ -170,14 +191,27 @@ public class DefaultOutlineModel implements OutlineModel {
         }
     }
     
+    @Override
     public final TreePathSupport getTreePathSupport() {
         return treePathSupport;
     }    
     
+    @Override
     public final AbstractLayoutCache getLayout() {
         return layout;
     }
-    
+
+    /** Flag which is set to true while multiple TableModelEvents generated
+     * from a single TreeModelEvent are being fired, so clients can avoid
+     * any model queries until all pending changes have been fired.  The
+     * main thing to avoid is any mid-process repaints, which can only happen
+     * if the response to an event will be to call paintImmediately().
+     * <p>
+     * This value is guaranteed to be true for the first group of
+     * related events, and false if tested in response to the final event.
+     * 
+     * @return <code>true</code> if more events are pending, <code>false</code> otherwise.
+     */
     public boolean areMoreEventsPending() {
         return broadcaster.areMoreEventsPending();
     }
@@ -192,16 +226,19 @@ public class DefaultOutlineModel implements OutlineModel {
         return tableModel;
     }
     
+    @Override
     public final Object getChild(Object parent, int index) {
         return treeModel.getChild (parent, index);
     }
     
+    @Override
     public final int getChildCount(Object parent) {
         return treeModel.getChildCount (parent);
     }
     
     /** Delegates to the RowMapper for > 0 columns; column 0 always
      * returns Object.class */
+    @Override
     public final Class getColumnClass(int columnIndex) {
         if (columnIndex == 0) {
             return Object.class;
@@ -210,10 +247,12 @@ public class DefaultOutlineModel implements OutlineModel {
         }
     }
     
+    @Override
     public final int getColumnCount() {
         return tableModel.getColumnCount()+1;
     }
     
+    @Override
     public String getColumnName(int columnIndex) {
         if (columnIndex == 0) {
             return nodesColumnLabel;
@@ -231,18 +270,22 @@ public class DefaultOutlineModel implements OutlineModel {
         broadcaster.fireTableChange( new TableModelEvent( this, -1, -1, 0, TableModelEvent.HEADER_ROW ) );
     }
     
+    @Override
     public final int getIndexOfChild(Object parent, Object child) {
         return treeModel.getIndexOfChild(parent, child);
     }
     
+    @Override
     public final Object getRoot() {
         return treeModel.getRoot();
     }
     
+    @Override
     public final int getRowCount() {
         return layout.getRowCount();
     }
     
+    @Override
     public final Object getValueAt(int rowIndex, int columnIndex) {
         Object result;
         if (columnIndex == 0) { //XXX need a column ID - columnIndex = 0 depends on the column model
@@ -258,6 +301,7 @@ public class DefaultOutlineModel implements OutlineModel {
         return result;
     }
      
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         if (columnIndex == 0) {
             return false; //XXX support editing of node names
@@ -266,31 +310,37 @@ public class DefaultOutlineModel implements OutlineModel {
         }
     }
     
+    @Override
     public final boolean isLeaf(Object node) {
         return null != node && treeModel.isLeaf(node);
     }
 
-    /** Delegates to the EventBroadcaster for this model */
+    // Delegates to the EventBroadcaster for this model
+    @Override
     public final synchronized void addTableModelListener(TableModelListener l) {
         broadcaster.addTableModelListener (l);
     }
     
-    /** Delegates to the EventBroadcaster for this model */
+    // Delegates to the EventBroadcaster for this model
+    @Override
     public final synchronized void addTreeModelListener(TreeModelListener l) {
         broadcaster.addTreeModelListener (l);
     }    
     
-    /** Delegates to the EventBroadcaster for this model */
+    // Delegates to the EventBroadcaster for this model
+    @Override
     public final synchronized void removeTableModelListener(TableModelListener l) {
         broadcaster.removeTableModelListener(l);
     }
     
-    /** Delegates to the EventBroadcaster for this model */
+    // Delegates to the EventBroadcaster for this model
+    @Override
     public final synchronized void removeTreeModelListener(TreeModelListener l) {
         broadcaster.removeTreeModelListener(l);
     }
     
     /** Delegates to the RowModel (or TableModel) for non-0 columns */
+    @Override
     public final void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         if (columnIndex != 0) {
             tableModel.setValueAt (aValue, rowIndex, columnIndex-1);
@@ -310,12 +360,14 @@ public class DefaultOutlineModel implements OutlineModel {
         //do nothing
     }
     
+    @Override
     public final void valueForPathChanged(javax.swing.tree.TreePath path, Object newValue) {
         //if the model is correctly implemented, this will trigger a change
         //event
         treeModel.valueForPathChanged(path, newValue);
     }
 
+    @Override
     public boolean isLargeModel() {
         return layout instanceof FixedHeightLayoutCache;
     }

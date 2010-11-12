@@ -4,7 +4,7 @@ Description: Integration library for subversion client
 License: Apache-2.0
 OSR: 4077
 Origin: http://subclipse.tigris.org/svnClientAdapter.html
-
+Files: svnClientAdapter-javahl-1.6.13.jar 
 
                                  Apache License
                            Version 2.0, January 2004

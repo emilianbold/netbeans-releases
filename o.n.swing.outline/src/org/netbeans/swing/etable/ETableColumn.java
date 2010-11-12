@@ -330,6 +330,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         // after the table has be layouted. During layout this column
         // has fixed width (by setting min==max==preffered)
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setMinWidth(oldMin);
                 setMaxWidth(oldMax);
@@ -443,6 +444,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /*
      * Implementing interface Comparable.
      */
+    @Override
     public int compareTo(ETableColumn obj) {
         if (modelIndex < obj.modelIndex) {
             return -1;
@@ -487,7 +489,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     }
     
     /**
-     * Overriden to return our special header renderer.
+     * Overridden to return our special header renderer.
      * @see javax.swing.table.TableColumn#createDefaultHeaderRenderer()
      */
     @Override
@@ -507,14 +509,17 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         public SortUpIcon() {
         }
         
+        @Override
         public int getIconWidth() {
             return 8;
         }
         
+        @Override
         public int getIconHeight() {
             return 8;
         }
         
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.setColor(Color.BLACK);
             g.drawLine(x    , y + 2, x + 8, y + 2);
@@ -532,14 +537,17 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         public SortDownIcon() {
         }
         
+        @Override
         public int getIconWidth() {
             return 8;
         }
         
+        @Override
         public int getIconHeight() {
             return 8;
         }
         
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.setColor(Color.BLACK);
             g.drawLine(x    , y + 6, x + 8, y + 6);
@@ -558,6 +566,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             origComparator = orig;
         }
 
+        @Override
         public int compare(ETable.RowMapping o1, ETable.RowMapping o2) {
             return -origComparator.compare(o1, o2);
         }
@@ -619,11 +628,14 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             if (sortIcon == null) {
                 if (customIcon == null) {
                     Icon dummy = new Icon() {
+                            @Override
                         public void paintIcon(Component c, Graphics g, int x, int y) {
                         }
+                            @Override
                         public int getIconWidth() {
                             return 0;
                         }
+                            @Override
                         public int getIconHeight() {
                             return 0;
                         }
@@ -654,6 +666,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             this.column = column;
         }
         @SuppressWarnings("unchecked")
+        @Override
         public int compare(ETable.RowMapping rm1, ETable.RowMapping rm2) {
             Object obj1 = rm1.getModelObject(column);
             Object obj2 = rm2.getModelObject(column);
@@ -683,7 +696,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Utility method merging 2 icons.
      */
-    private static final Icon mergeIcons(Icon icon1, Icon icon2, int x, int y, Component c) {
+    private static Icon mergeIcons(Icon icon1, Icon icon2, int x, int y, Component c) {
         int w = 0, h = 0;
         if (icon1 != null) {
             w = icon1.getIconWidth();
