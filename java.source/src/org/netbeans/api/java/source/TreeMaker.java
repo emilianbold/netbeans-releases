@@ -460,16 +460,16 @@ public final class TreeMaker {
     }
 
     /**
-     * Creates new DisjointTypeTree.
+     * Creates new DisjunctiveTypeTree.
      *
-     * @param typeComponents components from which the DisjointTypeTree should be created.
+     * @param typeComponents components from which the DisjunctiveTypeTree should be created.
      *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
      *                       {@link PrimitiveTypeTree}, {@link WildcardTree}, {@link ParameterizedTypeTree} or {@link ArrayTypeTree}.
-     * @return newly created DisjointTypeTree
-     * @since 0.67
+     * @return newly created DisjunctiveTypeTree
+     * @since 0.70
      */
-    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
-        return delegate.DisjointType(typeComponents);
+    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
+        return delegate.DisjunctiveType(typeComponents);
     }
     
     /** Creates a new DoWhileLoopTree.
@@ -817,16 +817,6 @@ public final class TreeMaker {
         return delegate.ParameterizedType(type, typeArguments);
     }
 
-    //XXX: AnnotationType and (maybe) TypeAnnotation should be public:
-    AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
-                                           ExpressionTree type) {
-        return delegate.AnnotatedType(annotations, type);
-    }
-
-    AnnotationTree TypeAnnotation(AnnotationTree t) {
-        return delegate.TypeAnnotation(t);
-    }
-    
     /**
      * Creates a new ParenthesizedTree.
      *
