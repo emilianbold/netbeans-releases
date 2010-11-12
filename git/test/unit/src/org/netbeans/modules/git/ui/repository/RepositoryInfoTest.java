@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
@@ -169,7 +170,29 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         info.refresh();
         list.assertPropertyEvent(RepositoryInfo.PROPERTY_ACTIVE_BRANCH, oldBranch, info.getActiveBranch());
-        
+
+    }
+
+    public void testChangeState () throws Exception {
+        File f = new File(repositoryLocation, "file");
+        File[] roots = new File[] { f };
+        GitClient client = getClient(repositoryLocation);
+        RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
+        info.refresh();
+        assertEquals(GitRepositoryState.SAFE, info.getRepositoryState());
+
+        RepositoryInfoListener list = new RepositoryInfoListener();
+        info.addPropertyChangeListener(list);
+        File mergeFlag = new File(new File(repositoryLocation, ".git"), "MERGE_HEAD");
+        mergeFlag.createNewFile();
+        info.refresh();
+        list.assertPropertyEvent(RepositoryInfo.PROPERTY_STATE, GitRepositoryState.SAFE, GitRepositoryState.MERGING_RESOLVED);
+        info.removePropertyChangeListener(list);
+
+        info.addPropertyChangeListener(list = new RepositoryInfoListener());
+        mergeFlag.delete();
+        info.refresh();
+        list.assertPropertyEvent(RepositoryInfo.PROPERTY_STATE, GitRepositoryState.MERGING_RESOLVED, GitRepositoryState.SAFE);
     }
 
     private static class RepositoryInfoListener implements PropertyChangeListener {
