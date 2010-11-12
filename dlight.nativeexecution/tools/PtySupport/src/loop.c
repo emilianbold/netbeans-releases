@@ -80,7 +80,7 @@ void loop(int master_fd) {
     fds[1].revents = 0;
 
     int poll_result;
-
+    
     for (;;) {
         poll_result = poll((struct pollfd*) & fds, 2, INFTIM);
 
@@ -125,6 +125,16 @@ void loop(int master_fd) {
             break;
         }
 
+        if (fds[0].revents & POLLHUP) {
+            // STDIN END is broken... 
+            // Cannot just break at this point as 'child' process still alive.
+            // [will hung on waitpid later.. ]
+            // So will close the MASTER END => this causes a hangup to occur on 
+            // the other end of the pipe.
+            // no data is drained in this case...
+            close(master_fd);
+            break;
+        }
     }
 }
 #endif
