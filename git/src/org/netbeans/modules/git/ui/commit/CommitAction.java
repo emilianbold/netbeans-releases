@@ -73,6 +73,8 @@ import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -82,6 +84,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.git.ui.commit.CommitAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_CommitAction_Name")
 public class CommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
