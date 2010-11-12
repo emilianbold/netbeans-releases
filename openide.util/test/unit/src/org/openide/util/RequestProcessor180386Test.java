@@ -179,7 +179,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         }
         assertFalse("All tasks should not have completed", allFinished);
         assertTrue("At least one task shall complete", finishedCount >= 1);
-        assertFalse(notRun.isEmpty());
+        assertTrue(notRun.isEmpty());
         assertTrue(rp.isShutdown());
         //Technically not provable due to "spurious wakeups"
         //        assertEquals (1, finishedCount);
@@ -193,11 +193,6 @@ public class RequestProcessor180386Test extends NbTestCase {
             RequestProcessor.getDefault().shutdownNow();
             fail("Should not be able to shutdownNow() default RP");
         } catch (Exception e) {
-        }
-        for (Runnable nr : notRun) {
-            assertTrue ("Shutdown is not returning submitted runnables - got a "
-                    + nr.getClass().getName() + " instead of " +
-                    R.class.getName(), nr.getClass() == R.class);
         }
     }
 
@@ -1259,4 +1254,39 @@ public class RequestProcessor180386Test extends NbTestCase {
         executedLatch.await();
         assertFalse("Executing tasks interrupted", interrupted.get());
     }
+    
+    public void testAwaitingTasksReturnedOnShutdownNow() throws InterruptedException {
+        final CountDownLatch startupLatch = new CountDownLatch(2);
+        final CountDownLatch blockingLatch = new CountDownLatch(1);
+        Runnable blockingRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    startupLatch.countDown();
+                    startupLatch.await();
+                    blockingLatch.await();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+        
+        Runnable awaitingRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                // noop
+            }
+        };
+        
+        RequestProcessor rp = new RequestProcessor("X", 1);
+        rp.submit(blockingRunnable);
+        startupLatch.countDown();
+        startupLatch.await();
+        rp.submit(awaitingRunnable);
+        Set<Runnable> awaiting = new HashSet<Runnable>(rp.shutdownNow());
+        assertTrue("Awaiting task not returned on shutdownNow()", awaiting.contains(awaitingRunnable));
+        assertFalse("Running task returned on shutdownNow()", awaiting.contains(blockingRunnable));
+    }    
 }
