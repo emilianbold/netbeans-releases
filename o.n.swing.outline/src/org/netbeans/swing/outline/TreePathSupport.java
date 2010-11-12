@@ -64,7 +64,7 @@ import javax.swing.tree.TreePath;
  * class manages information about any path that has been expanded at some
  * point in the lifetime of an Outline, so that for example, if A contains B
  * contains C, and A and B and C are expanded, then the user collapses A,
- * and later re&euml;expands A, B and C will retain their expanded state and
+ * and later re-expands A, B and C will retain their expanded state and
  * appear as they did the last time A was expanded.
  * <p>
  * When nodes are removed, the OutlineModel must call removePath() for any
@@ -73,7 +73,7 @@ import javax.swing.tree.TreePath;
  * <p>
  * Its <code>addTreeWillExpandListener</code> code supports 
  * <code>ExtTreeWillExpandListener</code>, so such a listener may be notified
- * if some other listener vetos a pending expansion event.
+ * if some other listener vetoes a pending expansion event.
  *
  * @author  Tim Boudreau
  */
@@ -95,9 +95,11 @@ public final class TreePathSupport {
     }
 
     /** Expand a path.  Notifies the layout cache of the change,
-     * stores the expanded path info (so reexpanding a parent node also reexpands
+     * stores the expanded path info (so re-expanding a parent node also re-expands
      * this path if a parent node containing it is later collapsed).  Fires
-     * TreeWillExpand and TreeExpansion events. */
+     * TreeWillExpand and TreeExpansion events.
+     * @param path The tree path to expand
+     */
     public void expandPath (TreePath path) {
         assert SwingUtilities.isEventDispatchThread();
         if (layout.isExpanded(path)) {
@@ -115,9 +117,11 @@ public final class TreePathSupport {
     }
     
     /** Collapse a path.  Notifies the layout cache of the change,
-     * stores the expanded path info (so reexpanding a parent node also reexpands
+     * stores the expanded path info (so re-expanding a parent node also re-expands
      * this path if a parent node containing it is later collapsed).  Fires
-     * TreeWillExpand and TreeExpansion events. */
+     * TreeWillExpand and TreeExpansion events.
+     * @param path The tree path to collapse
+     */
     public void collapsePath (TreePath path) {
         assert SwingUtilities.isEventDispatchThread();
         if (!layout.isExpanded(path)) {
@@ -135,7 +139,9 @@ public final class TreePathSupport {
     }
     
     /** Remove a path's data from the list of known paths.  Called when
-     * a tree model deletion event occurs */
+     * a tree model deletion event occurs
+     * @param path The tree path to remove
+     */
     public void removePath (TreePath path) {
     }
     
@@ -186,7 +192,11 @@ public final class TreePathSupport {
         }
     }
     
-    
+    /**
+     * Test if the tree path is expanded.
+     * @param path The tree path to test
+     * @return <code>true</code> if the path is expanded, <code>false</code> otherwise.
+     */
     public boolean hasBeenExpanded(TreePath path) {
         assert SwingUtilities.isEventDispatchThread();
 	return (path != null && layout.isExpanded(path));
@@ -221,7 +231,12 @@ public final class TreePathSupport {
 	    return isExpanded(parentPath);
         return true;
     }
-    
+
+    /**
+     * Test if the tree path is visible (the parent path is expanded).
+     * @param path The tree path to test
+     * @return <code>true</code> if the path is visible, <code>false</code> otherwise.
+     */
     public boolean isVisible(TreePath path) {
         if(path != null) {
 	    TreePath parentPath = path.getParentPath();
@@ -234,7 +249,12 @@ public final class TreePathSupport {
 	}
         return false;
     }    
-    
+
+    /**
+     * Get all expanded descendants of the given tree path.
+     * @param parent Tree path to find the expanded descendants for
+     * @return All expanded descendants.
+     */
     public TreePath[] getExpandedDescendants(TreePath parent) {
         assert SwingUtilities.isEventDispatchThread();
         TreePath[] result = new TreePath[0];
@@ -269,19 +289,33 @@ public final class TreePathSupport {
     
     /** Add a TreeExpansionListener.  If the TreeWillExpandListener implements
      * ExtTreeExpansionListener, it will be notified if another 
-     * TreeWillExpandListener vetoes the expansion event */
+     * TreeWillExpandListener vetoes the expansion event
+     * @param l The tree expansion listener
+     */
     public synchronized void addTreeExpansionListener (TreeExpansionListener l) {
         eListeners.add(l);
     }
-    
+
+    /**
+     * Remove a TreeExpansionListener.
+     * @param l The tree expansion listener
+     */
     public synchronized void removeTreeExpansionListener (TreeExpansionListener l) {
         eListeners.remove(l);
     }
-    
+
+    /**
+     * Add a TreeWillExpandListener.
+     * @param l The tree will expand listener
+     */
     public synchronized void addTreeWillExpandListener (TreeWillExpandListener l) {
         weListeners.add(l);
     }
     
+    /**
+     * Remove a TreeWillExpandListener.
+     * @param l The tree will expand listener
+     */
     public synchronized void removeTreeWillExpandListener (TreeWillExpandListener l) {
         weListeners.remove(l);
     }

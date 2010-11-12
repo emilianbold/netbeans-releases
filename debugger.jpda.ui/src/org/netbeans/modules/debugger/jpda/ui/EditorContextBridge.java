@@ -67,6 +67,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -163,6 +164,10 @@ public class EditorContextBridge {
                     s = getMostRecentClassName();
                     if (s.length () > 0)
                         return CLASS;
+                }
+                FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+                if ("text/x-java".equals(fo.getMIMEType())) { // NOI18N
+                    return LINE;
                 }
             }
         } catch (java.awt.IllegalComponentStateException icsex) {}

@@ -59,7 +59,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreePath;
@@ -388,6 +387,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             }
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer)
                     ((JComponent) c).getClientProperty(DefaultOutlineCellRenderer.class);
@@ -414,10 +414,12 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             return insets;
         }
         
+        @Override
         public boolean isBorderOpaque() {
             return false;
         }
         
+        @Override
         public void paintBorder(Component c, java.awt.Graphics g, int x, int y, int width, int height) {
             DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer)
                     ((JComponent) c).getClientProperty(DefaultOutlineCellRenderer.class);
