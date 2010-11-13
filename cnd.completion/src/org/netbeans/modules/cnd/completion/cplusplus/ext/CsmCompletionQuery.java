@@ -154,13 +154,9 @@ abstract public class CsmCompletionQuery {
         GLOBAL_QUERY,
     };
 
-    public CsmCompletionQuery() {
+    public CsmCompletionQuery(CsmItemFactory itemFactory) {
         super();
-        initFactory();
-    }
-
-    protected void initFactory() {
-        setCsmItemFactory(new CsmCompletionQuery.DefaultCsmItemFactory());
+        CsmCompletionQuery.itemFactory = itemFactory;
     }
 
     public CsmCompletionResult query(JTextComponent component, int offset, boolean instantiateTypes) {
@@ -520,7 +516,7 @@ abstract public class CsmCompletionQuery {
     static List<CsmObject> findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
             boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean skipConstructors, boolean sort) {
         // Find inner classes
-        List ret = new ArrayList();
+        List ret = new ArrayList<CsmObject>();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier, finder.getCsmFile());
         if (!CsmKindUtilities.isClass(classifier)) {
             return ret;
@@ -539,7 +535,7 @@ abstract public class CsmCompletionQuery {
             staticOnly = false;
         }
         // Add fields
-        List res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
+        List<?> res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier, sort);
         if (res != null) {
             ret.addAll(res);
         }
@@ -1083,7 +1079,7 @@ abstract public class CsmCompletionQuery {
                             String searchPkg = (lastNamespace.isGlobal() ? "" : lastNamespace.getQualifiedName()) + CsmCompletion.SCOPE;
                             List res;
                             if (openingSource) {
-                                res = new ArrayList();
+                                res = new ArrayList<CsmObject>();
                                 res.add(lastNamespace); // return only the package
                             } else {
                                 res = finder.findNestedNamespaces(lastNamespace, "", false, false); // find all nested namespaces
@@ -1157,7 +1153,7 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.NEW: // 'new' keyword
                 {
-                    List res = finder.findClasses(null, "", false, false); // Find all classes by name // NOI18N
+                    List<CsmClassifier> res = finder.findClasses(null, "", false, false); // Find all classes by name // NOI18N
                     result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     break;
                 }
@@ -1165,7 +1161,7 @@ abstract public class CsmCompletionQuery {
                 case CsmCompletionExpression.LABEL: {
                     CsmCompletionExpression item = exp.getParameter(0);
                     String name = item.getTokenText(0);
-                    List res = finder.findLabel(contextElement, name, false, false);
+                    List<CsmLabel> res = finder.findLabel(contextElement, name, false, false);
                     result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, // NOI18N
                             name.isEmpty() ? endOffset : item.getTokenOffset(0), 
                             name.isEmpty() ? 0 : item.getTokenLength(0),
@@ -1409,7 +1405,7 @@ abstract public class CsmCompletionQuery {
                                 if (lastNamespace != null && needToCheckNS) { // currently package
                                     String searchPkg = (lastNamespace.isGlobal() ? "" : (lastNamespace.getQualifiedName() + CsmCompletion.SCOPE)) + var;
                                     if (findType || !last) {
-                                        List res = finder.findNestedNamespaces(lastNamespace, var, true, false); // find matching nested namespaces
+                                        List<?> res = finder.findNestedNamespaces(lastNamespace, var, true, false); // find matching nested namespaces
                                         CsmNamespace curNs = res.isEmpty() ? null : (CsmNamespace) res.get(0);
                                         if (curNs != null) {
                                             lastNamespace = curNs;
@@ -1976,7 +1972,7 @@ abstract public class CsmCompletionQuery {
                                                             if (CsmKindUtilities.isFunctionPointerType(type)) {
                                                                 fldType = type;
                                                                 lastType = fldType;
-                                                                List typeList = getTypeList(item, 1);
+                                                                List<CsmType> typeList = getTypeList(item, 1);
                                                                 String parmStr = formatTypeList(typeList, methodOpen);
                                                                 Collection<CsmVariable> varList = new LinkedHashSet<CsmVariable>();
                                                                 varList.add(csmField);
@@ -2046,7 +2042,7 @@ abstract public class CsmCompletionQuery {
                                 return lastType != null;
                             }
                             String parmStr = "*"; // NOI18N
-                            List typeList = getTypeList(item, 1);
+                            List<CsmType> typeList = getTypeList(item, 1);
                             Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen, true);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
@@ -2087,7 +2083,7 @@ abstract public class CsmCompletionQuery {
                 if(lastType.isTemplateBased() ||
                         CsmFileReferences.isTemplateParameterInvolved(lastType) ||
                         CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
-                    Collection<CsmObject> data = new ArrayList();
+                    Collection<CsmObject> data = new ArrayList<CsmObject>();
                     data.add(new TemplateBasedReferencedObjectImpl());
                     result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                 }
@@ -2111,7 +2107,7 @@ abstract public class CsmCompletionQuery {
                     }
                     if(instantiatedByTemplateParam) {
                         if(!CsmInstantiationProvider.getDefault().getSpecializations(classifier, contextFile, endOffset).isEmpty()) {
-                            Collection<CsmObject> data = new ArrayList();
+                            Collection<CsmObject> data = new ArrayList<CsmObject>();
                             data.add(new TemplateBasedReferencedObjectImpl());
                             result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                         }
@@ -2250,12 +2246,12 @@ abstract public class CsmCompletionQuery {
         }
     }
 
-    private static String formatTypeList(List typeList, boolean methodOpen) {
+    private static String formatTypeList(List<CsmType> typeList, boolean methodOpen) {
         StringBuilder sb = new StringBuilder();
         if (typeList.size() > 0) {
             int cntM1 = typeList.size() - 1;
             for (int i = 0; i <= cntM1; i++) {
-                CsmType t = (CsmType) typeList.get(i);
+                CsmType t = typeList.get(i);
                 if (t != null) {
 // XXX                    sb.append(t.format(false));
                     sb.append(t.getText());
@@ -2298,7 +2294,7 @@ abstract public class CsmCompletionQuery {
         private BaseDocument baseDocument;
         private final List<CsmResultItem> items;
 
-        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection<?> data, String title,
                 CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc, data, title, substituteExp, substituteExp.getTokenOffset(0),
                     substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed, contextElement, instantiateTypes);
@@ -2316,7 +2312,7 @@ abstract public class CsmCompletionQuery {
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
-        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection<?> data, String title,
                 CsmCompletionExpression substituteExp, int substituteOffset,
                 int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc,
@@ -2325,7 +2321,7 @@ abstract public class CsmCompletionQuery {
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
-        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, CsmResultItem.SubstitutionHint hint, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection<?> data, CsmResultItem.SubstitutionHint hint, String title,
                 CsmCompletionExpression substituteExp, int substituteOffset,
                 int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc,
@@ -2356,7 +2352,7 @@ abstract public class CsmCompletionQuery {
             return Collections.unmodifiableList(items);
         }
         
-        private static String getTitle(List data, String origTitle, boolean isProjectBeeingParsed) {
+        private static String getTitle(List<?> data, String origTitle, boolean isProjectBeeingParsed) {
             if (CsmUtilities.DEBUG) {
                 System.out.println("original title (resolved type) was " + origTitle); //NOI18N
             }
@@ -2421,10 +2417,6 @@ abstract public class CsmCompletionQuery {
     }
 
     //========================== Items Factory ===============================
-    protected void setCsmItemFactory(CsmItemFactory itemFactory) {
-        CsmCompletionQuery.itemFactory = itemFactory;
-    }
-
     public static CsmItemFactory getCsmItemFactory() {
         return itemFactory;
     }
@@ -2664,7 +2656,7 @@ abstract public class CsmCompletionQuery {
 
     ////////////////////////////////////////////////////////////////////////////
     // convert data into CompletionItem
-    private static List<CsmResultItem> convertData(Collection dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, 
+    private static List<CsmResultItem> convertData(Collection<?> dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, 
             CsmOffsetableDeclaration contextElement, boolean instantiateTypes, CsmResultItem.SubstitutionHint hint) {
         List<CsmResultItem> ret = new ArrayList<CsmResultItem>();
         for (Object obj : dataList) {
