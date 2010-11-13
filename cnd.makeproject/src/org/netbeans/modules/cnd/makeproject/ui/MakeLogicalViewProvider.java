@@ -169,6 +169,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static StandardNodeAction deleteAction = null;
     private final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
     private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 10); // NOI18N
+    private MakeLogicalViewRootNode projectRootNode;
 
     public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
@@ -180,15 +181,27 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
         if (ASYNC_ROOT_NODE) {
             log.log(Level.FINE, "creating async root node in EDT? {0}", SwingUtilities.isEventDispatchThread());// NOI18N
-            return new MakeLogicalViewRootNode(configurationDescriptor.getLogicalFolders(), this);
+            createRoot(configurationDescriptor);
+            return projectRootNode;
         } else {
             if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
                 return new MakeLogicalViewRootNodeBroken(project);
             } else {
-                return new MakeLogicalViewRootNode(configurationDescriptor.getLogicalFolders(), this);
+                createRoot(configurationDescriptor);
+                return projectRootNode;
             }
         }
     }
+
+    private void createRoot(MakeConfigurationDescriptor configurationDescriptor) {
+        InstanceContent ic = new InstanceContent();
+        Folder logicalFolders = configurationDescriptor.getLogicalFolders();
+        ic.add(logicalFolders);
+        ic.add(getProject());
+        ic.add(new FolderSearchInfo(logicalFolders));
+        projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
+    }
+
     private final AtomicBoolean findPathMode = new AtomicBoolean(false);
 
     private boolean isFindPathMode() {
@@ -379,17 +392,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
                 Node root = findProjectNode(rootNode, project);
                 if (root != null) {
-                    for(Item item : delta.deleted) {
-                        // TODO remove nodes from view
-                    }
-                    for(Item item : delta.added) {
-                        // TODO add nodes in view
-                    }
-                    List<Item> list = new ArrayList<Item>(delta.changed);
-                    list.addAll(delta.exluded);
-                    list.addAll(delta.included);
-                    for(Item item : list) {
-                        // TODO change nodes in view
+                    MakeLogicalViewProvider provider = project.getLookup().lookup(MakeLogicalViewProvider.class);
+                    if (provider != null && provider.projectRootNode != null) {
+                        provider.projectRootNode.reInit(provider.projectRootNode.getMakeConfigurationDescriptor());
                     }
                 }
             }
@@ -554,7 +559,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    /** Filter node containin additional features for the Make physical
+    /** Filter node contain additional features for the Make physical
      */
     private final static class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 
@@ -563,12 +568,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Folder folder;
         private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
         private final MakeLogicalViewProvider provider;
+        private final InstanceContent ic;
 
-        public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider) {
-            super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
-                        folder,
-                        provider.getProject(),
-                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
+        public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
+            super(new LogicalViewChildren(folder, provider), new AbstractLookup(ic), ANNOTATION_RP);
+            this.ic = ic;
             this.folder = folder;
             this.provider = provider;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
@@ -585,7 +589,18 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             updateAnnotationFiles();
             ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
             pi.addPropertyChangeListener(this);
-//            ProjectUtils.getInformation(provider.getProject()).addPropertyChangeListener(this);
+        }
+
+        public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
+            Folder logicalFolders = configurationDescriptor.getLogicalFolders();
+            ic.remove(folder);
+            folder = logicalFolders;
+            ic.add(logicalFolders);
+            FolderSearchInfo old = getLookup().lookup(FolderSearchInfo.class);
+            ic.remove(old);
+            ic.add(new FolderSearchInfo(logicalFolders));
+            setChildren(new LogicalViewChildren(folder, provider));
+            updateAnnotationFiles();
         }
 
         public Folder getFolder() {
