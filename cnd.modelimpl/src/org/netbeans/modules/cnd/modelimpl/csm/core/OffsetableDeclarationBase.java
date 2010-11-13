@@ -219,7 +219,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }
             }            
             return new TemplateDescriptor(
-                templateParams, templateSuffix, inheritedTemplateParametersNumber, global);
+                templateParams, templateSuffix, inheritedTemplateParametersNumber, specialization, global);
         }
         return null;
     }
