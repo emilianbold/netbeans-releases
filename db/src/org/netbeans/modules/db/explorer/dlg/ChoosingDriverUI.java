@@ -105,10 +105,10 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     private void updateState() {
         Object drvO = cbDrivers.getSelectedItem();
         if (drvO instanceof JDBCDriver) {
+            drv = (JDBCDriver) drvO;
             // update current with modified files if any
             if (customizeDriverPanel.getDriver() != null) {
                 JDBCDriver current = customizeDriverPanel.getDriver();
-                drv = customizeDriverPanel.getDriver();
                 // any change?
                 if (! Arrays.equals(current.getURLs(), customizeDriverPanel.getDriverURLs())) {
                     JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), customizeDriverPanel.getDriverURLs());
@@ -119,6 +119,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                         JDBCDriverManager.getDefault().removeDriver(current);
                         JDBCDriverManager.getDefault().addDriver(modified);
                         drv = modified;
+                        cbDrivers.getModel().setSelectedItem(modified);
                     } catch (DatabaseException ex) {
                         Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.WARNING,
                                 "Unable to modify driver " + current.getName() + " and add driver jar files " +
@@ -126,13 +127,9 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                                 ": can not convert to URL", ex);
                     }
                 }
-                wizard.setDriver(drv);
-                customizeDriverPanel.setDriver(drv);
-            } else {
-                drv = (JDBCDriver) drvO;
-                wizard.setDriver(drv);
-                customizeDriverPanel.setDriver(drv);
             }
+            wizard.setDriver(drv);
+            customizeDriverPanel.setDriver(drv);
         } else {
             wizard.setDriver(drv);
             customizeDriverPanel.setDriver(null);
