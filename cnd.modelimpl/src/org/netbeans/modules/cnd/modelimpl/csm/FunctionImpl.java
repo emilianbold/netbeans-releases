@@ -89,7 +89,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence[] rawName;
 
-    private TemplateDescriptor templateDescriptor = null;
+    private final TemplateDescriptor templateDescriptor;
 
     protected final CharSequence classTemplateSuffix;
 
@@ -570,6 +570,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
+    }
+
+    @Override
+    public boolean isSpecialization() {
+        return templateDescriptor != null && templateDescriptor.isSpecialization();
     }
 
     /**
