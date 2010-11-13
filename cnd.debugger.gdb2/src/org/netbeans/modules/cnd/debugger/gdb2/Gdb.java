@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 // for dyingWords. SHOULD be moved elsewhere!
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
@@ -127,14 +129,25 @@ public class Gdb {
 
         @Override
         public void finishProgress() {
-            super.finishProgress();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.finishProgress();
+                }
+            });
             StatusDisplayer.getDefault().setStatusText("");     // NOI18N
         }
 
         @Override
-        public void updateProgress(char beginEnd, int level,
-                                        String message, int count, int total) {
-            super.updateProgress(beginEnd, level, message, count, total);
+        public void updateProgress(final char beginEnd,
+                                   final int level,
+                                   final String message,
+                                   final int count,
+                                   final int total) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.updateProgress(beginEnd, level, message, count, total);
+                }
+            });
             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
@@ -735,7 +748,7 @@ public class Gdb {
 
         // characters from gdb accumulate here and are forwarded to the tap
         private StringBuilder interceptBuffer = new StringBuilder();
-        private List<String> interceptedLines = new ArrayList<String>();
+        private LinkedList<String> interceptedLines = new LinkedList<String>();
 
 	/* OLD
         // buffer for accumulating incoming (from process) characters (via
@@ -922,7 +935,7 @@ public class Gdb {
                 appendChar(char_CR);
 
 		String line = interceptBuffer.toString();
-                interceptedLines.add(line);
+                interceptedLines.addLast(line);
                 interceptBuffer = new StringBuilder();
 
 		// do some pattern recognition and alternative colored output.
@@ -971,16 +984,17 @@ public class Gdb {
 	    putBuf.append(c);
         }
 
+        private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
+
         private void dispatchInterceptedLines() {
             while (!interceptedLines.isEmpty()) {
-                String line = interceptedLines.remove(0);
+                final String line = interceptedLines.removeFirst();
 
-                // make sure we keep on processing lines no matter what
-                try {
-                    miProxy.processLine(line);
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
+                processingQueue.post(new Runnable() {
+                    public void run() {
+                        miProxy.processLine(line);
+                    }
+                });
             }
         }
     }
