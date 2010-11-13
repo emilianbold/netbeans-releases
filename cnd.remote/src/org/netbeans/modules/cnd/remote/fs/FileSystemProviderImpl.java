@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,5 +74,26 @@ public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.File
         }
         return null;
     }
+
+    @Override
+    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        if (baseFileObject instanceof RemoteFileObjectBase) {
+            ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
+            if (CndPathUtilitities.isPathAbsolute(relativeOrAbsolutePath)) {
+                relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().get(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
+                try {
+                    baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                // it's RemoteDirectory responsibility to normalize in this case
+                baseFileObject.getFileObject(relativeOrAbsolutePath);
+            }
+        }
+        return null;
+    }
+
+
 
 }
