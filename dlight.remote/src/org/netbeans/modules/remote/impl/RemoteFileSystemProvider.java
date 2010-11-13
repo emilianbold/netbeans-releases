@@ -51,6 +51,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -65,6 +66,16 @@ public class RemoteFileSystemProvider extends FileSystemProvider {
     WeakHashMap<ExecutionEnvironment, RemoteFileSystem> cache =
             new WeakHashMap<ExecutionEnvironment, RemoteFileSystem>();
 
+    @Override
+    protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+        return absPath; // XXX: will be gone as soon as FileSystemProvider implementations are merged
+    }
+
+    @Override
+    protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
+        return fileObject; // XXX: will be gone as soon as FileSystemProvider implementations are merged
+    }
+    
     @Override
     protected synchronized FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {
