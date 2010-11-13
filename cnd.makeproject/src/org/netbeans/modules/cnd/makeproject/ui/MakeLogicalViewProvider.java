@@ -82,6 +82,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
@@ -1110,8 +1111,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 MakeConfigurationDescriptor conf = folder.getConfigurationDescriptor();
                 if (conf != null) {
                     String rootPath = folder.getRootPath();
-                    String absRootPath = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), rootPath);
-                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+                    FileObject fo = RemoteFileUtil.getFileObject(conf.getBaseDirFileObject(), rootPath);
                     if (fo != null /*paranoia*/ && fo.isValid() && fo.isFolder()) {
                         DataFolder dataFolder = DataFolder.findFolder(fo);
                         if (dataFolder != null) {
