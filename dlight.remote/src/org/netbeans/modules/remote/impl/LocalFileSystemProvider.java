@@ -74,6 +74,11 @@ public final class LocalFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
+    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        return null; // let default implementation do its work
+    }
+
+    @Override
     protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {
             synchronized (this) {
