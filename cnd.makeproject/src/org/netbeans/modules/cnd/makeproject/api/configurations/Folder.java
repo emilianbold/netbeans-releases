@@ -141,7 +141,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String rootPath = getRootPath();
         String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-        AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(rootPath, getProject());
+        AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
         CndUtils.assertNotNull(folderFile, "null folder file object"); //NOI18N
         if (folderFile == null) {
