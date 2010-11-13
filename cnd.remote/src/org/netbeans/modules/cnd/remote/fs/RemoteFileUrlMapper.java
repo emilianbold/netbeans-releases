@@ -88,14 +88,18 @@ public class RemoteFileUrlMapper extends URLMapper {
             RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
             try {
                 ExecutionEnvironment env = rfo.getExecutionEnvironment();
-                String host = env.getUser() + '@' + env.getHost();
-                URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), rfo.getPath());
-                String ext = url.toExternalForm(); // is there a way to set authority?
-                return new URL(ext);
+                return getURL(env, rfo.getPath());
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
         return null;
+    }
+
+    /*package*/ static URL getURL(ExecutionEnvironment env, String path) throws MalformedURLException {
+        String host = env.getUser() + '@' + env.getHost();
+        URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
+        String ext = url.toExternalForm(); // is there a way to set authority?
+        return new URL(ext);
     }
 }

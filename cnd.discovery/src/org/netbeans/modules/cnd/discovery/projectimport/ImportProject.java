@@ -1111,7 +1111,7 @@ public class ImportProject implements PropertyChangeListener {
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             if (makeConfigurationDescriptor != null) {
                 for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                    normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
+                    normalizedItems.put(item.getNormalizedPath(),item);
                 }
             }
         }

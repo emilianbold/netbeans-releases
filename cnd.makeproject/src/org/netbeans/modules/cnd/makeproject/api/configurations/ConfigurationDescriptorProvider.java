@@ -46,9 +46,12 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -169,7 +172,9 @@ public class ConfigurationDescriptorProvider {
                             if (newDescriptor != null) {
                                 newDescriptor.setProject(project);
                                 newDescriptor.waitInitTask();
+                                Delta delta = getDelta(newDescriptor);
                                 projectDescriptor.assign(newDescriptor);
+                                projectDescriptor.checkForChangedItems(delta);
                                 LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
                                         new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
                             } else {
@@ -190,6 +195,43 @@ public class ConfigurationDescriptorProvider {
             projectDescriptor.waitInitTask();
         }
         return projectDescriptor;
+    }
+
+    private Delta getDelta(MakeConfigurationDescriptor newDescriptor) {
+        Item[] oldItems = projectDescriptor.getProjectItems();
+        Map<String,Item> oldMap = new HashMap<String,Item>();
+        Set<Item> oldSet = new HashSet<Item>();
+        for(Item item : oldItems) {
+            oldMap.put(item.getAbsolutePath(), item);
+            oldSet.add(item);
+        }
+        Delta delta = new Delta();
+        Item[] newItems = newDescriptor.getProjectItems();
+        for(Item item : newItems) {
+            Item oldItem = oldMap.get(item.getAbsolutePath());
+            if (oldItem == null) {
+                delta.added.add(item);
+            } else {
+                oldSet.remove(oldItem);
+                if (item.isExcluded() && oldItem.isExcluded()) {
+                    // no changes
+                } else if (item.isExcluded() && !oldItem.isExcluded()) {
+                    delta.exluded.add(item);
+                } else  if (!item.isExcluded() && oldItem.isExcluded()) {
+                    delta.included.add(item);
+                } else {
+                    // compare item properties
+                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths()) &&
+                          item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
+                        delta.changed.add(item);
+                    }
+                }
+            }
+        }
+        for (Item item : oldSet) {
+            delta.deleted.add(item);
+        }
+        return delta;
     }
 
     public boolean gotDescriptor() {
@@ -442,4 +484,15 @@ public class ConfigurationDescriptorProvider {
 
     }
 
+    public static final class Delta {
+        public List<Item> included = new ArrayList<Item>(); // marked as included
+        public List<Item> added = new ArrayList<Item>(); // added in project
+        public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
+        public List<Item> deleted = new ArrayList<Item>(); // deleted from project items
+        public List<Item> changed = new ArrayList<Item>(); // changed properties
+
+        public boolean isEmpty(){
+            return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+        }
+    }
 }

@@ -44,6 +44,10 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -51,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -86,6 +91,20 @@ public class RemoteFileSystem extends FileSystem {
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
 
+    public String normalizeAbsolutePath(String absPath) {
+        try {
+            URL url = RemoteFileUrlMapper.getURL(execEnv, absPath);
+            URI uri = url.toURI();
+            uri = uri.normalize();
+            return uri.getPath();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+            return absPath;
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return absPath;
+        }
+    }
 
     /*package-local, for testing*/
     File getCache() {
