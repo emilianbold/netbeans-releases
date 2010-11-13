@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -388,8 +389,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         return getKind() == Kind.TEST;
     }
 
-    public ArrayList<Object> getElements() {
-        return items;
+    public List<Object> getElements() {
+        return Collections.unmodifiableList(items);
     }
 
     private void reInsertElement(Object element) {
