@@ -105,7 +105,7 @@ final class TextLayoutUtils {
             TextHitInfo startHit, TextHitInfo endHit)
     {
         Shape ret;
-        if (textLayoutBounds.getX() != 0d || textLayoutBounds.getY() != 0d) {
+        if (true && textLayoutBounds.getX() != 0d || textLayoutBounds.getY() != 0d) {
             Rectangle2D.Double zeroBasedBounds = ViewUtils.shape2Bounds(textLayoutBounds);
             zeroBasedBounds.x = 0;
             zeroBasedBounds.y = 0;

@@ -783,7 +783,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             // but it also has an important effect that it allows eliminate problems
             // caused by using a [float,float] point that does not fit into views boundaries
             // maintained as doubles.
-            defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
+            // [Update]: Finally do ceil to whole points since when doing a compound TextLayout and then
+            // using TextLayoutUtils.getRealAlloc() with its TL.getVisualHighlightShape() and doing
+            // Graphics2D.fill(Shape) on the returned shape then for certain fonts such as
+            // Lucida Sans Typewriter size=10 on Ubuntu 10.04 the background is rendered one pixel down for certain lines.
+            defaultLineHeight = (float) Math.ceil(defaultLineHeight);
             defaultAscent = ViewUtils.floorFractions(lineHeightTextLayout.getAscent());
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
             defaultUnderlineOffset = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
