@@ -68,6 +68,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
@@ -75,6 +76,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
     private static final String USG_CND_PROJECT_ACTION = "USG_CND_PROJECT_ACTION"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
 
     private FileObject projectDirectory;
     private Project project = null;
@@ -447,6 +449,12 @@ public class ConfigurationDescriptorProvider {
                         LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
                         needReload = true;
                         hasTried = false;
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                getConfigurationDescriptor();
+                            }
+                        });
                     }
                 }
             }
