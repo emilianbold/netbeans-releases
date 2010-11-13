@@ -310,7 +310,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     String fileName = rs.getString(5);
                     long line_number  = rs.getLong(6);
                     String createdFullName = funcName +
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
                     result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName,
                             createdFullName, fileName), metrics));
                 }
@@ -339,7 +339,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     String fileName = rs.getString(5);
                     long line_number  = rs.getLong(6);
                     String createdFullName = funcName + 
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
                     result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, 
                             createdFullName, fileName), metrics));
                 }
@@ -383,7 +383,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     String fileName = rs.getString(5);
                     long line_number  = rs.getLong(6);
                     String createdFullName = name +
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
                     funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, 
                             createdFullName, fileName), metrics));
                 }
@@ -883,8 +883,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Node.line_number, "
-                        + "Func.func_name, "
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Node.line_number, "  //NOI18N
+                        + "Func.func_name, "//NOI18N
                         + " SourceFiles.source_file " + // NOI18N
                         "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N
                         "WHERE node_id = ?"); // NOI18N
@@ -897,7 +897,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                         long line_number = rs.getLong(5);
                         String fileName = rs.getString(7);
                         final long offset = rs.getLong(4);
-                        String fullFuncName = funcName + "+0x" + Long.toHexString(offset) + (fileName != null ? ":" + fileName + ":" + line_number : "");
+                        String fullFuncName = funcName + "+0x" + Long.toHexString(offset) + (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
                         FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, fileName);
                         result.add(new FunctionCallImpl(func, offset, new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
