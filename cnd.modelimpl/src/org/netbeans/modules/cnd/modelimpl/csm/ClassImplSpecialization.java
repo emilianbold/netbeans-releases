@@ -116,6 +116,7 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
         return true;
     }
 
+    @Override
     public boolean isSpecialization() {
         return true;
     }

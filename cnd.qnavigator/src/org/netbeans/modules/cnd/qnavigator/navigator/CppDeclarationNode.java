@@ -50,6 +50,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -88,6 +89,7 @@ import org.openide.util.lookup.Lookups;
  * Navigator Tree node.
  */
 public class CppDeclarationNode extends AbstractCsmNode implements Comparable<CppDeclarationNode> {
+    private static final String FONT_COLORCONTROLSHADOW = "<font color='!controlShadow'>  "; // NOI18N
     private Image icon;
     private CsmObject object;
     private CsmFile file;
@@ -131,6 +133,21 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, CsmFileModel model, boolean isFriend) {
         this(children, element, model);
         this.isFriend = isFriend;
+    }
+
+    private CharSequence createFunctionSpecializationHtmlDisplayName(final CsmObject csmObject) throws MissingResourceException {
+        CsmFunction fun = (CsmFunction)csmObject;
+        String specializationContainerName = fun.getQualifiedName().toString();
+        int endInd = specializationContainerName.lastIndexOf("::");//NOI18N
+        String in;
+        if (endInd > 0) {
+            specializationContainerName = CsmDisplayUtilities.htmlize(specializationContainerName.substring(0, endInd));
+            in = NbBundle.getMessage(getClass(), "LBL_forClassSpecialization", specializationContainerName); //NOI18N
+        } else {
+            in = "";//NOI18N
+        }
+        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
+        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in); // NOI18N
     }
 
     private byte getObjectWeight(){
@@ -299,35 +316,42 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     private CharSequence createHtmlDisplayName() {
         try {
-            if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
+            final CsmObject csmObject = getCsmObject();
+            if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
                 // the try-catch is just a FIXUP for #118212 NPE when opening file from boost...
                 CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
                 if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
                     CsmClass cls = ((CsmMember) function).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        String aName = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                        String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                        String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N
-                        return CharSequences.create(displayName + "<font color='!controlShadow'>  " + in + " " + aName); // NOI18N
+                        String aName = CsmDisplayUtilities.htmlize(cls.getName()); // NOI18N
+                        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
+                        String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
+                        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
+                    } else if (CsmKindUtilities.isSpecialization(function)) {
+                        return createFunctionSpecializationHtmlDisplayName(function);
                     }
+                } else if (CsmKindUtilities.isSpecialization(csmObject)) {
+                    return createFunctionSpecializationHtmlDisplayName(csmObject);
                 }
-            } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
+            } else if (CsmKindUtilities.isVariableDefinition(csmObject)) {
                 CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
                 if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
                     CsmClass cls = ((CsmMember) variable).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        String aName = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                        String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                        String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N
-                        return CharSequences.create(displayName + "<font color='!controlShadow'>  " + in + " " + aName); // NOI18N
+                        String aName = CsmDisplayUtilities.htmlize(cls.getName()); // NOI18N
+                        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
+                        String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
+                        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
                     }
                 }
-            } else if (object instanceof CsmFile) {
+            } else if (csmObject instanceof CsmFile) {
                 //Restricted code assistance
                 return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
                         NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
-
+            } else if (CsmKindUtilities.isFunction(csmObject) && CsmKindUtilities.isSpecialization(csmObject)) {
+                return createFunctionSpecializationHtmlDisplayName(csmObject); 
             }
+
         } catch (AssertionError ex) {
             ex.printStackTrace();
         } catch (Exception ex) {
