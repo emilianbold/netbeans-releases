@@ -111,7 +111,7 @@ public final class PhpSourcePath {
         if (phpStubsFolder == null) {
             // Core classes: Stubs generated for the "builtin" php runtime and extenstions.
             File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-php-project.jar", null, false);   //NOI18N
+                    "modules/org-netbeans-modules-php-project.jar", "org.netbeans.modules.php.project", false);   //NOI18N
 
             if (clusterFile != null) {
                 File phpStubs =
