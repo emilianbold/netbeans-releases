@@ -150,6 +150,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in); // NOI18N
     }
 
+    private static CharSequence getClassifierName(CsmClassifier cls) {
+        CharSequence clsName = cls.getName();
+        if (CsmKindUtilities.isClass(cls) && CsmKindUtilities.isTemplate(cls)) {
+            clsName = ((CsmTemplate)cls).getDisplayName();
+        }
+        return clsName;
+    }
+
     private byte getObjectWeight(){
         try {
             if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
@@ -157,7 +165,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
                     CsmClass cls = ((CsmMember) function).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        scopeName = cls.getName();
+                        scopeName = getClassifierName(cls);
                     }
                 }
             } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
@@ -165,7 +173,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
                     CsmClass cls = ((CsmMember) variable).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        scopeName = cls.getName();
+                        scopeName = getClassifierName(cls);
                     }
                 }
             }
@@ -323,7 +331,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
                     CsmClass cls = ((CsmMember) function).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        String aName = CsmDisplayUtilities.htmlize(cls.getName()); // NOI18N
+                        String aName = CsmDisplayUtilities.htmlize(getClassifierName(cls)); 
                         String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
                         String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
                         return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
@@ -338,7 +346,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
                     CsmClass cls = ((CsmMember) variable).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
-                        String aName = CsmDisplayUtilities.htmlize(cls.getName()); // NOI18N
+                        String aName = CsmDisplayUtilities.htmlize(getClassifierName(cls));
                         String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
                         String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
                         return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
@@ -466,16 +474,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 }
             }
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
-            if (CsmKindUtilities.isClass(element)) {
-                CsmClass cls = (CsmClass)element;
-                if (CsmKindUtilities.isTemplate(cls)) {
-                    node.name = ((CsmTemplate)cls).getDisplayName();
-                } else {
-                    node.name = cls.getName();
-                }
-            } else {
-                node.name = ((CsmClassifier)element).getName();
-            }
+            node.name = getClassifierName((CsmClassifier)element);
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
             return node;
         } else if(CsmKindUtilities.isNamespaceDefinition(element)){
