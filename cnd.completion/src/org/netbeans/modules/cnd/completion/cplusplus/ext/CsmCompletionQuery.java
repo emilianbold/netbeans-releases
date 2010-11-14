@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -1345,6 +1346,10 @@ abstract public class CsmCompletionQuery {
                                                         if (elemList == null) {
                                                             elemList = baseClasses;
                                                         } else if (baseClasses != null) {
+                                                            if (CsmSortUtilities.matchName(clazz.getName(), var, true, true)) {
+                                                                // add current class as well
+                                                                elemList.add(clazz);
+                                                            }
                                                             elemList.addAll(baseClasses);
                                                         }
                                                     }
@@ -1385,6 +1390,10 @@ abstract public class CsmCompletionQuery {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
                                                 List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
+                                                if (CsmSortUtilities.matchName(cls.getName(), var, true, true)) {
+                                                    // add current class as well
+                                                    res.add(cls);
+                                                }
                                                 res.addAll(baseClasses);
                                             }
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
