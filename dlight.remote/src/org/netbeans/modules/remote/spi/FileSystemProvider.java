@@ -65,6 +65,7 @@ public abstract class FileSystemProvider {
     protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
     protected abstract String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env);
     protected abstract FileObject normalizeFileObjectImpl(FileObject fileObject);
+    protected abstract FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath);
 
     public static FileSystem getFileSystem(ExecutionEnvironment env) {
         return DEFAULT.getFileSystemImpl(env, "/"); //NOI18N
@@ -82,6 +83,16 @@ public abstract class FileSystemProvider {
         return DEFAULT.normalizeFileObjectImpl(fileObject);
     }
 
+    /**
+     * In many places, standard sequence is as follows:
+     *  - convert path to absolute if need
+     *  - normalize it
+     *  - find file object
+     * In the case of non-local file systems we should delegate it to correspondent file systems.
+     */
+    public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        return DEFAULT.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+    }
 
     private static class FileSystemProviderImpl extends FileSystemProvider {
 
@@ -130,5 +141,17 @@ public abstract class FileSystemProvider {
             return result;
         }
 
+        @Override
+        protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            FileObject result;
+            for (FileSystemProvider provider : allProviders) {
+                result = provider.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        }
     }
 }

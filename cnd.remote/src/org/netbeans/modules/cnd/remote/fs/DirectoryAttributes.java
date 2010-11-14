@@ -138,6 +138,11 @@ public final class DirectoryAttributes {
         return (result == null) ? true : result.booleanValue();
     }
 
+    public synchronized boolean exists(String fileName) {
+        // TODO: in this case it's time to get rid of empty files!
+        return Boolean.valueOf(attrs.containsKey(fileName));
+    }
+
     /** */
     public synchronized void setWritable(String fileName, boolean writable) {
         attrs.put(fileName, Boolean.valueOf(writable));

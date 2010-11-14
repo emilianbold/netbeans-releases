@@ -111,13 +111,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     public boolean canWrite(String childNameExt) throws IOException {
+        return getDirectoryAttrs().isWritable(childNameExt);
+    }
+
+    private DirectoryAttributes getDirectoryAttrs() throws IOException {
         synchronized (this) {
             if (attrs == null) {
                 attrs = new DirectoryAttributes(CndFileUtils.createLocalFile(cache, RemoteFileSupport.FLAG_FILE_NAME));
                 attrs.load();
             }
         }
-        return attrs.isWritable(childNameExt);
+        return attrs;
     }
 
     /**
@@ -150,6 +154,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 
                 if (!file.exists()) {
+                    return null;
+                }
+            }
+
+            if (relativePath.indexOf('/') < 0) { // XXX: get rid of empty files; delegate to directories recursively, then remove this check
+                if (!getDirectoryAttrs().exists(relativePath)) {
                     return null;
                 }
             }

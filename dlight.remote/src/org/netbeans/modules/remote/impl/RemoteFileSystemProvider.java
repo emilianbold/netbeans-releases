@@ -75,7 +75,12 @@ public class RemoteFileSystemProvider extends FileSystemProvider {
     protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
         return fileObject; // XXX: will be gone as soon as FileSystemProvider implementations are merged
     }
-    
+
+    @Override
+    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        return null; // XXX: will be gone as soon as FileSystemProvider implementations are merged
+    }
+
     @Override
     protected synchronized FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {

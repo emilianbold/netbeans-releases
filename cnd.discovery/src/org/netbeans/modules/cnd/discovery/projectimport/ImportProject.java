@@ -149,6 +149,7 @@ public class ImportProject implements PropertyChangeListener {
     private boolean setAsMain;
     private final String hostUID;
     private final ExecutionEnvironment executionEnvironment;
+    private final ExecutionEnvironment fileSystemExecutionEnvironment;
     private final boolean fullRemote;
     private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
@@ -164,7 +165,7 @@ public class ImportProject implements PropertyChangeListener {
     private Iterator<SourceFolderInfo> sources;
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
-    private File configureFile;
+    private FileObject configureFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
@@ -185,6 +186,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
+        fileSystemExecutionEnvironment = (fullRemote) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
         assert nativeProjectPath != null;
     }
 
@@ -282,9 +284,14 @@ public class ImportProject implements PropertyChangeListener {
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
     }
 
+    private String normalizeAbsolutePath(String path) {
+        ExecutionEnvironment fileSystemEnv = fullRemote ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
+        return RemoteFileUtil.normalizeAbsolutePath(path, fileSystemEnv);
+    }
+
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        projectFolder = CndFileUtils.normalizeFile(projectFolder);
+        projectFolder = CndFileUtils.normalizeFile(projectFolder); // always local
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel;
         if (fullRemote) { //XXX:fullRemote {
@@ -299,7 +306,7 @@ public class ImportProject implements PropertyChangeListener {
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
             buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult), pathMode);
-            buildResult = CndPathUtilitities.normalize(buildResult);
+            buildResult = normalizeAbsolutePath(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         // Include directories
@@ -342,7 +349,8 @@ public class ImportProject implements PropertyChangeListener {
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
-            configureFile = CndFileUtils.normalizeFile(new File(configurePath));
+            String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
+            configureFileObject = RemoteFileUtil.getFileObject(normPath, executionEnvironment);
             configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath), pathMode);
             configurePath = CndPathUtilitities.normalize(configurePath);
             importantItems.add(configurePath);
@@ -412,7 +420,8 @@ public class ImportProject implements PropertyChangeListener {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
-                if (runConfigure && configurePath != null && configurePath.length() > 0 && configureFile != null && configureFile.exists()) {
+                if (runConfigure && configurePath != null && configurePath.length() > 0 && 
+                        configureFileObject != null && configureFileObject.isValid()) {
                     postConfigure();
                 } else {
                     if (runMake) {
@@ -472,7 +481,6 @@ public class ImportProject implements PropertyChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            FileObject configureFileObject = CndFileUtils.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
             String mime = FileUtil.getMIMEType(configureFileObject);
@@ -544,7 +552,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#{0} {1}", new Object[]{configureFile, configureArguments}); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{configureFileObject, configureArguments}); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                 Future<Integer> task = ShellRunAction.performAction(node, listener, outputListener, makeProject, null);

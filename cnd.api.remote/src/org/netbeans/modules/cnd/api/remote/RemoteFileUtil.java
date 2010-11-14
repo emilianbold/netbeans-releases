@@ -47,6 +47,7 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -68,9 +69,30 @@ public class RemoteFileUtil {
         return (fo != null && fo.isValid());
     }
 
+    public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment, RemoteProject.Mode remoteMode) {
+        executionEnvironment = (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
+        return fileExists(absolutePath, executionEnvironment);
+    }
+
     public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {
         FileObject fo = getFileObject(absolutePath, executionEnvironment);
         return (fo != null && fo.isFolder());
+    }
+
+    /**
+     * In many places, standard sequence is as follows:
+     *  - convert path to absolute if need
+     *  - normalize it
+     *  - find file object
+     * In the case of non-local file systems we should delegate it to correspondent file systems.
+     */
+    public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        FileObject result = FileSystemProvider.getFileObject(baseFileObject, relativeOrAbsolutePath);
+        if (result == null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
+            result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+        }
+        return result;
     }
 
     private RemoteFileUtil() {}
