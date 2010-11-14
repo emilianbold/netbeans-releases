@@ -194,7 +194,7 @@ public class PositionManager {
 
         @Override
         public int getOffset() {
-            return -1;
+            return offset;
         }
 
         @Override
