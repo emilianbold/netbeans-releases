@@ -265,6 +265,7 @@ public class RemoteFileSupport extends NamedRunnable {
                 String fileName = inputLine.substring(2);
                 if (directory) {
                     fileName = fixCaseSensitivePathIfNeeded(fileName);
+                    attrs.setWritable(fileName, true);
                 } else {
                     attrs.setWritable(fileName, mode == 'w');
                 }

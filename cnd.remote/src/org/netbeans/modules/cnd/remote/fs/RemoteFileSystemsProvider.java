@@ -145,7 +145,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
         if (p != null) {
             CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
             CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
-            p.fileSystem.getChildInfo(p.remotePath.toString());
+            return p.fileSystem.getChildInfo(p.remotePath.toString());
         }
         return null;
     }
