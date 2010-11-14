@@ -188,6 +188,6 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public String toString() {
-        return getQualifiedName().toString();
+        return getQualifiedName().toString() + getPositionString();
     }
 }
