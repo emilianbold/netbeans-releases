@@ -151,17 +151,19 @@ public class ServerLocationVisual extends JPanel {
         }
         else {
             File[] files = candidate.listFiles();
-            for (File file : files) {
-                String fileName = file.getName();
-                if (fileName.startsWith("wlserver")) { // NOI18N
-                    if (WLPluginProperties.isGoodServerLocation(file)){
-                        String msg = NbBundle.getMessage(ServerLocationVisual.class,
-                                "WARN_CHILD_SERVER_ROOT", candidate.getPath(), // NOI18N
-                                file.getPath());
-                        wizardDescriptor.putProperty(
-                                WizardDescriptor.PROP_WARNING_MESSAGE,
-                                WLInstantiatingIterator.decorateMessage(msg));
-                        return file;
+            if (files != null) {
+                for (File file : files) {
+                    String fileName = file.getName();
+                    if (fileName.startsWith("wlserver")) { // NOI18N
+                        if (WLPluginProperties.isGoodServerLocation(file)){
+                            String msg = NbBundle.getMessage(ServerLocationVisual.class,
+                                    "WARN_CHILD_SERVER_ROOT", candidate.getPath(), // NOI18N
+                                    file.getPath());
+                            wizardDescriptor.putProperty(
+                                    WizardDescriptor.PROP_WARNING_MESSAGE,
+                                    WLInstantiatingIterator.decorateMessage(msg));
+                            return file;
+                        }
                     }
                 }
             }
