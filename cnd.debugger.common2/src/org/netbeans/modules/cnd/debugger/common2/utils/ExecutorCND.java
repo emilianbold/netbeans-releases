@@ -174,7 +174,8 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], Map<String, String> additionalEnv,
-			                TermComponent console) {
+			                TermComponent console,
+                                        boolean disableEcho) {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
 
@@ -197,6 +198,10 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
 
         PtySupport.connect(console.getIO(), engineProc);
+
+        if (disableEcho) {
+            PtySupport.disableEcho(exEnv, PtySupport.getTTY(engineProc));
+        }
 
 	//startMonitor();
         
