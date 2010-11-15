@@ -171,7 +171,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         String text;
 
         if (start >= 0 && end >= 0 && end > start) {
-            text = info.getText().substring(start, end + 1);
+            text = info.getText().substring(start, end);
         } else {
             text = tree.getLeaf().toString();
         }

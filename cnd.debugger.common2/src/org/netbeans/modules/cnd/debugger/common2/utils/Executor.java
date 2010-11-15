@@ -120,7 +120,7 @@ public abstract class Executor {
     public abstract int startShellCmd(String engine_argv[]);
 
     public abstract int startEngine(String engine_path, String engine_argv[], Map<String, String> additionalEnv,
-			            TermComponent console);
+			            TermComponent console, boolean disableEcho);
 
     public abstract String getStartError();
 

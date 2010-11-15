@@ -47,11 +47,14 @@ package org.netbeans.modules.git.ui.status;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import java.awt.Component;
+import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
@@ -98,6 +101,22 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
+
+        GitStatusNode[] selectedNodes = getSelectedNodes();
+        boolean displayAdd = false;
+        for (GitStatusNode node : selectedNodes) {
+            // is there any change between index and WT?
+            if (node.getFileNode().getInformation().containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
+                    Status.IN_CONFLICT,
+                    Status.MODIFIED_INDEX_WORKING_TREE))) {
+                displayAdd = true;
+            }
+        }
+        if (displayAdd) {
+            item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"))); //NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
+        
         item = menu.add(new SystemActionBridge(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N

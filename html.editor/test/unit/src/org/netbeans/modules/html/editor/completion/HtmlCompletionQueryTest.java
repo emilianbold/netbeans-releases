@@ -78,7 +78,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testIssue177347"));
+//        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTag"));
         return suite;
     }
 
@@ -124,7 +124,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<|", arr("div"), Match.CONTAINS, 1);
         assertItems("<|", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<d|", arr("div"), Match.CONTAINS, 1);
-        assertItems("<div|", arr("div"), Match.EXACT, 1);
+        assertItems("<div|", arr("div"), Match.CONTAINS, 1);
 
         //           01234567
         assertItems("<div></|", arr("div"), Match.CONTAINS, 7);
@@ -156,7 +156,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<| ", arr("div"), Match.CONTAINS, 1);
         assertItems("<| ", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<d| ", arr("div"), Match.CONTAINS, 1);
-        assertItems("<div| ", arr("div"), Match.EXACT, 1);
+        assertItems("<div| ", arr("div"), Match.CONTAINS, 1);
 
         //           01234567
         assertItems("<div></| ", arr("div"), Match.CONTAINS, 7);
