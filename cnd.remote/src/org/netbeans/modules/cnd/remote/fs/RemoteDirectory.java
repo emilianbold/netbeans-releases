@@ -159,6 +159,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
 
             if (relativePath.indexOf('/') < 0) { // XXX: get rid of empty files; delegate to directories recursively, then remove this check
+                getRemoteFileSupport().ensureDirSync(cache, remotePath);
                 if (!getDirectoryAttrs().exists(relativePath)) {
                     return null;
                 }

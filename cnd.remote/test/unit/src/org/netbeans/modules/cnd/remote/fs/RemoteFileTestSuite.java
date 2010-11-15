@@ -59,6 +59,7 @@ public class RemoteFileTestSuite extends CndBaseTestSuite {
            RemoteFileSystemTestCase.class,
            RemoteURLTestCase.class,
            CndFileUtilTestCase.class,
+           RemoteCodeModelTestCase.class,
            RemotePathTestCase.class
        );
    }
