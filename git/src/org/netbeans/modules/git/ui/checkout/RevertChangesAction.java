@@ -44,10 +44,13 @@ package org.netbeans.modules.git.ui.checkout;
 
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -57,6 +60,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.awt.ActionID;
@@ -95,18 +99,19 @@ public class RevertChangesAction extends SingleRepositoryAction {
                         
                         // revert
                         if(revert.isRevertAll()) {
-                            // XXX log
+                            // XXX log                            
                             client.checkout(roots, "HEAD", this); // XXX no constant for HEAD???
+                            logRevert("revert all", roots, repository);
                         } else if (revert.isRevertIndex()) {
-                            // XXX log
+                            logRevert("revert index", roots, repository);
                             client.reset(roots, "HEAD", this);
                         } else if (revert.isRevertWT()) {
-                            // XXX log
+                            logRevert("revert wt", roots, repository);
                             client.checkout(roots, null, this);                             
                         }
                         
                         if(revert.isRemove()) {
-                            // XXX log
+                            logRevert("clean ", roots, repository);
                             // XXX quick and dirty - need a propert impl in client
                             File[] files = Git.getInstance().getFileStatusCache().listFiles(roots, EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE)); 
                             for (File file : files) {
@@ -123,6 +128,30 @@ public class RevertChangesAction extends SingleRepositoryAction {
                         // refresh
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));                        
+                    }
+                }
+
+                private void logRevert(String msg, File[] roots, File repository) {
+                    if(LOG.isLoggable(Level.INFO)) {
+                        String  repopath = repository.getAbsolutePath();
+                        if(!repopath.endsWith("/")) {
+                            repopath = repopath + "/";
+                        }
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(msg);
+                        sb.append(" [");
+                        for (int i = 0; i < roots.length; i++) {
+                            String path = roots[i].getAbsolutePath();
+                            if(path.startsWith(repopath)) {
+                                path = path.substring(repopath.length());
+                            }
+                            sb.append(path);
+                            if(i < roots.length - 1) {
+                                sb.append(",");
+                            }
+                        }
+                        sb.append("]");
+                        LOG.info(sb.toString());
                     }
                 }
             };
