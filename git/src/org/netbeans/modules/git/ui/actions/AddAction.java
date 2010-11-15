@@ -72,6 +72,7 @@ public class AddAction extends SingleRepositoryAction {
                 GitClient client;
                 try {
                     client = getClient();
+                    client.addNotificationListener(new DefaultFileListener(roots));
                     client.add(roots, this);
                 } catch (GitException ex) {
                     LOG.log(Level.WARNING, null, ex);
