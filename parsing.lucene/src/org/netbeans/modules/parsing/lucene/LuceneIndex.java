@@ -135,7 +135,7 @@ public class LuceneIndex implements Index {
         Parameters.notNull("result", result);       //NOI18N        
         final IndexReader in = dirCache.getReader();
         if (in == null) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+            LOGGER.log(Level.FINE, "{0} is invalid!", this);
             return;
         }
         if (selector == null) {
