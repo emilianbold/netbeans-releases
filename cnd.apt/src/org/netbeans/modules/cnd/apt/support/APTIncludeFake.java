@@ -62,10 +62,10 @@ public final class APTIncludeFake implements APTInclude {
         this.token = APTUtils.createAPTToken(APTTokenTypes.INCLUDE);
         this.token.setColumn(0);
         this.token.setLine(0);
-        this.token.setOffset(0);
+        this.token.setOffset(-1);
         this.token.setEndColumn(0);
         this.token.setEndLine(0);
-        this.token.setEndOffset(0);
+        this.token.setEndOffset(-1);
         this.token.setText("-include"); // NOI18N
     }
 

@@ -166,6 +166,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }

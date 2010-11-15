@@ -719,6 +719,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             fullSize += trace(out.fileProjectMacros, "File Included Project Macros"); //NOI18N
         }
         // add global variables
+        // remove file local from global list if there are intersections by names
+        remove(out.globVars, out.fileLocalVars);
         if (DEBUG || STAT_COMPLETION) {
             fullSize += trace(out.globVars, "Global variables"); //NOI18N
         }

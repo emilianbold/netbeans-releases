@@ -174,13 +174,19 @@ public final class CodeModelDiagnostic {
 
         @Override
         public String getDisplayName() {
-            return "Project Code Model";// NOI18N 
+            return "Project Code Model (Huge size)";// NOI18N 
         }
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends CsmProject> allFiles = context.lookupAll(CsmProject.class);
-            for (CsmProject prj : allFiles) {
+            Collection<? extends CsmProject> projects = context.lookupAll(CsmProject.class);
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    new CsmTracer(printOut).dumpModel(file.getProject());
+                }
+            }
+            for (CsmProject prj : projects) {
                 new CsmTracer(printOut).dumpModel(prj);
             }
         }

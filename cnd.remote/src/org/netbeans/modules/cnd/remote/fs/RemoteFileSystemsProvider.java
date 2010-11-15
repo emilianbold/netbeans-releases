@@ -60,8 +60,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=CndFileSystemProvider.class)
 public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
-    private static final String PROTOCOL_PREFIX = "rfs:"; // NOI18N
-    
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
 
@@ -89,13 +87,13 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
     @Override
     protected FileObject toFileObjectImpl(CharSequence path) {
-        if (CharSequenceUtils.startsWith(path, PROTOCOL_PREFIX)) {
+        if (CharSequenceUtils.startsWith(path, RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:,hostname:22/tmp/filename.ext"
             int port = 0;
             StringBuilder hostName = new StringBuilder();
             CharSequence remotePath = null;
             boolean insideHost = true;
-            for (int i = PROTOCOL_PREFIX.length(); i < path.length(); i++) {
+            for (int i = RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length(); i < path.length(); i++) {
                 char c = path.charAt(i);
                 if (insideHost) {
                     if (c == ':') {
@@ -136,7 +134,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
     protected CharSequence toPathImpl(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
-            return PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
+            return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
         }
         return null;
     }
@@ -147,7 +145,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
         if (p != null) {
             CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
             CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
-            p.fileSystem.getChildInfo(p.remotePath.toString());
+            return p.fileSystem.getChildInfo(p.remotePath.toString());
         }
         return null;
     }

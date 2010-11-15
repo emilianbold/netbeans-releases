@@ -235,6 +235,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -473,8 +478,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
                         List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
-                        String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
-                        setTemplateDescriptor(params, name);
+                        final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
+                        String name = "<" + classSpecializationSuffix + ">"; // NOI18N
+                        setTemplateDescriptor(params, name, !classSpecializationSuffix.isEmpty());
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
@@ -736,8 +742,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return scope;
         }
 
-        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {
-            templateDescriptor = new TemplateDescriptor(params, name, !isRenderingLocalContext());
+        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization) {
+            templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
         }
 
         private boolean hasFriendPrefix(AST child) {

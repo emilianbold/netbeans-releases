@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans;
 
 import java.awt.AWTEvent;
 import java.awt.Toolkit;
@@ -73,7 +73,7 @@ import org.openide.util.datatransfer.ExClipboard;
 public final class NbClipboard extends ExClipboard
 implements LookupListener, Runnable, FlavorListener, AWTEventListener
 {
-    private Logger log;
+    private static final Logger log = Logger.getLogger(NbClipboard.class.getName());
     private Clipboard systemClipboard;
     private ExClipboard.Convertor[] convertors;
     private Lookup.Result<ExClipboard.Convertor> result;
@@ -91,7 +91,6 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     NbClipboard( Clipboard systemClipboard ) {
         super("NBClipboard");   // NOI18N
         this.systemClipboard = systemClipboard;
-        log = Logger.getLogger("org.netbeans.core.NbClipboard"); // NOI18N
 
         result = Lookup.getDefault().lookupResult(ExClipboard.Convertor.class);
         result.addLookupListener(this);

@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
@@ -548,6 +549,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             getNativeProject().checkForChangedItems(folder, item);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
+    }
+
+    public void checkForChangedItems(Delta delta) {
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().checkForChangedItems(delta);
+        }
+        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
     }
 
     @Override

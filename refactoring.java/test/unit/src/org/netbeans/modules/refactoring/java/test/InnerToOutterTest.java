@@ -72,7 +72,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performEncapsulateFieldsTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -81,7 +81,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
         performEncapsulateFieldsTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -90,7 +90,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performEncapsulateFieldsTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
     }
 

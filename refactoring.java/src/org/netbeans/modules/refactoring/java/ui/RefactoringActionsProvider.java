@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -550,6 +551,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         } else {
             //regular invokation
             boolean result = false;
+            nodesloop:
             for (Node n:nodes) {
                 DataObject dob = n.getCookie(DataObject.class);
                 if (dob==null) {
@@ -562,6 +564,20 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         //Ctrl-X
                         if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RetoucheUtils.isClasspathRoot(dob.getPrimaryFile())) {
                             return false;
+                        } else {
+                            LinkedList<DataFolder> folders = new LinkedList<DataFolder>();
+                            folders.add((DataFolder) dob);
+                            while (!folders.isEmpty()) {
+                                DataFolder fold = folders.remove();
+                                for (Enumeration<DataObject> e = fold.children(true); e.hasMoreElements();) {
+                                    if (RetoucheUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                                        result = true;
+                                        continue nodesloop;
+                                    } else if (e instanceof DataFolder) {
+                                        folders.add((DataFolder) e);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

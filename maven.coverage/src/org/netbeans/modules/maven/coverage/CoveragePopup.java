@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,48 +34,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core;
+package org.netbeans.modules.maven.coverage;
 
-import java.awt.datatransfer.*;
-import java.io.IOException;
-import java.util.*;
-import javax.swing.JComboBox;
-import javax.swing.TransferHandler;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.modules.ModuleInfo;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.*;
-import org.openide.util.datatransfer.ExClipboard;
 
-/** Test that verifies that Clipboard is used by swing components.
- * @author Jaroslav Tulach
- * @see "#40693"
- */
-public class NbClipboardIsUsedByAlreadyInitializedComponentsTest extends NbClipboardIsUsedBySwingComponentsTest {
-    private javax.swing.JTextField field;
-    
-    public NbClipboardIsUsedByAlreadyInitializedComponentsTest (String name) {
-        super(name);
+@ActionID(category="Project", id="org.netbeans.modules.maven.coverage.CoveragePopup")
+@ActionRegistration(displayName="Maven Coverage") // NOI18N
+@ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position=1205)
+public class CoveragePopup extends AbstractAction implements ContextAwareAction {
+
+    public CoveragePopup() {
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        setEnabled(false);
     }
 
-    protected void inMiddleOfSettingUpTheManager() {
-        assertNotNull("There is a manager already", System.getSecurityManager());
-        // do some strange tricks to initialize the system
-        field = new javax.swing.JTextField ();
-        TransferHandler.getCopyAction();
-        TransferHandler.getCutAction();
-        TransferHandler.getPasteAction();
+    public @Override void actionPerformed(ActionEvent e) {
+        assert false;
     }
-    
-    /** overrides to return field that exists since begining and was not instantiated
-     * after SecurityManager hack is started */
-    protected javax.swing.JTextField getField () {
-        return field;
+
+    public @Override Action createContextAwareInstance(Lookup ctx) {
+        Project p = ctx.lookup(Project.class);
+        if (p == null) {
+            return this;
+        }
+        if (!CoverageManager.INSTANCE.isEnabled(p)) {
+            // or could show it anyway in case provider is present
+            return this;
+        }
+        return ((ContextAwareAction) CoverageActionFactory.createCollectorAction(null, null)).createContextAwareInstance(ctx);
     }
-    
+
 }

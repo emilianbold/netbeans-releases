@@ -85,6 +85,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -305,7 +306,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             try {
                 int modEndOffset = e.getOffset() + e.getLength();
                 if (getActiveComponent().getSelectionStart() != modEndOffset)
@@ -352,7 +353,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     public synchronized void caretUpdate(javax.swing.event.CaretEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             // Check whether there is an active result being computed but not yet displayed
             // Caret update should be notified AFTER document modifications
             // thank to document listener priorities
@@ -458,16 +459,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 }
             }
             if (component != null) {
-                if (activeProviders != null) {
-                    component.addCaretListener(this);
-                    component.addKeyListener(this);
-                    component.addFocusListener(this);
-                    component.addMouseListener(this);
-                    Container parent = component.getParent();
-                    if (parent instanceof JViewport) {
-                        JViewport viewport = (JViewport) parent;
-                        viewport.addChangeListener(this);
-                    }
+                component.addCaretListener(this);
+                component.addKeyListener(this);
+                component.addFocusListener(this);
+                component.addMouseListener(this);
+                Container parent = component.getParent();
+                if (parent instanceof JViewport) {
+                    JViewport viewport = (JViewport) parent;
+                    viewport.addChangeListener(this);
                 }
             }
             activeComponent = (component != null)
@@ -486,7 +485,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             if (getActiveDocument() != null)
                 DocumentUtilities.removeDocumentListener(getActiveDocument(), this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
-            if (activeProviders != null)
+            if (document != null)
                 DocumentUtilities.addDocumentListener(document, this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
             activeDocument = (document != null) ? new WeakReference<Document>(document) : null;
@@ -498,7 +497,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private void initActiveProviders(JTextComponent component) {
         activeProviders = (component != null)
-                ? getCompletionProvidersForComponent(component)
+                ? getCompletionProvidersForComponent(component, true)
                 : null;
         if (LOG.isLoggable(Level.FINE)) {
             StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
@@ -513,6 +512,29 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
             LOG.fine(sb.toString());
         }
+    }
+    
+    private boolean ensureActiveProviders() {
+        if (activeProviders != null)
+            return true;
+        JTextComponent component = getActiveComponent();
+        activeProviders = (component != null)
+                ? getCompletionProvidersForComponent(component, false)
+                : null;
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
+            if (activeProviders != null) {
+                for (int i = 0; i < activeProviders.length; i++) {
+                    sb.append("providers["); // NOI18N
+                    sb.append(i);
+                    sb.append("]: "); // NOI18N
+                    sb.append(activeProviders[i].getClass());
+                    sb.append('\n');
+                }
+            }
+            LOG.fine(sb.toString());
+        }
+        return activeProviders != null;
     }
     
     private void restartCompletionAutoPopupTimer() {
@@ -531,7 +553,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         docAutoPopupTimer.restart();
     }
     
-    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component) {
+    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component, boolean asyncWarmUp) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (component == null)
@@ -555,7 +577,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (providersCache.containsKey(mimeType))
             return providersCache.get(mimeType);
 
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        final Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        if (asyncWarmUp) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    lookup.lookupAll(CompletionProvider.class);
+                }
+            });
+            return null;
+        }
         Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
         int size = col.size();
         CompletionProvider[] ret = size == 0 ? null : col.toArray(new CompletionProvider[size]);
@@ -822,7 +853,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         uilog(r);
         
         this.explicitQuery = explicitQuery;
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             completionAutoPopupTimer.stop();
             synchronized(this) {
                 if (explicitQuery && completionResult != null) {
@@ -1040,7 +1071,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             documentationCancel();
             layout.clearDocumentationHistory();
             documentationQuery();
@@ -1166,7 +1197,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             toolTipCancel();
             toolTipQuery();
         }

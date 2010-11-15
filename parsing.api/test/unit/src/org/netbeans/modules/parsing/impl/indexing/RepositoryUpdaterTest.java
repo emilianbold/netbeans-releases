@@ -92,6 +92,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -1085,6 +1087,34 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         assertTrue(indexerFactory.indexer.awaitIndex());
         assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+    
+    public void testFileChangedInEditorReparsedOnce191885() throws Exception {
+        //Prepare
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        final Source src = Source.create(f1);
+        assertNotNull(src);
+        assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+        RepositoryUpdater.unitTestActiveSource = src;
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
+                    Collections.singleton(f1.getURL()));
+            assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+            
+        } finally {
+            RepositoryUpdater.unitTestActiveSource=null;
+        }
+        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
+                    Collections.singleton(f1.getURL()));
+        assertTrue("Non active shource should be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
     }
     
 

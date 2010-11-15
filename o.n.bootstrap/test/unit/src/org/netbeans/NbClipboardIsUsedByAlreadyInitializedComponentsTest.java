@@ -42,28 +42,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans;
 
+import java.awt.datatransfer.*;
+import java.io.IOException;
+import java.util.*;
+import javax.swing.JComboBox;
+import javax.swing.TransferHandler;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.*;
+import org.openide.util.datatransfer.ExClipboard;
 
-/** Test NbClipboard, in "slow" mode (e.g. Unix).
- * @author Jesse Glick
- * @see "#30923"
+/** Test that verifies that Clipboard is used by swing components.
+ * @author Jaroslav Tulach
+ * @see "#40693"
  */
-@RandomlyFails // testOwnershipLostEvent in NB-Core-Build #1767
-public class NbClipboardDelayedTest extends NbClipboardNativeTest {
-
-    public NbClipboardDelayedTest(String name) {
+public class NbClipboardIsUsedByAlreadyInitializedComponentsTest extends NbClipboardIsUsedBySwingComponentsTest {
+    private javax.swing.JTextField field;
+    
+    public NbClipboardIsUsedByAlreadyInitializedComponentsTest (String name) {
         super(name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbClipboardDelayedTest.class));
+    protected void inMiddleOfSettingUpTheManager() {
+        assertNotNull("There is a manager already", System.getSecurityManager());
+        // do some strange tricks to initialize the system
+        field = new javax.swing.JTextField ();
+        TransferHandler.getCopyAction();
+        TransferHandler.getCutAction();
+        TransferHandler.getPasteAction();
     }
-
-    protected boolean slowClipboardHack() {
-        return true;
+    
+    /** overrides to return field that exists since begining and was not instantiated
+     * after SecurityManager hack is started */
+    protected javax.swing.JTextField getField () {
+        return field;
     }
-
+    
 }

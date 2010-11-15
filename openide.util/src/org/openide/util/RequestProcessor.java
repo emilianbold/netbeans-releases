@@ -705,10 +705,11 @@ public final class RequestProcessor implements ScheduledExecutorService {
         //XXX more aggressive shutdown?
         stop();
         synchronized (processorLock) {
-            List<Runnable> result = new ArrayList<Runnable>(processors.size());
-            for (Processor p : processors) {
-                if (p != null && p.todo != null && p.todo.run != null) {
-                    Runnable r = p.todo.run;
+            List<Runnable> result = new ArrayList<Runnable>(queue.size());
+            for (Item item : queue) {
+                Task task = item.getTask();
+                if (task != null && task.run != null) {
+                    Runnable r = task.run;
                     if (r instanceof RunnableWrapper) {
                         Runnable other = ((RunnableWrapper) r).getRunnable();
                         r = other == null ? r : other;

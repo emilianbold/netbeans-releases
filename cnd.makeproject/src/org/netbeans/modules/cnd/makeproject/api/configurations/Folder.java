@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -140,8 +141,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String rootPath = getRootPath();
         String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-        AbsRootPath = CndFileUtils.normalizeAbsolutePath(AbsRootPath);
-
+        AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
         CndUtils.assertNotNull(folderFile, "null folder file object"); //NOI18N
         if (folderFile == null) {
@@ -389,8 +389,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         return getKind() == Kind.TEST;
     }
 
-    public ArrayList<Object> getElements() {
-        return items;
+    public List<Object> getElements() {
+        return Collections.unmodifiableList(items);
     }
 
     private void reInsertElement(Object element) {

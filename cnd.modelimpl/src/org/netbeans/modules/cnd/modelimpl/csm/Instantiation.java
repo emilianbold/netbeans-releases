@@ -380,6 +380,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return ((CsmTemplate)declaration).isTemplate();
         }
 
+        @Override
+        public boolean isSpecialization() {
+            return ((CsmTemplate) declaration).isSpecialization();
+        }
+        
         private boolean isRecursion(CsmTemplate type, int i){
             if (i == 0) {
                 return true;

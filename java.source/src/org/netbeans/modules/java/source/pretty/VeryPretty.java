@@ -1471,10 +1471,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitTypeDisjoint(JCTypeDisjoint that) {
+    public void visitTypeDisjunction(JCTypeDisjunction that) {
         boolean first = true;
 
-        for (JCExpression c : that.getTypeComponents()) {
+        for (JCExpression c : that.getTypeAlternatives()) {
             if (!first) print(" | ");
             print(c);
             first = false;
