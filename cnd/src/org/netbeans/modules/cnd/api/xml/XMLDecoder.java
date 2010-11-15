@@ -177,8 +177,6 @@ public abstract class XMLDecoder {
 
         int version = getVersion(atts);
         if (version > maxVersion) {
-
-
             String title = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore_title"); //NOI18N
             String message = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore"); //NOI18N
             NotifyDescriptor nd = new NotifyDescriptor(message,
@@ -189,7 +187,7 @@ public abstract class XMLDecoder {
             if (ret == NotifyDescriptor.YES_OPTION) {
                 return;
             }
-            throw new VersionException(what, maxVersion, version);
+            throw new VersionException(what, false, maxVersion, version);
         }
     }
 }
