@@ -36,8 +36,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dbschemaComboBox" alignment="0" pref="382" max="32767" attributes="0"/>
-                  <Component id="datasourceComboBox" alignment="0" pref="382" max="32767" attributes="0"/>
+                  <Component id="dbschemaComboBox" alignment="0" pref="378" max="32767" attributes="0"/>
+                  <Component id="datasourceComboBox" alignment="0" pref="378" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Component id="tablesPanel" alignment="1" pref="536" max="32767" attributes="0"/>
@@ -86,6 +86,11 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="LBL_Datasource" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="4" left="0" right="4" top="4"/>
+          </Border>
         </Property>
       </Properties>
     </Component>
