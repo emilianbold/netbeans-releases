@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,67 +40,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.kenai.ui;
 
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.RequestProcessor;
+
 
 /**
+ * Handles module events distributed by NetBeans module framework.
  *
- * @author Jan Becicka
+ * <p>It's registered and instantiated from module manifest.
+ *
+ * @author Tomas Stupka
  */
-public class KenaiLoginTask implements Runnable {
-
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
-    @SuppressWarnings("deprecation")
-    public void run() {
-        Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
-        synchronized (monitor) {
-            try {
-                if (prefs.keys().length > 0) {
-                    for (Kenai k : KenaiManager.getDefault().getKenais()) {
-                        UIUtils.tryLogin(k, false);
-                    }
-                }
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            isFinished = true;
-            monitor.notify();
-        }
-        try {
-            if (prefs.keys().length > 0) {
-                for (Kenai k : KenaiManager.getDefault().getKenais()) {
-                    Utilities.isChatSupported(k);
-                }
-            }
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
-                try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+public final class ModuleLifecycleManager extends ModuleInstall {
+    @Override
+    public void restored() {
+        // invoke eventuall login on all known kenai instances
+        RequestProcessor.getDefault().post(new KenaiLoginTask());
     }
 }
