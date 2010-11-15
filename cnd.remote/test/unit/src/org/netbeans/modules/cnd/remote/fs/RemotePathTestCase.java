@@ -68,7 +68,7 @@ public class RemotePathTestCase extends RemoteFileTestBase {
         FileObject parent = rootFO;
         for (String name : parts) {
             FileObject child = parent.getFileObject(name);
-            assertNotNull(child);
+            assertNotNull("Null file object for \"" + name + "\"", child);
             System.err.printf("Child: %s\n", child.getPath());
             if (child == null) {
                 break;
