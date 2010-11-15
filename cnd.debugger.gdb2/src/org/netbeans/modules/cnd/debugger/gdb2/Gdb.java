@@ -465,7 +465,7 @@ public class Gdb {
 		    Color.blue.brighter());
 
 		pid = executor.startEngine(gdbname, gdb_argv, null,
-		    ioPack.console());
+		    ioPack.console(), true);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
 				      "startEngine -> pid %d\n", pid); // NOI18N
