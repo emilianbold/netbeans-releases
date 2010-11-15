@@ -298,7 +298,7 @@ public class Utilities {
      * @param pomFileObject
      * @param operations
      */
-    public static void performPOMModelOperations(FileObject pomFileObject, List<ModelOperation<POMModel>> operations) {
+    public static void performPOMModelOperations(FileObject pomFileObject, Iterable<? extends ModelOperation<POMModel>> operations) {
         assert pomFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(pomFileObject);
@@ -336,7 +336,7 @@ public class Utilities {
      * @param profilesFileObject
      * @param operations
      */
-    public static void performSettingsModelOperations(FileObject settingsFileObject, List<ModelOperation<SettingsModel>> operations) {
+    public static void performSettingsModelOperations(FileObject settingsFileObject, Iterable<? extends ModelOperation<SettingsModel>> operations) {
         assert settingsFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(settingsFileObject);
