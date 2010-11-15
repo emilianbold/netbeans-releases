@@ -191,7 +191,11 @@ public class AstRenderer {
                         try {
                             if (isMemberDefinition(token)) {
                                 // this is a template method specialization declaration (without a definition)
-                                container.addDeclaration(FunctionImplEx.create(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                                FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                                if (currentNamespace != null) {
+                                    currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                }
+                                container.addDeclaration(explicitSpecializationDeclaration);
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
                                     break;
