@@ -315,7 +315,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
         if(useHtmlParseResult) {
             //use the standart mechanism
-            node = parserResult.findLeaf(searchAstOffset, backward);
+            node = parserResult.findLeafTag(searchAstOffset, !backward, false);
             if(node == null) {
                 return null;
             }
@@ -327,7 +327,7 @@ public class HtmlCompletionQuery extends UserTask {
 //            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             root = XmlSyntaxTreeBuilder.makeUncheckedTree(htmlResult.source(), parserResult.getSyntaxAnalyzerResult().getElements().items());
-            node = AstNodeUtils.findDescendant(root, searchAstOffset, backward);
+            node = AstNodeUtils.findNode(root, searchAstOffset, !backward, false);
             if(node == null) {
                 return null;
             }
@@ -344,7 +344,7 @@ public class HtmlCompletionQuery extends UserTask {
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
         assert undeclaredTagsParseTreeRoot != null;
-        AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
+        AstNode undeclaredTagsLeafNode = AstNodeUtils.findNode(undeclaredTagsParseTreeRoot, searchAstOffset, !backward, false);
 
 
         //namespace is null for html content

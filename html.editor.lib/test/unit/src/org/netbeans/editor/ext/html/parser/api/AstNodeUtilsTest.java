@@ -154,7 +154,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         assertDescendant(root, 15, "p", NodeType.OPEN_TAG, 15, 33);
         assertDescendant(root, 18, "a", NodeType.OPEN_TAG, 18, 29);
@@ -229,7 +229,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         //root node allows all dtd elements
         assertPossibleElements(root, 0, arr("a", "abbr", "html"), Match.CONTAINS);
@@ -286,7 +286,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
-    public void testFindDescendantWithVirtualNodes() throws BadLocationException, ParseException {
+    public void testFindNodeVirtualNodes() throws BadLocationException, ParseException {
         String code = "<!doctype html><title>hi</title><div>buddy</div>";
         //             0123456789012345678901234567890123456789012345678901234
         //             0         1         2         3         4         5
@@ -294,33 +294,115 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         AstNode title = AstNodeUtils.query(root, "html/head/title");
         assertNotNull(title);
 
         //non logical range
-        assertSame(title, AstNodeUtils.findDescendantTag(root, 17, false, true)); //middle
-        assertSame(title, AstNodeUtils.findDescendantTag(root, 15, false, true)); //fw
-        assertSame(title, AstNodeUtils.findDescendantTag(root, 22, false, false)); //bw
+        assertSame(title, AstNodeUtils.findNode(root, 17, true, false)); //middle
+        assertSame(title, AstNodeUtils.findNode(root, 15, true, false)); //fw
+        assertSame(title, AstNodeUtils.findNode(root, 22, false, false)); //bw
 
         //logical range
-        assertSame(title, AstNodeUtils.findDescendantTag(root, 23, true, false)); 
+        assertSame(title, AstNodeUtils.findNode(root, 23, false, false));
 
         AstNode div = AstNodeUtils.query(root, "html/body/div");
         assertNotNull(div);
         //non logical range
-        assertSame(div, AstNodeUtils.findDescendantTag(root, 35, false, true)); //middle
-        assertSame(div, AstNodeUtils.findDescendantTag(root, 32, false, true)); //fw
-        assertSame(div, AstNodeUtils.findDescendantTag(root, 37, false, false)); //bw
+        assertSame(div, AstNodeUtils.findNode(root, 35, true, false)); //middle
+        assertSame(div, AstNodeUtils.findNode(root, 32, true, false)); //fw
+        assertSame(div, AstNodeUtils.findNode(root, 37, false, false)); //bw
 
         //logical range
-        assertSame(div, AstNodeUtils.findDescendantTag(root, 40, true, false));
+        assertSame(div, AstNodeUtils.findNode(root, 40, false, false));
+
+    }
+
+    public void testFindNodeByPhysicalRange() throws BadLocationException, ParseException {
+        String code = "<html>  <body> nazdar </body> <div></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        AstNode html = AstNodeUtils.query(root, "html");
+        assertNotNull(html);
+        AstNode htmlEnd = html.getMatchingTag();
+        assertNotNull(htmlEnd);
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertNotNull(body);
+        AstNode bodyEnd = body.getMatchingTag();
+        assertNotNull(bodyEnd);
+        AstNode div = AstNodeUtils.query(root, "html/div");
+        assertNotNull(div);
+
+        assertNull(AstNodeUtils.findNode(root,7, true, true));
+
+        //html open tag
+        assertNull(AstNodeUtils.findNode(root,6, true, true)); //behind, look forward
+        assertEquals(html, AstNodeUtils.findNode(root,6, false, true)); //behind, bw
+
+        assertEquals(html, AstNodeUtils.findNode(root,0, true, true)); //before, fw
+        assertNull(AstNodeUtils.findNode(root,0, false, true)); //before, look backward
+
+        assertEquals(html, AstNodeUtils.findNode(root,3, true, true)); //middle, fw
+        assertEquals(html, AstNodeUtils.findNode(root,3, false, true)); //middle, bw
+
+        //body open tag
+        assertNull(AstNodeUtils.findNode(root,14, true, true)); //behind, look forward
+        assertEquals(body, AstNodeUtils.findNode(root,14, false, true)); //behind, bw
+
+        assertEquals(body, AstNodeUtils.findNode(root,8, true, true)); //before, fw
+        assertNull(AstNodeUtils.findNode(root,8, false, true)); //before, look backward
+
+        assertEquals(body, AstNodeUtils.findNode(root,10, true, true)); //middle, fw
+        assertEquals(body, AstNodeUtils.findNode(root,10, false, true)); //middle, bw
+
+        //body end tag
+        assertNull(AstNodeUtils.findNode(root,29, true, true)); //behind, look forward
+        assertEquals(bodyEnd, AstNodeUtils.findNode(root,29, false, true)); //behind, bw
+
+        assertEquals(bodyEnd, AstNodeUtils.findNode(root,22, true, true)); //before, fw
+        assertNull(AstNodeUtils.findNode(root,22, false, true)); //before, look backward
+
+        assertEquals(bodyEnd, AstNodeUtils.findNode(root,25, true, true)); //middle, fw
+        assertEquals(bodyEnd, AstNodeUtils.findNode(root,25, false, true)); //middle, bw
+
+        //div open tag
+        assertNotNull(AstNodeUtils.findNode(root,35, true, true)); //behind, look forward //</html>
+        assertEquals(div, AstNodeUtils.findNode(root,35, false, true)); //behind, bw
+
+        assertEquals(div, AstNodeUtils.findNode(root,30, true, true)); //before, fw
+        assertNull(AstNodeUtils.findNode(root,30, false, true)); //before, look backward
+
+        assertEquals(div, AstNodeUtils.findNode(root,32, true, true)); //middle, fw
+        assertEquals(div, AstNodeUtils.findNode(root,32, false, true)); //middle, bw
+
+        //html end tag
+        assertNull(AstNodeUtils.findNode(root,42, true, true)); //behind, look forward
+        assertEquals(htmlEnd, AstNodeUtils.findNode(root,42, false, true)); //behind, bw
+
+        assertEquals(htmlEnd, AstNodeUtils.findNode(root,35, true, true)); //before, fw
+        assertNotNull(AstNodeUtils.findNode(root,35, false, true)); //before, look backward //<div>
+
+        assertEquals(htmlEnd, AstNodeUtils.findNode(root,40, true, true)); //middle, fw
+        assertEquals(htmlEnd, AstNodeUtils.findNode(root,40, false, true)); //middle, bw
+
+        //out of content
+        assertNull(AstNodeUtils.findNode(root,100, true, true));
+        assertNull(AstNodeUtils.findNode(root,100, false, true));
+
 
     }
 
     private AstNode assertDescendant(AstNode searchedNode, int searchOffset, String name, AstNode.NodeType type, int from, int to) {
-        AstNode node = AstNodeUtils.findDescendant(searchedNode, searchOffset);
+        return assertDescendant(searchedNode, searchOffset, true, name, type, from, to);
+    }
+    private AstNode assertDescendant(AstNode searchedNode, int searchOffset, boolean forward, String name, AstNode.NodeType type, int from, int to) {
+        AstNode node = AstNodeUtils.findNode(searchedNode, searchOffset, forward, false);
         assertNotNull(node);
         assertEquals(name, node.name());
         assertEquals(type, node.type());

@@ -134,7 +134,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         AstNode root = ((HtmlParserResult)info).root();
 
-        AstNode current = AstNodeUtils.findDescendant(root, info.getSnapshot().getEmbeddedOffset(caretPosition));
+        AstNode current = AstNodeUtils.findNode(root, info.getSnapshot().getEmbeddedOffset(caretPosition), false, false);
         if (current == null) {
             return;
         }
