@@ -69,12 +69,14 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML5;
         Documentation.setupDocumentationForUnitTests();
     }
 
     //tests disabled yet, not all of them passes
     public static Test suite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
+//        suite.addTest(new Html5CompletionQueryTest("testSimpleEndTag"));
 //        suite.addTest(new Html5CompletionQueryTest("testTags"));
         return suite;
     }
