@@ -102,13 +102,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
                             client.reset(roots, "HEAD", this);
                         } else if (revert.isRevertWT()) {
                             // XXX log
-                            if(revert.isRevertWT2HEAD()) {
-                                // XXX huh - client checkout(revision) also reverts the Index !!! 
-                                //           that's actually not what we want to do at this place ...
-                                // client.checkout(roots, HEAD, this); 
-                            } else if (revert.isRevertWT2Index()) {
-                                client.checkout(roots, null, this); 
-                            }
+                            client.checkout(roots, null, this);                             
                         }
                         
                         if(revert.isRemove()) {
