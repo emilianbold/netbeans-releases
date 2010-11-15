@@ -103,6 +103,31 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             return getName();
         }
     }
+
+    protected CharSequence toStringName() {
+        CharSequence name;
+        if (CsmKindUtilities.isTemplate(this)) {
+            name = ((CsmTemplate)this).getDisplayName();
+        } else {
+            name = getName();
+        }
+        if (this instanceof RawNamable) {
+            StringBuilder out = new StringBuilder(name);
+            out.append('(');
+            boolean first = true;
+            for (CharSequence part : ((RawNamable)this).getRawName()) {
+                if (first) {
+                    first = false;
+                } else {
+                    out.append("::"); //NOI18N
+                }
+                out.append(part);
+            }
+            out.append(')');
+            name = out.toString();
+        }
+        return name;
+    }
     
     private String getOffsetBasedName() {
         return "[" + this.getContainingFile().getName() + ":" + this.getStartOffset() + "-" + this.getEndOffset() + "]"; // NOI18N
@@ -239,12 +264,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public String toString() {
-        CharSequence name;
-        if (CsmKindUtilities.isTemplate(this)) {
-            name = ((CsmTemplate)this).getDisplayName();
-        } else {
-            name = getName();
-        }
+        CharSequence name = toStringName();
         return "" + getKind() + ' ' + name  + getOffsetString() + getPositionString(); // NOI18N
     }
 
