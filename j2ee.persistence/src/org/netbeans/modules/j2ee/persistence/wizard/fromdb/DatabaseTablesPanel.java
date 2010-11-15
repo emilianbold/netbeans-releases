@@ -640,6 +640,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         datasourceLabel.setLabelFor(datasourceComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(datasourceLabel, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_Datasource")); // NOI18N
+        datasourceLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 4, 4));
 
         datasourceComboBox.setEnabled(false);
         datasourceComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -823,8 +824,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dbschemaComboBox, 0, 382, Short.MAX_VALUE)
-                    .add(datasourceComboBox, 0, 382, Short.MAX_VALUE)))
+                    .add(dbschemaComboBox, 0, 378, Short.MAX_VALUE)
+                    .add(datasourceComboBox, 0, 378, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
