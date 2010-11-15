@@ -452,7 +452,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private synchronized void refreshModel() {
         models.clear();
-        if (treeModels == null) {
+        if (mm == null) {
             // Destroyed
             return ;
         }

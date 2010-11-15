@@ -46,41 +46,44 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-@ActionID(id = "org.netbeans.modules.git.ui.checkout.CheckoutPathsAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_CheckoutPathsAction_Name")
-public class CheckoutPathsAction extends SingleRepositoryAction {
+// XXX create tests for all possible revert settings
+@ActionID(id = "org.netbeans.modules.git.ui.checkout.RevertChangesAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_RevertChangesAction_Name")
+public class RevertChangesAction extends SingleRepositoryAction {
 
-    private static final Logger LOG = Logger.getLogger(CheckoutPathsAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(RevertChangesAction.class.getName());
 
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
-        final CheckoutPaths checkout = new CheckoutPaths(repository, roots);
-        if (checkout.show()) {
+        final RevertChanges revert = new RevertChanges();
+        if (revert.show()) {
             GitProgressSupport supp = new GitProgressSupport() {
-
                 @Override
                 protected void perform () {
                     final Collection<File> notifiedFiles = new HashSet<File>();
                     try {
+                        // init client
                         GitClient client = getClient();
                         client.addNotificationListener(new FileListener() {
                             @Override
@@ -89,20 +92,48 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                             }
                         });
                         client.addNotificationListener(new DefaultFileListener(roots));
-                        LOG.log(Level.FINE, "Checking out paths, revision: {0}", checkout.getRevision()); //NOI18N
-                        client.checkout(roots, checkout.getRevision(), this);
+                        
+                        // revert
+                        if(revert.isRevertAll()) {
+                            // XXX log
+                            client.checkout(roots, "HEAD", this); // XXX no constant for HEAD???
+                        } else if (revert.isRevertIndex()) {
+                            // XXX log
+                            client.reset(roots, "HEAD", this);
+                        } else if (revert.isRevertWT()) {
+                            // XXX log
+                            if(revert.isRevertWT2HEAD()) {
+                                // XXX huh - client checkout(revision) also reverts the Index !!! 
+                                //           that's actually not what we want to do at this place ...
+                                // client.checkout(roots, HEAD, this); 
+                            } else if (revert.isRevertWT2Index()) {
+                                client.checkout(roots, null, this); 
+                            }
+                        }
+                        
+                        if(revert.isRemove()) {
+                            // XXX log
+                            // XXX quick and dirty - need a propert impl in client
+                            File[] files = Git.getInstance().getFileStatusCache().listFiles(roots, EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE)); 
+                            for (File file : files) {
+                                FileUtils.deleteRecursively(file);
+                            }
+                        }
+                        
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {
-                        if (!notifiedFiles.isEmpty()) {
-                            setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                            Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));
-                        }
+                        // persist settings
+                        revert.storeSettings();                        
+                        
+                        // refresh
+                        setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                        Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));                        
                     }
                 }
             };
-            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPaths.progressName"));
+            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RevertChangesAction.class, "LBL_CheckoutPaths.progressName"));        
         }
     }
-
+    
 }

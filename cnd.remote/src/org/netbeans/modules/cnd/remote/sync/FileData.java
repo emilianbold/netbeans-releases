@@ -72,7 +72,8 @@ public final class FileData {
     private final Properties data;
     private final File dataFile;
 
-    private static final String VERSION = "1.2"; // NOI18N
+    // upgrade to 1.3 is caused not by this file itself, but by change in remote host mirror
+    private static final String VERSION = "1.3"; // NOI18N
     private static final String VERSION_KEY = "VERSION"; // NOI18N
 
     //
