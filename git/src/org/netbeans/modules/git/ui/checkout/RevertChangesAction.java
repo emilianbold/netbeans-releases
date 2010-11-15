@@ -103,20 +103,20 @@ public class RevertChangesAction extends SingleRepositoryAction {
                             client.checkout(roots, "HEAD", this); // XXX no constant for HEAD???
                             logRevert("revert all", roots, repository);
                         } else if (revert.isRevertIndex()) {
-                            logRevert("revert index", roots, repository);
                             client.reset(roots, "HEAD", this);
+                            logRevert("revert index", roots, repository);
                         } else if (revert.isRevertWT()) {
-                            logRevert("revert wt", roots, repository);
                             client.checkout(roots, null, this);                             
+                            logRevert("revert wt", roots, repository);
                         }
                         
                         if(revert.isRemove()) {
-                            logRevert("clean ", roots, repository);
                             // XXX quick and dirty - need a propert impl in client
                             File[] files = Git.getInstance().getFileStatusCache().listFiles(roots, EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE)); 
                             for (File file : files) {
                                 FileUtils.deleteRecursively(file);
                             }
+                            logRevert("clean ", roots, repository);
                         }
                         
                     } catch (GitException ex) {
