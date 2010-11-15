@@ -753,6 +753,12 @@ public final class FileUtil extends Object {
 
     /** Factory method that creates an empty implementation of a filesystem that
      * completely resides in a memory.
+     * <p>To specify the MIME type of a data file without using a MIME resolver,
+     * set the {@code mimeType} file attribute.
+     * <p>Since 7.42, a {@link URLMapper} is available for files (and folders)
+     * in memory filesystems. These URLs are valid only so long as the filesystem
+     * has not been garbage-collected, so hold the filesystem (or a file in it)
+     * strongly for as long as you expect the URLs to be in play.
      * @return a blank writable filesystem
      * @since 4.43
      */
