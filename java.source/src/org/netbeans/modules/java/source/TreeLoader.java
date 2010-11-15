@@ -127,6 +127,7 @@ public class TreeLoader extends LazyTreeLoader {
     }
     
     private static final Logger LOGGER = Logger.getLogger(TreeLoader.class.getName());
+    private static final boolean ALWAYS_ALLOW_JDOC_ARG_NAMES = Boolean.getBoolean("java.source.args.from.http.jdoc");  //NOI18N
     public  static boolean DISABLE_CONFINEMENT_TEST = false; //Only for tests!
     public  static boolean DISABLE_ARTIFICAL_PARAMETER_NAMES = false; //Only for tests!
 
@@ -182,7 +183,7 @@ public class TreeLoader extends LazyTreeLoader {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         if (clazz != null) {
             JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
-            if (page != null) {
+            if (page != null && argsFromJavaDocAllowedFor(page)) {
                 if (getParamNamesFromJavadocText(page, clazz)) {
                     return true;
                 }
@@ -618,5 +619,9 @@ public class TreeLoader extends LazyTreeLoader {
         }
         
         return null;
+    }
+    
+    private static boolean argsFromJavaDocAllowedFor(final JavadocHelper.TextStream page) {        
+        return ALWAYS_ALLOW_JDOC_ARG_NAMES || !"http".equals(page.getLocation().getProtocol());
     }
 }
