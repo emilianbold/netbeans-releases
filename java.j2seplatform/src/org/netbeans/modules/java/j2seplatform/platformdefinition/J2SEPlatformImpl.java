@@ -86,6 +86,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
     protected static final String SYSPROP_USER_DIR = "user.dir";                      //NOI18N
 
+    private static final String PROP_NO_DEFAULT_JAVADOC = "no.default.javadoc";       //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
 
     /**
@@ -303,9 +304,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Returns the location of the Javadoc for this platform
      * @return FileObject
      */
+    @Override
     public final List<URL> getJavadocFolders () {
         if (javadoc == null) {
-            javadoc = defaultJavadoc(this);
+            javadoc = shouldAddDefaultJavadoc() ? defaultJavadoc(this) : Collections.<URL>emptyList();
         }
         return this.javadoc;
     }
@@ -318,6 +320,16 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (!"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
             }
+        }
+        final List<URL> oldJavaDoc = this.javadoc;
+        if (c.isEmpty()) {
+            if (oldJavaDoc.equals(defaultJavadoc(this))) {
+                //Set the PROP_NO_DEFAULT_JAVADOC
+                this.properties.put(PROP_NO_DEFAULT_JAVADOC, Boolean.TRUE.toString());
+            }
+        } else {
+            //Reset the PROP_NO_DEFAULT_JAVADOC to allow auto javadoc again
+            this.properties.remove(PROP_NO_DEFAULT_JAVADOC);
         }
         this.javadoc = safeCopy;
         this.firePropertyChange(PROP_JAVADOC_FOLDER, null, null);
@@ -383,6 +395,15 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         return ClassPathSupport.createClassPath (resources);
+    }
+    
+    /**
+     * Tests if the default javadoc was already added and removed.
+     * If so do not add it again.
+     * @return 
+     */
+    private boolean shouldAddDefaultJavadoc() {
+        return !Boolean.parseBoolean(getProperties().get(PROP_NO_DEFAULT_JAVADOC));
     }
     
     /**
