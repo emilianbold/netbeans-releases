@@ -354,7 +354,6 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     continue params;
                 }
             }
-            System.out.println(t);
         }
     }
 
