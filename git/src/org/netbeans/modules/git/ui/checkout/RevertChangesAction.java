@@ -111,11 +111,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
                         }
                         
                         if(revert.isRemove()) {
-                            // XXX quick and dirty - need a propert impl in client
-                            File[] files = Git.getInstance().getFileStatusCache().listFiles(roots, EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE)); 
-                            for (File file : files) {
-                                FileUtils.deleteRecursively(file);
-                            }
+                            client.clean(roots, this);
                             logRevert("clean ", roots, repository);
                         }
                         
