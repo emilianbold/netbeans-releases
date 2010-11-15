@@ -376,7 +376,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * - debuggercore now multiplexes action enabledness between sessions
      *   for us so all the accomodation and worries about that are gone.
      */
-    protected List<StateListener> actions = new LinkedList<StateListener>();
+    protected final List<StateListener> actions = new LinkedList<StateListener>();
     protected javax.swing.Timer runTimer;		// see stateSetRunning()
     protected int runDelay = -1;	// -1 == first time through
 
@@ -429,15 +429,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Each action decides on it's own what it needs to do.
      */
     protected void updateActions() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // update explicitly registered actions
+                for (StateListener action : actions) {
+                    action.update(state);
+                }
 
-        // update explicitly registered actions
-        for (int ax = 0; ax < actions.size(); ax++) {
-            StateListener action = actions.get(ax);
-            action.update(state);
-        }
-
-        // update actions managed by ActionEnabler
-        actionEnabler().update(state);
+                // update actions managed by ActionEnabler
+                actionEnabler().update(state);
+            }
+        });
     }
 
     /**
