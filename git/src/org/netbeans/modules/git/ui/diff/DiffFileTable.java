@@ -55,10 +55,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
@@ -115,6 +118,20 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
+        GitStatusNode[] selectedNodes = getSelectedNodes();
+        boolean displayAdd = false;
+        for (GitStatusNode node : selectedNodes) {
+            // is there any change between index and WT?
+            if (node.getFileNode().getInformation().containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
+                    Status.IN_CONFLICT,
+                    Status.MODIFIED_INDEX_WORKING_TREE))) {
+                displayAdd = true;
+            }
+        }
+        if (displayAdd) {
+            item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"))); //NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"))); //NOI18N
