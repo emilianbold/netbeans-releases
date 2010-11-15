@@ -375,6 +375,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 } catch (InvalidExpressionException ex) {
                     declaringClass = ex.getLocalizedMessage();
                 }
+                if (declaringClass == null) {
+                    declaringClass = "unknown";
+                }
             }
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
                     "getMethodName", "()Ljava/lang/String;");  // NOI18N
@@ -390,9 +393,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     methodName = StringReferenceWrapper.value(sr);
                 } catch (InvalidExpressionException ex) {
                     methodName = ex.getLocalizedMessage();
-                    if (methodName == null) {
-                        methodName = ex.toString();
-                    }
+                }
+                if (methodName == null) {
+                    methodName = "unknown";
                 }
             }
             getMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(stElement),
