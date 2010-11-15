@@ -891,31 +891,45 @@ public class Gdb {
             this.miProxy = miProxy;
         }
 
+        private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
+
         // interface MICommandInjector
         public void inject(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(bold_sequence, 0, bold_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(bold_sequence, 0, bold_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
 
-            // send to gdb
-            toDCE.sendChars(cmda, 0, cmda.length);
+                    // send to gdb
+                    sendQueue.post(new Runnable() {
+                        public void run() {
+                            toDCE.sendChars(cmda, 0, cmda.length);
+                        }
+                    });
+                }
+            });
         }
 
         // interface MICommandInjector
         public void log(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(log_sequence, 0, log_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            // toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(log_sequence, 0, log_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    // toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
+                }
+            });
 
             // don't send to gdb
         }

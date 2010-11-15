@@ -67,6 +67,12 @@ public final class GitModuleConfig {
     private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N
     private static final String RECENT_COMMITERS        = "recentCommiters";    // NOI18N
     private static final String SIGN_OFF                = "signOff";            // NOI18N
+    private static final String REVERT_ALL              = "revertAll";          // NOI18N
+    private static final String REMOVE_ALL_NEW          = "removeAllNew";       // NOI18N
+    private static final String REVERT_INDEX            = "revertIndex";        // NOI18N
+    private static final String REVERT_WT_2_HEAD        = "revertWT2HEAD";      // NOI18N
+    private static final String REVERT_WT_2_INDEX       = "revertWT2Index";     // NOI18N
+    private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -190,6 +196,54 @@ public final class GitModuleConfig {
     
     public boolean getSignOff() {
         return getPreferences().getBoolean(SIGN_OFF, false);
+    }
+    
+    public void putRevertAll(boolean value) {
+        getPreferences().putBoolean(REVERT_ALL, value);        
+    }
+    
+    public void putRevertIndex(boolean value) {
+        getPreferences().putBoolean(REVERT_INDEX, value);        
+    }
+    
+    public void putRevertWT2Index(boolean value) {
+        getPreferences().putBoolean(REVERT_WT_2_INDEX, value);        
+    }
+    
+    public void putRevertWT2HEAD(boolean value) {
+        getPreferences().putBoolean(REVERT_WT_2_HEAD, value);        
+    }
+    
+    public void putRemoveAllNew(boolean value) {
+        getPreferences().putBoolean(REMOVE_ALL_NEW, value);        
+    }
+    
+    public void putRemoveWTNew(boolean value) {
+        getPreferences().putBoolean(REMOVE_WT_NEW, value);        
+    }
+    
+    public boolean getRevertAll() {
+        return getPreferences().getBoolean(REVERT_ALL, true);        
+    }
+    
+    public boolean getRevertIndex() {
+        return getPreferences().getBoolean(REVERT_INDEX, false);        
+    }
+    
+    public boolean getRevertWT2Index() {
+        return getPreferences().getBoolean(REVERT_WT_2_INDEX, true);        
+    }
+    
+    public boolean getRevertWT2Head() {
+        return getPreferences().getBoolean(REVERT_WT_2_HEAD, false);        
+    }
+
+    public boolean getRemoveWTNew() {
+        return getPreferences().getBoolean(REMOVE_WT_NEW, false);                
+    }
+    
+    public boolean getRemoveAllNew() {
+        return getPreferences().getBoolean(REMOVE_ALL_NEW, false);                
     }
     
 }

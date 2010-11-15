@@ -68,7 +68,7 @@ import java.util.List;
 import org.openide.util.Lookup;
 
 class ActionEnabler {
-    private final List<SystemAction> actions = new LinkedList<SystemAction>();
+    private final List<StateListener> actions = new LinkedList<StateListener>();
 
     ActionEnabler() {
 
@@ -121,15 +121,15 @@ class ActionEnabler {
 
     void update(State state) {
 	// pass update() on to each explicitly registered action up above
-	for (int ax = 0; ax < actions.size(); ax++) {
-	    StateListener action = (StateListener) actions.get(ax);
+	for (StateListener action : actions) {
 	    action.update(state);
 	}
 
 	// pass update() on to each registered service
 	Collection<? extends StateListener> stateListeners =
 		Lookup.getDefault().lookupAll(StateListener.class);
-	for (StateListener sl : stateListeners)
+	for (StateListener sl : stateListeners) {
 	    sl.update(state);
+        }
     }
 }

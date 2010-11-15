@@ -117,6 +117,7 @@ implements Executor {
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
+    private boolean                 isSyntheticLocation;
     //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
     private Properties p;
@@ -373,43 +374,37 @@ implements Executor {
             int suspendPolicy = getDebuggerImpl().getSuspend();
             
             // Synthetic method?
-            try {
-                if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
-                    //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
-                    
-                    int step = StepRequestWrapper.depth((StepRequest) EventWrapper.request(ev));
-                    VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-                    if (vm == null) {
-                        return false; // The session has finished
-                    }
-                    stepRequest = EventRequestManagerWrapper.createStepRequest(VirtualMachineWrapper.eventRequestManager(vm),
-                        tr,
-                        StepRequest.STEP_LINE,
-                        step
-                    );
-                    EventRequestWrapper.addCountFilter(stepRequest, 1);
-                    getDebuggerImpl ().getOperator ().register (stepRequest, this);
-                    EventRequestWrapper.setSuspendPolicy(stepRequest, suspendPolicy);
-                    try {
-                        EventRequestWrapper.enable(stepRequest);
-                    } catch (IllegalThreadStateException itsex) {
-                        // the thread named in the request has died.
-                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
-                        stepRequest = null;
-                    } catch (InvalidRequestStateExceptionWrapper irse) {
-                        Exceptions.printStackTrace(irse);
-                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
-                        stepRequest = null;
-                    }
-                    return true;
+            if (isSyntheticLocation) {
+                //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
+
+                int step = StepRequestWrapper.depth((StepRequest) EventWrapper.request(ev));
+                VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+                if (vm == null) {
+                    removeBPListener();
+                    return false; // The session has finished
                 }
-            } catch (IncompatibleThreadStateException e) {
-                Exceptions.printStackTrace(e);
-                logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
-            } catch (IllegalThreadStateExceptionWrapper e) {
-                return false;
-            } catch (InvalidStackFrameExceptionWrapper e) {
-                Exceptions.printStackTrace(e);
+                stepRequest = EventRequestManagerWrapper.createStepRequest(VirtualMachineWrapper.eventRequestManager(vm),
+                    tr,
+                    StepRequest.STEP_LINE,
+                    step
+                );
+                EventRequestWrapper.addCountFilter(stepRequest, 1);
+                getDebuggerImpl ().getOperator ().register (stepRequest, this);
+                EventRequestWrapper.setSuspendPolicy(stepRequest, suspendPolicy);
+                try {
+                    EventRequestWrapper.enable(stepRequest);
+                } catch (IllegalThreadStateException itsex) {
+                    // the thread named in the request has died.
+                    getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                    stepRequest = null;
+                    removeBPListener();
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
+                    getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                    stepRequest = null;
+                    removeBPListener();
+                }
+                return true;
             }
             
             // Stop execution here?
@@ -475,6 +470,14 @@ implements Executor {
             stepWatch.done();
             stepWatch = null;
         }*/
+        if (!isSyntheticLocation && lastMethodExitBreakpointListener != null) {
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+        }
+    }
+
+    private void removeBPListener() {
+        isSyntheticLocation = false;
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -485,28 +488,37 @@ implements Executor {
         Variable returnValue = null;
         if (lastMethodExitBreakpointListener != null) {
             returnValue = lastMethodExitBreakpointListener.getReturnValue();
+        }
+        isSyntheticLocation = !setLastOperation(tr, getDebuggerImpl(), returnValue);
+        if (!isSyntheticLocation && lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
-        setLastOperation(tr, getDebuggerImpl(), returnValue);
     }
 
-    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) throws VMDisconnectedExceptionWrapper {
+    public static boolean setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) throws VMDisconnectedExceptionWrapper {
         Location loc;
         try {
             loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
         } catch (IncompatibleThreadStateException itsex) {
             Exceptions.printStackTrace(itsex);
             logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
-            return ;
+            return true;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
-            return ;
+            return true;
         } catch (InternalExceptionWrapper iex) {
-            return ;
+            return true;
         } catch (InvalidStackFrameExceptionWrapper iex) {
-            return ;
+            return true;
         } catch (ObjectCollectedExceptionWrapper iex) {
-            return ;
+            return true;
+        }
+        try {
+            if (TypeComponentWrapper.isSynthetic0(LocationWrapper.method(loc))) {
+                // Ignore synthetic methods
+                return false;
+            }
+        } catch (InternalExceptionWrapper ex) {
         }
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
@@ -515,14 +527,14 @@ implements Executor {
         try {
             url = sourcePath.getURL(loc, language);
         } catch (InternalExceptionWrapper iex) {
-            return ;
+            return true;
         } catch (ObjectCollectedExceptionWrapper iex) {
-            return ;
+            return true;
         }
         ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
         if (expr == null) {
-            return ;
+            return true;
         }
         Operation[] ops = expr.getOperations();
         // code index right after the method call (step out)
@@ -532,7 +544,7 @@ implements Executor {
             codeIndex = (int) LocationWrapper.codeIndex(loc);
             bytecodes = MethodWrapper.bytecodes(LocationWrapper.method(loc));
         } catch (InternalExceptionWrapper iex) {
-            return ;
+            return false;
         }
         if (codeIndex >= 5 && (bytecodes[codeIndex - 5] & 0xFF) == 185) { // invokeinterface
             codeIndex -= 5;
@@ -544,12 +556,13 @@ implements Executor {
         if (opIndex >= 0 && ops[opIndex].getBytecodeIndex() == codeIndex) {
             lastOperation = ops[opIndex];
         } else {
-            return ;
+            return true;
         }
         lastOperation.setReturnValue(returnValue);
         JPDAThreadImpl jtr = debugger.getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
+        return true;
     }
     
     private StepIntoActionProvider stepIntoActionProvider;
