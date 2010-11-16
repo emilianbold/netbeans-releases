@@ -147,6 +147,14 @@ public interface GitClient {
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
+     * @param roots 
+     * @param monitor
+     * @return
+     */
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Returns an array of statuses for files under given roots
      * @param roots root folders or files
      * @return status array

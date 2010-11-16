@@ -421,7 +421,7 @@ public class HighlightsViewUtils {
         } else { // index == maxIndex
             Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
             mutableBounds.setRect(
-                    mutableBounds.getX() + textLayout.getAdvance(),
+                    mutableBounds.getX() + TextLayoutUtils.getWidth(textLayout),
                     mutableBounds.getY(),
                     1,
                     mutableBounds.getHeight());
@@ -727,7 +727,7 @@ public class HighlightsViewUtils {
                     g.fillRect(
                             (int) allocBounds.getX(),
                             (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
-                            (int) textLayout.getAdvance(), // Full width of text layout
+                            (int) TextLayoutUtils.getWidth(textLayout), // Full width of text layout
                             (int) Math.max(1, Math.round(strikeThickness))
                     );
                 }

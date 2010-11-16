@@ -80,7 +80,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
@@ -90,7 +89,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class GitCommitPanel extends VCSCommitPanel {
+public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
     static final GitCommitFilter FILTER_HEAD_VS_WORKING = new GitCommitFilter(
                 "HEAD_VS_WORKING", 
@@ -107,8 +106,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
-        super(parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
+    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
+        super(table, parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;        
@@ -127,7 +126,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         
         DiffProvider diffProvider = new DiffProvider();
         
-        return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
     }
     
     private static List<VCSCommitFilter> createFilters() {
@@ -157,7 +156,7 @@ public class GitCommitPanel extends VCSCommitPanel {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getCommitTable().setNodes(new VCSFileNode[0]);                            
+                            getCommitTable().setNodes(new GitFileNode[0]);                            
                         }
                     });
                     
@@ -200,14 +199,14 @@ public class GitCommitPanel extends VCSCommitPanel {
                         return;
                     }
 
-                    ArrayList<VCSFileNode> nodesList = new ArrayList<VCSFileNode>(fileList.size());
+                    ArrayList<GitFileNode> nodesList = new ArrayList<GitFileNode>(fileList.size());
 
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
-                        VCSFileNode node = new GitFileNode(repository, file);
+                        GitFileNode node = new GitFileNode(repository, file);
                         nodesList.add(node);
                     }
-                    final VCSFileNode[] nodes = nodesList.toArray(new VCSFileNode[fileList.size()]);
+                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[fileList.size()]);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -254,28 +253,6 @@ public class GitCommitPanel extends VCSCommitPanel {
             return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;                
         }         
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        
-    }
-    
-    @Override
-    protected void commitTableChanged() {
-        assert EventQueue.isDispatchThread();
-        VCSCommitTable table = getCommitTable();
-        Map<VCSFileNode, VCSCommitOptions> files = table.getCommitFiles();
-
-        boolean enabled = true;
-        for (VCSFileNode fileNode : files.keySet()) {
-            VCSCommitOptions options = files.get(fileNode);
-            if (options == VCSCommitOptions.EXCLUDE) {
-                continue;
-            }
-            FileInformation info = (FileInformation) fileNode.getInformation();
-            if (info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
-                enabled = false;
-                String msg = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
-                setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N                
-            }
-        }        
-        enableCommitButton(enabled && table.containsCommitable());        
     }
 
     private static class DiffProvider extends VCSCommitDiffProvider {

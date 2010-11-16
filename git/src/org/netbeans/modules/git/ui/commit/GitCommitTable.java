@@ -40,55 +40,52 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit.commands;
+package org.netbeans.modules.git.ui.commit;
 
-import java.io.File;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import java.util.List;
+import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitTable;
+import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class RenameCommand extends MoveTreeCommand {
+public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
-    final File source;
-    final File target;
-    final boolean after;
-
-    public RenameCommand (Repository repository, File source, File target, boolean after, ProgressMonitor monitor, FileListener listener){
-        super(repository, source, target, after, false, monitor, listener);
-        this.source = source;
-        this.target = target;
-        this.after = after;
+    private String errroMessage;
+    
+    public GitCommitTable() {
+        super(new VCSCommitTableModel());
     }
 
     @Override
-    protected boolean prepareCommand() throws GitException {
-        boolean retval = super.prepareCommand();
-        if (retval) {
-            if (source.equals(getRepository().getWorkTree())) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_CannotMoveWT", source.getAbsolutePath())); //NOI18N
+    public boolean containsCommitable() {
+        List<GitFileNode> list = getCommitFiles();
+        boolean ret = false;        
+        errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); // NOI18N
+        for(GitFileNode fileNode : list) {                        
+            
+            VCSCommitOptions co = fileNode.getCommitOptions();
+            if(co == VCSCommitOptions.EXCLUDE) {
+                continue;
             }
-            if (!source.exists() && !after) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_SourceDoesNotExist", source.getAbsolutePath())); //NOI18N
-            }
-            if (target.exists()) {
-                if (!after) {
-                    throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetExists", target.getAbsolutePath())); //NOI18N
-                }
-            } else if (after) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetDoesNotExist", target.getAbsolutePath())); //NOI18N
-            }
+            FileInformation info = fileNode.getInformation();
+            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                return false;
+            }            
+            ret = true;
+            errroMessage = "";            
         }
-        return retval;
+        return ret;
     }
 
     @Override
-    protected String getCommandDescription() {
-        return new StringBuilder("git mv ").append(source).append(" ").append(target).toString(); //NOI18N
-    }
+    public String getErrorMessage() {
+        return errroMessage;
+    }    
+    
 }

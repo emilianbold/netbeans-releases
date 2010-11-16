@@ -56,6 +56,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,8 +95,9 @@ public class CatCommand extends GitCommand {
         if (retval) {
             relativePath = Utils.getRelativePath(getRepository().getWorkTree(), file);
             if (relativePath.isEmpty()) {
-                monitor.preparationsFailed("Cannot cat root: " + file);
-                throw new GitException("Cannot cat root: " + file);
+                String message = NbBundle.getMessage(CatCommand.class, "MSG_Error_CannotCatRoot", file); //NOI18N
+                monitor.preparationsFailed(message);
+                throw new GitException(message);
             }
         }
         return retval;
