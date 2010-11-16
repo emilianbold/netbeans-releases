@@ -120,7 +120,7 @@ public class CommitAction extends SingleRepositoryAction {
                     LOG.log(Level.WARNING, null, ex);
                 }
                 
-                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user, context);
+                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user);
                 VCSCommitTable table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
