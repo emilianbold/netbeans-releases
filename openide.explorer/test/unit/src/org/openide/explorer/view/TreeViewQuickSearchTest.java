@@ -44,10 +44,7 @@
 
 package org.openide.explorer.view;
 
-import java.awt.AWTException;
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
@@ -66,10 +63,6 @@ import org.openide.nodes.Node;
  * Tests for the quick search feature in the treeview.
  */
 public class TreeViewQuickSearchTest extends NbTestCase {
-    
-    private static final int NO_OF_NODES = 3;
-    
-    
     public TreeViewQuickSearchTest(String name) {
         super(name);
     }
@@ -118,6 +111,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         final Integer[] phase = new Integer[1];
         phase[0] = 0;
         class AWTTst implements Runnable {
+            @Override
             public void run() {
                 try {
                     if (phase[0] == 0) {
@@ -129,13 +123,8 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         }
                     }
                     if (phase[0] == 1) {
-                        Robot robot = new Robot();
-                        Point p = btv.tree.getLocationOnScreen();
-                        robot.mouseMove(p.x + 10, p.y + 10);
-                        robot.mousePress(0);
-                        robot.mouseRelease(0);
-                        robot.keyPress(KeyEvent.VK_A);
-                        robot.keyRelease(KeyEvent.VK_A);
+                        KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'A');
+                        btv.tree.dispatchEvent(ke);
                     }
                     
                     if (phase[0] == 2) {
@@ -145,7 +134,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         assertEquals("One node should be selected, but there are none.", 1, paths.length);
                         assertEquals("Wrong node selected.", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
                     }
-                } catch (AWTException ex) {
+                } catch (Exception ex) {
                     problem[0] = ex;
                 }
             }
