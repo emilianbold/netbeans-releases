@@ -48,7 +48,6 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
