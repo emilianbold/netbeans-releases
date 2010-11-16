@@ -868,18 +868,19 @@ public abstract class TreeView extends JScrollPane {
     */
     final void synchronizeRootContext() {
         // #151850 cancel editing before changing root node
-        Mutex.EVENT.readAccess(
-                new Runnable() {
-
-                    public void run() {
-                        TreeCellEditor cellEditor = tree.getCellEditor();
-                        if (cellEditor instanceof TreeViewCellEditor) {
-                            ((TreeViewCellEditor) cellEditor).abortTimer();
-                        }
-                        tree.cancelEditing();
-                    }
-                });
-        treeModel.setNode(manager.getRootContext(), visHolder);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TreeCellEditor cellEditor = tree.getCellEditor();
+                if (cellEditor instanceof TreeViewCellEditor) {
+                    ((TreeViewCellEditor) cellEditor).abortTimer();
+                }
+                tree.cancelEditing();
+                final Node rc = manager.getRootContext();
+                LOG.log(Level.FINE, "synchronizeRootContext {0}", rc);
+                treeModel.setNode(rc, visHolder);
+            }
+        });
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -893,9 +894,11 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
-                showPath(getTreePath(n));
+                final TreePath tp = getTreePath(n);
+                LOG.log(Level.FINE, "synchronizeExploredContext {0} path {1}", new Object[] { n, tp });
+                showPath(tp);
             }
         });
     }
@@ -1011,18 +1014,27 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
                 Node[] arr = manager.getSelectedNodes();
                 TreePath[] paths = new TreePath[arr.length];
-
+                final boolean log = LOG.isLoggable(Level.FINE);
+                if (log) {
+                    LOG.fine("synchronizeSelectedNodes");
+                }
                 for (int i = 0; i < arr.length; i++) {
                     paths[i] = getTreePath(arr[i]);
+                    if (log) {
+                        LOG.log(Level.FINE, "paths[{0}] = {1} node: {2}", new Object[]{i, paths[i], arr[i]});
+                    }
                 }
 
                 tree.getSelectionModel().removeTreeSelectionListener(managerListener);
                 showSelection(paths);
                 tree.getSelectionModel().addTreeSelectionListener(managerListener);
+                if (log) {
+                    LOG.fine("synchronizeSelectedNodes done");
+                }
             }
         });
     }
