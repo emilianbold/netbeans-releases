@@ -133,9 +133,6 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="WebContainer">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
-                <folder name="JAXWS">
-                    <attr name="link" stringvalue="NBProfiler/Categories/JAX-WS"/>
-                </folder>
                 <folder name="Filters">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                     <folder name="LifeCycle">
@@ -212,7 +209,7 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="Persistence">
-					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                     <folder name=".custom">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.marking.EJB2PersistenceMarkingProvider"/>
                     </folder>
@@ -234,6 +231,9 @@ made subject to such option by the copyright holder.
                     <file name="EJBContainer.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/EJBContainer"/>
                     </file>
+                    <file name="JAXWS.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/JAX-WS"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -245,6 +245,9 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="WebContainer.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/WebContainer"/>
+                    </file>
+                    <file name="JAXWS.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/JAX-WS"/>
                     </file>
                 </folder>
             </folder>
