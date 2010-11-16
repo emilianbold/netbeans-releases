@@ -84,7 +84,9 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     private String[]            sortByColumns;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
     private VCSCommitPanel commitPanel;
-    
+
+    private String errroMessage;
+        
     public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
         init(tableModel);
         this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
@@ -124,15 +126,21 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     }
 
     public boolean containsCommitable() {
-        Map<F, VCSCommitOptions> map = getCommitFiles();
-        for(VCSCommitOptions co : map.values()) {
-            if(co != VCSCommitOptions.EXCLUDE) {
+        List<F> list = getCommitFiles();
+        for(F file : list) {
+            if(file.getCommitOptions() != VCSCommitOptions.EXCLUDE) {
+                errroMessage = null;
                 return true;
             }
         }
+        errroMessage = NbBundle.getMessage(VCSCommitTable.class, "MSG_ERROR_NO_FILES");
         return false;
     }
 
+    public String getErrorMessage() {
+        return errroMessage;
+    }
+    
     /**
      * Sets sizes of Commit table columns, kind of hardcoded.
      */ 
@@ -238,7 +246,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<F, VCSCommitOptions> getCommitFiles() {
+    public List<F> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 
