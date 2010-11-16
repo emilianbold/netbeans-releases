@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Exceptions;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -451,4 +452,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return 0;
     }
+
+    @Override
+    public long getOffset(CsmFile file, int line, int column) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getOffset(line, column);
+        }
+        return 0;
+    }
+
 }
