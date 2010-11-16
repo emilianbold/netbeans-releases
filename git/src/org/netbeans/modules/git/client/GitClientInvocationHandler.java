@@ -99,8 +99,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "checkout", //NOI18N
             "commit", //NOI18N
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
-            "reset",  //NOI18N 
-            "clean")); //NOI18N
+            "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 
