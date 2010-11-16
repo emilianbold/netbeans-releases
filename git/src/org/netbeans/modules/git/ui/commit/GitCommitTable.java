@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  *
  * @author Tomas Stupka
  */
-public class GitCommitTable extends VCSCommitTable {
+public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
     public GitCommitTable() {
         super(new VCSCommitTableModel());
@@ -62,9 +62,8 @@ public class GitCommitTable extends VCSCommitTable {
 
     @Override
     public boolean containsCommitable() {
-        Map<VCSFileNode, VCSCommitOptions> map = getCommitFiles();
-        for(VCSFileNode fn : map.keySet()) {            
-            GitFileNode fileNode = (GitFileNode) fn;
+        Map<GitFileNode, VCSCommitOptions> map = getCommitFiles();
+        for(GitFileNode fileNode : map.keySet()) {                        
             
             FileInformation info = fileNode.getInformation();
             if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {

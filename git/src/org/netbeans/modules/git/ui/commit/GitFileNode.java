@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  *
  * @author Tomas Stupka
  */
-public class GitFileNode extends VCSFileNode {
+public class GitFileNode extends VCSFileNode<FileInformation> {
 
     public GitFileNode(File root, File file) {
         super(root, file);

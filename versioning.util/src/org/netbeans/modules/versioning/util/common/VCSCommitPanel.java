@@ -111,7 +111,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public abstract class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
@@ -159,7 +159,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         this.preferences = preferences;
     }
     
-    public VCSCommitTable getCommitTable() {
+    public VCSCommitTable<F> getCommitTable() {
         return commitTable;
     }
     
