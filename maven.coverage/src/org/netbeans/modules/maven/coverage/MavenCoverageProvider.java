@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.coverage;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -49,16 +51,32 @@ import javax.swing.text.Document;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 @ProjectServiceProvider(service=CoverageProvider.class, projectType="org-netbeans-modules-maven") // not limited to a packaging
-public class MavenCoverageProvider implements CoverageProvider {
+public final class MavenCoverageProvider implements CoverageProvider {
 
     private static final String GROUP_COBERTURA = "org.codehaus.mojo"; // NOI18N
     private static final String ARTIFACT_COBERTURA = "cobertura-maven-plugin"; // NOI18N
@@ -134,31 +152,191 @@ public class MavenCoverageProvider implements CoverageProvider {
     }
 
     public @Override Set<String> getMimeTypes() {
-        return Collections.singleton("text/x-java");
+        return Collections.singleton("text/x-java"); // NOI18N
     }
 
     public @Override void setEnabled(boolean enabled) {
         // XXX add plugin configuration here if not already present
     }
 
-    public @Override void clear() {
-        // XXX run clean goal
+    private @CheckForNull FileObject report() {
+        // XXX read overridden location acc. to http://mojo.codehaus.org/cobertura-maven-plugin/cobertura-mojo.html#outputDirectory
+        return p.getProjectDirectory().getFileObject("target/site/cobertura/coverage.xml"); // NOI18N
+    }
+
+    private @NullAllowed org.w3c.dom.Document report;
+
+    public @Override synchronized void clear() {
+        FileObject r = report();
+        if (r != null) {
+            try {
+                r.delete();
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+        report = null;
+    }
+
+    private FileChangeListener listener;
+
+    private @CheckForNull synchronized org.w3c.dom.Document parse() {
+        if (report != null) {
+            return report;
+        }
+        FileObject r = report();
+        if (r == null) {
+            return null;
+        }
+        CoverageManager.INSTANCE.setEnabled(p, true); // XXX otherwise it defaults to disabled?? not clear where to call this
+        if (listener == null) {
+            listener = new FileChangeAdapter() {
+                public @Override void fileChanged(FileEvent fe) {
+                    fire();
+                }
+                public @Override void fileDataCreated(FileEvent fe) {
+                    fire();
+                }
+                public @Override void fileDeleted(FileEvent fe) {
+                    fire();
+                }
+                private void fire() {
+                    report = null;
+                    CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
+                }
+            };
+            FileUtil.addFileChangeListener(listener, FileUtil.toFile(r));
+        }
+        try {
+            return report = XMLUtil.parse(new InputSource(r.getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
+                public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                    if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
+                        return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
+                    } else {
+                        return null;
+                    }
+                }
+            });
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return null;
+        }
+    }
+
+    private @CheckForNull FileObject src() {
+        // XXX getOriginalMavenProject().getCompileSourceRoots()
+        return p.getProjectDirectory().getFileObject("src/main/java"); // NOI18N
     }
     
-    public @Override FileCoverageDetails getDetails(org.openide.filesystems.FileObject fo, Document doc) {
-        // XXX
-        throw new UnsupportedOperationException();
+    public @Override FileCoverageDetails getDetails(final FileObject fo, final Document doc) {
+        org.w3c.dom.Document r = parse();
+        if (r == null) {
+            return null;
+        }
+        FileObject src = src();
+        if (src == null) {
+            return null;
+        }
+        String path = FileUtil.getRelativePath(src, fo);
+        if (path == null) {
+            return null;
+        }
+        final List<Element> lines = new ArrayList<Element>();
+        String name = null;
+        NodeList nl = r.getElementsByTagName("class"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            final Element clazz = (Element) nl.item(i);
+            if (clazz.getAttribute("filename").equals(path)) { // NOI18N
+                Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18
+                if (linesE != null) {
+                    lines.addAll(XMLUtil.findSubElements(linesE));
+                }
+                if (name == null) {
+                    name = clazz.getAttribute("name");
+                }
+            }
+        }
+        if (name == null) {
+            return null; // no match
+        }
+        final String _name = name;
+        return new FileCoverageDetails() {
+            public @Override FileObject getFile() {
+                return fo;
+            }
+            public @Override int getLineCount() {
+                return doc.getDefaultRootElement().getElementCount();
+            }
+            public @Override boolean hasHitCounts() {
+                return true;
+            }
+            public @Override long lastUpdated() {
+                FileObject r = report();
+                return r != null ? r.lastModified().getTime() : 0L;
+            }
+            public @Override FileCoverageSummary getSummary() {
+                return summaryOf(fo, _name, lines);
+            }
+            private Integer find(int lineNo) {
+                for (Element line : lines) {
+                    if (line.getAttribute("number").equals(String.valueOf(lineNo + 1))) { // NOI18N
+                        return Integer.valueOf(line.getAttribute("hits")); // NOI18N
+                    }
+                }
+                return null;
+            }
+            public @Override CoverageType getType(int lineNo) {
+                Integer count = find(lineNo);
+                return count == null ? CoverageType.INFERRED : count == 0 ? CoverageType.NOT_COVERED : CoverageType.COVERED;
+            }
+            public @Override int getHitCount(int lineNo) {
+                Integer count = find(lineNo);
+                return count == null ? 0 : count;
+            }
+        };
     }
-    
+
     public @Override List<FileCoverageSummary> getResults() {
-        // XXX
-        throw new UnsupportedOperationException();
+        org.w3c.dom.Document r = parse();
+        if (r == null) {
+            return null;
+        }
+        FileObject src = src();
+        if (src == null) {
+            return null;
+        }
+        List<FileCoverageSummary> summs = new ArrayList<FileCoverageSummary>();
+        NodeList nl = r.getElementsByTagName("class"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element clazz = (Element) nl.item(i);
+            FileObject java = src.getFileObject(clazz.getAttribute("filename")); // NOI18N
+            if (java == null) {
+                continue;
+            }
+            // XXX nicer to collect together nested classes in same compilation unit
+            Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18N
+            List<Element> lines = linesE != null ? XMLUtil.findSubElements(linesE) : Collections.<Element>emptyList();
+            summs.add(summaryOf(java, clazz.getAttribute("name").replace('$', '.'), lines));
+        }
+        return summs;
     }
     
+    private FileCoverageSummary summaryOf(FileObject java, String name, List<Element> lines) {
+        // Not really the total number of lines in the file at all, but close enough - the ones Cobertura recorded.
+        int lineCount = 0;
+        int executedLineCount = 0;
+        for (Element line : lines) {
+            lineCount++;
+            if (!line.getAttribute("hits").equals("0")) {
+                executedLineCount++;
+            }
+        }
+        return new FileCoverageSummary(java, name, lineCount, executedLineCount, 0, 0); // NOI18N
+    }
+
     public @Override String getTestAllAction() {
-        // XXX mvn -DskipTests=false -Dcobertura.report.format=xml cobertura:cobertura
-        throw new UnsupportedOperationException();
-        // XXX and Test button runs COMMAND_TEST_SINGLE on file, which is not good here
+        return "cobertura"; // NOI18N
+        // XXX and Test button runs COMMAND_TEST_SINGLE on file, which is not good here; cf. CoverageSideBar.testOne
     }
 
 }
