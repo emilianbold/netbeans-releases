@@ -47,54 +47,51 @@ import java.io.IOException;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEditor;
-import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class RemoveCommand extends GitCommand {
+public class CleanCommand extends GitCommand {
     private final File[] roots;
-    private final FileListener listener;
     private final ProgressMonitor monitor;
-    private final boolean cached;
+    private final FileListener listener;
 
-    public RemoveCommand (Repository repository, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
+    public CleanCommand (Repository repository, File[] roots, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
-        this.listener = listener;
         this.monitor = monitor;
-        this.cached = cached;
+        this.listener = listener;
     }
 
     @Override
-    protected boolean prepareCommand() throws GitException {
-        boolean retval = super.prepareCommand();
-        if (retval && roots.length == 0) {
-            retval = false;
-            monitor.notifyWarning(EMPTY_ROOTS);
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git clean -d"); //NOI18N
+        for (File root : roots) {
+            sb.append(" ").append(root); //NOI18N
         }
-        return retval;
+        return sb.toString();
     }
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository();
+        Repository repository = getRepository();        
         try {
-            DirCache cache = repository.lockDirCache();
+            DirCache cache = null;
             try {
-                DirCacheEditor edit = cache.editor();
+                cache = repository.lockDirCache();
                 TreeWalk treeWalk = new TreeWalk(repository);
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
                 if (!pathFilters.isEmpty()) {
@@ -103,34 +100,28 @@ public class RemoveCommand extends GitCommand {
                 treeWalk.setRecursive(false);
                 treeWalk.setPostOrderTraversal(true);
                 treeWalk.reset();
-                treeWalk.addTree(new DirCacheIterator(cache));
+                                
                 treeWalk.addTree(new FileTreeIterator(repository));
-		while (treeWalk.next() && !monitor.isCanceled()) {
-                    File path = new File(repository.getWorkTree(), treeWalk.getPathString());
-                    if (!treeWalk.isPostChildren()) {
-                        if (treeWalk.isSubtree()) {
-                            treeWalk.enterSubtree();
-                            if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
-                                if (!cached) {
-                                    listener.notifyFile(path, treeWalk.getPathString());
-                                }
-                                edit.add(new DirCacheEditor.DeleteTree(treeWalk.getPathString()));
+                while (treeWalk.next() && !monitor.isCanceled()) {
+                    String path = treeWalk.getPathString();                    
+                    WorkingTreeIterator f = treeWalk.getTree(0, WorkingTreeIterator.class);
+                    if(f != null) { // file exists
+                        if (!treeWalk.isPostChildren()) {
+                            if (treeWalk.isSubtree()) {
+                                treeWalk.enterSubtree();
+                                continue;
+                            } else {
+                                deleteIfUnversioned(cache, path, f, repository, treeWalk);
                             }
                         } else {
-                            listener.notifyFile(path, treeWalk.getPathString());
-                            edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
-                        }
-                    }
-                    if (!cached && (!treeWalk.isSubtree() || treeWalk.isPostChildren() && Utils.isUnderOrEqual(treeWalk, pathFilters))) {
-                        // delete also the file
-                        if (!path.delete() && path.exists()) {
-                            monitor.notifyError(NbBundle.getMessage(RemoveCommand.class, "MSG_Error_CannotDeleteFile", path.getAbsolutePath())); //NOI18N
-                        }
-                    }
+                            deleteIfUnversioned(cache, path, f, repository, treeWalk);
+                        }                        
+                    }                    
                 }
-		edit.commit();
             } finally {
-                cache.unlock();
+                if (cache != null ) {
+                    cache.unlock();
+                }
             }
         } catch (CorruptObjectException ex) {
             throw new GitException(ex);
@@ -139,15 +130,20 @@ public class RemoveCommand extends GitCommand {
         }
     }
 
-    @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git rm"); //NOI18N
-        if (cached) {
-            sb.append(" --cached"); //NOI18N
+    private void deleteIfUnversioned(DirCache cache, String path, WorkingTreeIterator f, Repository repository, TreeWalk treeWalk) throws IOException, NoWorkTreeException {
+        if (cache.getEntry(path) == null &&  // not in index 
+            !f.isEntryIgnored())             // not ignored
+        {            
+            File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);                        
+            if(file.isDirectory()) {
+                String[] s = file.list();
+                if(s != null && s.length > 0) { // XXX is there no better way to find out if emtpy?
+                    // not empty
+                    return; 
+                }
+            }
+            file.delete();
+            listener.notifyFile(file, treeWalk.getPathString());
         }
-        for (File root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
-    }
+    }    
 }

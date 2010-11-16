@@ -152,6 +152,15 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract long getFileVersion(CsmFile file);
 
+    /**
+     * Calculates offset by line and column
+     * @param file - file.
+     * @param line - line in file.
+     * @param column - column.
+     * @return offset in file
+     */
+    public abstract long getOffset(CsmFile file, int line, int column);
+
     //
     // Implementation of the default query
     //
@@ -207,6 +216,11 @@ public abstract class CsmFileInfoQuery {
         @Override
         public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int offset) {
             return Collections.singleton(CsmCompilationUnit.createCompilationUnit(file));
+        }
+
+        @Override
+        public long getOffset(CsmFile file, int line, int column) {
+            return 0;
         }
     }
 }

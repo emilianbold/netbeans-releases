@@ -42,11 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -146,9 +142,26 @@ public final class CodeModelDiagnostic {
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             printOut.printf("====ModelImpl:\n");// NOI18N
-            ModelImpl.instance().dumpInfo(printOut);
+            ModelImpl.instance().dumpInfo(printOut, false);
             printOut.printf("====Libraries:\n"); //NOI18N
-            LibraryManager.getInstance().dumpInfo(printOut);
+            LibraryManager.getInstance().dumpInfo(printOut, false);
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1350)
+    public final static class ModelProjectsContainers implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Model Projects File Containers";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====ModelImpl:\n");// NOI18N
+            ModelImpl.instance().dumpInfo(printOut, true);
+            printOut.printf("====Libraries:\n"); //NOI18N
+            LibraryManager.getInstance().dumpInfo(printOut, true);
         }
     }
     

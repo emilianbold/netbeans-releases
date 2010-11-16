@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,28 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.ppoints;
+package org.netbeans.modules.git.ui.commit;
 
-import org.netbeans.api.project.Project;
-
+import java.util.List;
+import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitTable;
+import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
+import org.openide.util.NbBundle;
 
 /**
- * Abstract superclass for all Profiling Points defined globally for profiling session
  *
- * @author Jiri Sedlacek
+ * @author Tomas Stupka
  */
-public abstract class GlobalProfilingPoint extends ProfilingPoint {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-    GlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    GlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+public class GitCommitTable extends VCSCommitTable<GitFileNode> {
+
+    private String errroMessage;
+    
+    public GitCommitTable() {
+        super(new VCSCommitTableModel());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    @Override
+    public boolean containsCommitable() {
+        List<GitFileNode> list = getCommitFiles();
+        boolean ret = false;        
+        errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); // NOI18N
+        for(GitFileNode fileNode : list) {                        
+            
+            VCSCommitOptions co = fileNode.getCommitOptions();
+            if(co == VCSCommitOptions.EXCLUDE) {
+                continue;
+            }
+            FileInformation info = fileNode.getInformation();
+            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                return false;
+            }            
+            ret = true;
+            errroMessage = "";            
+        }
+        return ret;
+    }
 
-    abstract void hit(long hitValue);
+    @Override
+    public String getErrorMessage() {
+        return errroMessage;
+    }    
+    
 }

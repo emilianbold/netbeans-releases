@@ -60,12 +60,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.support.Inflector;
@@ -458,5 +461,30 @@ public class Util {
             }
         }
         return true;
+    }
+    
+    public static boolean isCDIEnabled(FileObject fileObject) {
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if ( project != null ){
+            return isCDIEnabled( project );
+        }
+        return false;
+    }
+    
+    public static boolean isCDIEnabled(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Profile profile = wm.getJ2eeProfile();
+            if (  !profile.equals(Profile.JAVA_EE_6_FULL) && 
+                !profile.equals(Profile.JAVA_EE_6_WEB) )
+            {
+                return false;
+            }
+            FileObject confRoot = wm.getWebInf();
+            if (confRoot!=null && confRoot.getFileObject("beans.xml")!=null) {  //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 }

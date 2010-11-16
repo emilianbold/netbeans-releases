@@ -111,6 +111,15 @@ public interface GitClient {
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
+     * Cleans the working tree by recursively removing files that are not under 
+ *   * version control starting from the given roots.
+     * @param roots
+     * @param monitor
+     * @throws GitException 
+     */
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Commits all changes made in the index to all files under the given roots
      * @param roots
      * @param commitMessage
@@ -136,6 +145,14 @@ public interface GitClient {
      * @return
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
+     * @param roots 
+     * @param monitor
+     * @return
+     */
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
      * Returns an array of statuses for files under given roots
