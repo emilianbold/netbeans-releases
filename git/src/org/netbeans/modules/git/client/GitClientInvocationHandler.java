@@ -79,7 +79,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     /**
      * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
      */
-    private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset")); //NOI18N
+    private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset", "clean")); //NOI18N
     /**
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
      * otherwise a FS event will come to Interceptor and trigger the full scan.
@@ -99,7 +99,8 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "checkout", //NOI18N
             "commit", //NOI18N
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
-            "reset")); //NOI18N
+            "reset",  //NOI18N 
+            "clean")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 
