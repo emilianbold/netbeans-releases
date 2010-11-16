@@ -64,8 +64,8 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     @Override
     public boolean containsCommitable() {
         List<GitFileNode> list = getCommitFiles();
-        boolean ret = false;
-        errroMessage = "No files available for commit.";
+        boolean ret = false;        
+        errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); // NOI18N
         for(GitFileNode fileNode : list) {                        
             
             VCSCommitOptions co = fileNode.getCommitOptions();

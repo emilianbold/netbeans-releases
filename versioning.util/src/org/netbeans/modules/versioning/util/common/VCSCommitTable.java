@@ -133,7 +133,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
                 return true;
             }
         }
-        errroMessage = "No files available for commit";
+        errroMessage = NbBundle.getMessage(VCSCommitTable.class, "MSG_ERROR_NO_FILES");
         return false;
     }
 
