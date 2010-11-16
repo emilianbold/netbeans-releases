@@ -74,15 +74,7 @@ public class RevertChanges implements ActionListener {
 
     private void loadSettings() {
         GitModuleConfig config = GitModuleConfig.getDefault();
-        if(config.getRevertWT2Head()) {
-            panel.toHEADRadioButton.setSelected(true);
-            panel.revertWTRadioButton.setSelected(true);
-        } else if(config.getRevertWT2Index()) {
-            panel.toIndexRadioButton.setSelected(true);
-            panel.revertWTRadioButton.setSelected(true);
-        } else {
-            panel.revertWTRadioButton.setSelected(false);            
-        }        
+        panel.revertWTRadioButton.setSelected(config.getRevertWT());        
         panel.removeWTNewCheckBox.setSelected(config.getRemoveWTNew());        
         panel.revertAllRadioButton.setSelected(config.getRevertAll());
         panel.removeAllNewCheckBox.setSelected(config.getRemoveAllNew());
@@ -93,8 +85,7 @@ public class RevertChanges implements ActionListener {
         GitModuleConfig config = GitModuleConfig.getDefault();
         config.putRevertAll(panel.revertAllRadioButton.isSelected());
         config.putRevertIndex(panel.revertIndexRadioButton.isSelected());
-        config.putRevertWT2HEAD(panel.toHEADRadioButton.isSelected());
-        config.putRevertWT2Index(panel.toIndexRadioButton.isSelected());        
+        config.putRevertWT(panel.revertWTRadioButton.isSelected());        
         config.putRemoveAllNew(panel.removeAllNewCheckBox.isSelected());        
         config.putRemoveWTNew(panel.removeWTNewCheckBox.isSelected());        
     }
@@ -119,15 +110,7 @@ public class RevertChanges implements ActionListener {
     
     boolean isRevertIndex() {
         return panel.revertIndexRadioButton.isSelected();
-    }
-    
-    boolean isRevertWT2HEAD() {
-        return panel.toHEADRadioButton.isEnabled() && panel.toHEADRadioButton.isSelected();
-    }
-    
-    boolean isRevertWT2Index() {
-        return panel.toIndexRadioButton.isEnabled() && panel.toIndexRadioButton.isSelected();
-    }
+    }        
     
     boolean isRemove() {
         return panel.removeAllNewCheckBox.isEnabled() && panel.removeAllNewCheckBox.isSelected() || 
@@ -144,10 +127,7 @@ public class RevertChanges implements ActionListener {
         }
     }
     
-    private void enableFields() {
-        panel.toHEADRadioButton.setEnabled(panel.revertWTRadioButton.isSelected());
-        panel.toIndexRadioButton.setEnabled(panel.revertWTRadioButton.isSelected());
-                
+    private void enableFields() {        
         panel.removeAllNewCheckBox.setEnabled(panel.revertAllRadioButton.isSelected()); 
         panel.removeWTNewCheckBox.setEnabled(panel.revertWTRadioButton.isSelected()); 
     }

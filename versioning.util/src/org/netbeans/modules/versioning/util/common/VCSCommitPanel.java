@@ -179,6 +179,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     
     public void setErrorLabel(String htmlErrorLabel) {
         errorLabel.setText(htmlErrorLabel);
+        errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
     @Override

@@ -73,19 +73,13 @@ public class RevertChangesPanel extends javax.swing.JPanel {
 
         removeAllNewCheckBox.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.removeAllNewCheckBox.text")); // NOI18N
 
-        workingTreeGroup.add(toHEADRadioButton);
-        toHEADRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.toHEADRadioButton.text")); // NOI18N
-        toHEADRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toHEADRadioButtonActionPerformed(evt);
-            }
-        });
-
-        workingTreeGroup.add(toIndexRadioButton);
-        toIndexRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.toIndexRadioButton.text")); // NOI18N
-
         revertbButtonGroup.add(revertWTRadioButton);
         revertWTRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertWTRadioButton.text")); // NOI18N
+        revertWTRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revertWTRadioButtonActionPerformed(evt);
+            }
+        });
 
         revertbButtonGroup.add(revertIndexRadioButton);
         revertIndexRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertIndexRadioButton.text")); // NOI18N
@@ -109,17 +103,14 @@ public class RevertChangesPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                        .addComponent(removeAllNewCheckBox))
-                    .addComponent(revertAllRadioButton)
+                        .addComponent(removeWTNewCheckBox))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(toIndexRadioButton)
-                            .addComponent(toHEADRadioButton)
-                            .addComponent(removeWTNewCheckBox)))
+                        .addComponent(removeAllNewCheckBox))
+                    .addComponent(revertAllRadioButton)
                     .addComponent(revertWTRadioButton)
                     .addComponent(revertIndexRadioButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -131,10 +122,6 @@ public class RevertChangesPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(revertWTRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toIndexRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toHEADRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(removeWTNewCheckBox)
                 .addGap(18, 18, 18)
                 .addComponent(revertIndexRadioButton)
@@ -142,13 +129,13 @@ public class RevertChangesPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void toHEADRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toHEADRadioButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_toHEADRadioButtonActionPerformed
-
     private void revertIndexRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revertIndexRadioButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_revertIndexRadioButtonActionPerformed
+
+    private void revertWTRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revertWTRadioButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_revertWTRadioButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -158,8 +145,6 @@ public class RevertChangesPanel extends javax.swing.JPanel {
     final javax.swing.JRadioButton revertIndexRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JRadioButton revertWTRadioButton = new javax.swing.JRadioButton();
     private javax.swing.ButtonGroup revertbButtonGroup;
-    final javax.swing.JRadioButton toHEADRadioButton = new javax.swing.JRadioButton();
-    final javax.swing.JRadioButton toIndexRadioButton = new javax.swing.JRadioButton();
     private javax.swing.ButtonGroup workingTreeGroup;
     // End of variables declaration//GEN-END:variables
 
