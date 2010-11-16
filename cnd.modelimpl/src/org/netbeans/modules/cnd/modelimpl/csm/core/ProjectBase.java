@@ -47,6 +47,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,7 +127,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
-import org.openide.windows.OutputWriter;
 
 /**
  * Base class for CsmProject implementation
@@ -2772,7 +2772,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fc != null ? fc : FileContainer.empty();
     }
 
-    public void traceContainer(OutputWriter err){
+    public void traceContainer(PrintWriter err){
         FileContainer container = getFileContainer();
         Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
         err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
