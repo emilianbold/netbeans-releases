@@ -113,16 +113,15 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         this.hooks = hooks;        
     }
 
-    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user, VCSContext context) {
+    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
         
-        
         DefaultCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage, user);
         
         Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
-        GitHookContext hooksCtx = new GitHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new GitHookContext.LogEntry[] {});        
+        GitHookContext hooksCtx = new GitHookContext(roots, null, new GitHookContext.LogEntry[] {});        
         
         DiffProvider diffProvider = new DiffProvider();
         
