@@ -263,6 +263,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         Map<VCSFileNode, VCSCommitOptions> files = table.getCommitFiles();
 
         boolean enabled = true;
+        String msg = ""; //NOI18N
         for (VCSFileNode fileNode : files.keySet()) {
             VCSCommitOptions options = files.get(fileNode);
             if (options == VCSCommitOptions.EXCLUDE) {
@@ -271,10 +272,10 @@ public class GitCommitPanel extends VCSCommitPanel {
             FileInformation info = (FileInformation) fileNode.getInformation();
             if (info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
                 enabled = false;
-                String msg = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
-                setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N                
+                msg = "<html><font color=\"#002080\">" + NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts") + "</font></html>"; // NOI18N
             }
         }        
+        setErrorLabel(msg); //NOI18N
         enableCommitButton(enabled && table.containsCommitable());        
     }
 
