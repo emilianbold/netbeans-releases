@@ -70,8 +70,7 @@ public final class GitModuleConfig {
     private static final String REVERT_ALL              = "revertAll";          // NOI18N
     private static final String REMOVE_ALL_NEW          = "removeAllNew";       // NOI18N
     private static final String REVERT_INDEX            = "revertIndex";        // NOI18N
-    private static final String REVERT_WT_2_HEAD        = "revertWT2HEAD";      // NOI18N
-    private static final String REVERT_WT_2_INDEX       = "revertWT2Index";     // NOI18N
+    private static final String REVERT_WT               = "revertWT";           // NOI18N
     private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
     
     private String lastCanceledCommitMessage;
@@ -206,12 +205,8 @@ public final class GitModuleConfig {
         getPreferences().putBoolean(REVERT_INDEX, value);        
     }
     
-    public void putRevertWT2Index(boolean value) {
-        getPreferences().putBoolean(REVERT_WT_2_INDEX, value);        
-    }
-    
-    public void putRevertWT2HEAD(boolean value) {
-        getPreferences().putBoolean(REVERT_WT_2_HEAD, value);        
+    public void putRevertWT(boolean value) {
+        getPreferences().putBoolean(REVERT_WT, value);        
     }
     
     public void putRemoveAllNew(boolean value) {
@@ -230,14 +225,10 @@ public final class GitModuleConfig {
         return getPreferences().getBoolean(REVERT_INDEX, false);        
     }
     
-    public boolean getRevertWT2Index() {
-        return getPreferences().getBoolean(REVERT_WT_2_INDEX, true);        
+    public boolean getRevertWT() {
+        return getPreferences().getBoolean(REVERT_WT, true);        
     }
-    
-    public boolean getRevertWT2Head() {
-        return getPreferences().getBoolean(REVERT_WT_2_HEAD, false);        
-    }
-
+        
     public boolean getRemoveWTNew() {
         return getPreferences().getBoolean(REMOVE_WT_NEW, false);                
     }
