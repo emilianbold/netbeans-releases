@@ -353,10 +353,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
         
         // 4) set columns for given model
-        String[] nodesColumnName = new String[] { null };
+        String[] nodesColumnName = new String[] { null, null };
         ColumnModel[] cs = model.getColumns ();
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
-        treeTable.setNodesColumnName(nodesColumnName[0]);
+        treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
@@ -434,10 +434,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
 
         // 4) set columns for given model
-        String[] nodesColumnName = new String[] { null };
+        String[] nodesColumnName = new String[] { null, null };
         ColumnModel[] cs = model.getColumns ();
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
-        treeTable.setNodesColumnName(nodesColumnName[0]);
+        treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
@@ -489,7 +489,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         return true;
     }
     
-    private Node.Property[] createColumns (ColumnModel[] cs, String[] nodesColumnName) {
+    private Node.Property[] createColumns (ColumnModel[] cs, String[] nodesColumnNameAndDescription) {
         int i, k = cs.length;
         columns = new Column[k];
         //icolumns = new IndexedColumn[k];
@@ -517,7 +517,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                 columnList.add(c);
             } else {
                 treeColumn = cs[i];
-                nodesColumnName[0] = Actions.cutAmpersand(cs[i].getDisplayName());
+                nodesColumnNameAndDescription[0] = Actions.cutAmpersand(cs[i].getDisplayName());
+                nodesColumnNameAndDescription[1] = cs[i].getShortDescription();
                 addDefaultColumn = false;
                 defaultColumnIndex = i;
                 if (cs[i].getCurrentOrderNumber() == -1) {
@@ -535,7 +536,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                 new PropertySupport.ReadWrite [columns.length + 1];
             System.arraycopy (columns, 0, columns2, 1, columns.length);
             columns2 [0] = new DefaultColumn ();
-            nodesColumnName[0] = columns2[0].getDisplayName();
+            nodesColumnNameAndDescription[0] = columns2[0].getDisplayName();
+            nodesColumnNameAndDescription[1] = columns2[0].getShortDescription();
             columns = columns2;
             int[] columnVisibleMap2 = new int[columnVisibleMap.length + 1];
             columnVisibleMap2[0] = 0;
@@ -955,11 +957,12 @@ ExplorerManager.Provider, PropertyChangeListener {
             return getOutline();
         }
 
-        void setNodesColumnName(String name) {
+        void setNodesColumnName(String name, String description) {
             OutlineModel m = getOutline().getOutlineModel();
             if (m instanceof DefaultOutlineModel) {
                 ((DefaultOutlineModel) m).setNodesColumnLabel(name);
             }
+            setPropertyColumnDescription(name, description);
         }
 
         /*
