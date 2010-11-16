@@ -111,6 +111,15 @@ public interface GitClient {
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
+     * Cleans the working tree by recursively removing files that are not under 
+ *   * version control starting from the given roots.
+     * @param roots
+     * @param monitor
+     * @throws GitException 
+     */
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Commits all changes made in the index to all files under the given roots
      * @param roots
      * @param commitMessage
