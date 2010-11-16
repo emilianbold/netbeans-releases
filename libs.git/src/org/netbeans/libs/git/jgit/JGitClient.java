@@ -70,6 +70,7 @@ import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -180,6 +181,17 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         BranchCommand cmd = new BranchCommand(gitRepository.getRepository(), all, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    /**
+     * Much faster then an equivalent call to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor) }
+     */
+    @Override
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ConflictCommand cmd = new ConflictCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     @Override

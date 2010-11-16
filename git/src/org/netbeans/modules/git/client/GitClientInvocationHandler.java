@@ -72,6 +72,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "getBranches",  //NOI18N
+            "getConflicts", //NOI18N
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
@@ -88,6 +89,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "getBranches",  //NOI18N
+            "getConflicts", //NOI18N
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
