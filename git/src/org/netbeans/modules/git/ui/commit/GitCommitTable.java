@@ -42,12 +42,11 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.io.File;
+import java.util.Map;
 import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitTable;
+import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
@@ -55,39 +54,26 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  *
  * @author Tomas Stupka
  */
-public class GitFileNode extends VCSFileNode<FileInformation> {
+public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
-    public GitFileNode(File root, File file) {
-        super(root, file);
+    public GitCommitTable() {
+        super(new VCSCommitTableModel());
     }
 
     @Override
-    public FileInformation getInformation() {
-        return Git.getInstance().getFileStatusCache().getStatus(getFile());
-    }
-    
-    @Override
-    public VCSCommitOptions getCommitOptions() {        
-        return getInformation().containsStatus(FileInformation.STATUS_REMOVED)
-                ? VCSCommitOptions.COMMIT
-                : VCSCommitOptions.COMMIT_REMOVE;
-    }
-
-    @Override
-    public VCSCommitOptions getDefaultCommitOption() {
-        if (GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
-            return VCSCommitOptions.EXCLUDE;
-        } else {
-            if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
-                return VCSCommitOptions.COMMIT_REMOVE;
-            } else if(getInformation().containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-                return GitModuleConfig.getDefault().getExludeNewFiles() ? 
-                                    VCSCommitOptions.EXCLUDE : 
-                                    VCSCommitOptions.COMMIT;
-            } else {
-                return VCSCommitOptions.COMMIT;
+    public boolean containsCommitable() {
+        Map<GitFileNode, VCSCommitOptions> map = getCommitFiles();
+        for(GitFileNode fileNode : map.keySet()) {                        
+            
+            FileInformation info = fileNode.getInformation();
+            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                continue;
+            }
+            VCSCommitOptions co = fileNode.getCommitOptions();
+            if(co != VCSCommitOptions.EXCLUDE) {
+                return true;
             }
         }
+        return false;
     }
-
 }

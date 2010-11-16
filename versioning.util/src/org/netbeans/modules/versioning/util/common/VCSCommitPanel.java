@@ -111,7 +111,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public abstract class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
@@ -136,9 +136,9 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     private final VCSCommitDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
+    public VCSCommitPanel(VCSCommitTable table, VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
         this.parameters = parameters;
-        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
+        this.commitTable = table;
         this.diffProvider = diffProvider;
         
         parameters.addChangeListener(this);
@@ -159,7 +159,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         this.preferences = preferences;
     }
     
-    public VCSCommitTable getCommitTable() {
+    public VCSCommitTable<F> getCommitTable() {
         return commitTable;
     }
     

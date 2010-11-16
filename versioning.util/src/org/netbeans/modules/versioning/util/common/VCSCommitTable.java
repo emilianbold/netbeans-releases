@@ -73,9 +73,9 @@ import org.openide.awt.Mnemonics;
  * 
  * @author Maros Sandor
  */
-public class VCSCommitTable implements AncestorListener, TableModelListener, MouseListener {    
+public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, TableModelListener, MouseListener {    
     
-    private VCSCommitTableModel tableModel;
+    private VCSCommitTableModel<F> tableModel;
     private JTable              table;
     private JComponent          component;
     
@@ -85,13 +85,13 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
     private Set<File> modifiedFiles = Collections.<File>emptySet();
     private VCSCommitPanel commitPanel;
     
-    public VCSCommitTable(VCSCommitTableModel tableModel) {
+    public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
         init(tableModel);
         this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
         setSortingStatus();            
     }
 
-    private void init(VCSCommitTableModel tableModel) {
+    private void init(VCSCommitTableModel<F> tableModel) {
         this.tableModel = tableModel;
         tableModel.addTableModelListener(this);
         sorter = new TableSorter(tableModel);
@@ -124,7 +124,7 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
     }
 
     public boolean containsCommitable() {
-        Map<VCSFileNode, VCSCommitOptions> map = getCommitFiles();
+        Map<F, VCSCommitOptions> map = getCommitFiles();
         for(VCSCommitOptions co : map.values()) {
             if(co != VCSCommitOptions.EXCLUDE) {
                 return true;
@@ -231,14 +231,14 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         setDefaultColumnSizes();
     }
 
-    public void setNodes(VCSFileNode[] nodes) {
+    public void setNodes(F[] nodes) {
         tableModel.setNodes(nodes);
     }
 
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<VCSFileNode, VCSCommitOptions> getCommitFiles() {
+    public Map<F, VCSCommitOptions> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 
