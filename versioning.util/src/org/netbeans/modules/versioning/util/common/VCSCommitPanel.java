@@ -136,9 +136,9 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     private final VCSCommitDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
+    public VCSCommitPanel(VCSCommitTable table, VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
         this.parameters = parameters;
-        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
+        this.commitTable = table;
         this.diffProvider = diffProvider;
         
         parameters.addChangeListener(this);
