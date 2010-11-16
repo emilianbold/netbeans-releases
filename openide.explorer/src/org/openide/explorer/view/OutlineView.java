@@ -516,10 +516,10 @@ public class OutlineView extends JScrollPane {
     /**
      * Set the description (table header tooltip) for the property column
      * representing properties that have the passed programmatic (not display)
-     * name.
+     * name, or for the tree column.
      *
      * @param columnName The programmatic name (Property.getName()) of the
-     * column
+     * column, or name of the tree column
      * @param description Tooltip text for the column header for that column
      */
     public final void setPropertyColumnDescription(String columnName, String description) {
@@ -529,6 +529,9 @@ public class OutlineView extends JScrollPane {
             if (columnName.equals(p.getName())) {
                 p.setShortDescription(description);
             }
+        }
+        if (columnName.equals(model.getColumnName(0))) {
+            outline.setNodesColumnDescription(description);
         }
     }
 
@@ -1211,6 +1214,7 @@ public class OutlineView extends JScrollPane {
         private int[] rowWidths;
         private RequestProcessor.Task changeTask;
         private boolean defaultActionAllowed = true;
+        private String nodesColumnDescription;
         //private int maxRowWidth;
 
         public OutlineViewOutline(final OutlineModel mdl, PropertiesRowModel rowModel) {
@@ -1494,6 +1498,9 @@ public class OutlineView extends JScrollPane {
             }
         }
 
+        private void setNodesColumnDescription(String description) {
+            nodesColumnDescription = description;
+        }
 
 
         /**
@@ -1545,6 +1552,9 @@ public class OutlineView extends JScrollPane {
                 }
                 if (getModelIndex () == 0) {
                     // 1st column
+                    if (nodesColumnDescription != null) {
+                        return nodesColumnDescription;
+                    }
                     return defaultValue;
                 }
                 return rowModel.getShortDescription (getModelIndex () - 1);
