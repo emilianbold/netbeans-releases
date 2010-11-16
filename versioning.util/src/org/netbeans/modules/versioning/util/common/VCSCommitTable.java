@@ -84,7 +84,9 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     private String[]            sortByColumns;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
     private VCSCommitPanel commitPanel;
-    
+
+    private String errroMessage;
+        
     public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
         init(tableModel);
         this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
@@ -123,21 +125,20 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         setDefaultColumnSizes();
     }
 
-    private String warning;
     public boolean containsCommitable() {
-        Map<F, VCSCommitOptions> map = getCommitFiles();
-        for(VCSCommitOptions co : map.values()) {
-            if(co != VCSCommitOptions.EXCLUDE) {
-                warning = null;
+        List<F> list = getCommitFiles();
+        for(F file : list) {
+            if(file.getCommitOptions() != VCSCommitOptions.EXCLUDE) {
+                errroMessage = null;
                 return true;
             }
         }
-        warning = "No files available for commit";
+        errroMessage = "No files available for commit";
         return false;
     }
 
-    public String getWarning() {
-        return warning;
+    public String getErrorMessage() {
+        return errroMessage;
     }
     
     /**
@@ -245,7 +246,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<F, VCSCommitOptions> getCommitFiles() {
+    public List<F> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 

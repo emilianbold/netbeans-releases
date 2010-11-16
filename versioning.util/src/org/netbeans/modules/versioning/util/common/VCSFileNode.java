@@ -62,17 +62,28 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
     private final File file;
     private final File root;
     private String shortPath;
+    private VCSCommitOptions commitOption;
 
     public VCSFileNode(File root, File file) {
         assert file != null && root != null;
         this.file = file;
-        this.root = root;
+        this.root = root;        
     }
 
-    public abstract VCSCommitOptions getCommitOptions();
     public abstract VCSCommitOptions getDefaultCommitOption();
     public abstract I getInformation();
     
+    public VCSCommitOptions getCommitOptions() {
+        if(commitOption == null) {
+            commitOption = getDefaultCommitOption();
+        }
+        return commitOption;
+    }
+    
+    void setCommitOptions(VCSCommitOptions option) {
+        commitOption = option;
+    }
+        
     public String getName() {
         return file.getName();
     }

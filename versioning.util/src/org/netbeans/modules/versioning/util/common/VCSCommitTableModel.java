@@ -111,7 +111,6 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
                                           loc.getString("CTL_CommitTable_Column_Folder")}); // NOI18N
     }
     
-    private VCSCommitOptions []    commitOptions;
     private F []      nodes;
     
     private String [] columns;
@@ -123,12 +122,10 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     public VCSCommitTableModel() {
         setColumns(COMMIT_COLUMNS);
         List<F> l = Collections.emptyList();
-//        setNodes((F[]) l.toArray());
     }
 
     protected void setNodes(F[] nodes) {
         this.nodes = nodes;
-        commitOptions = createDefaultCommitOptions();
         fireTableDataChanged();
     }
     
@@ -141,15 +138,16 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<F, VCSCommitOptions> getCommitFiles() {
+    public List<F> getCommitFiles() {
+        List<F> ret = new LinkedList<F>();
         if(nodes == null) {
-            return Collections.EMPTY_MAP;
+            ret = Collections.emptyList();
+            return Collections.unmodifiableList(ret);
         }
-        Map<F, VCSCommitOptions> ret = new HashMap<F, VCSCommitOptions>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            ret.put(nodes[i], commitOptions[i]);
+            ret.add(nodes[i]);
         }
-        return ret;
+        return Collections.unmodifiableList(ret);
     }
     
     @Override
@@ -190,7 +188,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
         F node;
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_COMMIT)) {
-            return commitOptions[rowIndex] != VCSCommitOptions.EXCLUDE;
+            return nodes[rowIndex].getCommitOptions() != VCSCommitOptions.EXCLUDE;
         } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         // TODO deal with branch?
@@ -202,7 +200,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             VCSFileInformation finfo =  node.getInformation();
             return finfo.getStatusText();
         } else if (col.equals(COLUMN_NAME_ACTION)) {
-            return commitOptions[rowIndex];
+            return nodes[rowIndex].getCommitOptions();
         } else if (col.equals(COLUMN_NAME_PATH)) {
             String shortPath = null;
             // XXX this is a mess
@@ -225,10 +223,10 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_ACTION)) {
-            commitOptions[rowIndex] = (VCSCommitOptions) aValue;
+            nodes[rowIndex].setCommitOptions((VCSCommitOptions) aValue);
         } else if (col.equals(COLUMN_NAME_COMMIT)) {
             VCSFileNode node = nodes[rowIndex];
-            commitOptions[rowIndex] = ((Boolean) aValue) ? node.getCommitOptions() : VCSCommitOptions.EXCLUDE;
+            nodes[rowIndex].setCommitOptions(((Boolean) aValue) ? node.getDefaultCommitOption() : VCSCommitOptions.EXCLUDE);
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
@@ -244,7 +242,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     }
 
     public VCSCommitOptions getOption(int row) {
-        return commitOptions[row];
+        return nodes[row].getCommitOptions();
     }
 
     protected void setRootFile(String repositoryPath, String rootLocalPath) {
@@ -256,8 +254,8 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     protected void setIncluded (int[] rows, boolean include) {
         for (int rowIndex : rows) {
             VCSFileNode node = nodes[rowIndex];
-            VCSCommitOptions options = node.getCommitOptions();
-            commitOptions[rowIndex] = include ? options : VCSCommitOptions.EXCLUDE;
+            VCSCommitOptions options = node.getDefaultCommitOption();
+            nodes[rowIndex].setCommitOptions(include ? options : VCSCommitOptions.EXCLUDE);
         }
         fireTableRowsUpdated(0, getRowCount() - 1);
     }

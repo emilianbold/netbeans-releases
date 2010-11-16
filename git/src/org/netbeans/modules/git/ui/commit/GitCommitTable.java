@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.util.Map;
+import java.util.List;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
-    private String warning;
+    private String errroMessage;
     
     public GitCommitTable() {
         super(new VCSCommitTableModel());
@@ -63,10 +63,10 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
     @Override
     public boolean containsCommitable() {
-        Map<GitFileNode, VCSCommitOptions> map = getCommitFiles();
+        List<GitFileNode> list = getCommitFiles();
         boolean ret = false;
-        warning = "No files available for commit.";
-        for(GitFileNode fileNode : map.keySet()) {                        
+        errroMessage = "No files available for commit.";
+        for(GitFileNode fileNode : list) {                        
             
             VCSCommitOptions co = fileNode.getCommitOptions();
             if(co == VCSCommitOptions.EXCLUDE) {
@@ -74,18 +74,18 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
             }
             FileInformation info = fileNode.getInformation();
             if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
-                warning = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
                 return false;
             }            
             ret = true;
-            warning = "";            
+            errroMessage = "";            
         }
         return ret;
     }
 
     @Override
-    public String getWarning() {
-        return warning;
+    public String getErrorMessage() {
+        return errroMessage;
     }    
     
 }

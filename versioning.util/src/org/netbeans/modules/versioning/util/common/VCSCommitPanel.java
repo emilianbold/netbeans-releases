@@ -178,7 +178,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
-        errorLabel.setText(htmlErrorLabel);
+        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>");
         errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
@@ -309,7 +309,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
         errorLabel.setVisible(false);
-        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/info.png", false)); // NOI18N        
+        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/error.gif", false)); // NOI18N        
         
         progressPanel.setAlignmentY(LEFT_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -388,22 +388,24 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
 
     private void valuesChanged() {
-        String warning = null;
+        String errroMsg = null;
         boolean commitable = true;
         try {
             commitable = parameters.isCommitable();            
             if(!commitable) {
-                warning = parameters.getWarning();
+                errroMsg = parameters.getErrorMessage();
+                return;
             } 
             
-            commitable = commitTable.containsCommitable();
+            commitable &= commitTable.containsCommitable();
             if(!commitable) {
-                warning = commitTable.getWarning();
+                errroMsg = commitTable.getErrorMessage();
+                return;
             }             
             
         } finally {
             commitButton.setEnabled(commitable);
-            setErrorLabel(warning != null ? warning : "");             // NOI18N            
+            setErrorLabel(errroMsg != null ? errroMsg : "");             // NOI18N            
         }        
     }
     
