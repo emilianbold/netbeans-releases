@@ -463,11 +463,11 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return validationTime;
     }
 
-    public void validateCode(String code) throws SAXException {
+    public void validateCode(String code, String sourceURI) throws SAXException {
         long from = System.currentTimeMillis();
         
         codeToValidate = code;
-        document = null; //represents an URI where the document can be loaded
+        document = sourceURI; //represents an URI where the document can be loaded
         parser = htmlVersion2ParserMode(version);
 //        charsetOverride = "UTF-8";
         filteredNamespaces = Collections.emptySet();
@@ -628,31 +628,37 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
             reader.parse(documentInput);
         } catch (TooManyErrorsException e) {
-            LOGGER.log(Level.INFO, "TooManyErrorsException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
         } catch (SAXException e) {
-            LOGGER.log(Level.INFO, "SAXException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "IOException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.ioError(e);
         } catch (IncorrectSchemaException e) {
-            LOGGER.log(Level.INFO, "IncorrectSchemaException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "RuntimeException, doc: " + document + " schema: "
-                    + schemaUrls + " lax: " + laxType, e);
+            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Error, doc: " + document + " schema: " + schemaUrls
-                    + " lax: " + laxType, e);
+            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
+    }
+    
+    private String getDocumentErrorMsg() {
+        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+    }
+    
+    private String getDocumentInternalErrorMsg() {
+        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
     }
 
     /**
