@@ -84,6 +84,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -146,6 +147,11 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
     @Override
     protected void computeNodes() {      
+        computeNodesIntern();
+    }
+    
+    /** used by unit tests */
+    RequestProcessor.Task computeNodesIntern() {      
         final boolean refreshFinnished[] = new boolean[] { false };
         RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
         final GitProgressSupport support = new GitProgressSupport( /*, cancel*/) {
@@ -225,7 +231,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         };
         final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit");        
         setupProgress(preparingMessage, support.getProgressComponent());
-        support.start(rp, repository, preparingMessage);
+        Task task = support.start(rp, repository, preparingMessage);
         
         // do not show progress in dialog if task finnished early        
         Timer t = new Timer();
@@ -242,9 +248,10 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                 }
             }
         }, 1000);
+        return task;
     }
     
-    EnumSet<Status> getAcceptedStatus() {
+    private EnumSet<Status> getAcceptedStatus() {
         VCSCommitFilter f = getSelectedFilter();
         if(f == FILTER_HEAD_VS_INDEX) {
             return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;

@@ -42,18 +42,24 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import javax.swing.JComboBox;
-import org.netbeans.junit.NbTestCase;
+import java.awt.EventQueue;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.GitTestKit;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class GetUserTest extends NbTestCase {
+public class CommitDialogTest extends AbstractGitTestCase {
 
-    public GetUserTest (String arg0) {
+    public CommitDialogTest (String arg0) {
         super(arg0);
     }
 
@@ -63,40 +69,27 @@ public class GetUserTest extends NbTestCase {
         super.setUp();        
     }
 
-    public void testGetUser() {
-        GitCommitParameters parameters = new GitCommitParameters(GitModuleConfig.getDefault().getPreferences(), "", null);
-        CommitPanel panel = parameters.getPanel();
-        assertUser(parameters, panel.authorComboBox, "A U Thor <author@example.com>", "A U Thor", "author@example.com");
-        assertUser(parameters, panel.authorComboBox, "Perun <author@example.com>", "Perun", "author@example.com");
-        assertUser(parameters, panel.authorComboBox, "A U Thor <>", "A U Thor", "");
-        assertUser(parameters, panel.authorComboBox, "Thor", "Thor", "");
-        assertUser(parameters, panel.authorComboBox, "A U Thor", "A U Thor", "");
-        assertUser(parameters, panel.authorComboBox, "<a", "<a", ""); // cli seems to live with this
-    }
-    
-    public void testWrongGetUser() {
-        GitCommitParameters parameters = new GitCommitParameters(GitModuleConfig.getDefault().getPreferences(), "", null);
-        CommitPanel panel = parameters.getPanel();
+    public void testPrefilledPanel() throws IOException, GitException, InterruptedException, InvocationTargetException {
+        File repository = getRepositoryLocation();
+        File[] roots = new File[] {repository};  
+        File file = createFile(repository, "file");                
+        add(file);
+        
+        GitUser user = GitTestKit.creategGitUser();
+        String  message = "msg";        
+        GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
                 
-        assertNull(getUser(parameters, panel.authorComboBox, "<>"));        
-        assertNull(getUser(parameters, panel.authorComboBox, " <author@example.com>"));
-        assertNull(getUser(parameters, panel.authorComboBox, "<author@example.com>"));
-        assertNull(getUser(parameters, panel.authorComboBox, "<odin>"));
-        assertNull(getUser(parameters, panel.authorComboBox, "<odin.org>"));
-        assertNull(getUser(parameters, panel.authorComboBox, "org>"));
-        assertNull(getUser(parameters, panel.authorComboBox, ">"));
-    }
-
-    private void assertUser(GitCommitParameters parameters, JComboBox combo, String userString, String name, String mail) {
-        GitUser user = getUser(parameters, combo, userString);
-        assertNotNull(user);
-        assertEquals(name, user.getName()); 
-        assertEquals(mail, user.getEmailAddress());
-    }
-   
-    private GitUser getUser(GitCommitParameters parameters, JComboBox combo, String userString) {
-        combo.setSelectedItem(userString);
-        GitUser user = parameters.getUser(combo);
-        return user;
-    }
+        GitCommitPanel p = GitCommitPanel.create(roots, repository, user);
+        p.computeNodesIntern().waitFinished();
+        EventQueue.invokeAndWait(new Runnable() {@Override public void run() {}});
+        
+        assertEquals(user, p.getParameters().getAuthor());
+        assertEquals(user, p.getParameters().getCommiter());
+        assertEquals(message, p.getParameters().getCommitMessage());           
+        
+        List<GitFileNode> files = p.getCommitTable().getCommitFiles();
+        assertEquals(1, files.size());
+        assertEquals(file, files.get(0).getFile());
+    }     
+    
 }
