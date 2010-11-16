@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="TreeView.quickSearchAllowed">
+        <api name="explorer"/>
+        <summary>It's possible to define whether the quick search is enabled or disabled in TreeView.</summary>
+        <version major="6" minor="33"/>
+        <date day="16" month="11" year="2010"/>
+        <author login="theanuradha"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Methods <code>setQuickSearchAllowed()</code> and <code>isQuickSearchAllowed()</code>
+            added to TreeView to control quick search enable or disable.
+        </description>
+        <class package="org.openide.explorer.view" name="TreeView"/>
+        <issue number="181452"/>
+    </change>
     <change id="OutlineView.defaultActionAllowed">
         <api name="explorer"/>
         <summary>It's possible to define whether the default action is allowed or not in OutlineView.</summary>

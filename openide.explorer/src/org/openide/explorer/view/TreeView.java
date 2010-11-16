@@ -228,6 +228,10 @@ public abstract class TreeView extends JScrollPane {
     transient private int allowedDragActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     
+    /** Quick Search support */
+    transient private boolean allowedQuickSearch = true;
+    transient private KeyAdapter quickSearchKeyAdapter;
+    
     /**
      * Whether the quick search uses prefix or substring. 
      * Defaults to false meaning prefix is used.
@@ -451,6 +455,36 @@ public abstract class TreeView extends JScrollPane {
         tree.setShowsRootHandles(!visible);
     }
 
+    /**
+     * Get whether the quick search feature enable or not.
+     * Defaults enable (false).
+     * @since 6.33
+     * @return true if quick search feature enabled, false
+     * otherwise.
+     */
+    public boolean isQuickSearchAllowed() {
+        return allowedQuickSearch;
+    }
+    
+    /**
+     * Set whether the quick search feature enable or not.
+     * Defaults enable (false).
+     * @since 6.33
+     * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
+     */
+    public void setQuickSearchAllowed(boolean allowedQuickSearch) {
+        this.allowedQuickSearch = allowedQuickSearch;
+         if (quickSearchKeyAdapter != null && tree != null) {
+            if (allowedQuickSearch) {
+               tree.addKeyListener(quickSearchKeyAdapter);
+            } else {
+               removeSearchField();
+               tree.removeKeyListener(quickSearchKeyAdapter);
+            }
+         }
+    }
+
+    
     /**
      * Set whether the quick search feature uses substring or prefix
      * matching for the typed characters. Defaults to prefix (false).
@@ -967,7 +1001,9 @@ public abstract class TreeView extends JScrollPane {
             }
         });
     }
-
+    
+   
+    
     /** Synchronize the selected nodes from the manager of this Explorer.
     * The default implementation does nothing.
     */
@@ -1629,7 +1665,7 @@ public abstract class TreeView extends JScrollPane {
     }
 
     TreePath[] origSelectionPaths = null;
-    private JPanel searchpanel = null;
+    JPanel searchpanel = null;
     // searchTextField manages focus because it handles VK_TAB key
     private JTextField searchTextField = new JTextField() {
         @Override
@@ -1712,7 +1748,7 @@ public abstract class TreeView extends JScrollPane {
      * Adds the search field to the tree.
      */
     private void displaySearchField() {
-        if( null != searchpanel )
+        if( null != searchpanel || !isQuickSearchAllowed())
             return;
 
         TreeView previousSearchField = lastSearchField.get();
@@ -1968,8 +2004,8 @@ public abstract class TreeView extends JScrollPane {
                 removeKeyListener(keyListeners[i]);
             }
 
-            // Add new key listeners
-            addKeyListener(
+            // create new key listeners
+            quickSearchKeyAdapter = (
                 new KeyAdapter() {
                 @Override
                     public void keyTyped(KeyEvent e) {
@@ -2001,7 +2037,9 @@ public abstract class TreeView extends JScrollPane {
                     }
                 }
             );
-
+            if(isQuickSearchAllowed()){
+                addKeyListener(quickSearchKeyAdapter);
+            }
             // Create a the "multi-event" listener for the text field. Instead of
             // adding separate instances of each needed listener, we're using a
             // class which implements them all. This approach is used in order 
@@ -2011,7 +2049,7 @@ public abstract class TreeView extends JScrollPane {
             searchTextField.addFocusListener(searchFieldListener);
             searchTextField.getDocument().addDocumentListener(searchFieldListener);
         }
-
+        
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
 
