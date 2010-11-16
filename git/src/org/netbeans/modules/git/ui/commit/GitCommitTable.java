@@ -42,13 +42,12 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.util.Map;
+import java.util.List;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,24 +55,37 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  */
 public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
+    private String errroMessage;
+    
     public GitCommitTable() {
         super(new VCSCommitTableModel());
     }
 
     @Override
     public boolean containsCommitable() {
-        Map<GitFileNode, VCSCommitOptions> map = getCommitFiles();
-        for(GitFileNode fileNode : map.keySet()) {                        
+        List<GitFileNode> list = getCommitFiles();
+        boolean ret = false;        
+        errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); // NOI18N
+        for(GitFileNode fileNode : list) {                        
             
-            FileInformation info = fileNode.getInformation();
-            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+            VCSCommitOptions co = fileNode.getCommitOptions();
+            if(co == VCSCommitOptions.EXCLUDE) {
                 continue;
             }
-            VCSCommitOptions co = fileNode.getCommitOptions();
-            if(co != VCSCommitOptions.EXCLUDE) {
-                return true;
-            }
+            FileInformation info = fileNode.getInformation();
+            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                return false;
+            }            
+            ret = true;
+            errroMessage = "";            
         }
-        return false;
+        return ret;
     }
+
+    @Override
+    public String getErrorMessage() {
+        return errroMessage;
+    }    
+    
 }

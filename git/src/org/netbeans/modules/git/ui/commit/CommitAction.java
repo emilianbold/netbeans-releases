@@ -125,7 +125,7 @@ public class CommitAction extends SingleRepositoryAction {
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
                 if (ok) {
-                    final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
+                    final List<VCSFileNode> commitFiles = table.getCommitFiles();
 
                     GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
                     panel.getParameters().storeCommitMessage();
@@ -150,7 +150,7 @@ public class CommitAction extends SingleRepositoryAction {
 
     private static void performCommit(
             GitCommitParameters parameters, 
-            Map<VCSFileNode, VCSCommitOptions> commitFiles,
+            List<VCSFileNode> commitFiles,
             VCSCommitFilter filter,
             GitClient client, 
             GitProgressSupport support, 
@@ -211,7 +211,7 @@ public class CommitAction extends SingleRepositoryAction {
 
     private static void populateCandidates(
             VCSCommitFilter filter,
-            Map<VCSFileNode, VCSCommitOptions> commitFiles, 
+            List<VCSFileNode> commitFiles, 
             List<File> addCandidates,
             List<File> deleteCandidates,
             List<File> commitCandidates,
@@ -220,7 +220,7 @@ public class CommitAction extends SingleRepositoryAction {
         List<String> excPaths = new ArrayList<String>();        
         List<String> incPaths = new ArrayList<String>();
         
-        Iterator<VCSFileNode> it = commitFiles.keySet().iterator();
+        Iterator<VCSFileNode> it = commitFiles.iterator();
         while (it.hasNext()) {
             if (support.isCanceled()) {
                 return;
@@ -228,7 +228,7 @@ public class CommitAction extends SingleRepositoryAction {
             GitFileNode node = (GitFileNode) it.next();
             FileInformation info = node.getInformation();
              
-            VCSCommitOptions option = commitFiles.get(node);
+            VCSCommitOptions option = node.getCommitOptions();
             File file = node.getFile();
             if (option != VCSCommitOptions.EXCLUDE) {                
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||

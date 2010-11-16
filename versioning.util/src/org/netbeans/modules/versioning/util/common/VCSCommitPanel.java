@@ -178,7 +178,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
-        errorLabel.setText(htmlErrorLabel);
+        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>");
         errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
@@ -225,8 +225,6 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
-    
-    protected abstract void commitTableChanged();
     
     protected abstract void computeNodes();
     
@@ -311,7 +309,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
         errorLabel.setVisible(false);
-        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/info.png", false)); // NOI18N        
+        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/error.gif", false)); // NOI18N        
         
         progressPanel.setAlignmentY(LEFT_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -384,19 +382,33 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             if(diffProvider != null) {
                 commitTable.setModifiedFiles(diffProvider.getModifiedFiles());
             }
-        } else if(e.getSource() == parameters) {
-            boolean commitable = parameters.isCommitable();
-            commitButton.setEnabled(commitable);
-            if(!commitable) {
-                String warning = parameters.getWarning();
-                errorLabel.setText(warning != null ? warning : "");             // NOI18N
-            } else {
-                errorLabel.setText("");                                         // NOI18N
-            }
-            errorLabel.setVisible(!errorLabel.getText().isEmpty());
+        } else if(e.getSource() == parameters || e.getSource() == commitTable) {
+            valuesChanged();    
         }
     }
 
+    private void valuesChanged() {
+        String errroMsg = null;
+        boolean commitable = true;
+        try {
+            commitable = parameters.isCommitable();            
+            if(!commitable) {
+                errroMsg = parameters.getErrorMessage();
+                return;
+            } 
+            
+            commitable &= commitTable.containsCommitable();
+            if(!commitable) {
+                errroMsg = commitTable.getErrorMessage();
+                return;
+            }             
+            
+        } finally {
+            commitButton.setEnabled(commitable);
+            setErrorLabel(errroMsg != null ? errroMsg : "");             // NOI18N            
+        }        
+    }
+    
     void openDiff (VCSFileNode[] nodes) {
         if(diffProvider == null) {
             return;
@@ -485,13 +497,13 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
         table.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
 
