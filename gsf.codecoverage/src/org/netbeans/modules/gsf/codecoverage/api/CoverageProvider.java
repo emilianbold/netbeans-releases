@@ -44,6 +44,7 @@ package org.netbeans.modules.gsf.codecoverage.api;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -96,12 +97,12 @@ public interface CoverageProvider {
     /**
      * Get the specific coverage information per line.
      */
-    FileCoverageDetails getDetails(FileObject fo, Document doc);
+    @CheckForNull FileCoverageDetails getDetails(FileObject fo, Document doc);
 
     /**
      * Get a summary of all the coverage data in the given project, one per measured file.
      */
-    List<FileCoverageSummary> getResults();
+    @CheckForNull List<FileCoverageSummary> getResults();
     
     /**
      * Gets the name of action that the Test All button in the code coverage bar
@@ -110,5 +111,5 @@ public interface CoverageProvider {
      * 
      * @return the name of test action or <code>null</code>.
      */
-    String getTestAllAction();
+    @CheckForNull String getTestAllAction();
 }
