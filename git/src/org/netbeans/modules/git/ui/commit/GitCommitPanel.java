@@ -254,28 +254,6 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         }         
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        
     }
-    
-    @Override
-    protected void commitTableChanged() {
-        assert EventQueue.isDispatchThread();
-        VCSCommitTable<GitFileNode> table = getCommitTable();
-        Map<GitFileNode, VCSCommitOptions> files = table.getCommitFiles();
-
-        boolean enabled = true;
-        for (GitFileNode fileNode : files.keySet()) {
-            VCSCommitOptions options = files.get(fileNode);
-            if (options == VCSCommitOptions.EXCLUDE) {
-                continue;
-            }
-            FileInformation info = fileNode.getInformation();
-            if (info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
-                enabled = false;
-                String msg = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
-                setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N                
-            }
-        }                
-        enableCommitButton(enabled && table.containsCommitable());        
-    }
 
     private static class DiffProvider extends VCSCommitDiffProvider {
 

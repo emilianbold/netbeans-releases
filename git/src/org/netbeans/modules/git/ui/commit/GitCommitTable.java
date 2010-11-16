@@ -47,8 +47,7 @@ import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,6 +55,8 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  */
 public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
+    private String warning;
+    
     public GitCommitTable() {
         super(new VCSCommitTableModel());
     }
@@ -63,17 +64,28 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     @Override
     public boolean containsCommitable() {
         Map<GitFileNode, VCSCommitOptions> map = getCommitFiles();
+        boolean ret = false;
+        warning = "No files available for commit.";
         for(GitFileNode fileNode : map.keySet()) {                        
             
-            FileInformation info = fileNode.getInformation();
-            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+            VCSCommitOptions co = fileNode.getCommitOptions();
+            if(co == VCSCommitOptions.EXCLUDE) {
                 continue;
             }
-            VCSCommitOptions co = fileNode.getCommitOptions();
-            if(co != VCSCommitOptions.EXCLUDE) {
-                return true;
-            }
+            FileInformation info = fileNode.getInformation();
+            if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                warning = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                return false;
+            }            
+            ret = true;
+            warning = "";            
         }
-        return false;
+        return ret;
     }
+
+    @Override
+    public String getWarning() {
+        return warning;
+    }    
+    
 }

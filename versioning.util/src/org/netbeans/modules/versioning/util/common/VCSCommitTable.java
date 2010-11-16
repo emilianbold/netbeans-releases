@@ -123,16 +123,23 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         setDefaultColumnSizes();
     }
 
+    private String warning;
     public boolean containsCommitable() {
         Map<F, VCSCommitOptions> map = getCommitFiles();
         for(VCSCommitOptions co : map.values()) {
             if(co != VCSCommitOptions.EXCLUDE) {
+                warning = null;
                 return true;
             }
         }
+        warning = "No files available for commit";
         return false;
     }
 
+    public String getWarning() {
+        return warning;
+    }
+    
     /**
      * Sets sizes of Commit table columns, kind of hardcoded.
      */ 

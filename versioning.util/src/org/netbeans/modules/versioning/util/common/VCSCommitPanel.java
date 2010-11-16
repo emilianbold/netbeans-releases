@@ -226,8 +226,6 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
     
-    protected abstract void commitTableChanged();
-    
     protected abstract void computeNodes();
     
     protected boolean isCommitButtonEnabled() {
@@ -384,19 +382,31 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             if(diffProvider != null) {
                 commitTable.setModifiedFiles(diffProvider.getModifiedFiles());
             }
-        } else if(e.getSource() == parameters) {
-            boolean commitable = parameters.isCommitable();
-            commitButton.setEnabled(commitable);
-            if(!commitable) {
-                String warning = parameters.getWarning();
-                errorLabel.setText(warning != null ? warning : "");             // NOI18N
-            } else {
-                errorLabel.setText("");                                         // NOI18N
-            }
-            errorLabel.setVisible(!errorLabel.getText().isEmpty());
+        } else if(e.getSource() == parameters || e.getSource() == commitTable) {
+            valuesChanged();    
         }
     }
 
+    private void valuesChanged() {
+        String warning = null;
+        boolean commitable = true;
+        try {
+            commitable = parameters.isCommitable();            
+            if(!commitable) {
+                warning = parameters.getWarning();
+            } 
+            
+            commitable = commitTable.containsCommitable();
+            if(!commitable) {
+                warning = commitTable.getWarning();
+            }             
+            
+        } finally {
+            commitButton.setEnabled(commitable);
+            setErrorLabel(warning != null ? warning : "");             // NOI18N            
+        }        
+    }
+    
     void openDiff (VCSFileNode[] nodes) {
         if(diffProvider == null) {
             return;
@@ -485,13 +495,13 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
         table.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
 
