@@ -80,7 +80,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
@@ -271,10 +270,10 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
             FileInformation info = fileNode.getInformation();
             if (info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
                 enabled = false;
-                msg = "<html><font color=\"#002080\">" + NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts") + "</font></html>"; // NOI18N
+                String msg = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
+                setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N                
             }
-        }        
-        setErrorLabel(msg); //NOI18N
+        }                
         enableCommitButton(enabled && table.containsCommitable());        
     }
 
