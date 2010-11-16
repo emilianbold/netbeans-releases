@@ -107,8 +107,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
-        super(parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
+    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
+        super(table, parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;        
@@ -127,7 +127,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         
         DiffProvider diffProvider = new DiffProvider();
         
-        return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
     }
     
     private static List<VCSCommitFilter> createFilters() {
