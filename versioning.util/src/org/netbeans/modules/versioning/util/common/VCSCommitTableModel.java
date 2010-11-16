@@ -99,10 +99,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
                                           loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_File")}); // NOI18N
-        columnLabels.put(COLUMN_NAME_BRANCH, new String [] { 
-                                          loc.getString("CTL_CommitTable_Column_Branch"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_Branch")}); // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_File")}); // NOI18N        
         columnLabels.put(COLUMN_NAME_STATUS, new String [] {
                                           loc.getString("CTL_CommitTable_Column_Status"),  // NOI18N
                                           loc.getString("CTL_CommitTable_Column_Status")}); // NOI18N
@@ -216,7 +213,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             } else {
                 shortPath = nodes[rowIndex].getRelativePath();
                 if (shortPath == null) {
-                    shortPath = org.openide.util.NbBundle.getMessage(VCSCommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
+                    shortPath = org.openide.util.NbBundle.getMessage(VCSCommitTableModel.class, "LBL_Location_NotInRepository"); // NOI18N
                 }
             }
             return shortPath;
