@@ -53,11 +53,11 @@ import java.util.ArrayList;
 import org.openide.util.NbBundle;
 
 /**
- * Represents real or virtual (non-local) file.
+ * Represents a versioned file.
  *
- * @author Padraig O'Briain
+ * @author Tomas Stupka
  */
-public abstract class VCSFileNode {
+public abstract class VCSFileNode<I extends VCSFileInformation> {
 
     private final File file;
     private final File root;
@@ -71,12 +71,11 @@ public abstract class VCSFileNode {
 
     public abstract VCSCommitOptions getCommitOptions();
     public abstract VCSCommitOptions getDefaultCommitOption();
-    public abstract VCSFileInformation getInformation();
+    public abstract I getInformation();
     
     public String getName() {
         return file.getName();
     }
-
 
     public File getFile() {
         return file;

@@ -55,7 +55,7 @@ import java.io.File;
  *
  * @author Tomas Stupka
  */
-public class VCSCommitTableModel extends AbstractTableModel {
+public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableModel {
 
     public static final String COLUMN_NAME_COMMIT  = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
@@ -115,7 +115,7 @@ public class VCSCommitTableModel extends AbstractTableModel {
     }
     
     private VCSCommitOptions []    commitOptions;
-    private VCSFileNode []      nodes;
+    private F []      nodes;
     
     private String [] columns;
 
@@ -125,10 +125,11 @@ public class VCSCommitTableModel extends AbstractTableModel {
      */
     public VCSCommitTableModel() {
         setColumns(COMMIT_COLUMNS);
-        setNodes(new VCSFileNode[0]);
+        List<F> l = Collections.emptyList();
+//        setNodes((F[]) l.toArray());
     }
 
-    protected void setNodes(VCSFileNode [] nodes) {
+    protected void setNodes(F[] nodes) {
         this.nodes = nodes;
         commitOptions = createDefaultCommitOptions();
         fireTableDataChanged();
@@ -143,8 +144,11 @@ public class VCSCommitTableModel extends AbstractTableModel {
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<VCSFileNode, VCSCommitOptions> getCommitFiles() {
-        Map<VCSFileNode, VCSCommitOptions> ret = new HashMap<VCSFileNode, VCSCommitOptions>(nodes.length);
+    public Map<F, VCSCommitOptions> getCommitFiles() {
+        if(nodes == null) {
+            return Collections.EMPTY_MAP;
+        }
+        Map<F, VCSCommitOptions> ret = new HashMap<F, VCSCommitOptions>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             ret.put(nodes[i], commitOptions[i]);
         }
@@ -163,7 +167,7 @@ public class VCSCommitTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return nodes.length;
+        return nodes == null ? 0 : nodes.length;
     }
 
     @Override
@@ -186,7 +190,7 @@ public class VCSCommitTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        VCSFileNode node;
+        F node;
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_COMMIT)) {
             return commitOptions[rowIndex] != VCSCommitOptions.EXCLUDE;
@@ -234,11 +238,11 @@ public class VCSCommitTableModel extends AbstractTableModel {
         fireTableRowsUpdated(rowIndex, rowIndex);
     }
 
-    protected VCSFileNode[] getNodes() {
+    protected F[] getNodes() {
         return nodes;
     }
     
-    public VCSFileNode getNode(int row) {
+    public F getNode(int row) {
         return nodes[row];
     }
 
