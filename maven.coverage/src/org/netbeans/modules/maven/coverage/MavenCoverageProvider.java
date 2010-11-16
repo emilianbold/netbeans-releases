@@ -241,49 +241,59 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (path == null) {
             return null;
         }
+        final List<Element> lines = new ArrayList<Element>();
+        String name = null;
         NodeList nl = r.getElementsByTagName("class"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             final Element clazz = (Element) nl.item(i);
             if (clazz.getAttribute("filename").equals(path)) { // NOI18N
-                Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18N
-                final List<Element> lines = linesE != null ? XMLUtil.findSubElements(linesE) : Collections.<Element>emptyList();
-                return new FileCoverageDetails() {
-                    public @Override FileObject getFile() {
-                        return fo;
-                    }
-                    public @Override int getLineCount() {
-                        return doc.getDefaultRootElement().getElementCount();
-                    }
-                    public @Override boolean hasHitCounts() {
-                        return true;
-                    }
-                    public @Override long lastUpdated() {
-                        FileObject r = report();
-                        return r != null ? r.lastModified().getTime() : 0L;
-                    }
-                    public @Override FileCoverageSummary getSummary() {
-                        return summaryOf(fo, clazz, lines);
-                    }
-                    private Integer find(int lineNo) {
-                        for (Element line : lines) {
-                            if (line.getAttribute("number").equals(String.valueOf(lineNo + 1))) { // NOI18N
-                                return Integer.valueOf(line.getAttribute("hits")); // NOI18N
-                            }
-                        }
-                        return null;
-                    }
-                    public @Override CoverageType getType(int lineNo) {
-                        Integer count = find(lineNo);
-                        return count == null ? CoverageType.INFERRED : count == 0 ? CoverageType.NOT_COVERED : CoverageType.COVERED;
-                    }
-                    public @Override int getHitCount(int lineNo) {
-                        Integer count = find(lineNo);
-                        return count == null ? 0 : count;
-                    }
-                };
+                Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18
+                if (linesE != null) {
+                    lines.addAll(XMLUtil.findSubElements(linesE));
+                }
+                if (name == null) {
+                    name = clazz.getAttribute("name");
+                }
             }
         }
-        return null;
+        if (name == null) {
+            return null; // no match
+        }
+        final String _name = name;
+        return new FileCoverageDetails() {
+            public @Override FileObject getFile() {
+                return fo;
+            }
+            public @Override int getLineCount() {
+                return doc.getDefaultRootElement().getElementCount();
+            }
+            public @Override boolean hasHitCounts() {
+                return true;
+            }
+            public @Override long lastUpdated() {
+                FileObject r = report();
+                return r != null ? r.lastModified().getTime() : 0L;
+            }
+            public @Override FileCoverageSummary getSummary() {
+                return summaryOf(fo, _name, lines);
+            }
+            private Integer find(int lineNo) {
+                for (Element line : lines) {
+                    if (line.getAttribute("number").equals(String.valueOf(lineNo + 1))) { // NOI18N
+                        return Integer.valueOf(line.getAttribute("hits")); // NOI18N
+                    }
+                }
+                return null;
+            }
+            public @Override CoverageType getType(int lineNo) {
+                Integer count = find(lineNo);
+                return count == null ? CoverageType.INFERRED : count == 0 ? CoverageType.NOT_COVERED : CoverageType.COVERED;
+            }
+            public @Override int getHitCount(int lineNo) {
+                Integer count = find(lineNo);
+                return count == null ? 0 : count;
+            }
+        };
     }
 
     public @Override List<FileCoverageSummary> getResults() {
@@ -303,14 +313,15 @@ public final class MavenCoverageProvider implements CoverageProvider {
             if (java == null) {
                 continue;
             }
+            // XXX nicer to collect together nested classes in same compilation unit
             Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18N
             List<Element> lines = linesE != null ? XMLUtil.findSubElements(linesE) : Collections.<Element>emptyList();
-            summs.add(summaryOf(java, clazz, lines));
+            summs.add(summaryOf(java, clazz.getAttribute("name").replace('$', '.'), lines));
         }
         return summs;
     }
     
-    private FileCoverageSummary summaryOf(FileObject java, Element clazz, List<Element> lines) {
+    private FileCoverageSummary summaryOf(FileObject java, String name, List<Element> lines) {
         // Not really the total number of lines in the file at all, but close enough - the ones Cobertura recorded.
         int lineCount = 0;
         int executedLineCount = 0;
@@ -320,7 +331,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 executedLineCount++;
             }
         }
-        return new FileCoverageSummary(java, clazz.getAttribute("name"), lineCount, executedLineCount, 0, 0); // NOI18N
+        return new FileCoverageSummary(java, name, lineCount, executedLineCount, 0, 0); // NOI18N
     }
 
     public @Override String getTestAllAction() {
