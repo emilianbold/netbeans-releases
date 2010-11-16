@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
  *
@@ -60,28 +61,39 @@ public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
 
     @Override
     protected String[] getAdditionalContainerResourceAnnotations() {
+        if ( Util.isCDIEnabled(project)){
+            return new String[] {RestConstants.STATELESS_ANNOTATION , 
+                    Constants.REQUESTED_SCOPE};
+        }
         return new String[] {RestConstants.STATELESS_ANNOTATION};
     }
 
     @Override
     protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
-        return new Object[] {null, null};
+        return new Object[] {null, null, null};
     }
 
     @Override
     protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
         List<String> imports = new ArrayList<String>();
         imports.add(RestConstants.STATELESS);
+        if (Util.isCDIEnabled(project)){
+            imports.add( Constants.FQN_REQUESTED_SCOPE);
+        }
         return imports;
     }
 
     @Override
     protected Object[] getAdditionalItemResourceAnnotationAttrs() {
-        return new Object[] {null, null};
+        return new Object[] {null, null, null};
     }
 
     @Override
     protected String[] getAdditionalItemResourceAnnotations() {
+        if ( Util.isCDIEnabled(project)){
+            return new String[] {RestConstants.STATELESS_ANNOTATION , 
+                    Constants.REQUESTED_SCOPE};
+        }
         return new String[] {RestConstants.STATELESS_ANNOTATION};
     }
 
@@ -89,6 +101,9 @@ public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
     protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
         List<String> imports = new ArrayList<String>();
         imports.add(RestConstants.STATELESS);
+        if (Util.isCDIEnabled(project)){
+            imports.add( Constants.FQN_REQUESTED_SCOPE);
+        }
         return imports;
     }
 }

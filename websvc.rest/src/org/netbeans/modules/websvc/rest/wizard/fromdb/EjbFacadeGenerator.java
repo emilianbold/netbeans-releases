@@ -88,8 +88,10 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -273,7 +275,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                     implementsClause.add(genUtils.createType(localInterfaceFQN, classElement));
                 if (hasRemote)
                     implementsClause.add(genUtils.createType(remoteInterfaceFQN, classElement));
-
+                
                 List<Tree> members = new ArrayList<Tree>(classTree.getMembers());
                 MethodTree constructor = maker.Constructor(
                         genUtils.createModifiers(Modifier.PUBLIC),
@@ -389,6 +391,11 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 ExpressionTree annArgument = maker.Literal(entityFQN.toLowerCase());
                 modifiersTree =
                         maker.addModifiersAnnotation(modifiersTree, genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
+                
+                if ( Util.isCDIEnabled(project)){
+                    modifiersTree =maker.addModifiersAnnotation(modifiersTree,
+                            genUtils.createAnnotation(Constants.FQN_REQUESTED_SCOPE));
+                }
 
                 ClassTree newClassTree = maker.Class(
                         modifiersTree,
