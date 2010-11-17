@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -180,15 +181,19 @@ public class ConfigurationMakefileWriter {
             }
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
-            SwingUtilities.invokeLater(new Runnable() {
+            if (CndUtils.isUnitTestMode()) {
+                new Exception(msg).printStackTrace();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
-                    DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(msg), title, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
-                    DialogDisplayer.getDefault().notify(nd);
-                }
-            });
+                    @Override
+                    public void run() {
+                        Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
+                        DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(msg), title, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
+                        DialogDisplayer.getDefault().notify(nd);
+                    }
+                });
+            }
         }
         return ok;
     }
@@ -555,8 +560,8 @@ public class ConfigurationMakefileWriter {
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
-        bw.write("build/" + conf.getName() + "/%.o: nbproject/qt-" + conf.getName() + ".mk\n"); // NOI18N
-        bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk \"$@\"\n"); // NOI18N
+        bw.write("build/" + conf.getName() + "/%.o: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
+        bw.write("\t$(MAKE) -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -565,7 +570,7 @@ public class ConfigurationMakefileWriter {
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         bw.write("\t\"${MAKE}\" " // NOI18N
-                + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
+                + " -f nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk " // NOI18N
                 + output + "\n\n"); // NOI18N
     }
 
@@ -1251,11 +1256,11 @@ public class ConfigurationMakefileWriter {
         bw.write("# Clean Targets\n"); // NOI18N
         bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}"); // NOI18N
         if (conf.isQmakeConfiguration()) {
-            bw.write(" nbproject/qt-" + conf.getName() + ".mk"); // NOI18N
+            bw.write(" nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk"); // NOI18N
         }
         bw.write('\n'); // NOI18N
         if (conf.isCompileConfiguration()) {
-            bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
+            bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/'+MakeConfiguration.CND_CONF_MACRO+ "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
             if (conf.getCompilerSet().getCompilerSet() != null
                     && conf.getCompilerSet().getCompilerSet().getCompilerFlavor().isSunStudioCompiler()
@@ -1309,7 +1314,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
+            bw.write("\t$(MAKE) -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);
