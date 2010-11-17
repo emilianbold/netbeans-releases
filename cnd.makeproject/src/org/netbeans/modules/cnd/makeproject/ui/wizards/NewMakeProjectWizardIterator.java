@@ -416,7 +416,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = (Boolean) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT);
+        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }

@@ -44,8 +44,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.PrintStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 
 /**
@@ -62,4 +71,68 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         assertNotNull("Null model", csmModel);
         assertTrue("Unknown model provider " + csmModel.getClass().getName(), csmModel instanceof ModelImpl);
     }
+    
+    public static void dumpProjectContainers(ProjectBase project) {
+        PrintStream printStream = System.err;
+        dumpProjectContainers(project.getClassifierSorage(), printStream);
+        dumpProjectContainers(project.getDeclarationsSorage(), printStream);
+    }
+
+    private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream) {
+        printStream.println("\n========== Dumping Dump Project Classifiers");
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getClassifiers().entrySet()) {
+            printStream.print("\t" + entry.getKey().toString() + " ");
+            if (entry.getValue() == null) {
+                printStream.println("null");
+            } else {
+                printStream.println(entry.getValue().getUniqueName());
+            }
+        }
+        printStream.println("\n========== Dumping Dump Project Typedefs");
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTypedefs().entrySet()) {
+            printStream.print("\t" + entry.getKey().toString() + " ");
+            if (entry.getValue() == null) {
+                printStream.println("null");
+            } else {
+                printStream.println(entry.getValue().getUniqueName());
+            }
+        }
+    }
+    
+    private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream) {
+        printStream.println("\n========== Dumping Project declarations");
+        for (Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()) {
+            printStream.println("\t" + entry.getKey().toString());
+            TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
+            Object o = entry.getValue();
+            if (o instanceof CsmUID<?>[]) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
+                for (CsmUID<CsmDeclaration> uidt : uids) {
+                    set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                }
+            } else if (o instanceof CsmUID<?>) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
+                set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+            }
+            for (Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()) {
+                printStream.print("\t\t" + f.getValue());
+            }
+        }
+        printStream.println("\n========== Dumping Project friends");
+        for (Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()) {
+            printStream.print("\t" + entry.getKey().toString() + " ");
+            TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
+            for (CsmUID<? extends CsmFriend> uid : entry.getValue()) {
+                CsmFriend f = uid.getObject();
+                set.put(f.getQualifiedName(), f);
+            }
+            for (Map.Entry<CharSequence, CsmFriend> f : set.entrySet()) {
+                printStream.print("\t\t" + f.getKey().toString() + " " + f.getValue());
+            }
+        }
+    }    
 }
