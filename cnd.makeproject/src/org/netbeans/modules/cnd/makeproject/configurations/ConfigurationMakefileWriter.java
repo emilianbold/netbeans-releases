@@ -478,15 +478,15 @@ public class ConfigurationMakefileWriter {
             if (!qmakeSpec.isEmpty()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
-            bw.write("nbproject/qt-${CND_CONF}.mk: nbproject/qt-${CND_CONF}.pro FORCE\n"); // NOI18N
+            bw.write("nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".pro FORCE\n"); // NOI18N
             // It is important to generate makefile in current directory, and then move it to nbproject/.
             // Otherwise qmake will complain that sources are not found.
-            bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
-            bw.write("\tmv -f qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
+            bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".pro\n"); // NOI18N
+            bw.write("\tmv -f qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
             if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CND_CONF}.mk >nbproject/qt-${CND_CONF}.tmp\n"); // NOI18N
-                bw.write("\t@mv -f nbproject/qt-${CND_CONF}.tmp nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
+                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
+                bw.write("\t@mv -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
             }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
@@ -550,8 +550,8 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
-        bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
-        bw.write("\t\"${MAKE}\" -f nbproject/qt-${CND_CONF}.mk " + output + "\n\n"); // NOI18N
+        bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
+        bw.write("\t\"${MAKE}\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
@@ -810,7 +810,7 @@ public class ConfigurationMakefileWriter {
                 bw.write(target + ": "); // NOI18N
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (conf.getRebuildPropChanged().getValue()) {
-                    bw.write("nbproject/Makefile-${CND_CONF}.mk "); // NOI18N
+                    bw.write("nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk "); // NOI18N
                 }
                 if (additionalDep != null) {
                     bw.write(file + " " + additionalDep + "\n"); // NOI18N
@@ -913,8 +913,8 @@ public class ConfigurationMakefileWriter {
                         } else {
                             assert false;
                         }
-                        target = target.replace("${OBJECTDIR}", "${TESTDIR}"); // NOI18N
-                        command = command.replace("${OBJECTDIR}", "${TESTDIR}"); // NOI18N
+                        target = target.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                        command = command.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
                         folders = CndPathUtilitities.getDirName(target);
                         bw.write("\n"); // NOI18N
                         // See IZ #151465 for explanation why Makefile is listed as dependency.
@@ -1115,7 +1115,7 @@ public class ConfigurationMakefileWriter {
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                 command += " code=cpp parse=partial"; // NOI18N
                             }
-                            command += " sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
                             command += " oname="; // NOI18N
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                 MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
@@ -1136,7 +1136,7 @@ public class ConfigurationMakefileWriter {
                 bw.write(target + ": "); // NOI18N
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (conf.getRebuildPropChanged().getValue()) {
-                    bw.write("nbproject/Makefile-${CND_CONF}.mk "); // NOI18N
+                    bw.write("nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk "); // NOI18N
                 }
                 if (additionalDep != null) {
                     bw.write(file + " " + additionalDep + "\n"); // NOI18N
@@ -1351,7 +1351,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public static String getObjectDir(MakeConfiguration conf) {
-        return MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}"; // UNIX path // NOI18N
+        return MakeConfiguration.BUILD_FOLDER + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO; // UNIX path // NOI18N
     }
 
     private static String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
