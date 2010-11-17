@@ -480,8 +480,8 @@ public class SelectModePanel extends javax.swing.JPanel {
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); // NOI18N
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); //NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); 
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); 
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
@@ -496,9 +496,9 @@ public class SelectModePanel extends javax.swing.JPanel {
             controller.getWizardStorage().setCompilerSet(item.getCompilerSet());
             controller.getWizardStorage().setDefaultCompilerSet(item.isDefaultCompilerSet());
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); 
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); 
         initialized = false;
     }
 

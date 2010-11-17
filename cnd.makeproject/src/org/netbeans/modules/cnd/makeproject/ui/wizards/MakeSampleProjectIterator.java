@@ -141,11 +141,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         String name = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = true;
-        Object property = wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT);
-        if (property instanceof Boolean) {
-            defaultToolchain = (Boolean) property;
-        }
+        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
         prjParams.setHostToolchain(hostUID, toolchain, defaultToolchain);
         return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);
