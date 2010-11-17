@@ -81,6 +81,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -1182,6 +1185,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     private static class NbIndexCreator extends AbstractIndexCreator {
 
+        private final List<ArtifactRepository> remoteRepos;
+        NbIndexCreator() {
+            remoteRepos = new ArrayList<ArtifactRepository>();
+            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                if (!info.isLocal()) {
+                    remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
+                }
+            }
+        }
+
         private WeakReference<MavenEmbedder> embedderRef = null;
 
         private MavenEmbedder getEmbedder() {
@@ -1204,7 +1217,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             try {
                 MavenProject mp = load(ai);
                 if (mp != null) {
-                    dependenciesByArtifact.put(ai, mp.getDependencies());
+                    List<Dependency> dependencies = mp.getDependencies();
+                    LOGGER.log(Level.FINE, "Successfully loaded project model from repository for {0} with {1} dependencies", new Object[] {ai, dependencies.size()});
+                    dependenciesByArtifact.put(ai, dependencies);
                 }
             } catch (InvalidArtifactRTException ex) {
                 ex.printStackTrace();
@@ -1242,11 +1257,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         ai.packaging != null ? ai.packaging : "jar");
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
                 dpbr.setLocalRepository(getEmbedder().getLocalRepository());
+                dpbr.setRemoteRepositories(remoteRepos);
                 dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+                dpbr.setSystemProperties(getEmbedder().getSystemProperties());
                 
                 ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
-                    LOGGER.log(Level.FINE, "Successfully loaded project model from repository for {0}", ai);
                     return res.getProject();
                 } else {
                     LOGGER.log(Level.FINE, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
