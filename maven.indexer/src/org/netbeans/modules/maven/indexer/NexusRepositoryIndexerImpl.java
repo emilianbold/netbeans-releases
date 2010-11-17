@@ -64,6 +64,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -81,6 +82,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -1182,8 +1184,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private WeakReference<MavenEmbedder> embedderRef = null;
 
-        private WeakReference<ArtifactRepository> repositoryRef = null;
-
         private MavenEmbedder getEmbedder() {
             MavenEmbedder res = (null!=embedderRef ? embedderRef.get() : null);
             if (null == res) {
@@ -1193,35 +1193,32 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             return res;
         }
 
-        private ArtifactRepository getRepository() {
-            ArtifactRepository res = (null!=repositoryRef ? repositoryRef.get() : null);
-            if (null == res) {
-                res = getEmbedder().getLocalRepository();
-                repositoryRef = new WeakReference<ArtifactRepository>(res);
-            }
-            return res;
-        }
+        private final Map<ArtifactInfo,List<Dependency>> dependenciesByArtifact = new WeakHashMap<ArtifactInfo,List<Dependency>>();
 
-        @Override
-        public void updateDocument(ArtifactInfo context, Document doc) {
-            ArtifactInfo ai = context;
+        public @Override void populateArtifactInfo(ArtifactContext context) throws IOException {
+            ArtifactInfo ai = context.getArtifactInfo();
             if (ai.classifier != null) {
                 //don't process items with classifier
                 return;
             }
             try {
-                MavenProject mp = load(ai, getRepository());
+                MavenProject mp = load(ai);
                 if (mp != null) {
-                    @SuppressWarnings("unchecked")
-                    List<Dependency> dependencies = mp.getDependencies();
-                    for (Dependency d : dependencies) {
-                        doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
-                        doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
-                        doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
-                    }
+                    dependenciesByArtifact.put(ai, mp.getDependencies());
                 }
             } catch (InvalidArtifactRTException ex) {
                 ex.printStackTrace();
+            }
+        }
+
+        public @Override void updateDocument(ArtifactInfo ai, Document doc) {
+            List<Dependency> dependencies = dependenciesByArtifact.get(ai);
+            if (dependencies != null) {
+                for (Dependency d : dependencies) {
+                    doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
+                    doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
+                    doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
+                }
             }
         }
         private static final String NS = "urn:NbIndexCreator"; // NOI18N
@@ -1236,39 +1233,33 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             return Arrays.asList(FLD_NB_DEPENDENCY_GROUP, FLD_NB_DEPENDENCY_ARTIFACT, FLD_NB_DEPENDENCY_VERSION);
         }
 
-        private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
+        private MavenProject load(ArtifactInfo ai) {
             try {
                 Artifact projectArtifact = getEmbedder().createArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
-                        null);
+                        ai.packaging != null ? ai.packaging : "jar");
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
                 dpbr.setLocalRepository(getEmbedder().getLocalRepository());
-                if(repository ==null || repository.equals(getEmbedder().getLocalRepository())) {
-                    dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
-                }else{
-                    dpbr.setRemoteRepositories(Arrays.asList(repository));
-                }
+                dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
                 
                 ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
+                    LOGGER.log(Level.FINE, "Successfully loaded project model from repository for {0}", ai);
                     return res.getProject();
+                } else {
+                    LOGGER.log(Level.FINE, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
                 }
             } catch (ProjectBuildingException ex) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+                LOGGER.log(Level.FINE, "Failed to load project model from repository for {0}: {1}", new Object[] {ai, ex});
             } catch (Exception exception) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", exception);
+                LOGGER.log(Level.FINE, "Failed to load project model from repository for " + ai, exception);
             }
             return null;
         }
 
-        @Override
-        public void populateArtifactInfo(ArtifactContext context) throws IOException {
-        }
-
-        @Override
-        public boolean updateArtifactInfo(Document arg0, ArtifactInfo arg1) {
+        public @Override boolean updateArtifactInfo(Document doc, ArtifactInfo ai) {
             return false;
         }
     }
