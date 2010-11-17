@@ -191,7 +191,6 @@ public class MakeSampleProjectGenerator {
                 }
                 //changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
                 changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT, csVariant, "X-TOOLCHAIN-X"); // NOI18N
-                changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.PLATFORM_ELEMENT, "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dll", "X-LIBSUFFIX-X"); // NOI18N
@@ -224,6 +223,7 @@ public class MakeSampleProjectGenerator {
                     projXml = FileUtil.toFile(privateConfiguration);
                     Document secodaryDoc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
                     changeXmlFileByTagName(secodaryDoc, CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT, prjHostUID, "X-HOST-UID-X"); // NOI18N
+                    changeXmlFileByTagName(secodaryDoc, CommonConfigurationXMLCodec.PLATFORM_ELEMENT, "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
                     saveXml(secodaryDoc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
                 } else {
                     // Create privete configuration with selected host
@@ -248,9 +248,12 @@ public class MakeSampleProjectGenerator {
                                 secondaryConfs.appendChild(secondaryConf);
                                 Element secondaryToolSet = secodaryDoc.createElement(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
                                 secondaryConf.appendChild(secondaryToolSet);
-                                Element developmentServer = secodaryDoc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
-                                secondaryToolSet.appendChild(developmentServer);
-                                developmentServer.setTextContent(prjHostUID);
+                                Element secondaryDevelopmentServer = secodaryDoc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
+                                secondaryToolSet.appendChild(secondaryDevelopmentServer);
+                                secondaryDevelopmentServer.setTextContent(prjHostUID);
+                                Element secondaryPlatform = secodaryDoc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+                                secondaryToolSet.appendChild(secondaryPlatform);
+                                secondaryPlatform.setTextContent("" + platform); // NOI18N
                             }
                         }
                     }

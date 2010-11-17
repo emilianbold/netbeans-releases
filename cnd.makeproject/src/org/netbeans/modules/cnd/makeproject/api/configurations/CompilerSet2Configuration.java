@@ -148,7 +148,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     private void setValue(String name, String flavor) {
-        if (name == null || name.startsWith(CompilerSetNodeProp.DEFAULT_CS+" (")) {
+        if (name == null || name.startsWith(CompilerSetNodeProp.DEFAULT_CS+" (")) { // NOI18N
             name = DEFAULT_CS;
         }
         getCompilerSetName().setValue(name);
