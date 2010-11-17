@@ -152,7 +152,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         }
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
-        conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
+        conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
         // Setup streams
@@ -219,7 +219,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         }
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
-        conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
+        conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
         // Setup streams
