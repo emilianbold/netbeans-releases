@@ -217,6 +217,7 @@ public class ConfigurationDescriptorProvider {
                 oldSet.remove(oldItem);
                 if (item.isExcluded() && oldItem.isExcluded()) {
                     // no changes
+                    delta.replaced.add(item);
                 } else if (item.isExcluded() && !oldItem.isExcluded()) {
                     delta.exluded.add(item);
                 } else  if (!item.isExcluded() && oldItem.isExcluded()) {
@@ -226,6 +227,8 @@ public class ConfigurationDescriptorProvider {
                     if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths()) &&
                           item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
                         delta.changed.add(item);
+                    } else {
+                        delta.replaced.add(item);
                     }
                 }
             }
@@ -498,6 +501,7 @@ public class ConfigurationDescriptorProvider {
         public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
         public List<Item> deleted = new ArrayList<Item>(); // deleted from project items
         public List<Item> changed = new ArrayList<Item>(); // changed properties
+        public List<Item> replaced = new ArrayList<Item>(); // properties were not changed (from code model point of view) but instance was replaced
 
         public boolean isEmpty(){
             return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();

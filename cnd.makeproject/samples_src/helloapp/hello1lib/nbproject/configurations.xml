@@ -26,7 +26,6 @@
     <conf name="Debug" type="3">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -48,7 +47,6 @@
     <conf name="Release" type="3">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>

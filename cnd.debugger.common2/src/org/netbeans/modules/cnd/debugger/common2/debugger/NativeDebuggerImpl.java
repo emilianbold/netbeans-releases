@@ -1527,19 +1527,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 	 */
 
-	String csname;
-        if (csconf.isValid()) {
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
-        } else {
-            csname = csconf.getOldName();
-
-
+        cs = csconf.getCompilerSet();
+	String csname = csconf.getOption();
+        if (cs == null) {
             final int platform = conf.getPlatformInfo().getPlatform();
             CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
             flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
             cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
-            csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
         if (debuggerTool != null)
