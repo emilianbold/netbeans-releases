@@ -78,7 +78,7 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
                 return false;
             }            
             ret = true;
-            errroMessage = "";            
+            errroMessage = null;            
         }
         return ret;
     }

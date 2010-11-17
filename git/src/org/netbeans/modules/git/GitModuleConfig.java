@@ -85,8 +85,9 @@ public final class GitModuleConfig {
     
     private GitModuleConfig() { }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
+    public boolean isExcludedFromCommit(String path) {
+        Set<String> commitExclusions = getCommitExclusions();        
+        return commitExclusions.contains(path);
     }
 
     public Color getColor(String colorName, Color defaultColor) {
