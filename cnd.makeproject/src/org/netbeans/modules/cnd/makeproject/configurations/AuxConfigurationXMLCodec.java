@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -62,6 +63,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private ConfigurationDescriptor configurationDescriptor;
     private Configuration currentConf;
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
+    private int descriptorVersion = -1;
 
     public AuxConfigurationXMLCodec(String tag,
             ConfigurationDescriptor configurationDescriptor) {
@@ -81,6 +83,10 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
+        String versionString = atts.getValue("version");        // NOI18N
+        if (versionString != null) {
+            descriptorVersion = new Integer(versionString).intValue();
+        }
     }
 
     // interface XMLDecoder
@@ -130,6 +136,14 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
                         ExecutionEnvironmentFactory.fromUniqueID(currentText));
             }
+        } else if (element.equals(PLATFORM_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                int set = new Integer(currentText).intValue();
+                if (descriptorVersion <= 37 && set == 4) {
+                    set = PlatformTypes.PLATFORM_GENERIC;
+                }
+                ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(1);
+            }
         }
     }
 
@@ -137,6 +151,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     protected void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(TOOLS_SET_ELEMENT);
         xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
+        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
 }

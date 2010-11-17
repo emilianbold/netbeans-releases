@@ -80,6 +80,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V72 - NB 7.0
+ *   move platform in private project area
  * V71 - NB 7.0
  *   introduce default tool collection
  * V70 - NB 7.0
@@ -206,7 +208,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 71;
+    public final static int CURRENT_VERSION = 72;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
