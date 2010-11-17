@@ -86,6 +86,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.legacy.WagonManager;
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.ConnectionException;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
@@ -121,8 +122,11 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 import org.sonatype.nexus.index.ArtifactAvailablility;
 import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactContextProducer;
@@ -257,18 +261,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             initIndexer();
 
             IndexingContext context = indexer.getIndexingContexts().get(info.getId());
+            String indexUpdateUrl = findIndexUpdateUrlConsideringMirrors(info);
             if (context != null) {
                 String contexturl = context.getIndexUpdateUrl();
-                String repourl = info.getIndexUpdateUrl();
                 File contextfile = context.getRepository();
                 File repofile = info.getRepositoryPath() != null ? new File(info.getRepositoryPath()) : null;
                 //try to figure if context reload is necessary
-                if ((contexturl == null) != (repourl == null) ||
-                    (contexturl != null && !contexturl.equals(repourl))) {
+                if (!Utilities.compareObjects(contexturl, indexUpdateUrl)) {
                     LOGGER.fine("Remote context changed:" + info.getId() + ", unload/load");//NOI18N
                     unloadIndexingContext(info);
-                } else if ((contextfile == null) != (repofile == null) ||
-                           (contextfile != null && !contextfile.equals(repofile))) {
+                } else if (!Utilities.compareObjects(contextfile, repofile)) {
                     LOGGER.fine("Local context changed:" + info.getId() + ", unload/load");//NOI18N
                     unloadIndexingContext(info);
                 } else {
@@ -301,7 +303,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
-                            info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
+                            info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
@@ -314,7 +316,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
-                            info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
+                            info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 }
                 if (index) {
@@ -344,6 +346,45 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }
+    }
+
+    private String findIndexUpdateUrlConsideringMirrors(RepositoryInfo info) { // #192064
+        String direct = info.getIndexUpdateUrl();
+        if (direct == null) {
+            return null; // local
+        }
+        MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
+        DefaultMirrorSelector selectorNoGroups = new DefaultMirrorSelector();
+        DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
+        for (Mirror mirror : embedder2.getSettings().getMirrors()) {
+            String mirrorOf = mirror.getMirrorOf();
+            if (!mirrorOf.contains("*")/* XXX list might be used just for variant repo names: && !mirrorOf.contains(",")*/) {
+                selectorNoGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+            }
+            selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+        }
+        RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
+        RemoteRepository mirrored = selectorNoGroups.getMirror(original);
+        if (mirrored != null) {
+            String index = addIndex(mirrored.getUrl());
+            LOGGER.log(Level.FINE, "Mirroring {0} to {1}", new Object[] {direct, index});
+            return index;
+        } else {
+            mirrored = selectorWithGroups.getMirror(original);
+            if (mirrored != null) {
+                // XXX consider displaying warning in GUI; use NbPreferences.root().node("org/netbeans/modules/maven/showQuestions")
+                LOGGER.log(Level.WARNING, "Will not mirror {0} to {1}", new Object[] {direct, addIndex(mirrored.getUrl())});
+            } else {
+                LOGGER.log(Level.FINE, "No mirror for {0}", direct);
+            }
+            return direct;
+        }
+    }
+    private String addIndex(String baseURL) {
+        if (!baseURL.endsWith("/")) {
+            baseURL += "/";
+        }
+        return baseURL + ".index/"; // NOI18N
     }
 
     /**
@@ -1260,6 +1301,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
         public @Override void retrieve(final String name, final File targetFile) throws IOException {
+            LOGGER.log(Level.FINE, "retrieving {0} from {1}", new Object[] {name, wagon.getRepository().getUrl()});
             try {
                 wagon.get(name, targetFile);
             } catch (ResourceDoesNotExistException x) {
