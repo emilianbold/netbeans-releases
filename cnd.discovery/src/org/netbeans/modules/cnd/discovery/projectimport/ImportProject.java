@@ -153,6 +153,7 @@ public class ImportProject implements PropertyChangeListener {
     private final boolean fullRemote;
     private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
+    private boolean defaultToolchain;
     private String workingDir;
     private String buildCommand = "${MAKE} -f Makefile";  // NOI18N
     private String cleanCommand = "${MAKE} -f Makefile clean";  // NOI18N
@@ -201,12 +202,12 @@ public class ImportProject implements PropertyChangeListener {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
             // the best guess
-            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
             if (makefilePath == null) {
                 makefilePath = nativeProjectPath + "/Makefile"; // NOI18N;
             }
         } else {
-            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
         }
         if (fullRemote) {
             makefileName = (makefilePath == null) ? "Makefile" : CndPathUtilitities.getBaseName(makefilePath); //NOI18N
@@ -215,7 +216,8 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        defaultToolchain = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT);
         
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
@@ -282,6 +284,7 @@ public class ImportProject implements PropertyChangeListener {
         manualCA = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE)); // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SET_AS_MAIN));  // NOI18N
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
+        defaultToolchain = (Boolean)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT); // NOI18N
     }
 
     private String normalizeAbsolutePath(String path) {
@@ -292,7 +295,7 @@ public class ImportProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         projectFolder = CndFileUtils.normalizeFile(projectFolder); // always local
-        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
+        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel;
         if (fullRemote) { //XXX:fullRemote {
             workingDirRel = nativeProjectFO.getPath();

@@ -139,10 +139,10 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
-        this(baseDir, name, configurationTypeValue, hostUID, null);
+        this(baseDir, name, configurationTypeValue, hostUID, null, true);
     }
 
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(baseDir, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
@@ -152,8 +152,12 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
-        CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
-        compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
+        if (defaultToolCollection) {
+            compilerSet = new CompilerSet2Configuration(developmentHost);
+        } else {
+            CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+            compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
+        }
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
