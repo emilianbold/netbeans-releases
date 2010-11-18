@@ -72,7 +72,7 @@ public abstract class MICommand {
     public MICommand(int routingToken, String command) {
 	this.routingToken = routingToken;
 	this.command = command;
-        this.consoleCommand = !command.startsWith("-");
+        this.consoleCommand = !command.startsWith("-"); // NOI18N
     } 
 
 
