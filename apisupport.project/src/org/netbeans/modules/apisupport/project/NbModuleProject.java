@@ -390,7 +390,7 @@ public final class NbModuleProject implements Project {
         }
     }
     
-    public FileObject getManifestFile() {
+    public @CheckForNull FileObject getManifestFile() {
         return helper.resolveFileObject(evaluator().getProperty("manifest.mf")); // NOI18N
     }
     
