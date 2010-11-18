@@ -150,7 +150,6 @@ public final class SearchBar extends JPanel {
     private Map<Object, Object> findProps;
     private JPopupMenu expandPopup;
     private JPanel padding;
-    private boolean navigateOnFocusLost = false;
     
     /**
      * contains everything that is in Search bar and is possible to move to expand popup
@@ -725,10 +724,6 @@ public final class SearchBar extends JPanel {
             return;
         }
         
-        if (navigateOnFocusLost) {
-            findNext();
-        }
-        
         org.netbeans.editor.Utilities.setStatusText(component, "");
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
@@ -784,13 +779,11 @@ public final class SearchBar extends JPanel {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
-                navigateOnFocusLost = !empty;
                 org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
                 incrementalSearchTextField.setForeground(NOT_FOUND);
-                navigateOnFocusLost = false;
                 org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
                     SearchBar.class, "incremental-search-not-found", incrementalSearchText),
                     StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
@@ -844,7 +837,6 @@ public final class SearchBar extends JPanel {
             incrementalSearchTextField.setForeground(NOT_FOUND);
             Toolkit.getDefaultToolkit().beep();
         }
-        navigateOnFocusLost = false;
     }
 
     private void processButton(AbstractButton button) {
