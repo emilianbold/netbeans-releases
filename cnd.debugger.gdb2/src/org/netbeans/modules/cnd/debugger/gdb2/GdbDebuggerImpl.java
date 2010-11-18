@@ -779,7 +779,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	private MICommand failureChain;
 
 	private boolean emptyDoneIsError;
-
+        
 	protected AbstractMICommand(int rt, String cmd) {
 	    super(rt, cmd);
 	}
@@ -944,16 +944,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	final boolean resume;
 
 	public InfoProcMICmd(boolean resume) {
-	    // I was hoping that that using -interpreter-exec
-	    // would make the ~ output come out with tokens 
-	    // but it doesn't, at least in gdb 6.4. If it did
-	    // it would help associate ~ output with the right command
-	    //
-	    // What we SHOULD tryis flag "console" commands as such and
-	    // have ~ go to the most recent outstanding "console" command
-	    // as opposed to just the most recent one.
-
-	    super(0, "-interpreter-exec console \"info proc\"");// NOI18N
+	    super(0, "info proc");// NOI18N
 	    this.resume = resume;
 	}
 
