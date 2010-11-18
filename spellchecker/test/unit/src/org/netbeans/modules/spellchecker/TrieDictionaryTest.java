@@ -44,17 +44,24 @@
 
 package org.netbeans.modules.spellchecker;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URL;
 import java.util.Collections;
 import java.util.SortedSet;
-import junit.framework.TestCase;
 import java.util.TreeSet;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 
 /**
  *
  * @author lahvac
  */
-public class TrieDictionaryTest extends TestCase {
+public class TrieDictionaryTest extends NbTestCase {
 
     public TrieDictionaryTest(String testName) {
         super(testName);
@@ -71,7 +78,7 @@ public class TrieDictionaryTest extends TestCase {
         data.add("data");
         data.add("test");
                 
-        TrieDictionary d = TrieDictionary.constructTrie(data);
+        Dictionary d = constructTrie(data);
         
         assertEquals(ValidityType.VALID, d.validateWord("remove"));
         assertEquals(ValidityType.VALID, d.validateWord("add"));
@@ -99,7 +106,7 @@ public class TrieDictionaryTest extends TestCase {
         data.add("hello");
         data.add("saida");
         
-        TrieDictionary d = TrieDictionary.constructTrie(data);
+        Dictionary d = constructTrie(data);
         
         assertEquals(Collections.singletonList("hello"), d.findProposals("hfllo"));
         assertEquals(Collections.singletonList("saida"), d.findProposals("safda"));
@@ -111,7 +118,7 @@ public class TrieDictionaryTest extends TestCase {
         data.add("abc");
         data.add("aéc");
 
-        TrieDictionary d = TrieDictionary.constructTrie(data);
+        Dictionary d = constructTrie(data);
 
         assertEquals(ValidityType.VALID, d.validateWord("abc"));
         assertEquals(ValidityType.VALID, d.validateWord("aéc"));
@@ -128,10 +135,27 @@ public class TrieDictionaryTest extends TestCase {
         data.add("Bcd");
         data.add("abcd");
 
-        TrieDictionary d = TrieDictionary.constructTrie(data);
+        Dictionary d = constructTrie(data);
 
         assertEquals(ValidityType.VALID, d.validateWord("Abc"));
         assertEquals(ValidityType.PREFIX_OF_VALID, d.validateWord("Bc"));
     }
 
+    private Dictionary constructTrie(SortedSet<String> data) throws Exception {
+        clearWorkDir();
+
+        File sourceFile = new File(getWorkDir(), "source");
+        Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile), "UTF-8"));
+
+        for (String d : data) {
+            w.write(d);
+            w.write("\n");
+        }
+
+        w.close();
+
+        File trieFile = new File(getWorkDir(), "dict");
+
+        return TrieDictionary.getDictionary(trieFile, Collections.<URL>singletonList(sourceFile.toURI().toURL()));
+    }
 }

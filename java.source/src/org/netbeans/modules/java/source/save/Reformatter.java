@@ -2540,7 +2540,7 @@ public class Reformatter implements ReformatTask {
                         break;
                     default:
                         if (lastWSToken != null) {
-                            lastBlankLines = 0;
+                            lastBlankLines = -1;
                             lastBlankLinesTokenIndex = tokens.index() - 1;
                             lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                         }
