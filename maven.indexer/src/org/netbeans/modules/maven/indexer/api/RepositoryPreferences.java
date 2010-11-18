@@ -261,7 +261,7 @@ public final class RepositoryPreferences {
     }
 
     public int getIndexUpdateFrequency() {
-        return getPreferences().getInt(PROP_INDEX_FREQ, FREQ_ONCE_WEEK);
+        return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
     }
 
     public Date getLastIndexUpdate(String repoId) {
