@@ -59,6 +59,7 @@ public class NodeTableModelTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -199,28 +200,33 @@ public class NodeTableModelTest extends NbTestCase {
             super( Object.class );
         }
         
+        @Override
         public void setValue(Object val) 
             throws IllegalAccessException, 
                 IllegalArgumentException, 
                 InvocationTargetException {
         }
 
+        @Override
         public Object getValue() 
             throws IllegalAccessException, 
                 InvocationTargetException {
             return null;
         }
 
+        @Override
         public boolean canWrite() {
             return true;
         }
 
+        @Override
         public boolean canRead() {
             return true;
         }
     }
     
     private static class NullGetValueProperty extends MyProperty {
+        @Override
         public Object getValue(String attributeName) {
             return null;
         }
