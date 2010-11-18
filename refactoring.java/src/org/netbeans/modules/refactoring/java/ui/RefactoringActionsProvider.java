@@ -139,7 +139,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             };
                             return wrap(new RenameRefactoringUI(folder));
                         } else {
-                            return wrap(new RenameRefactoringUI(selectedElement, info));
+                            if (selected.getSimpleName().length() != 0)
+                                return wrap(new RenameRefactoringUI(selectedElement, info));
+                            else {
+                                TreePath path = selectedElement.resolve(info);
+                                if (path!=null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                                    return wrap(new RenameRefactoringUI(selectedElement.getFileObject(), null, info));
+                                } else {
+                                    return null;
+                                }
+                            }
                         }
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
@@ -805,7 +814,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
                 if (!decls.isEmpty()) {
-                    selectedElement = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                    TreePath path = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                    if (path!=null && cc.getTrees().getElement(path)!=null) {
+                        selectedElement = path;
+                    }
                 }
             }
             ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
