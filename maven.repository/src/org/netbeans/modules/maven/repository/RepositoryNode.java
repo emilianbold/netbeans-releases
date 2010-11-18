@@ -117,11 +117,6 @@ public class RepositoryNode extends AbstractNode {
             buffer.append(NbBundle.getMessage(RepositoryNode.class,
                     "LBL_REPO_Url", info.getRepositoryUrl()));//NOI18N
         }
-        //show index url if available
-        if (info.getIndexUpdateUrl() != null) {
-            buffer.append(NbBundle.getMessage(RepositoryNode.class,
-                    "LBL_REPO_Index_Url", info.getIndexUpdateUrl()));//NOI18N
-        }
         buffer.append("</html>");//NOI18N
 
         return buffer.toString();
