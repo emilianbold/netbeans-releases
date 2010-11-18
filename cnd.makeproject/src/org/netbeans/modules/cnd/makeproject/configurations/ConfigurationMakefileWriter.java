@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -808,7 +809,16 @@ public class ConfigurationMakefileWriter {
                 } else {
                     assert false;
                 }
-                folders = CndPathUtilitities.getDirName(target);
+                StringTokenizer tokennizer = new StringTokenizer(target);
+                StringBuilder foldersBuffer = new StringBuilder();
+                while (tokennizer.hasMoreTokens()) {
+                    String dir = CndPathUtilitities.getDirName(tokennizer.nextToken());
+                    if (dir != null) {
+                        foldersBuffer.append(dir);
+                        foldersBuffer.append(" "); // NOI18N
+                    }
+                }
+                folders = foldersBuffer.toString().trim();
                 bw.write("\n"); // NOI18N
 
                 bw.write(target + ": "); // NOI18N
@@ -822,7 +832,7 @@ public class ConfigurationMakefileWriter {
                     bw.write(file + "\n"); // NOI18N
                 }
 
-                if (folders != null) {
+                if (folders != null && folders.length() > 0) {
                     bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
                 }
                 if (comment != null) {
