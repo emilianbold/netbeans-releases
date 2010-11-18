@@ -108,7 +108,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {
-            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalize(makefile.getParent()));
+            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalizeSlashes(makefile.getParent()));
             String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             buildCommandTextField.setText(buildCommand);
@@ -367,7 +367,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         //String path = CndPathUtilitities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilitities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
     
@@ -397,7 +397,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     

@@ -300,16 +300,16 @@ public class ImportProject implements PropertyChangeListener {
         if (fullRemote) { //XXX:fullRemote {
             workingDirRel = nativeProjectFO.getPath();
         } else {
-            workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir), pathMode);
+            workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
         }
-        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
+        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult), pathMode);
-            buildResult = CndPathUtilitities.normalize(buildResult);
+            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(buildResult), pathMode);
+            buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         // Include directories
@@ -318,8 +318,8 @@ public class ImportProject implements PropertyChangeListener {
             List<String> includeDirectoriesVector = new ArrayList<String>();
             while (tokenizer.hasMoreTokens()) {
                 String includeDirectory = tokenizer.nextToken();
-                includeDirectory = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(includeDirectory));
-                includeDirectory = CndPathUtilitities.normalize(includeDirectory);
+                includeDirectory = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(includeDirectory));
+                includeDirectory = CndPathUtilitities.normalizeSlashes(includeDirectory);
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
@@ -346,16 +346,16 @@ public class ImportProject implements PropertyChangeListener {
             } else {
                 // see comment above
                 // makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
-                makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
-                makefilePath = CndPathUtilitities.normalize(makefilePath);
+                makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath), pathMode);
+                makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
             }
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
             configureFileObject = RemoteFileUtil.getFileObject(normPath, executionEnvironment);
-            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath), pathMode);
-            configurePath = CndPathUtilitities.normalize(configurePath);
+            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(configurePath), pathMode);
+            configurePath = CndPathUtilitities.normalizeSlashes(configurePath);
             importantItems.add(configurePath);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();

@@ -197,7 +197,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
             System.out.println(result);
             System.out.println(golden);
         }
-        assert result.toString().equals(golden);
+        assertEquals(result.toString(),golden);
     }
 
     private void testDynamicLibrary(String testName, String flavorName, int platform, String golden) {
@@ -263,19 +263,19 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (TRACE) {
             System.out.println(result);
         }
-        assert result.toString().equals(golden);
+        assertEquals(result.toString(),golden);
     }
 
     @Test
     public void testMain_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/MyCompilerSet-MacOSX/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-MacOSX/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dylib\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dylib\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-MacOSX/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-MacOSX\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_GNU_MacOSX", "GNU", PlatformTypes.PLATFORM_MACOSX, golden.toString());
     }
@@ -284,12 +284,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testMain_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
@@ -298,12 +298,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testMain_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_GNU_Solaris_Intel", "GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
@@ -312,12 +312,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testMain_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_MinGW_Windows", "MinGW", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
@@ -326,12 +326,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testMain_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
         golden.append("\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx.exe: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testAppWithLibraries("Main_Cygwin_Windows", "Cygwin", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
@@ -344,8 +344,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("dist/Default/MyCompilerSet-MacOSX/libXxx.dylib: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-MacOSX\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dylib: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_MacOSX", "GNU", PlatformTypes.PLATFORM_MACOSX, golden.toString());
     }
@@ -357,8 +357,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/libXxx.so: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.so -KPIC -norunpath -h libXxx.so ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
@@ -371,8 +371,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("dist/Default/MyCompilerSet-Solaris-x86/libXxx.so: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -G -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_GNU_Solaris_Intel", "GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
@@ -385,8 +385,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
@@ -399,8 +399,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
-        golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
-        golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
+        golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -mno-cygwin -shared -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
         testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }

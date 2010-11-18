@@ -37,64 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.errors;
+package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
-import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
-import org.openide.filesystems.FileObject;
+import org.openide.text.Annotation;
 
 /**
  *
- * @author lahvac
+ * @author Egor Ushakov
  */
-public class Utilities {
+public interface DisassemblyService {
+    /**
+     * Opens disassembly and show the line related to the address specified
+     * @param address
+     * @return
+     */
+    boolean showAddress(String address);
 
-    public static ClassPath getSourceClassPathFor(FileObject file) {
-        for (String sourceCP : PathRecognizerRegistry.getDefault().getSourceIds()) {
-            ClassPath cp = ClassPath.getClassPath(file, sourceCP);
+    /**
+     * Opens disassembly and show the breakpoint
+     * @param address
+     * @return
+     */
+    //boolean showBreakpoint(AddressBreakpoint b);
 
-            if (cp != null) {
-                return cp;
-            }
-        }
+    /**
+     * Annotates address
+     * @param address
+     * @param annotationType
+     * @return
+     */
+    Annotation annotateAddress(String address, String annotationType);
 
-        return null;
-    }
+    /**
+     * Returns line number of the instruction with the address specified, -1 if not found
+     * @param address
+     * @return
+     */
+    int getAddressLine(String address);
 
-    public static Iterable<? extends FileObject> findIndexedRootsUnderDirectory(Project p, FileObject bigRoot) {
-        List<FileObject> result = new LinkedList<FileObject>();
-        
-        try {
-            Iterable<? extends FileObject> roots = CacheFolder.findRootsWithCacheUnderFolder(bigRoot);
+    /**
+     * Returns line number of the address breakpoint
+     * @param address
+     * @return
+     */
+    //int getBreakpointLine(AddressBreakpoint b);
 
-            for (FileObject root : roots) {
-                Project curr = FileOwnerQuery.getOwner(root);
+    /**
+     * Returns address of the instruction on the specified line
+     * @param lineNo
+     * @return
+     */
+    String getLineAddress(int lineNo);
 
-                if (   curr != null
-                    && curr.getProjectDirectory() == p.getProjectDirectory()
-                    && PathRegistry.getDefault().getSources().contains(root.getURL())) {
-                    result.add(root);
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, null, ex);
-        }
-
-        return result;
-    }
-
-    private Utilities() {}
-
+    /**
+     * @param url
+     * @return true if url is from disassembly file
+     */
+    boolean isDis(String url);
 }

@@ -238,8 +238,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalize(location);
-                    workingdir = CndPathUtilitities.normalize(workingdir);
+                    location = CndPathUtilitities.normalizeSlashes(location);
+                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -346,7 +346,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             // FIXUP: why are baseDir UNIX path when remote?
             String path = ProjectSupport.toProperPath(baseDir, fileChooser.getSelectedFile().getPath(), project);
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }
     }

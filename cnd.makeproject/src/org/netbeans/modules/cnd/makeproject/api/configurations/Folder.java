@@ -1076,7 +1076,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String itemPath = file.getPath();
         itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = CndPathUtilitities.normalize(itemPath);
+        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
         Item item = new Item(itemPath);
         addItemAction(item, false);
     }
