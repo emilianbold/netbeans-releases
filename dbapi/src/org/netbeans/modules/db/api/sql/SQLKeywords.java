@@ -402,7 +402,7 @@ public final class SQLKeywords {
         "BITVAR", //NOI18N
         "BIT_LENGTH", //NOI18N
         "BLOCKED", //NOI18N
-        "C", //NOI18N
+        // removed due to 191983 - "C", //NOI18N
         "CARDINALITY", //NOI18N
         "CATALOG_NAME", //NOI18N
         "CHAIN", //NOI18N
