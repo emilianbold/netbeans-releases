@@ -1011,7 +1011,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return t;
     }
 
-    private Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
+    public Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
         synchronized (lastOwningSourceRootCacheLock) {
             FileObject file = null;
             Document doc = null;
