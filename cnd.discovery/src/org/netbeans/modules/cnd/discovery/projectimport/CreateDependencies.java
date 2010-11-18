@@ -157,7 +157,7 @@ public class CreateDependencies implements PropertyChangeListener {
         // Working dir
         String wd = dir;
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalize(wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();
@@ -252,12 +252,12 @@ public class CreateDependencies implements PropertyChangeListener {
         // Working dir
         String wd = new File(executablePath).getParentFile().getPath();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalize(wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
         // Executable
         String exe = executablePath;
         exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-        exe = CndPathUtilitities.normalize(exe);
+        exe = CndPathUtilitities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         updateRunProfile(baseDir, conf.getProfile(), arguments, dir, envText);
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);

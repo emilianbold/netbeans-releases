@@ -546,7 +546,7 @@ public final class MakeActionProvider implements ActionProvider {
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = CndPathUtilitities.normalize(path);
+                path = CndPathUtilitities.normalizeSlashes(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
@@ -571,9 +571,9 @@ public final class MakeActionProvider implements ActionProvider {
                 if (!CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.naturalizeSlashes(path);
                     path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.naturalizeSlashes(path);
                 }
             } else {
                 // Always absolute
@@ -600,14 +600,14 @@ public final class MakeActionProvider implements ActionProvider {
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 path = location + ";" + path; // NOI18N
             }
             // Add paths from -L option
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 path = location + ";" + path; // NOI18N
             }
             String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
@@ -626,7 +626,7 @@ public final class MakeActionProvider implements ActionProvider {
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }
@@ -636,7 +636,7 @@ public final class MakeActionProvider implements ActionProvider {
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }
@@ -662,7 +662,7 @@ public final class MakeActionProvider implements ActionProvider {
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             Iterator<String> iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }

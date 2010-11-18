@@ -419,7 +419,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             return itemPath;
         }
 

@@ -905,7 +905,7 @@ public class MakeConfiguration extends Configuration {
         }
         if (!CndPathUtilitities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = CndPathUtilitities.normalize(output);
+            output = CndPathUtilitities.normalizeSlashes(output);
         }
         return expandMacros(output);
     }

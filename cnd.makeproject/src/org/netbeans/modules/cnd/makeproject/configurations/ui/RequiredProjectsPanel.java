@@ -203,8 +203,8 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalize(location);
-                    workingdir = CndPathUtilitities.normalize(workingdir);
+                    location = CndPathUtilitities.normalizeSlashes(location);
+                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

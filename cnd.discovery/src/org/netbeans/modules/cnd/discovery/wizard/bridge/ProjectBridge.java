@@ -108,8 +108,8 @@ public class ProjectBridge {
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
-        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
-        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalizeSlashes(workingDir));
+        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         String prjName = "DiscoveryProject"; // NOI18N
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, baseFolder);// NOI18N
@@ -228,7 +228,7 @@ public class ProjectBridge {
         }
         path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         return path;
     }
     
