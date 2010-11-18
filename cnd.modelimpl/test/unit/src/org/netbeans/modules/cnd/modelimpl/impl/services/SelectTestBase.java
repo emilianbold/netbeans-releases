@@ -113,17 +113,16 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                 Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qName);
                 final CsmFile containingFile = func.getContainingFile();
                 boolean ok = iter.hasNext();
-                assertTrue("Function " + qName.toString() + 
-                        " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
-                        " not found in project " + project.getName(), ok);
                 if (!ok) {
                     // more trace
                     if (dumpProjectContainer && project instanceof ProjectBase) {
                         dumpProjectContainer = false;
-                        ModelImplTest.dumpProjectContainers((ProjectBase)project);
-//                        ((ProjectBase)project).traceContainer(new PrintWriter(new OutputStreamWriter(System.err, "UTF-8")));
+                        ModelImplTest.dumpProjectContainers((ProjectBase) project);
                     }
                 }
+                assertTrue("Function " + qName.toString() + 
+                        " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
+                        " not found in project " + project.getName(), ok);
             }
         }
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {

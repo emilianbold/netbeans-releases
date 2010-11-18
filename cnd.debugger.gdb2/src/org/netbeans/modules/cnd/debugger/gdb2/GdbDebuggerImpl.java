@@ -130,6 +130,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
+    private final Disassembly disassembly = new Disassembly(this);
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -592,14 +593,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// It all ends here
     }
 
-    /**
-     * Set current line (in editor) and LATER manage state.
-     */
-    @Override
-    protected final void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
-        super.setCurrentLine(l, visited, srcOOD, andShow);
-    }
-
     public void postKill() {
         // was: finishDebugger()
         // We get here when ...
@@ -786,7 +779,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	private MICommand failureChain;
 
 	private boolean emptyDoneIsError;
-
+        
 	protected AbstractMICommand(int rt, String cmd) {
 	    super(rt, cmd);
 	}
@@ -951,16 +944,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	final boolean resume;
 
 	public InfoProcMICmd(boolean resume) {
-	    // I was hoping that that using -interpreter-exec
-	    // would make the ~ output come out with tokens 
-	    // but it doesn't, at least in gdb 6.4. If it did
-	    // it would help associate ~ output with the right command
-	    //
-	    // What we SHOULD tryis flag "console" commands as such and
-	    // have ~ go to the most recent outstanding "console" command
-	    // as opposed to just the most recent one.
-
-	    super(0, "-interpreter-exec console \"info proc\"");// NOI18N
+	    super(0, "info proc");// NOI18N
 	    this.resume = resume;
 	}
 
@@ -1588,7 +1572,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
-    private GdbFrame getCurrentFrame() {
+    GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
             for (int fx = 0; fx < guiStackFrames.length; fx++) {
                 if (guiStackFrames[fx].isCurrent()) {
@@ -3314,7 +3298,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     protected Controller disController() {
 	return disController;
     }
+    
+    Disassembly getDisassembly() {
+        return disassembly;
+    }
 
+//    @Override
+//    public void requestDisassembly() {
+//        disassembly.open();
+//    }
 
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
@@ -3325,6 +3317,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void setDis(MIRecord record) {
 	disModel.parseRecord(record);
+        disassembly.update(record.toString());
 
 	// 6582172
 	if (update_dis)
