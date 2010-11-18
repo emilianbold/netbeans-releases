@@ -1172,8 +1172,12 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
-                    return false;
+                if (CndUtils.isUnitTestMode()) {
+                    new Exception(errormsg).printStackTrace();
+                } else {
+                    if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                        return false;
+                    }
                 }
             }
             conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
