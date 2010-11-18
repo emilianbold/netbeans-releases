@@ -167,14 +167,14 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public void testTagAttributes() throws BadLocationException, ParseException {
         //           012345
-        assertItems("<col |", arr("align"), Match.CONTAINS, 5);
-        assertItems("<col |", arr("jindra"), Match.DOES_NOT_CONTAIN);
-        assertItems("<col a|", arr("align"), Match.CONTAINS, 5);
+        assertItems("<div |", arr("class"), Match.CONTAINS, 5);
+        assertItems("<div |", arr("jindra"), Match.DOES_NOT_CONTAIN);
+        assertItems("<div c|", arr("class"), Match.CONTAINS, 5);
     }
 
     public void testCompleteTagAttributes() throws BadLocationException, ParseException {
-        assertCompletedText("<col |", "align", "<col align=\"|\"");
-        assertCompletedText("<col a|", "align", "<col align=\"|\"");
+        assertCompletedText("<div |", "class", "<div class=\"|\"");
+        assertCompletedText("<div c|", "class", "<div class=\"|\"");
     }
 
     public void testTagAttributeValues() throws BadLocationException, ParseException {
@@ -333,6 +333,9 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public void testEndTagAutocompletion() throws BadLocationException, ParseException {
         assertItems("<div>|", arr("div"), Match.EXACT, 5);
+    }
+    
+    public void testNoEndTagAutocompletion() throws BadLocationException, ParseException {
         //test end tag ac for unknown tags
         assertItems("<div><bla>|", arr(), Match.EMPTY);
     }
