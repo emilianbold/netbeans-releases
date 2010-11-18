@@ -216,7 +216,11 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     }
     
     boolean valid (WizardDescriptor settings) {
-        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText(), this.buildScriptName.getText());
+        String result = checkValidity (
+                this.projectName.getText(),
+                this.projectLocation.getText(),
+                this.buildScriptName.getText(),
+                this.calculatePF);
         if (result == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");   //NOI18N
             return true;
@@ -228,15 +232,16 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     }
 
     static String checkValidity (final String projectName, final String projectLocation,
-        final String buildScriptName) {
-        if ( projectName.length() == 0 
-             || projectName.indexOf('/')  > 0           //NOI18N
-             || projectName.indexOf('\\') > 0           //NOI18N
-             || projectName.indexOf(':')  > 0) {        //NOI18N
+        final String buildScriptName, final boolean calculatedFolder) {
+        if ( projectName.length() == 0 || 
+            (calculatedFolder && 
+                (projectName.indexOf('/')  > 0 ||          //NOI18N
+                 projectName.indexOf('\\') > 0 ||          //NOI18N
+                 projectName.indexOf(':')  > 0))) {        //NOI18N
             // Display name not specified
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
         }
-
+        
         File projLoc = new File (projectLocation).getAbsoluteFile();
 
         if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
