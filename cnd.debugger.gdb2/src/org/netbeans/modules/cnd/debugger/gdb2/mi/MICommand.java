@@ -63,6 +63,7 @@ public abstract class MICommand {
 					// stores console stream data assoc.
 					// with this command.
 
+    private final boolean consoleCommand;
 
     /**
      * Constructor for simple commands.
@@ -71,6 +72,7 @@ public abstract class MICommand {
     public MICommand(int routingToken, String command) {
 	this.routingToken = routingToken;
 	this.command = command;
+        this.consoleCommand = !command.startsWith("-");
     } 
 
 
@@ -79,8 +81,7 @@ public abstract class MICommand {
      */
 
     public MICommand(int routingToken, String command, String args) {
-	this.routingToken = routingToken;
-	this.command = command + " " + args; // NOI18N
+        this(routingToken, command + " " + args); // NOI18N
     } 
 
     @Override
@@ -234,6 +235,10 @@ public abstract class MICommand {
 	for (String s : consoleStream)
 	    sb.append(String.format(s));
 	return sb.toString();
+    }
+   
+    public boolean isConsoleCommand() {
+        return consoleCommand;
     }
 }
 
