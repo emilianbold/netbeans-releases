@@ -432,7 +432,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-    String applyChangesInAWT() {
+    void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
@@ -449,16 +449,16 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             record.setParameters(new Object[] { obj.toString() });
             POHImpl.USG_LOGGER.log(record);
         }
-        if (txtContextPath.isEnabled()) {
-            return txtContextPath.getText().trim();
-        } else {
-            return null;
-        }
     }
 
     //this megod is called after the model was saved.
-    void applyChanges(String contextPath) {
+    void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
+
+        String contextPath = "";
+        if (txtContextPath.isEnabled()) {
+            contextPath = txtContextPath.getText().trim();
+        }
 
         //#109507 workaround
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
