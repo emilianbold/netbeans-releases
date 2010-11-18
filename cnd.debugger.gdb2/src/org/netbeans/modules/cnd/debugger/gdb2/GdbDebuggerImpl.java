@@ -130,6 +130,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
+    private final Disassembly disassembly = new Disassembly(this);
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -590,14 +591,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         engineProvider.getDestructor().killEngine();
 
 	// It all ends here
-    }
-
-    /**
-     * Set current line (in editor) and LATER manage state.
-     */
-    @Override
-    protected final void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
-        super.setCurrentLine(l, visited, srcOOD, andShow);
     }
 
     public void postKill() {
@@ -1588,7 +1581,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
-    private GdbFrame getCurrentFrame() {
+    GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
             for (int fx = 0; fx < guiStackFrames.length; fx++) {
                 if (guiStackFrames[fx].isCurrent()) {
@@ -3314,7 +3307,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     protected Controller disController() {
 	return disController;
     }
+    
+    Disassembly getDisassembly() {
+        return disassembly;
+    }
 
+//    @Override
+//    public void requestDisassembly() {
+//        disassembly.open();
+//    }
 
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
@@ -3325,6 +3326,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void setDis(MIRecord record) {
 	disModel.parseRecord(record);
+        disassembly.update(record.toString());
 
 	// 6582172
 	if (update_dis)
