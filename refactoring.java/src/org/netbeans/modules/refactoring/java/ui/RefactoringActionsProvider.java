@@ -805,7 +805,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
                 if (!decls.isEmpty()) {
-                    selectedElement = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                    TreePath path = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                    if (path!=null && cc.getTrees().getElement(path)!=null) {
+                        selectedElement = path;
+                    }
                 }
             }
             ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
