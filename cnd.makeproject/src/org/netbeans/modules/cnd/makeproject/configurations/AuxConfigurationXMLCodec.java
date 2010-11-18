@@ -142,7 +142,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 if (descriptorVersion <= 37 && set == 4) {
                     set = PlatformTypes.PLATFORM_GENERIC;
                 }
-                ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(1);
+                ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(set);
             }
         }
     }
