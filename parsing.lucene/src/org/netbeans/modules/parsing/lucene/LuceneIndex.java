@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -787,21 +788,24 @@ public class LuceneIndex implements Index {
         }
         
         private IOException annotateException (final IOException ioe) {
-            String message;
+            final StringBuilder message = new StringBuilder();            
             File[] children = folder.listFiles();
             if (children == null) {
-                message = "Non existing index folder";
+                message.append("Non existing index folder");    //NOI18N
             }
             else {
-                StringBuilder b = new StringBuilder();
+                message.append("Current Lucene version: ").     //NOI18N
+                        append(LucenePackage.get().getSpecificationVersion()).
+                        append('(').    //NOI18N
+                        append(LucenePackage.get().getImplementationVersion()).
+                        append(")\n");    //NOI18N
                 for (File c : children) {
-                    b.append(c.getName()).append(" f: ").append(c.isFile()).
+                    message.append(c.getName()).append(" f: ").append(c.isFile()).
                     append(" r: ").append(c.canRead()).
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
-                message = b.toString();
             }
-            return Exceptions.attachMessage(ioe, message);
+            return Exceptions.attachMessage(ioe, message.toString());
         }
         
         private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
