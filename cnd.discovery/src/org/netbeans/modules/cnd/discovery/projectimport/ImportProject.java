@@ -287,10 +287,10 @@ public class ImportProject implements PropertyChangeListener {
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
     }
 
-    private String normalizeAbsolutePath(String path) {
-        ExecutionEnvironment fileSystemEnv = fullRemote ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
-        return RemoteFileUtil.normalizeAbsolutePath(path, fileSystemEnv);
-    }
+//    private String normalizeAbsolutePath(String path) {
+//        ExecutionEnvironment fileSystemEnv = fullRemote ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
+//        return RemoteFileUtil.normalizeAbsolutePath(path, fileSystemEnv);
+//    }
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
@@ -309,7 +309,7 @@ public class ImportProject implements PropertyChangeListener {
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
             buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult), pathMode);
-            buildResult = normalizeAbsolutePath(buildResult);
+            buildResult = CndPathUtilitities.normalize(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         // Include directories
