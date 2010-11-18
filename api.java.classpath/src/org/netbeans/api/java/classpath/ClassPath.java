@@ -731,7 +731,21 @@ public final class ClassPath {
                         return null;
                     }
                     else if (_root.isData()) {
-                        throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
+                        String fileState = null;
+                        try {
+                            final File file = new File(this.url.toURI());
+                            fileState = "(exists: " + file.exists() +           //NOI18N
+                                        " file: " + file.isFile() +             //NOI18N
+                                        " directory: "+ file.isDirectory() +    //NOI18N
+                                        " read: "+ file.canRead() +             //NOI18N
+                                        " write: "+ file.canWrite()+")";        //NOI18N
+                        } catch (IllegalArgumentException e) {
+                            //Non local file - keep file null (not log file state)
+                        } catch (URISyntaxException e) {
+                            //keep file null (not log file state)
+                        }
+                        throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder." + //NOI18N
+                                (fileState != null ? fileState : ""));
                     }
                     root = _root;
                 }
