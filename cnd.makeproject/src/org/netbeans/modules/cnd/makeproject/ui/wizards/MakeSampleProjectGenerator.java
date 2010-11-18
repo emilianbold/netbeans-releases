@@ -199,8 +199,7 @@ public class MakeSampleProjectGenerator {
                     if (variant != null) {
                         changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", variant, "X-PLATFORM-X"); // NOI18N
                     }
-                }
-                if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                } else if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
                     changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
