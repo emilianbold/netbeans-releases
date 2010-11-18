@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -183,9 +184,12 @@ public class MakeSampleProjectGenerator {
                     variant = MakeConfiguration.getVariant(compilerSet, platform);
                     csVariant = compilerSet.getName();
                     if (compilerSet.getCompilerFlavor() != null) {
-                        csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+                        csVariant += "|" + compilerSet.getCompilerFlavor().toString(); // NOI18N
                     }
+                } else {
+                    CndUtils.assertTrue(false, "Expected not null tool collection"); // NOI18N
                 }
+                CndUtils.assertTrue(platform != PlatformTypes.PLATFORM_NONE, "Expected not Unknown platform"); // NOI18N
                 if (prjParams.isDefaultToolchain()) {
                     csVariant = CompilerSet2Configuration.DEFAULT_CS;
                 }
@@ -199,8 +203,7 @@ public class MakeSampleProjectGenerator {
                     if (variant != null) {
                         changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", variant, "X-PLATFORM-X"); // NOI18N
                     }
-                }
-                if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                } else if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
                     changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
                     changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
