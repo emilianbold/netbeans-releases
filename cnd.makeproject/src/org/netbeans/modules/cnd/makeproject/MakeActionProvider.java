@@ -1179,32 +1179,28 @@ public final class MakeActionProvider implements ActionProvider {
             conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
-            // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(env).getCompilerSet(csname);
-            if (cs == null) {
+        cs = csconf.getCompilerSet();
+        csname = csconf.getOption();
+        if (cs == null) {
+            if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
+                // Confiiguration was created with unknown tool set. Use the now default one.
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
+                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
+                errs.add(errMsg);
+                runBTA = true;
+            } else {
+                CompilerFlavor flavor = null;
+                if (csconf.getFlavor() != null) {
+                    flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
+                }
+                if (flavor == null) {
+                    flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
+                }
+                cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
+                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
+                errs.add(errMsg);
+                runBTA = true;
             }
-            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
-            errs.add(errMsg);
-            runBTA = true;
-        } else if (csconf.isValid()) {
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(env).getCompilerSet(csname);
-        } else {
-            csname = csconf.getOldName();
-            CompilerFlavor flavor = null;
-            if (csconf.getFlavor() != null) {
-                flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
-            }
-            if (flavor == null) {
-                flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
-            }
-            cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
-            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
-            errs.add(errMsg);
-            runBTA = true;
         }
 
         if (cancelled.get()) {

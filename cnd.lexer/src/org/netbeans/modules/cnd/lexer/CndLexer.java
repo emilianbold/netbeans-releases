@@ -632,6 +632,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     c = read(true);
                     if (c == 'l' || c == 'L') {
                         return token(CppTokenId.LONG_LONG_LITERAL);
+                    } else if (c == 'u' || c == 'U') {
+                        return token(CppTokenId.UNSIGNED_LONG_LITERAL);
                     } else {
                         backup(1);
                         return token(CppTokenId.LONG_LITERAL);

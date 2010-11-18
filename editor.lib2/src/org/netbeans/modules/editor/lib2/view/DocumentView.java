@@ -777,20 +777,16 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String defaultCharText = String.valueOf(defaultChar);
             TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, defaultFont, frc); // NOI18N
             TextLayout lineHeightTextLayout = new TextLayout("A_|B", defaultFont, frc);
-            defaultLineHeight = lineHeightTextLayout.getAscent() + lineHeightTextLayout.getDescent() +
-                    lineHeightTextLayout.getLeading(); // Leading: end of descent till next line's start distance
-            // Round up line height to one decimal place which is reasonable for layout
-            // but it also has an important effect that it allows eliminate problems
-            // caused by using a [float,float] point that does not fit into views boundaries
-            // maintained as doubles.
-            defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
+            defaultLineHeight = TextLayoutUtils.getHeight(lineHeightTextLayout);
+            // Round the ascent to eliminate long mantissa without any visible effect on rendering.
             defaultAscent = ViewUtils.floorFractions(lineHeightTextLayout.getAscent());
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
             defaultUnderlineOffset = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
             defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
             defaultStrikethroughOffset = ViewUtils.floorFractions(lineMetrics.getStrikethroughOffset());
             defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
-            defaultCharWidth = ViewUtils.ceilFractions(defaultCharTextLayout.getAdvance());
+            // Ceil fractions to whole numbers since this measure may be used for background rendering
+            defaultCharWidth = (float) Math.ceil(defaultCharTextLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;

@@ -260,8 +260,13 @@ public class TaskCache {
         while ((line = pw.readLine()) != null) {
             String[] parts = line.split(":"); //NOI18N
 
-            ErrorKind kind = ErrorKind.valueOf(parts[0]);
-
+            ErrorKind kind = null;
+            try {
+                kind = ErrorKind.valueOf(parts[0]);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, "Invalid ErrorKind: {0}", line);    //NOI18N
+            }
+            
             if (kind == null) {
                 continue;
             }

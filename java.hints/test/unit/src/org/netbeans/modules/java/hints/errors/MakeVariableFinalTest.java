@@ -73,8 +73,4 @@ public class MakeVariableFinalTest extends HintsTestBase {
         performTest("MakeVariableFinal", "Make", 11, 5);
     }
 
-    public void testMulticatch() throws Exception {
-        performTest("Multicatch", "Multicatch", "Make", 10, 5, true, "1.7");
-    }
-    
 }

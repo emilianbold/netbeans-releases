@@ -47,7 +47,9 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -60,6 +62,21 @@ import org.openide.util.lookup.ServiceProvider;
 public final class LocalFileSystemProvider extends FileSystemProvider {
 
     private LocalFileSystem fs = null;
+
+    @Override
+    protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+        return FileUtil.normalizePath(absPath);
+    }
+
+    @Override
+    protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
+        return null; // let default implementation do its work
+    }
+
+    @Override
+    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        return null; // let default implementation do its work
+    }
 
     @Override
     protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {

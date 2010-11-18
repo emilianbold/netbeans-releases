@@ -66,8 +66,6 @@ final class GitOptionsPanel extends javax.swing.JPanel {
         super.removeNotify();
     }
 
-
-        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -87,6 +85,8 @@ final class GitOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(excludeNewFiles, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.text")); // NOI18N
         excludeNewFiles.setToolTipText(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(signOffCheckBox, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.signOffCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -96,7 +96,11 @@ final class GitOptionsPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbOpenOutputWindow)
                     .addComponent(excludeNewFiles))
-                .addContainerGap(129, Short.MAX_VALUE))
+                .addContainerGap(257, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(signOffCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 557, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -105,26 +109,26 @@ final class GitOptionsPanel extends javax.swing.JPanel {
                 .addComponent(cbOpenOutputWindow)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(excludeNewFiles)
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(signOffCheckBox)
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
         excludeNewFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.text")); // NOI18N
         excludeNewFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void nameChange() {
-        controller.changed();
-    }
 
     void load() {        
         cbOpenOutputWindow.setSelected(GitModuleConfig.getDefault().getAutoOpenOutput());        
         excludeNewFiles.setSelected(GitModuleConfig.getDefault().getExludeNewFiles());
+        signOffCheckBox.setSelected(GitModuleConfig.getDefault().getSignOff());
     }
     
     void store() {
         GitModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
         GitModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
+        GitModuleConfig.getDefault().setSignOff(signOffCheckBox.isSelected());
     }
     
     boolean valid() {
@@ -134,6 +138,7 @@ final class GitOptionsPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbOpenOutputWindow;
     private javax.swing.JCheckBox excludeNewFiles;
+    final javax.swing.JCheckBox signOffCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
     
 }

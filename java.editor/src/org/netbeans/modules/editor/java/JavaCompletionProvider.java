@@ -632,8 +632,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case CATCH:
                     insideCatch(env);
                     break;
-                case DISJOINT_TYPE:
-                    insideDisjointType(env);
+                case DISJUNCTIVE_TYPE:
+                    insideDisjunctiveType(env);
                     break;
                 case IF:
                     insideIf(env);
@@ -1818,10 +1818,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void insideDisjointType(Env env) throws IOException {
+        private void insideDisjunctiveType(Env env) throws IOException {
             TreePath path = env.getPath();
             String prefix = env.getPrefix();
-            DisjointTypeTree dtt = (DisjointTypeTree)path.getLeaf();
+            DisjunctiveTypeTree dtt = (DisjunctiveTypeTree)path.getLeaf();
             CompilationController controller = env.getController();
             TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, dtt, env.getOffset());
             if (last != null && last.token().id() == JavaTokenId.BAR) {
@@ -2343,8 +2343,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
-            if (et.getKind() == Tree.Kind.DISJOINT_TYPE) {
-                for(Tree t : ((DisjointTypeTree)et).getTypeComponents()) {
+            if (et.getKind() == Tree.Kind.DISJUNCTIVE_TYPE) {
+                for(Tree t : ((DisjunctiveTypeTree)et).getTypeAlternatives()) {
                     et = t;
                     exPath = new TreePath(exPath, t);
                 }

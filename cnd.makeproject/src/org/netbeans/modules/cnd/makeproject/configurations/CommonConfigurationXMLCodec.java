@@ -80,6 +80,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V72 - NB 7.0
+ *   move platform in private project area
+ * V71 - NB 7.0
+ *   introduce default tool collection
  * V70 - NB 7.0
  *   move DEVELOPMENT_SERVER_ELEMENT in private area
  * Without changing version yet - NB 7.0
@@ -204,15 +208,15 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 70;
+    public final static int CURRENT_VERSION = 72;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
     // Old style. FIXUP: should be removed....
-    protected final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
+    public final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
     protected final static String DEFAULT_CONF_ELEMENT = "defaultConf"; // NOI18N
-    protected final static String CONFS_ELEMENT = "confs"; // NOI18N
-    protected final static String CONF_ELEMENT = "conf"; // NOI18N
+    public final static String CONFS_ELEMENT = "confs"; // NOI18N
+    public final static String CONF_ELEMENT = "conf"; // NOI18N
     protected final static String DIRECTORY_PATH_ELEMENT = "directoryPath"; // NOI18N
     protected final static String PATH_ELEMENT = "pElem"; // NOI18N
     protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
@@ -228,16 +232,16 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String SOURCE_FOLDERS_FILTER_ELEMENT = "sourceFolderFilter"; // NOI18N
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
-    protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
-    protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
+    public final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
+    public final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
     protected final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
     protected final static String REMOTE_MODE_ELEMENT = MakeProject.REMOTE_MODE; // NOI18N
-    protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
+    public final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
     protected final static String FORTRAN_REQUIRED_ELEMENT = "fortranRequired"; // NOI18N
     protected final static String ASSEMBLER_REQUIRED_ELEMENT = "assemblerRequired"; // NOI18N
-    protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
+    public final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     protected final static String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Compile Type
@@ -255,7 +259,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String COMMANDLINE_TOOL_ELEMENT = "commandlineTool"; // NOI18N
     protected final static String ADDITIONAL_DEP_ELEMENT = "additionalDep"; // NOI18N
     protected final static String ADDITIONAL_OPTIONS_ELEMENT = "additionalOptions"; // NOI18N
-    protected final static String OUTPUT_ELEMENT = "output"; // NOI18N
+    public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     // Compiler (Generic) Tool
@@ -313,7 +317,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String LINKER_LIB_FILE_ITEM_ELEMENT = "linkerLibFileItem"; // NOI18N
     protected final static String LINKER_LIB_OPTION_ITEM_ELEMENT = "linkerOptionItem"; // NOI18N
     // Make Artifact
-    protected final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact"; // NOI18N
+    public final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact"; // NOI18N
     protected final static String MAKE_ARTIFACT_PL_ELEMENT = "PL"; // NOI18N
     protected final static String MAKE_ARTIFACT_CT_ELEMENT = "CT"; // NOI18N
     protected final static String MAKE_ARTIFACT_CN_ELEMENT = "CN"; // NOI18N

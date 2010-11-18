@@ -574,8 +574,7 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
-        final ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        return CompilerSetManager.get(env).getCompilerSets().get(makeConfiguration.getCompilerSet().getValue());
+        return makeConfiguration.getCompilerSet().getCompilerSet();
     }
 
     public String getCygwinDrive(){

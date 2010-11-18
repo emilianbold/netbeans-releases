@@ -159,10 +159,10 @@ public class ImportExecutable implements PropertyChangeListener {
 
     @SuppressWarnings("unchecked")
     private void createProject() {
-        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
-        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
-        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
-        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); 
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); 
+        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER); 
+        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
         dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
         if (projectFolder != null) {
@@ -179,9 +179,10 @@ public class ImportExecutable implements PropertyChangeListener {
             baseDir = projectParentFolder + File.separator + projectName;
             projectFolder = CndFileUtils.createLocalFile(baseDir);
         }
-        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
-        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
-        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
+        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
+        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); 
+        boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);

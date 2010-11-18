@@ -733,7 +733,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     
     /////////// 
     // tracing
-    public void dumpInfo(PrintWriter printOut) {
+    public void dumpInfo(PrintWriter printOut, boolean withContainers) {
         printOut.printf("ModelImpl: disabled=%d, projects=%d\n", disabledProjects.size(), platf2csm.size());// NOI18N
         int ind = 1;
         for (Object prj : disabledProjects) {
@@ -744,6 +744,16 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             final Object key = entry.getKey();
             CsmUID<CsmProject> value = entry.getValue();
             printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind++, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+            if (withContainers) {
+                CsmProject prj = UIDCsmConverter.UIDtoProject(value);
+                if (prj == null) {
+                    printOut.printf("Library was NOT restored from repository\n");// NOI18N
+                } else if (prj instanceof ProjectBase) {
+                    ((ProjectBase) prj).traceContainer(printOut);
+                } else {
+                    printOut.printf("Library's project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
+                }
+            }
         }
     }
 }

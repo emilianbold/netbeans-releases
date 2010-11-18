@@ -1282,6 +1282,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         stateSetRunning(true);
         stateChanged();
 	session().setSessionState(state());
+        setStatusText(Catalog.get("MSG_running"));//NOI18N
     }
 
     private boolean dontKillOnExit() {
@@ -2885,11 +2886,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String signalName = "<UNKNOWN>"; // NOI18N
 
         if (reason.equals("end-stepping-range")) {		// NOI18N
-            // Perhaps "stepped" is uninteresting.
-            //stateMsg = Catalog.get("Dbx_stepped"); // NOI18N
-            // Let's just set it to null instead to suppress these
-            stateMsg = null;
-
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("signal-received")) {		// NOI18N
 	    final MIValue signalNameValue =
 		results.valueOf("signal-name");		// NOI18N
@@ -2901,7 +2898,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else if (reason.equals("function-finished")) { // NOI18N
             stateMsg = Catalog.get("Dbx_function_returned");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
-            stateMsg = Catalog.get("Dbx_breakpoint_hit");	// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }

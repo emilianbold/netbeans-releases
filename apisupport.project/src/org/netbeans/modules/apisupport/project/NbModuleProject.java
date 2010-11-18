@@ -764,7 +764,7 @@ public final class NbModuleProject implements Project {
      * <strong>For use from unit tests only.</strong> Returns {@link
      * LocalizedBundleInfo} for this project.
      */
-    public LocalizedBundleInfo getBundleInfo() {
+    public @CheckForNull LocalizedBundleInfo getBundleInfo() {
         return getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
     }
     

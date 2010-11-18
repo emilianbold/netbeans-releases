@@ -161,10 +161,11 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         if (conflictCount == 1) {
+            DependencyNode parent = firstConflict.getParent();
             tooltip.append(NbBundle.getMessage(ArtifactWidget.class, 
-                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_SingleConflict" : "TIP_SingleWarning" ,
+                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_SingleConflict" : "TIP_SingleWarning",
                     firstConflict.getArtifact().getVersion(),
-                    firstConflict.getParent().getArtifact().getArtifactId()));
+                    parent != null ? parent.getArtifact().getArtifactId() : "???"));
         } else if (conflictCount > 1) {
             tooltip.append(NbBundle.getMessage(ArtifactWidget.class,
                     conflictType == ArtifactGraphNode.CONFLICT ? "TIP_MultipleConflict" : "TIP_MultipleWarning"));
@@ -175,10 +176,11 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
                     tooltip.append("</td>");
                     tooltip.append("<td>");
                     DependencyNode parent = nd.getParent();
-                    assert parent != null;
-                    Artifact artifact = parent.getArtifact();
-                    assert artifact != null;
-                    tooltip.append(artifact.getArtifactId());
+                    if (parent != null) {
+                        Artifact artifact = parent.getArtifact();
+                        assert artifact != null;
+                        tooltip.append(artifact.getArtifactId());
+                    }
                     tooltip.append("</td></tr>");
                 }
             }

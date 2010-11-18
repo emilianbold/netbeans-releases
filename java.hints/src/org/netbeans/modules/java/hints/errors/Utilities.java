@@ -556,7 +556,7 @@ public class Utilities {
         List<TreePath> currentCluster = new LinkedList<TreePath>();
 
         for (TreePath t : trees) {
-            if (isConstantString(info, t)) {
+            if (isConstantString(info, t, true)) {
                 currentCluster.add(t);
             } else {
                 if (!currentCluster.isEmpty()) {
@@ -575,7 +575,12 @@ public class Utilities {
     }
 
     public static boolean isConstantString(CompilationInfo info, TreePath tp) {
+        return isConstantString(info, tp, false);
+    }
+
+    public static boolean isConstantString(CompilationInfo info, TreePath tp, boolean acceptsChars) {
         if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
+        if (acceptsChars && tp.getLeaf().getKind() == Kind.CHAR_LITERAL) return true;
 
         Element el = info.getTrees().getElement(tp);
 
@@ -595,11 +600,16 @@ public class Utilities {
 
         List<TreePath> part = sorted.get(0);
 
-        if (!part.isEmpty() && isConstantString(info, part.get(0))) {
-            return true;
+        for (TreePath c : part) {
+            if (isConstantString(info, c, acceptsChars))
+                return true;
         }
 
         return false;
+    }
+
+    public static boolean isStringOrCharLiteral(Tree t) {
+        return t != null && (t.getKind() == Kind.STRING_LITERAL || t.getKind() == Kind.CHAR_LITERAL);
     }
 
     public static @NonNull Collection<? extends TreePath> resolveFieldGroup(@NonNull CompilationInfo info, @NonNull TreePath variable) {

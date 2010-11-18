@@ -288,6 +288,11 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    

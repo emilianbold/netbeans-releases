@@ -363,6 +363,9 @@ public class ProjectActionSupport {
                 Action[] actions = getActions(pae.getActionName());
                 if (reuse) {
                     synchronized (lock) {
+                        // Close buildtab from default provider
+                        InputOutput buildtab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                        buildtab.closeInputOutput(); // Close it...
                         io = runIoTab;
                         if (io == null) {
                             io = termProvider.getIO(name, false);
