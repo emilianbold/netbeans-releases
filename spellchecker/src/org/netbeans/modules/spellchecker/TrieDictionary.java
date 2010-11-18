@@ -46,10 +46,10 @@ package org.netbeans.modules.spellchecker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -65,6 +65,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -75,7 +76,6 @@ public class TrieDictionary implements Dictionary {
     private byte[] array;
     private ByteBuffer buffer;
 
-    /** Creates a new instance of TrieDictionary */
     TrieDictionary(byte[] array) {
         this.array = array;
         this.buffer = null;
@@ -220,18 +220,26 @@ public class TrieDictionary implements Dictionary {
 
     public static Dictionary getDictionary(String suffix, List<URL> sources) throws IOException {
         File trie = new File(CACHE_DIR, "dictionary" + suffix + ".trie" + CURRENT_TRIE_DICTIONARY_VERSION);
+        
+        return getDictionary(trie, sources);
+    }
 
+    static Dictionary getDictionary(File trie, List<URL> sources) throws IOException {
         if (!trie.exists()) {
-            byte[] array = constructTrie(sources);
-
             trie.getParentFile().mkdirs();
 
-            OutputStream out = new FileOutputStream(trie);
+            boolean done = false;
 
             try {
-                out.write(array);
+                ByteArray array = new ByteArray(trie);
+
+                constructTrie(array, sources);
+                array.close();
+                done = true;
             } finally {
-                out.close();
+                if (!done) {
+                    trie.delete();
+                }
             }
         }
 
@@ -322,17 +330,18 @@ public class TrieDictionary implements Dictionary {
         return old[pattern.length()];
     }
     
-    public static byte[] constructTrie(List<URL> sources) throws IOException {
-        SortedSet<String> data = new TreeSet<String>();
+    private static void constructTrie(ByteArray array, List<URL> sources) throws IOException {
+        SortedSet<CharSequence> data = new TreeSet<CharSequence>();
 
         for (URL u : sources) {
+
             BufferedReader in = new BufferedReader(new InputStreamReader(u.openStream(), "UTF-8"));
             
             try {
                 String line;
                 
                 while ((line = in.readLine()) != null) {
-                    data.add(line);
+                    data.add(CharSequences.create(line));
                 }
             } finally {
                 //TODO: wrap in try - catch:
@@ -340,42 +349,30 @@ public class TrieDictionary implements Dictionary {
             }
         }
         
-        return constructTrieData(data);
+        constructTrieData(array, data);
     }
     
-    public static byte[] constructTrieData(SortedSet<String> data) throws IOException {
-        ByteArray array = new ByteArray();
-
+    private static void constructTrieData(ByteArray array, SortedSet<? extends CharSequence> data) throws IOException {
         array.put(0, CURRENT_TRIE_DICTIONARY_VERSION);
-
-        int length = encodeOneLayer(array, 4, 0, data);
-        byte[] result = new byte[length];
-        
-        System.arraycopy(array.data, 0, result, 0, length);
-        
-        return result;
+        encodeOneLayer(array, 4, 0, data);
     }
 
-    public static TrieDictionary constructTrie(SortedSet<String> data) throws IOException {
-        return new TrieDictionary(constructTrieData(data));
-    }
-    
-    private static int encodeOneLayer(ByteArray array, int currentPointer, int currentChar, SortedSet<String> data) {
-        Map<Character, SortedSet<String>> char2Words = new TreeMap<Character, SortedSet<String>>();
+    private static int encodeOneLayer(ByteArray array, int currentPointer, int currentChar, SortedSet<? extends CharSequence> data) throws IOException {
+        Map<Character, SortedSet<CharSequence>> char2Words = new TreeMap<Character, SortedSet<CharSequence>>();
         boolean representsFullWord = !data.isEmpty() && data.first().length() <= currentChar;
-        Iterator<String> dataIt = data.iterator();
+        Iterator<? extends CharSequence> dataIt = data.iterator();
 
         if (representsFullWord) {
             dataIt.next();
         }
 
         while (dataIt.hasNext()) {
-            String word = dataIt.next();
+            CharSequence word = dataIt.next();
             char c = word.charAt(currentChar);
-            SortedSet<String> words = char2Words.get(c);
+            SortedSet<CharSequence> words = char2Words.get(c);
 
             if (words == null) {
-                char2Words.put(c, words = new TreeSet<String>());
+                char2Words.put(c, words = new TreeSet<CharSequence>());
             }
 
             words.add(word);
@@ -396,7 +393,7 @@ public class TrieDictionary implements Dictionary {
         int currentEntry = 0;
         int childPointer = currentPointer + 5 + entries * 6;
 
-        for (Entry<Character, SortedSet<String>> e : char2Words.entrySet()) {
+        for (Entry<Character, SortedSet<CharSequence>> e : char2Words.entrySet()) {
             array.put(currentPointer + 5 + currentEntry * 6, e.getKey());
             array.put(currentPointer + 5 + currentEntry * 6 + 2, childPointer - currentPointer);
 
@@ -410,39 +407,29 @@ public class TrieDictionary implements Dictionary {
 
     private static class ByteArray {
 
-        byte[] data = new byte[0];
+        private final RandomAccessFile out;
 
-        private void assureCapacity(int size) {
-            if (data.length < size) {
-                byte[] newData = new byte[size + 1024 * 1024];
-
-                System.arraycopy(data, 0, newData, 0, data.length);
-
-                data = newData;
-            }
-        }
-        public void put(int pos, char what) {
-            assureCapacity(pos + 2);
-
-            int whatInt = what;
-
-            data[pos] = (byte) (whatInt >> 8);
-            data[pos + 1] = (byte) (whatInt & 0xFF);
+        public ByteArray(File out) throws FileNotFoundException {
+            this.out = new RandomAccessFile(out, "rw");
         }
 
-        public void put(int pos, byte what) {
-            assureCapacity(pos + 1);
-
-            data[pos] = what;
+        public void put(int pos, char what) throws IOException {
+            out.seek(pos);
+            out.writeChar(what);
         }
 
-        public void put(int pos, int what) {
-            assureCapacity(pos + 4);
-            
-            data[pos + 0] = (byte) ((what >> 24) & 0xFF);
-            data[pos + 1] = (byte) ((what >> 16) & 0xFF);
-            data[pos + 2] = (byte) ((what >>  8) & 0xFF);
-            data[pos + 3] = (byte) ((what >>  0) & 0xFF);
+        public void put(int pos, byte what) throws IOException {
+            out.seek(pos);
+            out.writeByte(what);
+        }
+
+        public void put(int pos, int what) throws IOException {
+            out.seek(pos);
+            out.writeInt(what);
+        }
+
+        public void close() throws IOException {
+            out.close();
         }
     }
 }
