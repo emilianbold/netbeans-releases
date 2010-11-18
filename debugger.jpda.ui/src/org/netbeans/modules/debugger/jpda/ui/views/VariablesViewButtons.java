@@ -74,7 +74,7 @@ public class VariablesViewButtons {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.setProperty(SHOW_FORMATTERS_PROP_NAME, "true"); // NOI18N
-                OptionsDisplayer.getDefault().open("Advanced/org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption"); // NOI18N
+                OptionsDisplayer.getDefault().open("Advanced/JavaDebugger"); // NOI18N
             }
         });
         return button;
