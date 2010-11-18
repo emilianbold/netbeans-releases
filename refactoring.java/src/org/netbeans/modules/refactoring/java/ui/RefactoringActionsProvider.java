@@ -139,7 +139,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             };
                             return wrap(new RenameRefactoringUI(folder));
                         } else {
-                            return wrap(new RenameRefactoringUI(selectedElement, info));
+                            if (selected.getSimpleName().length() != 0)
+                                return wrap(new RenameRefactoringUI(selectedElement, info));
+                            else {
+                                TreePath path = selectedElement.resolve(info);
+                                if (path!=null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                                    return wrap(new RenameRefactoringUI(selectedElement.getFileObject(), null, info));
+                                } else {
+                                    return null;
+                                }
+                            }
                         }
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
