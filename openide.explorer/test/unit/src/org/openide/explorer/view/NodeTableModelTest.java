@@ -49,6 +49,7 @@ import javax.swing.JCheckBox;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /*
  * Tests for class NodeTableModelTest
@@ -174,7 +175,11 @@ public class NodeTableModelTest extends NbTestCase {
         assertEquals( "Invalid display name:", 
                 p.getValue("ColumnDisplayNameWithMnemonicTTV"),
                 model.getDisplayNameWithMnemonic(p) );
-        assertEquals( "Invalid mnemonic", 'D', checkBox.getMnemonic() );
+        if (Utilities.isMac()) {
+            assertEquals( "No mnemonic on mac", 0, checkBox.getMnemonic() );
+        } else {
+            assertEquals( "Invalid mnemonic", 'D', checkBox.getMnemonic() );
+        }
     }
 
     private static class MyNodeTableModel extends NodeTableModel {
