@@ -806,7 +806,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         @Override
         public void setValue(String v) {
             String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             setRunDir(path);
         }
 

@@ -1186,7 +1186,7 @@ public class ConfigurationMakefileWriter {
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         //bw.write(target + ":" + "\n"); // NOI18N
-        bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(cwd)) + " && " + command + "\n"); // NOI18N
+        bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
     }
 
     public static void writeSubProjectBuildTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -1205,7 +1205,7 @@ public class ConfigurationMakefileWriter {
                     if (!makeArtifact.getBuild()) {
                         continue;
                     }
-                    bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                    bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
                 }
             }
         }
@@ -1216,7 +1216,7 @@ public class ConfigurationMakefileWriter {
             if (!makeArtifact.getBuild()) {
                 continue;
             }
-            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
     }
@@ -1237,7 +1237,7 @@ public class ConfigurationMakefileWriter {
                     if (!makeArtifact.getBuild()) {
                         continue;
                     }
-                    bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                    bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
                 }
             }
         }
@@ -1248,7 +1248,7 @@ public class ConfigurationMakefileWriter {
             if (!makeArtifact.getBuild()) {
                 continue;
             }
-            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
         }
     }
 
@@ -1312,7 +1312,7 @@ public class ConfigurationMakefileWriter {
             String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
             String command = makefileConfiguration.getCleanCommand().getValue();
 
-            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalize(cwd)) + " && " + command + "\n"); // NOI18N
+            bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
             bw.write("\t$(MAKE) -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }

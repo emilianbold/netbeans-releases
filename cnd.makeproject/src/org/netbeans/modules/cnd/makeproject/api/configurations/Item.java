@@ -91,7 +91,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         this.fileObject = RemoteFileUtil.normalizeFileObject(fileObject);
 
         String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
-        p = CndPathUtilitities.normalize(p);
+        p = CndPathUtilitities.normalizeSlashes(p);
 
         path = p;
     }
@@ -263,7 +263,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
                     newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = CndPathUtilitities.normalize(newPath);
+                newPath = CndPathUtilitities.normalizeSlashes(newPath);
                 renameTo(newPath);
             }
         }

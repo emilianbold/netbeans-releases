@@ -183,17 +183,17 @@ public class ImportExecutable implements PropertyChangeListener {
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); 
         boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
+        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalizeSlashes(baseDir),  sourcesPath,
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
-        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exe);
-        exe = CndPathUtilitities.normalize(exe);
+        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exe);
+        exe = CndPathUtilitities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         String exePath = new File(binaryPath).getParentFile().getAbsolutePath();
-        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exePath);
-        exePath = CndPathUtilitities.normalize(exePath);
+        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exePath);
+        exePath = CndPathUtilitities.normalizeSlashes(exePath);
         conf.getProfile().setRunDirectory(exePath);
         conf.getProfile().setBuildFirst(false);
 

@@ -213,7 +213,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
                 String itemPath = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
-                itemPath = CndPathUtilitities.normalize(itemPath);
+                itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
                     addObjectAction(new PackagerFileElement(
@@ -369,9 +369,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     } else {
                         path = files[i].getPath();
                     }
-                    path = CndPathUtilitities.normalize(path);
+                    path = CndPathUtilitities.normalizeSlashes(path);
                     String toFile = CndPathUtilitities.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
-                    toFile = CndPathUtilitities.normalize(toFile);
+                    toFile = CndPathUtilitities.normalizeSlashes(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
                     if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
