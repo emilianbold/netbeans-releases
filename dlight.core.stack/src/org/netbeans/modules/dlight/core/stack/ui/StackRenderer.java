@@ -122,6 +122,15 @@ public final class StackRenderer implements Renderer<DataRow> {
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;
 
+    @Override
+    public void reset() {
+       stackDataProvider = null;
+       stackDataProviderSearched = false;
+
+    }
+
+
+
     private synchronized StackDataProvider findStackDataProvider() {
         if (stackDataProvider == null && !stackDataProviderSearched) {
             DLightSession session = DLightManager.getDefault().getActiveSession();
