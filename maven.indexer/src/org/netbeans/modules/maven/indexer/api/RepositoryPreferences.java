@@ -200,7 +200,7 @@ public final class RepositoryPreferences {
             }
             if (info.getRepositoryUrl() != null) {
                 fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
+                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl().equals(info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX) ? null : info.getIndexUpdateUrl());
             }
         } catch (SyncFailedException x) {
             LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
