@@ -214,7 +214,8 @@ public class ProjectCreator {
                         sub, // String workingDirectory
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                        "" //String output
+                        "", //String output // NOI18N
+                        extConf
                         )));
             }
         }
@@ -480,7 +481,8 @@ public class ProjectCreator {
                     sub, // String workingDirectory
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                    "" //String output
+                    "", //String output // NOI18N
+                    conf
                     )));
         }
         makeConfigurationDescriptor.save();
