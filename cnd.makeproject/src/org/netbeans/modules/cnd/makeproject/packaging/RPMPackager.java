@@ -156,7 +156,7 @@ public class RPMPackager implements PackagerDescriptor {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
-            String tmprpmdir = "~/.netbeans/" + CndPathUtilitities.getBaseName(System.getProperty("netbeans.user")) + "/var/cache/cnd/rpms"; // NOI18N
+            String tmprpmdir = "/tmp/cnd/rpms"; // NOI18N
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
