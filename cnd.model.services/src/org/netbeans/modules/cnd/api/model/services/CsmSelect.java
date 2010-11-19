@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider;
@@ -172,6 +174,10 @@ public class CsmSelect {
                 result.add((CsmFunction) decl);
             }
         }
+    }
+
+    public static Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor nameFilter) {
+        return getDefault().getFileUIDs(csmProject, nameFilter);
     }
 
     private CsmSelect() {
@@ -314,6 +320,15 @@ public class CsmSelect {
                 return service.hasDeclarations(file);
             }
             return file.getDeclarations().isEmpty();
+        }
+
+        @Override
+        public Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor filter) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getFileUIDs(csmProject, filter);
+            }
+            return Collections.<CsmUID<CsmFile>>emptyList().iterator();
         }
     }
 }
