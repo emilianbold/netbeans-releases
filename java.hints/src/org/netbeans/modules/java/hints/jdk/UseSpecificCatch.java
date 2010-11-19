@@ -143,7 +143,7 @@ public class UseSpecificCatch {
 
             VariableTree excVar = ((CatchTree) tp.getLeaf()).getParameter();
 
-            wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjointType(exceptions));
+            wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjunctiveType(exceptions));
 
             if (!excVar.getModifiers().getFlags().contains(Modifier.FINAL)) {
                 wc.rewrite(excVar.getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));

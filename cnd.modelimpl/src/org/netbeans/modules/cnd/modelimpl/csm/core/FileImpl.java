@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
@@ -73,6 +74,7 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -1556,6 +1558,31 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
                 CsmUID<CsmOffsetableDeclaration> containerUID = UIDCsmConverter.declarationToUID(container);
                 if(includeUid != null && containerUID != null) {
+                    boolean isNamespaceDefinition = CsmKindUtilities.isNamespaceDefinition(container);
+                    // extra check to track possible double registrations like
+                    // namespace AAA {
+                    //   namespace Inner {
+                    //        class B {
+                    // #include "classBody.h"
+                    //        }; end of class B
+                    //   } // end of namespace Inner
+                    // } // end of namespace AAA
+                    // 
+                    for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+                        if (fakeIncludePair.includeUid.equals(includeUid)) {
+                            Kind kind = UIDUtilities.getKind(fakeIncludePair.containerUid);
+                            // lowest priority has outer namespace definition
+                            if (isNamespaceDefinition) {
+                                // we don't want external namespace to replace anything what is already here,
+                                // i.e. nested namespace definition or class
+                                return;
+                            } else if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
+                                // ns has lower priority, remove it
+                                fakeIncludeRegistrations.remove(fakeIncludePair);
+                                break;
+                            }
+                        }
+                    }
                     fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, containerUID));
                 }
             }

@@ -94,36 +94,36 @@ public final class GdbThread extends Thread {
 
     @Override
     public String getLWP() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public Integer getPriority() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public Integer getStackSize() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public String getStartFunction() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public String getStartupFlags() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public String getState() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return null; // Not supported
     }
 
     @Override
     public boolean getSuspended() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return false; // Not supported
     }
 }

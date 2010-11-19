@@ -68,7 +68,9 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
+import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -78,6 +80,7 @@ import org.netbeans.libs.git.progress.StatusListener;
 /**
  *
  * @author ondra
+ * @author Tomas Stupka
  */
 public class JGitClient implements GitClient, StatusListener, FileListener {
     private final JGitRepository gitRepository;
@@ -136,6 +139,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
             cmd.execute();
         }
     }
+   
+    @Override
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CleanCommand cmd = new CleanCommand(repository, roots, monitor, this);
+        cmd.execute();        
+    }
 
     /**
      * Commits all changes made in the index to all files under the given roots
@@ -171,6 +181,17 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         BranchCommand cmd = new BranchCommand(gitRepository.getRepository(), all, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    /**
+     * Much faster then an equivalent call to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor) }
+     */
+    @Override
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ConflictCommand cmd = new ConflictCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     @Override

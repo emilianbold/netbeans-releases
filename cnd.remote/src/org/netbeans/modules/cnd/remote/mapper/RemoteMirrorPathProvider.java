@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.util.Exceptions;
@@ -94,7 +95,8 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
             Exceptions.printStackTrace(ex);
         }
         // each local host maps into own remote folder to prevent collisions on path mapping level
-        String result = home + "/.netbeans/remote/" + localHostID; //NOI18N
+        // remote hosts should be separated as well since they can share home directory
+        String result = home + "/.netbeans/remote/" + executionEnvironment.getHost() + "/" + localHostID; //NOI18N
         if (POSTFIX != null) {
             result += '-' + POSTFIX;
         }

@@ -447,8 +447,8 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         HtmlParserResult htmlresult = (HtmlParserResult) result;
         Snapshot snapshot = result.getSnapshot();
-        AstNode leaf = htmlresult.findLeaf(caretOffset);
-        if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+        AstNode leaf = htmlresult.findLeafTag(caretOffset, true, true);
+        if (leaf != null && leaf.type() == AstNode.NodeType.OPEN_TAG) {
             String namespace = leaf.getNamespace();
             FaceletsLibrary lib = JsfSupport.findFor(result.getSnapshot().getSource()).getFaceletsLibraries().get(namespace);
             if (lib != null) {

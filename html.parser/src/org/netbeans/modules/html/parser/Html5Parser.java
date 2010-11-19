@@ -191,9 +191,11 @@ public class Html5Parser implements HtmlParser {
             Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
             //end tags
             do {
-                HtmlTag tag = HtmlTagProvider.getTagForElement(node.getNameWithoutPrefix());
-                if (!tag.isEmpty()) {
-                    possible.add(tag);
+                if(!node.isVirtual()) {
+                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.getNameWithoutPrefix());
+                    if (!tag.isEmpty()) {
+                        possible.add(tag);
+                    }
                 }
             } while ((node = node.parent()) != null && !node.isRootNode());
 

@@ -116,6 +116,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
             return new JarClassLoader.JarURLStreamHandler(originalJarHandler);
         } else if (protocol.equals("file") || protocol.equals("http") || protocol.equals("https") || protocol.equals("resource")) { // NOI18N
             // Well-known handlers in JRE. Do not try to initialize lookup, etc.
+            // (delegate already ignores these, but we cannot afford to look for URLSHFs in default lookup either.)
             return null;
         } else {
             if (delegate != null) {

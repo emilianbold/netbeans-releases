@@ -546,7 +546,7 @@ public final class MakeActionProvider implements ActionProvider {
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = CndPathUtilitities.normalize(path);
+                path = CndPathUtilitities.normalizeSlashes(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
@@ -571,9 +571,9 @@ public final class MakeActionProvider implements ActionProvider {
                 if (!CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.naturalizeSlashes(path);
                     path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.naturalizeSlashes(path);
                 }
             } else {
                 // Always absolute
@@ -600,14 +600,14 @@ public final class MakeActionProvider implements ActionProvider {
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 path = location + ";" + path; // NOI18N
             }
             // Add paths from -L option
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 path = location + ";" + path; // NOI18N
             }
             String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
@@ -626,7 +626,7 @@ public final class MakeActionProvider implements ActionProvider {
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }
@@ -636,7 +636,7 @@ public final class MakeActionProvider implements ActionProvider {
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }
@@ -662,7 +662,7 @@ public final class MakeActionProvider implements ActionProvider {
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             Iterator<String> iter = list.iterator();
             while (iter.hasNext()) {
-                String location = CndPathUtilitities.naturalize(iter.next());
+                String location = CndPathUtilitities.naturalizeSlashes(iter.next());
                 if (path.length() > 0) {
                     path.append(":"); // NOI18N
                 }
@@ -1172,39 +1172,39 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
-                    return false;
+                if (CndUtils.isUnitTestMode()) {
+                    new Exception(errormsg).printStackTrace();
+                } else {
+                    if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                        return false;
+                    }
                 }
             }
             conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
-            // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(env).getCompilerSet(csname);
-            if (cs == null) {
+        cs = csconf.getCompilerSet();
+        csname = csconf.getOption();
+        if (cs == null) {
+            if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
+                // Confiiguration was created with unknown tool set. Use the now default one.
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
+                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
+                errs.add(errMsg);
+                runBTA = true;
+            } else {
+                CompilerFlavor flavor = null;
+                if (csconf.getFlavor() != null) {
+                    flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
+                }
+                if (flavor == null) {
+                    flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
+                }
+                cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
+                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
+                errs.add(errMsg);
+                runBTA = true;
             }
-            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
-            errs.add(errMsg);
-            runBTA = true;
-        } else if (csconf.isValid()) {
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(env).getCompilerSet(csname);
-        } else {
-            csname = csconf.getOldName();
-            CompilerFlavor flavor = null;
-            if (csconf.getFlavor() != null) {
-                flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
-            }
-            if (flavor == null) {
-                flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
-            }
-            cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
-            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
-            errs.add(errMsg);
-            runBTA = true;
         }
 
         if (cancelled.get()) {

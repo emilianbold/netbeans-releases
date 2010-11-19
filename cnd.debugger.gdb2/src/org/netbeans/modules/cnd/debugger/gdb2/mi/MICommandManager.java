@@ -173,12 +173,21 @@ class MICommandManager {
 	    */
 	    return;
 	}
-	MICommand oc = pendingCommands.values().iterator().next();
+        // find the first unfinished console command
+        MICommand oc = null;
+        for (MICommand command : pendingCommands.values()) {
+            if (command.isConsoleCommand()) {
+                if (oc == null || command.getToken() < oc.getToken()) {
+                    oc = command;
+                }
+            }
+        }
 	/*
 	System.out.printf("--- logConsole added to %d:\n", oc.getToken());
 	System.out.printf("    %s\n", data);
 	*/
-	oc.recordConsoleStream(data);
+        assert oc != null : "Console output for unknown command"; //NOI18N
+        oc.recordConsoleStream(data);
     }
 
     /**

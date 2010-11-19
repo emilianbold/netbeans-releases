@@ -1068,9 +1068,6 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (!checkLists(node.getThrows(), t.getThrows(), p))
             return false;
 
-        if (!checkLists(node.getReceiverAnnotations(), t.getReceiverAnnotations(), p))
-            return false;
-
         if (!scan(node.getBody(), t.getBody(), p))
             return false;
 

@@ -363,6 +363,9 @@ public class ProjectActionSupport {
                 Action[] actions = getActions(pae.getActionName());
                 if (reuse) {
                     synchronized (lock) {
+                        // Close buildtab from default provider
+                        InputOutput buildtab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                        buildtab.closeInputOutput(); // Close it...
                         io = runIoTab;
                         if (io == null) {
                             io = termProvider.getIO(name, false);
@@ -591,10 +594,10 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = CndPathUtilitities.naturalize(executable);
+                    executable = CndPathUtilitities.naturalizeSlashes(executable);
                     //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
                     executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
-                    executable = CndPathUtilitities.normalize(executable);
+                    executable = CndPathUtilitities.normalizeSlashes(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -627,7 +630,7 @@ public class ProjectActionSupport {
                     runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
                 }
-                executable = CndPathUtilitities.normalize(executable);
+                executable = CndPathUtilitities.normalizeSlashes(executable);
             }
             if (CndPathUtilitities.isPathAbsolute(executable)) {
                 MakeConfiguration conf = pae.getConfiguration();

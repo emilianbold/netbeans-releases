@@ -806,7 +806,10 @@ public class RetoucheUtils {
             
             path = path.getParentPath();
             if (path == null) {
-                selectedTree = javac.getCompilationUnit().getTypeDecls().get(0);
+                List<? extends Tree> typeDecls = javac.getCompilationUnit().getTypeDecls();
+                if (typeDecls.isEmpty())
+                    return null;
+                selectedTree = typeDecls.get(0);
                 if (selectedTree.getKind().asInterface() == ClassTree.class) {
                     return javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
                 } else {

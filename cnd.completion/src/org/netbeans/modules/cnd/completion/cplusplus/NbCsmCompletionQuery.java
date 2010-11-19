@@ -91,6 +91,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private final FileReferencesContext fileReferencesContext;
     
     protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext) {
+        super(new NbCsmItemFactory());
         this.csmFile = csmFile;
         this.queryScope = localContext;
         this.fileReferencesContext = fileReferencesContext;
@@ -182,11 +183,6 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         }
         return resolver;
     }    
-    
-    @Override
-    protected void initFactory(){
-        setCsmItemFactory(new NbCsmItemFactory());
-    }
 
     @Override
     protected boolean isProjectBeeingParsed(boolean openingSource) {

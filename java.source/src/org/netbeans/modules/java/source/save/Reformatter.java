@@ -1650,8 +1650,8 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
-        public Boolean visitDisjointType(DisjointTypeTree node, Void p) {
-            Iterator<? extends Tree> it = node.getTypeComponents().iterator();
+        public Boolean visitDisjunctiveType(DisjunctiveTypeTree node, Void p) {
+            Iterator<? extends Tree> it = node.getTypeAlternatives().iterator();
             Tree tcomp = it.hasNext() ? it.next() : null;
             while (true) {
                 scan(tcomp, p);
@@ -2540,7 +2540,7 @@ public class Reformatter implements ReformatTask {
                         break;
                     default:
                         if (lastWSToken != null) {
-                            lastBlankLines = 0;
+                            lastBlankLines = -1;
                             lastBlankLinesTokenIndex = tokens.index() - 1;
                             lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                         }
