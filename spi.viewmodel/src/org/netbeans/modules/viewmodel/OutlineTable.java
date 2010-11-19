@@ -755,6 +755,10 @@ ExplorerManager.Provider, PropertyChangeListener {
                     break;
                 }
             }
+            if (j == n) {
+                // No "j" for order[j] == i.
+                continue;
+            }
             logger.fine("  order["+j+"] = "+i);
             if (j != i) {
                 for (int k = j; k > i; k--) {
