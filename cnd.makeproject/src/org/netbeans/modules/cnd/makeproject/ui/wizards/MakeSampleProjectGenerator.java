@@ -234,6 +234,7 @@ public class MakeSampleProjectGenerator {
                     Element masterRoot = doc.getDocumentElement();
                     if (masterRoot != null) {
                         Element secodaryRoot = secodaryDoc.getDocumentElement();
+                        secodaryRoot.setAttribute("version", masterRoot.getAttribute("version")); // NOI18N
                         NodeList masterConfsList = masterRoot.getElementsByTagName(CommonConfigurationXMLCodec.CONFS_ELEMENT);
                         if (masterConfsList.getLength() > 0) {
                             Element secondaryConfs = secodaryDoc.createElement(CommonConfigurationXMLCodec.CONFS_ELEMENT);
