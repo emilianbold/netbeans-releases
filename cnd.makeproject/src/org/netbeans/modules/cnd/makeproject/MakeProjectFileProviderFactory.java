@@ -212,7 +212,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             computeFiles(project, descriptor, matcher, result);
                         }
                     }
-                    return true;
+                    return false;
                 }
             }
             return false;

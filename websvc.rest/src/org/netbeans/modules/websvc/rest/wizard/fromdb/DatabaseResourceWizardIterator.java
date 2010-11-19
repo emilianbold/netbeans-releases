@@ -87,6 +87,10 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorP
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableClosure;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.ExistingDisabledReason;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
@@ -278,7 +282,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
 
-            Set<FileObject> files = generator.createdObjects();
+            Set<FileObject> files = getAffectedFiles(generator, helper );
 
             RestUtils.ensureRestDevelopmentReady(project);
             Set<Entity> entities = getEntities(project, files);
@@ -413,6 +417,40 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             });
         }
 
+    }
+
+    private Set<FileObject> getAffectedFiles( PersistenceGenerator generator,
+            RelatedCMPHelper helper )
+    {
+        Set<FileObject> created = generator.createdObjects();
+        TableClosure closure = helper.getTableClosure();
+        Set<Table> tables = closure.getSelectedTables();
+        Set<FileObject> extension = new HashSet<FileObject>(); 
+        for(Table table :tables ){
+            if ( table.isDisabled() ){
+                DisabledReason reason = table.getDisabledReason();
+                if ( reason instanceof ExistingDisabledReason ){
+                    String fqnClass = ((ExistingDisabledReason)reason).getFQClassName();
+                    try {
+                        FileObject fileObject = SourceGroupSupport.
+                            getFileObjectFromClassName(fqnClass, helper.getProject());
+                        if ( !created.contains( fileObject) ){
+                            extension.add( fileObject );
+                        }
+                    }
+                    catch(IOException e){
+                        Logger.getLogger("global").log(Level.SEVERE, null, e);
+                    }
+                }
+            }
+        }
+        if ( extension.size() == 0 ){
+            return created;
+        }
+        else {
+            extension.addAll( created );
+            return extension;
+        }
     }
 
     /**

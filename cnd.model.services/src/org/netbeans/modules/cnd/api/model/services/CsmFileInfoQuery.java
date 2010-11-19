@@ -50,8 +50,10 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 
 /**
@@ -161,6 +163,9 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract long getOffset(CsmFile file, int line, int column);
 
+    public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
+    
+    public abstract CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID);
     //
     // Implementation of the default query
     //
@@ -221,6 +226,24 @@ public abstract class CsmFileInfoQuery {
         @Override
         public long getOffset(CsmFile file, int line, int column) {
             return 0;
+        }
+
+        @Override
+        public CharSequence getName(CsmUID<CsmFile> fileUID) {
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                return file.getName();
+            }
+            return CharSequences.empty();
+        }
+
+        @Override
+        public CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID) {
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                return file.getAbsolutePath();
+            }
+            return CharSequences.empty();
         }
     }
 }
