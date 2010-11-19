@@ -258,6 +258,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for (CsmFile file : resolved) {
                 top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
+                coherence.add(file);
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             updateStartFilesWithBestStartFiles(coherence, top);
