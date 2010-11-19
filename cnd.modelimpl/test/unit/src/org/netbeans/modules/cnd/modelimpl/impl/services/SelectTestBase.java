@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
@@ -118,6 +120,9 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                     if (dumpProjectContainer && project instanceof ProjectBase) {
                         dumpProjectContainer = false;
                         ModelImplTest.dumpProjectContainers((ProjectBase) project);
+                    }
+                    if (containingFile instanceof FileImpl) {
+                        ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
                     }
                 }
                 assertTrue("Function " + qName.toString() + 

@@ -994,6 +994,10 @@ public final class CsmProjectContentResolver {
         } else {
             res = new ArrayList<CsmClass>();
         }
+        if (CsmSortUtilities.matchName(clazz.getName(), strPrefix, true, true)) {
+            // add current class as well
+            res.add(0, clazz);
+        }        
         return res;
     }
 

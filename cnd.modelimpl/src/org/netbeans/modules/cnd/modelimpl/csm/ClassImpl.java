@@ -91,13 +91,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //    }
     protected ClassImpl(NameHolder name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(name, file, ast);
+        this(name, ast, file, getStartOffset(ast), getEndOffset(ast));
+    }
+
+    protected ClassImpl(NameHolder name, AST ast, CsmFile file, int start, int end) {
+        // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
+        super(name, file, start, end);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         kind = findKind(ast);
     }
-
+    
     private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
         members = new ArrayList<CsmUID<CsmMember>>();

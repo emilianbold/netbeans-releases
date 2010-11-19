@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -63,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -151,17 +155,58 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
             CsmFile file, AtomicBoolean visible, boolean classesOnly) {
         Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
+        List<CsmClassifier> visibles = new ArrayList<CsmClassifier>();
         CsmClassifier first = null;
+        final CsmIncludeResolver ir = CsmIncludeResolver.getDefault();
+        List<CsmObject> td = new ArrayList<CsmObject>();
+        AtomicBoolean hasClassifier = new AtomicBoolean(false);
         for (CsmClassifier decl : decls) {
             if (!classesOnly || CsmKindUtilities.isClass(decl)) {
                 if (first == null || ForwardClass.isForwardClass(first)) {
                     first = decl;
                 }
-                if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
-                    visible.set(true);
-                    return decl;
+                if (ir.isObjectVisible(file, decl)) {
+                    if (CsmKindUtilities.isTypedef(decl)) {
+                        CharSequence classifierText = ((CsmTypedef)decl).getType().getClassifierText();
+                        if (decl.getName().equals(classifierText)) {
+                            if (!hasClassifier.get()) {
+                                visibles.add(decl);
+                                td.add((CsmTypedef) decl);
+                            }
+                        } else {
+                            visibles.add(decl);
+                        }
+                    } else if (CsmKindUtilities.isClassForwardDeclaration(decl) || ForwardClass.isForwardClass(decl)) {
+                        if (!hasClassifier.get()) {
+                            visibles.add(decl);
+                            td.add(decl);
+                        }
+                    } else {
+                        if (td != null) {
+                            // remove typedef
+                            visibles.removeAll(td);
+                            td.clear();
+                        }
+                        hasClassifier.set(true);
+                        visibles.add(decl);
+                    }
                 }
             }
+        }
+        if (!visibles.isEmpty()) {
+            visible.set(true);
+            // trace
+            if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                if (visibles.size() > 1) {
+                    // we have several visible classifiers
+                    System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s\n", uniqueName, file.getAbsolutePath()); // NOI18N
+                    int ind = 0;
+                    for (CsmClassifier csmClassifier : visibles) {
+                        System.err.printf("[%d] %s\n", ind++, csmClassifier); // NOI18N
+                    }
+                }
+            }
+            return visibles.get(0);
         }
         return first;
     }
