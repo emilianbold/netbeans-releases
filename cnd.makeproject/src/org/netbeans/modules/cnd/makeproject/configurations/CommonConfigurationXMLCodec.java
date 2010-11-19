@@ -326,7 +326,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String MAKE_ARTIFACT_WD_ELEMENT = "WD"; // NOI18N
     protected final static String MAKE_ARTIFACT_BC_ELEMENT = "BC"; // NOI18N
     protected final static String MAKE_ARTIFACT_CC_ELEMENT = "CC"; // NOI18N
-    protected final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
+    public final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
     // Archiver Tool
     protected final static String ARCHIVERTOOL_ELEMENT = "archiverTool"; // NOI18N
     protected final static String RANLIB_TOOL_ELEMENT = "ranlibTool"; // NOI18N
@@ -949,7 +949,7 @@ public abstract class CommonConfigurationXMLCodec
                     new AttrValuePair(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory()),
                     new AttrValuePair(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand()),
                     new AttrValuePair(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand()),
-                    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getOutput()),});
+                    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getStoredOutput()),});
         /*
         xes.elementOpen(MAKE_ARTIFACT_ELEMENT);
         xes.element(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation());
