@@ -50,8 +50,6 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -87,12 +85,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private static enum Mode {
         EXISTENCE,
-        FILE_OBJECT,
-        CHILDINFO
-    }
-
-    public CndFileSystemProvider.FileInfo[] getChildInfo(String relativePath) {
-        return (CndFileSystemProvider.FileInfo[]) getFileOrCheckExistence(relativePath, Mode.CHILDINFO);
+        FILE_OBJECT
     }
 
     public boolean exists(String relativePath) {
@@ -167,19 +160,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
             if (mode == Mode.EXISTENCE) {
                 return Boolean.valueOf(file.exists());
-            } else if (mode == Mode.CHILDINFO) {
-                File cacheFile = CndFileUtils.createLocalFile(cache, relativePath);
-                getRemoteFileSupport().ensureDirSync(cacheFile, remotePath + '/' + relativePath);
-                File[] children = file.listFiles();
-                if (children == null) {
-                    return new CndFileSystemProvider.FileInfo[0];
-                } else {
-                    CndFileSystemProvider.FileInfo[] infos = new CndFileSystemProvider.FileInfo[children.length];
-                    for (int i = 0; i < children.length; i++) {
-                        infos[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
-                    }
-                    return infos;
-                }
             } else {
                 CndUtils.assertTrue(mode == Mode.FILE_OBJECT);
             }

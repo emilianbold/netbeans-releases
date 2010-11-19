@@ -126,10 +126,6 @@ public class RemoteFileSystem extends FileSystem {
         return root;
     }
 
-    public CndFileSystemProvider.FileInfo[] getChildInfo(String path) {
-        return root.getChildInfo(path);
-    }
-
     public boolean exists(String path) {
         return root.exists(path);
     }

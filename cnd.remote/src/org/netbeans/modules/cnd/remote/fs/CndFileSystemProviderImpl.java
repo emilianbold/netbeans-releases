@@ -145,7 +145,16 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         if (p != null) {
             CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
             CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
-            return p.fileSystem.getChildInfo(p.remotePath.toString());
+            FileObject dirFO = p.fileSystem.findResource(path.toString());
+            if (dirFO == null) {
+                return new FileInfo[0];
+            }
+            FileObject[] children = dirFO.getChildren();
+            FileInfo[] result = new FileInfo[children.length];
+            for (int i = 0; i < children.length; i++) {
+                result[i] = new FileInfo(children[i].getNameExt(), children[i].isFolder());
+            }
+            return result;
         }
         return null;
     }
