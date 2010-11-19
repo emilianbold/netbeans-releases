@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 @ServiceProvider(service=CndFileSystemProvider.class)
-public class RemoteFileSystemsProvider extends CndFileSystemProvider {
+public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
