@@ -96,7 +96,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
 
     @Override
     public String toString() {
-        return "FIELD " + super.toString();
+        return "FIELD " + super.toString(); // NOI18N
     }
     
     ////////////////////////////////////////////////////////////////////////////
