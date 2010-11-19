@@ -525,7 +525,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
-        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
+        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 9);
     }
 
     public void testIZ136731() throws Exception {
@@ -653,7 +653,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ145071_2() throws Exception {
         // IZ#145071 : forward declarations in function body marked as error
         performTest("IZ145071_2.cc", 2, 12, "IZ145071_2.cc", 2, 5);
-        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 5);
+        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 13);
         performTest("IZ145071_2.cc", 10, 12, "IZ145071_2.cc", 10, 5);
         performTest("IZ145071_2.cc", 11, 20, "IZ145071_2.cc", 10, 5);
     }

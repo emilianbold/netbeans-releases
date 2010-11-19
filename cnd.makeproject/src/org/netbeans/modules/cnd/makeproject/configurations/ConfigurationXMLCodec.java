@@ -366,17 +366,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
             currentRequiredProjectsConfiguration = ((MakeConfiguration) currentConf).getRequiredProjectsConfiguration();
         } else if (element.equals(MAKE_ARTIFACT_ELEMENT)) {
-            String pl = atts.getValue("PL");        // NOI18N
+            String pl = atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_PL_ELEMENT);
             pl = getString(adjustOffset(pl));
-            String ct = getString(atts.getValue("CT"));        // NOI18N
-            String cn = getString(atts.getValue("CN"));        // NOI18N
-            String ac = getString(atts.getValue("AC"));        // NOI18N
-            String bl = getString(atts.getValue("BL"));        // NOI18N
-            String wd = atts.getValue("WD");        // NOI18N
+            String ct = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CT_ELEMENT));
+            String cn = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CN_ELEMENT));
+            String ac = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_AC_ELEMENT));
+            String bl = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_BL_ELEMENT));
+            String wd = atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_WD_ELEMENT);
             wd = getString(adjustOffset(wd));
-            String bc = getString(atts.getValue("BC"));        // NOI18N
-            String cc = getString(atts.getValue("CC"));        // NOI18N
-            String op = getString(atts.getValue("OP"));        // NOI18N
+            String bc = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_BC_ELEMENT));
+            String cc = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CC_ELEMENT));
+            String op = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT));
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                     pl,
@@ -387,7 +387,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     wd,
                     bc,
                     cc,
-                    op));
+                    op,
+                    ((MakeConfiguration) currentConf)));
             if (currentLibrariesConfiguration != null) {
                 currentLibrariesConfiguration.add(projectItem);
             } else if (currentRequiredProjectsConfiguration != null) {

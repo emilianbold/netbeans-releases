@@ -131,7 +131,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 "../hello1lib",
                 "${MAKE} -f Makefile CONF=Debug",
                 "${MAKE} -f Makefile CONF=Debug clean",
-                "dist/Debug/.../libhello1lib.a"));
+                "dist/Debug/.../libhello1lib.a",
+                conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
         projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                 "../hello3lib",
@@ -142,7 +143,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 "../hello3lib",
                 "${MAKE} -f Makefile CONF=Debug",
                 "${MAKE} -f Makefile CONF=Debug clean",
-                "dist/Debug/.../libhello3lib." + libsuffix));
+                "dist/Debug/.../libhello3lib." + libsuffix,
+                conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);

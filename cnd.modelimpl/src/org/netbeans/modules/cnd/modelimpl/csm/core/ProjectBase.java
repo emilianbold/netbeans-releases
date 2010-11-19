@@ -71,6 +71,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -100,6 +101,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -1533,6 +1535,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
+    }
+
+    public Iterator<CsmUID<CsmFile>> getFilteredFileUIDs(NameAcceptor nameFilter) {
+        FileContainer fileContainer = getFileContainer();
+        Collection<CsmUID<CsmFile>> filesUID = fileContainer.getFilesUID();
+        Collection<CsmUID<CsmFile>> out = new ArrayList<CsmUID<CsmFile>>(filesUID.size());
+        for (CsmUID<CsmFile> fileUID : filesUID) {
+            CharSequence fileName = FileInfoQueryImpl.getFileName(fileUID);
+            if (nameFilter.accept(fileName)) {
+                out.add(fileUID);
+            }
+        }
+        return out.iterator();
     }
 
     private static enum ComparisonResult {
