@@ -6141,10 +6141,7 @@ org.netbeans.modules.localhistory.LocalHistoryVCSAnnotator
 org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem$FSCallable
 org.netbeans.modules.masterfs.filebasedfs.naming.UNCName
 org.netbeans.modules.masterfs.filebasedfs.naming.UNCName$UNCFile
-org.netbeans.modules.maven.cos.CopyResourcesOnSave
 org.netbeans.modules.maven.indexer.Installer
-org.netbeans.modules.maven.ModInstall
-org.netbeans.modules.maven.ModInstall$OpenProjectsListener
 org.netbeans.modules.mercurial.FileStatusCache$ChangedEvent
 org.netbeans.modules.mercurial.HgException
 org.netbeans.modules.mercurial.HgProgressSupport
@@ -7008,8 +7005,6 @@ org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory$Data
 org.netbeans.modules.localhistory.store.LocalHistoryStoreImpl$StoreDataFile
 org.netbeans.modules.localhistory.utils.FileUtils
 org.netbeans.modules.maven.NbMavenProjectFactory
-org.netbeans.modules.maven.NbMavenProjectImpl
-org.netbeans.modules.maven.api.NbMavenProject
 org.netbeans.modules.maven.hints.pom.TaskListBridge
 org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl
 org.netbeans.modules.maven.queries.RepositorySourceForBinaryQueryImpl
