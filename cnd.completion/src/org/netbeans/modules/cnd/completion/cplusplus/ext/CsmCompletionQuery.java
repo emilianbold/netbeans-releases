@@ -97,12 +97,12 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -797,21 +797,72 @@ abstract public class CsmCompletionQuery {
             for (int i = 0; i < item.getTokenCount() - 1; i++) {
                 _const |= item.getTokenText(i).equals("const"); // NOI18N
             }
+            List<CsmObject> visibleObject = new ArrayList<CsmObject>();
+            List<CsmObject> td = new ArrayList<CsmObject>();
+            AtomicBoolean hasClassifier = new AtomicBoolean(false);
             for (CsmObject firstElem : vars) {
                 if (CsmKindUtilities.isClassifier(firstElem) || CsmKindUtilities.isVariable(firstElem)) {
                     if (ir.isObjectVisible(contextFile, firstElem)) {
-                        resolveType = CsmCompletion.getObjectType(firstElem, _const);
-                        visible.set(true);
-                        break;
+                        if (!CsmKindUtilities.isClassifier(firstElem)) {
+                            visibleObject.add(firstElem);
+                            break;
+                        } else {
+                            fillVisibleListAndFilterTypedefs(firstElem, hasClassifier, visibleObject, td);
+                        }
                     } else if (!onlyVisible && bestCandidate == null) {
                         bestCandidate = firstElem;
                     }
+                }
+            }
+            if (!visibleObject.isEmpty()) {
+                resolveType = CsmCompletion.getObjectType(visibleObject.get(0), _const);
+                visible.set(true);
+                // trace
+                if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                    if (visibleObject.size() > 1) {
+                        // we have several visible classifiers
+                        System.err.printf("getVariableOrClassifierType: : we have several objects visible from %s [%d]\n", contextFile.getAbsolutePath(), endOffset); // NOI18N
+                        int ind = 0;
+                        for (CsmObject obj : visibleObject) {
+                            System.err.printf("[%d] %s\n", ind++, obj); // NOI18N
+                        }
+                    }            
                 }
             }
             if (resolveType == null && bestCandidate != null) {
                 resolveType = CsmCompletion.getObjectType(bestCandidate, _const);
             }
             return resolveType;
+        }
+
+        private void fillVisibleListAndFilterTypedefs(CsmObject elem, AtomicBoolean hasClassifier, List<CsmObject> visibleObjects, List<CsmObject> td) {
+            if (CsmKindUtilities.isTypedef(elem)) {
+                CsmTypedef curTd = (CsmTypedef) elem;
+                CharSequence classifierText = curTd.getType().getClassifierText();
+                if (curTd.getName().equals(classifierText)) {
+                    if (!hasClassifier.get()) {
+                        visibleObjects.add(elem);
+                        td.add(curTd);
+                    }
+                } else {
+                    visibleObjects.add(elem);
+                }
+            } else if (CsmKindUtilities.isClassForwardDeclaration(elem) || CsmClassifierResolver.getDefault().isForwardClass(elem)) {
+                if (!hasClassifier.get()) {
+                    visibleObjects.add(elem);
+                    td.add(elem);
+                }
+            } else if (CsmKindUtilities.isClassifier(elem)) {
+                if (!td.isEmpty()) {
+                    // remove typedefs
+                    visibleObjects.removeAll(td);
+                    td.clear();
+                }
+                hasClassifier.set(true);
+                visibleObjects.add(elem);
+            } else {
+                visibleObjects.add(elem);
+            }
         }
 
         private boolean resolve(int varPos, String var, boolean match) {
@@ -1346,10 +1397,6 @@ abstract public class CsmCompletionQuery {
                                                         if (elemList == null) {
                                                             elemList = baseClasses;
                                                         } else if (baseClasses != null) {
-                                                            if (CsmSortUtilities.matchName(clazz.getName(), var, true, true)) {
-                                                                // add current class as well
-                                                                elemList.add(clazz);
-                                                            }
                                                             elemList.addAll(baseClasses);
                                                         }
                                                     }
@@ -1390,10 +1437,6 @@ abstract public class CsmCompletionQuery {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
                                                 List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
-                                                if (CsmSortUtilities.matchName(cls.getName(), var, true, true)) {
-                                                    // add current class as well
-                                                    res.add(cls);
-                                                }
                                                 res.addAll(baseClasses);
                                             }
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
@@ -2211,16 +2254,33 @@ abstract public class CsmCompletionQuery {
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList<CsmObject>());
                 // check visibility if more than one element in collection
                 Collection<CsmClassifier> otherClassifiers = new ArrayList<CsmClassifier>();
+                List<CsmObject> visibleClassifiers = new ArrayList<CsmObject>();
+                final CsmIncludeResolver ir = CsmIncludeResolver.getDefault();
+                List<CsmObject> td = new ArrayList<CsmObject>();
+                AtomicBoolean hasClassifier = new AtomicBoolean(false);
                 for (CsmObject item : allItems) {
                     if (CsmKindUtilities.isClassifier(item)) {
                         // if more than one we prefer visible
-                        if (allItems.size() > 1 && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, item)) {
-                            cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) item, contextFile);
+                        if (ir.isObjectVisible(contextFile, item)) {
+                            fillVisibleListAndFilterTypedefs(item, hasClassifier, visibleClassifiers, td);
                         } else {
                             // remember is only one or the first and invisible
                             otherClassifiers.add((CsmClassifier) item);
                         }
                     }
+                }
+                if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                    if (visibleClassifiers.size() > 1) {
+                        // we have several visible classifiers
+                        System.err.printf("findExactClass: we have several classifiers %s visible from %s [%d]\n", var, contextFile.getAbsolutePath(), endOffset); // NOI18N
+                        int ind = 0;
+                        for (CsmObject csmClassifier : visibleClassifiers) {
+                            System.err.printf("[%d] %s\n", ind++, csmClassifier); // NOI18N
+                        }
+                    }
+                }
+                for (CsmObject csmClassifier : visibleClassifiers) {
+                    cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)csmClassifier, contextFile);
                     if (cls != null) {
                         break;
                     }
