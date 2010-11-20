@@ -90,6 +90,8 @@ public class ActionRegistrationHinter implements Hinter {
             });
         } else if ("method:org.openide.awt.Actions.callback".equals(instanceCreate) || "method:org.openide.awt.Actions.context".equals(instanceCreate)) {
             ctx.addHint(Severity.WARNING, ctx.standardDescription()/* XXX no fixes yet */);
+        } else if ("method:org.openide.windows.TopComponent.openAction".equals(instanceCreate)) {
+            // XXX pending #191407
         } else if (ctx.instanceFile().getPath().startsWith("Actions/")) {
             // Old-style eager action of some variety.
             ctx.addStandardHint(new Callable<Void>() {
