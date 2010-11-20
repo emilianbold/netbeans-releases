@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -111,7 +110,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
     public static final int CONSOLE_TYPE_INTERNAL = 3;
     private static final String[] consoleTypeNames = {
-        getString("ConsoleType_Default"), // NOI18N
+        //getString("ConsoleType_Default"), // NOI18N // Carefull: names no longer match CONSOLE_TYPE. Cleanup when debugger works again.
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
         getString("ConsoleType_Internal"), // NOI18N
@@ -145,12 +144,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         platform = PlatformTypes.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
-        initializeImpl(CONSOLE_TYPE_DEFAULT);
+        initializeImpl(getDefaultConsoleType());
     }
 
     @Override
     public final void initialize() {
-       initializeImpl(CONSOLE_TYPE_DEFAULT);
+       initializeImpl(getDefaultConsoleType());
     }
 
     private void initializeImpl(int initialConsoleType) {
@@ -714,7 +713,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
-        ListenableIntNodeProp consoleTypeNP = new ListenableIntNodeProp(getConsoleType(), true, null,
+        ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, null,
                 getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
         set.put(consoleTypeNP);
         final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
@@ -734,7 +733,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 }
             });
             // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
-            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
+            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[((Integer) consoleTypeNP.getValue())-1]);
         }
 
         // TODO: this is a quick and durty "hack".
@@ -752,8 +751,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
-        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL].equals(value) ||
-                consoleTypeNames[CONSOLE_TYPE_DEFAULT].equals(value) && getDefaultConsoleType() == CONSOLE_TYPE_EXTERNAL);
+        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL-1].equals(value));
     }
 
     private static String getString(String s) {
