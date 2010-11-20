@@ -339,14 +339,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE_OCI_DRIVER)) {
                     this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName"); // NOI18N
                     this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass"); // NOI18N
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
+                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
                 } else {
                     this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName"); // NOI18N
                     this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass"); // NOI18N
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
+                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
                 }
-                this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
-                this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
+                this.user = user != null ? user : NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
+                this.pwd = password != null ? password : NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N

@@ -155,6 +155,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -741,7 +742,7 @@ public class EditorContextImpl extends EditorContext {
         }
 
         try {
-            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -890,7 +891,7 @@ public class EditorContextImpl extends EditorContext {
         final StyledDocument doc = findDocument(fo);
         if (doc == null) return null;
         try {
-            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -1038,7 +1039,7 @@ public class EditorContextImpl extends EditorContext {
         final StyledDocument doc = findDocument(fo);
         if (doc == null) return null;
         try {
-            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -1133,7 +1134,7 @@ public class EditorContextImpl extends EditorContext {
         final String[] currentClassPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -1270,7 +1271,7 @@ public class EditorContextImpl extends EditorContext {
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -2141,7 +2142,7 @@ public class EditorContextImpl extends EditorContext {
         final String[] currentElementPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -2423,6 +2424,170 @@ public class EditorContextImpl extends EditorContext {
             assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
         }
         return ops;
+    }
+
+    private static RequestProcessor scanningProcessor = new RequestProcessor("Debugger Context Scanning", 1);   // NOI18N
+
+    private static abstract class ScanRunnable <E extends Throwable> implements Runnable {
+        
+        private Future<Void>[] resultPtr;
+        private E[] excPtr;
+        private Class<E> exceptionType;
+
+        public ScanRunnable(Class<E> exceptionType) {
+            this.exceptionType = exceptionType;
+        }
+
+        private void setParam(Future<Void>[] resultPtr, E[] excPtr) {
+            this.resultPtr = resultPtr;
+            this.excPtr = excPtr;
+        }
+
+        @Override
+        public final void run() {
+            run(resultPtr, excPtr);
+        }
+
+        public abstract void run(Future<Void>[] resultPtr, E[] excPtr);
+
+    }
+
+    private static Future<Void> runWhenScanFinishedReallyLazy(final JavaSource js,
+                                                              final Task<CompilationController> task,
+                                                              final boolean shared) throws IOException {
+        return scanReallyLazy(new ScanRunnable<IOException>(IOException.class) {
+            @Override
+            public void run(Future<Void>[] resultPtr, IOException[] excPtr) {
+                try {
+                    Future<Void> result = js.runWhenScanFinished(task, shared);
+                    synchronized (resultPtr) {
+                        resultPtr[0] = result;
+                    }
+                } catch (IOException ex) {
+                    synchronized (resultPtr) {
+                        excPtr[0] = ex;
+                    }
+                }
+            }
+        });
+    }
+
+    private static Future<Void> parseWhenScanFinishedReallyLazy(final Collection<Source> sources,
+                                                                final UserTask userTask) throws ParseException {
+        return scanReallyLazy(new ScanRunnable<ParseException> (ParseException.class) {
+            @Override
+            public void run(Future<Void>[] resultPtr, ParseException[] excPtr) {
+                try {
+                    Future<Void> result = ParserManager.parseWhenScanFinished(sources, userTask);
+                    synchronized (resultPtr) {
+                        resultPtr[0] = result;
+                    }
+                } catch (ParseException ex) {
+                    synchronized (resultPtr) {
+                        excPtr[0] = ex;
+                    }
+                }
+            }
+        });
+    }
+
+    private static <E extends Throwable> Future<Void> scanReallyLazy(ScanRunnable<E> run) throws E {
+        final Future<Void>[] resultPtr = new Future[] { null };
+        final E[] excPtr = (E[]) java.lang.reflect.Array.newInstance(run.exceptionType, 1);//new E[] { null };
+        run.setParam(resultPtr, excPtr);
+        final RequestProcessor.Task scanning = scanningProcessor.post(run);
+        try {
+            scanning.waitFinished(200);
+        } catch (InterruptedException ex) {
+        }
+        synchronized (resultPtr) {
+            if (excPtr[0] != null) {
+                throw excPtr[0];
+            }
+            if (resultPtr[0] != null) {
+                return resultPtr[0];
+            }
+        }
+        return new Future<Void>() {
+
+            private Future<Void> getDelegate() {
+                synchronized (resultPtr) {
+                    return resultPtr[0];
+                }
+            }
+
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                Future<Void> d = getDelegate();
+                if (d != null) {
+                    return d.cancel(mayInterruptIfRunning);
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                Future<Void> d = getDelegate();
+                if (d != null) {
+                    return d.isCancelled();
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean isDone() {
+                Future<Void> d = getDelegate();
+                if (d != null) {
+                    return d.isDone();
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public Void get() throws InterruptedException, ExecutionException {
+                scanning.waitFinished();
+                Future<Void> d = getDelegate();
+                if (d != null) {
+                    return d.get();
+                } else {
+                    if (excPtr[0] != null) {
+                        throw new ExecutionException(excPtr[0]);
+                    }
+                    throw new ExecutionException("Task failed", new RuntimeException("Task Failed"));
+                }
+            }
+
+            @Override
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                long mstimeout = unit.toMillis(timeout);
+                if (mstimeout == 0) {
+                    if (!scanning.isFinished()) {
+                        throw new TimeoutException("Task timeout");
+                    }
+                } else {
+                    long s1 = System.nanoTime();
+                    boolean finished = scanning.waitFinished(mstimeout);
+                    if (!finished) {
+                        throw new TimeoutException("Task timeout");
+                    }
+                    long s2 = System.nanoTime();
+                    timeout -= unit.convert(s2 - s1, TimeUnit.NANOSECONDS);
+                    if (timeout < 0) timeout = 1;
+                }
+                Future<Void> d = getDelegate();
+                if (d != null) {
+                    return d.get(timeout, unit);
+                } else {
+                    if (excPtr[0] != null) {
+                        throw new ExecutionException(excPtr[0]);
+                    }
+                    throw new ExecutionException("Task failed", new RuntimeException("Task Failed"));
+                }
+            }
+        };
     }
 
 
