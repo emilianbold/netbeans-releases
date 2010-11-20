@@ -200,7 +200,13 @@ public final class RepositoryPreferences {
             }
             if (info.getRepositoryUrl() != null) {
                 fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl().equals(info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX) ? null : info.getIndexUpdateUrl());
+                String inferred = info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX;
+                Object stored = fo.getAttribute(KEY_INDEX_URL);
+                String updated = info.getIndexUpdateUrl();
+                // #16761 workaround; would prefer to simply store updated == inferred ? null : updated
+                if (!updated.equals(inferred) || (stored != null && !stored.equals(updated))) {
+                    fo.setAttribute(KEY_INDEX_URL, updated);
+                }
             }
         } catch (SyncFailedException x) {
             LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
