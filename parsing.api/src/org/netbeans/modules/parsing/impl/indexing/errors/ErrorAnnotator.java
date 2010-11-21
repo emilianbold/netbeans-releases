@@ -98,7 +98,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     private static final Image ERROR_BADGE_FOLDER;
     
     static {
-        URL errorBadgeIconURL = ErrorAnnotator.class.getClassLoader().getResource(ERROR_BADGE_URL);
+        URL errorBadgeIconURL = ErrorAnnotator.class.getResource("/" + ERROR_BADGE_URL);
         assert errorBadgeIconURL != null : "Note in bug #166236";
         String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
         Image errorBadge = loadImage(ERROR_BADGE_URL);
