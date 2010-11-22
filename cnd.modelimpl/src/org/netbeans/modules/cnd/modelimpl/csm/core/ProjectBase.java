@@ -2835,9 +2835,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream) {
         printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
         for (Map.Entry<CharSequence, CsmClassifier> entry : container.getClassifiers().entrySet()) {
-            printStream.print("\t" + entry.getKey().toString() + " ");
+            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
             if (entry.getValue() == null) {
-                printStream.println("null");
+                printStream.println("null");//NOI18N
             } else {
                 printStream.println(entry.getValue().getUniqueName());
             }
@@ -2856,7 +2856,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream) {
         printStream.println("\n========== Dumping Project declarations");//NOI18N
         for (Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()) {
-            printStream.println("\t" + entry.getKey().toString());
+            printStream.println("\t" + entry.getKey().toString());//NOI18N
             TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
             Object o = entry.getValue();
             if (o instanceof CsmUID<?>[]) {
