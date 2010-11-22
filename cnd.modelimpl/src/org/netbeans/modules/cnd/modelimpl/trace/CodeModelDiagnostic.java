@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileSnapshot;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -183,6 +186,35 @@ public final class CodeModelDiagnostic {
     }    
     
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
+    public final static class ProjectDeclarationsTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Project Declaration Containers (Huge size)";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    CsmProject project = file.getProject();
+                    if (project instanceof ProjectBase) {
+                        projects.add(project);
+                    }
+                }
+            }
+            PrintStream ps = CsmTracer.toPrintStream(printOut);
+            for (CsmProject prj : projects) {
+                if (prj instanceof ProjectBase) {
+                    ((ProjectBase)prj).traceProjectContainers(ps);
+                }
+            }
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
     public final static class ModelTrace implements CndDiagnosticProvider {
 
         @Override
@@ -192,11 +224,14 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends CsmProject> projects = context.lookupAll(CsmProject.class);
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {
-                    new CsmTracer(printOut).dumpModel(file.getProject());
+                    CsmProject project = file.getProject();
+                    if (project != null) {
+                        projects.add(project);
+                    }
                 }
             }
             for (CsmProject prj : projects) {
