@@ -250,7 +250,7 @@ public class Watcher extends AnnotationProvider {
                 }
             }
         } catch (LinkageError x) {
-            LOG.log(Level.INFO, null, x);
+            LOG.warning(x.toString());
         }
         return null;
     }
