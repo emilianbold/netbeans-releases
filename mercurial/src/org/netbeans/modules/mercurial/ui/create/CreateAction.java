@@ -144,6 +144,9 @@ public class CreateAction extends ContextAction {
 
     private void performCreate (VCSContext context) {
         final Mercurial hg = Mercurial.getInstance();
+        if (!hg.isAvailable(true)) {
+            return;
+        }
 
         final File rootToManage = selectRootToManage(context);
         if (rootToManage == null) {
