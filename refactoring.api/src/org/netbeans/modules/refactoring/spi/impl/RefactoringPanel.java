@@ -57,6 +57,7 @@ import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.Collection;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
@@ -83,6 +84,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -366,7 +368,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private static final byte PHYSICAL = 1;
     private static final byte GRAPHICAL = 2;
     
-    private byte currentView = PHYSICAL;
+    private static final String PREF_VIEW_TYPE = "PREF_VIEW_TYPE";
+    private byte currentView = getPrefViewType();
 
     void switchToLogicalView() {
         logicalViewButton.setSelected(true);
@@ -380,6 +383,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             nextMatch.setEnabled(true);
             expandButton.setEnabled(true);
         }
+        storePrefViewType();
         refresh(false);
     }
     
@@ -395,6 +399,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             nextMatch.setEnabled(true);
             expandButton.setEnabled(true);
         }
+        storePrefViewType();
         refresh(false);
     }
 
@@ -815,6 +820,17 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     public void restoreDeviderLocation() {
         if (splitPane.getRightComponent()!=null)
             splitPane.setDividerLocation(location);
+    }
+
+    private byte getPrefViewType() {
+        Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
+        return (byte) prefs.getInt(PREF_VIEW_TYPE, PHYSICAL);
+    }
+
+    private void storePrefViewType() {
+        assert currentView!=GRAPHICAL;
+        Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
+        prefs.putInt(PREF_VIEW_TYPE, currentView);
     }
 
     ////////////////////////////////////////////////////////////////////////////

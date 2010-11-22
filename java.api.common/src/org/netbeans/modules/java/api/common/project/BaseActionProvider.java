@@ -441,12 +441,15 @@ public abstract class BaseActionProvider implements ActionProvider {
 
                     if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
-                            FileObject file = findSources(context)[0];
-                            String url = p.getProperty("applet.url");
-                            execProperties.put("applet.url", url);
-                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                            prepareSystemProperties(execProperties, false);
-                            JavaRunner.execute(targetNames[0], execProperties);
+                            final FileObject[] selectedFiles = findSources(context);
+                            if (selectedFiles != null) {
+                                FileObject file = selectedFiles[0];
+                                String url = p.getProperty("applet.url");
+                                execProperties.put("applet.url", url);
+                                execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
+                                prepareSystemProperties(execProperties, false);
+                                JavaRunner.execute(targetNames[0], execProperties);
+                            }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
