@@ -228,9 +228,9 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, null/*?currentNamespace*/, !isRenderingLocalContext());
                             container.addDeclaration(funcDef);
-                            currentNamespace.addDeclaration(funcDef);
+//                            currentNamespace.addDeclaration(funcDef);
                         } else {
                             FunctionDDImpl<?> fddit = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(fddit);
