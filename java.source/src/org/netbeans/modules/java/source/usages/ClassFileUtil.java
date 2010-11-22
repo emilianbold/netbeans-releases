@@ -178,7 +178,7 @@ public class ClassFileUtil {
         final ElementKind kind = ee.getKind();
         final String[] result = (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) ? new String[2] : new String[3];
         final Element enclosingType = ee.getEnclosingElement();
-	assert enclosingType instanceof TypeElement;
+	assert enclosingType instanceof TypeElement : enclosingType == null ? "null" : enclosingType.toString() + "(" + enclosingType.getKind()+")";
         result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "Result of encodeClassNameOrArray = " + result[0]);    // NOI18N

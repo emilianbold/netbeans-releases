@@ -77,6 +77,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.ui.TextFilterPanel;
 import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponentsProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
+import org.netbeans.modules.dlight.visualizers.ui.FunctionCallNode;
 import org.netbeans.modules.dlight.visualizers.ui.FunctionCallNodeChildren;
 import org.netbeans.modules.dlight.visualizers.ui.FunctionsListViewTable;
 import org.netbeans.modules.dlight.visualizers.util.FunctionCallFilter;
@@ -251,6 +252,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private void updateView() {
         Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+        final String selectedFunction;
+
+        if (selectedNodes.length == 1 && selectedNodes[0] instanceof FunctionCallNode) {
+            FunctionCallNode selected = (FunctionCallNode) selectedNodes[0];
+            selectedFunction = selected.getDisplayName();
+        } else {
+            selectedFunction = null;
+        }
+
         final List<FunctionCallWithMetric> newData = dataRef.get();
 
         if (newData.isEmpty()) {
@@ -261,10 +271,25 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         functionChildren.setData(newData);
 
-        try {
-            getExplorerManager().setSelectedNodes(selectedNodes);
-        } catch (PropertyVetoException ex) {
-        }
+        SwingUtilities.invokeLater(new Runnable()                          {
+
+            @Override
+            public void run() {
+                if (selectedFunction != null) {
+                    for (Node node : getExplorerManager().getRootContext().getChildren().getNodes(true)) {
+                        if (node instanceof FunctionCallNode) {
+                            if (selectedFunction.equals(((FunctionCallNode) node).getDisplayName())) {
+                                try {
+                                    getExplorerManager().setSelectedNodes(new Node[]{node});
+                                } catch (PropertyVetoException ex) {
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
