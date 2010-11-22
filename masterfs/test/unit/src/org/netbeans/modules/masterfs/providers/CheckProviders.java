@@ -43,6 +43,7 @@
 package org.netbeans.modules.masterfs.providers;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -56,6 +57,7 @@ public final class CheckProviders extends NbTestCase {
         this.created = created;
     }
 
+    @RandomlyFails // NB-Core-Build #5533: Provided extensions provided as expected expected:<1> but was:<2>
     public void testProviders() {
         ProvidedExtensionsTest.ProvidedExtensionsImpl.assertCreated("Provided extensions provided as expected", created);
         InterceptionListenerTest.AnnotationProviderImpl.assertCreated("Annotation provider created or not as expected", created);
