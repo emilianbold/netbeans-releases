@@ -2717,7 +2717,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case METHOD:
                         ExecutableType et = (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, isOfSmartType(env, et.getReturnType(), smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                 }
             }
@@ -2947,11 +2947,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case CONSTRUCTOR:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, type, smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, type, smartTypes)));
                         break;
                     case METHOD:
                         et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, et.getReturnType(), smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                     case CLASS:
                     case ENUM:
@@ -4916,6 +4916,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Set<? extends TypeMirror> smartTypes = null;
             private Set<Element> excludes = null;
             private boolean checkAccessibility;
+            private boolean addSemicolon = false;
+            private boolean checkAddSemicolon = true;
             
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
@@ -5058,6 +5060,25 @@ public class JavaCompletionProvider implements CompletionProvider {
                         && getController().getTrees().isAccessible(scope, (TypeElement)((DeclaredType)type).asElement())
                         && (member.getKind() != METHOD
                         || getController().getElementUtilities().getImplementationOf((ExecutableElement)member, (TypeElement)((DeclaredType)type).asElement()) == member);
+            }
+            
+            public boolean addSemicolon() {
+                if (checkAddSemicolon) {
+                    TreePath tp = getPath();
+                    Tree tree = tp.getLeaf();
+                    if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        tp = tp.getParentPath();
+                        if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                            addSemicolon = true;
+                    }
+                    if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
+                        (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
+                        tp = tp.getParentPath();
+                    if (tp.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT || tp.getLeaf().getKind() == Tree.Kind.BLOCK)
+                        addSemicolon = true;
+                    checkAddSemicolon = false;
+                }
+                return addSemicolon;
             }
         }
         
