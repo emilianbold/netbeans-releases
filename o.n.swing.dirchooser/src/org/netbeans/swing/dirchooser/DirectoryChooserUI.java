@@ -206,6 +206,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private JComponent topCombo, topComboWrapper, topToolbar;
     private JPanel slownessPanel;
 
+    private final CompletionWorker completionWorker = new CompletionWorker();
+    private final RequestProcessor.Task completionTask = RP.create(completionWorker);
+
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
     }
@@ -991,32 +994,68 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             });
         }
     }
-    
+
     private void updateCompletions() {
-        String name = normalizeFile(getFileName());
-        int slash = name.lastIndexOf(File.separatorChar);
-        if (slash != -1) {
-            String prefix = name.substring(0, slash + 1);
-            File d = new File(prefix);
-            if (d.isDirectory()) {
-                File[] children = d.listFiles();
-                if(children != null) {
-                    Vector list = buildList(name, children, 20);
-                    
-                    if(completionPopup == null) {
-                        completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
-                    } else if (completionPopup.isShowing() || 
-                            (showPopupCompletion && fileChooser.isShowing())) {
-                        completionPopup.setDataList(list);
-                    }
-                    
-                    if(showPopupCompletion && fileChooser.isShowing() && !completionPopup.isShowing()) {
-                        java.awt.Point los = filenameTextField.getLocation();
-                        int popX = los.x;
-                        int popY = los.y + filenameTextField.getHeight() - 6;
-                        completionPopup.showPopup(filenameTextField, popX, popY);
-                    }
+        if (showPopupCompletion) {
+            final String name = normalizeFile(getFileName());
+            int slash = name.lastIndexOf(File.separatorChar);
+            if (slash != -1) {
+                String prefix = name.substring(0, slash + 1);
+                File d = new File(prefix);
+                synchronized (completionWorker) {
+                    completionWorker.d = d;
+                    completionWorker.name = name;
                 }
+                completionTask.schedule(500);
+            }
+        }
+    }
+
+    private class CompletionWorker implements Runnable {
+        private File d;
+        private String name;
+        private File lastDir;
+        private File[] lastChildren;
+
+        @Override
+        public void run() {
+            File dir;
+            final String fName;
+            synchronized (this) {
+                dir = d;
+                fName = name;
+            }
+
+            final File[] children;
+            if (!dir.equals(lastDir)) {
+                if (dir.isDirectory()) {
+                    lastDir = dir;
+                    children = lastChildren = dir.listFiles();
+                } else {
+                    children = lastChildren = null;
+                }
+            } else {
+                children = lastChildren;
+            }
+            if (children != null) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Vector<File> list = buildList(fName, children, 20);
+                        if(completionPopup == null) {
+                            completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
+                        } else if (completionPopup.isShowing() ||
+                                (showPopupCompletion && fileChooser.isShowing())) {
+                            completionPopup.setDataList(list);
+                        }
+                        if (fileChooser.isShowing() && !completionPopup.isShowing()) {
+                            java.awt.Point los = filenameTextField.getLocation();
+                            int popX = los.x;
+                            int popY = los.y + filenameTextField.getHeight() - 6;
+                            completionPopup.showPopup(filenameTextField, popX, popY);
+                        }
+                    }
+                });
             }
         }
     }
