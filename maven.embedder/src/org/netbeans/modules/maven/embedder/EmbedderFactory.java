@@ -105,6 +105,8 @@ public final class EmbedderFactory {
      * embedder seems to cache some values..
      */
     public synchronized static void resetProjectEmbedder() {
+        project = null;
+        online = null;
     }
 
     private static void setLocalRepoPreference(EmbedderConfiguration req) {
