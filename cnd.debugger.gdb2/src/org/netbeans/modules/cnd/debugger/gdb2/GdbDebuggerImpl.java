@@ -996,13 +996,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    // Note that the implicit resumption after a stoppage on main
 	    // will interfere with a normal "break main"!
 
-	    AbstractMICommand startHook1Cmd =
+	    AbstractMICommand breakStartCmd =
 		new AbstractMICommand(0, "-break-insert -t _start");// NOI18N
-	    startHook1Cmd.setEmptyDoneIsError(true);
+	    breakStartCmd.setEmptyDoneIsError(true);
 
-	    AbstractMICommand startHook2Cmd =
+	    AbstractMICommand breakMainCmd =
 		new AbstractMICommand(0, "-break-insert -t main");// NOI18N
-	    startHook2Cmd.setEmptyDoneIsError(true);
+	    breakMainCmd.setEmptyDoneIsError(true);
 
 	    //
 	    // The actual run command
@@ -1010,33 +1010,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MICommand runCmd =
                 new MIResumptiveCommand("-exec-run") {		// NOI18N
 
-		    private int pid = 0;
-
                 @Override
                     protected void onRunning(MIRecord record) {
                         state().isProcess = true;
-
-			// On some gdb's (Mac 10.4) we get something like:
-			// ~"[Switching to process 446 ...]\n"
-			// Which is captured in the console stream for
-			// this command.
-			String console = record.command().getConsoleStream();
-
-			if (console != null) {
-			    pid = extractPid2(console);
-
-			    session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
-			    if (pid != 0)
-				session().setPid(pid);
-			}
-
                         super.onRunning(record);
                     }
 
                 @Override
                     protected void onStopped(MIRecord record) {
 			// Are we sure we hit '_start' or 'main'?
-			if (pid == 0) {
+			if (session().getPid() <= 0) {
                             sendPidCommand(true);
                         } else {
 			    go();	// resume
@@ -1045,10 +1028,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    }
                 };
 
-	    startHook1Cmd.chain(runCmd, startHook2Cmd);
-	    startHook2Cmd.chain(runCmd, null);
+	    breakStartCmd.chain(runCmd, breakMainCmd);
+	    breakMainCmd.chain(runCmd, null);
 
-            gdb.sendCommand(startHook1Cmd);
+            // _start does not work on MacOS
+            if (getHost().getPlatform() == Platform.MacOSX_x86) {
+                gdb.sendCommand(breakMainCmd);
+            } else {
+                gdb.sendCommand(breakStartCmd);
+            }
         }
     }
 
@@ -3348,7 +3336,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-	    newHandler(rt, cmd, result);
+            if (result.matches("bkpt")) {
+                newHandler(rt, cmd, result);
+            }
 	}
     }
 
