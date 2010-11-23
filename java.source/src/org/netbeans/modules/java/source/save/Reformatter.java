@@ -2905,6 +2905,9 @@ public class Reformatter implements ReformatTask {
                     diffs.removeFirst();
             }
             this.col = col;
+            if (index < lastBlankLinesTokenIndex) {
+                lastBlankLinesTokenIndex = -1;
+            }
         }
         
         private void appendToDiff(String s) {

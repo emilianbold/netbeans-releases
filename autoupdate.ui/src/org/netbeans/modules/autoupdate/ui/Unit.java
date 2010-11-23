@@ -522,8 +522,11 @@ public abstract class Unit {
             return container.contains (updateEl);
         }
         
+        @Override
         public void setMarked (boolean marked) {
-            assert marked != isMarked ();
+            if (marked == isMarked()) {
+                return;
+            }
             OperationContainer container = null;
             if (isNbms) {
                 container = Containers.forUpdateNbms ();

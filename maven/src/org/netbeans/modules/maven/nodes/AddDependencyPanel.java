@@ -658,7 +658,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 vers.add(rec.getVersion());
             }
         }
-        Collections.sort(vers);
         // also include properties/expressions that could be related to version
         // management
         List<String> propList = new ArrayList<String>();

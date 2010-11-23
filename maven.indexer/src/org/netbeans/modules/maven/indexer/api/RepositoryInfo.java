@@ -55,6 +55,7 @@ import org.openide.filesystems.FileStateInvalidException;
  */
 public final class RepositoryInfo {
 
+    /** @see org.sonatype.nexus.index.context.DefaultIndexingContext#INDEX_DIRECTORY */
     static final String DEFAULT_INDEX_SUFFIX = ".index/"; // NOI18N
 
     private String id;

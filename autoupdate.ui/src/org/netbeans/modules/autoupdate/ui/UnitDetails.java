@@ -48,11 +48,9 @@ import java.io.CharConversionException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -78,7 +76,7 @@ public class UnitDetails extends DetailsPanel {
 
     private final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.ui.UnitDetails");
     private RequestProcessor.Task unitDetailsTask = null;
-    private static final RequestProcessor UNIT_DETAILS_PROCESSOR = new RequestProcessor("unit-details-processor", 1, true);
+    static final RequestProcessor UNIT_DETAILS_PROCESSOR = new RequestProcessor("unit-details-processor", 1, true);
 
     /** Creates a new instance of UnitDetails */
     public UnitDetails() {

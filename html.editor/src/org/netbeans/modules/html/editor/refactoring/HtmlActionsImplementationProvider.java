@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
@@ -118,7 +119,7 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
     }
 
     private static boolean isFromEditor(EditorCookie ec) {
-        if (ec != null && ec.getOpenedPanes() != null) {
+        if (ec != null && NbDocument.findRecentEditorPane(ec) != null) {
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             if (activetc instanceof CloneableEditorSupport.Pane) {
                 return true;

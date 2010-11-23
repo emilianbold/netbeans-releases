@@ -100,4 +100,9 @@ public class UpdateToAction extends UpdateAction {
         }
         return revision;
     }
+
+    @Override
+    protected String iconResource () {
+        return null;
+    }
 }
