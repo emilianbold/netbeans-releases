@@ -1107,12 +1107,13 @@ public class InstallSupportImpl {
                     (Map)ev.getNewValue(), 
                     File.class, Long.class, true
                 );
-                final FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
+                long now = System.currentTimeMillis();
+                for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
+                    touch(e.getKey(), Math.max(e.getValue(), now));
+                }
+                FileUtil.getConfigRoot().refresh();
+                FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
-                    long now = System.currentTimeMillis();
-                    for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
-                        touch(e.getKey(), Math.max(e.getValue(), now));
-                    }
                     modulesRoot.refresh();
                 }
             } else {
