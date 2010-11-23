@@ -114,7 +114,7 @@ public class UIDUtilities {
             uid = handleUnnamedDeclaration(declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                uid = (CsmUID<T>) new TypedefUID((CsmTypedef) declaration);
+                uid = new TypedefUID<T>(declaration);
             } else if (declaration instanceof CsmClassifier) {
                 uid = new ClassifierUID<T>(declaration);
             } else {
@@ -566,9 +566,9 @@ public class UIDUtilities {
     /**
      * UID for CsmTypedef
      */
-    /* package */ static final class TypedefUID extends OffsetableDeclarationUIDBase<CsmTypedef> {
+    /* package */ static final class TypedefUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
-        public TypedefUID(CsmTypedef typedef) {
+        public TypedefUID(T typedef) {
             super(typedef);
 //            assert typedef instanceof RegistarableDeclaration;
 //            if (!((RegistarableDeclaration)typedef).isRegistered()) {
