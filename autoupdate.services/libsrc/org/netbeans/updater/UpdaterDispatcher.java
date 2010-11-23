@@ -52,9 +52,6 @@ import javax.swing.SwingUtilities;
  * @author  Jiri Rechtacek
  */
 public final class UpdaterDispatcher implements Runnable {
-    
-    UpdaterDispatcher () {}
-    
     private Boolean disable = null;
     private Boolean install = null;
     private Boolean uninstall = null;
@@ -66,6 +63,12 @@ public final class UpdaterDispatcher implements Runnable {
     public static final String DEACTIVATE_LATER = "deactivate_later.txt"; // NOI18N
     
     public static final String LAST_MODIFIED = ".lastModified"; // NOI18N
+    private final UpdatingContext context;
+
+    UpdaterDispatcher (UpdatingContext context) {
+        this.context = context;
+    }
+    
     
     /** Explore <cluster>/update directory and schedules actions handler for
      * Install/Update, Uninstall or Disable modules
@@ -76,18 +79,18 @@ public final class UpdaterDispatcher implements Runnable {
         try {
             // uninstall first
             if (isUninstallScheduled ()) {
-                ModuleDeactivator.delete ();
+                new ModuleDeactivator(context).delete();
             }
 
             // then disable
             if (isDisableScheduled ()) {
-                ModuleDeactivator.disable ();
+                new ModuleDeactivator(context).disable();
             }
 
             // finally install/update
             if (isInstallScheduled ()) {
                 try {
-                    ModuleUpdater mu = new ModuleUpdater (null);
+                    ModuleUpdater mu = new ModuleUpdater (context);
                     mu.start ();
                     mu.join ();
                 } catch (InterruptedException ex) {
@@ -97,7 +100,7 @@ public final class UpdaterDispatcher implements Runnable {
         } catch (Exception x) {
             System.out.println ("Error: Handling delete throws " + x);
         } finally {
-            UpdaterFrame.getUpdaterFrame ().unpackingFinished ();
+            context.unpackingFinished ();
         }
     }
     
@@ -148,9 +151,10 @@ public final class UpdaterDispatcher implements Runnable {
         }
     }
 
+    @Override
     public void run () {
         dispatch ();
-        UpdaterFrame.disposeSplash ();
+        context.disposeSplash();
     }
     
     public static void touchLastModified (File cluster) {

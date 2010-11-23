@@ -58,11 +58,6 @@ import javax.swing.SwingUtilities;
  * @version
  */
 public final class ModuleUpdater extends Thread {
-    
-    public ModuleUpdater (Collection<File> forInstall) {
-        this.forInstall = forInstall;
-    }
-
     /** Relative name of update directory */
     private static final String DOWNLOAD_DIR_NAME = "download"; // NOI18N
 
@@ -108,16 +103,22 @@ public final class ModuleUpdater extends Thread {
     public static final String EXECUTABLE_FILES_ENTRY = "Info/executables.list";
     
     /** files that are supposed to be installed (when running inside the ide) */
-    private Collection<File> forInstall;
     private Map<File, Collection<File>> files2clustersForInstall;
 
     /** Should the thread stop */
     private volatile boolean stop = false;
 
-    private volatile boolean suspend = false;
-
     /** Total length of unpacked files */
     private long totalLength;
+    
+    private final UpdatingContext context;
+
+    ModuleUpdater(UpdatingContext context) {
+        super("Module Updater");
+        this.context = context;
+    }
+    
+    
 
     /** Creates new ModuleUpdater */
     @Override
@@ -146,9 +147,7 @@ public final class ModuleUpdater extends Thread {
         } catch (Exception x) {
             x.printStackTrace ();
         } finally {
-            if (UpdaterFrame.isFromIDE ()) {
-                UpdaterFrame.getUpdaterFrame ().runningFinished ();
-            }
+            context.runningFinished();
         }
     }
     
@@ -181,13 +180,9 @@ public final class ModuleUpdater extends Thread {
 
     /** checks wheter ends the run of update */
     private void checkStop() {
-
-        if ( suspend )
-            while ( suspend );
-
         if ( stop ) {
-            if (UpdaterFrame.isFromIDE ()) {
-                UpdaterFrame.getUpdaterFrame().unpackingFinished();
+            if (context.isFromIDE ()) {
+                context.unpackingFinished();
             } else {
                 System.exit( 0 );
             }
@@ -196,19 +191,19 @@ public final class ModuleUpdater extends Thread {
 
     private void processFilesForInstall () {
         // if installOnly are null then generate all NBMs around all clusters
-        if (forInstall == null) {
+        if (context.forInstall() == null) {
             files2clustersForInstall = new HashMap<File, Collection<File>> ();
             for (File cluster : UpdateTracking.clusters (true)) {
                 Collection<File> tmp = getModulesToInstall (cluster);
                 files2clustersForInstall.put (cluster, tmp);
                 // if ModuleUpdater runs 'offline' then delete install_later files
-                if (! UpdaterFrame.isFromIDE ()) {
+                if (!context.isFromIDE()) {
                     deleteInstallLater (cluster);
                 }
             }
         } else {
             files2clustersForInstall = new HashMap<File, Collection<File>> ();
-            for (File nbm : forInstall) {
+            for (File nbm : context.forInstall()) {
                 File cluster = getCluster (nbm);
                 if (files2clustersForInstall.get (cluster) == null) {
                     files2clustersForInstall.put (cluster, new HashSet<File> ());
@@ -256,12 +251,12 @@ public final class ModuleUpdater extends Thread {
     private void totalLength () {
         totalLength = 0L;
 
-        UpdaterFrame.setLabel (Localization.getBrandedString ("CTL_PreparingUnpack"));
+        context.setLabel (Localization.getBrandedString ("CTL_PreparingUnpack"));
         Collection<File> allFiles = new HashSet<File> ();
         for (File c : getClustersForInstall ()) {
             allFiles.addAll (getFilesForInstallInCluster (c));
         }
-        UpdaterFrame.setProgressRange (0, allFiles.size ());
+        context.setProgressRange (0, allFiles.size ());
 
         int i = 0;
         for (File f : allFiles) {
@@ -285,7 +280,7 @@ public final class ModuleUpdater extends Thread {
                     }
                 }
                 }
-                UpdaterFrame.setProgressValue (i ++);
+                context.setProgressValue (i ++);
             } catch (java.io.IOException e) {
                 System.out.println ("Error: Counting size of entries in " + f + " throws " + e);
             } finally {
@@ -309,8 +304,8 @@ public final class ModuleUpdater extends Thread {
         long bytesRead = 0L;
         boolean hasMainClass;
 
-        UpdaterFrame.setLabel( "" ); // NOI18N
-        UpdaterFrame.setProgressRange( 0, totalLength );
+        context.setLabel( "" ); // NOI18N
+        context.setProgressRange( 0, totalLength );
         
         ArrayList<UpdateTracking> allTrackings = new ArrayList<UpdateTracking> ();
         Map<ModuleUpdate, UpdateTracking.Version> l10ns = 
@@ -330,7 +325,7 @@ public final class ModuleUpdater extends Thread {
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
-                UpdaterFrame.getUpdaterFrame ().unpackingIsRunning ();
+                context.unpackingIsRunning ();
                 
                 ModuleUpdate mu = null;
                 try {
@@ -362,8 +357,8 @@ public final class ModuleUpdater extends Thread {
                 //System.gc();
 
                 hasMainClass = false;
-                UpdaterFrame.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
-                UpdaterFrame.setProgressValue( bytesRead );
+                context.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
+                context.setProgressValue( bytesRead );
                 JarFile jarFile = null;
 
                 try {
@@ -392,7 +387,7 @@ public final class ModuleUpdater extends Thread {
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
 
-                        UpdaterFrame.setProgressValue(bytesRead);
+                        context.setProgressValue(bytesRead);
                         modtrack.setOSGi(true);
                     } else {
                         //NBM
@@ -443,7 +438,7 @@ public final class ModuleUpdater extends Thread {
                                     version.addFileWithCrc( pathTo, Long.toString(crc));
                                 }
                                 
-                                UpdaterFrame.setProgressValue( bytesRead );
+                                context.setProgressValue( bytesRead );
                             }
                         } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
                                   !entry.isDirectory() ) {
@@ -456,7 +451,7 @@ public final class ModuleUpdater extends Thread {
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
                             bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
-                            UpdaterFrame.setProgressValue( bytesRead );
+                            context.setProgressValue( bytesRead );
                         }
                     }
                     chmod(filesToChmod);
@@ -705,7 +700,7 @@ public final class ModuleUpdater extends Thread {
                 if ( count > 8500 ) {
                     if (progressVal >= 0) {
                         progressVal += count;
-                        UpdaterFrame.setProgressValue( progressVal );
+                        context.setProgressValue( progressVal );
                     }
 
                     count = 0;
