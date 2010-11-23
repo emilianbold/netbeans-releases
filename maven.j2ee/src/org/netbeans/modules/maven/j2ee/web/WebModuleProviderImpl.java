@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -146,6 +147,10 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         return copyOnSave;
     }
 
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+    }
 
     @Override
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {

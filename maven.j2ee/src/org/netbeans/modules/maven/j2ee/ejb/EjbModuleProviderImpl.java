@@ -61,10 +61,10 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -95,7 +95,10 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         return super.getDeployOnSaveSupport();
     }
 
-
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+    }
 
     public EjbJarImpl getModuleImpl() {
         return ejbimpl;
