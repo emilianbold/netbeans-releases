@@ -115,7 +115,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 projectSearchBase.remove(folder);
             } else {
                 if (list.isEmpty()) {
-                    projectSearchBase.put(folder, Collections.<CharSequence>emptyList());
+                    projectSearchBase.put(folder, new ArrayList<CharSequence>(0));
                 } else {
                     projectSearchBase.put(folder, list);
                 }
@@ -212,7 +212,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             computeFiles(project, descriptor, matcher, result);
                         }
                     }
-                    return true;
+                    return false;
                 }
             }
             return false;

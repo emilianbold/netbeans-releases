@@ -55,6 +55,8 @@ import org.openide.filesystems.FileStateInvalidException;
  */
 public final class RepositoryInfo {
 
+    static final String DEFAULT_INDEX_SUFFIX = ".index/"; // NOI18N
+
     private String id;
     private String type;
     private String name;
@@ -62,15 +64,21 @@ public final class RepositoryInfo {
     private String repositoryUrl;
     private String indexUpdateUrl;
 
+    public RepositoryInfo(String id, String type, String name, String repositoryPath, String repositoryUrl) {
+        this(id, type, name, repositoryPath, repositoryUrl, null);
+    }
     public RepositoryInfo(String id, String type, String name, String repositoryPath,
             String repositoryUrl, String indexUpdateUrl) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.repositoryPath = repositoryPath;
+        if (repositoryUrl != null && !repositoryUrl.endsWith("/")) {
+            repositoryUrl += "/";
+        }
         this.repositoryUrl = repositoryUrl;
-        this.indexUpdateUrl = indexUpdateUrl;
-        assert (isLocal() == true && isRemoteDownloadable() == true) != true : "Cannot have both local and remote index fields filled in. Repository: " + id + " Path=" + repositoryPath + " Remote URL:" + indexUpdateUrl; //NOI18N
+        this.indexUpdateUrl = indexUpdateUrl != null ? indexUpdateUrl : repositoryUrl != null ? repositoryUrl + DEFAULT_INDEX_SUFFIX : null;
+        assert isLocal() ^ isRemoteDownloadable() : "Cannot have both local and remote index fields filled in. Repository: " + id + " Path=" + repositoryPath + " Remote URL:" + indexUpdateUrl;
     }
 
     public static RepositoryInfo createRepositoryInfo(FileObject fo) {

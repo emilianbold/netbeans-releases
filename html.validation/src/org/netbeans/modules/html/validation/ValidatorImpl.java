@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.html.validation;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -54,6 +55,7 @@ import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.ValidationResult;
 import org.netbeans.html.api.validation.Validator;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
@@ -81,7 +83,8 @@ public class ValidatorImpl implements Validator {
 //            }
 
             String source = maskTemplatingMarks(context.getSource());
-            validatorTransaction.validateCode(source);
+            URL sourceFileURL = context.getFile() != null ? URLMapper.findURL(context.getFile(), URLMapper.EXTERNAL) : null;
+            validatorTransaction.validateCode(source, sourceFileURL != null ? sourceFileURL.toExternalForm() : null);
 
             Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
             

@@ -48,14 +48,13 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class GitFileNode extends VCSFileNode {
+public class GitFileNode extends VCSFileNode<FileInformation> {
 
     public GitFileNode(File root, File file) {
         super(root, file);
@@ -64,13 +63,6 @@ public class GitFileNode extends VCSFileNode {
     @Override
     public FileInformation getInformation() {
         return Git.getInstance().getFileStatusCache().getStatus(getFile());
-    }
-    
-    @Override
-    public VCSCommitOptions getCommitOptions() {        
-        return getInformation().containsStatus(FileInformation.STATUS_REMOVED)
-                ? VCSCommitOptions.COMMIT
-                : VCSCommitOptions.COMMIT_REMOVE;
     }
 
     @Override

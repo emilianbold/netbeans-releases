@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 
@@ -178,7 +179,8 @@ public class PkgConfigImpl implements PkgConfig {
     private void initPackages(List<String> folders, boolean isWindows) {
         Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
-            FileObject file = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(folder), pi.getExecutionEnvironment());
+            ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
+            FileObject file = RemoteFileUtil.getFileObject(RemoteFileUtil.normalizeAbsolutePath(folder, execEnv), execEnv);
             if (file == null) {
                 continue;
             }

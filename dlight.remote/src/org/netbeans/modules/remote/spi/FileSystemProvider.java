@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -60,14 +63,41 @@ public abstract class FileSystemProvider {
     }
 
     protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
+    protected abstract String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env);
+    protected abstract FileObject normalizeFileObjectImpl(FileObject fileObject);
+    protected abstract FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath);
+
+    public static FileSystem getFileSystem(ExecutionEnvironment env) {
+        return DEFAULT.getFileSystemImpl(env, "/"); //NOI18N
+    }
 
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         return DEFAULT.getFileSystemImpl(env, root);
     }
 
+    public static String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
+        return DEFAULT.normalizeAbsolutePathImpl(absPath, env);
+    }
+
+    public static FileObject normalizeFileObject(FileObject fileObject) {
+        return DEFAULT.normalizeFileObjectImpl(fileObject);
+    }
+
+    /**
+     * In many places, standard sequence is as follows:
+     *  - convert path to absolute if need
+     *  - normalize it
+     *  - find file object
+     * In the case of non-local file systems we should delegate it to correspondent file systems.
+     */
+    public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        return DEFAULT.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+    }
+
     private static class FileSystemProviderImpl extends FileSystemProvider {
 
-        public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+        @Override
+        protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
             Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
             FileSystem result = null;
 
@@ -78,6 +108,50 @@ public abstract class FileSystemProvider {
             }
 
             return result;
+        }
+
+        @Override
+        protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            for (FileSystemProvider provider : allProviders) {
+                String result = provider.normalizeAbsolutePathImpl(absPath, env);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return FileUtil.normalizePath(absPath);
+        }
+
+        @Override
+        protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            FileObject result;
+            for (FileSystemProvider provider : allProviders) {
+                result = provider.normalizeFileObjectImpl(fileObject);
+                if (result != null) {
+                    return result;
+                }
+            }
+            String normalizedPath = FileUtil.normalizePath(fileObject.getPath());
+            if (normalizedPath.equals(fileObject.getPath())) {
+                result = fileObject;
+            } else {
+                result = FileUtil.toFileObject(new File(normalizedPath));;
+            }
+            return result;
+        }
+
+        @Override
+        protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            FileObject result;
+            for (FileSystemProvider provider : allProviders) {
+                result = provider.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
         }
     }
 }

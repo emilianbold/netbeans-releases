@@ -55,7 +55,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.DisjointTypeTree;
+import com.sun.source.tree.DisjunctiveTypeTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -1411,11 +1411,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
         }
 
         @Override
-        public Void visitDisjointType(DisjointTypeTree node, EnumSet<UseTypes> p) {
-            for (Tree tree : node.getTypeComponents()) {
+        public Void visitDisjunctiveType(DisjunctiveTypeTree node, EnumSet<UseTypes> p) {
+            for (Tree tree : node.getTypeAlternatives()) {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree), EnumSet.of(UseTypes.CLASS_USE));
             }
-            return super.visitDisjointType(node, p);
+            return super.visitDisjunctiveType(node, p);
         }
 
         @Override

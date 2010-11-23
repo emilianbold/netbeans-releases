@@ -3,7 +3,7 @@ Version: 2.4.1
 Description: Java-based indexing and search technology
 License: Apache-2.0
 Origin: http://lucene.apache.org/
-Files: lucene-core-2.4.1.jar
+Files: lucene-core-2.9.3.jar
 Source: http://svn.apache.org/repos/asf/lucene/java/trunk
 OSR: 6381
 

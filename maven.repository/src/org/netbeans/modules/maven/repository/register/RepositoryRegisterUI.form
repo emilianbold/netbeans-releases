@@ -66,10 +66,7 @@
                                       <Component id="jraRemote" alignment="0" max="32767" attributes="1"/>
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="lblIndexUrl" alignment="0" max="32767" attributes="1"/>
-                                              <Component id="lblRepoUrl" alignment="0" min="-2" max="-2" attributes="1"/>
-                                          </Group>
+                                          <Component id="lblRepoUrl" min="-2" max="-2" attributes="1"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -77,7 +74,6 @@
                       </Group>
                       <EmptySpace pref="30" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="txtIndexUrl" pref="659" max="32767" attributes="1"/>
                           <Component id="txtRepoUrl" alignment="1" pref="659" max="32767" attributes="1"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="txtRepoPath" pref="566" max="32767" attributes="1"/>
@@ -128,12 +124,7 @@
                   <Component id="lblRepoUrl" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtRepoUrl" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lblIndexUrl" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="txtIndexUrl" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <EmptySpace pref="49" max="32767" attributes="0"/>
               <Component id="lblValidate" min="-2" pref="17" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -326,32 +317,6 @@
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lblIndexUrl">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="txtIndexUrl"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/repository/register/Bundle.properties" key="LBL_Repo_Index_Url" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JTextField" name="txtIndexUrl">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/repository/register/Bundle.properties" key="RepositoryRegisterUI.txtIndexUrl.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtIndexUrlKeyReleased"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="txtRepoUrl">
       <Properties>

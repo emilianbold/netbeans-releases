@@ -173,7 +173,7 @@ public class ModelSource implements SourceFileProperties {
             path = path.replace('/', File.separatorChar);
         }
         path = CndPathUtilitities.toRelativePath(getCompilePath(), path);
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         return path;
     }
     

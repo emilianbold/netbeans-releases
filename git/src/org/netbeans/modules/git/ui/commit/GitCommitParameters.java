@@ -66,7 +66,7 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     private CommitPanel panel;
     private String commitMessage;
     private GitUser user;
-    private String warning;
+    private String errorMessage;
 
     public GitCommitParameters(Preferences preferences, String commitMessage, GitUser user) {
         super(preferences);
@@ -128,10 +128,6 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     public GitUser getCommiter() {
         return getUser(getPanel().commiterComboBox);        
     }
-
-    public boolean isSignOff() {
-        return getPanel().signOffCheckBox.isSelected();
-    }
     
     static String getUserString(GitUser user) {
         if(user == null) return "";                                             // NOI18N
@@ -146,16 +142,16 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     @Override
     public boolean isCommitable() {            
         if(getAuthor() != null && getCommiter() != null) {
-            warning = null;
+            errorMessage = null;
             return true;
         }
-        warning = NbBundle.getMessage(GitCommitParameters.class, "MSG_WARNING_WRONG_USER");  // NOI18N
+        errorMessage = NbBundle.getMessage(GitCommitParameters.class, "MSG_WARNING_WRONG_USER");  // NOI18N
         return false;
     }
 
     @Override
-    public String getWarning() {
-        return warning;
+    public String getErrorMessage() {
+        return errorMessage;
     }    
     
     private Pattern validUserFormat = Pattern.compile("(.+)\\<(.*)\\>");        // NOI18N

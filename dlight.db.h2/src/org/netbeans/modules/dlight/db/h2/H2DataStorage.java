@@ -180,7 +180,10 @@ public final class H2DataStorage extends SQLDataStorage {
         }
 
         boolean result = super.shutdown();
-
+        //do nor remove if it is persistent, but close the connection
+        if (isPersistent){
+            return result;
+        }        
         //find current DB folder we are placing H2 database files
         final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1); // NOI18N
         result = result && Util.deleteLocalDirectory(new File(folderToDelete));

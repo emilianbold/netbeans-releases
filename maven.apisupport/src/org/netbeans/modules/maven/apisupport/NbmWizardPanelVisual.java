@@ -97,6 +97,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info)) { // NOI18N
                         versions.add(version.getVersion());
                     }
+                    versions.add("SNAPSHOT"); // NOI18N
                     EventQueue.invokeLater(new Runnable()  {
                         public @Override void run() {
                             versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));

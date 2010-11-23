@@ -118,17 +118,7 @@ public final class CreateFieldFix implements Fix {
 
                 TreeMaker make = working.getTreeMaker();
                 TypeMirror tm = proposedType;
-                VariableTree var = null;
-
-                if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
-                    var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
-                }
-
-                if (tm.getKind().isPrimitive()) {
-                    var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
-                }
-
-                assert var != null : tm.getKind();
+                VariableTree var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
                 ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, decl);
             }

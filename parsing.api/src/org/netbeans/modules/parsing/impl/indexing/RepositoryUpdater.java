@@ -824,6 +824,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
+    /* test */ static Source unitTestActiveSource;
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -1010,7 +1011,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return t;
     }
 
-    private Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
+    public Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
         synchronized (lastOwningSourceRootCacheLock) {
             FileObject file = null;
             Document doc = null;
@@ -1786,7 +1787,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
         }
 
-        protected final void invalidateSources (final Iterable<? extends IndexableImpl> toInvalidate) {
+        protected void invalidateSources (final Iterable<? extends IndexableImpl> toInvalidate) {
             final long st = System.currentTimeMillis();
             for (IndexableImpl indexable : toInvalidate) {
                 final FileObject cheapFo = indexable instanceof FileObjectProvider ?
@@ -2110,15 +2111,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                 + "[followUpJob=" + followUpJob + ", checkEditor=" + checkEditor; //NOI18N
         }
-
-        protected final void refreshActiveDocument() {
+        
+        protected final Source getActiveSource() {
+            if (unitTestActiveSource != null) {
+                return unitTestActiveSource;
+            }
             final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
             if (jtc == null) {
-                return;
+                return null;
             }
             Document doc = jtc.getDocument();
             assert doc != null;
-            final Source source = Source.create(doc);
+            return Source.create(doc);
+        }
+
+        protected void refreshActiveDocument() {            
+            final Source source = getActiveSource();
             if (source != null) {
                 LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
                 final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
@@ -2213,6 +2221,32 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             return false;
         }
+
+        @Override
+        protected void refreshActiveDocument() {
+            if (shouldRefresh()) {
+                super.refreshActiveDocument();
+            }
+        }
+
+        @Override
+        protected void invalidateSources(Iterable<? extends IndexableImpl> toInvalidate) {
+            if (shouldRefresh()) {
+                super.invalidateSources(toInvalidate);
+            }
+        }
+        
+        private boolean shouldRefresh() {
+            if (this.files.size() != 1) {
+                return true;
+            }
+            final Source source = getActiveSource();
+            if (source == null) {
+                return true;
+            }
+            return !files.iterator().next().equals(source.getFileObject());            
+        }
+        
     } // End of FileListWork class
 
 
