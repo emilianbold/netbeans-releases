@@ -49,6 +49,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -71,6 +73,7 @@ import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
@@ -85,6 +88,8 @@ import org.openide.util.NbPreferences;
  * @author mkleint
  */
 public final class EmbedderFactory {
+
+    private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
     private static MavenEmbedder online;
@@ -145,6 +150,60 @@ public final class EmbedderFactory {
         }
     }
 
+    /**
+     * #191267: suppresses logging from embedded Maven, since interesting results normally appear elsewhere.
+     */
+    private static class NbLoggerManager extends BaseLoggerManager {
+        protected @Override org.codehaus.plexus.logging.Logger createLogger(String name) {
+            int level = levelOf(LOG).intValue();
+            return new NbLogger(level <= Level.FINEST.intValue() ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG :
+                  level <= Level.FINER.intValue() ? org.codehaus.plexus.logging.Logger.LEVEL_INFO :
+                  level <= Level.FINE.intValue() ? org.codehaus.plexus.logging.Logger.LEVEL_WARN :
+                  org.codehaus.plexus.logging.Logger.LEVEL_DISABLED,
+                name);
+        }
+        private Level levelOf(Logger log) {
+            Level lvl = log.getLevel();
+            if (lvl != null) {
+                return lvl;
+            } else {
+                Logger par = log.getParent();
+                if (par != null) {
+                    return levelOf(par);
+                } else {
+                    return Level.INFO;
+                }
+            }
+        }
+        private static class NbLogger extends org.codehaus.plexus.logging.AbstractLogger {
+            NbLogger(int threshold, String name) {
+                super(threshold, name);
+                LOG.log(Level.FINEST, "created Plexus logger {0} at threshold {1}", new Object[] {name, threshold});
+            }
+            private Logger logger() {
+                return Logger.getLogger(LOG.getName() + "." + getName());
+            }
+            public @Override void debug(String m, Throwable t) {
+                logger().log(Level.FINEST, m, t);
+            }
+            public @Override void info(String m, Throwable t) {
+                logger().log(Level.FINER, m, t);
+            }
+            public @Override void warn(String m, Throwable t) {
+                logger().log(Level.FINE, m, t);
+            }
+            public @Override void error(String m, Throwable t) {
+                logger().log(Level.FINE, m, t);
+            }
+            public @Override void fatalError(String m, Throwable t) {
+                logger().log(Level.FINE, m, t);
+            }
+            public @Override org.codehaus.plexus.logging.Logger getChildLogger(String name) {
+                return new NbLogger(getThreshold(), getName() + "." + name);
+            }
+        }
+    }
+
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
@@ -154,6 +213,7 @@ public final class EmbedderFactory {
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         
         addComponentDescriptor(pc, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
+        pc.setLoggerManager(new NbLoggerManager());
        
         try {
             
@@ -246,7 +306,8 @@ public final class EmbedderFactory {
             .setName("maven");
 
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
-        
+        pc.setLoggerManager(new NbLoggerManager());
+
         EmbedderConfiguration req = new EmbedderConfiguration();
         req.setContainer(pc);
         setLocalRepoPreference(req);
