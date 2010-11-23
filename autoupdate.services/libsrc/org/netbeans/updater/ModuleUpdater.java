@@ -365,8 +365,8 @@ public final class ModuleUpdater extends Thread {
                 try {
                     jarFile = new JarFile (nbm);
                     Enumeration<JarEntry> entries = jarFile.entries();
-
-                    if (jarFile.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                    final Manifest manifest = jarFile.getManifest();
+                    if (manifest != null && manifest.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
                         //OSGi bundle
                         File osgiJar = nbm;
                         
