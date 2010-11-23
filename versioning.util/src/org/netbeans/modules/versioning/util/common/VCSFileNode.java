@@ -70,12 +70,12 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
         this.root = root;        
     }
 
-    public abstract VCSCommitOptions getDefaultCommitOption();
+    public abstract VCSCommitOptions getDefaultCommitOption (boolean withExclusions);
     public abstract I getInformation();
     
     public VCSCommitOptions getCommitOptions() {
         if(commitOption == null) {
-            commitOption = getDefaultCommitOption();
+            commitOption = getDefaultCommitOption(true);
         }
         return commitOption;
     }
