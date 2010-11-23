@@ -144,7 +144,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     thisString = "this"; // NOI18N
             
             }
-            if (thisString != null) {
+            if (thisString != null && currentElement instanceof ExecutableElement) {
                 ExecutableElement constr = (ExecutableElement) currentElement;
                 if (constr.isVarArgs()) {
                     int index = constr.getParameters().size() - 1;

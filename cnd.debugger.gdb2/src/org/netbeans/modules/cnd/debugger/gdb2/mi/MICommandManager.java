@@ -186,7 +186,7 @@ class MICommandManager {
 	System.out.printf("--- logConsole added to %d:\n", oc.getToken());
 	System.out.printf("    %s\n", data);
 	*/
-        assert oc != null : "Console output for unknown command"; //NOI18N
+        assert oc != null : "Console output for unknown command: " + data; //NOI18N
         oc.recordConsoleStream(data);
     }
 

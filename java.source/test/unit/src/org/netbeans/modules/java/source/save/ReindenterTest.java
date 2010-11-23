@@ -1332,6 +1332,58 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
     }
 
+    public void testNewLineIndentationAtMultilineCommentStartWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testLineIndentationAtMultilineCommentStartWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testNewLineIndentationInsideMultilineCommentWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\t */\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testLineIndentationInsideMultilineCommentWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\t */\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
     public void testNewLineIndentationInsideMethodInvocation() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        System.arraycopy(arr,|);\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        System.arraycopy(arr,\n                );\n    }\n}\n");

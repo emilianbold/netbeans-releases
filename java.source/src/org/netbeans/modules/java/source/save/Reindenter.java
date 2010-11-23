@@ -162,10 +162,11 @@ public class Reindenter implements IndentTask {
                 while (!startOffsets.isEmpty()) {
                     startOffset = startOffsets.removeLast();
                     Integer newIndent = newIndents.get(startOffset);
-                    context.modifyIndent(startOffset, newIndent);
                     if (linesToAddStar.contains(startOffset)) {
-                        context.document().insertString(startOffset + newIndent, "* ", null); //NOI18N
+                        context.modifyIndent(startOffset, 0);
+                        context.document().insertString(startOffset, "* ", null); //NOI18N
                     }
+                    context.modifyIndent(startOffset, newIndent);
                     if (!startOffsets.isEmpty()) {
                         char c;
                         int len = 0;
