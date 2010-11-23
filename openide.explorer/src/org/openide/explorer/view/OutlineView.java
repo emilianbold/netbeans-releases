@@ -838,8 +838,14 @@ public class OutlineView extends JScrollPane {
         }
         Node[] arr = al.toArray (new Node[al.size ()]);
         if (arr.length == 0) {
-            // hack to show something even when no rows are selected
-            arr = new Node[] { manager.getRootContext() };
+            if (manager.getRootContext() != null) {
+                // display the context menu of the root node
+                JPopupMenu popup = manager.getRootContext().getContextMenu();
+                if (popup != null && popup.getSubElements().length > 0) {
+                    return popup;
+                }
+            }
+            // we'll have an empty popup
         }
         p = SwingUtilities.convertPoint(this, p, outline);
         int column = outline.columnAtPoint(p);

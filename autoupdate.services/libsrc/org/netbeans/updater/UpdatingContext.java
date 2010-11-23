@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.services;
+package org.netbeans.updater;
 
 import java.io.File;
-import java.util.logging.Level;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.RandomlyFails;
+import java.io.FileNotFoundException;
+import java.io.OutputStream;
+import java.util.Collection;
 
-/**
+/** 
  *
- * @author Jaroslav Tulach
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class InstallHiddenModuleTest extends OperationsTestImpl {
-
-    public InstallHiddenModuleTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        clearWorkDir();
-        super.setUp();        
-        System.setProperty("netbeans.dirs", getWorkDirPath());
-        String udp = System.getProperty("netbeans.user");
-        assertNotNull("User dir is provided", udp);
-        File ud = new File(udp);
-        File hidden = new File(new File(new File(ud, "config"), "Modules"),
-            moduleCodeNameBaseForTest().replace('.', '-') + ".xml_hidden"
-        );
-        hidden.getParentFile().mkdirs();
-        hidden.createNewFile();
-    }
-
-    protected String moduleCodeNameBaseForTest() {
-        return "com.sun.testmodule.cluster"; //NOI18N
-    }
-
-    @RandomlyFails // NB-Core-Build #2967
-    public void testSelf() throws Exception {
-        UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
-        assertNotNull("There is an NBM to install", install);
-        installModule(install, null);
-    }
+interface UpdatingContext {
+    Collection<File> forInstall();
+    boolean isFromIDE();
+    void unpackingFinished();
+    void setProgressValue(long bytesRead);
+    void setLabel(String string);
+    void unpackingIsRunning();
+    void setProgressRange(long i, long totalLength);
+    void runningFinished();
+    void disposeSplash();
+    OutputStream createOS(File bckFile) throws FileNotFoundException;
 }

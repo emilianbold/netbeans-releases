@@ -67,7 +67,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
-import org.netbeans.updater.UpdaterFrame;
+import org.netbeans.updater.UpdaterInternal;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -187,7 +187,7 @@ public class UpdateDisabledModuleTest extends NbTestCase {
         Restarter res = support.doInstall(inst, null);
         System.setProperty("netbeans.close.no.exit", "true");
         support.doRestart(res, null);
-        UpdaterFrame.main("--noexit", "--nosplash");
+        UpdaterInternal.update(null, null, null);
 
         assertFalse("No Config file created in for upgrade: " + f, f.exists());
     }

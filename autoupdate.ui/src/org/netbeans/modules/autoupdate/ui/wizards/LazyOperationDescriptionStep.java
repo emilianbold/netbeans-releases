@@ -60,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
@@ -142,7 +143,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     @SuppressWarnings("unchecked")
     private void checkRealUpdates () {
         final Collection<String> problems=new ArrayList<String>();
-        checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
+        checkRealUpdatesTask = Installer.RP.post (new Runnable () {
             public void run () {
                 final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType,problems, forceReload);
                 hasUpdates = updates != null && ! updates.isEmpty ();

@@ -116,7 +116,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                 final CsmFile containingFile = func.getContainingFile();
                 boolean ok = iter.hasNext();
                 if (!ok) {
-                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+qName);
+                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+qName + "\n\tNS="+nsp);
                     // more trace
                     if (dumpProjectContainer && project instanceof ProjectBase) {
                         dumpProjectContainer = false;
