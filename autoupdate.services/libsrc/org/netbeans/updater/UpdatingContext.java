@@ -43,6 +43,8 @@
 package org.netbeans.updater;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.util.Collection;
 
 /** 
@@ -59,4 +61,5 @@ interface UpdatingContext {
     void setProgressRange(long i, long totalLength);
     void runningFinished();
     void disposeSplash();
+    OutputStream createOS(File bckFile) throws FileNotFoundException;
 }

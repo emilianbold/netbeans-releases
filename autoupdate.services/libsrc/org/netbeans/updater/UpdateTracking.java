@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -111,15 +110,17 @@ public final class UpdateTracking {
     private final File directory;
     private final File trackingFile;
     private String origin = NBM_ORIGIN;
+    private final UpdatingContext context;
     
     /** Private constructor.
      */
-    private UpdateTracking( File nbPath ) {
+    private UpdateTracking( File nbPath, UpdatingContext context ) {
         assert nbPath != null : "Path cannot be null";
         
         trackingFile = new File( nbPath + FILE_SEPARATOR + TRACKING_FILE_NAME);
         directory = nbPath;
         origin = UPDATER_ORIGIN;
+        this.context = context;
     }
     
     //
@@ -131,7 +132,7 @@ public final class UpdateTracking {
      * @param createIfDoesNotExists should new tracking be created if it does not exists
      * @return the tracking for that cluster
      */    
-    public static UpdateTracking getTracking (File path, boolean createIfDoesNotExists) {
+    static UpdateTracking getTracking (File path, boolean createIfDoesNotExists, UpdatingContext context) {
         synchronized (trackings) {
             UpdateTracking track = trackings.get (path);
             if (track == null) {
@@ -148,7 +149,7 @@ public final class UpdateTracking {
                     return null;
                 }
                 
-                track = new UpdateTracking (path);
+                track = new UpdateTracking (path, context);
                 trackings.put (path, track);
                 track.read ();
                 track.scanDir ();
@@ -162,11 +163,11 @@ public final class UpdateTracking {
      * @path root of a cluster
      * @return the additional information for that cluster
      */    
-    public static UpdateTracking.AdditionalInfo getAdditionalInformation (File path) {
+    static UpdateTracking.AdditionalInfo getAdditionalInformation (File path, UpdatingContext context) {
         synchronized (infos) {
             UpdateTracking.AdditionalInfo additionalInfo = infos.get (path);
             if (additionalInfo == null) {
-                getTracking (path, false);
+                getTracking (path, false, context);
                 File downloadDir = new File (path, ModuleUpdater.DOWNLOAD_DIR);
                 if (downloadDir.exists () && downloadDir.isDirectory ()) {
                     File addInfo = new File (downloadDir, ADDITIONAL_INFO_FILE_NAME);
@@ -751,7 +752,7 @@ public final class UpdateTracking {
 
             OutputStream os = null;
             try {
-                os = new FileOutputStream(file);
+                os = context.createOS(file);
             } catch (Exception e) {
                 XMLUtil.LOG.log(Level.WARNING, "Cannot read " + file, e);
                 //#154904
@@ -760,7 +761,7 @@ public final class UpdateTracking {
                 } else {
                     XMLUtil.LOG.log(Level.SEVERE, null, new IOException("Update tracking file was deleted since permissions does not allow to modify it: " + file));
                     try {
-                        os = new FileOutputStream(file);
+                        os = context.createOS(file);
                     } catch (Exception ex) {
                         XMLUtil.LOG.log(Level.WARNING, "Cannot read", ex);
                     }
@@ -908,7 +909,7 @@ public final class UpdateTracking {
             String spec = newVersion.getVersion();
             OutputStream os;
             try {
-                os = new FileOutputStream(config);
+                os = context.createOS(config);
                 PrintWriter pw = new PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"));
                 // Please make sure formatting matches what the IDE actually spits
                 // out; it could matter.

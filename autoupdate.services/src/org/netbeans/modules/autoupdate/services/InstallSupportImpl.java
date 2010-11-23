@@ -102,6 +102,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -1102,27 +1103,43 @@ public class InstallSupportImpl {
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
-                final FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
-                err.log(Level.FINE,
-                        "It\'s a hack: Call refresh on " + modulesRoot +
-                        " file object.");
+                Map<File,Long> modifiedFiles = NbCollections.checkedMapByFilter(
+                    (Map)ev.getNewValue(), 
+                    File.class, Long.class, true
+                );
+                long now = System.currentTimeMillis();
+                for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
+                    touch(e.getKey(), Math.max(e.getValue(), now));
+                }
+                FileUtil.getConfigRoot().refresh();
+                FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
-                    try {
-                        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-                            public void run() throws IOException {
-                                modulesRoot.getParent().refresh();
-                                modulesRoot.refresh();
-                            }
-                        });
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    modulesRoot.refresh();
                 }
             } else {
                 assert false : "Unknown property " + ev.getPropertyName ();
             }
         }
-    };
+    }
+    
+    private static void touch(File f, long minTime) {
+        for (int cnt = 0; ;cnt++) {
+            long time = f.lastModified();
+            if (time > minTime) {
+                break;
+            }
+            if (!f.exists()) {
+                err.log(Level.FINE, "File {0} does not exist anymore", f);
+                break;
+            }
+            err.log(Level.FINE, "Need to change time for {0} with delta {1}", new Object[]{f, minTime - f.lastModified()});
+            try { synchronized (InstallSupportImpl.class) {
+                InstallSupportImpl.class.wait(30);
+            }} catch (InterruptedException ex) {}
+            f.setLastModified(System.currentTimeMillis() - 1000);
+        }
+        err.log(Level.FINE, "Time stamp changed succcessfully {0}", f);
+    }
 
     private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File cluster = getElement2Clusters ().get (update);

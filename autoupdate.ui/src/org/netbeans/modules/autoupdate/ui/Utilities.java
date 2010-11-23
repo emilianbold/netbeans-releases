@@ -86,6 +86,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -625,26 +626,27 @@ public class Utilities {
                         final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
                         handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
                         handle.progress (progressDisplayName, 0);
-                        final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
-                        RequestProcessor.getDefault ().post (new Runnable () {
-                            public void run () {
-                                int i = 0;
-                                while (! runnableTask.isFinished ()) {
-                                    try {
-                                        if (friendlyEstimatedTime * 10 > i++) {
-                                            handle.progress (progressDisplayName, i);
-                                        } else {
-                                            handle.switchToIndeterminate ();
-                                            handle.progress (progressDisplayName);
-                                            return ;
-                                        }
-                                        Thread.sleep (100);
-                                    } catch (InterruptedException ex) {
-                                        // no worries
-                                    }
-                                }
-                            }
-                        });
+                        final RequestProcessor.Task runnableTask = Installer.RP.post (runnableCode);
+                        RequestProcessor.Task post = Installer.RP.post (new Runnable () {
+                            @Override
+                             public void run () {
+                                 int i = 0;
+                                 while (! runnableTask.isFinished ()) {
+                                     try {
+                                         if (friendlyEstimatedTime * 10 > i++) {
+                                             handle.progress (progressDisplayName, i);
+                                         } else {
+                                             handle.switchToIndeterminate ();
+                                             handle.progress (progressDisplayName);
+                                             return ;
+                                         }
+                                         Thread.sleep (100);
+                                     } catch (InterruptedException ex) {
+                                         // no worries
+                                     }
+                                 }
+                             }
+                         });
                         runnableTask.addTaskListener (new TaskListener () {
                             public void taskFinished (Task task) {
                                 task.removeTaskListener (this);

@@ -174,7 +174,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private RequestProcessor.Task createInstallTask () {
-        return RequestProcessor.getDefault ().create (new Runnable () {
+        return org.netbeans.modules.autoupdate.ui.actions.Installer.RP.create (new Runnable () {
+            @Override
             public void run () {
                 doDownloadAndVerificationAndInstall ();
             }
