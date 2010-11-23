@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,7 +91,6 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
-import org.apache.maven.repository.legacy.WagonManager;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.ConnectionException;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
@@ -169,7 +169,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
-    private WagonManager wagonManager;
     private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
@@ -242,7 +241,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
-                wagonManager = embedder.lookup(WagonManager.class);
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
@@ -1280,21 +1278,22 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    /** XXX use WagonHelper when available (3.0.5?) */
+    /** XXX use WagonHelper in 3.1.0 */
     private class WagonFetcher extends AbstractResourceFetcher {
         private final TransferListener listener;
         private Wagon wagon = null;
         WagonFetcher(TransferListener listener) {
             this.listener = listener;
         }
-        @SuppressWarnings("deprecation") // XXX what is best replacement for getWagon? getRemoteFile does not hold open a connection
         public @Override void connect(final String id, final String url) throws IOException {
             Repository repository = new Repository(id, url);
             try {
-                wagon = wagonManager.getWagon(repository);
+                wagon = embedder.lookup(Wagon.class, URI.create(url).getScheme());
                 wagon.addTransferListener(listener);
                 wagon.connect(repository);
             } catch (WagonException x) {
+                throw new IOException(url + ": " + x, x);
+            } catch (ComponentLookupException x) {
                 throw new IOException(url + ": " + x, x);
             }
         }
