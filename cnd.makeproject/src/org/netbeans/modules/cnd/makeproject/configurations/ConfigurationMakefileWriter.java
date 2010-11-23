@@ -343,15 +343,6 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    private static boolean isDMake(CompilerSet compilerSet) {
-        boolean dMakeSyntax = false;
-        Tool makeTool = compilerSet.getTool(PredefinedToolKind.MakeTool);
-        if (makeTool != null && makeTool.getFlavor().isSunStudioCompiler()) {
-            dMakeSyntax = true;
-        }
-        return dMakeSyntax;
-    }
-
     public static String getCompilerName(MakeConfiguration conf, PredefinedToolKind tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
@@ -748,7 +739,6 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
-                boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                 FileObject fileObject = items[i].getFileObject();
                 if(fileObject != null) {
@@ -797,12 +787,7 @@ public class ConfigurationMakefileWriter {
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
-                        //Fix for #180918: Multiple make targets incompatible with GNU make
-                        if (dMake) {
-                            target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
-                        } else {
-                            target = customToolConfiguration.getOutputs().getValue();
-                        }
+                        target = customToolConfiguration.getOutputs().getValue();
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -824,6 +809,9 @@ public class ConfigurationMakefileWriter {
                 folders = foldersBuffer.toString().trim();
                 bw.write("\n"); // NOI18N
 
+                if (target.contains(" ")) {
+                    bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
+                }
                 bw.write(target + ": "); // NOI18N
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (conf.getRebuildPropChanged().getValue()) {
@@ -873,7 +861,6 @@ public class ConfigurationMakefileWriter {
                         if (compilerSet == null) {
                             continue;
                         }
-                        boolean dMake = isDMake(compilerSet);
                         file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                         FileObject fileObject = items[i].getFileObject();
                         if(fileObject != null) {
@@ -916,11 +903,7 @@ public class ConfigurationMakefileWriter {
                         } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                             CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                             if (customToolConfiguration.getModified()) {
-                                if (dMake) {
-                                    target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
-                                } else {
-                                    target = customToolConfiguration.getOutputs().getValue();
-                                }
+                                target = customToolConfiguration.getOutputs().getValue();
                                 command = customToolConfiguration.getCommandLine().getValue();
                                 comment = customToolConfiguration.getDescription().getValue();
                                 additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -934,6 +917,10 @@ public class ConfigurationMakefileWriter {
                         command = command.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
                         folders = CndPathUtilitities.getDirName(target);
                         bw.write("\n"); // NOI18N
+
+                        if (target.contains(" ")) {
+                            bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
+                        }
                         // See IZ #151465 for explanation why Makefile is listed as dependency.
                         if (additionalDep != null) {
                             bw.write(target + ": " + file + " " + additionalDep + "\n"); // NOI18N
@@ -979,7 +966,6 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
-                boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                 FileObject fileObject = items[i].getFileObject();
                 if(fileObject != null) {
@@ -1033,11 +1019,7 @@ public class ConfigurationMakefileWriter {
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
-                        if (dMake) {
-                            target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
-                        } else {
-                            target = customToolConfiguration.getOutputs().getValue();
-                        }
+                        target = customToolConfiguration.getOutputs().getValue();
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -1050,6 +1032,9 @@ public class ConfigurationMakefileWriter {
                 nomainTarget = target.replace(name, name + "_nomain"); // NOI18N
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
+                if (target.contains(" ")) {
+                    bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
+                }
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (additionalDep != null) {
                     bw.write(nomainTarget + ": " + target + " " + file + " " + additionalDep + "\n"); // NOI18N
@@ -1107,7 +1092,6 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
-                boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, item.getPath(true)));
                 command = ""; // NOI18N
                 comment = null;
@@ -1116,12 +1100,7 @@ public class ConfigurationMakefileWriter {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if(customToolConfiguration != null) {
                         if (customToolConfiguration.getModified()) {
-                            //Fix for #180918: Multiple make targets incompatible with GNU make
-                            if (dMake) {
-                                target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
-                            } else {
-                                target = customToolConfiguration.getOutputs().getValue();
-                            }
+                            target = customToolConfiguration.getOutputs().getValue();
                             command = customToolConfiguration.getCommandLine().getValue();
                             comment = customToolConfiguration.getDescription().getValue();
                             additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -1150,6 +1129,9 @@ public class ConfigurationMakefileWriter {
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
 
+                if (target.contains(" ")) {
+                    bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
+                }
                 bw.write(target + ": "); // NOI18N
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (conf.getRebuildPropChanged().getValue()) {
