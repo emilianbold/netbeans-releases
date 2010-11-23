@@ -265,7 +265,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return match && strPrefix != null && strPrefix.length() > 0;
     }
 
-    private boolean isEnough(String strPrefix, boolean match, Collection collection) {
+    private boolean isEnough(String strPrefix, boolean match, Collection<?> collection) {
         if (collection != null && isEnough(strPrefix, match)) {
             return !collection.isEmpty();
         }
@@ -935,11 +935,22 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private Collection<CsmEnumerator> getGlobalEnumerators(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
+        if (isEnough(strPrefix, match) && fileReferncesContext != null && !fileReferncesContext.isCleaned()) {
+            CsmEnumerator hotSpotEnum = fileReferncesContext.getHotSpotEnum(strPrefix);
+            if (hotSpotEnum != null) {
+                return Collections.singleton(hotSpotEnum);
+            }
+        }
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(context, this.file, offset, strPrefix.length() == 0, false);
         LinkedHashSet<CsmEnumerator> out = new LinkedHashSet<CsmEnumerator>(1024);
         for (CsmNamespace ns : namespaces) {
             List<CsmEnumerator> res = contResolver.getNamespaceEnumerators(ns, strPrefix, match, false);
             out.addAll(res);
+        }
+        if (isEnough(strPrefix, match, out)) {
+            if (fileReferncesContext != null && !fileReferncesContext.isCleaned()) {
+                fileReferncesContext.putHotSpotEnum(out);
+            }
         }
         return out;
     }
