@@ -76,7 +76,6 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -113,7 +112,9 @@ public final class EmbedderFactory {
             if (file.exists() && file.isDirectory()) {
                 req.setLocalRepository(file);
             } else if (!file.exists()) {
-                file.mkdirs();
+                if (!file.mkdirs()) {
+                    LOG.log(Level.WARNING, "Could not create {0}", file);
+                }
                 req.setLocalRepository(file);
             }
         }
@@ -229,9 +230,9 @@ public final class EmbedderFactory {
         props.putAll(System.getProperties());
         configuration.setSystemProperties(fillEnvVars(props));
         
-        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-
+//        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
+//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
+//
 //        //validating  Configuration
 //        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
 //        Exception userSettingsException = cvr.getUserSettingsException();
