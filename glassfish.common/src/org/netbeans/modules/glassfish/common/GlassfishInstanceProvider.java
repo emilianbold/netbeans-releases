@@ -153,7 +153,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     public static synchronized GlassfishInstanceProvider getEe6WC() {
         if (ee6WCProvider == null) {
-            ee6WCProvider = new GlassfishInstanceProvider(new String[]{EE6WC_DEPLOYER_FRAGMENT},
+            ee6WCProvider = new GlassfishInstanceProvider(new String[]{EE6WC_DEPLOYER_FRAGMENT, EE6_DEPLOYER_FRAGMENT, PRELUDE_DEPLOYER_FRAGMENT},
                     new String[]{EE6WC_INSTANCES_PATH},
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_SERVER_NAME", new Object[]{}), // NOI18N
                     EE6WC_INSTALL_ROOT_PROP,
