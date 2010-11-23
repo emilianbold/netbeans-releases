@@ -296,7 +296,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
         
-        String folderAnnotation = null;
+        String folderAnnotation = ""; //NOI18N
         Set<File> roots = context.getRootFiles();
         File repository = Git.getInstance().getRepositoryRoot(mostImportantFile);
         if (roots.size() > 1 || mostImportantFile.equals(repository)) {
@@ -321,7 +321,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         }
 
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
-        return uptodateFormat.format(new Object [] { nameHtml, folderAnnotation != null ? new StringBuilder(" [").append(folderAnnotation).append("]").toString() : "" }); // NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, !folderAnnotation.isEmpty() ? new StringBuilder(" [").append(folderAnnotation).append("]").toString() : "" }); // NOI18N
     }
 
     private void addFileWithRepositoryAnnotation (RepositoryInfo info, File file) {
