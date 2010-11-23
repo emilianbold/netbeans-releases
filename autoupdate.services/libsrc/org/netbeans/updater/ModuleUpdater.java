@@ -374,7 +374,6 @@ public final class ModuleUpdater extends Thread {
                         //OSGi bundle
                         File osgiJar = nbm;
                         
-                        Long touch;
                         File destFile = new File(cluster, "modules/" + osgiJar.getName());
                         if (destFile.exists()) {
                             File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
@@ -384,17 +383,14 @@ public final class ModuleUpdater extends Thread {
                             if (!destFile.delete() && isWindows()) {
                                 trickyDeleteOnWindows(destFile);
                             }
-                            touch = destFile.lastModified();
                         } else {
                             destFile.getParentFile().mkdirs();
-                            touch = null;
                         }
 
                         bytesRead = copyStreams(new FileInputStream(osgiJar), new FileOutputStream(destFile), bytesRead);
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
-                        XMLUtil.touch(destFile, touch);
 
                         UpdaterFrame.setProgressValue(bytesRead);
                         modtrack.setOSGi(true);
@@ -415,9 +411,7 @@ public final class ModuleUpdater extends Thread {
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                 // path without netbeans prefix
                                 File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
-                                Long touch;
                                 if ( destFile.exists() ) {
-                                    touch = destFile.lastModified();
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                     bckFile.getParentFile ().mkdirs ();
                                     // System.out.println("Backing up" ); // NOI18N
@@ -426,7 +420,6 @@ public final class ModuleUpdater extends Thread {
                                         trickyDeleteOnWindows(destFile);
                                     }
                                 } else {
-                                    touch = null;
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 
@@ -434,18 +427,15 @@ public final class ModuleUpdater extends Thread {
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
-                                XMLUtil.touch(destFile, touch);
                                 long crc = entry.getCrc();
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
                                     File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
-                                    Long touchUnpacked = unpacked.exists() ? unpacked.lastModified() : null;
                                     unpack200(destFile, unpacked);
                                     destFile.delete();
                                     pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
                                     crc = UpdateTracking.getFileCRC(unpacked);
-                                    XMLUtil.touch(unpacked, touchUnpacked);
                                 }
                                 if ( mu.isL10n() ) {
                                     version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
@@ -466,7 +456,6 @@ public final class ModuleUpdater extends Thread {
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
                             bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
-                            XMLUtil.touch(destFile, null);
                             UpdaterFrame.setProgressValue( bytesRead );
                         }
                     }

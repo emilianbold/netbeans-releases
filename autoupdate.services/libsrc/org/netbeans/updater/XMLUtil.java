@@ -44,11 +44,8 @@
 
 package org.netbeans.updater;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -75,7 +72,6 @@ import org.xml.sax.SAXException;
  * @author Petr Kuzel, Jesse Glick
  */
 public final class XMLUtil extends Object {
-    private static final Logger LOG = Logger.getLogger(XMLUtil.class.getName());
 
     public static Document parse (
             InputSource input, 
@@ -181,42 +177,6 @@ public final class XMLUtil extends Object {
                 }
             }
         };
-    }
-    
-    
-    static void touch(File f, Long ref) throws IOException {
-        long older = f.lastModified();
-        if (ref != null) {
-            older = Math.max(older, ref.longValue());
-        } else {
-            older = Math.max(older, System.currentTimeMillis());
-        }
-        int maxPause = 9999;
-        /* XXX consider this (as yet untested):
-        long curr = System.currentTimeMillis();
-        if (older > curr + maxPause) {
-        throw new IllegalArgumentException("reference too far into the future, by " + (older - curr) + "msec");
-        }
-         */
-        for (long pause = 1; pause < maxPause; pause *= 2) {
-            try {
-                Thread.sleep(pause);
-            } catch (InterruptedException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-            f.setLastModified(System.currentTimeMillis() + 1);  // plus 1 needed for FileObject tests (initially FO lastModified is set to currentTimeMillis)
-            if (f.lastModified() > older) {
-                while (f.lastModified() >= System.currentTimeMillis()) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-                return;
-            }
-        }
-        LOG.log(Level.WARNING, "Did not manage to touch {0}", f);
     }
     
 }
