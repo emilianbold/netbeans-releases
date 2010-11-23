@@ -176,7 +176,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         fileChanges = new Boolean[]{false, false, false};
         installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
         File f = InstallManager.findTargetDirectory(installElement.getUpdateUnit ().getInstalled (), Trampoline.API.impl(installElement),false);
-        File configModules = new File (f, "config/Modules");
+        File configModules = new File(new File (f, "config"), "Modules");
         File modules = new File (f, "modules");
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
         int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;

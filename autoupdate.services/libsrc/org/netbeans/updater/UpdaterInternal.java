@@ -45,7 +45,12 @@ package org.netbeans.updater;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -62,6 +67,8 @@ public final class UpdaterInternal {
         Localization.setBranding (branding);
         
         class Context implements UpdatingContext {
+            private Map<File,Long> modified = new HashMap<File,Long>();
+            
             @Override
             public Collection<File> forInstall() {
                 return files;
@@ -84,7 +91,7 @@ public final class UpdaterInternal {
 
             @Override
             public void runningFinished() {
-                firePropertyChange (FINISHED, null, null);
+                firePropertyChange (FINISHED, null, modified);
             }
 
             @Override
@@ -109,6 +116,14 @@ public final class UpdaterInternal {
                     l.propertyChange(ev);
                 }
             }
+
+            @Override
+            public OutputStream createOS(File file) throws FileNotFoundException {
+                if (modified.get(file) == null) {
+                    modified.put(file, file.lastModified());
+                }
+                return new FileOutputStream(file);
+            }
         }
 
         Context c = new Context();
@@ -116,7 +131,4 @@ public final class UpdaterInternal {
         mu.start();
         mu.join();
     }    
-    
-    
-    
 }

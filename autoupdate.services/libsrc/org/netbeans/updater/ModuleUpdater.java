@@ -313,7 +313,7 @@ public final class ModuleUpdater extends Thread {
                 new HashMap<ModuleUpdate, UpdateTracking.Version>();
         
         for (File cluster : getClustersForInstall ()) {
-            UpdateTracking tracking = UpdateTracking.getTracking (cluster, true);
+            UpdateTracking tracking = UpdateTracking.getTracking (cluster, true, context);
             if (tracking == null) {
                 throw new RuntimeException ("No update_tracking file in cluster " + cluster);
             }
@@ -349,7 +349,7 @@ public final class ModuleUpdater extends Thread {
                 } else {
                     modtrack = tracking.readModuleTracking (mu.getCodenamebase (), true);
                     // find origin for file
-                    UpdateTracking.AdditionalInfo info = UpdateTracking.getAdditionalInformation (cluster);
+                    UpdateTracking.AdditionalInfo info = UpdateTracking.getAdditionalInformation (cluster, context);
                     String origin = info != null && info.getSource (nbm.getName ()) != null ?
                         info.getSource (nbm.getName ()) : UpdateTracking.UPDATER_ORIGIN;
                     version = modtrack.addNewVersion (mu.getSpecification_version (), origin);
@@ -375,7 +375,7 @@ public final class ModuleUpdater extends Thread {
                             File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
                             bckFile.getParentFile().mkdirs();
                             // XMLUtil.LOG.info("Backing up" ); // NOI18N
-                            copyStreams(new FileInputStream(destFile), new FileOutputStream(bckFile), -1);
+                            copyStreams(new FileInputStream(destFile), context.createOS(bckFile), -1);
                             if (!destFile.delete() && isWindows()) {
                                 trickyDeleteOnWindows(destFile);
                             }
@@ -383,7 +383,7 @@ public final class ModuleUpdater extends Thread {
                             destFile.getParentFile().mkdirs();
                         }
 
-                        bytesRead = copyStreams(new FileInputStream(osgiJar), new FileOutputStream(destFile), bytesRead);
+                        bytesRead = copyStreams(new FileInputStream(osgiJar), context.createOS(destFile), bytesRead);
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
@@ -411,7 +411,7 @@ public final class ModuleUpdater extends Thread {
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                     bckFile.getParentFile ().mkdirs ();
                                     // XMLUtil.LOG.info("Backing up" ); // NOI18N
-                                    copyStreams( new FileInputStream( destFile ), new FileOutputStream( bckFile ), -1 );
+                                    copyStreams( new FileInputStream( destFile ), context.createOS( bckFile ), -1 );
                                     if (!destFile.delete() && isWindows()) {
                                         trickyDeleteOnWindows(destFile);
                                     }
@@ -419,7 +419,7 @@ public final class ModuleUpdater extends Thread {
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 
-                                bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
+                                bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
@@ -451,7 +451,7 @@ public final class ModuleUpdater extends Thread {
                             }
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
-                            bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
+                            bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
                             context.setProgressValue( bytesRead );
                         }
                     }

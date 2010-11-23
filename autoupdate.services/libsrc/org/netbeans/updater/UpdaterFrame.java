@@ -46,11 +46,13 @@ package org.netbeans.updater;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Locale;
 import javax.swing.*;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Level;
 
 
@@ -379,6 +381,11 @@ implements UpdatingContext {
         URL lookup = Localization.getBrandedResource( SPLASH_PATH, ".gif" ); // NOI18N
         if ( lookup != null )
             jLabel3.setIcon( new ImageIcon( lookup ) );
+    }
+
+    @Override
+    public OutputStream createOS(File bckFile) throws FileNotFoundException {
+        return new FileOutputStream(bckFile);
     }
         
     static class SplashFrame extends JFrame {
