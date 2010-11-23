@@ -192,7 +192,7 @@ public class AstRenderer {
                             if (isMemberDefinition(token)) {
                                 // this is a template method specialization declaration (without a definition)
                                 FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
-                                if (currentNamespace != null) {
+                                if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
                                     currentNamespace.addDeclaration(explicitSpecializationDeclaration);
                                 }
                                 container.addDeclaration(explicitSpecializationDeclaration);
@@ -228,9 +228,11 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, null/*?currentNamespace*/, !isRenderingLocalContext());
+                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(funcDef);
-//                            currentNamespace.addDeclaration(funcDef);
+                            if (currentNamespace != null && NamespaceImpl.isNamespaceScope(funcDef)) {
+                                currentNamespace.addDeclaration(funcDef);
+                            }
                         } else {
                             FunctionDDImpl<?> fddit = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(fddit);
