@@ -734,7 +734,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         for (int i = 0; i < defaultColumnIndex; i++) {
             if (!columns[i].isHidden()) defaultColumnVisibleIndex++;
         }
-        if (defaultColumnVisibleIndex != 0) {
+        if (defaultColumnVisibleIndex != 0 && defaultColumnVisibleIndex < tcm.getColumnCount()) {
             logger.fine(" move default column("+0+", "+defaultColumnVisibleIndex+")");
             tcm.moveColumn(0, defaultColumnVisibleIndex);
         }

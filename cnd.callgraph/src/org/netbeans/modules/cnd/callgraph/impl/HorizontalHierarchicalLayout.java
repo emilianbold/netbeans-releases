@@ -149,7 +149,7 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         @Override
         public String toString() {
-            return "Node " + vertex;
+            return "Node " + vertex; // NOI18N
         }
     }
 
@@ -171,15 +171,15 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             long start = 0;
             if (TRACE) {
-                System.out.println("##################################################");
-                System.out.println("Starting part " + this.getClass().getName());
+                System.out.println("##################################################"); // NOI18N
+                System.out.println("Starting part " + this.getClass().getName()); // NOI18N
                 start = System.currentTimeMillis();
             }
             
             run();
             
             if (TRACE) {
-                System.out.println("Timing for " + this.getClass().getName() + " is " + (System.currentTimeMillis() - start));
+                System.out.println("Timing for " + this.getClass().getName() + " is " + (System.currentTimeMillis() - start)); // NOI18N
                 printStatistics();
             }
 
@@ -615,7 +615,7 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         @Override
         public void printStatistics() {
-            System.out.println("Dummy nodes created: " + (nodes.size() - oldNodeCount));
+            System.out.println("Dummy nodes created: " + (nodes.size() - oldNodeCount)); // NOI18N
         }
 
         @Override
@@ -1179,13 +1179,13 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         @Override
         protected void printStatistics() {
-            System.out.println("Number of nodes: " + nodes.size());
+            System.out.println("Number of nodes: " + nodes.size()); // NOI18N
             int edgeCount = 0;
             for (LayoutNode n : nodes) {
                 edgeCount += n.succs.size();
             }
-            System.out.println("Number of edges: " + edgeCount);
-            System.out.println("Number of points: " + pointCount);
+            System.out.println("Number of edges: " + edgeCount); // NOI18N
+            System.out.println("Number of points: " + pointCount); // NOI18N
         }
     }
 }

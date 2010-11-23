@@ -52,6 +52,7 @@ import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -60,6 +61,8 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocalVariableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -166,7 +169,16 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     
     protected final void setValue (Value value) throws InvalidExpressionException {
         try {
-            StackFrame sf = ((CallStackFrameImpl) thread.getCallStack(depth, depth + 1)[0]).getStackFrame();
+            CallStackFrame[] frames = thread.getCallStack(depth, depth + 1);
+            if (frames.length == 0) {
+                // No top frame, can not set the value
+                // Just some sample code that throws VMDisconnectedException
+                // when the VM is already disconnected:
+                VirtualMachineWrapper.mirrorOf(value.virtualMachine(), true);
+                // If the VM lives, report the problem...
+                throw new InvalidExpressionException(NbBundle.getMessage(ObjectLocalVariable.class, "MSG_NoTopFrame"));
+            }
+            StackFrame sf = ((CallStackFrameImpl) frames[0]).getStackFrame();
             StackFrameWrapper.setValue (sf, local, value);
             setInnerValue(value);
         } catch (AbsentInformationException aiex) {

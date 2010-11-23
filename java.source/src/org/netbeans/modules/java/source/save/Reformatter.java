@@ -1062,7 +1062,7 @@ public class Reformatter implements ReformatTask {
                         lastBlankLines = lbl;
                         lastBlankLinesTokenIndex = lblti;
                         lastBlankLinesDiff = lbld;
-                        if (!isStandalone) {
+                        if (!isStandalone || !afterAnnotation) {
                             scan(annotations.next(), p);
                         } else {
                             wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
