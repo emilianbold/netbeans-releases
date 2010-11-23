@@ -809,7 +809,7 @@ public class ConfigurationMakefileWriter {
                 folders = foldersBuffer.toString().trim();
                 bw.write("\n"); // NOI18N
 
-                if (target.contains(" ")) {
+                if (target.contains(" ")) { // NOI18N
                     bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
                 }
                 bw.write(target + ": "); // NOI18N
@@ -918,7 +918,7 @@ public class ConfigurationMakefileWriter {
                         folders = CndPathUtilitities.getDirName(target);
                         bw.write("\n"); // NOI18N
 
-                        if (target.contains(" ")) {
+                        if (target.contains(" ")) { // NOI18N
                             bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
                         }
                         // See IZ #151465 for explanation why Makefile is listed as dependency.
@@ -1032,7 +1032,7 @@ public class ConfigurationMakefileWriter {
                 nomainTarget = target.replace(name, name + "_nomain"); // NOI18N
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
-                if (target.contains(" ")) {
+                if (target.contains(" ")) { // NOI18N
                     bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
                 }
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
@@ -1129,7 +1129,7 @@ public class ConfigurationMakefileWriter {
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
 
-                if (target.contains(" ")) {
+                if (target.contains(" ")) { // NOI18N
                     bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
                 }
                 bw.write(target + ": "); // NOI18N
