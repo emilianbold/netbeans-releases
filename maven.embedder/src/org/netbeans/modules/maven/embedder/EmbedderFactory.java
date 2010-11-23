@@ -94,10 +94,6 @@ public final class EmbedderFactory {
     private static MavenEmbedder project;
     private static MavenEmbedder online;
 
-    public static MavenEmbedder createExecuteEmbedder() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     private EmbedderFactory() {
     }
 
