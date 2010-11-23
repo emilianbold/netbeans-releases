@@ -44,6 +44,7 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -91,6 +92,13 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             public void run() {
                 //create outside of AWT
                 final XHTMLPanel panel = new PatchedXHTMLPanel(new PreviewUserAgent());
+                try {
+                    //call the setDocument(...) on the freshly created panel so all the resources
+                    //loading is done now and not later in EDT
+                    panel.setDocument(new ByteArrayInputStream(CssPreviewGenerator.getEmptyDocumentContent().getBytes()), null);
+                } catch (Exception ex) {
+                    //no-op
+                }
                 //and set the panel to this component in AWT
                 SwingUtilities.invokeLater(new Runnable() {
 
