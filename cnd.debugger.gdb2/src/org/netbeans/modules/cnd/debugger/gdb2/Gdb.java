@@ -312,12 +312,12 @@ public class Gdb {
 		} else {
 		    avec.add(gdbname);
 		}
-
+                
 		if (gdbInitFile != null) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
-
+                    
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
 		avec.add("mi"); // NOI18N
@@ -1024,10 +1024,25 @@ public class Gdb {
             super(injector, "(gdb)"); // NOI18N
         }
 
+        private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
+        
         @Override
         protected void consoleStreamOutput(MIRecord record) {
+            if (record.isStream() && record.stream().startsWith(SWITCHING_PREFIX)) {
+                String msg = record.stream();
+                try {
+                    int end = SWITCHING_PREFIX.length();
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
+                    }
+                    debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+                    debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
+                } catch (NumberFormatException ex) {
+                }
+                return;
+            } 
 	    super.consoleStreamOutput(record);
-
+            
             if (version == null &&
 		record.isStream() &&
 		record.stream().startsWith(versionString)) {
