@@ -128,7 +128,7 @@ public class CsmSelect {
             Collection<CsmFunction> result, Collection<CsmProject> processedProjects) {
         if (!processedProjects.contains(project)) {
             processedProjects.add(project);
-            // find "::" in Name
+            // find last "::" in Name
             int pos = -1;
             for (int i = qName.length()-2; i > 1; i--) {
                 if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
