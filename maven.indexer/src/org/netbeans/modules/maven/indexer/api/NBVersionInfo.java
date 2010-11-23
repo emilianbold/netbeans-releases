@@ -187,6 +187,12 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         if (c != 0) {
             return -c; // show newest versions first!
         }
+        if (type != null && o.type != null) {
+            c = type.compareTo(o.type);
+            if (c != 0) {
+                return c; // show e.g. jar vs. nbm artifacts in some predictable order
+            }
+        }
         return System.identityHashCode(this) - System.identityHashCode(o); // don't care
     }
     private ComparableVersion version() {
