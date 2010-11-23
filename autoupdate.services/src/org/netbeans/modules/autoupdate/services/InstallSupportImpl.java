@@ -95,6 +95,7 @@ import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
+import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -428,15 +429,12 @@ public class InstallSupportImpl {
                             files = new HashSet <File> (downloadedFiles);
                         }
                         if (! files.isEmpty ()) {
-
-                            // XXX: should run in single Thread
-                            Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
+                            try {
+                                UpdaterInternal.update(
                                     files,
                                     new RefreshModulesListener (progress),
-                                    NbBundle.getBranding(), false);
-
-                            try {
-                                th.join();
+                                    NbBundle.getBranding()
+                                );
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
@@ -446,7 +444,6 @@ public class InstallSupportImpl {
                                     }
                                     if (rerunWaitCount == 100) {
                                         err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
-                                        th.interrupt();
                                         afterInstall ();
                                         synchronized(downloadedFiles) {
                                             downloadedFiles.clear();
@@ -458,7 +455,6 @@ public class InstallSupportImpl {
                                 }
                             } catch(InterruptedException ie) {
                                 err.log (Level.INFO, ie.getMessage (), ie);
-                                th.interrupt();
                             }
                         }
                         afterInstall ();
@@ -1098,12 +1094,13 @@ public class InstallSupportImpl {
             this.i = 0;
         }
         
-        public void propertyChange(PropertyChangeEvent arg0) {
-            if (org.netbeans.updater.UpdaterFrame.RUNNING.equals (arg0.getPropertyName ())) {
+        @Override
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
                     handle.progress (i++);
                 }
-            } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
+            } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
                 final FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 err.log(Level.FINE,
@@ -1122,7 +1119,7 @@ public class InstallSupportImpl {
                     }
                 }
             } else {
-                assert false : "Unknown property " + arg0.getPropertyName ();
+                assert false : "Unknown property " + ev.getPropertyName ();
             }
         }
     };

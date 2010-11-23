@@ -749,7 +749,6 @@ public final class UpdateTracking {
             
             document.getDocumentElement().normalize();
 
-            Long touch = file.exists() ? file.lastModified() : null;
             OutputStream os = null;
             try {
                 os = new FileOutputStream(file);
@@ -771,8 +770,6 @@ public final class UpdateTracking {
             if (os != null) {
                 try {
                     XMLUtil.write(document, os);
-                    os.close();
-                    XMLUtil.touch(file, touch);
                 } catch (IOException e) {
                     XMLUtil.LOG.log(Level.WARNING, "Cannot write " + file, e);
                 } finally {
@@ -783,7 +780,6 @@ public final class UpdateTracking {
                     }
                 }
             }
-            
         }
 
         void deleteUnusedFiles() {
@@ -912,7 +908,6 @@ public final class UpdateTracking {
             String spec = newVersion.getVersion();
             OutputStream os;
             try {
-                Long touch = config.exists() ? config.lastModified() : null;
                 os = new FileOutputStream(config);
                 PrintWriter pw = new PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"));
                 // Please make sure formatting matches what the IDE actually spits
@@ -932,7 +927,6 @@ public final class UpdateTracking {
                 pw.println("</module>");
                 pw.flush();
                 pw.close();
-                XMLUtil.touch(config, touch);
             } catch (IOException ex) {
                 XMLUtil.LOG.log(Level.INFO, null, ex);
             }
