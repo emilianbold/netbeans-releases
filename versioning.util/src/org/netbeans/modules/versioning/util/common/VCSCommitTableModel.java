@@ -76,7 +76,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
         VCSCommitOptions[] co = new VCSCommitOptions[getNodes().length];
         for (int i = 0; i < getNodes().length; i++) {
             co[i] = VCSCommitOptions.COMMIT;
-            co[i] = getNode(i).getDefaultCommitOption();            
+            co[i] = getNode(i).getDefaultCommitOption(true);
         }
         return co;
     }
@@ -226,7 +226,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             nodes[rowIndex].setCommitOptions((VCSCommitOptions) aValue);
         } else if (col.equals(COLUMN_NAME_COMMIT)) {
             VCSFileNode node = nodes[rowIndex];
-            nodes[rowIndex].setCommitOptions(((Boolean) aValue) ? node.getDefaultCommitOption() : VCSCommitOptions.EXCLUDE);
+            nodes[rowIndex].setCommitOptions(((Boolean) aValue) ? node.getDefaultCommitOption(false) : VCSCommitOptions.EXCLUDE);
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
@@ -254,7 +254,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     protected void setIncluded (int[] rows, boolean include) {
         for (int rowIndex : rows) {
             VCSFileNode node = nodes[rowIndex];
-            VCSCommitOptions options = node.getDefaultCommitOption();
+            VCSCommitOptions options = node.getDefaultCommitOption(false);
             nodes[rowIndex].setCommitOptions(include ? options : VCSCommitOptions.EXCLUDE);
         }
         fireTableRowsUpdated(0, getRowCount() - 1);

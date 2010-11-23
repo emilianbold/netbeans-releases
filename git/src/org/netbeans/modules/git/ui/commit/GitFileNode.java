@@ -66,8 +66,8 @@ public class GitFileNode extends VCSFileNode<FileInformation> {
     }
 
     @Override
-    public VCSCommitOptions getDefaultCommitOption() {
-        if (GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
+    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
+        if (withExclusions && GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
             return VCSCommitOptions.EXCLUDE;
         } else {
             if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {

@@ -54,6 +54,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
@@ -135,8 +136,12 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
             if (modelColumnIndex == 0) {
                 node = tableModel.getNode(table.convertRowIndexToModel(row));
                 if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                    value = node.getHtmlDisplayName();
                 }
+                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                    value = "<s>" + value + "</s>"; //NOI18N
+                }
+                value = "<html>" + value; // NOI18N
             }
             if (modelColumnIndex == 2) {
                 renderer = pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
