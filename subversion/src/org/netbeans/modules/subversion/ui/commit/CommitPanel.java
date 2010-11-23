@@ -373,7 +373,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
 
-        messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
+        messageTextArea.setColumns(70);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(4);
         messageTextArea.setTabSize(4);
