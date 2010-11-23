@@ -1133,7 +1133,10 @@ public class InstallSupportImpl {
                 break;
             }
             err.log(Level.FINE, "Need to change time for {0} with delta {1}", new Object[]{f, minTime - f.lastModified()});
-            f.setLastModified(System.currentTimeMillis());
+            try { synchronized (InstallSupportImpl.class) {
+                InstallSupportImpl.class.wait(30);
+            }} catch (InterruptedException ex) {}
+            f.setLastModified(System.currentTimeMillis() - 1000);
         }
         err.log(Level.FINE, "Time stamp changed succcessfully {0}", f);
     }

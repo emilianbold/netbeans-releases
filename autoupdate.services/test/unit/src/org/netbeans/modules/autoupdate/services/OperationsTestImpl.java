@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.util.logging.Level;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.File;
 import java.util.Arrays;
@@ -58,10 +59,12 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 
@@ -94,6 +97,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[0] = true;
                 fileChangeThreads[0] = Thread.currentThread ();
                 exceptions[0] = new Exception ();
+                LOG.log(Level.INFO, "fileDataCreated {0}", fe.getFile());
             }
 
             @Override
@@ -101,6 +105,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[2] = true;
                 fileChangeThreads[2] = Thread.currentThread ();
                 exceptions[2] = new Exception ();
+                LOG.log(Level.INFO, "fileChanged {0}", fe.getFile());
             }
 
             
@@ -109,7 +114,25 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[1] = true;
                 fileChangeThreads[1] = Thread.currentThread ();
                 exceptions[1] = new Exception ();
+                LOG.log(Level.INFO, "fileDeleted {0}", fe.getFile());
             }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                LOG.log(Level.INFO, "fileRenamed {0}", fe.getFile());
+            }
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                LOG.log(Level.INFO, "fileFolderCreated {0}", fe.getFile());
+            }
+
+            @Override
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+                LOG.log(Level.INFO, "fileAttributeChanged {0}", fe.getFile());
+            }
+            
+            
         };
         modulesRoot.addFileChangeListener (fca);
         modulesRoot.getChildren();
