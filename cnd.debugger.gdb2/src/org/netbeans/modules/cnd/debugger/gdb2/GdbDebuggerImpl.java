@@ -3343,7 +3343,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-            if (result.matches("bkpt")) {
+            if (result.matches("bkpt")) { //NOI18N
                 newHandler(rt, cmd, result);
             }
 	}
