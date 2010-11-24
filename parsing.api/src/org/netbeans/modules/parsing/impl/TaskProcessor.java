@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,6 +74,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -114,7 +116,7 @@ public class TaskProcessor {
     //Tasks which are scheduled (not yet executed) but blocked by expected event (waiting for event)
     private final static Map<Source,Collection<Request>> waitingRequests = new WeakHashMap<Source,Collection<Request>>();    
     //Tasked which should be cleared from requests or finieshedRequests
-    private final static Collection<SchedulerTask> toRemove = new LinkedList<SchedulerTask> ();
+    private final static Collection<RemovedTask> toRemove = new LinkedList<RemovedTask> ();
     
     //Worker thread factory - single worker thread
     final static WorkerThreadFactory factory = new WorkerThreadFactory ();
@@ -349,7 +351,7 @@ public class TaskProcessor {
                     }
                 }
                 if (!found) {
-                    toRemove.add (task);
+                    toRemove.add (new RemovedTask(source,task));
                     // there was a modification in toRemove, wake up the thread
                     requests.add(Request.NONE);
                 }
@@ -500,7 +502,9 @@ public class TaskProcessor {
         int priority = Integer.MAX_VALUE;
         synchronized (INTERNAL_LOCK) {
             for (Request request : requests) {
-                toRemove.remove(request.task);
+                if (source != null) {
+                    toRemove.remove(new RemovedTask(source, request.task));
+                }
                 priority = Math.min(priority, request.task.getPriority());
             }
             TaskProcessor.requests.addAll (requests);
@@ -564,15 +568,17 @@ public class TaskProcessor {
                         synchronized (INTERNAL_LOCK) {
                             //Clean up toRemove tasks
                             if (!toRemove.isEmpty()) {
-                                for (Iterator<Collection<Request>> it = finishedRequests.values().iterator(); it.hasNext();) {
-                                    Collection<Request> cr = it.next ();
-                                    for (Iterator<Request> it2 = cr.iterator(); it2.hasNext();) {
+                                for (Iterator<Map.Entry<Source,Collection<Request>>> it = finishedRequests.entrySet().iterator(); it.hasNext();) {
+                                    final Map.Entry<Source,Collection<Request>> cr = it.next ();
+                                    final Source source = cr.getKey();
+                                    assert source != null;
+                                    for (Iterator<Request> it2 = cr.getValue().iterator(); it2.hasNext();) {
                                         Request fr = it2.next();
-                                        if (toRemove.remove(fr.task)) {
+                                        if (toRemove.remove(new RemovedTask(source,fr.task))) {
                                             it2.remove();
                                         }
                                     }
-                                    if (cr.isEmpty()) {
+                                    if (cr.getValue().isEmpty()) {
                                         it.remove();
                                     }
                                 }
@@ -625,7 +631,7 @@ public class TaskProcessor {
                                     synchronized (INTERNAL_LOCK) {
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
                                         //it will cause a starvation
-                                        if (toRemove.remove(r.task)) {
+                                        if (toRemove.remove(new RemovedTask(source,r.task))) {
                                             continue;
                                         }
 
@@ -1172,5 +1178,52 @@ public class TaskProcessor {
             this.task = task;
             this.sync = sync;
         }
+    }
+    
+    static final class RemovedTask extends WeakReference<Source> implements Runnable {
+        
+        private final SchedulerTask task;
+        
+        public RemovedTask(final @NonNull Source src, final @NonNull SchedulerTask task) {
+            super (src, org.openide.util.Utilities.activeReferenceQueue());
+            Parameters.notNull("src", src);     //NOI18N
+            Parameters.notNull("task", task);   //NOI18N
+            this.task = task;            
+        }
+        
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof RemovedTask)) {
+                return false;
+            }
+            final RemovedTask otherRt = (RemovedTask) other;
+            final Source thisSrc = get();
+            final Source otherSrc = otherRt.get();
+            return (thisSrc == null ? otherSrc == null : thisSrc.equals(otherSrc)) &&
+                (this.task.equals(otherRt.task));
+        }
+        
+        @Override
+        public int hashCode() {
+            return task.hashCode();
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("RemovedTask[%s, %s]", get(), task);   //NOI18N
+        }
+
+        @Override
+        public void run() {
+            synchronized (INTERNAL_LOCK) {
+                for (Iterator<RemovedTask> it = toRemove.iterator(); it.hasNext(); ) {
+                    final RemovedTask rt = it.next();
+                    if (rt == this) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }                
     }
 }
