@@ -176,6 +176,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], Map<String, String> additionalEnv,
 			                TermComponent console,
+                                        boolean usePty,
                                         boolean disableEcho) {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
@@ -188,9 +189,11 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
         npb.setExecutable(enginePath);
         npb.setArguments(argv);
-        npb.setUsePty(true);
-
-        npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        
+        if (usePty) {
+            npb.setUsePty(true);
+            npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        }
 
         try {
             engineProc = npb.call();
