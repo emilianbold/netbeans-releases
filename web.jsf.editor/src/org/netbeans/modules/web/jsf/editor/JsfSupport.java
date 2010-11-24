@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
@@ -76,12 +75,6 @@ import org.openide.util.Exceptions;
  */
 public class JsfSupport {
 
-    private static Logger LOGGER = Logger.getLogger("JsfSupport"); //NOI18N
-
-    //TODO remove later
-    static {
-        LOGGER.setLevel(Level.ALL);
-    }
     private static final WeakHashMap<WebModule, JsfSupport> INSTANCIES = new WeakHashMap<WebModule, JsfSupport>();
 
     public static JsfSupport findFor(Source source) {
