@@ -1039,18 +1039,20 @@ public class Gdb {
                     debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
                 } catch (NumberFormatException ex) {
                 }
-                return;
-            } 
-	    super.consoleStreamOutput(record);
-            
-            if (version == null &&
-		record.isStream() &&
-		record.stream().startsWith(versionString)) {
+            } else if (record.isStream() && record.stream().startsWith("Current language:")) {
+                //skip
+            } else {
+                super.consoleStreamOutput(record);
 
-		version = record.stream();
-                // OLD debugger.gdbVersionString(record.stream());
-		return;
-	    }
+                if (version == null &&
+                    record.isStream() &&
+                    record.stream().startsWith(versionString)) {
+
+                    version = record.stream();
+                    // OLD debugger.gdbVersionString(record.stream());
+                    return;
+                }
+            }
         }
 
         @Override
@@ -1066,6 +1068,25 @@ public class Gdb {
                 dispatch(record);
             }
         }
+        
+        @Override
+        protected void notifyAsyncOutput(MIRecord record) {
+            if (record.token() == 0) {
+                if (record.cls().equals("thread-group-added") ||
+                    record.cls().equals("thread-group-removed") ||
+                    record.cls().equals("thread-group-started") ||
+                    record.cls().equals("thread-group-exited") ||
+                    record.cls().equals("thread-created") ||
+                    record.cls().equals("thread-exited") ||
+                    record.cls().equals("thread-selected") ||
+                    record.cls().equals("library-loaded") ||
+                    record.cls().equals("library-unloaded")) {
+                        // just skip
+                    }
+            } else {
+                dispatch(record);
+            }
+        }
 
         @Override
         protected void targetStreamOutput(MIRecord record) {
@@ -1074,13 +1095,6 @@ public class Gdb {
         @Override
         protected void logStreamOutput(MIRecord record) {
 	    super.logStreamOutput(record);
-        }
-
-        @Override
-        protected void prompt() {
-            /* DEBUG
-            System.out.println(" PROMPT: ");
-             */
         }
 
         @Override

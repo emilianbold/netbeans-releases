@@ -72,6 +72,7 @@ public final class GitModuleConfig {
     private static final String REVERT_INDEX            = "revertIndex";        // NOI18N
     private static final String REVERT_WT               = "revertWT";           // NOI18N
     private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
+    private static final String PROP_LAST_USED_COMMIT_VIEW_MODE = "lastUsedCommitViewMode"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -159,6 +160,20 @@ public final class GitModuleConfig {
     public void setLastUsedModificationContext (Mode mode) {
         getPreferences().put(PROP_LAST_USED_MODE, mode.name());
     }    
+
+    public Mode getLastUsedCommitViewMode () {
+        Mode mode;
+        try {
+            mode = Mode.valueOf(getPreferences().get(PROP_LAST_USED_COMMIT_VIEW_MODE, Mode.HEAD_VS_WORKING_TREE.name()));
+        } catch (IllegalArgumentException ex) {
+            mode = null;
+        }
+        return mode == null ? Mode.HEAD_VS_WORKING_TREE : mode;
+    }
+
+    public void setLastUsedCommitViewMode (Mode mode) {
+        getPreferences().put(PROP_LAST_USED_COMMIT_VIEW_MODE, mode.name());
+    }
     
     public boolean getAutoOpenOutput() {
         return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);

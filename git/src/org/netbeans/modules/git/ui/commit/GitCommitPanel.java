@@ -45,6 +45,7 @@ package org.netbeans.modules.git.ui.commit;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
@@ -76,12 +78,11 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
-import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -106,15 +107,18 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
     private final Collection<GitHook> hooks;
     private final File[] roots;
     private final File repository;
+    private final boolean fromGitView;
 
-    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
-        super(table, parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
+    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, 
+            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, boolean fromGitView) {
+        super(table, parameters, preferences, hooks, hooksContext, createFilters(fromGitView), diffProvider);
         this.roots = roots;
         this.repository = repository;
-        this.hooks = hooks;        
+        this.hooks = hooks;
+        this.fromGitView = fromGitView;
     }
 
-    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user) {
+    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user, boolean fromGitView) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
@@ -126,14 +130,18 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         
         DiffProvider diffProvider = new DiffProvider();
         
-        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, fromGitView);
     }
     
-    private static List<VCSCommitFilter> createFilters() {
-        List<VCSCommitFilter> filters = new LinkedList<VCSCommitFilter>();
-        filters.add(FILTER_HEAD_VS_WORKING);            
-        filters.add(FILTER_HEAD_VS_INDEX);
-        return filters;
+    private static List<VCSCommitFilter> createFilters (boolean gitViewStoredMode) {
+        // synchronize access to this static field
+        assert EventQueue.isDispatchThread();
+        for (GitCommitFilter f : Arrays.asList(FILTER_HEAD_VS_INDEX, FILTER_HEAD_VS_WORKING)) {
+            f.setSelected(false);
+        }
+        Mode mode = gitViewStoredMode ? GitModuleConfig.getDefault().getLastUsedModificationContext() : GitModuleConfig.getDefault().getLastUsedCommitViewMode();
+        (Mode.HEAD_VS_INDEX.equals(mode) ? GitCommitPanel.FILTER_HEAD_VS_INDEX : GitCommitPanel.FILTER_HEAD_VS_WORKING).setSelected(true);
+        return Arrays.<VCSCommitFilter>asList(FILTER_HEAD_VS_INDEX, FILTER_HEAD_VS_WORKING);
     }
     
     @Override
@@ -148,6 +156,17 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
     @Override
     protected void computeNodes() {      
         computeNodesIntern();
+    }
+
+    @Override
+    public boolean open (VCSContext context, HelpCtx helpCtx) {
+        // synchronize access to this static field
+        assert EventQueue.isDispatchThread();
+        boolean ok = super.open(context, helpCtx);
+        if (ok && !fromGitView) {
+            GitModuleConfig.getDefault().setLastUsedCommitViewMode(getSelectedFilter() == GitCommitPanel.FILTER_HEAD_VS_INDEX ? Mode.HEAD_VS_INDEX : Mode.HEAD_VS_WORKING_TREE);
+        }
+        return ok;
     }
     
     /** used by unit tests */
@@ -340,6 +359,11 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         @Override
         public String getID() {
             return id;
+        }
+
+        @Override
+        public void setSelected (boolean selected) {
+            super.setSelected(selected);
         }
         
     }

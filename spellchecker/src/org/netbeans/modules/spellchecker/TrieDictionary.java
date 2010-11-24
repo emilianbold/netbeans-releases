@@ -63,9 +63,13 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -226,21 +230,7 @@ public class TrieDictionary implements Dictionary {
 
     static Dictionary getDictionary(File trie, List<URL> sources) throws IOException {
         if (!trie.exists()) {
-            trie.getParentFile().mkdirs();
-
-            boolean done = false;
-
-            try {
-                ByteArray array = new ByteArray(trie);
-
-                constructTrie(array, sources);
-                array.close();
-                done = true;
-            } finally {
-                if (!done) {
-                    trie.delete();
-                }
-            }
+            return new FutureDictionary(trie, sources);
         }
 
         return new TrieDictionary(trie);
@@ -403,6 +393,89 @@ public class TrieDictionary implements Dictionary {
         }
 
         return childPointer;
+    }
+
+    private static final RequestProcessor WORKER = new RequestProcessor(TrieDictionary.class.getName(), 1, false, false);
+    private static final class FutureDictionary implements Dictionary, Runnable {
+        private final File trie;
+        private final List<URL> sources;
+        private final AtomicReference<Dictionary> delegate = new AtomicReference<Dictionary>();
+        private final CountDownLatch wait;
+        public FutureDictionary(File trie, List<URL> sources) {
+            this.trie = trie;
+            this.sources = sources;
+            this.wait = new CountDownLatch(1);
+            WORKER.post(this);
+        }
+        public ValidityType validateWord(CharSequence word) {
+            try {
+                wait.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            Dictionary dict = delegate.get();
+
+            if (dict != null) {
+                return dict.validateWord(word);
+            }
+
+            return ValidityType.VALID;
+        }
+
+        public List<String> findValidWordsForPrefix(CharSequence word) {
+            try {
+                wait.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            Dictionary dict = delegate.get();
+
+            if (dict != null) {
+                return dict.findValidWordsForPrefix(word);
+            }
+
+            return Collections.emptyList();
+        }
+
+        public List<String> findProposals(CharSequence word) {
+            try {
+                wait.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            Dictionary dict = delegate.get();
+
+            if (dict != null) {
+                return dict.findProposals(word);
+            }
+
+            return Collections.emptyList();
+        }
+
+        public void run() {
+            trie.getParentFile().mkdirs();
+
+            boolean done = false;
+
+            try {
+                ByteArray array = new ByteArray(trie);
+
+                constructTrie(array, sources);
+                array.close();
+                done = true;
+                delegate.set(new TrieDictionary(trie));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                wait.countDown();
+                if (!done) {
+                    trie.delete();
+                }
+            }
+        }
     }
 
     private static class ByteArray {

@@ -59,6 +59,7 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
@@ -480,6 +481,15 @@ public final class GitUtils {
             // not found, continue
         }
         return false;
+    }
+
+    /**
+     * Determines if the context has been created in a git view, i.e. it consists of instances of {@link GitStatusNode}
+     * @param context
+     * @return true if the context contains instances of {@link GitStatusNode}
+     */
+    public static boolean isFromInternalView (VCSContext context) {
+        return context.getElements().lookup(GitStatusNode.class) != null;
     }
     
     private GitUtils() {
