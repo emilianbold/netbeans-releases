@@ -1066,6 +1066,25 @@ public class Gdb {
                 dispatch(record);
             }
         }
+        
+        @Override
+        protected void notifyAsyncOutput(MIRecord record) {
+            if (record.token() == 0) {
+                if (record.cls().equals("thread-group-added") ||
+                    record.cls().equals("thread-group-removed") ||
+                    record.cls().equals("thread-group-started") ||
+                    record.cls().equals("thread-group-exited") ||
+                    record.cls().equals("thread-created") ||
+                    record.cls().equals("thread-exited") ||
+                    record.cls().equals("thread-selected") ||
+                    record.cls().equals("library-loaded") ||
+                    record.cls().equals("library-unloaded")) {
+                        // just skip
+                    }
+            } else {
+                dispatch(record);
+            }
+        }
 
         @Override
         protected void targetStreamOutput(MIRecord record) {
@@ -1074,13 +1093,6 @@ public class Gdb {
         @Override
         protected void logStreamOutput(MIRecord record) {
 	    super.logStreamOutput(record);
-        }
-
-        @Override
-        protected void prompt() {
-            /* DEBUG
-            System.out.println(" PROMPT: ");
-             */
         }
 
         @Override
