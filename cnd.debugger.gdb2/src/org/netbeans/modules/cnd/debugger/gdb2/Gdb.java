@@ -1039,18 +1039,20 @@ public class Gdb {
                     debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
                 } catch (NumberFormatException ex) {
                 }
-                return;
-            } 
-	    super.consoleStreamOutput(record);
-            
-            if (version == null &&
-		record.isStream() &&
-		record.stream().startsWith(versionString)) {
+            } else if (record.isStream() && record.stream().startsWith("Current language:")) {
+                //skip
+            } else {
+                super.consoleStreamOutput(record);
 
-		version = record.stream();
-                // OLD debugger.gdbVersionString(record.stream());
-		return;
-	    }
+                if (version == null &&
+                    record.isStream() &&
+                    record.stream().startsWith(versionString)) {
+
+                    version = record.stream();
+                    // OLD debugger.gdbVersionString(record.stream());
+                    return;
+                }
+            }
         }
 
         @Override
