@@ -206,8 +206,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private JComponent topCombo, topComboWrapper, topToolbar;
     private JPanel slownessPanel;
 
-    private final CompletionWorker completionWorker = new CompletionWorker();
-    private final RequestProcessor.Task completionTask = RP.create(completionWorker);
+    private final ListFilesWorker listFilesWorker = new ListFilesWorker();
+    private final RequestProcessor.Task listFilesTask = RP.create(listFilesWorker);
 
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
@@ -1015,68 +1015,68 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 
+    private File lastDir;
+    private File[] lastChildren;
     private void updateCompletions() {
         if (showPopupCompletion) {
             final String name = normalizeFile(getFileName());
             int slash = name.lastIndexOf(File.separatorChar);
             if (slash != -1) {
                 String prefix = name.substring(0, slash + 1);
-                File d = new File(prefix);
-                synchronized (completionWorker) {
-                    completionWorker.d = d;
-                    completionWorker.name = name;
+                File dir = new File(prefix);
+                File[] children;
+                synchronized (listFilesWorker) {
+                    if (!dir.equals(lastDir)) {
+                        if (completionPopup != null) {
+                            completionPopup.setDataList(new Vector<File>(0));
+                            completionPopup.detach();
+                            completionPopup = null;
+                        }
+                        listFilesWorker.d = dir;
+                        listFilesTask.schedule(0);
+                        return;
+                    } else {
+                        children = lastChildren;
+                    }
                 }
-                completionTask.schedule(500);
+                if (children != null) {
+                    Vector<File> list = buildList(name, children, 20);
+                    if(completionPopup == null) {
+                        completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
+                    } else if (completionPopup.isShowing() ||
+                            (showPopupCompletion && fileChooser.isShowing())) {
+                        completionPopup.setDataList(list);
+                    }
+                    if (fileChooser.isShowing() && !completionPopup.isShowing()) {
+                        java.awt.Point los = filenameTextField.getLocation();
+                        int popX = los.x;
+                        int popY = los.y + filenameTextField.getHeight() - 6;
+                        completionPopup.showPopup(filenameTextField, popX, popY);
+                    }
+                }
             }
         }
     }
 
-    private class CompletionWorker implements Runnable {
+    private class ListFilesWorker implements Runnable {
         private File d;
-        private String name;
-        private File lastDir;
-        private File[] lastChildren;
-
         @Override
         public void run() {
             File dir;
-            final String fName;
             synchronized (this) {
                 dir = d;
-                fName = name;
             }
-
-            final File[] children;
-            if (!dir.equals(lastDir)) {
-                if (dir.isDirectory()) {
-                    lastDir = dir;
-                    children = lastChildren = dir.listFiles();
-                } else {
-                    children = lastChildren = null;
+            File[] children = dir.listFiles();
+            synchronized (this) {
+                lastDir = dir;
+                lastChildren = children;
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateCompletions();
                 }
-            } else {
-                children = lastChildren;
-            }
-            if (children != null) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Vector<File> list = buildList(fName, children, 20);
-                        if(completionPopup == null) {
-                            completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
-                        } else if (completionPopup.isShowing() ||
-                                (showPopupCompletion && fileChooser.isShowing())) {
-                            completionPopup.setDataList(list);
-                        }
-                        if (fileChooser.isShowing() && !completionPopup.isShowing()) {
-                            java.awt.Point los = filenameTextField.getLocation();
-                            int popX = los.x;
-                            int popY = los.y + filenameTextField.getHeight() - 6;
-                            completionPopup.showPopup(filenameTextField, popX, popY);
-                        }
-                    }
-                });
-            }
+            });
         }
     }
     

@@ -80,6 +80,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -228,6 +229,19 @@ abstract public class CsmCompletionQuery {
 //        }
 //        return processedToken;
 //    }
+    private final static String TOKEN_PROCESSOR_CACHE_KEY = "TokenProcessorCache"; // NOI18N
+    private static final class TokenProcessorCache {
+        private final int queryOffset;
+        private final long docVersion;
+        private final CsmCompletionTokenProcessor tp;
+
+        public TokenProcessorCache(int queryOffset, long docVersion, CsmCompletionTokenProcessor tp) {
+            this.queryOffset = queryOffset;
+            this.docVersion = docVersion;
+            this.tp = tp;
+        }        
+    }
+        
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
@@ -243,19 +257,32 @@ abstract public class CsmCompletionQuery {
         }
 
         try {
-            // find last separator position
-            final int lastSepOffset = sup.getLastCommandSeparator(offset);
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-            final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
-            if(etp instanceof CsmExpandedTokenProcessor) {
-                tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+            TokenProcessorCache property = (TokenProcessorCache) baseDocument.getProperty(TOKEN_PROCESSOR_CACHE_KEY);
+            long docVersion = DocumentUtilities.getDocumentVersion(doc);
+            CsmCompletionTokenProcessor tp = null;
+            if (property != null) {
+                if (property.queryOffset == offset && property.docVersion == docVersion) {
+                    tp = property.tp;
+                }
             }
-            tp.enableTemplateSupport(true);
-            doc.readLock();
-            try {
-                CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
-            } finally {
-                doc.readUnlock();
+            if (tp == null) {
+                // find last separator position
+                final int lastSepOffset = sup.getLastCommandSeparator(offset);
+                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+                if(etp instanceof CsmExpandedTokenProcessor) {
+                    tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+                }
+                tp.enableTemplateSupport(true);
+                doc.readLock();
+                try {
+                    CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
+                } finally {
+                    doc.readUnlock();
+                }
+                baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));
+            } else {
+                // hit
             }
             sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
