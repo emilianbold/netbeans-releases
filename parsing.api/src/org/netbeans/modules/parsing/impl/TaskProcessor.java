@@ -331,25 +331,48 @@ public class TaskProcessor {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
-            Collection<Request> rqs = finishedRequests.get(source);
+            final Collection<Request> frqs = finishedRequests.get(source);
+            final Collection<Request> wrqs = waitingRequests.get(source);
             for (SchedulerTask task : tasks) {
                 boolean found = false;
+                //Ignore excluded tasks
                 final String taskClassName = task.getClass().getName();
                 if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
                     if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
                         continue;
                     }
                 }
-                if (rqs != null) {
-                    for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
-                        Request rq = it.next();
-                        if (rq.task == task) {
+                //First) Try to find it in finished tasks
+                if (frqs != null) {
+                    for (Iterator<Request> it = frqs.iterator(); it.hasNext(); ) {
+                        final Request rq = it.next();
+                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
                             it.remove();
                             found = true;
 //                      break; todo: Some tasks are duplicated (racecondition?), remove even them, Prevent duplication of tasks
                         }
                     }
                 }
+                //Sencond) Try to find it among started task
+                for (Iterator<Request> it = requests.iterator(); it.hasNext();) {
+                    final Request rq = it.next();
+                    if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                        it.remove();
+                        found = true;
+                    }
+                }
+                //Third) Try to find in among waiting tasks
+                if (wrqs != null) {
+                    for (Iterator<Request> it = wrqs.iterator(); it.hasNext(); ) {
+                        final Request rq = it.next();
+                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                            it.remove();
+                            found = true;
+                        }
+                    }
+                }
+                
+                //Fourh) Not found either due to weak consistency (1 task) or removing task which is not added
                 if (!found) {
                     toRemove.add (new RemovedTask(source,task));
                     // there was a modification in toRemove, wake up the thread
@@ -564,26 +587,7 @@ public class TaskProcessor {
         public void run () {
             try {
                 while (true) {                   
-                    try {
-                        synchronized (INTERNAL_LOCK) {
-                            //Clean up toRemove tasks
-                            if (!toRemove.isEmpty()) {
-                                for (Iterator<Map.Entry<Source,Collection<Request>>> it = finishedRequests.entrySet().iterator(); it.hasNext();) {
-                                    final Map.Entry<Source,Collection<Request>> cr = it.next ();
-                                    final Source source = cr.getKey();
-                                    assert source != null;
-                                    for (Iterator<Request> it2 = cr.getValue().iterator(); it2.hasNext();) {
-                                        Request fr = it2.next();
-                                        if (toRemove.remove(new RemovedTask(source,fr.task))) {
-                                            it2.remove();
-                                        }
-                                    }
-                                    if (cr.getValue().isEmpty()) {
-                                        it.remove();
-                                    }
-                                }
-                            }
-                        }
+                    try {                        
                         final Request r = requests.take();
                         if (r != null && r != Request.NONE) {
                             currentRequest.setCurrentTask(r);
@@ -623,119 +627,135 @@ public class TaskProcessor {
                                     finally {
                                         parserLock.unlock();
                                     }
-                                }
-                                else {                                    
+                                } else {                                    
                                     final Source source = sourceCache.getSnapshot ().getSource ();
                                     assert source != null;
 
-                                    synchronized (INTERNAL_LOCK) {
-                                        //Not only the finishedRequests for the current request.javaSource should be cleaned,
-                                        //it will cause a starvation
-                                        if (toRemove.remove(new RemovedTask(source,r.task))) {
-                                            continue;
-                                        }
-
-                                        boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
-                                        if (changeExpected) {
-                                            //Skeep the task, another invalidation is comming
-                                            Collection<Request> rc = waitingRequests.get (source);
-                                            if (rc == null) {
-                                                rc = new LinkedList<Request> ();
-                                                waitingRequests.put (source, rc);
-                                            }
-                                            rc.add(r);
-                                            continue;
-                                        }
-
-                                    }
-
-                                    Snapshot snapshot = null;
-                                    long[] id = new long[] {-1};
-                                    if (SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
-                                        snapshot = sourceCache.createSnapshot(id);
-                                    }
                                     boolean reschedule = false;
-                                    parserLock.lock();                                    
-                                    try {
-                                        if (SourceAccessor.getINSTANCE ().invalidate(source,id[0],snapshot)) {
-                                            lockCount++;
-                                            try {
-                                                if (r.task instanceof EmbeddingProvider) {
-                                                    sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
-                                                }
-                                                else {
-                                                    currentRequest.setCurrentParser(sourceCache.getParser());
-                                                    final Parser.Result currentResult = sourceCache.getResult (r.task);
-                                                    if (currentResult != null) {
-                                                        try {
-                                                            boolean shouldCall = !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
-                                                            if (shouldCall) {
-                                                                try {
-                                                                    final long startTime = System.currentTimeMillis();
-                                                                    if (r.task instanceof ParserResultTask) {
-                                                                        if (LOGGER.isLoggable(Level.FINE)) {
-                                                                            LOGGER.log(Level.FINE, "Running Task: {0}", r.toString());
+                                    byte validFlags = 0;
+                                    synchronized (INTERNAL_LOCK) {
+                                        if (toRemove.contains(new RemovedTask(source,r.task))) {
+                                            //No need to perform the task as it's removed
+                                            validFlags = 1;
+                                        } else if (SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED)) {
+                                            validFlags = 2;
+                                        }                                        
+                                    }
+                                    if (validFlags == 0) {
+                                        Snapshot snapshot = null;
+                                        long[] id = new long[] {-1};
+                                        if (SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
+                                            snapshot = sourceCache.createSnapshot(id);
+                                        }
+                                        parserLock.lock();                                    
+                                        try {
+                                            if (SourceAccessor.getINSTANCE ().invalidate(source,id[0],snapshot)) {
+                                                lockCount++;
+                                                try {
+                                                    if (r.task instanceof EmbeddingProvider) {
+                                                        sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
+                                                    }
+                                                    else {
+                                                        currentRequest.setCurrentParser(sourceCache.getParser());
+                                                        final Parser.Result currentResult = sourceCache.getResult (r.task);
+                                                        if (currentResult != null) {
+                                                            try {
+                                                                boolean shouldCall = !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
+                                                                if (shouldCall) {
+                                                                    try {
+                                                                        final long startTime = System.currentTimeMillis();
+                                                                        if (r.task instanceof ParserResultTask) {
+                                                                            if (LOGGER.isLoggable(Level.FINE)) {
+                                                                                LOGGER.log(Level.FINE, "Running Task: {0}", r.toString());
+                                                                            }
+                                                                            ParserResultTask parserResultTask = (ParserResultTask) r.task;
+                                                                            SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
+                                                                            parserResultTask.run (currentResult, schedulerEvent);                                                                        
                                                                         }
-                                                                        ParserResultTask parserResultTask = (ParserResultTask) r.task;
-                                                                        SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
-                                                                        parserResultTask.run (currentResult, schedulerEvent);                                                                        
-                                                                    }
-                                                                    else {
-                                                                        assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
-                                                                    }
-                                                                    final long endTime = System.currentTimeMillis();
-                                                                    if (LOGGER.isLoggable(Level.FINEST)) {
-                                                                        LOGGER.finest(String.format("Executed task: %s in %d ms.",  //NOI18N
-                                                                            r.task.getClass().toString(), (endTime-startTime)));
-                                                                    }
-                                                                    if (LOGGER.isLoggable(Level.FINER)) {
-                                                                        final long cancelTime = currentRequest.getCancelTime();
-                                                                        if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
-                                                                            LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
-                                                                                r.task.getClass().toString(), (endTime-cancelTime)));
+                                                                        else {
+                                                                            assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
                                                                         }
+                                                                        final long endTime = System.currentTimeMillis();
+                                                                        if (LOGGER.isLoggable(Level.FINEST)) {
+                                                                            LOGGER.finest(String.format("Executed task: %s in %d ms.",  //NOI18N
+                                                                                r.task.getClass().toString(), (endTime-startTime)));
+                                                                        }
+                                                                        if (LOGGER.isLoggable(Level.FINER)) {
+                                                                            final long cancelTime = currentRequest.getCancelTime();
+                                                                            if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
+                                                                                LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
+                                                                                    r.task.getClass().toString(), (endTime-cancelTime)));
+                                                                            }
+                                                                        }
+                                                                    } catch (Exception re) {
+                                                                        Exceptions.printStackTrace (re);
                                                                     }
-                                                                } catch (Exception re) {
-                                                                    Exceptions.printStackTrace (re);
                                                                 }
+                                                            } finally {
+                                                                ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                             }
-                                                        } finally {
-                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                         }
                                                     }
+                                                } finally {
+                                                    lockCount--;
                                                 }
-                                            } finally {
-                                                lockCount--;
                                             }
+                                            else {
+                                                reschedule = true;
+                                            }
+                                        } finally {                                        
+                                            parserLock.unlock();
                                         }
-                                        else {
-                                            reschedule = true;
-                                        }
-                                    } finally {                                        
-                                        parserLock.unlock();
                                     }
                                     //Maybe should be in finally to prevent task lost when parser crashes
                                     if (r.reschedule != ReschedulePolicy.NEVER) {
-                                        reschedule|= currentRequest.setCurrentTask(null);
-
+                                        reschedule |= currentRequest.setCurrentTask(null);
                                         synchronized (INTERNAL_LOCK) {
-                                            if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
-                                                //The JavaSource was changed or canceled rechedule it now
-                                                requests.add(r);
-                                            }
-                                            else {
-                                                //Up to date JavaSource add it to the finishedRequests
-                                                Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
-                                                if (rc == null) {
-                                                    rc = new LinkedList<Request> ();
-                                                    finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                            if (!toRemove.contains(new RemovedTask(source,r.task))) {
+                                                if (validFlags == 2) {
+                                                    if (SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED)) {
+                                                        Collection<Request> rc = waitingRequests.get (source);
+                                                        if (rc == null) {
+                                                            rc = new LinkedList<Request> ();
+                                                            waitingRequests.put (source, rc);
+                                                        }
+                                                        rc.add(r);
+                                                    } else {
+                                                        requests.add(r);
+                                                    }
                                                 }
-                                                rc.add(r);
+                                                else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
+                                                    //The JavaSource was changed or canceled rechedule it now
+                                                    requests.add(r);
+                                                } else {
+                                                    //Up to date JavaSource add it to the finishedRequests
+                                                    Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
+                                                    if (rc == null) {
+                                                        rc = new LinkedList<Request> ();
+                                                        finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                                    }
+                                                    rc.add(r);
+                                                }
                                             }
+                                            toRemove.clear();
                                         }
-                                   }
-                                   else {
-                                        SourceAccessor.getINSTANCE().taskRemoved(source);
+                                   } else {
+                                       synchronized (INTERNAL_LOCK) {
+                                           if (validFlags == 2 && !toRemove.contains(new RemovedTask(source,r.task))) {
+                                               if (SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED)) {
+                                                   Collection<Request> rc = waitingRequests.get (source);
+                                                    if (rc == null) {
+                                                        rc = new LinkedList<Request> ();
+                                                        waitingRequests.put (source, rc);
+                                                    }
+                                                    rc.add(r);
+                                               } else {
+                                                   requests.add(r);
+                                               }
+                                           }
+                                           toRemove.clear();
+                                       }
+                                       SourceAccessor.getINSTANCE().taskRemoved(source);
                                    }
                                 }
                             } finally {
