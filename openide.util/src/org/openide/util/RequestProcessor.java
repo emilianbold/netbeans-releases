@@ -1009,7 +1009,7 @@ outer:  do {
             throw new RejectedExecutionException("Request Processor already " + //NOI18N
                     "stopped"); //NOI18N
         }
-        long delayMillis = unit.convert(delay, TimeUnit.MILLISECONDS);
+        long delayMillis = TimeUnit.MILLISECONDS.convert(delay, unit);
         ScheduledRPFutureTask<T> result = new ScheduledRPFutureTask<T>(callable, delayMillis);
         Task t = create(result);
         result.setTask(t);
