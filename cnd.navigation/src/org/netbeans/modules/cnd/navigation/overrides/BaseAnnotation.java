@@ -82,18 +82,22 @@ import org.openide.text.NbDocument;
     protected final AnnotationType type;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> descUIDs;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseTemplateUIDs;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> specializationUIDs;
     
     protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl,
             Collection<? extends CsmOffsetableDeclaration> baseDecls,
-            Collection<? extends CsmOffsetableDeclaration> descDecls) {
+            Collection<? extends CsmOffsetableDeclaration> descDecls,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
         assert decl != null;
         this.document = document;
         this.pos = new DeclarationPosition(decl);
-        if (baseDecls.isEmpty() && !descDecls.isEmpty()) {
+        if ((baseDecls.isEmpty() && baseTemplates.isEmpty()) && (!descDecls.isEmpty() || !templateSpecializations.isEmpty())) {
             type = AnnotationType.IS_OVERRIDDEN;
-        } else if (!baseDecls.isEmpty() && descDecls.isEmpty()) {
+        } else if ((!baseDecls.isEmpty() || !baseTemplates.isEmpty()) && (descDecls.isEmpty() && templateSpecializations.isEmpty())) {
             type = AnnotationType.OVERRIDES;
-        } else if (!baseDecls.isEmpty() && !descDecls.isEmpty()) {
+        } else if ((!baseDecls.isEmpty() || !baseTemplates.isEmpty()) && (!descDecls.isEmpty() || !templateSpecializations.isEmpty())) {
             type = AnnotationType.COMBINED;
         } else { //both are empty
             throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
@@ -105,6 +109,14 @@ import org.openide.text.NbDocument;
         descUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(descDecls.size());
         for (CsmOffsetableDeclaration d : descDecls) {
             descUIDs.add(UIDs.get(d));
+        }
+        baseTemplateUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseTemplates.size());
+        for (CsmOffsetableDeclaration d : baseTemplates) {
+            baseTemplateUIDs.add(UIDs.get(d));
+        }
+        specializationUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(templateSpecializations.size());
+        for (CsmOffsetableDeclaration d : templateSpecializations) {
+            specializationUIDs.add(UIDs.get(d));
         }
     }
     
@@ -168,9 +180,17 @@ import org.openide.text.NbDocument;
         List<? extends CsmOffsetableDeclaration> descDecls = toDeclarations(descUIDs);
         Collections.sort(descDecls, comparator);
 
+        List<? extends CsmOffsetableDeclaration> baseTemplateDecls = toDeclarations(baseTemplateUIDs);
+        Collections.sort(baseTemplateDecls, comparator);
+
+        List<? extends CsmOffsetableDeclaration> specializationDecls = toDeclarations(specializationUIDs);
+        Collections.sort(specializationDecls, comparator);
+        
         List<CsmOffsetableDeclaration> allDecls = new ArrayList<CsmOffsetableDeclaration>();
         allDecls.addAll(baseDecls);
         allDecls.addAll(descDecls);
+        allDecls.addAll(baseTemplateDecls);
+        allDecls.addAll(specializationDecls);
 
         for (CsmOffsetableDeclaration decl : allDecls) {
             int gotoLine = decl.getStartPosition().getLine();
@@ -195,22 +215,23 @@ import org.openide.text.NbDocument;
         SwingUtilities.convertPointToScreen(position, c);        
         performGoToAction(position);
     }
-
-//    public Collection<? extends CsmMethod> getDeclarations() {
-//        return methods;
-//    }
     
     private void performGoToAction(Point position) {
-        if (baseUIDs.size() + descUIDs.size() == 1) {
-            CsmUID<? extends CsmOffsetableDeclaration> uid =
-                    baseUIDs.isEmpty() ? descUIDs.iterator().next() : baseUIDs.iterator().next();
+        if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() == 1) {
+            Collection<CsmUID<? extends CsmOffsetableDeclaration>> all = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>> (1);
+            all.addAll(baseUIDs);
+            all.addAll(descUIDs);
+            all.addAll(baseTemplateUIDs);
+            all.addAll(specializationUIDs);
+            CsmUID<? extends CsmOffsetableDeclaration> uid = all.iterator().next();
             CsmOffsetableDeclaration decl = uid.getObject();
             if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
                 CsmUtilities.openSource(decl);
             }
         } else if (baseUIDs.size() + descUIDs.size() > 1) {
             String caption = getShortDescription();
-            OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs));
+            OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs), 
+                    toDeclarations(baseTemplateUIDs), toDeclarations(specializationUIDs));
             PopupUtil.showPopup(popup, caption, position.x, position.y, true, 0);
         } else {
             throw new IllegalStateException("method list should not be empty"); // NOI18N
