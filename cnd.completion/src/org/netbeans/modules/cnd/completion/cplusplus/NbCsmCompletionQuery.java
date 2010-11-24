@@ -115,7 +115,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return fileReferencesContext;
     }
     
-    private CsmFile getCsmFile() {
+    @Override
+    public CsmFile getCsmFile() {
         if (this.csmFile == null) {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
