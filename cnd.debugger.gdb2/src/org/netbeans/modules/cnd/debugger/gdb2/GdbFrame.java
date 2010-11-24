@@ -104,7 +104,9 @@ public final class GdbFrame extends Frame {
 	}
         
         MIValue fn = MIframe.valueOf("fullname"); // NOI18N
-        fullname = fn.asConst().value();
+        if (fn != null) {
+            fullname = fn.asConst().value();
+        }
 
 	// handle args info
 	if (frameargs != null) 

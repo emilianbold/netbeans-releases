@@ -110,7 +110,7 @@ class MICommandManager {
 	int token = record.token();
 	MICommand cmd = pendingCommands.get(token);
 	if (cmd == null) {
-	    injector.log(String.format("No command for token %d\n\r", token)); // NOI18N
+	    injector.log(String.format("No command for record %s\n\r", record)); // NOI18N
 	    return;
 	}
 
@@ -187,7 +187,9 @@ class MICommandManager {
 	System.out.printf("    %s\n", data);
 	*/
         assert oc != null : "Console output for unknown command: " + data; //NOI18N
-        oc.recordConsoleStream(data);
+        if (oc != null) {
+            oc.recordConsoleStream(data);
+        }
     }
 
     /**
