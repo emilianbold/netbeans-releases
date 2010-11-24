@@ -48,7 +48,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -194,12 +193,20 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
                 removeInstances();
-                lastInstance = new EjbModuleProviderImpl(project);
+                EjbModuleProviderImpl prov = new EjbModuleProviderImpl(project);
+                lastInstance = prov;
                 content.add(lastInstance);
                 content.add(jpa);
                 content.add(ejbEnt);
                 content.add(resolver);
                 content.add(supplier);
+                copyOnSave = prov.getCopyOnSaveSupport();
+                try {
+                    copyOnSave.initialize();
+                } catch (FileStateInvalidException ex) {
+                    ex.printStackTrace();
+                }
+                content.add(copyOnSave);
             } else if (lastInstance != null && !(
                     NbMavenProject.TYPE_WAR.equals(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 

@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -86,14 +87,14 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     private ModuleChangeReporter moduleChange;
     
     private String serverInstanceID;
-    private final CopyOnSave copyOnSave;
+    private final WebCopyOnSave copyOnSave;
 
     
     public WebModuleProviderImpl(Project proj) {
         project = proj;
         implementation = new WebModuleImpl(project, this);
         moduleChange = new ModuleChangeReporterImpl();
-        copyOnSave = new CopyOnSave(proj, this);
+        copyOnSave = new WebCopyOnSave(proj, this);
     }
     
     public WebModule findWebModule(FileObject fileObject) {
