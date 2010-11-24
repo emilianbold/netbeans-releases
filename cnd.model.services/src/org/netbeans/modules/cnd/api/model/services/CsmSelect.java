@@ -72,6 +72,8 @@ import org.openide.util.Lookup;
 public class CsmSelect {
 
     private static CsmSelectProvider DEFAULT = new Default();
+    private static final CsmFilter funcKindFilter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                                                    CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
 
     public static CsmFilterBuilder getFilterBuilder() {
         return getDefault().getFilterBuilder();
@@ -129,33 +131,45 @@ public class CsmSelect {
         if (!processedProjects.contains(project)) {
             processedProjects.add(project);
             // find last "::" in Name
-            int pos = -1;
-            for (int i = qName.length()-2; i > 1; i--) {
-                if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
-                    pos = i;
-                    break;
-                }
-            }
+            int pos = findLastScopeDelimeterPos(qName);
             if (pos == -1) {
                 // qName resides in global namespace
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
+                         funcKindFilter,
                          CsmSelect.getFilterBuilder().createNameFilter(qName, true, true, false));
                 getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
             } else {
                 // split qName into owner name and function name
-                CharSequence ownerQName = qName.subSequence(0, pos);
+                CharSequence nsQName = qName.subSequence(0, pos);
+                CharSequence classQName = nsQName;
                 CharSequence funcName = qName.subSequence(pos+2, qName.length());
-                CsmNamespace nsp = project.findNamespace(ownerQName);
-                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
-                         CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
-                if (nsp != null) {
-                    getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                CharSequence shortFuncName = funcName;
+                CsmNamespace nsp = project.findNamespace(nsQName);
+                // we can have explicit template specialization like std::Class<int>::foo 
+                while (nsp == null && pos >= 0) {
+                    pos = findLastScopeDelimeterPos(nsQName);
+                    if (pos >= 0) {
+                        nsQName = nsQName.subSequence(0, pos);
+                        nsp = project.findNamespace(nsQName);
+                        funcName = qName.subSequence(pos+2, qName.length());
+                    }
                 }
-                for (CsmClassifier cls : project.findClassifiers(ownerQName)) {
+                if (nsp == null) {
+                    nsp = project.getGlobalNamespace();
+                    funcName = qName;
+                }
+                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         funcKindFilter,
+                         CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
+                getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                
+                if (!shortFuncName.equals(funcName)) {
+                    filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                            funcKindFilter,
+                            CsmSelect.getFilterBuilder().createNameFilter(shortFuncName, true, true, false));
+                }
+
+                for (CsmClassifier cls : project.findClassifiers(classQName)) {
                     if (CsmKindUtilities.isClass(cls)) {
                         getFunctions(CsmSelect.getClassMembers((CsmClass) cls, filter), result);
                     }
@@ -165,6 +179,17 @@ public class CsmSelect {
                 getFunctions(lib, qName, result, processedProjects);
             }
         }
+    }
+
+    private static int findLastScopeDelimeterPos(CharSequence qName) {
+        int pos = -1;
+        for (int i = qName.length()-2; i > 1; i--) {
+            if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
+                pos = i;
+                break;
+            }
+        }
+        return pos;
     }
 
     private static void getFunctions(Iterator<? extends CsmOffsetableDeclaration> iter, Collection<CsmFunction> result) {
