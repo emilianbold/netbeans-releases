@@ -42,14 +42,12 @@
 package org.netbeans.modules.maven.j2ee.ear;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -66,8 +64,10 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
+import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -98,7 +98,11 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     public EarImplementation2 getEarImplementation() {
         return earimpl;
     }
-    
+
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+    }
     
     public Ear findEar(FileObject file) {
         Project proj = FileOwnerQuery.getOwner(file);
