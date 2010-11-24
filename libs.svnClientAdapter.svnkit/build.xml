@@ -43,31 +43,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.libs.jna</code-name-base>
-            <module-dependencies/>
-            <friend-packages>
-                <friend>com.sun.tools.swdev.sunstudio</friend>
-                <friend>org.jruby</friend>
-                <friend>org.netbeans.core.browser.xulrunner</friend>
-                <friend>org.netbeans.core.nativeaccess</friend>
-                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
-                <friend>org.netbeans.modules.extexecution.destroy</friend>
-                <friend>org.netbeans.modules.keyring.impl</friend>
-                <friend>org.netbeans.modules.masterfs</friend>
-                <friend>org.netbeans.modules.python.qshell</friend>
-                <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
-                <package>com.sun.jna</package>
-                <package>com.sun.jna.ptr</package>
-                <package>com.sun.jna.win32</package>
-            </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/jna-3.0.9.jar</runtime-relative-path>
-                <binary-origin>external/jna-3.0.9.jar</binary-origin>
-            </class-path-extension>
-        </data>
-    </configuration>
+<project name="libs.svnClientAdapter.svnkit" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
