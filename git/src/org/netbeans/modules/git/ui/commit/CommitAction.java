@@ -74,6 +74,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
@@ -120,7 +121,7 @@ public class CommitAction extends SingleRepositoryAction {
                     LOG.log(Level.WARNING, null, ex);
                 }
                 
-                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user);
+                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
@@ -390,5 +391,16 @@ public class CommitAction extends SingleRepositoryAction {
         }
         return commitPermitted;
     }
-    
+
+    protected boolean isFromGitView (VCSContext context) {
+        return GitUtils.isFromInternalView(context);
+    }
+
+    public static class GitViewCommitAction extends CommitAction {
+        @Override
+        protected boolean isFromGitView(VCSContext context) {
+            return true;
+        }
+    }
+
 }
