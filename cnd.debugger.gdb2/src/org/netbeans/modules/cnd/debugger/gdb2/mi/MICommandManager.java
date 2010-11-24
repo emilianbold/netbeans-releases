@@ -187,7 +187,9 @@ class MICommandManager {
 	System.out.printf("    %s\n", data);
 	*/
         assert oc != null : "Console output for unknown command: " + data; //NOI18N
-        oc.recordConsoleStream(data);
+        if (oc != null) {
+            oc.recordConsoleStream(data);
+        }
     }
 
     /**
