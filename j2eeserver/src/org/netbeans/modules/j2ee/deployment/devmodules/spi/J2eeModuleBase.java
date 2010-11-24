@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Iterator;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
@@ -71,6 +72,8 @@ public interface J2eeModuleBase {
      * Returns the location of the module within the application archive. 
      * 
      * TODO: this does not belong here.. it has to be moved to J2eeApplication
+     * If incremental deployment is supported, the value should
+     * match the {@link IncrementalDeployment#getModuleUrl(javax.enterprise.deploy.spi.TargetModuleID)}.
      */
     abstract String getUrl ();
     

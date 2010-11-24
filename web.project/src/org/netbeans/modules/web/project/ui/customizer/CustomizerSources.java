@@ -52,18 +52,16 @@ import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.table.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
@@ -168,30 +166,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         
-        initTableVisualProperties(sourceRoots);
-        initTableVisualProperties(testRoots);
+        Util.initTwoColumnTableVisualProperties(this, sourceRoots);
+        Util.initTwoColumnTableVisualProperties(this, testRoots);
         this.uiProperties = uiProperties;
-    }
-    
-    private void initTableVisualProperties(JTable table) {
-        //table.setGridColor(jTableCpC.getBackground());
-        table.setRowHeight(testRoots.getRowHeight() + 4);
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
-        // set the color of the table's JViewport
-        table.getParent().setBackground(table.getBackground());
-        
-        //#88174 - Need horizontal scrollbar for library names
-        //ugly but I didn't find a better way how to do it
-        TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(230);
-        column.setWidth(230);
-        column.setMinWidth(75);
-        
-        column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(158);
-        column.setWidth(158);
-        column.setMinWidth(75);
     }
     
     public HelpCtx getHelpCtx() {

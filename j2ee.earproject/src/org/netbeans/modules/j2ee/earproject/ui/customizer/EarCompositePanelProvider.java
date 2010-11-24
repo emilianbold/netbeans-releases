@@ -62,6 +62,7 @@ public class EarCompositePanelProvider implements ProjectCustomizer.CompositeCat
     
     private static final String EAR = "Ear";
     public static final String RUN = "Run";
+    public static final String COMPILE = "Compile";
 //    private static final String RUN_TESTS = "RunTests";
 
     private String name;
@@ -94,6 +95,11 @@ public class EarCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     RUN,
                     bundle.getString("LBL_Config_Run"), // NOI18N
                     null);
+        } else if (COMPILE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    COMPILE,
+                    bundle.getString("LBL_Config_Compile"), // NOI18N
+                    null);
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
@@ -110,6 +116,8 @@ public class EarCompositePanelProvider implements ProjectCustomizer.CompositeCat
             return new CustomizerJarContent(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
+        } else if (COMPILE.equals(nm)) {
+            return new CustomizerCompile(uiProps);
         }
         return new JPanel();
     }
@@ -128,5 +136,9 @@ public class EarCompositePanelProvider implements ProjectCustomizer.CompositeCat
 
     public static EarCompositePanelProvider createRun() {
         return new EarCompositePanelProvider(RUN);
+    }
+    
+    public static EarCompositePanelProvider createCompile() {
+        return new EarCompositePanelProvider(COMPILE);
     }
 }
