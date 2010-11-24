@@ -201,8 +201,10 @@ public final class MainWindow extends JFrame {
                 statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
                         statusLinePanel.getBorder(),
                         BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
-                
-                statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
+
+                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                    statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
+                }
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
                 decoratePanel (statusLinePanel, false);
