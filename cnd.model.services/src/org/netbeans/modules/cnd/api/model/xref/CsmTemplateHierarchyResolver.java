@@ -40,59 +40,64 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.navigation.overrides;
+package org.netbeans.modules.cnd.api.model.xref;
 
 import java.util.Collection;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author Vladimir Kvashin
+ * entry point to resolve templates hierarchies 
+ * @author Vladimir Voskresensky
  */
-/*package*/ class OverrideAnnotation extends BaseAnnotation {
-
-    public OverrideAnnotation(StyledDocument document, CsmFunction decl, 
-            Collection<? extends CsmOffsetableDeclaration> baseDecls, 
-            Collection<? extends CsmOffsetableDeclaration> descDecls,
-            Collection<? extends CsmOffsetableDeclaration> baseTemplates, 
-            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, baseDecls, descDecls, baseTemplates, templateSpecializations);
+public abstract class CsmTemplateHierarchyResolver {
+    /** A dummy resolver that never returns any results.
+     */
+    private static final CsmTemplateHierarchyResolver EMPTY = new Empty();
+    
+    /** default instance */
+    private static CsmTemplateHierarchyResolver defaultResolver;
+    
+    protected CsmTemplateHierarchyResolver() {
     }
-
-    @Override
-    public String getShortDescription() {
-        if (baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
-            return NbBundle.getMessage(getClass(), "LAB_IsOverriden");
-        } else if (!baseUIDs.isEmpty() && descUIDs.isEmpty()) {
-            CharSequence text = "..."; //NOI18N
-            if (baseUIDs.size() == 1) {
-                CsmOffsetableDeclaration obj = baseUIDs.iterator().next().getObject();
-                if (obj != null) {
-                    text = obj.getQualifiedName();
-                }
-            }
-            return NbBundle.getMessage(getClass(), "LAB_Overrides", text);
-        } else if (!baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
-            return NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
-        } else { //both are empty
-            throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
+    
+    /** Static method to obtain the resolver.
+     * @return the resolver
+     */
+    public static CsmTemplateHierarchyResolver getDefault() {
+        /*no need for sync synchronized access*/
+        if (defaultResolver != null) {
+            return defaultResolver;
         }
+        defaultResolver = Lookup.getDefault().lookup(CsmTemplateHierarchyResolver.class);
+        return defaultResolver == null ? EMPTY : defaultResolver;
     }
-
-    @Override
-    protected CharSequence debugTypeStirng() {
-        switch (type) {
-            case OVERRIDES:
-                return "OVERRIDES"; // NOI18N
-            case IS_OVERRIDDEN:
-                return "OVERRIDDEN"; // NOI18N
-            case COMBINED:
-                return "OVERRIDES_AND_OVERRIDDEN"; // NOI18N
-            default:
-                return "???"; // NOI18N
+    
+    /**
+     * Get specializations for referenced declaration.
+     * Return collection of template specializations
+     */
+    public abstract Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration declaration);
+    
+    public abstract Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration);
+    
+    //
+    // Implementation of the default resolver
+    //
+    private static final class Empty extends CsmTemplateHierarchyResolver {
+        Empty() {
         }
-    }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration declaration) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
+        }
+    }    
 }

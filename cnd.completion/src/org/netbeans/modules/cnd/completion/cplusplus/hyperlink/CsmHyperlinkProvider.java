@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmTemplateHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -160,22 +161,28 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     overriddenMethods = Collections.<CsmMethod>emptyList();
                 }
                 baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
-                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
+                
+                Collection<CsmOffsetableDeclaration> baseTemplates = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(meth);
+                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmTemplateHierarchyResolver.getDefault().getSpecializations(meth);
+                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
                     UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
                     return true;
                 }
             } else if (CsmKindUtilities.isClass(item)) {
-                Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes((CsmClass) item, false);
+                CsmClass cls = (CsmClass) item;
+                Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
                 if (!subRefs.isEmpty()) {
                     Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
                     for (CsmReference ref : subRefs) {
                         CsmObject obj = ref.getReferencedObject();
                         CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
-                        if (obj instanceof CsmClass) {
+                        if (CsmKindUtilities.isClass(obj)) {
                             subClasses.add((CsmClass) obj);
                         }
                     }
-                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, false, target, offset)) {
+                    Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(cls);
+                    Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmTemplateHierarchyResolver.getDefault().getSpecializations(cls);
+                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplateClasses, templateSpecializationClasses, false, target, offset)) {
                         UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
                         return true;
                     }
@@ -189,11 +196,13 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     private boolean showOverridesPopup(CsmOffsetableDeclaration mainDeclaration,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations,
             boolean gotoDefinitions,
             JTextComponent target, int offset) {
         if (!baseDeclarations.isEmpty() || !descendantDeclarations.isEmpty()) {
             try {
-                final OverridesPopup popup = new OverridesPopup(null, mainDeclaration, baseDeclarations, descendantDeclarations, gotoDefinitions);
+                final OverridesPopup popup = new OverridesPopup(null, mainDeclaration, baseDeclarations, descendantDeclarations, baseTemplates, templateSpecializations, gotoDefinitions);
                 Rectangle rect = target.modelToView(offset);
                 final Point point = new Point((int) rect.getX(), (int)(rect.getY() + rect.getHeight()));
                 SwingUtilities.convertPointToScreen(point, target);
