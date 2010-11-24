@@ -75,7 +75,6 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Resource;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -492,16 +491,10 @@ public final class MavenModelUtils {
      * @param project Project
      */
     public static void addJavadoc(final Project project) {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
-                if (mavenProject != null) {
-                    mavenProject.downloadDependencyAndJavadocSource();
-                }
-            }
-
-        });
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (mavenProject != null) {
+            mavenProject.downloadDependencyAndJavadocSource(false);
+        }
     }
 
     /** get list of wsdl files in Maven project
