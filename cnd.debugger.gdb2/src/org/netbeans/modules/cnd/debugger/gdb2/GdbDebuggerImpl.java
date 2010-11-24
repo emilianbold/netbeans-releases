@@ -2051,6 +2051,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 					exp.equals("protected")) { // NOI18N
                 getMIChildren(parent, qname, level+1);
             } else {
+                // Show array name and index instead of only index, IZ 192123
+                try {
+                    Integer.parseInt(exp);
+                    exp = parent.getVariableName() + '[' + exp + ']';
+                } catch (Exception e) {
+                    // do nothing
+                }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, ((GdbVariable)parent).isWatch());
 		if (value == null)
@@ -3336,7 +3343,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-            if (result.matches("bkpt")) {
+            if (result.matches("bkpt")) { //NOI18N
                 newHandler(rt, cmd, result);
             }
 	}
