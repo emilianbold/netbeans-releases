@@ -210,7 +210,7 @@ public class SelectImpl implements CsmSelectProvider {
             }
         }
         if (res != null) {
-            Iterator<CsmOffsetableDeclaration> iter = UIDCsmConverter.UIDsToDeclarations(res, filter);
+            Iterator<CsmOffsetableDeclaration> iter = UIDCsmConverter.UIDsToDeclarations(res).iterator();
             return iter;
         }
         return null;

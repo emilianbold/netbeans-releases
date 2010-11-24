@@ -246,7 +246,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            ELJavaCompletionItem item = new ELJavaCompletionItem(element, bean.name, elElement, typeUtilities);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
