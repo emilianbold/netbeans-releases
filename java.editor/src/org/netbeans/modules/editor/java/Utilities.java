@@ -113,6 +113,7 @@ public final class Utilities {
     private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
             if (settingName == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(settingName)) {
@@ -451,14 +452,14 @@ public final class Utilities {
         List<String> result = new ArrayList<String>();
         if (type == null)
             return result;
-        List<String> vnct = varNamesForType(type, types, elements);
+        String p = prefix;
+        List<String> vnct = varNamesForType(type, types, elements, p == null || p.length() == 0);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
                 ls.add(getConstName(s));
             vnct = ls;
         }
-        String p = prefix;
         while (p != null && p.length() > 0) {
             List<String> l = new ArrayList<String>();
             for(String name : vnct)
@@ -507,16 +508,16 @@ public final class Utilities {
         return inAnonymousOrLocalClass(parentPath);
     }
         
-    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
+    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, boolean addInitials) {
         switch (type.getKind()) {
             case ARRAY:
                 TypeElement iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
                 TypeMirror iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 TypeMirror ct = ((ArrayType)type).getComponentType();
                 if (ct.getKind() == TypeKind.ARRAY && iterable != null && types.isSubtype(ct, iterable))
-                    return varNamesForType(ct, types, elements);
+                    return varNamesForType(ct, types, elements, addInitials);
                 List<String> vnct = new ArrayList<String>();
-                for (String name : varNamesForType(ct, types, elements))
+                for (String name : varNamesForType(ct, types, elements, false))
                     vnct.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                 return vnct;
             case BOOLEAN:
@@ -542,7 +543,7 @@ public final class Utilities {
                     al.add(tn);
                     sb.append(tn.charAt(0));
                 }
-                if (sb.length() > 0)
+                if (addInitials && sb.length() > 0)
                     al.add(sb.toString());
                 return al;
             case DECLARED:
@@ -564,14 +565,14 @@ public final class Utilities {
                     if (tas.size() > 0) {
                         TypeMirror et = tas.get(0);
                         if (et.getKind() == TypeKind.ARRAY || (et.getKind() != TypeKind.WILDCARD && types.isSubtype(et, iterable))) {
-                            al.addAll(varNamesForType(et, types, elements));
+                            al.addAll(varNamesForType(et, types, elements, addInitials));
                         } else {
-                            for (String name : varNamesForType(et, types, elements))
+                            for (String name : varNamesForType(et, types, elements, false))
                                 al.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                         }
                     }
                 }
-                if (sb.length() > 0)
+                if (addInitials && sb.length() > 0)
                     al.add(sb.toString());
                 return al;
             case WILDCARD:
@@ -579,7 +580,7 @@ public final class Utilities {
                 if (bound == null)
                     bound = ((WildcardType)type).getSuperBound();
                 if (bound != null)
-                    return varNamesForType(bound, types, elements);
+                    return varNamesForType(bound, types, elements, addInitials);
         }
         return Collections.<String>emptyList();
     }
