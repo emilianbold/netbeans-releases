@@ -51,12 +51,12 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-final class CreateQualifierFix extends CreateAnnotationFix {
+final class CreateInterceptorBinding extends CreateAnnotationFix {
 
-    CreateQualifierFix( CompilationInfo compilationInfo, String name , 
-            String packageName , FileObject fileObject)
+    CreateInterceptorBinding( CompilationInfo compilationInfo, String name,
+            String packageName, FileObject fileObject )
     {
-       super(compilationInfo, name, packageName, fileObject);
+        super(compilationInfo, name, packageName, fileObject);
     }
 
     /* (non-Javadoc)
@@ -66,18 +66,18 @@ final class CreateQualifierFix extends CreateAnnotationFix {
     public String getText() {
         if ( getPackage() == null || getPackage().length() == 0 ){
             return NbBundle.getMessage(CreateQualifierFix.class, 
-                    "LBL_FixCreateQualifierDefaultPackage");
+                    "LBL_FixCreateInterceptorDefaultPackage");
         }
         return NbBundle.getMessage(CreateQualifierFix.class, 
-                "LBL_FixCreateQualifier" , getName() , getPackage() );
+                "LBL_FixCreateInterceptor" , getName() , getPackage() );
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.hints.CreateAnnotationFix#getTemplate()
      */
     @Override
     protected String getTemplate() {
-        return "Templates/CDI/Qualifier.java";          // NOI18N
+        return "Templates/CDI/Interceptor.java";
     }
 
 }
