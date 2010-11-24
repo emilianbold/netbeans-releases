@@ -149,6 +149,8 @@ abstract public class CsmCompletionQuery {
 
     abstract protected FileReferencesContext getFileReferencesContext();
 
+    abstract public CsmFile getCsmFile();
+    
     public static enum QueryScope {
 
         LOCAL_QUERY,
@@ -269,7 +271,7 @@ abstract public class CsmCompletionQuery {
                 // find last separator position
                 final int lastSepOffset = sup.getLastCommandSeparator(offset);
                 tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(getCsmFile(), doc, tp, offset);
                 if(etp instanceof CsmExpandedTokenProcessor) {
                     tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
                 }
@@ -343,7 +345,7 @@ abstract public class CsmCompletionQuery {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
-            CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
+            CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
             ctx.resolveExp(exp, true);
             if (ctx.result != null) {
@@ -1293,7 +1295,7 @@ abstract public class CsmCompletionQuery {
                     switch (item.getTokenID(0)) {
                         case THIS: // 'this' keyword
                             if (first) { // first item in expression
-                                CsmClass cls = sup.getClass(item.getTokenOffset(0));
+                                CsmClass cls = sup.getClass(getCsmFile(), item.getTokenOffset(0));
                                 if (cls != null) {
                                     derefOfThisOUT.set(true);
                                     lastType = CsmCompletion.getType(cls, 0, false, 0, false);

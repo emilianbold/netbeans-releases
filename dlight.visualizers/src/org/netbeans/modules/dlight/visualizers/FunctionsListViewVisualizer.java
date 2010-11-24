@@ -102,6 +102,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     private final ExplorerManager manager = new ExplorerManager();
     private final JPanel emptyPanel;
+    private final JPanel busyPanel;
     private final JPanel dataPanel;
     private final JPanel contentPanel;
     private final InstanceContent content = new InstanceContent();
@@ -116,15 +117,18 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final ChangeListener filterListener;
     private final JButton refreshBtn;
     private final AtomicReference<List<FunctionCallWithMetric>> dataRef = new AtomicReference<List<FunctionCallWithMetric>>();
+    private final Task busyPanelDisplayTask;
 
     public FunctionsListViewVisualizer(final FunctionsListDataProvider dataProvider, final FunctionsListViewVisualizerConfiguration cfg) {
         setLayout(new BorderLayout());
 
         emptyPanel = new FunctionsListViewEmptyPanel(cfg);
+        busyPanel = new FunctionsListViewBusyPanel();
         dataPanel = new JPanel(new BorderLayout());
 
         contentPanel = new JPanel(new CardLayout());
         contentPanel.add(emptyPanel, "empty"); // NOI18N
+        contentPanel.add(busyPanel, "busy"); // NOI18N
         contentPanel.add(dataPanel, "data"); // NOI18N
         add(contentPanel, BorderLayout.CENTER);
 
@@ -141,6 +145,27 @@ public class FunctionsListViewVisualizer extends JPanel implements
         functionChildren = new FunctionCallNodeChildren(gotoSourceActionsProvider, metrics);
 
         dataFetchTask = RequestProcessor.getDefault().create(new DataFetchRunnable(dataProvider));
+
+        busyPanelDisplayTask = RequestProcessor.getDefault().create(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (!dataFetchTask.isFinished()) {
+                                ((CardLayout) contentPanel.getLayout()).show(contentPanel, "busy"); // NOI18N
+                            }
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Thread.interrupted();
+                } catch (Exception ex) {
+                }
+            }
+        });
 
         // Create toolbar with refresh button
 
@@ -246,6 +271,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     public synchronized void refresh() {
         if (refreshBtn.isEnabled()) {
             refreshBtn.setEnabled(false);
+            busyPanelDisplayTask.schedule(700);
             dataFetchTask.schedule(0);
         }
     }
@@ -271,7 +297,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         functionChildren.setData(newData);
 
-        SwingUtilities.invokeLater(new Runnable()                          {
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {

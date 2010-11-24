@@ -130,12 +130,13 @@ public class CommitAction extends SingleRepositoryAction {
                     GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
                     panel.getParameters().storeCommitMessage();
 
+                    final VCSCommitFilter selectedFilter = panel.getSelectedFilter();
                     RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
                     GitProgressSupport support = new GitProgressSupport() {
                         @Override
                         public void perform() {
                             try {
-                                performCommit(panel.getParameters(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
+                                performCommit(panel.getParameters(), commitFiles, selectedFilter, getClient(), this, panel.getHooks());
                             } catch (GitException ex) {
                                 LOG.log(Level.WARNING, null, ex);
                                 return;
