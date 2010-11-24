@@ -452,14 +452,14 @@ public final class Utilities {
         List<String> result = new ArrayList<String>();
         if (type == null)
             return result;
-        String p = prefix;
-        List<String> vnct = varNamesForType(type, types, elements, p == null || p.length() == 0);
+        List<String> vnct = varNamesForType(type, types, elements, prefix);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
                 ls.add(getConstName(s));
             vnct = ls;
         }
+        String p = prefix;
         while (p != null && p.length() > 0) {
             List<String> l = new ArrayList<String>();
             for(String name : vnct)
@@ -508,16 +508,16 @@ public final class Utilities {
         return inAnonymousOrLocalClass(parentPath);
     }
         
-    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, boolean addInitials) {
+    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
         switch (type.getKind()) {
             case ARRAY:
                 TypeElement iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
                 TypeMirror iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 TypeMirror ct = ((ArrayType)type).getComponentType();
                 if (ct.getKind() == TypeKind.ARRAY && iterable != null && types.isSubtype(ct, iterable))
-                    return varNamesForType(ct, types, elements, addInitials);
+                    return varNamesForType(ct, types, elements, prefix);
                 List<String> vnct = new ArrayList<String>();
-                for (String name : varNamesForType(ct, types, elements, false))
+                for (String name : varNamesForType(ct, types, elements, prefix))
                     vnct.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                 return vnct;
             case BOOLEAN:
@@ -543,8 +543,11 @@ public final class Utilities {
                     al.add(tn);
                     sb.append(tn.charAt(0));
                 }
-                if (addInitials && sb.length() > 0)
-                    al.add(sb.toString());
+                if (sb.length() > 0) {
+                    String s = sb.toString();
+                    if (prefix == null || prefix.length() == 0 || s.startsWith(prefix))
+                        al.add(s);
+                }
                 return al;
             case DECLARED:
                 iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
@@ -565,22 +568,25 @@ public final class Utilities {
                     if (tas.size() > 0) {
                         TypeMirror et = tas.get(0);
                         if (et.getKind() == TypeKind.ARRAY || (et.getKind() != TypeKind.WILDCARD && types.isSubtype(et, iterable))) {
-                            al.addAll(varNamesForType(et, types, elements, addInitials));
+                            al.addAll(varNamesForType(et, types, elements, prefix));
                         } else {
-                            for (String name : varNamesForType(et, types, elements, false))
+                            for (String name : varNamesForType(et, types, elements, prefix))
                                 al.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                         }
                     }
                 }
-                if (addInitials && sb.length() > 0)
-                    al.add(sb.toString());
+                if (sb.length() > 0) {
+                    String s = sb.toString();
+                    if (prefix == null || prefix.length() == 0 || s.startsWith(prefix))
+                        al.add(s);
+                }
                 return al;
             case WILDCARD:
                 TypeMirror bound = ((WildcardType)type).getExtendsBound();
                 if (bound == null)
                     bound = ((WildcardType)type).getSuperBound();
                 if (bound != null)
-                    return varNamesForType(bound, types, elements, addInitials);
+                    return varNamesForType(bound, types, elements, prefix);
         }
         return Collections.<String>emptyList();
     }
