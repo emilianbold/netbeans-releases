@@ -40,39 +40,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
-import junit.framework.Test;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
+ * Manages instances of the RemoteFileSystem class
  *
- * @author Vladimir Voskresensky
+ * TODO: release instances when they are not used
+ *
+ * @author Vladimir Kvashin
  */
-public class RemoteFileSupportTestCase extends CndBaseTestCase {
+public class RemoteFileSystemManager {
+    
+    private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
+    
+    private Map<ExecutionEnvironment, RemoteFileSystem> fileSystems = new HashMap<ExecutionEnvironment, RemoteFileSystem>();
 
-    public RemoteFileSupportTestCase(String testName) {
-        super(testName);
+    public static RemoteFileSystemManager getInstance() {
+        return INSTANCE;
     }
 
-    public void testCCSmallReplacement() throws Exception {
-        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
-                                                            { "cc", "cc.cnd.rfs.small"},
-                                                            { "include/cc", "include/cc.cnd.rfs.small" },
-                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
-
-                                                            {"include/ccd", "include/ccd"},
-                                                            { "dcc/dir", "dcc/dir" },
-                                                            { "ccdir", "ccdir"}
-                                                          };
-        for (String[] pair : data) {
-            assertEquals(pair[1], RemoteFileSupport.testFixCaseSensitivePathIfNeeded(pair[0]));
-            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
+    public RemoteFileSystem get(ExecutionEnvironment execEnv) {
+        synchronized(this) {
+            RemoteFileSystem result = fileSystems.get(execEnv);
+            if (result == null) {
+                try {
+                    result = new RemoteFileSystem(execEnv);
+                    fileSystems.put(execEnv, result);
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+            return result;
         }
-    }
-
-    public static Test suite() {
-        return new NativeExecutionBaseTestSuite(RemoteFileSupportTestCase.class);
     }
 }

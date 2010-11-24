@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.fs.ui;
+package org.netbeans.modules.remote.impl.fs.ui;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -53,14 +52,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -91,21 +86,21 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private final ExecutionEnvironment env;
     private boolean shown;
     private Notification notification;
-    private final Set<NamedRunnable> tasks = new HashSet<NamedRunnable>();
+    private final Set<ConnectionNotifier.NamedRunnable> tasks = new HashSet<ConnectionNotifier.NamedRunnable>();
 
     public ConnectionNotifierDelegate(ExecutionEnvironment execEnv) {
         this.env = execEnv;
         shown = false;
     }
 
-    public void addTask(NamedRunnable task) {
+    public void addTask(ConnectionNotifier.NamedRunnable task) {
         synchronized (tasks) {
             tasks.add(task);
             showIfNeed();
         }
     }
 
-    public void removeTask(NamedRunnable task) {
+    public void removeTask(ConnectionNotifier.NamedRunnable task) {
         synchronized (tasks) {
             tasks.remove(task);
         }
@@ -116,7 +111,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     public void connected(ExecutionEnvironment env) {
         if (this.env.equals(env)) {
             ConnectionManager.getInstance().removeConnectionListener(this);
-            RequestProcessor.getDefault().post(new NamedRunnable("Connection notifier for " + env.getDisplayName()) { //NOI18N
+            RequestProcessor.getDefault().post(new ConnectionNotifier.NamedRunnable("Connection notifier for " + env.getDisplayName()) { //NOI18N
                 @Override
                 protected void runImpl() {
                     onConnect();
@@ -131,12 +126,12 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
     private void onConnect() {
         notification.clear();
-        List<NamedRunnable> toLaunch;
+        List<ConnectionNotifier.NamedRunnable> toLaunch;
         synchronized (tasks) {
-            toLaunch = new ArrayList<NamedRunnable>(tasks);
+            toLaunch = new ArrayList<ConnectionNotifier.NamedRunnable>(tasks);
             tasks.clear();
         }
-        for (NamedRunnable task : toLaunch) {
+        for (ConnectionNotifier.NamedRunnable task : toLaunch) {
             RP.post(task);
         }
     }
@@ -158,7 +153,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         ActionListener onClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+                RequestProcessor.getDefault().post(new ConnectionNotifier.NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
                     @Override
                     protected void runImpl() {
                         connect();
@@ -166,14 +161,14 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
                 });
             }
         };
-        String envString = RemoteUtil.getDisplayName(env);
+        String envString = env.getDisplayName(); // RemoteUtil.getDisplayName(env);
 
         String title, details;
         ImageIcon icon;
 
         if (error == null) {
             StringBuilder reasons = new StringBuilder();
-            for (NamedRunnable task : tasks) {
+            for (ConnectionNotifier.NamedRunnable task : tasks) {
                 reasons.append(' ');
                 reasons.append(task.getName());
             }
@@ -192,7 +187,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private void connect() {
         try {
             ConnectionManager.getInstance().connectTo(env);
-            RemoteUtil.checkSetupAfterConnection(env);
+            //RemoteUtil.checkSetupAfterConnection(env);
         } catch (IOException ex) {
             reShow(ex);
         } catch (CancellationException ex) {

@@ -40,53 +40,26 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs.ui;
 
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemotePathTestCase extends RemoteFileTestBase {
+@ServiceProvider(service=ConnectionNotifierImplementation.class)
+public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
 
-
-    public RemotePathTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    @Override
+    public void addTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
     }
 
-    @ForAllEnvironments
-    public void testPath() throws Exception {
-        String absPath = "/usr/include/stdio.h";
-        String[] parts = absPath.split("/");
-        FileObject parent = rootFO;
-        for (String name : parts) {
-            FileObject child = parent.getFileObject(name);
-            assertNotNull("Null file object for \"" + name + "\"", child);
-            System.err.printf("Child: %s\n", child.getPath());
-            if (child == null) {
-                break;
-            }
-            parent = child;
-        }
-        Exception lastAssertion = CndUtils.getLastAssertion();
-        if (lastAssertion != null) {
-            throw lastAssertion;
-        }
-        CharSequence content = readFile(absPath);
-        CharSequence text2search = "printf";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                CharSequenceUtils.indexOf(content, text2search) >= 0);
+    @Override
+    public void removeTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
     }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemotePathTestCase.class);
-    }
-
 }

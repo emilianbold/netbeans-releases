@@ -40,10 +40,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.remote.api.ui;
 
-import org.netbeans.modules.cnd.spi.remote.ConnectionNotifierImplementation;
-import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.remote.impl.fs.ui.ConnectionNotifierImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -64,6 +63,33 @@ import org.openide.util.Lookup;
  * @author Vladimir Kvashin
  */
 public class ConnectionNotifier {
+
+    public abstract static class NamedRunnable implements Runnable {
+
+        private final String name;
+
+        public NamedRunnable(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public final void run() {
+            String oldName = Thread.currentThread().getName();
+            try {
+                Thread.currentThread().setName(name);
+                runImpl();
+            } finally {
+                // restore thread name - it might belong to the pool
+                Thread.currentThread().setName(oldName);
+            }
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        protected abstract void runImpl();
+    }
 
     private static ConnectionNotifierImplementation impl;
 

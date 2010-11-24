@@ -37,45 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Manages instances of the RemoteFileSystem class
- *
- * TODO: release instances when they are not used
  *
  * @author Vladimir Kvashin
  */
-public class RemoteFileSystemManager {
-    
-    private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
-    
-    private Map<ExecutionEnvironment, RemoteFileSystem> fileSystems = new HashMap<ExecutionEnvironment, RemoteFileSystem>();
+@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemCacheProvider.class, position=100)
+public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
 
-    public static RemoteFileSystemManager getInstance() {
-        return INSTANCE;
-    }
-
-    public RemoteFileSystem get(ExecutionEnvironment execEnv) {
-        synchronized(this) {
-            RemoteFileSystem result = fileSystems.get(execEnv);
-            if (result == null) {
-                try {
-                    result = new RemoteFileSystem(execEnv);
-                    fileSystems.put(execEnv, result);
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
-            return result;
-        }
+    @Override
+    protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
+        String hostId = EnvUtils.toHostID(executionEnvironment);
+        String root = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/remote-files/"; //NOI18N;
+        return root + '/' + hostId + '/';
     }
 }

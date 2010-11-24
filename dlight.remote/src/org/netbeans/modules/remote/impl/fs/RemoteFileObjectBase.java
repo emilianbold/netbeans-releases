@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,9 +50,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import javax.swing.event.EventListenerList;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -75,12 +74,12 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
-        CndUtils.assertTrue(execEnv.isRemote());
-        CndUtils.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
+        RemoteLogger.assertTrue(execEnv.isRemote());
+        RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.parent = parent;
-        this.remotePath = RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
+        this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
         int slashPos = this.remotePath.lastIndexOf('/');
         nameExt = (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
@@ -226,7 +225,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
         String text = "setAttribute(" + attrName + ", " + value + " is unsupported"; //NOI18N
-        RemoteUtil.LOGGER.log(Level.INFO, text, new UnsupportedOperationException(text)); // NOI18N
+        RemoteLogger.getInstance().log(Level.INFO, text, new UnsupportedOperationException(text)); // NOI18N
     }
 
     @Override

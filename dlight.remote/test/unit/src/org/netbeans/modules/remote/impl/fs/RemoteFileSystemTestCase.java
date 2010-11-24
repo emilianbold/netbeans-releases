@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,21 +53,20 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 
 /**
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
@@ -126,10 +125,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        CharSequence content = readFile(absPath);
-        CharSequence text2search = "printf";
+        String content = readFile(absPath);
+        String text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                CharSequenceUtils.indexOf(content, text2search) >= 0);
+                content.indexOf(text2search) >= 0);
     }
 
     @ForAllEnvironments
@@ -207,12 +206,12 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 super(name, barrier, exceptions);
             }
             protected void work() throws Exception {
-                CharSequence content = readFile(absPath);
+                String content = readFile(absPath);
                 int currSize = content.length();
                 size.compareAndSet(-1, currSize);
-                CharSequence text2search = "printf";
+                String text2search = "printf";
                 assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                        CharSequenceUtils.indexOf(content, text2search) >= 0);
+                        content.indexOf(text2search) >= 0);
                 assertEquals("File size for " + absPath + " differ", size.get(), currSize);
             }
         }
@@ -272,6 +271,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteFileSystemTestCase.class);
+        return RemoteApiTest.createSuite(RemoteFileSystemTestCase.class);
     }
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,11 +48,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -78,19 +77,23 @@ public class RemoteFileSystem extends FileSystem {
     private final File cache;
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
-        CndUtils.assertTrue(execEnv.isRemote());
+        RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
-        this.filePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
-        cache = CndFileUtils.createLocalFile(filePrefix);
+        this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
+        cache = new File(filePrefix);
         if (! cache.exists() && ! cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
         }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
 
+    /*package*/ ExecutionEnvironment getExecutionEnvironment() {
+        return execEnv;
+    }
+    
     public String normalizeAbsolutePath(String absPath) {
         try {
             URL url = RemoteFileUrlMapper.getURL(execEnv, absPath);

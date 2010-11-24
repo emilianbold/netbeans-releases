@@ -533,7 +533,7 @@ public class CndPathUtilitities {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
-        } else if (path.indexOf(':') > 0) {
+        } else if (path.indexOf(':') == 1 && Utilities.isWindows()) {
             return true;
         } else {
             return false;

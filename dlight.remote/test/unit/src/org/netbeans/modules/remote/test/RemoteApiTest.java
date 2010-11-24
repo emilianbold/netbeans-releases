@@ -40,16 +40,42 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.remote;
+package org.netbeans.modules.remote.test;
 
-import org.netbeans.modules.cnd.utils.NamedRunnable;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.impl.fs.DirectoryAttributesTestCase;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSupportTestCase;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
+import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
+import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public interface ConnectionNotifierImplementation {
-    void addTask(ExecutionEnvironment executionEnvironment, NamedRunnable task);
-    void removeTask(ExecutionEnvironment executionEnvironment, NamedRunnable task);
+public class RemoteApiTest extends NativeExecutionBaseTestSuite {
+
+    public RemoteApiTest() {
+        this("Remote API",
+           DirectoryAttributesTestCase.class,
+           RemoteFileSupportTestCase.class,
+           RemoteFileSystemTestCase.class,
+           RemotePathTestCase.class,
+           RemoteURLTestCase.class);
+    }
+
+
+    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new RemoteApiTest(testClass.getName(), testClass);
+    }
+
+    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+        super(name, "remote.platforms", testClasses);
+    }
+
+    public static Test suite() {
+        return new RemoteApiTest();
+    }
 }
