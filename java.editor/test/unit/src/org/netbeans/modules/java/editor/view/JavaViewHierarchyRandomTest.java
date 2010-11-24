@@ -578,6 +578,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
         container.run(1271946202898L);
+        container.run(1290550667174L);
         container.run(0L); // Test random ops
     }
 
