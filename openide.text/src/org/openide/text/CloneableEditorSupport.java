@@ -125,8 +125,8 @@ import org.openide.util.WeakSet;
 * really implement and which not.
 * <P>
 * This class supports collecting multiple edits into a group which is treated
-* as a single edit by undo/redo. Send {@BEGIN_COMMIT_GROUP} and
-* {@END_COMMIT_GROUP} to UndoableEditListener. These must always be paired.
+* as a single edit by undo/redo. Send {@link #BEGIN_COMMIT_GROUP} and
+* {@link #END_COMMIT_GROUP} to UndoableEditListener. These must always be paired.
 *
 * @author Jaroslav Tulach
 */
@@ -3460,11 +3460,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * <ol>
      * <li> Default behavior is defined by {@link UndoManager}.</li>
      * <li> <tt>UnddoableEdit</tt>s issued between {@link #BEGIN_COMMIT_GROUP}
-     * and {@link END_COMMIT_GROUP} are placed into a single
+     * and {@link #END_COMMIT_GROUP} are placed into a single
      * {@link CompoundEdit}.
      * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
      * as a single undo/redo.</li>
-     * <li> Use {@link commitUndoGroup} to commit accumulated
+     * <li> Use {@link #commitUndoGroup} to commit accumulated
      * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
      * (and to continue accumulating);
      * an application could do this at strategic points, such as EndOfLine
@@ -3616,7 +3616,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
-        /** {@inheritDoc} */
         @Override
         public synchronized void discardAllEdits() {
             commitUndoGroup();

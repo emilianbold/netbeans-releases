@@ -47,8 +47,6 @@ package org.openide.text;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
@@ -370,92 +368,6 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
 
         ur().undo();
         assertEquals("undo3", "", d.getText(0, d.getLength()));
-    }
-
-    // This is testSaveDocumentWhileActiveChunk WITHOUT chunking
-    private void doSaveDocumentCommon(boolean doFailCase) throws Exception {
-        content = "";
-        StyledDocument d = support.openDocument();
-        d.insertString(d.getLength(), "a", null);
-
-        support.saveDocument (); // creates a separate undoable chunk
-        assertFalse("save: not modified", support.isModified());
-        assertTrue("save: can undo", ur().canUndo());
-        assertFalse("save: no redo", ur().canRedo());
-
-        d.insertString(d.getLength(), "b", null);
-
-        assertEquals("insert, after save: data", "ab", d.getText(0, d.getLength()));
-        assertTrue("insert, after save: modified", support.isModified());
-        assertTrue("insert, after save: can undo", ur().canUndo());
-        assertFalse("insert, after save: no redo", ur().canRedo());
-
-        ur().undo();
-        assertEquals("undo, at save: data", "a", d.getText(0, d.getLength()));
-        assertFalse("undo, at save: not modified", support.isModified());
-        assertTrue("undo, at save: can undo", ur().canUndo());
-        assertTrue("undo, at save: can redo", ur().canRedo());
-
-        ur().undo();
-        assertEquals("undo, before save: data", "", d.getText(0, d.getLength()));
-
-        if(doFailCase) {
-            // ****************************************************************
-            // CES BUG???
-            assertTrue("undo, before save: modified", support.isModified());
-            // ****************************************************************
-        }
-
-        assertFalse("undo, before save: can undo", ur().canUndo());
-        assertTrue("undo, before save: can redo", ur().canRedo());
-
-        ur().redo();
-        assertEquals("redo, at save: data", "a", d.getText(0, d.getLength()));
-        assertFalse("redo, at save: not modified", support.isModified());
-        assertTrue("redo, at save: can undo", ur().canUndo());
-        assertTrue("redo, at save: can redo", ur().canRedo());
-    }
-
-    public void testSaveDocument() throws Exception {
-        doSaveDocumentCommon(false);
-    }
-
-    public void testSaveDocumentErrorCase() throws Exception {
-        // NOTE: following fail is issue in CES, use true as parameter
-        doSaveDocumentCommon(false);
-    }
-
-    // NOTE: following fail is issue in CES
-    public void testRedoAfterSave() throws Exception {
-        content = "";
-        StyledDocument d = support.openDocument();
-        d.insertString(d.getLength(), "a", null);
-
-        d.insertString(d.getLength(), "b", null);
-
-        assertEquals("insert: data", "ab", d.getText(0, d.getLength()));
-        assertTrue("insert: modified", support.isModified());
-        assertTrue("insert: can undo", ur().canUndo());
-        assertFalse("insert: no redo", ur().canRedo());
-
-        ur().undo();
-        assertEquals("undo: data", "a", d.getText(0, d.getLength()));
-        assertTrue("undo: modified", support.isModified());
-        assertTrue("undo: can undo", ur().canUndo());
-        assertTrue("undo: can redo", ur().canRedo());
-
-        support.saveDocument ();
-        assertFalse("save: not modified", support.isModified());
-        assertTrue("save: can undo", ur().canUndo());
-        /* XXX: Fails right now
-        assertTrue("save: can redo", ur().canRedo());
-
-        ur().redo();
-        assertEquals("redo: data", "ab", d.getText(0, d.getLength()));
-        assertTrue("redo: modified", support.isModified());
-        assertTrue("redo: can undo", ur().canUndo());
-        assertFalse("redo: no redo", ur().canRedo());
-         */
     }
     
     //
