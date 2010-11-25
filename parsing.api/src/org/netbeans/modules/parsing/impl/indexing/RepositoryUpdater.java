@@ -2712,11 +2712,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 // refresh filesystems
                 FileSystem.AtomicAction aa = new FileSystem.AtomicAction() {
                     public @Override void run() throws IOException {
-                        FileUtil.refreshAll();
+                        FileUtil.refreshFor(File.listRoots());
                     }
                 };
 // XXX: nested FS.AA don't seem to work, so just ignore evrything
-//                interceptor.setActiveAtomicAction(aa);
+//      interceptor.setActiveAtomicAction(aa);                
+//      Probably not needed, the aa calls refreshFor which behaves correctly
+//      regarding AtomicAction unlike FU.refreshAll
                 interceptor.setIgnoreFsEvents(true);
                 try {
                     FileUtil.runAtomicAction(aa);
