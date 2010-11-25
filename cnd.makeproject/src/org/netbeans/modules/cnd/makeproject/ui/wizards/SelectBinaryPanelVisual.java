@@ -303,7 +303,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     dllPaths.put(dll, null);
                 }
             }
-            if (search && root.length() > 0) {
+            if (search && root.length() > 1) {
                 ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL"));
                 progress.start();
                 try {
