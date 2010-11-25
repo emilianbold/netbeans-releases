@@ -331,8 +331,8 @@ public class TaskProcessor {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
-            final Collection<Request> frqs = finishedRequests.get(source);
-            final Collection<Request> wrqs = waitingRequests.get(source);
+            Collection<Request> frqs = finishedRequests.get(source);
+            Collection<Request> wrqs = waitingRequests.get(source);
             for (SchedulerTask task : tasks) {
                 boolean found = false;
                 //Ignore excluded tasks
@@ -352,6 +352,10 @@ public class TaskProcessor {
 //                      break; todo: Some tasks are duplicated (racecondition?), remove even them, Prevent duplication of tasks
                         }
                     }
+                    if (frqs.isEmpty()) {
+                        finishedRequests.remove(source);
+                        frqs = null;
+                    }
                 }
                 //Sencond) Try to find it among started task
                 for (Iterator<Request> it = requests.iterator(); it.hasNext();) {
@@ -369,6 +373,10 @@ public class TaskProcessor {
                             it.remove();
                             found = true;
                         }
+                    }
+                    if (wrqs.isEmpty()) {
+                        waitingRequests.remove(source);
+                        wrqs = null;
                     }
                 }
                 
