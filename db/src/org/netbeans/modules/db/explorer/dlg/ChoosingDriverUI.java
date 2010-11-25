@@ -169,7 +169,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbDrivers, 0, 322, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,6 +182,8 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ACD_ChoosingDriverUI")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
