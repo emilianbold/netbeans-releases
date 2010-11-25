@@ -1039,8 +1039,6 @@ public class Gdb {
                     debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
                 } catch (NumberFormatException ex) {
                 }
-            } else if (record.isStream() && record.stream().startsWith("Current language:")) {
-                //skip
             } else {
                 super.consoleStreamOutput(record);
 
@@ -1072,15 +1070,15 @@ public class Gdb {
         @Override
         protected void notifyAsyncOutput(MIRecord record) {
             if (record.token() == 0) {
-                if (record.cls().equals("thread-group-added") ||
-                    record.cls().equals("thread-group-removed") ||
-                    record.cls().equals("thread-group-started") ||
-                    record.cls().equals("thread-group-exited") ||
-                    record.cls().equals("thread-created") ||
-                    record.cls().equals("thread-exited") ||
-                    record.cls().equals("thread-selected") ||
-                    record.cls().equals("library-loaded") ||
-                    record.cls().equals("library-unloaded")) {
+                if (record.cls().equals("thread-group-added") || //NOI18N
+                    record.cls().equals("thread-group-removed") || //NOI18N
+                    record.cls().equals("thread-group-started") || //NOI18N
+                    record.cls().equals("thread-group-exited") || //NOI18N
+                    record.cls().equals("thread-created") || //NOI18N
+                    record.cls().equals("thread-exited") || //NOI18N
+                    record.cls().equals("thread-selected") || //NOI18N
+                    record.cls().equals("library-loaded") || //NOI18N
+                    record.cls().equals("library-unloaded")) { //NOI18N
                         // just skip
                     }
             } else {
