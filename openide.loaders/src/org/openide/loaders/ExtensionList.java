@@ -173,7 +173,6 @@ public class ExtensionList extends Object
             if (mimeTypes.contains(mime)) {
                 return true;
             }
-            return true;
         }
         
         return false;
