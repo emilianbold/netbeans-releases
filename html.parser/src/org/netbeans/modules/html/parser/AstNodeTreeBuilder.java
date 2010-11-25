@@ -47,7 +47,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.common.TransitionHandler;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
@@ -69,9 +71,17 @@ import org.xml.sax.SAXException;
  */
 public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TransitionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(AstNodeTreeBuilder.class.getName());
-    private static boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static boolean LOG_FINER = LOGGER.isLoggable(Level.FINER);
+    static final Logger LOGGER = Logger.getLogger(AstNodeTreeBuilder.class.getName());
+    static boolean LOG, LOG_FINER;
+
+    static {
+        initLogLevels();
+    }
+
+    private static void initLogLevels() {
+        LOG = LOGGER.isLoggable(Level.FINE);
+        LOG_FINER = LOGGER.isLoggable(Level.FINER);
+    }
 
     private final AstNodeFactory factory;
     private AstNode root;
@@ -124,6 +134,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if(t != top) {
             //weird, there doesn't seem to be the 't' node pushed
             //better put all the removed nodes back to the stack
+            LOGGER.info(String.format("The node %s has been popped but not previously pushed!", t));
             while(!removedFromStack.isEmpty()) {
                 stack.push(removedFromStack.pop());
             }
@@ -476,6 +487,28 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
             node.setAttribute(attr);
         }
+    }
+
+    //for unit tests
+    static void setLoggerLevel(Level level) {
+        LOGGER.setLevel(level);
+        LOGGER.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                System.err.println(record.getMessage());
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+
+        });
+        initLogLevels();
     }
 
     private static class AttrInfo {
