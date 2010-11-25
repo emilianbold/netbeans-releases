@@ -43,9 +43,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Exceptions;
 
 /**
  * Manages instances of the RemoteFileSystem class
@@ -58,7 +60,8 @@ public class RemoteFileSystemManager {
     
     private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
     
-    private Map<ExecutionEnvironment, RemoteFileSystem> fileSystems = new HashMap<ExecutionEnvironment, RemoteFileSystem>();
+    private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
+            new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
 
     public static RemoteFileSystemManager getInstance() {
         return INSTANCE;
@@ -66,13 +69,14 @@ public class RemoteFileSystemManager {
 
     public RemoteFileSystem get(ExecutionEnvironment execEnv) {
         synchronized(this) {
-            RemoteFileSystem result = fileSystems.get(execEnv);
+            SoftReference<RemoteFileSystem> ref = fileSystems.get(execEnv);
+            RemoteFileSystem result = (ref == null) ? null : ref.get();
             if (result == null) {
                 try {
                     result = new RemoteFileSystem(execEnv);
-                    fileSystems.put(execEnv, result);
+                    fileSystems.put(execEnv, new SoftReference<RemoteFileSystem>(result));
                 } catch (IOException ioe) {
-                    ioe.printStackTrace();
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             return result;
