@@ -54,6 +54,7 @@ import java.io.SyncFailedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -74,6 +75,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -1101,14 +1103,21 @@ public final class FileUtil extends Object {
                 continue;
             }
 
-            Object value = source.getAttribute(key);
+            AtomicBoolean isRawValue = new AtomicBoolean();
+            Object value = XMLMapAttr.getRawAttribute(source, key, isRawValue);
 
             // #132801 and #16761 - don't set attributes where value is 
             // instance of VoidValue because these attributes were previously written 
             // by mistake in code. So it should happen only if you import some
             // settings from old version.
             if (value != null && !(value instanceof MultiFileObject.VoidValue)) {
-                dest.setAttribute(key, value);
+                if (isRawValue.get() && value instanceof Method) {
+                    dest.setAttribute("methodvalue:" + key, value); // NOI18N
+                } else if (isRawValue.get() && value instanceof Class) {
+                    dest.setAttribute("newvalue:" + key, value); // NOI18N
+                } else {
+                    dest.setAttribute(key, value);
+                }
             }
         }
     }
