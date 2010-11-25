@@ -81,6 +81,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -109,10 +110,11 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final InstanceContent ic;
 
     public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
-        super(new LogicalViewChildren(folder, provider), new AbstractLookup(ic), MakeLogicalViewProvider.ANNOTATION_RP);
+        super(Children.LEAF, new AbstractLookup(ic), MakeLogicalViewProvider.ANNOTATION_RP);
         this.ic = ic;
         this.folder = folder;
         this.provider = provider;
+        setChildren(new ProjectRootChildren(folder, provider));
         setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
         setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
 
@@ -139,6 +141,19 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(new FolderSearchInfo(logicalFolders));
         setChildren(new LogicalViewChildren(folder, provider));
         updateAnnotationFiles();
+    }
+
+    private void setFolder(Folder folder) {
+        if (this.folder != null) {
+            ic.remove(this.folder);
+        }
+        this.folder = folder;
+        ic.add(folder);
+        FolderSearchInfo old = getLookup().lookup(FolderSearchInfo.class);
+        if (old != null) {
+            ic.remove(old);
+        }
+        ic.add(new FolderSearchInfo(folder));
     }
 
     public Folder getFolder() {
@@ -282,42 +297,46 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public Action[] getActions(boolean context) {
-        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-
-        // TODO: not clear if we need to call the following method at all
-        // but we need to remove remembering the output to prevent memory leak;
-        // I think it could be removed
-        if (descriptor != null) {
-            descriptor.getLogicalFolders();
-        }
-
         List<Action> actions = new ArrayList<Action>();
-        // Add standard actions
-        Action[] standardActions;
-        MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-        if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
-            standardActions = getAdditionalDiskFolderActions();
+        if (!gotMakeConfigurationDescriptor()) {
+            actions.add(CommonProjectActions.closeProjectAction()); // NOI18N
         } else {
-            standardActions = getAdditionalLogicalFolderActions();
-        }
-        actions.addAll(Arrays.asList(standardActions));
-        actions.add(null);
-        //actions.add(new CodeAssistanceAction());
-        // makeproject sensitive actions
-        final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
-        final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
-        if (!actionsForMakeProject.isEmpty()) {
-            actions.addAll(actionsForMakeProject);
+            MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+
+            // TODO: not clear if we need to call the following method at all
+            // but we need to remove remembering the output to prevent memory leak;
+            // I think it could be removed
+            if (descriptor != null) {
+                descriptor.getLogicalFolders();
+            }
+
+            // Add standard actions
+            Action[] standardActions;
+            MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
+            if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
+                standardActions = getAdditionalDiskFolderActions();
+            } else {
+                standardActions = getAdditionalLogicalFolderActions();
+            }
+            actions.addAll(Arrays.asList(standardActions));
             actions.add(null);
+            //actions.add(new CodeAssistanceAction());
+            // makeproject sensitive actions
+            final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
+            if (!actionsForMakeProject.isEmpty()) {
+                actions.addAll(actionsForMakeProject);
+                actions.add(null);
+            }
+            actions.add(SystemAction.get(org.openide.actions.FindAction.class));
+            // all project sensitive actions
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
+            // Add remaining actions
+            actions.add(null);
+            //actions.add(SystemAction.get(ToolsAction.class));
+            //actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());
         }
-        actions.add(SystemAction.get(org.openide.actions.FindAction.class));
-        // all project sensitive actions
-        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
-        // Add remaining actions
-        actions.add(null);
-        //actions.add(SystemAction.get(ToolsAction.class));
-        //actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -453,5 +472,21 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             }
         }
         return false;
+    }
+
+    private final class ProjectRootChildren extends LogicalViewChildren {
+        private ProjectRootChildren(Folder folder, MakeLogicalViewProvider provider) {
+            super(folder, provider);
+        }
+
+        @Override
+        protected void onFolderChange(Folder folder) {
+            MakeLogicalViewRootNode.this.setFolder(folder);
+        }
+
+        @Override
+        protected boolean isRoot() {
+            return true;
+        }
     }
 }

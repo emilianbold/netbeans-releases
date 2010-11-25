@@ -67,11 +67,18 @@ import org.openide.nodes.Node;
  *
  * @author Alexander Simon
  */
-final class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChangeListener {
+class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChangeListener {
 
     public LogicalViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         super(folder, provider);
-        if (folder.isDiskFolder()) {
+        if (folder != null && folder.isDiskFolder()) {
+            MakeOptions.getInstance().addPropertyChangeListener(LogicalViewChildren.this);
+        }
+    }
+
+    @Override
+    protected void onFolderChange(Folder folder) {
+        if (folder != null && folder.isDiskFolder()) {
             MakeOptions.getInstance().addPropertyChangeListener(LogicalViewChildren.this);
         }
     }

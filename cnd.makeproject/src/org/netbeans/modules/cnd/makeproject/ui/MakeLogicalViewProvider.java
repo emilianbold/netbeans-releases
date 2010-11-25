@@ -102,18 +102,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     @Override
     public Node createLogicalView() {
-        MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
-        if (ASYNC_ROOT_NODE) {
-            log.log(Level.FINE, "creating async root node in EDT? {0}", SwingUtilities.isEventDispatchThread());// NOI18N
-            createRoot(configurationDescriptor);
-            return projectRootNode;
-        } else {
-            if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
-                return new MakeLogicalViewRootNodeBroken(project);
-            } else {
+        if (gotMakeConfigurationDescriptor()) {
+            MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
+            if (ASYNC_ROOT_NODE) {
+                log.log(Level.FINE, "creating async root node in EDT? {0}", SwingUtilities.isEventDispatchThread());// NOI18N
                 createRoot(configurationDescriptor);
                 return projectRootNode;
+            } else {
+                if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
+                    return new MakeLogicalViewRootNodeBroken(project);
+                } else {
+                    createRoot(configurationDescriptor);
+                    return projectRootNode;
+                }
             }
+        } else {
+            createRoot();
+            return projectRootNode;
         }
     }
 
@@ -124,6 +129,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         ic.add(getProject());
         ic.add(new FolderSearchInfo(logicalFolders));
         projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
+    }
+
+    private void createRoot() {
+        InstanceContent ic = new InstanceContent();
+        ic.add(getProject());
+        projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
     }
 
     private final AtomicBoolean findPathMode = new AtomicBoolean(false);
@@ -204,8 +215,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
      * that is representing 'folder'
      */
     private static Node findFolderNode(Node root, Folder folder) {
-        if (root.getValue("Folder") == folder) // NOI18N
-        {
+        if (root.getValue("Folder") == folder) { // NOI18N
             return root;
         }
         Folder parent = folder.getParent();
@@ -222,8 +232,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         Node[] nodes = parentNode.getChildren().getNodes(true);
         for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].getValue("Folder") == folder) // NOI18N
-            {
+            if (nodes[i].getValue("Folder") == folder) { // NOI18N
                 return nodes[i];
             }
         }
@@ -239,8 +248,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (parentNode != null) {
             Node[] nodes = parentNode.getChildren().getNodes(true);
             for (int i = 0; i < nodes.length; i++) {
-                if (nodes[i].getValue("Item") == item) // NOI18N
-                {
+                if (nodes[i].getValue("Item") == item) { // NOI18N
                     return nodes[i];
                 }
             }
@@ -435,16 +443,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     public static boolean hasBrokenLinks() {
         return false;
     }
+
     private static Image loadToolTipImage(String imgResouce, String textResource) {
         Image img = ImageUtilities.loadImage(imgResouce);
         img = ImageUtilities.assignToolTipToImage(img,
                 "<img src=\"" + MakeLogicalViewRootNode.class.getClassLoader().getResource(imgResouce) + "\">&nbsp;" // NOI18N
                 + NbBundle.getMessage(MakeLogicalViewRootNode.class, textResource));
         return img;
-    }
-
-    static Node getWaitNode() {
-        return new LoadingNode();
     }
 
     static String getShortDescription(MakeProject project) {
