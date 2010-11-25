@@ -1039,8 +1039,6 @@ public class Gdb {
                     debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
                 } catch (NumberFormatException ex) {
                 }
-            } else if (record.isStream() && record.stream().startsWith("Current language:")) { //NOI18N
-                //skip
             } else {
                 super.consoleStreamOutput(record);
 
