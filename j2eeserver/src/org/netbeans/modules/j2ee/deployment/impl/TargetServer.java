@@ -834,6 +834,10 @@ public class TargetServer {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
+            if (provider.isOnlyCompileOnSaveEnabled()) {
+                // XXXX is this right response? it should not result in any error
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+            }
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");

@@ -1014,6 +1014,10 @@ public final class WebProject implements Project {
             filterBrokenLibraryRefs();
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+            if (props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
+                props.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                        props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            }
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
