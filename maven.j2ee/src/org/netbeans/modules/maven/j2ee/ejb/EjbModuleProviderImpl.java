@@ -61,16 +61,17 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
+import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
+import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author  Milos Kleint 
  */
 
 public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarProvider, EjbJarsInProject  {
@@ -81,21 +82,30 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     private J2eeModule j2eemodule;    
     private EjbJar apiEjbJar;
     private NbMavenProject mavenproject;
+    private final CopyOnSave copyOnSave;
+
     
     /** Creates a new instance of EjbModuleProviderImpl */
     public EjbModuleProviderImpl(Project proj) {
         project = proj;
         ejbimpl = new EjbJarImpl(project, this);
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
+        copyOnSave = new CopyOnSave(proj, this);
     }
 
     @Override
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        //TODO
-        return super.getDeployOnSaveSupport();
+        return copyOnSave;
     }
 
+    public CopyOnSave getCopyOnSaveSupport() {
+        return copyOnSave;
+    }
 
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+    }
 
     public EjbJarImpl getModuleImpl() {
         return ejbimpl;
