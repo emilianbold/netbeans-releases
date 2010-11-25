@@ -240,7 +240,7 @@ public class RequestProcessor180386Test extends NbTestCase {
             lock.notifyAll();
         }
         rp.shutdown();
-        boolean awaitTermination = rp.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        boolean awaitTermination = rp.awaitTermination(1, TimeUnit.DAYS);
         assertTrue(awaitTermination);
         assertTrue(rp.isShutdown());
         assertTrue(rp.isTerminated());

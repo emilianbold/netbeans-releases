@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,68 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core;
+package org.netbeans.libs.svnclientadapter.svnkit;
 
-import java.awt.EventQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.netbeans.junit.Log;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
+import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
+import org.tmatesoft.svn.core.javahl.SVNClientImpl;
 
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ * @author Tomas Stupka
  */
-public class TimableEventQueueTest extends NbTestCase {
-    static {
-        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
-        System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
-        System.setProperty("org.netbeans.core.TimeableEventQueue.report", "600");
-        TimableEventQueue.initialize(null, false);
-    }
-    private CharSequence log;
+@ServiceProviders({@ServiceProvider(service=SvnClientAdapterFactory.class)})
+public class SvnKitClientAdapterFactory extends SvnClientAdapterFactory {
     
+    private boolean available = false;
     
-    public TimableEventQueueTest(String testName) {
-        super(testName);
+    public SvnKitClientAdapterFactory() {
+        super();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        log = Log.enable(TimableEventQueue.class.getName(), Level.FINE);
+    public Client provides() {
+        return Client.SVNKIT;
     }
 
-    public void testDispatchEvent() throws Exception {
-        class Slow implements Runnable {
-            private int ok;
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                ok++;
+    @Override
+    protected boolean isAvailable() {
+        if(!available) {
+            try {
+                org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.setup();        
+            } catch (Throwable t) {
+                LOG.log(Level.WARNING, t.getMessage());
+            }
+            if(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.isAvailable()) {
+                available = true;
+                // is this really needed? this clears the credentials cache
+                SVNClientImpl.setRuntimeCredentialsStorage(null);
             }
         }
-        Slow slow = new Slow();
-        
-        EventQueue.invokeAndWait(slow);
-        EventQueue.invokeAndWait(slow);
-        TimableEventQueue.RP.shutdown();
-        TimableEventQueue.RP.awaitTermination(3, TimeUnit.SECONDS);
-        
-        assertEquals("called", 2, slow.ok);
-
-        if (!log.toString().contains("too much time in AWT thread")) {
-            fail("There shall be warning about too much time in AWT thread:\n" + log);
-        }
+        return available;
     }
+
+    @Override
+    public ISVNClientAdapter createClient() {
+        return org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory
+                .createSVNClient(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.SVNKIT_CLIENT);
+    }
+    
 }
