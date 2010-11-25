@@ -125,7 +125,13 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     }
 
     private void onConnect() {
-        notification.clear();
+        Notification n;
+        synchronized (this) {
+            n = notification;
+        }
+        if (n != null) {
+            n.clear();
+        }
         List<ConnectionNotifier.NamedRunnable> toLaunch;
         synchronized (tasks) {
             toLaunch = new ArrayList<ConnectionNotifier.NamedRunnable>(tasks);
@@ -181,7 +187,10 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
             String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
             details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
         }
-        notification = NotificationDisplayer.getDefault().notify(title, icon, details, onClickAction, NotificationDisplayer.Priority.HIGH);
+        Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, onClickAction, NotificationDisplayer.Priority.HIGH);
+        synchronized (this) {
+            notification = n;
+        }
     }
 
     private void connect() {
