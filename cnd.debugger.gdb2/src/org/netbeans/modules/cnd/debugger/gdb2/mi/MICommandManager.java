@@ -182,14 +182,16 @@ class MICommandManager {
                 }
             }
         }
+        
+        // if there is no console command pending - just use the first pending command
+        if (oc == null) {
+            oc = pendingCommands.values().iterator().next();
+        }
 	/*
 	System.out.printf("--- logConsole added to %d:\n", oc.getToken());
 	System.out.printf("    %s\n", data);
 	*/
-        assert oc != null : "Console output for unknown command: " + data; //NOI18N
-        if (oc != null) {
-            oc.recordConsoleStream(data);
-        }
+        oc.recordConsoleStream(data);
     }
 
     /**
