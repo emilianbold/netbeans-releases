@@ -272,7 +272,7 @@ public class AutoupdateCatalogCache {
     
     private void updateCachedFile(File cache, File temp) {
         if (cache.exists() && !cache.delete()) {
-            err.log(Level.INFO, "Cannot delete cache " + cache);
+            err.log(Level.INFO, "Cannot delete cache {0}", cache);
             try {
                Thread.sleep(200);
             } catch (InterruptedException ie) {
@@ -286,7 +286,19 @@ public class AutoupdateCatalogCache {
         }
 
         if (!temp.renameTo(cache)) {
-            err.log(Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+            err.log(Level.INFO, "Cannot rename temp {0} to cache {1}", new Object[]{temp, cache});
+            err.log(Level.INFO, "Trying to copy {0} to cache {1}", new Object[] {temp, cache});
+            try {
+                FileOutputStream os = new FileOutputStream(cache);
+                FileInputStream is = new FileInputStream(temp);
+                FileUtil.copy(is, os);
+                os.close();
+                is.close();
+                temp.delete();
+            } catch (IOException ex) {
+                err.log(Level.INFO, "Cannot even copy: {0}", ex.getMessage());
+                err.log(Level.FINE, null, ex);
+            }
         }
 
         if (cache.exists() && cache.length() == 0) {
