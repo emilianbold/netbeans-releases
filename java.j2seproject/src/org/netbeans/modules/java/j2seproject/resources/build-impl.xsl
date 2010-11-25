@@ -1605,7 +1605,7 @@ is divided into following sections:
             </target>
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
@@ -1642,7 +1642,7 @@ is divided into following sections:
             
             <target name="-do-compile-test-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <xsl:element name="j2seproject3:force-recompile">
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
