@@ -52,11 +52,11 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Kvashin
  */
 public interface FileSystemProviderImplementation {
-    FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
-    String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env);
-    FileObject normalizeFileObjectImpl(FileObject fileObject);
-    FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath);
-    FileObject getFileObjectImpl(String absoluteURL);
+    FileSystem getFileSystem(ExecutionEnvironment env, String root);
+    String normalizeAbsolutePath(String absPath, ExecutionEnvironment env);
+    FileObject normalizeFileObject(FileObject fileObject);
+    FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
+    FileObject getFileObject(String absoluteURL);
     String toURL(FileObject fileObject);
     boolean isMine(ExecutionEnvironment env);
     boolean isMine(FileObject fileObject);

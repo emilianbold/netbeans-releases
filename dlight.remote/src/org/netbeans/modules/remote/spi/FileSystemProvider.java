@@ -75,7 +75,7 @@ public final class FileSystemProvider {
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
-                return provider.getFileSystemImpl(env, root);
+                return provider.getFileSystem(env, root);
             }
         }
         noProvidersWarning(env);
@@ -95,7 +95,7 @@ public final class FileSystemProvider {
     public static String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
-                return provider.normalizeAbsolutePathImpl(absPath, env);
+                return provider.normalizeAbsolutePath(absPath, env);
             }
         }
         noProvidersWarning(env);
@@ -105,7 +105,7 @@ public final class FileSystemProvider {
     public static FileObject normalizeFileObject(FileObject fileObject) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileObject)) {
-                return provider.normalizeFileObjectImpl(fileObject);
+                return provider.normalizeFileObject(fileObject);
             }
         }
         noProvidersWarning(fileObject);
@@ -122,7 +122,7 @@ public final class FileSystemProvider {
     public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(baseFileObject)) {
-                return provider.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+                return provider.getFileObject(baseFileObject, relativeOrAbsolutePath);
             }
         }
         noProvidersWarning(baseFileObject);
@@ -154,7 +154,7 @@ public final class FileSystemProvider {
     public static FileObject getFileObject(String path) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(path)) {
-                return provider.getFileObjectImpl(path);
+                return provider.getFileObject(path);
             }
         }
         noProvidersWarning(path);

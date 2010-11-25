@@ -59,17 +59,17 @@ import org.openide.util.lookup.ServiceProvider;
 public class RemoteFileSystemProvider implements FileSystemProviderImplementation {
 
     @Override
-    public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+    public FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         return RemoteFileSystemManager.getInstance().get(env);
     }
 
     @Override
-    public String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+    public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
         return RemoteFileSystemManager.getInstance().get(env).normalizeAbsolutePath(absPath);
     }
 
     @Override
-    public  FileObject normalizeFileObjectImpl(FileObject fileObject) {
+    public  FileObject normalizeFileObject(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObjectBase) {
             return fileObject;
         }
@@ -77,7 +77,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+    public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
             if (isPathAbsolute(relativeOrAbsolutePath)) {
@@ -136,7 +136,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public FileObject getFileObjectImpl(String path) {
+    public FileObject getFileObject(String path) {
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:,hostname:22/tmp/filename.ext"
             int port = 0;

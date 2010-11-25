@@ -71,12 +71,12 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
 
     @Override
-    public String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
+    public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
         return FileUtil.normalizePath(absPath);
     }
 
     @Override
-    public FileObject normalizeFileObjectImpl(FileObject fileObject) {
+    public FileObject normalizeFileObject(FileObject fileObject) {
         String normalizedPath = FileUtil.normalizePath(fileObject.getPath());
         if (normalizedPath.equals(fileObject.getPath())) {
             return fileObject;
@@ -86,7 +86,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
+    public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         return baseFileObject.getFileObject(relativeOrAbsolutePath);
     }
 
@@ -103,7 +103,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+    public FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {
             synchronized (this) {
                 if ("/".equals(root)) {
@@ -162,7 +162,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public FileObject getFileObjectImpl(String absoluteURL) {
+    public FileObject getFileObject(String absoluteURL) {
         File file = new File(absoluteURL);
         return FileUtil.toFileObject(file);
     }
