@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -73,8 +74,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
-        String testName = "testDivLogicalEndAtTheEOF";
+    public static Test Xsuite() {
+        String testName = "testNodePopWithoutPush";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -691,6 +692,21 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(div);
 
         assertEquals(21, div.logicalEndOffset());
+
+    }
+
+    //Bug 191873 - IllegalStateException: Stack's top root:ROOT(0-186){} is not the same as <*head>(34-40/47){}
+    public void testNodePopWithoutPush() throws ParseException {
+        String code = "<!doctype html>"
+                + "<head></head>"
+                + "<meta charset=\"utf-8\" />";
+
+//        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
 
     }
 
