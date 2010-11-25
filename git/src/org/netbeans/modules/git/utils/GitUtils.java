@@ -319,7 +319,7 @@ public final class GitUtils {
      * @param ctx
      * @return
      */
-    public static File[] getActionRoots(VCSContext ctx) {
+    public static HashMap.SimpleImmutableEntry<File, File[]> getActionRoots(VCSContext ctx) {
         Set<File> rootsSet = ctx.getRootFiles();
         Map<File, List<File>> map = new HashMap<File, List<File>>();
 
@@ -349,13 +349,16 @@ public final class GitUtils {
             if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
                 File selection = fs.getSelectedFile();
                 List<File> l = map.get(selection);
-                return l.toArray(new File[l.size()]);
+                return new HashMap.SimpleImmutableEntry<File, File[]>(selection, l.toArray(new File[l.size()]));
             } else {
                 return null;
             }
+        } else if (map.isEmpty()) {
+            return null;
         } else {
-            List<File> l = map.get(map.keySet().iterator().next());
-            return l.toArray(new File[l.size()]);
+            File root = map.keySet().iterator().next();
+            List<File> l = map.get(root);
+            return new HashMap.SimpleImmutableEntry<File, File[]>(root, l.toArray(new File[l.size()]));
         }
     }
 
