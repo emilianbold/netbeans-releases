@@ -138,6 +138,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         txtUser.getDocument().addDocumentListener(docListener);
         txtHost.getDocument().addDocumentListener(docListener);
         txtPort.getDocument().addDocumentListener(docListener);
+        txtPassword.getDocument().addDocumentListener(docListener);
         
         String user = server.getUser();
         if ( user == null || user.equals("") ) {
