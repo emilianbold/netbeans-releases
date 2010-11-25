@@ -42,45 +42,74 @@
 
 package org.netbeans.modules.remote.spi;
 
-import java.io.File;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * A temporary solution until we have an official file system provider in thus module
  * @author Andrew Krasny
  * @author Vladimir Kvashin
  */
-public abstract class FileSystemProvider {
+public final class FileSystemProvider {
 
-    private static final FileSystemProvider DEFAULT = new FileSystemProviderImpl();
+    private static final  Collection<? extends FileSystemProviderImplementation> ALL_PROVIDERS =
+            Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class);
 
-    protected FileSystemProvider() {
+    private FileSystemProvider() {
     }
 
-    protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
-    protected abstract String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env);
-    protected abstract FileObject normalizeFileObjectImpl(FileObject fileObject);
-    protected abstract FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath);
-
     public static FileSystem getFileSystem(ExecutionEnvironment env) {
-        return DEFAULT.getFileSystemImpl(env, "/"); //NOI18N
+        return getFileSystem(env, "/"); //NOI18N
     }
 
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
-        return DEFAULT.getFileSystemImpl(env, root);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.getFileSystemImpl(env, root);
+            }
+        }
+        noProvidersWarning(env);
+        return null;
+    }
+
+    public static boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.waitWrites(env, failedFiles);
+            }
+        }
+        noProvidersWarning(env);
+        return true;
     }
 
     public static String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
-        return DEFAULT.normalizeAbsolutePathImpl(absPath, env);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.normalizeAbsolutePathImpl(absPath, env);
+            }
+        }
+        noProvidersWarning(env);
+        return FileUtil.normalizePath(absPath); // or should it return just absPath?
     }
 
     public static FileObject normalizeFileObject(FileObject fileObject) {
-        return DEFAULT.normalizeFileObjectImpl(fileObject);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.normalizeFileObjectImpl(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return fileObject;
     }
 
     /**
@@ -91,67 +120,71 @@ public abstract class FileSystemProvider {
      * In the case of non-local file systems we should delegate it to correspondent file systems.
      */
     public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        return DEFAULT.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(baseFileObject)) {
+                return provider.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
+            }
+        }
+        noProvidersWarning(baseFileObject);
+        if (isAbsolute(relativeOrAbsolutePath)) {
+            try {
+                return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
+        } else {
+            return baseFileObject.getFileObject(relativeOrAbsolutePath);
+        }
     }
 
-    private static class FileSystemProviderImpl extends FileSystemProvider {
-
-        @Override
-        protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            FileSystem result = null;
-
-            for (FileSystemProvider provider : allProviders) {
-                if ((result = provider.getFileSystemImpl(env, root)) != null) {
-                    break;
-                }
-            }
-
-            return result;
+    public static boolean isAbsolute(String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        } else if (path.charAt(0) == '/') {
+            return true;
+        } else if (path.charAt(0) == '\\') {
+            return true;
+        } else if (path.indexOf(':') == 1 && Utilities.isWindows()) {
+            return true;
+        } else {
+            return false;
         }
+    }
 
-        @Override
-        protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            for (FileSystemProvider provider : allProviders) {
-                String result = provider.normalizeAbsolutePathImpl(absPath, env);
-                if (result != null) {
-                    return result;
-                }
+    public static FileObject getFileObject(String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(path)) {
+                return provider.getFileObjectImpl(path);
             }
-            return FileUtil.normalizePath(absPath);
         }
+        noProvidersWarning(path);
+        return null;
+    }
 
-        @Override
-        protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            FileObject result;
-            for (FileSystemProvider provider : allProviders) {
-                result = provider.normalizeFileObjectImpl(fileObject);
-                if (result != null) {
-                    return result;
-                }
+    public static String toURL(FileObject fileObject) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.toURL(fileObject);
             }
-            String normalizedPath = FileUtil.normalizePath(fileObject.getPath());
-            if (normalizedPath.equals(fileObject.getPath())) {
-                result = fileObject;
-            } else {
-                result = FileUtil.toFileObject(new File(normalizedPath));;
-            }
-            return result;
         }
-
-        @Override
-        protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            FileObject result;
-            for (FileSystemProvider provider : allProviders) {
-                result = provider.getFileObjectImpl(baseFileObject, relativeOrAbsolutePath);
-                if (result != null) {
-                    return result;
-                }
-            }
+        noProvidersWarning(fileObject);
+        try {
+            return fileObject.getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
             return null;
         }
+    }
+
+    private static void noProvidersWarning(FileObject fileObject) {
+        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", fileObject); //NOI18N
+    }
+
+    private static void noProvidersWarning(ExecutionEnvironment env) {
+        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", env); //NOI18N
+    }
+
+    private static void noProvidersWarning(String path) {
+        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", path); //NOI18N
     }
 }

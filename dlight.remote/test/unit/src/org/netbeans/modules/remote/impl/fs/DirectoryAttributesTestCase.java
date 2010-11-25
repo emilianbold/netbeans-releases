@@ -40,20 +40,20 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class DirectoryAttributesTestCase extends CndBaseTestCase {
+public class DirectoryAttributesTestCase extends NativeExecutionBaseTestCase {
 
     public DirectoryAttributesTestCase(String testName) {
         super(testName);
@@ -226,7 +226,7 @@ public class DirectoryAttributesTestCase extends CndBaseTestCase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(DirectoryAttributesTestCase.class);
+        return RemoteApiTest.createSuite(DirectoryAttributesTestCase.class);
     }
 
 }

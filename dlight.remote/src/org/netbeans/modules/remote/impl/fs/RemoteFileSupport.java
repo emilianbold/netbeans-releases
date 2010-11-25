@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,19 +66,14 @@ import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ConnectionNotifier;
-import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
-import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.NamedRunnable;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -89,7 +84,7 @@ import org.openide.util.Parameters;
  * 
  * @author Vladimir Kvashin
  */
-public class RemoteFileSupport extends NamedRunnable {
+public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
     private final PendingFilesQueue pendingFilesQueue = new PendingFilesQueue();
     private final ExecutionEnvironment execEnv;
@@ -108,7 +103,7 @@ public class RemoteFileSupport extends NamedRunnable {
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
-        super(NbBundle.getMessage(RemoteFileSupport.class, "RemoteDownloadTask.TITLE", RemoteUtil.getDisplayName(execEnv)));
+        super(NbBundle.getMessage(RemoteFileSupport.class, "RemoteDownloadTask.TITLE", getDisplayName(execEnv)));
         this.execEnv = execEnv;
         resetStatistic();
     }
@@ -130,54 +125,54 @@ public class RemoteFileSupport extends NamedRunnable {
         }
     }
 
-    private static final String CC_STR = "cc"; // NOI18N
-    /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
-
-    /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
-        return _fixCaseSensitivePathIfNeeded(in, false);
-    }
-
-    /** for TEST purposes ONLY */
-    /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
-        return _fixCaseSensitivePathIfNeeded(in, true);
-    }
-
-    private static String _fixCaseSensitivePathIfNeeded(String in, boolean force) {
-        if (!force && CndFileUtils.isSystemCaseSensitive()) {
-            return in;
-        }
-        StringBuilder out = new StringBuilder(in);
-        // now we support only cc replacement into cc.cnd
-        int left = out.indexOf(CC_STR); // NOI18N
-        if (left >= 0 && out.length() >= CC_STR.length()) {
-             // check what we have before "cc"
-            if (left > 0 && out.charAt(left-1) != '/') { // NOI18N
-                return out.toString();
-            }
-            int right = left + CC_STR.length();
-            // check what we have after "cc"
-            if (out.length() > right && out.charAt(right) != '/') { // NOI18N
-                return out.toString();
-            }
-            if (right == out.length()) {
-                out.append(POSTFIX);
-            } else {
-                out.insert(right, POSTFIX);
-            }
-        }
-        return out.toString();
-    }
-
-    /*package*/static String fromFixedCaseSensitivePathIfNeeded(String in) {
-        return in.replaceAll(POSTFIX, "");
-    }
+//    private static final String CC_STR = "cc"; // NOI18N
+//    /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
+//
+//    /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
+//        return _fixCaseSensitivePathIfNeeded(in, false);
+//    }
+//
+//    /** for TEST purposes ONLY */
+//    /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
+//        return _fixCaseSensitivePathIfNeeded(in, true);
+//    }
+//
+//    private static String _fixCaseSensitivePathIfNeeded(String in, boolean force) {
+//        if (!force && CndFileUtils.isSystemCaseSensitive()) {
+//            return in;
+//        }
+//        StringBuilder out = new StringBuilder(in);
+//        // now we support only cc replacement into cc.cnd
+//        int left = out.indexOf(CC_STR); // NOI18N
+//        if (left >= 0 && out.length() >= CC_STR.length()) {
+//             // check what we have before "cc"
+//            if (left > 0 && out.charAt(left-1) != '/') { // NOI18N
+//                return out.toString();
+//            }
+//            int right = left + CC_STR.length();
+//            // check what we have after "cc"
+//            if (out.length() > right && out.charAt(right) != '/') { // NOI18N
+//                return out.toString();
+//            }
+//            if (right == out.length()) {
+//                out.append(POSTFIX);
+//            } else {
+//                out.insert(right, POSTFIX);
+//            }
+//        }
+//        return out.toString();
+//    }
+//
+//    /*package*/static String fromFixedCaseSensitivePathIfNeeded(String in) {
+//        return in.replaceAll(POSTFIX, "");
+//    }
     
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         if (!file.exists() || file.length() == 0) {
             synchronized (getLock(file)) {
                 // dbl check is ok here since it's file-based
                 if (!file.exists() || file.length() == 0) {
-                    syncFile(file, fromFixedCaseSensitivePathIfNeeded(remotePath));
+                    syncFile(file, remotePath); // fromFixedCaseSensitivePathIfNeeded(remotePath));
                     removeLock(file);
                 }
             }
@@ -185,7 +180,7 @@ public class RemoteFileSupport extends NamedRunnable {
     }
 
     private void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
-        CndUtils.assertTrue(!file.exists() || file.isFile(), "not a file " + file.getAbsolutePath());
+        RemoteLogger.assertTrue(!file.exists() || file.isFile(), "not a file " + file.getAbsolutePath());
         checkConnection(file, remotePath, false);
         Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
         try {
@@ -211,17 +206,26 @@ public class RemoteFileSupport extends NamedRunnable {
 
     }
 
+    private boolean isValidLocalFile(File base, String name) {
+        File file = new File(base, name);
+        if (file.isAbsolute()) {
+            return file.exists();
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Ensured that the directory is synchronized
      */
     public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         DirectoryAttributes attrs = null;
-        if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
+        if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
-                File flagFile = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
-                if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
-                    attrs = syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir), flagFile);
+                File flagFile = new File(dir, FLAG_FILE_NAME);
+                if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
+                    attrs = syncDirStruct(dir, /*fromFixedCaseSensitivePathIfNeeded(*/remoteDir/*)*/, flagFile);
                     removeLock(dir);
                 }
             }
@@ -233,7 +237,7 @@ public class RemoteFileSupport extends NamedRunnable {
     private DirectoryAttributes syncDirStruct(final File dir, final String remoteDir, final File flagFile) throws IOException, ConnectException {
         Parameters.notNull("null remote dir", remoteDir);
         if (dir.exists()) {
-            CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
+            RemoteLogger.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
 
         final String rdir = remoteDir.length() == 0 ? "/" : remoteDir; // NOI18N
@@ -259,19 +263,19 @@ public class RemoteFileSupport extends NamedRunnable {
                         return;
                     }
                 }
-                CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
+                RemoteLogger.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
                 char mode = inputLine.charAt(0);
                 boolean directory = (mode == 'D');
                 String fileName = inputLine.substring(2);
                 if (directory) {
-                    fileName = fixCaseSensitivePathIfNeeded(fileName);
+                    //fileName = fixCaseSensitivePathIfNeeded(fileName);
                     attrs.setWritable(fileName, true);
                 } else {
                     attrs.setWritable(fileName, mode == 'w');
                 }
-                File file = CndFileUtils.createLocalFile(dir, fileName);
+                File file = new File(dir, fileName);
                 try {
-                    RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
+                    RemoteLogger.getInstance().log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
                     if (directory) {
                         if (!file.mkdirs() && !file.exists()) {
                             throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
@@ -280,7 +284,7 @@ public class RemoteFileSupport extends NamedRunnable {
                         file.createNewFile();
                     }
                 } catch (IOException ioex) {
-                    RemoteUtil.LOGGER.log(Level.WARNING,
+                    RemoteLogger.getInstance().log(Level.WARNING,
                             "Error creating {0}{1}{2}: {3}", // NOI18N
                             new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ioex.getMessage()}); // NOI18N
                     nonCriticalException.set(ioex);
@@ -300,7 +304,7 @@ public class RemoteFileSupport extends NamedRunnable {
 
             @Override
             public void processLine(String line) {
-                RemoteUtil.LOGGER.log(Level.FINEST,
+                RemoteLogger.getInstance().log(Level.FINEST,
                         "Error [{0}]\n\ton Synchronizing dir {1} with {2}{3}{4}", // NOI18N
                         new Object[]{line, dir.getAbsolutePath(), execEnv, ':', rdir});
             }
@@ -317,7 +321,7 @@ public class RemoteFileSupport extends NamedRunnable {
         ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, outputProcessor);
         scriptRunner.setErrorProcessor(errorProcessor);
 
-        RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
+        RemoteLogger.getInstance().log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
                 new Object[]{dir.getAbsolutePath(), execEnv, ':', rdir});
 
         int rc = scriptRunner.execute();
@@ -334,24 +338,24 @@ public class RemoteFileSupport extends NamedRunnable {
         }
 
         if (dirCreated.get()) {
-            File flag = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
-            RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
+            File flag = new File(dir, FLAG_FILE_NAME);
+            RemoteLogger.getInstance().log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
             } catch (IOException ie) {
-                RemoteUtil.LOGGER.log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
+                RemoteLogger.getInstance().log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
                 criticalException.set(ie);
             }
             dirSyncCount++;
         }
         if (rc == 0) {
-            CndUtils.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
+            RemoteLogger.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
             attrs.store();
             return attrs;
         } else {
-            if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+            if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
                 ExitStatus ls = ProcessUtils.execute(execEnv, "/bin/ls", rdir); // NOI18N
-                RemoteUtil.LOGGER.log(Level.FINE, "Error running script\n{0}\non {1}.\nContent of directory {2}:\n{3}\n",
+                RemoteLogger.getInstance().log(Level.FINE, "Error running script\n{0}\non {1}.\nContent of directory {2}:\n{3}\n",
                         new Object[]{script, execEnv, rdir, ls.output});
             }
             return null;
@@ -373,7 +377,7 @@ public class RemoteFileSupport extends NamedRunnable {
 
     private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            RemoteUtil.LOGGER.log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
+            RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
             pendingFilesQueue.add(localFile, remotePath, isDirectory);
             ConnectionNotifier.addTask(execEnv, this);
             throw new ConnectException();
@@ -385,28 +389,30 @@ public class RemoteFileSupport extends NamedRunnable {
         try {
             onConnect();
         } catch (ConnectException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
             ConnectionNotifier.addTask(execEnv, this);
         } catch (InterruptedException ex) {
             // don't report interruption
         } catch (InterruptedIOException ex) {
             // don't report interruption
         } catch (IOException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
             ConnectionNotifier.addTask(execEnv, this);
         } catch (ExecutionException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
             ConnectionNotifier.addTask(execEnv, this);
         }
     }
 
+    private static String getDisplayName(ExecutionEnvironment env) {
+        return env.getDisplayName(); // RemoteUtil.getDisplayName(env);
+    }
 
     // NB: it is always called in a specially created thread
     private void onConnect() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(getClass(), "Progress_Title", RemoteUtil.getDisplayName(execEnv)));
+                NbBundle.getMessage(getClass(), "Progress_Title", getDisplayName(execEnv)));
         handle.start();
-        RemoteServerListUI.revalidate(execEnv);
         handle.switchToDeterminate(pendingFilesQueue.size());
         int cnt = 0;
         try {
@@ -422,7 +428,7 @@ public class RemoteFileSupport extends NamedRunnable {
             }
         } finally {
             handle.finish();
-            RemoteCodeModelUtils.scheduleReparse(execEnv);
+            //RemoteCodeModelUtils.scheduleReparse(execEnv);
         }
     }
 

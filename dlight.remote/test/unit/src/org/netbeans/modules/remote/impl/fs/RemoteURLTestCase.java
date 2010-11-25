@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -51,12 +51,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -67,8 +67,7 @@ import org.openide.filesystems.URLMapper;
 public class RemoteURLTestCase extends RemoteFileTestBase {
 
     static {
-        RemoteUtil.LOGGER.setLevel(Level.FINEST);
-        System.setProperty("cnd.nativeexecution.logger.level", "0");
+        RemoteLogger.getInstance().setLevel(Level.FINEST);
     }
 
     public RemoteURLTestCase(String testName, ExecutionEnvironment execEnv) {
@@ -194,7 +193,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
 //    }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteURLTestCase.class);
+        return RemoteApiTest.createSuite(RemoteURLTestCase.class);
     }
 
 }

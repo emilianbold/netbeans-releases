@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.Writer;
@@ -56,9 +56,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.util.Exceptions;
 
 /**
@@ -173,7 +173,7 @@ public class WritingQueue {
         public void stateChanged(ChangeEvent e) {
             Object source = e.getSource();
             if (!(source instanceof Future)) {
-                CndUtils.assertTrue(false, "Wrong class, should be Future<Integer>: " + (source == null ? "null" : source.getClass())); //NOI18N
+                RemoteLogger.assertTrue(false, "Wrong class, should be Future<Integer>: " + (source == null ? "null" : source.getClass())); //NOI18N
                 return;
             }
             try {

@@ -40,9 +40,8 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
@@ -58,7 +57,7 @@ public class RemoteFileSystemUtils {
     
     public static ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
         ExecutionEnvironment result = null;
-        for(ExecutionEnvironment env : ServerList.getEnvironments()) {
+        for(ExecutionEnvironment env : ConnectionManager.getInstance().getRecentConnections()) {
             if (hostName.equals(EnvUtils.toHostID(env))) {
                 if (port == 0 || port == env.getSSHPort()) {
                     result = env;

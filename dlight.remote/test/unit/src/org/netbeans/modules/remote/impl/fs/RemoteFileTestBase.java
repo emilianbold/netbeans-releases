@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -49,15 +49,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteFileTestBase extends RemoteTestBase {
+public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected final RemoteFileSystem fs;
     protected final FileObject rootFO;
@@ -78,9 +79,11 @@ public class RemoteFileTestBase extends RemoteTestBase {
         File cache = fs.getCache();
         removeDirectoryContent(cache);
         assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);
     }
 
-    protected CharSequence readFile(String absPath) throws Exception {
+    protected String readFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
@@ -99,7 +102,7 @@ public class RemoteFileTestBase extends RemoteTestBase {
         }
     }
 
-    protected CharSequence readFile(FileObject fo) throws Exception {
+    protected String readFile(FileObject fo) throws Exception {
         assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
@@ -110,7 +113,7 @@ public class RemoteFileTestBase extends RemoteTestBase {
             while ((line = rdr.readLine()) != null) {
                 sb.append(line);
             }
-            return sb;
+            return sb.toString();
         } finally {
             rdr.close();
         }

@@ -40,62 +40,68 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl;
+package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author ak119685
+ * @author Vladimir Kvashin
  */
-@ServiceProvider(service = FileSystemProvider.class, position=100)
-public final class LocalFileSystemProvider extends FileSystemProvider {
-
-    private LocalFileSystem fs = null;
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
+public class RemoteFileUrlMapper extends URLMapper {
 
     @Override
-    protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
-        return FileUtil.normalizePath(absPath);
-    }
-
-    @Override
-    protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
-        return null; // let default implementation do its work
-    }
-
-    @Override
-    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        return null; // let default implementation do its work
-    }
-
-    @Override
-    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-        if (env.isLocal()) {
-            synchronized (this) {
-                if (fs == null) {
-                    fs = new LocalFileSystem();
-                    try {
-                        fs.setRootDirectory(new File(root));
-                    } catch (PropertyVetoException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+    public FileObject[] getFileObjects(URL url) {
+        if (url.getProtocol().equals(RemoteFileURLStreamHandler.PROTOCOL)) {
+            ExecutionEnvironment env;
+            String user = url.getUserInfo();
+            if (user != null) {
+                env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
+            } else {
+                RemoteLogger.assertTrue(false, "Trying to access remote file system without user name");
+                env = RemoteFileSystemUtils.getExecutionEnvironment(url.getHost(), url.getPort());
+                if (env == null) {
+                    user = System.getProperty("user.name");
+                    if (user != null) {
+                        env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
                     }
                 }
             }
-            return fs;
+            if (env != null) {
+                RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+                FileObject fo = fs.findResource(url.getFile());
+                return new FileObject[] { fo };
+            }
         }
-
         return null;
+    }
+
+    @Override
+    public URL getURL(FileObject fo, int type) {
+        if (fo instanceof RemoteFileObjectBase) {
+            RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
+            try {
+                ExecutionEnvironment env = rfo.getExecutionEnvironment();
+                return getURL(env, rfo.getPath());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+
+    /*package*/ static URL getURL(ExecutionEnvironment env, String path) throws MalformedURLException {
+        String host = env.getUser() + '@' + env.getHost();
+        URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
+        String ext = url.toExternalForm(); // is there a way to set authority?
+        return new URL(ext);
     }
 }

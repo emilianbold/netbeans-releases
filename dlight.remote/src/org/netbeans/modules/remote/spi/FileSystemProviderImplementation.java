@@ -40,31 +40,26 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.spi;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import org.openide.util.URLStreamHandlerRegistration;
+import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@URLStreamHandlerRegistration(protocol="rfs")
-public class RemoteFileURLStreamHandler extends URLStreamHandler {
-
-    public static final String PROTOCOL = "rfs"; //NOI18N
-    public static final String PROTOCOL_PREFIX = "rfs:"; //NOI18N
-    
-    @Override
-    protected URLConnection openConnection(URL url) throws IOException {
-        return new RemoteFileURLConnection(url);
-    }
-
-    @Override
-    protected int getDefaultPort() {
-        return 22;
-    }
+public interface FileSystemProviderImplementation {
+    FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
+    String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env);
+    FileObject normalizeFileObjectImpl(FileObject fileObject);
+    FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath);
+    FileObject getFileObjectImpl(String absoluteURL);
+    String toURL(FileObject fileObject);
+    boolean isMine(ExecutionEnvironment env);
+    boolean isMine(FileObject fileObject);
+    boolean isMine(String absoluteURL);
+    boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException;
 }

@@ -40,60 +40,31 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProvider.class, position=50)
-public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.FileSystemProvider {
+@URLStreamHandlerRegistration(protocol="rfs")
+public class RemoteFileURLStreamHandler extends URLStreamHandler {
 
+    public static final String PROTOCOL = "rfs"; //NOI18N
+    public static final String PROTOCOL_PREFIX = "rfs:"; //NOI18N
+    
     @Override
-    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-        return RemoteFileSystemManager.getInstance().get(env);
+    protected URLConnection openConnection(URL url) throws IOException {
+        return new RemoteFileURLConnection(url);
     }
 
     @Override
-    protected String normalizeAbsolutePathImpl(String absPath, ExecutionEnvironment env) {
-        return RemoteFileSystemManager.getInstance().get(env).normalizeAbsolutePath(absPath);
+    protected int getDefaultPort() {
+        return 22;
     }
-
-    @Override
-    protected  FileObject normalizeFileObjectImpl(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            return fileObject;
-        }
-        return null;
-    }
-
-    @Override
-    protected FileObject getFileObjectImpl(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        if (baseFileObject instanceof RemoteFileObjectBase) {
-            ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
-            if (CndPathUtilitities.isPathAbsolute(relativeOrAbsolutePath)) {
-                relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().get(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
-                try {
-                    baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                // it's RemoteDirectory responsibility to normalize in this case
-                baseFileObject.getFileObject(relativeOrAbsolutePath);
-            }
-        }
-        return null;
-    }
-
-
-
 }

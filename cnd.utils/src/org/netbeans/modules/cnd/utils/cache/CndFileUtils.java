@@ -56,6 +56,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -126,11 +127,15 @@ public final class CndFileUtils {
     }
 
     public static FileObject toFileObject(File file) {
-        return CndFileSystemProvider.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return InvalidFileObjectSupport.getInvalidFileObject(file);
+        }
+        return fo;
     }
 
-    public static FileObject toFileObject(CharSequence path) {
-        return CndFileSystemProvider.toFileObject(path);
+    public static FileObject toFileObject(CharSequence absoluteLocalPath) {
+        return CndFileSystemProvider.toFileObject(absoluteLocalPath);
     }
 
     public static String getCanonicalPath(CharSequence path) throws IOException {

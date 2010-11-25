@@ -40,27 +40,57 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs.ui;
+package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.cnd.spi.remote.ConnectionNotifierImplementation;
-import org.netbeans.modules.cnd.utils.NamedRunnable;
+import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=ConnectionNotifierImplementation.class)
-public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
+public class RemotePathTestCase extends RemoteFileTestBase {
 
-    @Override
-    public void addTask(ExecutionEnvironment execEnv, NamedRunnable task) {
-        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
+
+    public RemotePathTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
-    @Override
-    public void removeTask(ExecutionEnvironment execEnv, NamedRunnable task) {
-        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
+    @ForAllEnvironments
+    public void testPath() throws Exception {
+        String absPath = "/usr/include/stdio.h";
+        String[] parts = absPath.split("/");
+        FileObject parent = rootFO;
+        for (String name : parts) {
+            FileObject child;
+            if (name.length() == 0) {
+                child = rootFO;
+            } else {
+                child = parent.getFileObject(name);
+            }
+            assertNotNull("Null file object for \"" + name + "\"", child);
+            System.err.printf("Child: %s\n", child.getPath());
+            if (child == null) {
+                break;
+            }
+            parent = child;
+        }
+        Exception lastAssertion = RemoteLogger.getLastAssertion();
+        if (lastAssertion != null) {
+            throw lastAssertion;
+        }
+        String content = readFile(absPath);
+        String text2search = "printf";
+        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
+                content.indexOf(text2search) >= 0);
     }
+
+    public static Test suite() {
+        return RemoteApiTest.createSuite(RemotePathTestCase.class);
+    }
+
 }
