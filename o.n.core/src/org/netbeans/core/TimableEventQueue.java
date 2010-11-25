@@ -133,16 +133,21 @@ implements Runnable {
     @Override
     protected void dispatchEvent(AWTEvent event) {
         eq = Thread.currentThread();
+        boolean scheduled = false;
         try {
-            tick("dispatchEvent"); // NOI18N
+            scheduled = tick("dispatchEvent"); // NOI18N
             super.dispatchEvent(event);
         } finally {
-            done();
+            if (scheduled) {
+                done();
+            }
         }
     }
 
     private void done() {
         TIMEOUT.cancel();
+        TIMEOUT.waitFinished();
+
         LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
         long r;
         if (isWaitCursor) {
@@ -174,12 +179,14 @@ implements Runnable {
         return;
     }
 
-    private void tick(String name) {
+    private boolean tick(String name) {
         start = System.currentTimeMillis();
         if (start >= ignoreTill && mainWindow.isShowing()) {
             LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
+            return true;
         }
+        return false;
     }
 
     @Override
