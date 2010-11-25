@@ -47,6 +47,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +82,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -110,11 +112,16 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final InstanceContent ic;
 
     public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
-        super(Children.LEAF, new AbstractLookup(ic), MakeLogicalViewProvider.ANNOTATION_RP);
+        this(new ProjectRootChildren(folder, provider),folder, provider, ic);
+    }
+    
+    private MakeLogicalViewRootNode(ProjectRootChildren children, Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
+        super(children, new AbstractLookup(ic), MakeLogicalViewProvider.ANNOTATION_RP);
+        children.setMakeLogicalViewRootNode(MakeLogicalViewRootNode.this);
         this.ic = ic;
         this.folder = folder;
         this.provider = provider;
-        setChildren(new ProjectRootChildren(folder, provider));
+//        setChildren(new ProjectRootChildren(folder, provider));
         setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
         setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
 
@@ -126,7 +133,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         brokenIncludes = hasBrokenIncludes(provider.getProject());
         // Handle annotations
         setForceAnnotation(true);
-        updateAnnotationFiles();
+        if (folder != null) {
+            updateAnnotationFiles();
+        }
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(this);
     }
@@ -143,7 +152,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         updateAnnotationFiles();
     }
 
-    private void setFolder(Folder folder) {
+    private void setRealProjectFolder(Folder folder) {
+        assert folder != null;
         if (this.folder != null) {
             ic.remove(this.folder);
         }
@@ -154,6 +164,14 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             ic.remove(old);
         }
         ic.add(new FolderSearchInfo(folder));
+        stateChanged(null);
+        try {
+            // to reinvalidate Run/Debug and other toolbar buttons, we use the following hack
+            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public Folder getFolder() {
@@ -474,14 +492,21 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         return false;
     }
 
-    private final class ProjectRootChildren extends LogicalViewChildren {
+    private final static class ProjectRootChildren extends LogicalViewChildren {
+        private MakeLogicalViewRootNode parent;
         private ProjectRootChildren(Folder folder, MakeLogicalViewProvider provider) {
             super(folder, provider);
         }
 
         @Override
         protected void onFolderChange(Folder folder) {
-            MakeLogicalViewRootNode.this.setFolder(folder);
+            assert parent != null;
+            this.parent.setRealProjectFolder(folder);
+        }
+        
+        private void setMakeLogicalViewRootNode(MakeLogicalViewRootNode parent) {
+            assert this.parent == null;
+            this.parent = parent;
         }
 
         @Override

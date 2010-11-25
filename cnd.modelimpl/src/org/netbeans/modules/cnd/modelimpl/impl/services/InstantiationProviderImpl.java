@@ -139,11 +139,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
-    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
-        if (CsmKindUtilities.isTemplate(classifier) && CsmKindUtilities.isClass(classifier)) {
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset) {
+        if (CsmKindUtilities.isTemplate(templateDecl) && CsmKindUtilities.isClass(templateDecl)) {
             CsmProject proj = contextFile.getProject();
             if (proj instanceof ProjectBase) {
-                CsmClass cls = (CsmClass) classifier;
+                CsmClass cls = (CsmClass) templateDecl;
                 StringBuilder fqn = new StringBuilder(cls.getUniqueName());
                 fqn.append('<'); // NOI18N
                 Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
