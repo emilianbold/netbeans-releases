@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,7 +64,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 10); // NOI18N
     private static final int WAIT_DELAY = 50;
 
-    private final Folder folder;
+    private Folder folder;
     protected final MakeLogicalViewProvider provider;
 
     public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
@@ -73,6 +74,13 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
 
     protected final MakeProject getProject() {
         return provider.getProject();
+    }
+
+    protected boolean isRoot() {
+        return false;
+    }
+
+    protected void onFolderChange(Folder folder) {
     }
 
     @Override
@@ -87,12 +95,16 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             //System.err.println("BaseMakeViewChildren: create wait node " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
             if (SwingUtilities.isEventDispatchThread()) {
                 super.addNotify();
-                setKeys(new Object[]{MakeLogicalViewProvider.getWaitNode()});
-                folder.addChangeListener(this);
+                setKeys(new Object[]{getWaitNode()});
                 LOAD_NODES_RP.post(new Runnable() {
 
                     @Override
                     public void run() {
+                        if (isRoot() && folder == null) {
+                            folder = provider.getMakeConfigurationDescriptor().getLogicalFolders();
+                            onFolderChange(folder);
+                        }
+                        folder.addChangeListener(BaseMakeViewChildren.this);
                         // between posting this task and running it can be become deleted (see iz #142240)
                         // TODO: fix workflow instead?
                         if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
@@ -113,6 +125,11 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         }
     }
 
+    private Node getWaitNode() {
+        return new LoadingNode();
+    }
+
+
     @Override
     public void refreshItem(Item item) {
         refreshKey(item);
@@ -122,7 +139,9 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     @SuppressWarnings("unchecked")
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
-        folder.removeChangeListener(this);
+        if (folder != null) {
+            folder.removeChangeListener(this);
+        }
         super.removeNotify();
     }
 
