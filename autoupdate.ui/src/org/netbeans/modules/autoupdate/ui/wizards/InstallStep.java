@@ -230,16 +230,17 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (inBackground) {
             assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
             Window w = SwingUtilities.getWindowAncestor (getComponent ());
+            if (spareHandle != null && !spareHandleStarted) {
+                indeterminateProgress = true;
+                spareHandle.setInitialDelay(0);
+                spareHandle.start();
+                spareHandleStarted = true;
+            }
             if (w != null) {
                 w.setVisible (false);
             }
             if (model.getPluginManager () != null) {
                 model.getPluginManager ().close ();
-            }
-            if (spareHandle != null && ! spareHandleStarted) {
-                indeterminateProgress = true;
-                spareHandle.start ();
-                spareHandleStarted = true;
             }
         } else {
             assert false : "Cannot set runInBackground to false";
