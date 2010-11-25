@@ -65,6 +65,7 @@ import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.conflicts.MarkResolvedAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
@@ -127,6 +128,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(DiffAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
+                MarkResolvedAction a = SystemAction.get(MarkResolvedAction.class);
+                if (a.isEnabled()) {
+                    actions.add(null);
+                    actions.add(a);
+                }
             }
         } else {
             Lookup lkp = context.getElements();
@@ -139,6 +145,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
+                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(MarkResolvedAction.class), NbBundle.getMessage(MarkResolvedAction.class, "LBL_MarkResolvedAction_PopupName"), lkp);
+                if (a.isEnabled()) {
+                    actions.add(null);
+                    actions.add(a);
+                }
             }
         }
 
