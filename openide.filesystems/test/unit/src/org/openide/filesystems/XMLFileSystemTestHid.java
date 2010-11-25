@@ -931,6 +931,30 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return map.get("displayName");
     }
 
+    public  static class Value {
+        private Value() { }
+    }
+    public void testNewValueForNonPublicConstructor() throws Exception {
+        File f = writeFile("layer3.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='v' newvalue='org.openide.filesystems.XMLFileSystemTestHid$Value'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+              
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object v = fo.getAttribute("v");
+        assertNotNull("Attribute found", v);
+        assertEquals("Right type", Value.class, v.getClass());
+        
+    }
+
     public void testVariousXMLAttributes() throws Exception {
         URL attribs = XMLFileSystemTestHid.class.getResource("test-layer-attribs.xml");
         xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, attribs);

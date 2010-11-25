@@ -51,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -544,7 +545,9 @@ final class BinaryFS extends FileSystem {
                         if (SharedClassObject.class.isAssignableFrom(cls)) {
                             return SharedClassObject.findObject(cls.asSubclass(SharedClassObject.class), true);
                         } else {
-                            return cls.newInstance();
+                            Constructor<?> init = cls.getDeclaredConstructor();
+                            init.setAccessible(true);
+                            return init.newInstance((Object[]) null);
                         }
 
                     case 12: // serialvalue

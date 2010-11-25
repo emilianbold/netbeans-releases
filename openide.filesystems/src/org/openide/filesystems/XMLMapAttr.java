@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.AbstractMap;
@@ -927,7 +928,9 @@ final class XMLMapAttr implements Map {
                         if (SharedClassObject.class.isAssignableFrom(cls)) {
                             return SharedClassObject.findObject(cls, true);
                         } else {
-                            return cls.newInstance();
+                            Constructor<?> init = cls.getDeclaredConstructor();
+                            init.setAccessible(true);
+                            return init.newInstance((Object[]) null);
                         }
                     case 13:
                         String[] arr = value.split("#", 2); // NOI18N

@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="private-constructor">
+            <api name="filesystems"/>
+            <summary>XMLFileSystem's newvalue can create private instances</summary>
+            <version major="7" minor="43"/>
+            <date day="25" month="10" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                If the class referenced from <code>newvalue</code> 
+                <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
+                attribute is not public, it is made accessible for reflection.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="141698"/>
+        </change>
         <change id="createAndOpen">
             <api name="filesystems"/>
             <summary>FileObject.createAndOpen</summary>
