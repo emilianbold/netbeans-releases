@@ -243,6 +243,7 @@ public class LuceneIndex implements Index {
             searcher.close();
         }
         
+        boolean logged = false;
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
             if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
@@ -251,7 +252,20 @@ public class LuceneIndex implements Index {
             final T value = convertor.convert(doc);
             if (value != null) {
                 final Set<Term> terms = termCollector.get(docNum);
-                result.put (value, convertTerms(termConvertor, terms));
+                if (terms != null) {
+                    result.put (value, convertTerms(termConvertor, terms));
+                } else {
+                    if (!logged) {
+                        LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                new Object[] {
+                                    in.maxDoc(),
+                                    in.numDocs(),
+                                    termCollector.docs()
+                                });
+                        logged = true;
+                    }
+                    LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                }
             }
         }
     }
