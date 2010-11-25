@@ -77,7 +77,7 @@ import org.openide.util.datatransfer.ExTransferable;
  */
 final class ViewItemNode extends FilterNode implements ChangeListener {
 
-    private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
+    private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.ViewItemNode; mask={0}"); // NOI18N
 
     private RefreshableItemsContainer childrenKeys;
     private Folder folder;
