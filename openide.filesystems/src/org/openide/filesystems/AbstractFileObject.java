@@ -327,7 +327,7 @@ final class AbstractFileObject extends AbstractFolder {
 
     /** performance hack */
     final Object getAttribute(String attrName, String path) {
-        return getAbstractFileSystem().attr.readAttribute(path, attrName);
+        return XMLMapAttr.readAttribute(this, getAbstractFileSystem().attr, path, attrName);
     }
 
     /* Set the file attribute with the specified name.
@@ -348,7 +348,7 @@ final class AbstractFileObject extends AbstractFolder {
         Object oldValue = null;
 
         //FileSystem fs = getAbstractFileSystem ();
-        //if (fs.isReadOnly()) 
+        //if (fs.isReadOnly()) XMLFileSystemTestHid.java:934
         //  throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", fs.getDisplayName ()); // NOI18N
         if (fire) {
             oldValue = getAttribute(attrName);

@@ -453,7 +453,7 @@ public class ImportExecutable implements PropertyChangeListener {
                     dllPaths.put(dll, null);
                 }
             }
-            if (search) {
+            if (search && root.length() > 1) {
                 gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
             }
             StringBuilder buf = new StringBuilder();
