@@ -42,68 +42,156 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.filesystems.FileObject;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ModifiersTree;
 
 /**
  *
- * @author Milan Kuchtiak
+ * @author ads
  */
 public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
-     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public JavaEE6EntityResourcesGenerator() {
-        injectEntityManager = true;
-        useEjbInjections = true;
-    }
-
+    
+    private static final String XMLROOT_ANNOTATION = 
+        "javax.xml.bind.annotation.XmlRootElement";         // NOI18N
+    
     @Override
-    protected String[] getAdditionalContainerResourceAnnotations() {
-        if ( Util.isCDIEnabled(project)){
-            return new String[] {RestConstants.STATELESS_ANNOTATION , 
-                    Constants.REQUESTED_SCOPE};
+    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
+        if (pHandle != null) {
+            initProgressReporting(pHandle);
         }
-        return new String[] {RestConstants.STATELESS_ANNOTATION};
-    }
 
-    @Override
-    protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
-        return new Object[] {null, null, null};
-    }
+        createFolders( false);
 
-    @Override
-    protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
-        List<String> imports = new ArrayList<String>();
-        imports.add(RestConstants.STATELESS);
-        if (Util.isCDIEnabled(project)){
-            imports.add( Constants.FQN_REQUESTED_SCOPE);
+        //Make necessary changes to the persistence.xml
+        new PersistenceHelper(project).configure(model.getBuilder().getAllEntityNames(),
+                !RestUtils.hasJTASupport(project));
+        
+        Collection<EntityResourceBean> resourceBeans = model.getResourceBeans();
+        Set<Entity> entities = new HashSet<Entity>();
+        for (EntityResourceBean entityResourceBean : resourceBeans) {
+            Entity entity = entityResourceBean.getEntityClassInfo().getEntity();
+            entities.add( entity );
+            modifyEntity( entity );
         }
-        return imports;
-    }
-
-    @Override
-    protected Object[] getAdditionalItemResourceAnnotationAttrs() {
-        return new Object[] {null, null, null};
-    }
-
-    @Override
-    protected String[] getAdditionalItemResourceAnnotations() {
-        if ( Util.isCDIEnabled(project)){
-            return new String[] {RestConstants.STATELESS_ANNOTATION , 
-                    Constants.REQUESTED_SCOPE};
+        
+        FileObject targetResourceFolder = null;
+        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        SourceGroup targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(
+                sourceGroups, targetFolder);
+        if (targetSourceGroup != null) {
+            targetResourceFolder = SourceGroupSupport.getFolderForPackage(
+                    targetSourceGroup, resourcePackageName, true);
         }
-        return new String[] {RestConstants.STATELESS_ANNOTATION};
+        if (targetResourceFolder == null) {
+            targetResourceFolder = targetFolder;
+        }
+        
+        Util.generateRESTFacades(project, entities, model, targetResourceFolder, 
+                resourcePackageName);
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>();
     }
 
-    @Override
-    protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
-        List<String> imports = new ArrayList<String>();
-        imports.add(RestConstants.STATELESS);
-        if (Util.isCDIEnabled(project)){
-            imports.add( Constants.FQN_REQUESTED_SCOPE);
+    private void modifyEntity( final Entity entity ) {
+        try {
+            FileObject entityFileObject = SourceGroupSupport.
+                getFileObjectFromClassName(entity.getClass2(), project);
+
+            if (entityFileObject == null) {
+                return;
+            }
+            JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
+            if (javaSource == null) {
+                return;
+            }
+            ModificationResult result = javaSource
+                    .runModificationTask(new Task<WorkingCopy>() {
+
+                        public void run( final WorkingCopy working )
+                                throws IOException
+                        {
+                            working.toPhase(Phase.RESOLVED);
+
+                            TreeMaker make = working.getTreeMaker();
+                            
+                            if (working.getElements().getTypeElement(
+                                    XMLROOT_ANNOTATION) == null )
+                            {
+                                return;
+                            }
+                            
+                            TypeElement entityElement = 
+                                working.getTopLevelElements().get(0);
+                            List<? extends AnnotationMirror> annotationMirrors = 
+                                working.getElements().getAllAnnotationMirrors(
+                                        entityElement);
+                            boolean hasXmlRootAnnotation = false;
+                            for (AnnotationMirror annotationMirror : annotationMirrors)
+                            {
+                                DeclaredType type = annotationMirror.getAnnotationType();
+                                Element annotationElement = type.asElement();
+                                if ( annotationElement instanceof TypeElement ){
+                                    Name annotationName = ((TypeElement)annotationElement).
+                                        getQualifiedName();
+                                    if ( annotationName.contentEquals(XMLROOT_ANNOTATION))
+                                    {
+                                        hasXmlRootAnnotation = true;
+                                    }
+                                }
+                            }
+                            if ( !hasXmlRootAnnotation ){
+                                ClassTree classTree = working.getTrees().getTree(
+                                        entityElement);
+                                GenerationUtils genUtils = GenerationUtils.
+                                    newInstance(working);
+                                ModifiersTree modifiersTree = make.addModifiersAnnotation(
+                                        classTree.getModifiers(),
+                                        genUtils.createAnnotation(XMLROOT_ANNOTATION));
+
+                                working.rewrite( classTree.getModifiers(), 
+                                        modifiersTree);
+                            }
+                        }
+                    });
+            result.commit();
         }
-        return imports;
+        catch (IOException e) {
+            Logger.getLogger(JavaEE6EntityResourcesGenerator.class.getName()).
+                log( Level.SEVERE, null, e);
+        }
     }
+
 }
