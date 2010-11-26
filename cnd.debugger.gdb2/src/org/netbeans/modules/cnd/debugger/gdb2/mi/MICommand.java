@@ -78,7 +78,15 @@ public abstract class MICommand {
 
     @Override
     public String toString() {
-	return String.valueOf(routingToken) + command;
+        StringBuilder res = new StringBuilder();
+        if (routingToken != 0) {
+            res.append('(');
+            res.append(routingToken);
+            res.append(')');
+        }
+        res.append(token);
+        res.append(command);
+	return res.toString();
     }
 
 
