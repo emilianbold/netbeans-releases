@@ -120,9 +120,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public boolean catIndexEntry (File file, OutputStream out, ProgressMonitor monitor) throws GitException {
+    public boolean catIndexEntry (File file, int stage, OutputStream out, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CatCommand cmd = new CatCommand(repository, file, out, monitor);
+        CatCommand cmd = new CatCommand(repository, file, stage, out, monitor);
         cmd.execute();
         return cmd.foundInRevision();
     }
