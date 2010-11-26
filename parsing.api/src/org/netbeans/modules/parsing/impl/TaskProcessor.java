@@ -412,10 +412,9 @@ public class TaskProcessor {
                                 Request fr = it.next();                                
                                 if (task == fr.task) {
                                     it.remove();
-                                    if (fr.reschedule == ReschedulePolicy.ON_CHANGE) {
-                                        fr.schedulerType = schedulerType;
-                                        aRequests.add(fr);
-                                    }
+                                    assert fr.reschedule == ReschedulePolicy.ON_CHANGE;
+                                    fr.schedulerType = schedulerType;
+                                    aRequests.add(fr);
                                     if (cr.isEmpty()) {
                                         finishedRequests.remove(source);
                                     }
@@ -483,17 +482,14 @@ public class TaskProcessor {
                 if (reschedule) {
                     if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
                         for (Request toAdd : cr) {
-                            if (toAdd.reschedule == ReschedulePolicy.ON_CHANGE) {
-                                requests.add(toAdd);
-                            }
+                            assert toAdd.reschedule == ReschedulePolicy.ON_CHANGE;
+                            requests.add(toAdd);
                         }
                     }
                 }
                 if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
-                    for (Request toAdd : cr) {
-                        if (toAdd.reschedule == ReschedulePolicy.ON_CHANGE) {
-                            requests.add(toAdd);
-                        }
+                    for (Request toAdd : cr) {                        
+                        requests.add(toAdd);
                     }
                 }
             }
@@ -735,7 +731,7 @@ public class TaskProcessor {
                                                 else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                     //The JavaSource was changed or canceled rechedule it now
                                                     requests.add(r);
-                                                } else {
+                                                } else if (r.reschedule == ReschedulePolicy.ON_CHANGE) {
                                                     //Up to date JavaSource add it to the finishedRequests
                                                     Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
                                                     if (rc == null) {
