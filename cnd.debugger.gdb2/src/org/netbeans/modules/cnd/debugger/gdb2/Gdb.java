@@ -1117,7 +1117,7 @@ public class Gdb {
 	}
     }
 
-    public void sendCommand(MICommand cmd) {
+    void sendCommand(MICommand cmd) {
         myMIProxy.send(cmd);
     }
 }

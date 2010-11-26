@@ -66,7 +66,7 @@ public abstract class MICommand {
     private final boolean consoleCommand;
 
     /**
-     * Constructor for simple commands.
+     * Constructor for commands.
      */
 
     public MICommand(int routingToken, String command) {
@@ -76,17 +76,9 @@ public abstract class MICommand {
     } 
 
 
-    /**
-     * Constructor for commands with arguments.
-     */
-
-    public MICommand(int routingToken, String command, String args) {
-        this(routingToken, command + " " + args); // NOI18N
-    } 
-
     @Override
     public String toString() {
-	return "" + routingToken + command;
+	return String.valueOf(routingToken) + command;
     }
 
 
