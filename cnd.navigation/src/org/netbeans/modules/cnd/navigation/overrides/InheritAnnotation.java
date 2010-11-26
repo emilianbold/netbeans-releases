@@ -65,11 +65,13 @@ import org.openide.util.NbBundle;
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(getClass(), "LAB_Extended");
+        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
+        out = addTemplateAnnotation(out);
+        return out;
     }
 
     @Override
-    protected CharSequence debugTypeStirng() {
+    protected CharSequence debugTypeString() {
         switch (type) {
             case OVERRIDES:
                 return "INHERITS"; // NOI18N

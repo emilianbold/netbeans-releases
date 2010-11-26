@@ -424,10 +424,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
 
-    public final Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
+    public final Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String uniquNamePrefix) {
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
-        return getDeclarationsSorage().getDeclarationsRange(prefix, prefix + maxChar); // NOI18N
+        return getDeclarationsSorage().getDeclarationsRange(uniquNamePrefix, uniquNamePrefix + maxChar); // NOI18N
     }
 
     public final Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
