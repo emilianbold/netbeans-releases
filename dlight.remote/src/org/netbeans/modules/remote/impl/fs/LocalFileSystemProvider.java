@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
@@ -170,5 +171,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public String toURL(FileObject fileObject) {
         return fileObject.getPath();
+    }
+
+    @Override
+    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
+    }
+
+    @Override
+    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
     }
 }

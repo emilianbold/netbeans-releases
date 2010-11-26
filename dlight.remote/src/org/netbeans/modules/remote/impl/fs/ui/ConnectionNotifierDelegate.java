@@ -179,11 +179,11 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
                 reasons.append(task.getName());
             }
             title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString, reasons);
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/exclamation.gif", false); // NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/exclamation.gif", false); // NOI18N
             details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
         } else {
             title = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.TITLE", envString);
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.png", false); // NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/error.png", false); // NOI18N
             String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
             details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
         }

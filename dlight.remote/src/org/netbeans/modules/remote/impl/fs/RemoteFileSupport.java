@@ -428,7 +428,7 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             }
         } finally {
             handle.finish();
-            //RemoteCodeModelUtils.scheduleReparse(execEnv);
+            RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
         }
     }
 

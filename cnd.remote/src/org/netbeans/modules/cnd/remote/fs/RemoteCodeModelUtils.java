@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.fs;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * Misc utilities methods related to code model
  * @author Vladimir Kvashin
  */
-public class RemoteCodeModelUtils {
+/*package*/ class RemoteCodeModelUtils {
 
     public static void scheduleReparse(ExecutionEnvironment execEnv) {
         CsmModelAccessor.getModel().scheduleReparse(getCsmProjects(execEnv));

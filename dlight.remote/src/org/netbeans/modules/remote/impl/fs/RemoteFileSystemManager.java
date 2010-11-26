@@ -44,9 +44,12 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,6 +65,9 @@ public class RemoteFileSystemManager {
     
     private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
             new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
+
+    private final List<FileSystemProvider.DownloadListener> downloadListeners =
+            new ArrayList<FileSystemProvider.DownloadListener>();
 
     public static RemoteFileSystemManager getInstance() {
         return INSTANCE;
@@ -80,6 +86,30 @@ public class RemoteFileSystemManager {
                 }
             }
             return result;
+        }
+    }
+
+    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
+        synchronized (downloadListeners) {
+            downloadListeners.remove(listener);
+            downloadListeners.add(listener);
+        }
+    }
+
+    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
+        synchronized (downloadListeners) {
+            downloadListeners.remove(listener);
+            downloadListeners.add(listener);
+        }
+    }
+
+    public void fireDownloadListeners(ExecutionEnvironment env) {
+        List<FileSystemProvider.DownloadListener> listenersCopy;
+        synchronized (downloadListeners) {
+            listenersCopy = new ArrayList<FileSystemProvider.DownloadListener>(downloadListeners);
+        }
+        for (FileSystemProvider.DownloadListener l : listenersCopy) {
+            l.postConnectDownloadFinished(env);
         }
     }
 }

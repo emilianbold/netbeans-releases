@@ -62,6 +62,10 @@ import org.openide.util.Utilities;
  */
 public final class FileSystemProvider {
 
+    public interface DownloadListener {
+        void postConnectDownloadFinished(ExecutionEnvironment env);
+    }
+
     private static final  Collection<? extends FileSystemProviderImplementation> ALL_PROVIDERS =
             Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class);
 
@@ -173,6 +177,18 @@ public final class FileSystemProvider {
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        }
+    }
+
+    public static void addDownloadListener(DownloadListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addDownloadListener(listener);
+        }
+    }
+
+    public static void removeDownloadListener(DownloadListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addDownloadListener(listener);
         }
     }
 

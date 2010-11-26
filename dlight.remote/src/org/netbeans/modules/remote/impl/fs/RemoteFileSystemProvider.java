@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -186,5 +187,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
         }
         return null;
+    }
+
+    @Override
+    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
+        RemoteFileSystemManager.getInstance().addDownloadListener(listener);
+    }
+
+    @Override
+    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
+        RemoteFileSystemManager.getInstance().removeDownloadListener(listener);
     }
 }

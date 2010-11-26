@@ -64,11 +64,15 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 @ServiceProvider(service=CndFileSystemProvider.class)
-public class CndFileSystemProviderImpl extends CndFileSystemProvider {
+public class CndFileSystemProviderImpl extends CndFileSystemProvider implements FileSystemProvider.DownloadListener {
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
-   private String cachPrefix;
+   private String cachePrefix;
+
+    public CndFileSystemProviderImpl() {
+        FileSystemProvider.addDownloadListener(this);
+    }
 
     @Override
     protected FileObject toFileObjectImpl(CharSequence path) {
@@ -142,17 +146,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
     private String getPrefix() {
         synchronized (this) {
-            if (cachPrefix == null) {
+            if (cachePrefix == null) {
                 // XXX: FullRemote
                 String prefix = new File(FileSystemCacheProvider.getCacheRoot(ExecutionEnvironmentFactory.getLocal())).getParent();
                 prefix= prefix.replace("\\", "/"); //NOI18N
                 if (!prefix.endsWith("/")) { //NOI18N
                     prefix += '/';
                 }
-                cachPrefix = prefix;
+                cachePrefix = prefix;
             }
         }
-        return cachPrefix;
+        return cachePrefix;
     }
 
     private boolean pathStartsWith(CharSequence path, CharSequence prefix) {
@@ -192,6 +196,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 //            return start + rest.toString(); // RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
 //        }
 //        return null;
+    }
+
+    @Override
+    public void postConnectDownloadFinished(ExecutionEnvironment env) {
+        RemoteCodeModelUtils.scheduleReparse(env);
     }
 
     private static class FileSystemAndString {
