@@ -115,10 +115,7 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getNameExt() {
-        final File file = getFileName().getFile();
-        final String retVal = BaseFileObj.getNameExt(file);
-        return retVal;
-
+        return getFileName().getName();
     }
 
     /** Returns true is file is \\ComputerName\sharedFolder. */
@@ -352,6 +349,13 @@ public abstract class BaseFileObj extends FileObject {
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
+        if (file2Rename.equals(file)) {
+            // just a case sensitive update of the file name
+            NamingFactory.checkCaseSensitivity(fileName, file2Rename);
+            fireFileRenamedEvent(file.getName(), file2Rename.getName());
+            return;
+        }
+        
         boolean targetFileExists = FileChangedManager.getInstance().exists(file2Rename) && !file2Rename.equals(file);
         //#108690
         if (targetFileExists && Utilities.isMac()) {
