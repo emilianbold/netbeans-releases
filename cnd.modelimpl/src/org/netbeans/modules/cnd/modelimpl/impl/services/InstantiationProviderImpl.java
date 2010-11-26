@@ -163,6 +163,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             if (CsmKindUtilities.isOffsetable(declaration)) {
                 CsmFile contextFile = ((CsmOffsetable) declaration).getContainingFile();
                 CsmProject proj = contextFile != null ? contextFile.getProject() : null;
+                if (proj instanceof ProjectBase) {
+                    CharSequence qualifiedName = declaration.getUniqueName();
+                    String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");
+                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)proj).findDeclarationsByPrefix(removedSpecialization);
+                    Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>(0);
+                    for (CsmOffsetableDeclaration decl : decls) {
+                        if (CsmKindUtilities.isTemplate(decl) && !CsmKindUtilities.isSpecialization(decl)) {
+                            out.add(decl);
+                        }
+                    }
+                    return out;
+                }
             }
         }
         return Collections.<CsmOffsetableDeclaration>emptyList();

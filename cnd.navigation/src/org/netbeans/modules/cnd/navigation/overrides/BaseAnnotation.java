@@ -228,7 +228,7 @@ import org.openide.text.NbDocument;
             if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
                 CsmUtilities.openSource(decl);
             }
-        } else if (baseUIDs.size() + descUIDs.size() > 1) {
+        } else if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
             String caption = getShortDescription();
             OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs), 
                     toDeclarations(baseTemplateUIDs), toDeclarations(specializationUIDs));
