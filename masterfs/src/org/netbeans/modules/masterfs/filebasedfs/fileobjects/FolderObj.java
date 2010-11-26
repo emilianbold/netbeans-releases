@@ -64,6 +64,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
@@ -144,13 +145,29 @@ public final class FolderObj extends BaseFileObj {
             final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {
                 assert fileName == ((BaseFileObj)fo).getFileName() : 
-                    "FileName: " + fileName + "@" +  // NOI18N
-                    Integer.toHexString(System.identityHashCode(fileName)) + 
-                    " fo: " + fo; // NOI18N
+                    dumpFileNaming(fileName) + "\n" + 
+                    dumpFileNaming(((BaseFileObj)fo).getFileName()) + "\nfo: " +
+                    fo;
                 results.put(fileName, fo);
             }
         }
         return results.values().toArray(new FileObject[0]);
+    }
+    
+    private static String dumpFileNaming(FileNaming fn) {
+        if (fn == null) {
+            return "null";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileName: ").append(fn).append("#").
+           append(Integer.toHexString(fn.hashCode())).append("@").
+           append(Integer.toHexString(System.identityHashCode(fn)))
+           .append("\n");
+        
+        if (fn instanceof FileName) {
+            ((FileName)fn).dumpCreation(sb);
+        }
+        return sb.toString();
     }
 
     public final FileObject createFolderImpl(final String name) throws java.io.IOException {
