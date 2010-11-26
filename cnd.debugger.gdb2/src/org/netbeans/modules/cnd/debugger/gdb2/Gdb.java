@@ -462,7 +462,7 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(1,
 		    Color.green.darker());
 		ioPack.console().getTerm().setCustomColor(2,
-		    Color.blue.brighter());
+		    Color.red.darker());
 
 		pid = executor.startEngine(gdbname, gdb_argv, null,
 		    ioPack.console(), false, false);
@@ -1117,7 +1117,7 @@ public class Gdb {
 	}
     }
 
-    public void sendCommand(MICommand cmd) {
+    void sendCommand(MICommand cmd) {
         myMIProxy.send(cmd);
     }
 }

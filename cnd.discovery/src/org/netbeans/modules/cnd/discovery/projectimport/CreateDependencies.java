@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Exceptions;
@@ -84,13 +85,17 @@ public class CreateDependencies implements PropertyChangeListener {
     private final Project mainProject;
     private final List<String> dependencies;
     private List<String> paths;
+    private final List<String> searchPaths;
+    private final String binary;
     private final Map<Project, String> createdProjects = new HashMap<Project,String>();
     private MakeConfigurationDescriptor mainConfigurationDescriptor;
 
-    public CreateDependencies(Project mainProject, List<String> dependencies, List<String> paths) {
+    public CreateDependencies(Project mainProject, List<String> dependencies, List<String> paths, List<String> searchPaths, String binary) {
         this.mainProject = mainProject;
         this.dependencies = dependencies;
         this.paths = paths;
+        this.searchPaths = searchPaths;
+        this.binary = binary;
     }
 
     public void create() {
@@ -107,7 +112,8 @@ public class CreateDependencies implements PropertyChangeListener {
             String root = ImportExecutable.findFolderPath(ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
-                String ldLibPath = ImportExecutable.getLdLibraryPath(activeConfiguration);
+                String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
+                ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
                 boolean search = false;
                 for(String dll : dependencies) {
                     String p = ImportExecutable.findLocation(dll, ldLibPath);
@@ -118,7 +124,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         dllPaths.put(dll, null);
                     }
                 }
-                if (search) {
+                if (search && root.length() > 1) {
                     ImportExecutable.gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
                 }
             }
