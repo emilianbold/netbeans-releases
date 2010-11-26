@@ -58,7 +58,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -165,7 +164,11 @@ public abstract class CsmInstantiationProvider {
      * @return
      */
     public abstract Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset);
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl) {
+        return getSpecializations(templateDecl, null, -1);
+    }
     
+    public abstract Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration);
     //
     // Implementation of the default provider
     //
@@ -212,6 +215,11 @@ public abstract class CsmInstantiationProvider {
 
         @Override
         public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
             return Collections.<CsmOffsetableDeclaration>emptyList();
         }
 

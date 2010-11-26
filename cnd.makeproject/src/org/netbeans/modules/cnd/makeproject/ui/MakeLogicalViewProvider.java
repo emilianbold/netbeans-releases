@@ -49,8 +49,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -81,8 +79,6 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
 
-    private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
-    private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenIncludeImgPath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.png"; // NOI18N
     static final Image brokenProjectBadge = loadToolTipImage(brokenProjectBadgePath, "BrokenProjectTxt"); // NOI18N
@@ -104,20 +100,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     public Node createLogicalView() {
         if (gotMakeConfigurationDescriptor()) {
             MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
-            if (ASYNC_ROOT_NODE) {
-                log.log(Level.FINE, "creating async root node in EDT? {0}", SwingUtilities.isEventDispatchThread());// NOI18N
+            if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
+                return new MakeLogicalViewRootNodeBroken(project);
+            } else {
                 createRoot(configurationDescriptor);
                 return projectRootNode;
-            } else {
-                if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
-                    return new MakeLogicalViewRootNodeBroken(project);
-                } else {
-                    createRoot(configurationDescriptor);
-                    return projectRootNode;
-                }
             }
         } else {
-            createRoot();
+            createLoadingRoot();
             return projectRootNode;
         }
     }
@@ -131,7 +121,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
     }
 
-    private void createRoot() {
+    private void createLoadingRoot() {
         InstanceContent ic = new InstanceContent();
         ic.add(getProject());
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);

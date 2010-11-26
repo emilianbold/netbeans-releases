@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
@@ -73,10 +72,10 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmTemplateHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -145,34 +144,35 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmOffsetable item = toJumpObject(primary, csmFile, offset);
         if (type == HyperlinkType.ALT_HYPERLINK) {
-            if (CsmKindUtilities.isMethod(item)) {
-                CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
-                boolean inDeclaration = isInDeclaration(meth, csmFile, offset);
-                final Collection<? extends CsmMethod> baseMethods;
-                if (inDeclaration) {
-                    baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-                } else {
-                    baseMethods = Collections.<CsmMethod>emptyList();
+            if (CsmKindUtilities.isFunction(item)) {
+                CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
+                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(decl);
+                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(decl);
+                boolean inDeclaration = isInDeclaration(decl, csmFile, offset);
+                Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
+                Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
+                if (CsmKindUtilities.isMethod(decl)) {
+                    CsmMethod meth = (CsmMethod) decl;
+                    if (inDeclaration) {
+                        baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+                    }
+                    if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                        overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
+                    }
+                    baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
                 }
-                Collection<? extends CsmMethod> overriddenMethods;
-                if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
-                    overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
-                } else {
-                    overriddenMethods = Collections.<CsmMethod>emptyList();
-                }
-                baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
-                
-                Collection<CsmOffsetableDeclaration> baseTemplates = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(meth);
-                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmTemplateHierarchyResolver.getDefault().getSpecializations(meth);
-                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
+                if (showOverridesPopup(inDeclaration ? null : decl, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
                     UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
                     return true;
                 }
             } else if (CsmKindUtilities.isClass(item)) {
                 CsmClass cls = (CsmClass) item;
+                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
+                Collection<CsmClass> subClasses = Collections.<CsmClass>emptyList();
+             
                 Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
                 if (!subRefs.isEmpty()) {
-                    Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
                     for (CsmReference ref : subRefs) {
                         CsmObject obj = ref.getReferencedObject();
                         CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
@@ -180,12 +180,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                             subClasses.add((CsmClass) obj);
                         }
                     }
-                    Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(cls);
-                    Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmTemplateHierarchyResolver.getDefault().getSpecializations(cls);
-                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplateClasses, templateSpecializationClasses, false, target, offset)) {
-                        UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
-                        return true;
-                    }
+                }
+                if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplates, templateSpecializations, false, target, offset)) {
+                    UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
+                    return true;
                 }
             }
         }
@@ -200,7 +198,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations,
             boolean gotoDefinitions,
             JTextComponent target, int offset) {
-        if (!baseDeclarations.isEmpty() || !descendantDeclarations.isEmpty()) {
+        if (!baseDeclarations.isEmpty() || !descendantDeclarations.isEmpty() || !baseDeclarations.isEmpty() || !templateSpecializations.isEmpty()) {
             try {
                 final OverridesPopup popup = new OverridesPopup(null, mainDeclaration, baseDeclarations, descendantDeclarations, baseTemplates, templateSpecializations, gotoDefinitions);
                 Rectangle rect = target.modelToView(offset);
