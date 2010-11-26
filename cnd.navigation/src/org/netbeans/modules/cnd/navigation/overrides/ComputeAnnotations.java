@@ -55,11 +55,11 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmTemplateHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.loaders.DataObject;
@@ -108,14 +108,13 @@ public class ComputeAnnotations {
     }
 
     private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
+        Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
+        Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-            Collection<? extends CsmMethod> overriddenMethods;
+            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
             if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
                 overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
-            } else {
-                overriddenMethods = Collections.<CsmMethod>emptyList();
             }
             if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                 BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
@@ -124,19 +123,19 @@ public class ComputeAnnotations {
                 }
             }
             baseMethods.remove(meth);
-            Collection<CsmOffsetableDeclaration> baseTemplates = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(meth);
-            Collection<CsmOffsetableDeclaration> templateSpecializations = CsmTemplateHierarchyResolver.getDefault().getSpecializations(meth);
-            if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
-                toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
-            }
+        }
+        Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(func);
+        Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);
+        if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
+            toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
     }
 
     private void computeAnnotation(CsmClass cls, Collection<BaseAnnotation> toAdd) {
         Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
         Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
-        Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(cls);
-        Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmTemplateHierarchyResolver.getDefault().getSpecializations(cls);
+        Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+        Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmInstantiationProvider.getDefault().getSpecializations(cls);
         if (!subRefs.isEmpty()) {
             for (CsmReference ref : subRefs) {
                 CsmObject obj = ref.getReferencedObject();
