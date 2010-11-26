@@ -60,6 +60,7 @@ import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.MarkResolvedAction;
+import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
@@ -124,10 +125,12 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
-        SystemActionBridge a = new SystemActionBridge(SystemAction.get(MarkResolvedAction.class), NbBundle.getMessage(MarkResolvedAction.class, "LBL_MarkResolvedAction_PopupName")); //NOI18N
+        ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
         if (a.isEnabled()) {
             menu.addSeparator();
-            item = menu.add(a);
+            item = menu.add(new SystemActionBridge(a, NbBundle.getMessage(MarkResolvedAction.class, "LBL_ResolveConflictsAction_PopupName"))); //NOI18N);
+            Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(new SystemActionBridge(SystemAction.get(MarkResolvedAction.class), NbBundle.getMessage(MarkResolvedAction.class, "LBL_MarkResolvedAction_PopupName"))); //NOI18N);
             Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;
