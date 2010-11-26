@@ -108,14 +108,13 @@ public class ComputeAnnotations {
     }
 
     private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
+        Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
+        Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-            Collection<? extends CsmMethod> overriddenMethods;
+            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
             if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
                 overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
-            } else {
-                overriddenMethods = Collections.<CsmMethod>emptyList();
             }
             if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                 BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
@@ -124,11 +123,11 @@ public class ComputeAnnotations {
                 }
             }
             baseMethods.remove(meth);
-            Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(meth);
-            Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(meth);
-            if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
-                toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
-            }
+        }
+        Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(func);
+        Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);
+        if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
+            toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
     }
 
