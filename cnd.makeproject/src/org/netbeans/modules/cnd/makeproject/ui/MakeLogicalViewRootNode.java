@@ -58,6 +58,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -137,7 +138,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             updateAnnotationFiles();
         }
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
-        pi.addPropertyChangeListener(this);
+        pi.addPropertyChangeListener(MakeLogicalViewRootNode.this);
     }
 
     public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
@@ -165,13 +166,27 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         ic.add(new FolderSearchInfo(folder));
         stateChanged(null);
-        try {
-            // to reinvalidate Run/Debug and other toolbar buttons, we use the following hack
-            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(new Node[0]);
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // to reinvalidate Run/Debug and other toolbar buttons, we use the workaround with selection
+                    // remember selection
+                    Node[] selectedNodes = ProjectTabBridge.getInstance().getExplorerManager().getSelectedNodes();
+                    // clear
+                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(new Node[0]);
+                    // restore
+                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(selectedNodes);
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
         }
-
     }
 
     public Folder getFolder() {
@@ -222,7 +237,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                         set.add(fileObject);
                     }
                 } catch (IOException ioe) {
-                    ioe.printStackTrace();
+                    ioe.printStackTrace(System.err);
                 }
             }
         }
