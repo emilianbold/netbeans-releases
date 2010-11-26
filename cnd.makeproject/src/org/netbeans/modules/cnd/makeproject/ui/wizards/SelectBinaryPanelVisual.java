@@ -93,11 +93,9 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -106,7 +104,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -128,7 +125,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable"); // NOI18N
     private DefaultTableModel tableModel;
     private static final String BINARY_FILE_KEY = "binaryField"; // NOI18N
-    private String pathSepararor = ":"; // NOI18N
 
 
     /** Creates new form SelectBinaryPanelVisual */
@@ -215,7 +211,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         if (root == null) {
                             root = "";
                         }
-                        final Map<String, String> checkDll = checkDll(dlls, root);
+                        @SuppressWarnings("unchecked")
+                        List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
+                        Map<String, String> checkDll = checkDll(dlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
                         updateArtifacts(root, map, checkDll);
                     }
                 });
@@ -289,10 +287,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         table.getColumnModel().getColumn(2).setCellRenderer(new PathCellRenderer());
     }
 
-    private Map<String,String> checkDll(List<String> dlls, String root){
+    private Map<String,String> checkDll(List<String> dlls, String root, List<String> searchPaths, String binary){
         Map<String,String> dllPaths = new TreeMap<String, String>();
         if (validBinary() && dlls != null) {
-            String ldLibPath = getLdLibraryPath();
+            String ldLibPath = CommonUtilities.getLdLibraryPath();
+            ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
             boolean search = false;
             for(String dll : dlls) {
                 String p = findLocation(dll, ldLibPath);
@@ -304,7 +303,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 }
             }
             if (search && root.length() > 1) {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL"));
+                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
                 progress.start();
                 try {
                     gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
@@ -345,6 +344,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String findLocation(String dll, String ldPath){
         if (ldPath != null) {
+            String pathSepararor = ":"; // NOI18N
+            if (ldPath.indexOf(';')>0) {
+                pathSepararor = ";"; // NOI18N
+            }
             for(String search :  ldPath.split(pathSepararor)) {  // NOI18N
                 File file = new File(search, dll);
                 if (file.isFile() && file.exists()) {
@@ -354,47 +357,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             }
         }
         return null;
-    }
-
-    private String getLdLibraryPath() {
-        ExecutionEnvironment eenv = ExecutionEnvironmentFactory.getLocal();
-        String ldLibraryPathName = getLdLibraryPathName(eenv);
-        String paths = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
-        if (paths == null) {
-            paths = "";
-        }
-        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
-        switch (platformInfo.getPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                pathSepararor = ";";  // NOI18N
-                break;
-            case PlatformTypes.PLATFORM_MACOSX:
-                pathSepararor = ":";  // NOI18N
-                paths += ":/usr/lib:/usr/local/lib:/Library/Frameworks:/System/Library/Frameworks";  // NOI18N
-                break;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                pathSepararor = ":";  // NOI18N
-                paths += ":/lib:/usr/lib";  // NOI18N
-        }
-        return paths;
-    }
-
-    private static String getLdLibraryPathName(ExecutionEnvironment eenv) {
-        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
-        switch (platformInfo.getPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                return platformInfo.getPathName();
-            case PlatformTypes.PLATFORM_MACOSX:
-                return "DYLD_LIBRARY_PATH"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                return "LD_LIBRARY_PATH"; // NOI18N
-        }
     }
 
     private CompilerSet detectCompilerSet(String compiler){
@@ -888,9 +850,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         private final SelectBinaryPanelVisual parent;
         private MyDefaultTableModel(SelectBinaryPanelVisual parent, Map<String, String> dlls, String root){
             super(new String[] {
-                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col0"),
-                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col1"),
-                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col2"),
+                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col0"), //NOI18N
+                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col1"), //NOI18N
+                SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col2"), //NOI18N
             }, 0);
             for(Map.Entry<String,String> entry : dlls.entrySet()) {
                 String dll = entry.getKey();
@@ -898,7 +860,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 String path = entry.getValue();
                 if (path == null) {
                     uses.add(Boolean.FALSE);
-                    paths.add(SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col.notfound"));
+                    paths.add(SelectBinaryPanelVisual.getString("SelectBinaryPanelVisual.col.notfound")); //NOI18N
                 } else {
                     if (isMyDll(path, root)) {
                         uses.add(Boolean.TRUE);
@@ -912,9 +874,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
 
         private boolean isMyDll(String path, String root) {
-            path = path.replace('\\','/');
-            root = root.replace('\\','/');
-            if (path.startsWith(root)) {
+            path = path.replace('\\','/'); //NOI18N
+            root = root.replace('\\','/'); //NOI18N
+            if (path.startsWith("/usr/lib/")) { //NOI18N
+                return false;
+            } else if (path.startsWith("/lib/")) { //NOI18N
+                return false;
+            } else if (path.startsWith("/usr/local/lib/")) { //NOI18N
+                return false;
+            } else if (path.startsWith(root)) {
                 return true;
             } else {
                 String[] p1 = path.split("/");  // NOI18N
