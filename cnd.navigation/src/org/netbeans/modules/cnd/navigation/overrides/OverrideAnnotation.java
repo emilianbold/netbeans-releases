@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
     }
 
     @Override
-    protected CharSequence debugTypeStirng() {
+    protected CharSequence debugTypeString() {
         switch (type) {
             case OVERRIDES:
                 return "OVERRIDES"; // NOI18N

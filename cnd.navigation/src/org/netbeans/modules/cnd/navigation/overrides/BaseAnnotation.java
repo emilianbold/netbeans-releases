@@ -155,7 +155,7 @@ import org.openide.text.NbDocument;
         return pos;
     }
 
-    protected abstract CharSequence debugTypeStirng();
+    protected abstract CharSequence debugTypeString();
 
     /** for test/debugging purposes */
     public CharSequence debugDump() {
@@ -163,7 +163,7 @@ import org.openide.text.NbDocument;
         int line = NbDocument.findLineNumber(document, getPosition().getOffset()) + 1; // convert to 1-based
         sb.append(line);
         sb.append(':');
-        sb.append(debugTypeStirng());
+        sb.append(debugTypeString());
         sb.append(' ');
         boolean first = true;
 
@@ -228,7 +228,7 @@ import org.openide.text.NbDocument;
             if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
                 CsmUtilities.openSource(decl);
             }
-        } else if (baseUIDs.size() + descUIDs.size() > 1) {
+        } else if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
             String caption = getShortDescription();
             OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs), 
                     toDeclarations(baseTemplateUIDs), toDeclarations(specializationUIDs));
