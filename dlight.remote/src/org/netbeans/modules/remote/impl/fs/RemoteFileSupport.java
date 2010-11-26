@@ -98,8 +98,6 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
     private final Object mainLock = new Object();
     private Map<File, Object> locks = new HashMap<File, Object>();
 
-    private final Map<ExecutionEnvironment, Boolean> cancels = new HashMap<ExecutionEnvironment, Boolean>();
-
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
