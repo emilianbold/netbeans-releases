@@ -74,9 +74,6 @@
                         <attr intvalue="1200" name="position"/>
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
 
-                    <file name="format">
-                    <attr intvalue="750" name="position"/></file>
-
                     <file name="SeparatorAfterFormat.instance">
                         <attr intvalue="780" name="position"/>
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
