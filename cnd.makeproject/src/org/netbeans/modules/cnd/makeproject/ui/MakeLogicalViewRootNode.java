@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -83,6 +84,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -107,6 +109,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     private boolean brokenLinks;
     private boolean brokenIncludes;
+    private boolean brokenProject;
     private Folder folder;
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
@@ -143,11 +146,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
-        ic.remove(folder);
+        if (folder != null) {
+            ic.remove(folder);
+        }
         folder = logicalFolders;
         ic.add(logicalFolders);
         FolderSearchInfo old = getLookup().lookup(FolderSearchInfo.class);
-        ic.remove(old);
+        if (old != null) {
+            ic.remove(old);
+        }
         ic.add(new FolderSearchInfo(logicalFolders));
         setChildren(new LogicalViewChildren(folder, provider));
         updateAnnotationFiles();
@@ -271,6 +278,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
+            if (brokenProject) {
+                MakeLogicalViewRootNode.this.setChildren(Children.LEAF);
+            }
             fireIconChange();
             fireOpenedIconChange();
             fireDisplayNameChange(null, null);
@@ -284,6 +294,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     public void stateChanged(ChangeEvent e) {
         brokenLinks = MakeLogicalViewProvider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(getProject());
+        brokenProject = provider.getMakeConfigurationDescriptor().getState() == State.BROKEN;
         updateAnnotationFiles();
         EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
 //            fireIconChange(); // MakeLogicalViewRootNode
@@ -314,18 +325,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         return mergeBadge(annotateIcon(super.getIcon(type), type));
     }
 
+    @Override
+    public Image getOpenedIcon(int type) {
+        return mergeBadge(annotateIcon(super.getIcon(type), type));
+    }
+
     private Image mergeBadge(Image original) {
         if (brokenLinks) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         } else if (brokenIncludes) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
+        } else if (brokenProject) {
+            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         }
         return original;
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return mergeBadge(annotateIcon(super.getOpenedIcon(type), type));
     }
 
     @Override
