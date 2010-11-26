@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.navigation.overrides;
 
+import java.util.MissingResourceException;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -62,14 +63,14 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Kvashin
  */
 /*package*/ abstract class BaseAnnotation extends Annotation {
 
-
-    public enum AnnotationType {
+    /*package*/ enum AnnotationType {
         IS_OVERRIDDEN,
         OVERRIDES,
         COMBINED
@@ -138,6 +139,43 @@ import org.openide.text.NbDocument;
         }
     }
     
+    protected final String addTemplateAnnotation(String baseDescr) throws MissingResourceException {
+        if (baseTemplateUIDs.isEmpty() && !specializationUIDs.isEmpty()) {
+            CharSequence text = "..."; //NOI18N
+            if (specializationUIDs.size() == 1) {
+                CsmOffsetableDeclaration obj = specializationUIDs.iterator().next().getObject();
+                if (obj != null) {
+                    text = obj.getQualifiedName();
+                }
+            }
+            if (baseDescr.isEmpty()) {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_Specialization", text);
+            } else {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_Specialization2", baseDescr, text);
+            }
+        } else if (!baseTemplateUIDs.isEmpty() && specializationUIDs.isEmpty()) {
+            CharSequence text = "..."; //NOI18N
+            if (baseTemplateUIDs.size() == 1) {
+                CsmOffsetableDeclaration obj = baseTemplateUIDs.iterator().next().getObject();
+                if (obj != null) {
+                    text = obj.getQualifiedName();
+                }
+            }
+            if (baseDescr.isEmpty()) {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_BaseTemplate", text);
+            } else {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_BaseTemplate2", baseDescr, text);
+            }
+        } else if (!baseTemplateUIDs.isEmpty() && !specializationUIDs.isEmpty()) {
+            if (baseDescr.isEmpty()) {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_BaseTemplateAndSpecialization");
+            } else {
+                baseDescr = NbBundle.getMessage(getClass(), "LAB_BaseTemplateAndSpecialization2", baseDescr);
+            }
+        }
+        return baseDescr;
+    }
+    
     public void attach() {
         NbDocument.addAnnotation(document, pos, -1, this);
     }
@@ -155,7 +193,7 @@ import org.openide.text.NbDocument;
         return pos;
     }
 
-    protected abstract CharSequence debugTypeStirng();
+    protected abstract CharSequence debugTypeString();
 
     /** for test/debugging purposes */
     public CharSequence debugDump() {
@@ -163,7 +201,7 @@ import org.openide.text.NbDocument;
         int line = NbDocument.findLineNumber(document, getPosition().getOffset()) + 1; // convert to 1-based
         sb.append(line);
         sb.append(':');
-        sb.append(debugTypeStirng());
+        sb.append(debugTypeString());
         sb.append(' ');
         boolean first = true;
 
@@ -228,7 +266,7 @@ import org.openide.text.NbDocument;
             if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
                 CsmUtilities.openSource(decl);
             }
-        } else if (baseUIDs.size() + descUIDs.size() > 1) {
+        } else if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
             String caption = getShortDescription();
             OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs), 
                     toDeclarations(baseTemplateUIDs), toDeclarations(specializationUIDs));
