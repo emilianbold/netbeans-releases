@@ -82,26 +82,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
-    private static enum Mode {
-        EXISTENCE,
-        FILE_OBJECT
-    }
-
-    public boolean exists(String relativePath) {
-        Boolean result = (Boolean) getFileOrCheckExistence(relativePath, Mode.EXISTENCE);
-        return (result == null) ? false : result.booleanValue();
-    }
-
-    @Override
-    public FileObject getFileObject(String relativePath) {
-        FileObject fo = (FileObject) getFileOrCheckExistence(relativePath, Mode.FILE_OBJECT);
-// The FileObject contract is to return NULL in the case file object is not found
-//        if (fo == null) {
-//            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, remotePath + '/' + relativePath);
-//        }
-        return fo;
-    }
-
     public boolean canWrite(String childNameExt) throws IOException {
         return getDirectoryAttrs().isWritable(childNameExt);
     }
@@ -116,13 +96,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return attrs;
     }
 
-    /**
-     *
-     * @param relativePath
-     * @param createFileObject
-     * @return either FileObject or Boolean
-     */
-    private Object getFileOrCheckExistence(String relativePath, Mode mode) {
+    @Override
+    public FileObject getFileObject(String relativePath) {
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -155,12 +130,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!getDirectoryAttrs().exists(relativePath)) {
                     return null;
                 }
-            }
-
-            if (mode == Mode.EXISTENCE) {
-                return Boolean.valueOf(file.exists());
-            } else {
-                RemoteLogger.assertTrue(mode == Mode.FILE_OBJECT);
             }
 
             boolean resultIsDirectory = file.isDirectory();

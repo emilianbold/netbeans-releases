@@ -129,10 +129,6 @@ public class RemoteFileSystem extends FileSystem {
         return root;
     }
 
-    public boolean exists(String path) {
-        return root.exists(path);
-    }
-
     @Override
     public FileObject findResource(String name) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
