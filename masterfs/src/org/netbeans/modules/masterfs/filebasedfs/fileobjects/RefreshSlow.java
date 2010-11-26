@@ -61,7 +61,7 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     @Override
     public void run() {
-        RootObj.invokeRefreshFor(this, File.listRoots());
+        RootObj.invokeRefreshFor(this, File.listRoots(), true);
     }
 
     boolean refreshFileObject(final BaseFileObj fo, final boolean expected, final int add) {

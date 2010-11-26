@@ -71,7 +71,6 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 
 /**
