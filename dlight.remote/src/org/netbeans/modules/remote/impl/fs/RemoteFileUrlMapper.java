@@ -76,7 +76,7 @@ public class RemoteFileUrlMapper extends URLMapper {
                 }
             }
             if (env != null) {
-                RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+                RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
                 FileObject fo = fs.findResource(url.getFile());
                 return new FileObject[] { fo };
             }

@@ -99,9 +99,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
         long time;
         
-        RemoteFileSupport remoteFileSupport = fs.getRemoteFileSupport();
+        ChildrenSupport childrenSupport = fs.getChildrenSupport();
         time = System.currentTimeMillis();
-        remoteFileSupport.ensureDirSync(localDir, dirName);
+        childrenSupport.ensureDirSync(localDir, dirName);
         time = System.currentTimeMillis() - time;
         assertTrue("File " + stdioFile + " should exist", stdioFile.exists());
         System.err.printf("Synchronizing %s took %d ms\n", dirName, time);
@@ -109,7 +109,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         // check that ensureDirSync does not take too long
         long maxTime = time / 10;
         time = System.currentTimeMillis();
-        remoteFileSupport.ensureDirSync(localDir, dirName);
+        childrenSupport.ensureDirSync(localDir, dirName);
         time = System.currentTimeMillis() - time;
         System.err.printf("Checking sync for %s took %d ms\n", dirName, time);
         assertTrue("ensureDirSync worked too long", time < maxTime);
@@ -240,7 +240,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             }
         }
 
-        fs.getRemoteFileSupport().resetStatistic();
+        fs.getChildrenSupport().resetStatistic();
         Thread[] threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++) {
             threads[i] = new Thread(new Worker(absPath, barrier, exceptions));
@@ -250,8 +250,8 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         for (int i = 0; i < threadCount; i++) {
             threads[i].join();
         }
-        assertEquals("Dir. sync count differs", 1, fs.getRemoteFileSupport().getDirSyncCount());
-        assertEquals("File transfer count differs", 1, fs.getRemoteFileSupport().getFileCopyCount());
+        assertEquals("Dir. sync count differs", 1, fs.getChildrenSupport().getDirSyncCount());
+        assertEquals("File transfer count differs", 1, fs.getChildrenSupport().getFileCopyCount());
         if (!exceptions.isEmpty()) {
             System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
             throw exceptions.iterator().next();

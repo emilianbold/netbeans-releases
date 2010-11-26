@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -56,7 +57,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -141,8 +141,12 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    public FileSystem getFileSystem() throws FileStateInvalidException {
+    public RemoteFileSystem getFileSystem() throws FileStateInvalidException {
         return fileSystem;
+    }
+
+    public ChildrenSupport getChildrenSupport() {
+        return fileSystem.getChildrenSupport();
     }
 
     protected RemoteFileSupport getRemoteFileSupport() {
@@ -233,6 +237,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     public void setImportant(boolean b) {
         // Deprecated. Noithing to do.
     }
+
+//    protected abstract void ensureSync() throws IOException, ConnectException;
 
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {

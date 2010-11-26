@@ -84,7 +84,7 @@ public class RemoteFileURLConnection extends URLConnection {
 
     @Override
     public void connect() throws IOException {
-        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(execEnv);
+        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
         fileObject = fs.findResource(path);
         if (fileObject == null || !fileObject.isValid()) {
             throw newFileNotFoundException();

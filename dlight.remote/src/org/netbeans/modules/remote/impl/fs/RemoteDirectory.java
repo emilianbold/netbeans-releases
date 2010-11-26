@@ -88,7 +88,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private DirectoryAttributes getDirectoryAttrs() throws IOException {
         synchronized (this) {
             if (attrs == null) {
-                attrs = new DirectoryAttributes(new File(cache, RemoteFileSupport.FLAG_FILE_NAME));
+                attrs = new DirectoryAttributes(new File(cache, ChildrenSupport.FLAG_FILE_NAME));
                 attrs.load();
             }
         }
@@ -109,14 +109,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 int slashPos = relativePath.lastIndexOf('/');
                 if (slashPos == -1) {
                     String parentRemotePath = (remotePath.length() == 0) ? "/" : remotePath; // NOI18N
-                    DirectoryAttributes newAttrs = getRemoteFileSupport().ensureDirSync(cache, parentRemotePath);
+                    DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, parentRemotePath);
                     if (newAttrs != null) {
                         attrs = newAttrs;
                     }
                 } else {
                     File parentFile = file.getParentFile();
                     String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
-                    getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
+                    getChildrenSupport().ensureDirSync(parentFile, parentRemotePath);
                 }
                 
                 if (!file.exists()) {
@@ -125,7 +125,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
 
             if (relativePath.indexOf('/') < 0) { // XXX: get rid of empty files; delegate to directories recursively, then remove this check
-                getRemoteFileSupport().ensureDirSync(cache, remotePath);
+                getChildrenSupport().ensureDirSync(cache, remotePath);
                 if (!getDirectoryAttrs().exists(relativePath)) {
                     return null;
                 }
@@ -165,14 +165,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public FileObject[] getChildren() {
         try {
-            DirectoryAttributes newAttrs = getRemoteFileSupport().ensureDirSync(cache, remotePath);
+            DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, remotePath);
             if (newAttrs != null) {
                 attrs = newAttrs;
             }
             File[] childrenFiles = cache.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return ! RemoteFileSupport.FLAG_FILE_NAME.equals(name);
+                    return ! ChildrenSupport.FLAG_FILE_NAME.equals(name);
                 }
             });
             FileObject[] childrenFO = new FileObject[childrenFiles.length];
@@ -195,6 +195,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return new FileObject[0];
     }
 
+//    @Override
+//    protected void ensureSync() throws IOException, ConnectException {
+//    }
     
     @Override
     public InputStream getInputStream() throws FileNotFoundException {

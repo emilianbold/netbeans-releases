@@ -43,40 +43,25 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.support.RemoteLogger;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
 
 /**
  * Responsible for copying files from remote host.
@@ -89,255 +74,9 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
     private final PendingFilesQueue pendingFilesQueue = new PendingFilesQueue();
     private final ExecutionEnvironment execEnv;
 
-    /** File transfer statistics */
-    private int fileCopyCount;
-
-    /** Directory synchronization statistics */
-    private int dirSyncCount;
-
-    private final Object mainLock = new Object();
-    private Map<File, Object> locks = new HashMap<File, Object>();
-
-    public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
-
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
         super(NbBundle.getMessage(RemoteFileSupport.class, "RemoteDownloadTask.TITLE", getDisplayName(execEnv)));
         this.execEnv = execEnv;
-        resetStatistic();
-    }
-
-    private Object getLock(File file) {
-        synchronized(mainLock) {
-            Object lock = locks.get(file);
-            if (lock == null) {
-                lock = new Object();
-                locks.put(file, lock);
-            }
-            return lock;
-        }
-    }
-
-    private void removeLock(File file) {
-        synchronized(mainLock) {
-            locks.remove(file);
-        }
-    }
-   
-    public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
-        if (!file.exists() || file.length() == 0) {
-            synchronized (getLock(file)) {
-                // dbl check is ok here since it's file-based
-                if (!file.exists() || file.length() == 0) {
-                    syncFile(file, remotePath); // fromFixedCaseSensitivePathIfNeeded(remotePath));
-                    removeLock(file);
-                }
-            }
-        }
-    }
-
-    private void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
-        RemoteLogger.assertTrue(!file.exists() || file.isFile(), "not a file " + file.getAbsolutePath());
-        checkConnection(file, remotePath, false);
-        Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
-        try {
-            int rc = task.get().intValue();
-            if (rc == 0) {
-                fileCopyCount++;
-            } else {
-                throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
-                        " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
-            }
-        } catch (InterruptedException ex) {
-            truncate(file);
-            throw ex;
-        } catch (ExecutionException ex) {
-            truncate(file);
-            throw ex;
-        }
-    }
-
-    private void truncate(File file) throws IOException {
-        OutputStream os = new FileOutputStream(file);
-        os.close();
-
-    }
-
-    private boolean isValidLocalFile(File base, String name) {
-        File file = new File(base, name);
-        if (file.isAbsolute()) {
-            return file.exists();
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Ensured that the directory is synchronized
-     */
-    public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
-        DirectoryAttributes attrs = null;
-        if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
-            synchronized (getLock(dir)) {
-                // dbl check is ok here since it's file-based
-                File flagFile = new File(dir, FLAG_FILE_NAME);
-                if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
-                    attrs = syncDirStruct(dir, /*fromFixedCaseSensitivePathIfNeeded(*/remoteDir/*)*/, flagFile);
-                    removeLock(dir);
-                }
-            }
-        }
-        return attrs;
-    }
-
-    @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private DirectoryAttributes syncDirStruct(final File dir, final String remoteDir, final File flagFile) throws IOException, ConnectException {
-        Parameters.notNull("null remote dir", remoteDir);
-        if (dir.exists()) {
-            RemoteLogger.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
-        }
-
-        final String rdir = remoteDir.length() == 0 ? "/" : remoteDir; // NOI18N
-        checkConnection(dir, rdir, true);
-
-        final String script = "test -d \"" + rdir + "\" && " + // NOI18N
-                "cd \"" + rdir + "\" &&" + // NOI18N
-                "for D in `/bin/ls`; do " + // NOI18N
-                "if [ -d \"$D\" ]; then echo D \"$D\"; else if [ -w \"$D\" ]; then echo w \"$D\"; else echo r \"$D\"; fi; fi; done"; // NOI18N
-
-        final AtomicReference<IOException> criticalException = new AtomicReference<IOException>();
-        final AtomicReference<IOException> nonCriticalException = new AtomicReference<IOException>();
-        final AtomicBoolean dirCreated = new AtomicBoolean(false);
-        final DirectoryAttributes attrs = new DirectoryAttributes(flagFile);
-
-        LineProcessor outputProcessor = new LineProcessor() {
-            @Override
-            public void processLine(String inputLine) {
-                if (!dirCreated.get()) {
-                    dirCreated.set(true);
-                    if (!dir.mkdirs() && !dir.exists()) {
-                        criticalException.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
-                        return;
-                    }
-                }
-                RemoteLogger.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
-                char mode = inputLine.charAt(0);
-                boolean directory = (mode == 'D');
-                String fileName = inputLine.substring(2);
-                if (directory) {
-                    //fileName = fixCaseSensitivePathIfNeeded(fileName);
-                    attrs.setWritable(fileName, true);
-                } else {
-                    attrs.setWritable(fileName, mode == 'w');
-                }
-                File file = new File(dir, fileName);
-                try {
-                    RemoteLogger.getInstance().log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
-                    if (directory) {
-                        if (!file.mkdirs() && !file.exists()) {
-                            throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
-                        }
-                    } else {
-                        file.createNewFile();
-                    }
-                } catch (IOException ioex) {
-                    RemoteLogger.getInstance().log(Level.WARNING,
-                            "Error creating {0}{1}{2}: {3}", // NOI18N
-                            new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ioex.getMessage()}); // NOI18N
-                    nonCriticalException.set(ioex);
-                }
-            }
-
-            @Override
-            public void reset() {
-            }
-
-            @Override
-            public void close() {
-            }
-        };
-
-        LineProcessor errorProcessor = new LineProcessor() {
-
-            @Override
-            public void processLine(String line) {
-                RemoteLogger.getInstance().log(Level.FINEST,
-                        "Error [{0}]\n\ton Synchronizing dir {1} with {2}{3}{4}", // NOI18N
-                        new Object[]{line, dir.getAbsolutePath(), execEnv, ':', rdir});
-            }
-
-            @Override
-            public void reset() {
-            }
-
-            @Override
-            public void close() {
-            }
-        };
-
-        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, outputProcessor);
-        scriptRunner.setErrorProcessor(errorProcessor);
-
-        RemoteLogger.getInstance().log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
-                new Object[]{dir.getAbsolutePath(), execEnv, ':', rdir});
-
-        int rc = scriptRunner.execute();
-
-        if (nonCriticalException.get() != null) {
-            IOException e = nonCriticalException.get();
-            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
-            Exceptions.printStackTrace(ioe);
-        }
-        if (criticalException.get() != null) {
-            IOException e = criticalException.get();
-            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
-            throw ioe;
-        }
-
-        if (dirCreated.get()) {
-            File flag = new File(dir, FLAG_FILE_NAME);
-            RemoteLogger.getInstance().log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
-            try {
-                flag.createNewFile(); // TODO: error processing
-            } catch (IOException ie) {
-                RemoteLogger.getInstance().log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
-                criticalException.set(ie);
-            }
-            dirSyncCount++;
-        }
-        if (rc == 0) {
-            RemoteLogger.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
-            attrs.store();
-            return attrs;
-        } else {
-            if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
-                ExitStatus ls = ProcessUtils.execute(execEnv, "/bin/ls", rdir); // NOI18N
-                RemoteLogger.getInstance().log(Level.FINE, "Error running script\n{0}\non {1}.\nContent of directory {2}:\n{3}\n",
-                        new Object[]{script, execEnv, rdir, ls.output});
-            }
-            return null;
-        }
-    }
-
-    /*package-local test method*/ final void resetStatistic() {
-        this.dirSyncCount = 0;
-        this.fileCopyCount = 0;
-    }
-
-    /*package-local test method*/ int getDirSyncCount() {
-        return dirSyncCount;
-    }
-
-    /*package-local test method*/ int getFileCopyCount() {
-        return fileCopyCount;
-    }
-
-    private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
-            pendingFilesQueue.add(localFile, remotePath, isDirectory);
-            ConnectionNotifier.addTask(execEnv, this);
-            throw new ConnectException();
-        }
     }
 
     @Override
@@ -373,12 +112,13 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
         int cnt = 0;
         try {
             PendingFile pendingFile;
+            ChildrenSupport childrenSupport = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getChildrenSupport();
             // die after half a minute inactivity period
             while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
                 if (pendingFile.isDirectory) {
-                    ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
+                    childrenSupport.ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
                 } else {
-                    ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
+                    childrenSupport.ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
                 }
                 handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
             }
@@ -386,6 +126,12 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             handle.finish();
             RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
         }
+    }
+
+    public void addPendingFile(File localFile, String remotePath, boolean isDirectory) {
+        RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
+        pendingFilesQueue.add(localFile, remotePath, isDirectory);
+        ConnectionNotifier.addTask(execEnv, this);
     }
 
     private static class PendingFile {

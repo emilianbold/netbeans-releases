@@ -61,12 +61,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public FileSystem getFileSystem(ExecutionEnvironment env, String root) {
-        return RemoteFileSystemManager.getInstance().get(env);
+        return RemoteFileSystemManager.getInstance().getFileSystem(env);
     }
 
     @Override
     public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
-        return RemoteFileSystemManager.getInstance().get(env).normalizeAbsolutePath(absPath);
+        return RemoteFileSystemManager.getInstance().getFileSystem(env).normalizeAbsolutePath(absPath);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         if (baseFileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
             if (isPathAbsolute(relativeOrAbsolutePath)) {
-                relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().get(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
+                relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
                     baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
                 } catch (FileStateInvalidException ex) {
@@ -169,7 +169,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             RemoteFileSystem fs = null;
             ExecutionEnvironment env = RemoteFileSystemUtils.getExecutionEnvironment(hostName.toString(), 0);
             if (env != null) {
-                fs = RemoteFileSystemManager.getInstance().get(env);
+                fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
                 fo = fs.findResource(remotePath.toString());
             }
 //            if (fo == null) {

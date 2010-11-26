@@ -67,7 +67,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         this.execEnv = execEnv;
-        fs = RemoteFileSystemManager.getInstance().get(execEnv);
+        fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
         assertNotNull("Null remote file system", fs);
         rootFO = fs.getRoot();
         assertNotNull("Null root file object", rootFO);

@@ -73,6 +73,7 @@ public class RemoteFileSystem extends FileSystem {
     private final String filePrefix;
     private final RootFileObject root;
     private final RemoteFileSupport remoteFileSupport;
+    private final ChildrenSupport childrenSupport;
     private final File cache;
     private final RemoteFileObjectFactory factory;
 
@@ -80,6 +81,7 @@ public class RemoteFileSystem extends FileSystem {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
+        this.childrenSupport = new ChildrenSupport(this);
         factory  = new RemoteFileObjectFactory(this);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
@@ -150,6 +152,10 @@ public class RemoteFileSystem extends FileSystem {
 
     public RemoteFileSupport getRemoteFileSupport() {
         return remoteFileSupport;
+    }
+
+    public ChildrenSupport getChildrenSupport() {
+        return childrenSupport;
     }
 
     @Override
