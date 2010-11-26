@@ -449,14 +449,9 @@ public final class FileObjectFactory {
                     for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
                         @SuppressWarnings("unchecked")
                         WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
-                        BaseFileObj fo = (ref != null) ? ref.get() : null;
-                        if (fo != null && noRecListeners) {
-                            FolderObj p = fo.getExistingParent();
-                            if (p != null && p.hasRecursiveListener()) {
-                                LOG_REFRESH.log(Level.FINER, "skip: {0}", fo);
-                                fo = null;
-                            }
-                        }
+                        BaseFileObj fo = shallBeChecked(
+                            ref != null ? ref.get() : null, noRecListeners
+                        );
                         if (fo != null) {
                             all2Refresh.add(fo);
                         }
@@ -464,14 +459,9 @@ public final class FileObjectFactory {
                 } else {
                     @SuppressWarnings("unchecked")
                     final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
-                    BaseFileObj fo = (ref != null) ? ref.get() : null;
-                    if (fo != null && noRecListeners) {
-                        FolderObj p = fo.getExistingParent();
-                        if (p != null && p.hasRecursiveListener()) {
-                            LOG_REFRESH.log(Level.FINER, "skip: {0}", fo);
-                            fo = null;
-                        }
-                    }
+                    BaseFileObj fo = shallBeChecked(
+                        ref != null ? ref.get() : null, noRecListeners
+                    );
                     if (fo != null) {
                         all2Refresh.add(fo);
                     }
@@ -480,6 +470,17 @@ public final class FileObjectFactory {
         }
         all2Refresh.remove(root); // #182793
         return all2Refresh;
+    }
+
+    private BaseFileObj shallBeChecked(BaseFileObj fo, boolean noRecListeners) {
+        if (fo != null && noRecListeners) {
+            FolderObj p = (FolderObj) (fo instanceof FolderObj ? fo : fo.getExistingParent());
+            if (p != null && p.hasRecursiveListener()) {
+                LOG_REFRESH.log(Level.FINER, "skip: {0}", fo);
+                fo = null;
+            }
+        }
+        return fo;
     }
 
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
