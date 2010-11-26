@@ -536,7 +536,11 @@ public abstract class Unit {
                 container = Containers.forUpdate ();
             }
             if (marked) {
-                container.add (updateUnit, updateEl);
+                try {
+                    container.add (updateUnit, updateEl);
+                } catch (IllegalArgumentException ex) {
+                    log.log(Level.WARNING, ex.getMessage());
+                }
             } else {
                 container.remove (updateEl);
             }
