@@ -50,16 +50,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -538,8 +535,13 @@ public final class FolderObj extends BaseFileObj {
         }
         return folderChildren;
     }
+    
+    public synchronized final boolean hasRecursiveListener() {
+        FileObjectKeeper k = keeper;
+        return k != null && k.isOn();
+    }
 
-    synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
+    final synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
         if (keeper == null) {
             keeper = new FileObjectKeeper(this);
             List<File> ch = keeper.init(-1, null, false);

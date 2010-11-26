@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,67 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
+package org.netbeans.modules.git.ui.conflicts;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import java.io.File;
+import org.netbeans.modules.git.ui.actions.*;
+import java.util.EnumSet;
+import java.util.logging.Logger;
+import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Stupka
  */
-public interface DiscoveryDescriptor {
+@ActionID(id = "org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_ResolveConflictsAction_Name")
+public class ResolveConflictsAction extends MultipleRepositoryAction {
 
-    Project getProject();
-    void setProject(Project project);
-    
-    DiscoveryProvider getProvider();
-    String getProviderID();
-    void setProvider(DiscoveryProvider provider);
+    private static final Logger LOG = Logger.getLogger(ResolveConflictsAction.class.getName());
 
-    String getRootFolder();
-    void setRootFolder(String root);
+    @Override
+    protected boolean enable (Node[] activatedNodes) {
+        VCSContext context = getCurrentContext(activatedNodes);
+        return Git.getInstance().getFileStatusCache().containsFiles(context, EnumSet.of(Status.IN_CONFLICT), false);
+    }
 
-    List<String> getErrors();
-    void setErrors(List<String> errors);
-
-    String getBuildResult();
-    void setBuildResult(String binaryPath);
-
-    String getAditionalLibraries();
-    void setAditionalLibraries(String binaryPath);
-
-    String getBuildLog();
-    void setBuildLog(String logFile);
-
-    String getLevel();
-    void setLevel(String level);
-
-    List<ProjectConfiguration> getConfigurations();
-    void setConfigurations(List<ProjectConfiguration> configuration);
-
-    List<String> getIncludedFiles();
-    void setIncludedFiles(List<String> includedFiles);
-
-    boolean isInvokeProvider();
-    void setInvokeProvider(boolean invoke);
-    
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
-
-    String getCompilerName();
-    void setCompilerName(String compiler);
-
-    List<String> getDependencies();
-    void setDependencies(List<String> dependencies);
-
-    List<String> getSearchPaths();
-    void setSearchPaths(List<String> searchPaths);
-
-    void setMessage(String message);
-
-    void clean();
+    @Override
+    protected Task performAction (File repository, File[] roots, VCSContext context) {
+        final File[] files = Git.getInstance().getFileStatusCache().listFiles(roots, EnumSet.of(Status.IN_CONFLICT));
+        if (files.length > 0) {
+            GitProgressSupport supp = new ResolveConflictsExecutor(files);;
+            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(ResolveConflictsAction.class, "MSG_PreparingMerge")); //NOI18N
+            return supp.getTask();
+        } else {
+            return null;
+        }
+    }
 }
