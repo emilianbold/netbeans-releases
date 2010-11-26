@@ -65,7 +65,9 @@ import org.openide.util.NbBundle;
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(getClass(), "LAB_Extended");
+        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
+        out = addTemplateAnnotation(out);
+        return out;
     }
 
     @Override

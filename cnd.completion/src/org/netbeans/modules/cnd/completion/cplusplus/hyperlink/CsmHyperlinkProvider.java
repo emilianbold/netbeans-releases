@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
@@ -168,9 +167,12 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
             } else if (CsmKindUtilities.isClass(item)) {
                 CsmClass cls = (CsmClass) item;
+                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
+                Collection<CsmClass> subClasses = Collections.<CsmClass>emptyList();
+             
                 Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
                 if (!subRefs.isEmpty()) {
-                    Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
                     for (CsmReference ref : subRefs) {
                         CsmObject obj = ref.getReferencedObject();
                         CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
@@ -178,12 +180,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                             subClasses.add((CsmClass) obj);
                         }
                     }
-                    Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
-                    Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmInstantiationProvider.getDefault().getSpecializations(cls);
-                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplateClasses, templateSpecializationClasses, false, target, offset)) {
-                        UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
-                        return true;
-                    }
+                }
+                if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplates, templateSpecializations, false, target, offset)) {
+                    UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
+                    return true;
                 }
             }
         }
