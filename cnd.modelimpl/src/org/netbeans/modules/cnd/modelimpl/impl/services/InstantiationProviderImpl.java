@@ -165,7 +165,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 CsmProject proj = contextFile != null ? contextFile.getProject() : null;
                 if (proj instanceof ProjectBase) {
                     CharSequence qualifiedName = declaration.getUniqueName();
-                    String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");
+                    String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");// NOI18N
                     Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)proj).findDeclarationsByPrefix(removedSpecialization);
                     Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>(0);
                     for (CsmOffsetableDeclaration decl : decls) {
