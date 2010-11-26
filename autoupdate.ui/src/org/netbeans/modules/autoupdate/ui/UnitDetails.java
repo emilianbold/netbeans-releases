@@ -64,6 +64,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
@@ -210,7 +211,14 @@ public class UnitDetails extends DetailsPanel {
         if (!(u instanceof Unit.InternalUpdate)) {
             OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
 
-            container.add(u.updateUnit, uu.getRelevantElement());
+            try {
+                container.add(u.updateUnit, uu.getRelevantElement());
+            } catch (IllegalArgumentException ex) {
+                Exceptions.attachMessage(ex, "Unit: " + u);
+                Exceptions.attachMessage(ex, "Unit.updateUnit: " + u.updateUnit);
+                Exceptions.attachMessage(ex, "Unit.getRelevantElement(): " + uu.getRelevantElement());
+                throw ex;
+            }
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
             List <OperationInfo<InstallSupport>> infos = container.listAll();
 
