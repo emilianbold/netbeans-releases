@@ -124,49 +124,7 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             locks.remove(file);
         }
     }
-
-//    private static final String CC_STR = "cc"; // NOI18N
-//    /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
-//
-//    /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
-//        return _fixCaseSensitivePathIfNeeded(in, false);
-//    }
-//
-//    /** for TEST purposes ONLY */
-//    /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
-//        return _fixCaseSensitivePathIfNeeded(in, true);
-//    }
-//
-//    private static String _fixCaseSensitivePathIfNeeded(String in, boolean force) {
-//        if (!force && CndFileUtils.isSystemCaseSensitive()) {
-//            return in;
-//        }
-//        StringBuilder out = new StringBuilder(in);
-//        // now we support only cc replacement into cc.cnd
-//        int left = out.indexOf(CC_STR); // NOI18N
-//        if (left >= 0 && out.length() >= CC_STR.length()) {
-//             // check what we have before "cc"
-//            if (left > 0 && out.charAt(left-1) != '/') { // NOI18N
-//                return out.toString();
-//            }
-//            int right = left + CC_STR.length();
-//            // check what we have after "cc"
-//            if (out.length() > right && out.charAt(right) != '/') { // NOI18N
-//                return out.toString();
-//            }
-//            if (right == out.length()) {
-//                out.append(POSTFIX);
-//            } else {
-//                out.insert(right, POSTFIX);
-//            }
-//        }
-//        return out.toString();
-//    }
-//
-//    /*package*/static String fromFixedCaseSensitivePathIfNeeded(String in) {
-//        return in.replaceAll(POSTFIX, "");
-//    }
-    
+   
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         if (!file.exists() || file.length() == 0) {
             synchronized (getLock(file)) {

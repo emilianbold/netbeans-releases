@@ -51,7 +51,6 @@ import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 
 /**
