@@ -98,7 +98,6 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -440,11 +439,12 @@ public class InstallSupportImpl {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
+                                        err.log(Level.FINE, "Waiting for {0}@{1} #{2}", new Object[]{ impl.getCodeName(), impl.getSpecificationVersion(), rerunWaitCount});
                                         Thread.sleep(100);
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
-                                        err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
+                                        err.log (Level.INFO, "Timeout waiting for loading module {0}@{2}", new Object[]{impl.getCodeName (), impl.getSpecificationVersion ()});
                                         afterInstall ();
                                         synchronized(downloadedFiles) {
                                             downloadedFiles.clear();
