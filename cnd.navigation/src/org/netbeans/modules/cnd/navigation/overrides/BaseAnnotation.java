@@ -155,7 +155,7 @@ import org.openide.text.NbDocument;
         return pos;
     }
 
-    protected abstract CharSequence debugTypeStirng();
+    protected abstract CharSequence debugTypeString();
 
     /** for test/debugging purposes */
     public CharSequence debugDump() {
@@ -163,7 +163,7 @@ import org.openide.text.NbDocument;
         int line = NbDocument.findLineNumber(document, getPosition().getOffset()) + 1; // convert to 1-based
         sb.append(line);
         sb.append(':');
-        sb.append(debugTypeStirng());
+        sb.append(debugTypeString());
         sb.append(' ');
         boolean first = true;
 
