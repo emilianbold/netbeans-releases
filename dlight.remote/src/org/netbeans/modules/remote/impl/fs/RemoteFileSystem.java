@@ -49,7 +49,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
@@ -68,18 +67,20 @@ import org.openide.util.actions.SystemAction;
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public class RemoteFileSystem extends FileSystem {
 
-    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};
+    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};    
 
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
     private final RootFileObject root;
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
+    private final RemoteFileObjectFactory factory;
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
+        factory  = new RemoteFileObjectFactory(this);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
@@ -92,6 +93,10 @@ public class RemoteFileSystem extends FileSystem {
 
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
+    }
+
+    public RemoteFileObjectFactory getFactory() {
+        return factory;
     }
     
     public String normalizeAbsolutePath(String absPath) {

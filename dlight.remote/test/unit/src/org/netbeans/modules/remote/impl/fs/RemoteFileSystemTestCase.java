@@ -132,6 +132,30 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
+    public void testSingleFileObject() {
+        String absPath = "/usr/include/stdio.h";
+        FileObject fo1 = rootFO.getFileObject(absPath);
+        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo1);
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo1.isValid());
+        FileObject fo2 = rootFO.getFileObject(absPath);
+        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo2);
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo2.isValid());
+        assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
+    }
+
+//    @ForAllEnvironments
+//    public void testSingleLocalFileObject() {
+//        String absPath = "/usr/include/stdio.h";
+//        FileObject fo1 = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()).findResource(absPath);
+//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo1);
+//        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo1.isValid());
+//        FileObject fo2 = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()).findResource(absPath);
+//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo2);
+//        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo2.isValid());
+//        assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
+//    }
+
+    @ForAllEnvironments
     // Disabled, see IZ 190453
     @RandomlyFails
     public void testMultipleRead() throws Exception {

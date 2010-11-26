@@ -143,9 +143,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 remoteAbsPath.append('/').append(pathComponent);
                 cacheFile = new File(cacheFile.getPath() + '/' + pathComponent);
                 if (pathTokenizer.hasMoreElements() || resultIsDirectory) {
-                    resultFileObject = new RemoteDirectory(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
+                    resultFileObject = fileSystem.getFactory().createRemoteDirectory(resultFileObject, remoteAbsPath.toString(), cacheFile);
                 } else {
-                    resultFileObject = new RemotePlainFile(fileSystem, execEnv, (RemoteDirectory) resultFileObject, remoteAbsPath.toString(), cacheFile);
+                    resultFileObject = fileSystem.getFactory().createRemotePlainFile((RemoteDirectory) resultFileObject, remoteAbsPath.toString(), cacheFile);
                 }
             }
             return resultFileObject;
@@ -179,9 +179,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             for (int i = 0; i < childrenFiles.length; i++) {
                 String childPath = remotePath + '/' + childrenFiles[i].getName(); //NOI18N
                 if (childrenFiles[i].isDirectory()) {
-                    childrenFO[i] = new RemoteDirectory(fileSystem, execEnv, this, childPath, childrenFiles[i]);
+                    childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childrenFiles[i]);
                 } else {
-                    childrenFO[i] = new RemotePlainFile(fileSystem, execEnv, this, childPath, childrenFiles[i]);
+                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childrenFiles[i]);
                 }
             }
             return childrenFO;
