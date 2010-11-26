@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
+import java.io.IOException;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
@@ -82,7 +83,7 @@ public class ConvertToStringSwitchTest extends TestBase {
         performFixTest("test/Test.java",
                        "package test;" +
                        "public class Test {" +
-                       "     public int test(int r) {" +
+                       "     public int test(int r) throws Exception {" +
                        "         String g = null;\n" +
                        "         if (g == \"j\") {" +
                        "             System.err.println(1);" +
@@ -96,6 +97,16 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             }" +
                        "         } else if (g == \"l\") {" +
                        "             System.err.println(3);" +
+                       "         } else if (g == \"z\") {" +
+                       "             try {" +
+                       "                 throw new java.io.FileNotFoundException();" +
+                       "             } catch (java.io.IOException e) {}" +
+                       "         } else if (g == \"a\") {" +
+                       "             try {" +
+                       "                 throw new java.io.IOException();" +
+                       "             } catch (java.io.FileNotFoundException e) {}" +
+                       "         } else {\n" +
+                       "             throw new IllegalStateExceptin();\n" +
                        "         }\n" +
                        "         return 11;\n" +
                        "     }" +
@@ -104,7 +115,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "FixImpl",
                        ("package test;" +
                        "public class Test {" +
-                       "     public int test(int r) {" +
+                       "     public int test(int r) throws Exception {" +
                        "         String g = null;" +
                        "         switch (g) {\n" +
                        "             case \"j\":\n" +
@@ -120,6 +131,17 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             case \"l\":\n" +
                        "                 System.err.println(3);" +
                        "                 break;" +
+                       "             case \"z\":\n" +
+                       "                 try {" +
+                       "                     throw new java.io.FileNotFoundException();" +
+                       "                 } catch (java.io.IOException e) {}" +
+                       "                 break;" +
+                       "             case \"a\":\n" +
+                       "                 try {" +
+                       "                     throw new java.io.IOException();" +
+                       "                 } catch (java.io.FileNotFoundException e) {}" +
+                       "             default:\n" +
+                       "                 throw new IllegalStateExceptin();\n" +
                        "         }\n" +
                        "         return 11;\n" +
                        "     }" +
