@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="reuse.existing.frame.as.the.main.window">
+    <api name="winsys"/>
+    <summary>Reuse existing JFrame instance (if any) as IDE's main window.</summary>
+    <version major="6" minor="36"/>
+    <date day="23" month="1" year="2010"/>
+    <author login="saubrecht"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        When window system loads it checks for existing Frames (java.awt.Frame.getFrames()) and
+        if there is a JFrame whose name is "NbMainWindow" then it is reused as the main window.
+        Main menu, toolbars and content pane will be put into this existing JFrame.
+        If there isn't such a JFrame instance then a new empty JFrame is created
+        and used for the main window - the same way as before this change.
+    </description>
+    <class package="org.netbeans.core.windows.view.ui" name="MainWindow"/>
+</change>
 
 <change id="retain.non.persistent.topcomponent.locations">
     <api name="winsys"/>
