@@ -73,10 +73,10 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmTemplateHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -162,8 +162,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
                 baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
                 
-                Collection<CsmOffsetableDeclaration> baseTemplates = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(meth);
-                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmTemplateHierarchyResolver.getDefault().getSpecializations(meth);
+                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(meth);
+                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(meth);
                 if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
                     UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
                     return true;
@@ -180,8 +180,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                             subClasses.add((CsmClass) obj);
                         }
                     }
-                    Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmTemplateHierarchyResolver.getDefault().getBaseTemplate(cls);
-                    Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmTemplateHierarchyResolver.getDefault().getSpecializations(cls);
+                    Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+                    Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmInstantiationProvider.getDefault().getSpecializations(cls);
                     if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplateClasses, templateSpecializationClasses, false, target, offset)) {
                         UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
                         return true;
