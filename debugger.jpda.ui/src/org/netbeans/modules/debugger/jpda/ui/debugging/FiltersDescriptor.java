@@ -70,6 +70,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingMonitorModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.Presenter;
 
@@ -380,7 +381,12 @@ public final class FiltersDescriptor {
         /** Creates a new instance of SortByNameAction */
         SortAction (Item item) {
             this.filterItem = item;
-            putValue(Action.NAME, item.getDisplayName());
+            String displayName = item.getDisplayName();
+            int i = Mnemonics.findMnemonicAmpersand(displayName);
+            if (i >= 0) {
+                displayName = displayName.substring(0, i) + displayName.substring(i+1);
+            }
+            putValue(Action.NAME, displayName);
             putValue(Action.SMALL_ICON, item.getIcon());
         }
 
@@ -390,7 +396,8 @@ public final class FiltersDescriptor {
         }
 
         protected final JRadioButtonMenuItem obtainMenuItem () {
-            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem();
+            Mnemonics.setLocalizedText(menuItem, filterItem.getDisplayName());
             menuItem.setAction(this);
             menuItem.addHierarchyListener(new ParentChangeListener(menuItem));
             menuItem.setSelected(filterItem.isSelected);
@@ -451,7 +458,8 @@ public final class FiltersDescriptor {
         }
 
         private JMenuItem createSubmenu () {
-            JMenuItem menu = new JMenu(NbBundle.getMessage(FiltersDescriptor.class, "LBL_FilterSubmenu")); //NOI18N
+            JMenuItem menu = new JMenu();
+            Mnemonics.setLocalizedText(menu, NbBundle.getMessage(FiltersDescriptor.class, "LBL_FilterSubmenu"));
             JMenuItem menuItem;
             String filterName;
             for (Item item : filtersDesc.filters) {
@@ -460,6 +468,7 @@ public final class FiltersDescriptor {
                 }
                 filterName = item.getName();
                 menuItem = new JCheckBoxMenuItem(item.getDisplayName(), item.isSelected());
+                Mnemonics.setLocalizedText(menuItem, item.getDisplayName());
                 menuItem.addActionListener(this);
                 menuItem.putClientProperty(PROP_FILTER_NAME, filterName);
                 menu.add(menuItem);
