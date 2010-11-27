@@ -190,6 +190,61 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "}");
     }
 
+    public void testVariableDeclarations() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         if (g == \"j\") {" +
+                       "             int i = 1;" +
+                       "             int z = 1;" +
+                       "             System.err.println(i + z);" +
+                       "         } else if (g == \"k\") {" +
+                       "             int i = 2;" +
+                       "             System.err.println(i);" +
+                       "         } else if (g == \"l\") {" +
+                       "             int j = 1;" +
+                       "             System.err.println(j);" +
+                       "         } else if (g == \"z\") {" +
+                       "             int z = 1;" +
+                       "             System.err.println(z);" +
+                       "         }\n" +
+                       "     }" +
+                       "}",
+                       "1:9-1:11:verifier:Convert to switch",
+                       "FixImpl",
+                       ("package test;" +
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         String g = null;" +
+                       "         switch (g) {\n" +
+                       "             case \"j\": {\n" +
+                       "                 int i = 1;" +
+                       "                 int z = 1;" +
+                       "                 System.err.println(i + z);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"k\": {\n" +
+                       "                 int i = 2;" +
+                       "                 System.err.println(i);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"l\":\n" +
+                       "                 int j = 1;" +
+                       "                 System.err.println(j);" +
+                       "                 break;" +
+                       "             case \"z\": {\n" +
+                       "                 int z = 1;" +
+                       "                 System.err.println(z);" +
+                       "                 break;" +
+                       "             }" +
+                       "         }\n" +
+                       "     }" +
+                       "}").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

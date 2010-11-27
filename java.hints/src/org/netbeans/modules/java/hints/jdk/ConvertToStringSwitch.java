@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.jdk;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -52,17 +53,27 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -115,7 +126,7 @@ public class ConvertToStringSwitch {
             return null;
         }
         
-        Map<Iterable<TreePathHandle>, TreePathHandle> literal2Statement = new LinkedHashMap<Iterable<TreePathHandle>, TreePathHandle>();
+        List<CatchDescription<TreePathHandle>> literal2Statement = new ArrayList<CatchDescription<TreePathHandle>>();
         TreePathHandle defaultStatement = null;
 
         Iterable<? extends TreePath> conds = linearizeOrs(ctx.getVariables().get("$cond"));
@@ -158,7 +169,7 @@ public class ConvertToStringSwitch {
                     literals.add(TreePathHandle.create(lt, ctx.getInfo()));
                 }
 
-                literal2Statement.put(literals, TreePathHandle.create(body, ctx.getInfo()));
+                literal2Statement.add(new CatchDescription<TreePathHandle>(literals, TreePathHandle.create(body, ctx.getInfo())));
                 break;
             }
         }
@@ -184,7 +195,7 @@ public class ConvertToStringSwitch {
                     literals.add(TreePathHandle.create(lt, ctx.getInfo()));
                 }
 
-                literal2Statement.put(literals, TreePathHandle.create(new TreePath(tp, it.getThenStatement()), ctx.getInfo()));
+                literal2Statement.add(new CatchDescription<TreePathHandle>(literals, TreePathHandle.create(new TreePath(tp, it.getThenStatement()), ctx.getInfo())));
                 
                 if (it.getElseStatement() == null) {
                     break;
@@ -259,10 +270,10 @@ public class ConvertToStringSwitch {
     private static final class ConvertToSwitch extends JavaFix {
 
         private final TreePathHandle value;
-        private final Map<Iterable<TreePathHandle>, TreePathHandle> literal2Statement;
+        private final List<CatchDescription<TreePathHandle>> literal2Statement;
         private final TreePathHandle defaultStatement;
 
-        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, Map<Iterable<TreePathHandle>, TreePathHandle> literal2Statement, TreePathHandle defaultStatement) {
+        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, List<CatchDescription<TreePathHandle>> literal2Statement, TreePathHandle defaultStatement) {
             super(info, create);
             this.value = value;
             this.literal2Statement = literal2Statement;
@@ -277,17 +288,18 @@ public class ConvertToStringSwitch {
         protected void performRewrite(WorkingCopy copy, TreePath it, UpgradeUICallback callback) {
             TreeMaker make = copy.getTreeMaker();
             List<CaseTree> cases = new LinkedList<CaseTree>();
+            List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
+            Map<TreePath, Set<Name>> catch2Declared = new IdentityHashMap<TreePath, Set<Name>>();
 
-            for (Entry<Iterable<TreePathHandle>, TreePathHandle> e : ConvertToSwitch.this.literal2Statement.entrySet()) {
-                TreePath s = e.getValue().resolve(copy);
+            for (CatchDescription<TreePathHandle> d : ConvertToSwitch.this.literal2Statement) {
+                TreePath s = d.path.resolve(copy);
 
                 if (s == null) {
                     return ;
                 }
 
-                if (addCase(copy, s, cases, e.getKey())) {
-                    return;
-                }
+                resolved.add(new CatchDescription<TreePath>(d.literals, s));
+                catch2Declared.put(s, declaredVariables(s));
             }
 
             if (defaultStatement != null) {
@@ -297,7 +309,14 @@ public class ConvertToStringSwitch {
                     return ;
                 }
 
-                addCase(copy, s, cases, null);
+                resolved.add(new CatchDescription<TreePath>(null, s));
+                catch2Declared.put(s, declaredVariables(s));
+            }
+
+            for (CatchDescription<TreePath> d : resolved) {
+                if (addCase(copy, d, cases, catch2Declared)) {
+                    return;
+                }
             }
 
             TreePath value = ConvertToSwitch.this.value.resolve(copy);
@@ -307,35 +326,57 @@ public class ConvertToStringSwitch {
             copy.rewrite(it.getLeaf(), s); //XXX
         }
 
-        private boolean addCase(WorkingCopy copy, TreePath s, List<CaseTree> cases, Iterable<TreePathHandle> literals) {
+        private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared) {
             TreeMaker make = copy.getTreeMaker();
             List<StatementTree> statements = new LinkedList<StatementTree>();
-            Tree then = s.getLeaf();
-            boolean exitsFromAllBranches = false;
+            Tree then = desc.path.getLeaf();
 
             if (then.getKind() == Kind.BLOCK) {
-                //XXX: should verify declarations inside the blocks
-                statements.addAll(((BlockTree) then).getStatements());
+                Set<Name> currentDeclared = catch2Declared.get(desc.path);
+                boolean keepBlock = false;
+
+                for (Entry<TreePath, Set<Name>> e : catch2Declared.entrySet()) {
+                    if (e.getKey() == desc.path) continue;
+                    if (!Collections.disjoint(currentDeclared, e.getValue())) {
+                        keepBlock = true;
+                        break;
+                    }
+                }
+
+                boolean exitsFromAllBranches = false;
 
                 for (Tree st : ((BlockTree) then).getStatements()) {
-                    exitsFromAllBranches |= Utilities.exitsFromAllBranchers(copy, new TreePath(s, st));
+                    exitsFromAllBranches |= Utilities.exitsFromAllBranchers(copy, new TreePath(desc.path, st));
+                }
+
+                BlockTree block = (BlockTree) then;
+
+                if (keepBlock) {
+                    if (!exitsFromAllBranches) {
+                        statements.add(make.addBlockStatement(block, make.Break(null)));
+                    } else {
+                        statements.add(block);
+                    }
+                } else {
+                    statements.addAll(block.getStatements());
+                    if (!exitsFromAllBranches) {
+                        statements.add(make.Break(null));
+                    }
                 }
             } else {
                 statements.add((StatementTree) then);
-                exitsFromAllBranches = Utilities.exitsFromAllBranchers(copy, s);
+                if (!Utilities.exitsFromAllBranchers(copy, desc.path)) {
+                    statements.add(make.Break(null));
+                }
             }
 
-            if (!exitsFromAllBranches) {
-                statements.add(make.Break(null));
-            }
-
-            if (literals == null) {
+            if (desc.literals == null) {
                 cases.add(make.Case(null, statements));
 
                 return false;
             }
             
-            for (Iterator<TreePathHandle> it = literals.iterator(); it.hasNext(); ) {
+            for (Iterator<TreePathHandle> it = desc.literals.iterator(); it.hasNext(); ) {
                 TreePathHandle tph = it.next();
                 TreePath lit = tph.resolve(copy);
 
@@ -352,6 +393,34 @@ public class ConvertToStringSwitch {
             return false;
         }
 
+        private Set<Name> declaredVariables(TreePath where) {
+            Set<Name> result = new HashSet<Name>();
+            Iterable<? extends Tree> statements;
+
+            if (where.getLeaf().getKind() == Kind.BLOCK) {
+                statements = ((BlockTree) where.getLeaf()).getStatements();
+            } else {
+                statements = Collections.singletonList(where.getLeaf());
+            }
+
+            for (Tree t : statements) {
+                if (t.getKind() == Kind.VARIABLE) {
+                    result.add(((VariableTree) t).getName());
+                }
+            }
+
+            return result;
+        }
+    }
+
+    private static final class CatchDescription<T> {
+        private final @NullAllowed Iterable<TreePathHandle> literals;
+        private final @NonNull T path;
+
+        public CatchDescription(Iterable<TreePathHandle> literals, T path) {
+            this.literals = literals;
+            this.path = path;
+        }
     }
 
 }
