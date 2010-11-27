@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -107,6 +109,12 @@ public class ConvertToStringSwitch {
             return null;
         }
 
+        TypeElement jlString = ctx.getInfo().getElements().getTypeElement("java.lang.String");
+
+        if (jlString == null) {
+            return null;
+        }
+        
         Map<Iterable<TreePathHandle>, TreePathHandle> literal2Statement = new LinkedHashMap<Iterable<TreePathHandle>, TreePathHandle>();
         TreePathHandle defaultStatement = null;
 
@@ -132,6 +140,12 @@ public class ConvertToStringSwitch {
                     return null;
                 }
 
+                TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(variable);
+
+                if (!ctx.getInfo().getTypes().isSameType(varType, jlString.asType())) {
+                    return null;
+                }
+                
                 ctx.getVariables().put("$var", variable); //XXX: hack
 
                 while (iter.hasNext()) {

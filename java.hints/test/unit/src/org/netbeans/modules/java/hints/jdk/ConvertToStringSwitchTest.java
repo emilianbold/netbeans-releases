@@ -172,6 +172,24 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
     }
 
+    public void testStringEqualsObject() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         Object g = null;\n" +
+                       "         if (\"j\".equals(g)) {" +
+                       "             System.err.println(1);" +
+                       "         } else if (\"k\".equals(g)) {" +
+                       "             System.err.println(2);" +
+                       "         } else {\n" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";
