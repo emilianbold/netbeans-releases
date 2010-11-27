@@ -118,6 +118,7 @@ final class JavaDebuggerPanel extends StorablePanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, categoriesList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
+        categoriesLabel.setLabelFor(categoriesList);
         org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoriesLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
