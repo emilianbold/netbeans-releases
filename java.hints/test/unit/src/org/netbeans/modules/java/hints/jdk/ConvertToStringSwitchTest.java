@@ -195,6 +195,7 @@ public class ConvertToStringSwitchTest extends TestBase {
         performFixTest("test/Test.java",
                        "package test;" +
                        "public class Test {" +
+                       "     private int a, b;"+
                        "     public void test() throws Exception {" +
                        "         String g = null;\n" +
                        "         if (g == \"j\") {" +
@@ -210,6 +211,12 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "         } else if (g == \"z\") {" +
                        "             int z = 1;" +
                        "             System.err.println(z);" +
+                       "         } else if (g == \"a\") {" +
+                       "             int a = 1;" +
+                       "             System.err.println(a);" +
+                       "         } else if (g == \"b\") {" +
+                       "             int b = 1;" +
+                       "             System.err.println(a + b);" +
                        "         }\n" +
                        "     }" +
                        "}",
@@ -217,6 +224,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "FixImpl",
                        ("package test;" +
                        "public class Test {" +
+                       "     private int a, b;"+
                        "     public void test() throws Exception {" +
                        "         String g = null;" +
                        "         switch (g) {\n" +
@@ -240,6 +248,15 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "                 System.err.println(z);" +
                        "                 break;" +
                        "             }" +
+                       "             case \"a\": {\n" +
+                       "                 int a = 1;" +
+                       "                 System.err.println(a);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"b\":\n" +
+                       "                 int b = 1;" +
+                       "                 System.err.println(a + b);" +
+                       "                 break;" +
                        "         }\n" +
                        "     }" +
                        "}").replaceAll("[ \t\n]+", " "));

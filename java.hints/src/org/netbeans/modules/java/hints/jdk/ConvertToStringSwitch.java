@@ -47,6 +47,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
@@ -55,6 +56,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +71,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -290,6 +293,7 @@ public class ConvertToStringSwitch {
             List<CaseTree> cases = new LinkedList<CaseTree>();
             List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
             Map<TreePath, Set<Name>> catch2Declared = new IdentityHashMap<TreePath, Set<Name>>();
+            Map<TreePath, Set<Name>> catch2Used = new IdentityHashMap<TreePath, Set<Name>>();
 
             for (CatchDescription<TreePathHandle> d : ConvertToSwitch.this.literal2Statement) {
                 TreePath s = d.path.resolve(copy);
@@ -300,6 +304,7 @@ public class ConvertToStringSwitch {
 
                 resolved.add(new CatchDescription<TreePath>(d.literals, s));
                 catch2Declared.put(s, declaredVariables(s));
+                catch2Used.put(s, usedVariables(copy, s));
             }
 
             if (defaultStatement != null) {
@@ -314,7 +319,7 @@ public class ConvertToStringSwitch {
             }
 
             for (CatchDescription<TreePath> d : resolved) {
-                if (addCase(copy, d, cases, catch2Declared)) {
+                if (addCase(copy, d, cases, catch2Declared, catch2Used)) {
                     return;
                 }
             }
@@ -326,7 +331,7 @@ public class ConvertToStringSwitch {
             copy.rewrite(it.getLeaf(), s); //XXX
         }
 
-        private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared) {
+        private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared, Map<TreePath, Set<Name>> catch2Used) {
             TreeMaker make = copy.getTreeMaker();
             List<StatementTree> statements = new LinkedList<StatementTree>();
             Tree then = desc.path.getLeaf();
@@ -340,6 +345,16 @@ public class ConvertToStringSwitch {
                     if (!Collections.disjoint(currentDeclared, e.getValue())) {
                         keepBlock = true;
                         break;
+                    }
+                }
+
+                if (!keepBlock) {
+                    for (Entry<TreePath, Set<Name>> e : catch2Used.entrySet()) {
+                        if (e.getKey() == desc.path) continue;
+                        if (!Collections.disjoint(currentDeclared, e.getValue())) {
+                            keepBlock = true;
+                            break;
+                        }
                     }
                 }
 
@@ -408,6 +423,26 @@ public class ConvertToStringSwitch {
                     result.add(((VariableTree) t).getName());
                 }
             }
+
+            return result;
+        }
+
+        private Set<Name> usedVariables(final CompilationInfo info, TreePath where) {
+            final Set<Name> result = new HashSet<Name>();
+            final Set<Element> declared = new HashSet<Element>();
+
+            new TreePathScanner<Void, Void>() {
+                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                    if (declared.contains(info.getTrees().getElement(getCurrentPath())))
+                        return null;
+                    result.add(node.getName());
+                    return super.visitIdentifier(node, p);
+                }
+                @Override public Void visitVariable(VariableTree node, Void p) {
+                    declared.add(info.getTrees().getElement(getCurrentPath()));
+                    return super.visitVariable(node, p);
+                }
+            }.scan(where, null);
 
             return result;
         }
