@@ -235,4 +235,36 @@ public final class NamingFactory {
         }
         return retVal;
     }
+    
+    public synchronized static String dumpId(Integer id) {
+        StringBuilder sb = new StringBuilder();
+        final String hex = Integer.toHexString(id);
+        
+        Object value = nameMap.get(id);
+        if (value instanceof Reference) {
+            sb.append("One reference to ").
+               append(hex).append("\n");
+            dumpFileNaming(sb, ((Reference)value).get());
+        } else if (value instanceof List) {
+            int cnt = 0;
+            List arr = (List)value;
+            sb.append("There is ").append(arr.size()).append(" references to ").append(hex);
+            for (Object o : arr) {
+                sb.append(++cnt).append(" = ");
+                dumpFileNaming(sb, ((Reference)o).get());
+            }
+        } else {
+            sb.append("For ").append(hex).append(" there is just ").append(value);
+        }
+        return sb.toString();
+    }
+    private static void dumpFileNaming(StringBuilder sb, Object fn) {
+        if (fn == null) {
+            sb.append("null");
+        }
+        sb.append("FileName: ").append(fn).append("#").
+           append(Integer.toHexString(fn.hashCode())).append("@").
+           append(Integer.toHexString(System.identityHashCode(fn)))
+           .append("\n");
+    }
 }
