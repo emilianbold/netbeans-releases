@@ -55,10 +55,16 @@ import org.openide.util.Utilities;
  */
 public class CndPathUtilitities {
 
+    private static boolean isWindows = Utilities.isWindows();
+
     /**
      * Constructor is private. This class should not be instantiated.
      */
     private CndPathUtilitities() {
+    }
+
+    /*package*/ static void testSetWindows(boolean isWin) {
+        isWindows = isWin;
     }
 
     /** Store the real environment here */
@@ -533,7 +539,7 @@ public class CndPathUtilitities {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
-        } else if (path.indexOf(':') > 0) {
+        } else if (path.indexOf(':') == 1 && isWindows) {
             return true;
         } else {
             return false;

@@ -75,6 +75,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
@@ -356,7 +357,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         }
 
         public JMenuItem getPopupPresenter() {
-            JMenu displayAsPopup = new JMenu(NbBundle.getMessage(DebuggingActionsProvider.class, "CTL_Session_Popup_Language"));
+            JMenu displayAsPopup = new JMenu();
+            Mnemonics.setLocalizedText(displayAsPopup, NbBundle.getMessage(DebuggingActionsProvider.class, "CTL_Session_Popup_Language"));
 
             String [] languages = session.getSupportedLanguages();
             String currentLanguage = session.getCurrentLanguage();

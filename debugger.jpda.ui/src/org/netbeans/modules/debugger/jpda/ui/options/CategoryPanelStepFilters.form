@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -30,10 +30,7 @@
                                   <Component id="filterSyntheticCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="filterConstructorsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="filterClassesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="filterClassesScrollPane" pref="432" max="32767" attributes="2"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="filterClassesScrollPane" alignment="0" pref="432" max="32767" attributes="2"/>
                               </Group>
                               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -73,10 +70,7 @@
                       <Component id="filtersUncheckAllButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="filterClassesScrollPane" pref="152" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="filterClassesScrollPane" pref="154" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="stepThroughFiltersCheckBox" min="-2" max="-2" attributes="0"/>
@@ -92,6 +86,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.useStepFiltersCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.useStepFiltersCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="useStepFiltersCheckBoxActionPerformed"/>
       </Events>
@@ -102,6 +101,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterSyntheticCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterSyntheticCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="filterStaticInitCheckBox">
       <Properties>
@@ -109,6 +113,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterStaticInitCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterStaticInitCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="filterConstructorsCheckBox">
       <Properties>
@@ -116,6 +125,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterConstructorsCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterConstructorsCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="filterClassesLabel">
       <Properties>
@@ -126,6 +140,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterClassesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterClassesLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="filterClassesScrollPane">
 
@@ -165,6 +184,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.stepThroughFiltersCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.stepThroughFiltersCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="filterAddButton">
       <Properties>
@@ -172,6 +196,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterAddButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterAddButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterAddButtonActionPerformed"/>
       </Events>
@@ -182,6 +211,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterRemoveButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filterRemoveButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterRemoveButtonActionPerformed"/>
       </Events>
@@ -192,6 +226,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filtersCheckAllButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filtersCheckAllButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filtersCheckAllButtonActionPerformed"/>
       </Events>
@@ -202,6 +241,11 @@
           <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filtersUncheckAllButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelStepFilters.filtersUncheckAllButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filtersUncheckAllButtonActionPerformed"/>
       </Events>

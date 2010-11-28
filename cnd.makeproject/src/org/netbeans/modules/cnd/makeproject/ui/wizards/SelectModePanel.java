@@ -562,7 +562,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (ConfigureUtils.findConfigureScript(path) != null){ //XXX:fullRemote
+            if (ConfigureUtils.findConfigureScript(controller.getWizardStorage().getSourcesFileObject()) != null) {
                 return true;
             }
             FileObject makeFO = ConfigureUtils.findMakefile(controller.getWizardStorage().getSourcesFileObject());

@@ -1913,7 +1913,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             newSF = null;
         } else {
             try {
-                newSF = thread.getCallStack(0, 1)[0];
+                CallStackFrame[] csfs = thread.getCallStack(0, 1);
+                if (csfs.length > 0) {
+                    newSF = csfs[0];
+                } else {
+                    newSF = null;
+                }
             } catch (AbsentInformationException e) {
                 newSF = null;
             }
@@ -1930,7 +1935,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             callStackFrame = null;
         } else {
             try {
-                callStackFrame = thread.getCallStack(0, 1) [0];
+                CallStackFrame[] csfs = thread.getCallStack(0, 1);
+                if (csfs.length > 0) {
+                    callStackFrame = csfs[0];
+                } else {
+                    callStackFrame = null;
+                }
             } catch (AbsentInformationException e) {
                 callStackFrame = null;
             }
