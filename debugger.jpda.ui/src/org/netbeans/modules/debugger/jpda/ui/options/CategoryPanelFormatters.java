@@ -140,6 +140,7 @@ class CategoryPanelFormatters extends StorablePanel {
         jSeparator1 = new javax.swing.JSeparator();
 
         org.openide.awt.Mnemonics.setLocalizedText(childrenVarsLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenVarsLabel.text")); // NOI18N
+        childrenVarsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenVarsLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         formatChildrenListScrollPane.setEnabled(false);
 
@@ -264,6 +265,11 @@ class CategoryPanelFormatters extends StorablePanel {
                 .add(formattersMoveDownButton))
         );
 
+        formattersAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.AccessibleContext.accessibleDescription")); // NOI18N
+        formattersRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.AccessibleContext.accessibleDescription")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.editButton.AccessibleContext.accessibleDescription")); // NOI18N
+        copyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.copyButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(subtypesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.subtypesLabel.text")); // NOI18N
 
         testChildrenTextField.setEditable(false);
@@ -349,6 +355,11 @@ class CategoryPanelFormatters extends StorablePanel {
 
         layout.linkSize(new java.awt.Component[] {formattersScrollPane, jPanel1}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        formatterClassTypesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        formatValueLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatValueLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        formatChildrenLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        subtypesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.subtypesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        childrenCodeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenCodeLabel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void formattersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersAddButtonActionPerformed

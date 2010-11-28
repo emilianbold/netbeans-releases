@@ -141,6 +141,13 @@ class CategoryPanelGeneral extends StorablePanel {
                 .add(reuseTabsCheckBox)
                 .addContainerGap(130, Short.MAX_VALUE))
         );
+
+        stopOnExceptionsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stopOnExceptionsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        applyCodeChangesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.applyCodeChangesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        breakpointsSuspendLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.breakpointsSuspendLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        stepsResumeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stepsResumeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        openDebuggerConsoleCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.openDebuggerConsoleCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        reuseTabsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.reuseTabsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     @Override

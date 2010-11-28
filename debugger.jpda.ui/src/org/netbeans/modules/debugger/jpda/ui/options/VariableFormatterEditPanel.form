@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -93,6 +93,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.nameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.nameLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JTextField" name="nameTextField">
           <Properties>
@@ -110,6 +115,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.classTypesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.classTypesLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JTextField" name="classTypesTextField">
           <Properties>
@@ -128,6 +138,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.subtypesCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.subtypesCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
@@ -217,6 +232,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.valueFormatCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.valueFormatCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="valueFormatCheckBoxActionPerformed"/>
           </Events>
@@ -238,6 +258,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenFormatCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenFormatCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="childrenFormatCheckBoxActionPerformed"/>
           </Events>
@@ -252,6 +277,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenCodeRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenCodeRadioButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="childrenCodeRadioButtonActionPerformed"/>
           </Events>
@@ -276,6 +306,11 @@
               <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenVariablesRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.childrenVariablesRadioButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="childrenVariablesRadioButtonActionPerformed"/>
           </Events>
@@ -339,6 +374,11 @@
                   <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.addVarButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.addVarButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addVarButtonActionPerformed"/>
               </Events>
@@ -349,6 +389,11 @@
                   <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.removeVarButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.removeVarButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeVarButtonActionPerformed"/>
               </Events>
@@ -359,6 +404,11 @@
                   <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.moveUpVarButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.moveUpVarButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveUpVarButtonActionPerformed"/>
               </Events>
@@ -369,6 +419,11 @@
                   <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.moveDownVarButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="VariableFormatterEditPanel.moveDownVarButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveDownVarButtonActionPerformed"/>
               </Events>
