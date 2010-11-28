@@ -245,6 +245,25 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testNonConstantString() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     private static String nonConstant = \"a\";" +
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         if (\"j\".equals(g)) {" +
+                       "             System.err.println(1);" +
+                       "         } else if (nonConstant.equals(g)) {" +
+                       "             System.err.println(2);" +
+                       "         } else {\n" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

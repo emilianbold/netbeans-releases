@@ -188,7 +188,7 @@ public class ConvertToStringSwitch {
                 for (TreePath cond : linearizeOrs(new TreePath(tp, it.getCondition()))) {
                     TreePath lt = isStringComparison(ctx, cond);
 
-                    if (lt == null) {
+                    if (lt == null || !Utilities.isConstantString(ctx.getInfo(), lt)) {
                         return null;
                     }
 
