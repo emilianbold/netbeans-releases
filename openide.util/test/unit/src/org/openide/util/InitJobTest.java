@@ -54,6 +54,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -71,18 +73,26 @@ public class InitJobTest extends NbTestCase {
     /** event dispatch thread */
     Thread edThread;
     /** test component */
-    SimpleInitComp comp;
+    JPanel comp;
     /** parent, main frame */
     private Frame frame;
+    private final Logger LOG;
     
     /** Creates a new instance of UtilProgressCursorTest */
     public InitJobTest(String testName) {
         super(testName);
+        LOG = Logger.getLogger("test." + testName);
     }
     
     /** Run tests in EQ thread, as it touches Swing */
+    @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override
@@ -94,10 +104,11 @@ public class InitJobTest extends NbTestCase {
      * impl conforms to the API behaviour described in javadoc *
      */
     public void testInitJob() throws Exception {
-        System.out.println("Testing simple init job run");
+        LOG.info("Testing simple init job run");
         initializeSimple();
-        comp = new SimpleInitComp();
-        Utilities.attachInitJob(comp, comp);
+        final SimpleInitComp c = new SimpleInitComp();
+        comp = c;
+        Utilities.attachInitJob(c, c);
         frame = new Frame();
         frame.setSize(100, 100);
         frame.setVisible(true);
@@ -108,11 +119,12 @@ public class InitJobTest extends NbTestCase {
     }
     
     public void testCancelAbility() throws Exception {
-        System.out.println("Testing cancel ability of async init job");
+        LOG.info("Testing cancel ability of async init job");
         initializeSimple();
         initCancelResults();
-        CancelInitComp comp = new CancelInitComp();
-        Utilities.attachInitJob(comp, comp);
+        final CancelInitComp c = new CancelInitComp();
+        comp = c;
+        Utilities.attachInitJob(c, c);
         frame = new Frame();
         frame.setSize(100, 100);
         frame.setVisible(true);
@@ -126,14 +138,17 @@ public class InitJobTest extends NbTestCase {
     /**********************************************************************/
     
     private void constructCalled(Thread thread, long time) {
+        LOG.info("constructCalled");
         constructCalls.add(new CallData(thread, time));
     }
     
     private void finishCalled(Thread thread, long time) {
+        LOG.info("finishCalled");
         finishCalls.add(new CallData(thread, time));
     }
     
     private void cancelCalled() {
+        LOG.info("cancelCalled");
         cancelCalls.add(new CallData(Thread.currentThread(), System.currentTimeMillis()));
     }
     
