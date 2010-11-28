@@ -107,7 +107,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     public FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {
             synchronized (this) {
-                if ("/".equals(root)) {
+                if ("/".equals(root)) { // NOI18N
                     return getRootFileSystem();
                 } else {
                     LocalFileSystem fs = nonRootFileSystems.get(root);
