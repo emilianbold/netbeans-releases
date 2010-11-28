@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -212,5 +213,10 @@ public class RemoteFileUtil {
             }
         }
         return fileChooser;
+    }
+
+    /** A temporary stuff to replace CndUtils.getIncludeFilePrefix */
+    public static String getIncludeFilePrefix(ExecutionEnvironment executionEnvironment) {
+        return FileSystemCacheProvider.getCacheRoot(executionEnvironment);
     }
 }
