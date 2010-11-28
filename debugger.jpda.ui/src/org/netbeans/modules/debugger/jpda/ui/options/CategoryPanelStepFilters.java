@@ -199,9 +199,7 @@ class CategoryPanelStepFilters extends StorablePanel {
                                     .add(filterSyntheticCheckBox)
                                     .add(filterConstructorsCheckBox)
                                     .add(filterClassesLabel)
-                                    .add(layout.createSequentialGroup()
-                                        .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                                    .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
                                 .add(6, 6, 6)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(filterAddButton)
@@ -235,13 +233,22 @@ class CategoryPanelStepFilters extends StorablePanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(filtersUncheckAllButton)
                         .add(36, 36, 36))
-                    .add(layout.createSequentialGroup()
-                        .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                    .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(stepThroughFiltersCheckBox)
                 .addContainerGap())
         );
+
+        useStepFiltersCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.useStepFiltersCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        filterSyntheticCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterSyntheticCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        filterStaticInitCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterStaticInitCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        filterConstructorsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterConstructorsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        filterClassesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        stepThroughFiltersCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        filterAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterAddButton.AccessibleContext.accessibleDescription")); // NOI18N
+        filterRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterRemoveButton.AccessibleContext.accessibleDescription")); // NOI18N
+        filtersCheckAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersCheckAllButton.AccessibleContext.accessibleDescription")); // NOI18N
+        filtersUncheckAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filtersUncheckAllButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void initFilterClassesList() {
