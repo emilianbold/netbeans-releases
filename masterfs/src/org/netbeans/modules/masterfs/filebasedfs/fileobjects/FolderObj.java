@@ -147,7 +147,8 @@ public final class FolderObj extends BaseFileObj {
                 assert fileName == ((BaseFileObj)fo).getFileName() : 
                     dumpFileNaming(fileName) + "\n" + 
                     dumpFileNaming(((BaseFileObj)fo).getFileName()) + "\nfo: " +
-                    fo;
+                    fo + "\nContent of the nameMap cache:\n" +
+                    NamingFactory.dumpId(fInfo.getID());
                 results.put(fileName, fo);
             }
         }
