@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +54,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -68,6 +69,7 @@ import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -75,12 +77,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -107,7 +106,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -128,6 +126,7 @@ final public class EjbJarProjectProperties {
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; // NOI18N
+    public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -232,6 +231,7 @@ final public class EjbJarProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
+    JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
     
     // CustomizerCompileTest
                 
@@ -256,7 +256,7 @@ final public class EjbJarProjectProperties {
     // CustomizerRun
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
-    ButtonModel DEPLOY_ON_SAVE_MODEL;
+    JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL;
     Document RUNMAIN_JVM_MODEL;
 
     // CustomizerRunTest
@@ -389,6 +389,24 @@ final public class EjbJarProjectProperties {
             J2eeModule.Type.EJB);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(profile);
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COMPILE_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                    DEPLOY_ON_SAVE_MODEL.setSelected(false);
+                }
+            }
+        });
+        DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                    COMPILE_ON_SAVE_MODEL.setSelected(true);
+                }
+            }
+        });
+        
         RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
     }
     
@@ -411,7 +429,7 @@ final public class EjbJarProjectProperties {
                 project.setProjectPropertiesSave(false);
             }
             //Delete COS mark
-            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
                 DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N
             }            
         } 

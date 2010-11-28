@@ -477,11 +477,17 @@ public class CndPathUtilitities {
         return trimSlashes(dir.trim());
     }
 
+    // keep it for a while since it is used in SolStudio
+    @Deprecated
     public static String normalize(String path) {
+        return normalizeSlashes(path);
+    }
+
+    public static String normalizeSlashes(String path) {
         return path.replaceAll("\\\\", "/"); // NOI18N
     }
 
-    public static String naturalize(String path) {
+    public static String naturalizeSlashes(String path) {
         if (Utilities.isUnix()) {
             return path.replaceAll("\\\\", "/"); // NOI18N
         } else if (Utilities.isWindows()) {

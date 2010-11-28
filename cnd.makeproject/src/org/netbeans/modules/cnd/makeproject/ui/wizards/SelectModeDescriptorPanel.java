@@ -201,6 +201,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         private boolean setMain = true;
         private boolean buildProject = true;
         private CompilerSet cs;
+        private boolean defaultCompilerSet;
         private ExecutionEnvironment env;
         private final boolean fullRemote;
         private FileObject makefileFO;
@@ -319,6 +320,10 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         void setExecutionEnvironment(ExecutionEnvironment ee) {
             this.env = ee;
         }
+
+        void setDefaultCompilerSet(boolean defaultCompilerSet) {
+            this.defaultCompilerSet = defaultCompilerSet;
+        }
     }
 
     public static class WizardDescriptorAdapter extends WizardDescriptor{
@@ -352,6 +357,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return ExecutionEnvironmentFactory.toUniqueID(storage.env);
             } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
                 return storage.cs;
+            } else if (WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.equals(name)) { // NOI18N
+                return storage.defaultCompilerSet;
             } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
                 return storage.fullRemote;
             } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N

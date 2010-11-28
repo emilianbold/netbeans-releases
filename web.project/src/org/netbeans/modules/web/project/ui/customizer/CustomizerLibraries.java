@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -64,24 +63,20 @@ import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
-import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -107,7 +102,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         initComponents();
 
         jTableCpC.setModel( uiProperties.JAVAC_CLASSPATH_MODEL );
-        initTableVisualProperties(jTableCpC);
         //uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER.setBooleanRenderer(jTableCpC.getDefaultRenderer(Boolean.class));
         jTableCpC.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
         //jTableCpC.setDefaultRenderer( Boolean.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
@@ -203,6 +197,14 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         } else {
             librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
         }
+        Util.initTwoColumnTableVisualProperties(this, jTableCpC);
+        jTableCpC.setShowHorizontalLines(false);
+        jTableCpC.setShowVerticalLines(false);
+        jTableCpC.setRowHeight(jTableCpC.getRowHeight() + 4);        
+        TableColumn column = jTableCpC.getColumnModel().getColumn(1);
+        JTableHeader header = jTableCpC.getTableHeader();
+        column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
+	        
     }
 
     /** split file name into folder and name */
@@ -314,29 +316,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         WebLogicalViewProvider viewProvider = (WebLogicalViewProvider) uiProperties.getProject().getLookup().lookup(WebLogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();        
-    }
-    
-    private void initTableVisualProperties(JTable table) {	
-        //table.setGridColor(jTableCpC.getBackground());
-        table.setRowHeight(jTableCpC.getRowHeight() + 4);        
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);        
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));        
-        // set the color of the table's JViewport
-        table.getParent().setBackground(table.getBackground());
-        table.setShowHorizontalLines(false);
-        table.setShowVerticalLines(false);
-
-        TableColumn column = table.getColumnModel().getColumn(1);
-        JTableHeader header = table.getTableHeader();
-        column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
-	
-        //#58200 - Need horizontal scrollbar for library names
-        //ugly but I didn't find a better way how to do it
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(230);
-        column.setWidth(230);
-        column.setMinWidth(75);
     }
     
     // Implementation of HelpCtx.Provider --------------------------------------

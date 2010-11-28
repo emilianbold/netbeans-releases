@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -99,7 +100,8 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     }
 
     private void appendLoadingLazy () {
-        lazyLoadingTask = RequestProcessor.getDefault ().post (new Runnable () {
+        lazyLoadingTask = Installer.RP.post (new Runnable () {
+            @Override
             public void run () {
                 panel = new LicenseApprovalPanel (model, isApproved);
                 panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {

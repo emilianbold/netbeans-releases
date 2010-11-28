@@ -293,8 +293,11 @@ public class LocalFileSystem extends AbstractFileSystem {
         File nf = getFile(newName);
 
         // #7086 - (nf.exists() && !nf.equals(of)) instead of nf.exists() - fix for Win32
-        if ((nf.exists() && !nf.equals(of)) || !of.renameTo(nf)) {
-            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotRename", oldName, getDisplayName(), newName));
+        boolean existsNF = nf.exists();
+        boolean equalsOF = nf.equals(of);
+        Boolean rename = null;
+        if ((existsNF && !equalsOF) || !(rename = of.renameTo(nf))) {
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotRename", oldName, getDisplayName(), newName, existsNF, rename));
         }
     }
 

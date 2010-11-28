@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -84,7 +85,7 @@ public class SlowRefreshTest extends NbTestCase {
         assertNotNull("Test folder created", testFolder);
 
     }
-
+    
     public void testChangeInChildrenNoticed() throws Exception {
         long lm = System.currentTimeMillis();
         FileObject fileObject1 = testFolder.createData("fileObject1");
@@ -126,7 +127,7 @@ public class SlowRefreshTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = testFolder.getFileSystem().getRoot().getAttribute("refreshSlow");
+        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 

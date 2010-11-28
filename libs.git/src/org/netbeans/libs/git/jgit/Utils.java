@@ -64,6 +64,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -193,7 +194,7 @@ public final class Utils {
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
         } catch (IncorrectObjectTypeException ex) {
-            throw new GitException("The given id [" + revision + "] is not a commit or an annotated tag.");
+            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -203,7 +204,7 @@ public final class Utils {
         try {
             return repository.resolve(objectId);
         } catch (AmbiguousObjectException ex) {
-            throw new GitException("Given objectId [" + objectId + "] is not unique.", ex);
+            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }

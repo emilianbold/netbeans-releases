@@ -297,8 +297,9 @@ made subject to such option by the copyright holder.
 
     <codetemplate abbreviation="fcom">
         <code>
-<![CDATA[// <editor-fold defaultstate="collapsed" desc="${comment}">
-${selection}${cursor}// </editor-fold>
+<![CDATA[${no-format}//<editor-fold defaultstate="collapsed" desc="${comment}">
+${selection}${cursor}
+//</editor-fold>
 ]]>
         </code>
     </codetemplate>

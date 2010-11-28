@@ -336,7 +336,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public static boolean isFakeFunction(CsmObject declaration) {
         if (declaration instanceof FunctionImplEx<?>) {
-            return FunctionImplEx.class.equals(declaration.getClass());
+            return FunctionImplEx.class.equals(declaration.getClass()) && ((FunctionImplEx)declaration).hasFlags(FAKE_QUALIFIED_NAME);
         } else {
             return false;
         }

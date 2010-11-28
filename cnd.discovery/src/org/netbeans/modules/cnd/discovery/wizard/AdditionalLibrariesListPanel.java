@@ -121,7 +121,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         StringBuilder buf = new StringBuilder();
         for (File item : fileChooser.getSelectedFiles()){
             String itemPath = item.getPath();
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             if (buf.length() > 0) {
                 buf.append(';');
             }

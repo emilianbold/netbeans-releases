@@ -43,23 +43,19 @@
 package org.netbeans.modules.maven;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -164,7 +160,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             assert model != null;
             for (URL url : urls) {
                 FileObject fo = URLMapper.findFileObject(FileUtil.getArchiveFile(url));
-                assert fo != null;
+                if (fo == null) {
+                    throw new IOException("Could find no file corresponding to " + url);
+                }
                 if (fo.isFolder()) {
                     throw new IOException("Cannot add folders to Maven projects as dependencies: " + fo.getURL()); //NOI18N
                 }

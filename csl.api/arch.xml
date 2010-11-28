@@ -1326,10 +1326,7 @@ as well as the options UI code in GSF.
 -->
     <answer id="resources-read">
         <p>
-Yes, GSF uses the layer filesystem to register GSF language plugin clients. 
-It looks in the "<code>GsfPlugins/<i>mimetype</i></code>" folder for registrations of GSF
-interface implementations.
-This is all documented in the <a href="@TOP@/registration.html">registration document</a>.
+No.
         </p>
     </answer>
 

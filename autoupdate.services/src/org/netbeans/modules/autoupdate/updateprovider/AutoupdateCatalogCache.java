@@ -49,24 +49,26 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jiri Rechtacek
  * @author Dmitry Lipin
  */
-public class AutoupdateCatalogCache {
+public final class AutoupdateCatalogCache {
     private File cacheDir;
     
     
     private static AutoupdateCatalogCache INSTANCE;
     
-    private Logger err = Logger.getLogger (this.getClass ().getName ());
+    private static final Logger err = Logger.getLogger (AutoupdateCatalogCache.class.getName());
     
     public static synchronized AutoupdateCatalogCache getDefault () {
         if (INSTANCE == null) {
@@ -92,7 +94,7 @@ public class AutoupdateCatalogCache {
         }
         cacheDir.mkdirs();
         getLicenseDir().mkdirs();
-        err.log (Level.FINE, "getCacheDirectory: " + cacheDir.getPath ());
+        err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
         return;
     }
     
@@ -111,7 +113,7 @@ public class AutoupdateCatalogCache {
             }
             synchronized (getLock(cache)) {
                 assert cache.exists() : "Cache " + cache + " exists.";
-                err.log(Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
+                err.log(Level.FINER, "Cache file {0} was wrote from original URL {1}", new Object[]{cache, original});
                 if (cache.exists() && cache.length() == 0) {
                     err.log(Level.INFO, "Written cache size is zero bytes");
                 }
@@ -126,7 +128,7 @@ public class AutoupdateCatalogCache {
         synchronized (getLock(cache)) {
             if (cache != null && cache.exists()) {
                 if (cache.length() == 0) {
-                    err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+                    err.log(Level.INFO, "Cache file {0} exists and of zero size", cache);
                     return null;
                 }
                 URL url = null;
@@ -244,7 +246,7 @@ public class AutoupdateCatalogCache {
         // -- report success or IOException
         // -- if success then do copy
         
-        err.log(Level.FINE, "Processing URL: " + sourceUrl); // NOI18N
+        err.log(Level.FINE, "Processing URL: {0}", sourceUrl); // NOI18N
         
         String prefix = "";
         while (prefix.length () < 3) {
@@ -266,13 +268,17 @@ public class AutoupdateCatalogCache {
     public String getLock(File cache) {
         return cache.getAbsolutePath().intern();
     }
-    public String getLock(URL cache) {
-        return getLock(new File(cache.getFile()));
+    public String getLock(URL cache) throws IOException {
+        try {
+            return getLock(new File(cache.toURI()));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
     }
     
     private void updateCachedFile(File cache, File temp) {
         if (cache.exists() && !cache.delete()) {
-            err.log(Level.INFO, "Cannot delete cache " + cache);
+            err.log(Level.INFO, "Cannot delete cache {0}", cache);
             try {
                Thread.sleep(200);
             } catch (InterruptedException ie) {
@@ -286,7 +292,19 @@ public class AutoupdateCatalogCache {
         }
 
         if (!temp.renameTo(cache)) {
-            err.log(Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+            err.log(Level.INFO, "Cannot rename temp {0} to cache {1}", new Object[]{temp, cache});
+            err.log(Level.INFO, "Trying to copy {0} to cache {1}", new Object[] {temp, cache});
+            try {
+                FileOutputStream os = new FileOutputStream(cache);
+                FileInputStream is = new FileInputStream(temp);
+                FileUtil.copy(is, os);
+                os.close();
+                is.close();
+                temp.delete();
+            } catch (IOException ex) {
+                err.log(Level.INFO, "Cannot even copy: {0}", ex.getMessage());
+                err.log(Level.FINE, null, ex);
+            }
         }
 
         if (cache.exists() && cache.length() == 0) {

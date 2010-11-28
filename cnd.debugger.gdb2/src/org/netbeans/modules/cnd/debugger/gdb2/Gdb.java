@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 // for dyingWords. SHOULD be moved elsewhere!
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
@@ -127,14 +129,25 @@ public class Gdb {
 
         @Override
         public void finishProgress() {
-            super.finishProgress();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.finishProgress();
+                }
+            });
             StatusDisplayer.getDefault().setStatusText("");     // NOI18N
         }
 
         @Override
-        public void updateProgress(char beginEnd, int level,
-                                        String message, int count, int total) {
-            super.updateProgress(beginEnd, level, message, count, total);
+        public void updateProgress(final char beginEnd,
+                                   final int level,
+                                   final String message,
+                                   final int count,
+                                   final int total) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.updateProgress(beginEnd, level, message, count, total);
+                }
+            });
             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
@@ -299,12 +312,12 @@ public class Gdb {
 		} else {
 		    avec.add(gdbname);
 		}
-
+                
 		if (gdbInitFile != null) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
-
+                    
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
 		avec.add("mi"); // NOI18N
@@ -449,10 +462,10 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(1,
 		    Color.green.darker());
 		ioPack.console().getTerm().setCustomColor(2,
-		    Color.blue.brighter());
+		    Color.red.darker());
 
 		pid = executor.startEngine(gdbname, gdb_argv, null,
-		    ioPack.console());
+		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
 				      "startEngine -> pid %d\n", pid); // NOI18N
@@ -735,7 +748,7 @@ public class Gdb {
 
         // characters from gdb accumulate here and are forwarded to the tap
         private StringBuilder interceptBuffer = new StringBuilder();
-        private List<String> interceptedLines = new ArrayList<String>();
+        private LinkedList<String> interceptedLines = new LinkedList<String>();
 
 	/* OLD
         // buffer for accumulating incoming (from process) characters (via
@@ -878,31 +891,45 @@ public class Gdb {
             this.miProxy = miProxy;
         }
 
+        private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
+
         // interface MICommandInjector
         public void inject(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(bold_sequence, 0, bold_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(bold_sequence, 0, bold_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
 
-            // send to gdb
-            toDCE.sendChars(cmda, 0, cmda.length);
+                    // send to gdb
+                    sendQueue.post(new Runnable() {
+                        public void run() {
+                            toDCE.sendChars(cmda, 0, cmda.length);
+                        }
+                    });
+                }
+            });
         }
 
         // interface MICommandInjector
         public void log(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(log_sequence, 0, log_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            // toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(log_sequence, 0, log_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    // toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
+                }
+            });
 
             // don't send to gdb
         }
@@ -922,7 +949,7 @@ public class Gdb {
                 appendChar(char_CR);
 
 		String line = interceptBuffer.toString();
-                interceptedLines.add(line);
+                interceptedLines.addLast(line);
                 interceptBuffer = new StringBuilder();
 
 		// do some pattern recognition and alternative colored output.
@@ -971,16 +998,17 @@ public class Gdb {
 	    putBuf.append(c);
         }
 
+        private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
+
         private void dispatchInterceptedLines() {
             while (!interceptedLines.isEmpty()) {
-                String line = interceptedLines.remove(0);
+                final String line = interceptedLines.removeFirst();
 
-                // make sure we keep on processing lines no matter what
-                try {
-                    miProxy.processLine(line);
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
+                processingQueue.post(new Runnable() {
+                    public void run() {
+                        miProxy.processLine(line);
+                    }
+                });
             }
         }
     }
@@ -996,18 +1024,33 @@ public class Gdb {
             super(injector, "(gdb)"); // NOI18N
         }
 
+        private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
+        
         @Override
         protected void consoleStreamOutput(MIRecord record) {
-	    super.consoleStreamOutput(record);
+            if (record.isStream() && record.stream().startsWith(SWITCHING_PREFIX)) {
+                String msg = record.stream();
+                try {
+                    int end = SWITCHING_PREFIX.length();
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
+                    }
+                    debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+                    debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
+                } catch (NumberFormatException ex) {
+                }
+            } else {
+                super.consoleStreamOutput(record);
 
-            if (version == null &&
-		record.isStream() &&
-		record.stream().startsWith(versionString)) {
+                if (version == null &&
+                    record.isStream() &&
+                    record.stream().startsWith(versionString)) {
 
-		version = record.stream();
-                // OLD debugger.gdbVersionString(record.stream());
-		return;
-	    }
+                    version = record.stream();
+                    // OLD debugger.gdbVersionString(record.stream());
+                    return;
+                }
+            }
         }
 
         @Override
@@ -1023,6 +1066,25 @@ public class Gdb {
                 dispatch(record);
             }
         }
+        
+        @Override
+        protected void notifyAsyncOutput(MIRecord record) {
+            if (record.token() == 0) {
+                if (record.cls().equals("thread-group-added") || //NOI18N
+                    record.cls().equals("thread-group-removed") || //NOI18N
+                    record.cls().equals("thread-group-started") || //NOI18N
+                    record.cls().equals("thread-group-exited") || //NOI18N
+                    record.cls().equals("thread-created") || //NOI18N
+                    record.cls().equals("thread-exited") || //NOI18N
+                    record.cls().equals("thread-selected") || //NOI18N
+                    record.cls().equals("library-loaded") || //NOI18N
+                    record.cls().equals("library-unloaded")) { //NOI18N
+                        // just skip
+                    }
+            } else {
+                dispatch(record);
+            }
+        }
 
         @Override
         protected void targetStreamOutput(MIRecord record) {
@@ -1031,13 +1093,6 @@ public class Gdb {
         @Override
         protected void logStreamOutput(MIRecord record) {
 	    super.logStreamOutput(record);
-        }
-
-        @Override
-        protected void prompt() {
-            /* DEBUG
-            System.out.println(" PROMPT: ");
-             */
         }
 
         @Override
@@ -1062,7 +1117,7 @@ public class Gdb {
 	}
     }
 
-    public void sendCommand(MICommand cmd) {
+    void sendCommand(MICommand cmd) {
         myMIProxy.send(cmd);
     }
 }

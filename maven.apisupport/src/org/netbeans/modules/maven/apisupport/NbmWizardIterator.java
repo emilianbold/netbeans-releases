@@ -220,6 +220,9 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                     storeNbAppModuleDirInfo(prj);
                 }
             }
+            if ("SNAPSHOT".equals(version)) { // NOI18N
+                addSnapshotRepo(projFile);
+            }
             Templates.setDefinesMainProject(wiz, projects.size() > 1);
             handle.progress(max);
             return projects;
@@ -320,6 +323,34 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         }
         //TODO report inability to create? or if the file doesn't exist, it was already
         //reported?
+   }
+
+    private static void addSnapshotRepo(File projFile) throws IOException {
+        FileObject prjDir = FileUtil.toFileObject(projFile);
+        if (prjDir != null) {
+            FileObject pom = prjDir.getFileObject("pom.xml");
+            if (pom != null) {
+                Project prj = ProjectManager.getDefault().findProject(prjDir);
+                if (prj == null) {
+                    return;
+                }
+                NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
+                Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
+                    public @Override void performOperation(POMModel model) {
+                        Repository repo = model.getFactory().createRepository();
+                        repo.setId("netbeans-snapshot"); // NOI18N
+                        repo.setName("NetBeans Snapshots"); // NOI18N
+                        /* Is the following necessary?
+                        RepositoryPolicy policy = model.getFactory().createSnapshotRepositoryPolicy();
+                        policy.setEnabled(true);
+                        repo.setSnapshots(policy);
+                         */
+                        repo.setUrl("http://bits.netbeans.org/netbeans/trunk/maven-snapshot/"); // NOI18N
+                        model.getProject().addRepository(repo);
+                    }
+                }));
+            }
+        }
    }
 
     private static void trimInheritedFromNbmProject(File projFile) throws IOException {

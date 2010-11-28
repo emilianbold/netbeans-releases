@@ -366,17 +366,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
             currentRequiredProjectsConfiguration = ((MakeConfiguration) currentConf).getRequiredProjectsConfiguration();
         } else if (element.equals(MAKE_ARTIFACT_ELEMENT)) {
-            String pl = atts.getValue("PL");        // NOI18N
+            String pl = atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_PL_ELEMENT);
             pl = getString(adjustOffset(pl));
-            String ct = getString(atts.getValue("CT"));        // NOI18N
-            String cn = getString(atts.getValue("CN"));        // NOI18N
-            String ac = getString(atts.getValue("AC"));        // NOI18N
-            String bl = getString(atts.getValue("BL"));        // NOI18N
-            String wd = atts.getValue("WD");        // NOI18N
+            String ct = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CT_ELEMENT));
+            String cn = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CN_ELEMENT));
+            String ac = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_AC_ELEMENT));
+            String bl = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_BL_ELEMENT));
+            String wd = atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_WD_ELEMENT);
             wd = getString(adjustOffset(wd));
-            String bc = getString(atts.getValue("BC"));        // NOI18N
-            String cc = getString(atts.getValue("CC"));        // NOI18N
-            String op = getString(atts.getValue("OP"));        // NOI18N
+            String bc = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_BC_ELEMENT));
+            String cc = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_CC_ELEMENT));
+            String op = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT));
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                     pl,
@@ -387,7 +387,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     wd,
                     bc,
                     cc,
-                    op));
+                    op,
+                    ((MakeConfiguration) currentConf)));
             if (currentLibrariesConfiguration != null) {
                 currentLibrariesConfiguration.add(projectItem);
             } else if (currentRequiredProjectsConfiguration != null) {
@@ -439,7 +440,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion <= 33) {
                 currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
             }
-            ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
+            ((MakeConfiguration) currentConf).getCompilerSet().restore(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
                     ExecutionEnvironmentFactory.fromUniqueID(currentText));
@@ -955,7 +956,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
             xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
         }
-        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified()) {
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
         }

@@ -960,7 +960,9 @@ public final class OpenProjectList {
                         }
                         if (fail) {
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            Exceptions.attachSeverity(x, Level.INFO);
+                            throw x;
                         }
                     }
                 } catch (IOException ex) {
