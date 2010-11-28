@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -80,7 +81,11 @@ public class MavenPersistenceProviderSupplier implements PersistenceProviderSupp
             // is pretty much identical with the EJB implementation,
             // should be refactored to some common class.
             J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-            platform = Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID()).getJ2eePlatform();
+            ServerInstance si = Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID());
+            if (si == null) {
+                return Collections.<Provider>emptyList();
+            }
+            platform = si.getJ2eePlatform();
             if (platform == null) {
                 return Collections.<Provider>emptyList();
             }

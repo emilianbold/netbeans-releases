@@ -280,6 +280,10 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/issue162017.jsp", new IndentPrefs(4, 4));
     }
 
+    public void testFormattingIssue162031() throws Exception {
+        reformatFileContents("testfilesformatting/issue162031.jsp", new IndentPrefs(4, 4));
+    }
+    
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
