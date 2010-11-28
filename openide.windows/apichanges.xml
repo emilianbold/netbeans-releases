@@ -64,7 +64,6 @@ made subject to such option by the copyright holder.
         If there isn't such a JFrame instance then a new empty JFrame is created
         and used for the main window - the same way as before this change.
     </description>
-    <class package="org.netbeans.core.windows.view.ui" name="MainWindow"/>
 </change>
 
 <change id="retain.non.persistent.topcomponent.locations">
