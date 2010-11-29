@@ -110,7 +110,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
@@ -158,7 +158,7 @@ public class JsfElExpression extends ELExpression {
     public JsfElExpression(WebModule wm, Document doc, int offset) throws BadLocationException{
         super(doc, offset);
         this.webModule = wm;
-	this.webBeansModel = JsfSupport.findFor(doc).getWebBeansModel();
+	this.webBeansModel = JsfSupportImpl.findFor(doc).getWebBeansModel();
     }
 
     @Override
