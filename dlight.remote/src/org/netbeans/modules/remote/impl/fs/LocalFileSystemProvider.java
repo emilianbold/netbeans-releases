@@ -93,11 +93,20 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     private FileSystem getRootFileSystem() {
         if (rootFileSystem == null) {
-            FileObject fo = FileUtil.toFileObject(File.listRoots()[0]);
+            File tmpFile = null;
             try {
+                tmpFile = File.createTempFile("NetBeans", ".tmp");
+                tmpFile = FileUtil.normalizeFile(tmpFile);
+                FileObject fo = FileUtil.toFileObject(tmpFile);
                 rootFileSystem = fo.getFileSystem();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (tmpFile != null) {
+                    tmpFile.delete();
+                }
             }
         }
         return rootFileSystem;
