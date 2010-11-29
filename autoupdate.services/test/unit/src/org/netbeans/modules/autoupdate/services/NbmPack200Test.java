@@ -92,6 +92,11 @@ public class NbmPack200Test extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
     public static class MyProvider extends AutoupdateCatalogProvider {
 
         public MyProvider() {
