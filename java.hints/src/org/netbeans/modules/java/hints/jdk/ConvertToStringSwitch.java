@@ -44,11 +44,13 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -294,7 +296,8 @@ public class ConvertToStringSwitch {
             List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
             Map<TreePath, Set<Name>> catch2Declared = new IdentityHashMap<TreePath, Set<Name>>();
             Map<TreePath, Set<Name>> catch2Used = new IdentityHashMap<TreePath, Set<Name>>();
-
+            Map<BreakTree, StatementTree> break2Target = new IdentityHashMap<BreakTree, StatementTree>();
+            
             for (CatchDescription<TreePathHandle> d : ConvertToSwitch.this.literal2Statement) {
                 TreePath s = d.path.resolve(copy);
 
@@ -304,7 +307,7 @@ public class ConvertToStringSwitch {
 
                 resolved.add(new CatchDescription<TreePath>(d.literals, s));
                 catch2Declared.put(s, declaredVariables(s));
-                catch2Used.put(s, usedVariables(copy, s));
+                catch2Used.put(s, usedVariables(copy, s, break2Target));
             }
 
             if (defaultStatement != null) {
@@ -329,6 +332,54 @@ public class ConvertToStringSwitch {
             SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
 
             copy.rewrite(it.getLeaf(), s); //XXX
+
+            TreePath topLevelMethod = it;
+
+            while (topLevelMethod.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+                if (topLevelMethod.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+                    break;
+                }
+                if (topLevelMethod.getParentPath().getLeaf().getKind() == Kind.METHOD) {
+                    break;
+                }
+                topLevelMethod = topLevelMethod.getParentPath();
+            }
+
+            final Set<String> seenLabels = new HashSet<String>();
+
+            new TreeScanner<Void, Void>() {
+                @Override public Void visitLabeledStatement(LabeledStatementTree node, Void p) {
+                    seenLabels.add(node.getLabel().toString());
+                    return super.visitLabeledStatement(node, p);
+                }
+            }.scan(topLevelMethod.getLeaf(), null);
+
+            Map<StatementTree, String> labels = new IdentityHashMap<StatementTree, String>();
+
+            for (Entry<BreakTree, StatementTree> e : break2Target.entrySet()) {
+                String label = labels.get(e.getValue());
+
+                if (label == null) {
+                    labels.put(e.getValue(), label = computeLabel(seenLabels));
+                    copy.rewrite(e.getValue(), make.LabeledStatement(label, e.getValue()));
+                }
+                
+                copy.rewrite(e.getKey(), make.Break(label));
+            }
+        }
+
+        private static final String DEFAULT_LABEL = "OUTER";
+        private static String computeLabel(Set<String> labels) {
+            int index = 0;
+            String append = "";
+
+            while (labels.contains(DEFAULT_LABEL + append)) {
+                append = "_" + ++index;
+            }
+
+            labels.add(DEFAULT_LABEL + append);
+
+            return DEFAULT_LABEL + append;
         }
 
         private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared, Map<TreePath, Set<Name>> catch2Used) {
@@ -427,9 +478,14 @@ public class ConvertToStringSwitch {
             return result;
         }
 
-        private Set<Name> usedVariables(final CompilationInfo info, TreePath where) {
+        private Set<Name> usedVariables(final CompilationInfo info, TreePath where, final Map<BreakTree, StatementTree> break2Target) {
             final Set<Name> result = new HashSet<Name>();
             final Set<Element> declared = new HashSet<Element>();
+            final Set<Tree> above = new HashSet<Tree>();
+
+            for (Tree t : where) {
+                above.add(t);
+            }
 
             new TreePathScanner<Void, Void>() {
                 @Override public Void visitIdentifier(IdentifierTree node, Void p) {
@@ -441,6 +497,17 @@ public class ConvertToStringSwitch {
                 @Override public Void visitVariable(VariableTree node, Void p) {
                     declared.add(info.getTrees().getElement(getCurrentPath()));
                     return super.visitVariable(node, p);
+                }
+                @Override
+                public Void visitBreak(BreakTree node, Void p) {
+                    if (node.getLabel() == null) {
+                        StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+
+                        if (above.contains(target)) {
+                            break2Target.put(node, target);
+                        }
+                    }
+                    return super.visitBreak(node, p);
                 }
             }.scan(where, null);
 
