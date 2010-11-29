@@ -158,6 +158,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    int line = 0;
 	    String func = null;
 	    long pc = 0;
+            int level = 0;
 
             if (frameTuple != null) {
 		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
@@ -181,6 +182,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    }
 		}
 
+                MIValue levelValue = frameTuple.valueOf("level"); // NOI18N
+                if (levelValue != null) {
+                    String lineString = levelValue.asConst().value();
+                    level = Integer.parseInt(lineString);
+                }
+                
                 MIValue lineValue = frameTuple.valueOf("line"); // NOI18N
                 if (lineValue != null) {
                     String lineString = lineValue.asConst().value();
@@ -207,7 +214,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  func,
 				  pc,
 				  Location.UPDATE |
-				  (visited? Location.VISITED: 0));
+				  (visited ? Location.VISITED: 0) |
+                                  (level == 0 ? Location.TOPFRAME : 0));
         }
 
         public static Location make(Location h, boolean visited) {
@@ -216,7 +224,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  h.func(),
 				  h.pc(),
 				  Location.UPDATE |
-				  (visited? Location.VISITED: 0));
+				  (visited ? Location.VISITED: 0) |
+                                  (h.topframe() ? Location.TOPFRAME: 0));
 	}
 
 	private MILocation(String src, int line, String func, long pc,
