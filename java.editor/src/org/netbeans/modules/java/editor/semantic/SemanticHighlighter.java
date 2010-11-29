@@ -130,6 +130,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -1554,6 +1555,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
     static ErrorDescriptionSetter ERROR_DESCRIPTION_SETTER = new ErrorDescriptionSetter() {
         
         public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
+            FileObject file = NbEditorUtilities.getFileObject(doc);
+            if (file != null && org.netbeans.modules.editor.java.Utilities.disableErrors(file).contains(Severity.VERIFIER)) {
+                return;
+            }
+
             HintsController.setErrors(doc, "semantic-highlighter", errors);
         }
         

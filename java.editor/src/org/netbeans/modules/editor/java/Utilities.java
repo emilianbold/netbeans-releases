@@ -89,6 +89,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -893,6 +894,9 @@ public final class Utilities {
 
     public static Set<Severity> disableErrors(FileObject file) {
         if (file.getAttribute(DISABLE_ERRORS) != null) {
+            return EnumSet.allOf(Severity.class);
+        }
+        if (!file.canWrite() && FileUtil.getArchiveFile(file) != null) {
             return EnumSet.allOf(Severity.class);
         }
 
