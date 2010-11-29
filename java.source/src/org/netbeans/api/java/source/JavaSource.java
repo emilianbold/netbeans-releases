@@ -70,6 +70,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -218,7 +219,7 @@ public final class JavaSource {
     }
     
     private static Map<FileObject, Reference<JavaSource>> file2JavaSource = new WeakHashMap<FileObject, Reference<JavaSource>>();
-    private static final String[] supportedMIMETypes = new String[] {"application/x-class-file", "text/x-java"};
+    private static final String[] supportedMIMETypes = new String[] {ClassParser.MIME_TYPE, JavacParser.MIME_TYPE};
     
     /**
      * Returns a {@link JavaSource} instance associated to given {@link org.openide.filesystems.FileObject},
@@ -468,7 +469,8 @@ public final class JavaSource {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final Snapshot snapshot = resultIterator.getSnapshot();
-            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
+            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType()) ||
+                ClassParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                 Parser.Result result = resultIterator.getParserResult();
                 if (result == null) {
                     //Deleted file of other parser critical issue
