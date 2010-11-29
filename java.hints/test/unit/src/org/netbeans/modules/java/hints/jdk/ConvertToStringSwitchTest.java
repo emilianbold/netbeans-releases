@@ -262,6 +262,46 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testNonLocalBreak() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         for (;;) {\n" +
+                       "             String g = null;\n" +
+                       "             if (g == \"j\") {" +
+                       "                 System.err.println(1);" +
+                       "                 break;" +
+                       "             } else if (g == \"k\") {" +
+                       "                 System.err.println(2);" +
+                       "                 break;" +
+                       "             }\n" +
+                       "         }\n" +
+                       "     }" +
+                       "}",
+                       "2:13-2:15:verifier:Convert to switch",
+                       "FixImpl",
+                       ("package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         OUTER: for (;;) {\n" +
+                       "             String g = null;\n" +
+                       "             switch (g) {" +
+                       "                 case \"j\":" +
+                       "                     System.err.println(1);" +
+                       "                     break OUTER;" +
+                       "                 case \"k\":" +
+                       "                     System.err.println(2);" +
+                       "                     break OUTER;" +
+                       "             }\n" +
+                       "         }\n" +
+                       "     }" +
+                       "}").replaceAll("[ \t\n]+", " "));
+    }
+
     public void testNonConstantString() throws Exception {
         setSourceLevel("1.7");
         performAnalysisTest("test/Test.java",
