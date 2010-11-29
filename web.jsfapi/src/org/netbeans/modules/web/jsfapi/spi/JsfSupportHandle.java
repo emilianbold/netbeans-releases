@@ -40,64 +40,38 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.jsfapi.spi;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.openide.filesystems.FileUtil;
 
 /**
+ * Supposed to be in web project's lookup.
  *
- * @author Tomasz.Slota@Sun.COM
+ * Hold a reference for an instance of JsfSupport for the project.
+ *
+ * @author marekfukala
  */
-public class FixLibDeclaration implements HintFix{
-    private String nsPrefix;
-    private FaceletsLibrary lib;
-    private Document doc;
+public final class JsfSupportHandle {
 
-    public FixLibDeclaration(Document doc, String nsPrefix, FaceletsLibrary lib) {
-        this.doc = doc;
-        this.nsPrefix = nsPrefix;
-        this.lib = lib;
-    }
+    private JsfSupport instance;
+    private Throwable caller;
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(FixLibDeclaration.class, "MSG_FixLibDeclaration", nsPrefix, lib.getNamespace());
-    }
-
-    @Override
-    public void implement() throws Exception {
-        JsfUtils.importLibrary(doc, lib, nsPrefix);
-    }
-
-    @Override
-    public boolean isSafe() {
-        return true; // hope so...
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
-    }
-
-    public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
-        List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
-        JsfSupportImpl sup = JsfSupportImpl.findFor(doc);
-
-        if (sup != null){
-            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
-                if (prefix.equals(lib.getDefaultPrefix())){
-                    libs.add(lib);
-                }
-            }
+    /** can be called only once per session. */
+    synchronized void install(JsfSupport instance) {
+        if(instance != null) {
+            throw new IllegalStateException(
+                    String.format("An instance of JsfSupport has already been installed to this project %s!",
+                    FileUtil.getFileDisplayName(instance.getProject().getProjectDirectory())), caller);
         }
 
-        return libs;
+        this.instance = instance;
+        this.caller = new Throwable();
     }
+
+    synchronized JsfSupport get() {
+        return instance;
+    }
+    
+
 }

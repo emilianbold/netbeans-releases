@@ -60,7 +60,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -133,7 +134,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                             hints.add(hint);
                         } else {
                             //check the component attributes
-                            TldLibrary.Tag tag = component.getTag();
+                            Tag tag = component.getTag();
                             if (tag != null) {
                                 //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
                                 //do not do any check on a composite component w/o any interface attributes
@@ -144,8 +145,8 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 }
 
                                 //1. check required attributes
-                                Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
-                                for (TldLibrary.Attribute attr : attrs) {
+                                Collection<Attribute> attrs = tag.getAttributes();
+                                for (Attribute attr : attrs) {
                                     if (attr.isRequired()) {
                                         if (node.getAttribute(attr.getName()) == null) {
                                             //missing required attribute

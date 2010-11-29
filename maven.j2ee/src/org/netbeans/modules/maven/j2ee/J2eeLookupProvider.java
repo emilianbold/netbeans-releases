@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
 import org.netbeans.modules.maven.j2ee.web.WebEjbJarImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
@@ -110,6 +111,7 @@ public class J2eeLookupProvider implements LookupProvider {
         private EjbJarProvider webEjbJarProvider;
         private EjbJarsInProject ejbJarsInProject;
         private MavenWebProjectWebRootProvider webRootProvider;
+        private JsfSupportHandle jsfSupportHandle;
 
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
@@ -122,6 +124,7 @@ public class J2eeLookupProvider implements LookupProvider {
             resolver = new EMGSResolverImpl();
             supplier = new MavenPersistenceProviderSupplier(proj);
             webRootProvider = new MavenWebProjectWebRootProvider(project);
+            jsfSupportHandle = new JsfSupportHandle();
 
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
@@ -169,6 +172,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(resolver);
                 content.add(supplier);
                 content.add(webRootProvider);
+                content.add(jsfSupportHandle);
                 //j2ee 6 stuff..
                 Profile prf = prov.getWebModuleImplementation().getJ2eeProfile();
                 if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
@@ -233,6 +237,7 @@ public class J2eeLookupProvider implements LookupProvider {
             content.remove(resolver);
             content.remove(supplier);
             content.remove(webRootProvider);
+            content.remove(jsfSupportHandle);
             if (webEjbJarProvider != null) {
                 content.remove(webEjbJarProvider);
                 webEjbJarProvider = null;

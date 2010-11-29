@@ -60,7 +60,7 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  * 
@@ -109,7 +109,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             return;
         }
 
-        JsfSupport sup = JsfSupport.findFor(source); //activate the jsf support
+        JsfSupportImpl sup = JsfSupportImpl.findFor(source); //activate the jsf support
         if (sup == null) {
             return;
         }

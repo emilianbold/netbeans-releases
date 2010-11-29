@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
+import org.netbeans.modules.web.jsfapi.api.Attribute;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ import org.xml.sax.SAXException;
  * @author marekfukala
  */
 
-public class TldLibrary extends LibraryDescriptor {
+public final class TldLibrary extends AbstractLibraryDescriptor {
 
     static TldLibrary create(FileObject definitionFile) throws LibraryDescriptorException {
         return new TldLibrary(definitionFile);
@@ -89,6 +90,7 @@ public class TldLibrary extends LibraryDescriptor {
         return parseNamespace(content, "taglib", "uri"); //NOI18N
     }
 
+    @Override
     protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();

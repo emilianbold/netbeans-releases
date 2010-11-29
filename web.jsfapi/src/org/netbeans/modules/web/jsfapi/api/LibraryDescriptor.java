@@ -37,67 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsfapi.api;
 
-package org.netbeans.modules.web.jsf.editor.hints;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.openide.util.NbBundle;
+import java.util.Map;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author marekfukala
  */
-public class FixLibDeclaration implements HintFix{
-    private String nsPrefix;
-    private FaceletsLibrary lib;
-    private Document doc;
+public interface LibraryDescriptor {
 
-    public FixLibDeclaration(Document doc, String nsPrefix, FaceletsLibrary lib) {
-        this.doc = doc;
-        this.nsPrefix = nsPrefix;
-        this.lib = lib;
-    }
+    public String getURI();
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(FixLibDeclaration.class, "MSG_FixLibDeclaration", nsPrefix, lib.getNamespace());
-    }
+    public String getDefaultPrefix();
 
-    @Override
-    public void implement() throws Exception {
-        JsfUtils.importLibrary(doc, lib, nsPrefix);
-    }
+    public String getDisplayName();
 
-    @Override
-    public boolean isSafe() {
-        return true; // hope so...
-    }
+    public Map<String, Tag> getTags();
 
-    @Override
-    public boolean isInteractive() {
-        return false;
-    }
-
-    public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
-        List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
-        JsfSupportImpl sup = JsfSupportImpl.findFor(doc);
-
-        if (sup != null){
-            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
-                if (prefix.equals(lib.getDefaultPrefix())){
-                    libs.add(lib);
-                }
-            }
-        }
-
-        return libs;
-    }
 }
