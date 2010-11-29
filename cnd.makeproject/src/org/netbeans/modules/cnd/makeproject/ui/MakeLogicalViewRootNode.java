@@ -158,6 +158,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(new FolderSearchInfo(logicalFolders));
         setChildren(new LogicalViewChildren(folder, provider));
         updateAnnotationFiles();
+        stateChanged(null);
     }
 
     private void setRealProjectFolder(Folder folder) {
@@ -294,7 +295,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     public void stateChanged(ChangeEvent e) {
         brokenLinks = MakeLogicalViewProvider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(getProject());
-        brokenProject = provider.getMakeConfigurationDescriptor().getState() == State.BROKEN;
+        brokenProject = provider.getMakeConfigurationDescriptor().getState() == State.BROKEN || provider.getMakeConfigurationDescriptor().getConfs().size() == 0;
         updateAnnotationFiles();
         EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
 //            fireIconChange(); // MakeLogicalViewRootNode
