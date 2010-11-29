@@ -885,7 +885,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         public @Override String getHtmlDisplayName() {
             if (isDeprecated()) {
                 try {
-                    return "<html><strike>" + XMLUtil.toElementContent(getDisplayName()) + "</strike>"; // NOI18N
+                    return "<html><s>" + XMLUtil.toElementContent(getDisplayName()) + "</s>"; // NOI18N
                 } catch (CharConversionException ex) {}
             }
             return null;
