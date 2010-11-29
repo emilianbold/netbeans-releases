@@ -141,8 +141,8 @@ public class Utilities {
     private static final String USER_KS_FILE_NAME = "user.ks";
     private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
-    private static Logger err = null;
-    private static ModuleManager mgr = null;
+    private static final Logger err = Logger.getLogger(Utilities.class.getName ());
+    private static ModuleManager mgr;
     
     
     public static Collection<KeyStore> getKeyStore () {
@@ -852,18 +852,23 @@ public class Utilities {
             mgr = Main.getModuleSystem().getManager();
             assert mgr != null;
             if (mgr == null) {
+                err.config("No module manager");
                 return null;
             }
         }
         Module m = mgr.get(codeNameBase);
         if (specificationVersion == null || m == null) {
+            err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
             return m;
         } else {
             SpecificationVersion version = m.getSpecificationVersion();
             if (version == null) {
+                err.log(Level.FINER, "No version for {0}", m);
                 return null;
             }
-            return version.compareTo(specificationVersion) >= 0 ? m : null;
+            final int res = version.compareTo(specificationVersion);
+            err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+            return res >= 0 ? m : null;
         }
     }
     
@@ -1030,9 +1035,6 @@ public class Utilities {
     }
     
     private static Logger getLogger () {
-        if (err == null) {
-            err = Logger.getLogger (Utilities.class.getName ());
-        }
         return err;
     }
     
