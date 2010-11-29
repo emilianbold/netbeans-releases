@@ -62,6 +62,8 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
+import org.netbeans.modules.git.ui.actions.ConnectAction;
+import org.netbeans.modules.git.ui.actions.DisconnectAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
@@ -116,9 +118,14 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         boolean noneVersioned = (roots == null || roots.isEmpty());
 
         List<Action> actions = new LinkedList<Action>();
+        ConnectAction ca = SystemAction.get(ConnectAction.class);
         if (destination.equals(ActionDestination.MainMenu)) {
-            if (noneVersioned) {                    
-                actions.add(SystemAction.get(InitAction.class));
+            if (noneVersioned) {
+                if (ca.isEnabled()) {
+                    actions.add(ca);
+                } else {
+                    actions.add(SystemAction.get(InitAction.class));
+                }
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(SystemAction.get(CheckoutPathsAction.class));
@@ -126,6 +133,12 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
+                actions.add(null);
+                if (ca.isEnabled()) {
+                    actions.add(SystemAction.get(ConnectAction.class));
+                } else {
+                    actions.add(SystemAction.get(DisconnectAction.class));
+                }
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 MarkResolvedAction a = SystemAction.get(MarkResolvedAction.class);
@@ -137,7 +150,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {                    
-                actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "LBL_InitAction.popupName"), lkp));
+                if (ca.isEnabled()) {
+                    actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
+                } else {
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "LBL_InitAction.popupName"), lkp));
+                }
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
@@ -149,6 +166,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (a.isEnabled()) {
                     actions.add(null);
                     actions.add(a);
+                }
+                DisconnectAction da = SystemAction.get(DisconnectAction.class);
+                if (da.isEnabled()) {
+                    actions.add(null);
+                    actions.add(SystemActionBridge.createAction(da, NbBundle.getMessage(da.getClass(), "LBL_DisconnectAction_PopupName"), lkp)); //NOI18N
+                }
+                if (ca.isEnabled()) {
+                    actions.add(null);
+                    actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
             }
         }
