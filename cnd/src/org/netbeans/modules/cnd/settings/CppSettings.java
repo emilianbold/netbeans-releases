@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.settings;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -87,7 +87,7 @@ public final class CppSettings extends SharedClassObject {
         super.initialize();
     }
     
-    /** Return the signleton cppSettings */
+    /** Return the singleton cppSettings */
     public static CppSettings getDefault() {
         // See IZ 120502
         if (cppSettings == null) {
@@ -110,7 +110,7 @@ public final class CppSettings extends SharedClassObject {
     }
 
     /**
-     * Gets the replacable strings table - used during instantiating
+     * Gets the replaceable strings table - used during instantiating
      * from template.
      */
     public String getReplaceableStringsTable() {
@@ -131,7 +131,7 @@ public final class CppSettings extends SharedClassObject {
         Properties props = new Properties();
         
         try {
-            props.load(new ByteArrayInputStream(getReplaceableStringsTable().getBytes()));
+            props.load(new StringReader(getReplaceableStringsTable()));
         }
         catch (IOException e) {
         }
