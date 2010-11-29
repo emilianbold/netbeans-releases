@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.settings;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -131,7 +131,7 @@ public final class CppSettings extends SharedClassObject {
         Properties props = new Properties();
         
         try {
-            props.load(new ByteArrayInputStream(getReplaceableStringsTable().getBytes()));
+            props.load(new StringReader(getReplaceableStringsTable()));
         }
         catch (IOException e) {
         }
