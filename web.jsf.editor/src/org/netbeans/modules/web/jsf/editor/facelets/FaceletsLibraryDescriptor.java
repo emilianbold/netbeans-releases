@@ -49,8 +49,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -62,7 +64,7 @@ import org.xml.sax.SAXException;
  *
  * @author marekfukala
  */
-public class FaceletsLibraryDescriptor extends LibraryDescriptor {
+public final class FaceletsLibraryDescriptor extends AbstractLibraryDescriptor {
 
     static FaceletsLibraryDescriptor create(FileObject definitionFile) throws LibraryDescriptorException {
         return new FaceletsLibraryDescriptor(definitionFile);
@@ -98,6 +100,7 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
         return parseNamespace(content, "facelet-taglib", "namespace"); //NOI18N
     }
 
+    @Override
     protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();

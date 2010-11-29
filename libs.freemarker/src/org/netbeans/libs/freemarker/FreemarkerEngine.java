@@ -47,14 +47,15 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /* Taken from A. Sundararajan and adopted by Jaroslav Tulach 
  * for NetBeans needs.
  * 
  * @author A. Sundararajan
  */
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 class FreemarkerEngine extends AbstractScriptEngine {
 
     public static final String STRING_OUTPUT_MODE = "com.sun.script.freemarker.stringOut";
@@ -74,6 +75,15 @@ class FreemarkerEngine extends AbstractScriptEngine {
 
     public FreemarkerEngine(ScriptEngineFactory factory) {
         this.factory = factory;
+        try {
+            freemarker.log.Logger.selectLoggerLibrary(freemarker.log.Logger.LIBRARY_JAVA);
+        } catch (ClassNotFoundException ex) {
+            try {
+                freemarker.log.Logger.selectLoggerLibrary(freemarker.log.Logger.LIBRARY_NONE);
+            } catch (ClassNotFoundException ex1) {
+                Exceptions.printStackTrace(ex1);
+            }
+        }
     }   
 
     public FreemarkerEngine() {

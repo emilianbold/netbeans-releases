@@ -52,6 +52,8 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.web.jsfapi.api.LibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -66,7 +68,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author marekfukala
  */
-public abstract class LibraryDescriptor {
+public abstract class AbstractLibraryDescriptor implements LibraryDescriptor {
 
     private FileObject definitionFile;
     private InputStream content;
@@ -75,14 +77,14 @@ public abstract class LibraryDescriptor {
     protected String displayName;
     protected Map<String, Tag> tags = new HashMap<String, Tag>();
 
-    protected LibraryDescriptor() {
+    protected AbstractLibraryDescriptor() {
     }
 
-    protected LibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
+    protected AbstractLibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
         this.definitionFile = definitionFile;
     }
 
-    protected LibraryDescriptor(InputStream content) throws LibraryDescriptorException {
+    protected AbstractLibraryDescriptor(InputStream content) throws LibraryDescriptorException {
         this.content = content;
     }
 
@@ -90,18 +92,22 @@ public abstract class LibraryDescriptor {
         return definitionFile;
     }
 
+    @Override
     public String getURI() {
         return uri;
     }
 
+    @Override
     public String getDefaultPrefix() {
         return prefix;
     }
 
+    @Override
     public String getDisplayName() {
         return this.displayName;
     }
 
+    @Override
     public Map<String, Tag> getTags() {
         return tags;
     }
@@ -178,9 +184,9 @@ public abstract class LibraryDescriptor {
     @Override
     public String toString() {
         try {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
-            sb.append("; defaultPrefix = " + getDefaultPrefix() + "; uri = " + getURI() + "; tags={"); //NOI18N
+            sb.append("; defaultPrefix = ").append(getDefaultPrefix()).append("; uri = ").append(getURI()).append("; tags={"); //NOI18N
             for (Tag t : getTags().values()) {
                 sb.append(t.toString());
             }
@@ -215,98 +221,5 @@ public abstract class LibraryDescriptor {
             }
         }
         return nodes;
-    }
-
-    public static interface Tag {
-        
-        public String getName();
-
-        public String getDescription();
-
-        public boolean hasNonGenenericAttributes();
-
-        public Collection<Attribute> getAttributes();
-
-        public Attribute getAttribute(String name);
-    }
-
-    public static class TagImpl implements Tag {
-
-        private static final String ID_ATTR_NAME = "id"; //NOI18N
-        private String name;
-        private String description;
-        private Map<String, Attribute> attrs;
-
-        public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-            this.name = name;
-            this.description = description;
-            this.attrs = attrs;
-
-            //add the default ID attribute
-            if (getAttribute(ID_ATTR_NAME) == null) {
-                attrs.put(ID_ATTR_NAME, new Attribute(ID_ATTR_NAME, "", false));
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public boolean hasNonGenenericAttributes() {
-            return getAttributes().size() > 1; //the ID attribute is the default generic one
-        }
-
-        public Collection<Attribute> getAttributes() {
-            return attrs.values();
-        }
-
-        public Attribute getAttribute(String name) {
-            return attrs.get(name);
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("Tag[name=" + getName() + /*", description=" + getDescription() +*/ ", attributes={"); //NOI18N
-            for (Attribute attr : getAttributes()) {
-                sb.append(attr.toString() + ",");
-            }
-            sb.append("}]");
-            return sb.toString();
-        }
-    }
-
-    public static class Attribute {
-
-        private String name;
-        private String description;
-        private boolean required;
-
-        public Attribute(String name, String description, boolean required) {
-            this.name = name;
-            this.description = description;
-            this.required = required;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public boolean isRequired() {
-            return required;
-        }
-
-        @Override
-        public String toString() {
-            return "Attribute[name=" + getName() + /*", description=" + getDescription() + */ ", required=" + isRequired() + "]"; //NOI18N
-        }
     }
 }

@@ -41,34 +41,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javacard.ri.bundle;
+package org.netbeans.modules.javacard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.MissingResourceException;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.JavacardPlatformLocator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class Installer extends ModuleInstall implements Runnable {
+public class Installer {
     private static final String ATTR = "isRiBundle302"; //NOI18N
     private static final String[] SUPERSEDED_ATTRS = new String[] { "isRiBundle" }; //NOI18N
     private static final String PLATFORM_DIRECTORY_NAME = "JCDK3.0.2_ConnectedEdition"; //NOI18N
+    
+    private static boolean installing = false;
+    private static final Object LOCK = new Object();
+    private static RequestProcessor rp;
+    
+    public static void install() {
+        synchronized (LOCK){
+            if (installing) return;
+            
+            installing = true;
+        }
+        rp = new RequestProcessor();
+        rp.post(new Runnable() {
 
-    @Override
-    public void restored() {
-        //No need to block startup
-        RequestProcessor.getDefault().post(this, 2000, Thread.MIN_PRIORITY);
+            @Override
+            public void run() {
+                installImpl();
+                rp.shutdown(); //no need anymore
+                rp = null;
+                installing = false;
+            }
+        });
     }
 
-    public void run() {
+    private static void installImpl() throws MissingResourceException {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Installer.class,
                 "MSG_CHECKING_RUNTIME")); //NOI18N
         final FileObject platformsFolder = Utils.sfsFolderForRegisteredJavaPlatforms();
@@ -107,9 +124,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
         }
+        return;
     }
 
-    private void cleanUp (FileObject platformFileObject) {
+    private static void cleanUp (FileObject platformFileObject) {
         //If there was an older version of the bundle, try to delete its
         //card files, so we do not end up with stale properties files
         //that cannot be read in directories we will try to use
@@ -130,8 +148,8 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    @Override
-    public void uninstalled() {
+    //XXX needed?
+    public static void uninstall() {
         FileObject platformsFolder = Utils.sfsFolderForRegisteredJavaPlatforms();
         for (FileObject fo : platformsFolder.getChildren()) {
             if (Boolean.TRUE.equals(fo.getAttribute(ATTR))) {

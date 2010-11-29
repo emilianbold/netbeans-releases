@@ -321,7 +321,7 @@ public class JsfUtils {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
-        JsfSupport jsfSupport = JsfSupport.findFor(result.getSnapshot().getSource().getFileObject());
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(result.getSnapshot().getSource().getFileObject());
         if (jsfSupport != null) {
             Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
 
