@@ -60,8 +60,6 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -69,8 +67,6 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-@ActionID(id = "org.netbeans.modules.git.ui.conflicts.MarkResolvedAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_MarkResolvedAction_Name")
 public class MarkResolvedAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(MarkResolvedAction.class.getName());
