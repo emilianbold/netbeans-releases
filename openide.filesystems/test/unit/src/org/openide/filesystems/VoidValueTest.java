@@ -41,40 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.filesystems;
 
+import java.io.File;
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-/**
- * Simulates issue 50852.
- *
- * @author Jiri Skrivanek
- */
-public class VoidValue132801Test extends NbTestCase {
+public class VoidValueTest extends NbTestCase {
 
-    public VoidValue132801Test(String name) {
+    public VoidValueTest(String name) {
         super(name);
-    }
-
-    public static void main(String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite(VoidValue132801Test.class));
-    }
-
-    /**
-     * Setups variables.
-     */
-    @Override
-    protected void setUp() throws Exception {
-    }
-    private static String[] resources = new String[]{
-        "/fold10/fold11/fold12/file12.txt",
-        "/fold20/fold21/fold22",
-        "/fold20/fold23.txt"
-    };
-
-    protected String[] getResources(String testName) {
-        return resources;
     }
 
     /** Test VoidValue attribute is not copied (#132801).
@@ -82,6 +59,7 @@ public class VoidValue132801Test extends NbTestCase {
      * - set String and VoidValue attributes for file object
      * - copy file object
      * - check String attribute is copied and VoidValue attribute not
+     * Simulates issue 50852.
      */
     public void testCopyVoidValue132801() throws Exception {
         System.setProperty("workdir", getWorkDirPath());
@@ -100,7 +78,25 @@ public class VoidValue132801Test extends NbTestCase {
         assertEquals("String attribute is not copied.", stringValue, file11FO.getAttribute("STRING-ATTR"));
         assertNull("VoidValue should not be copied.", file11FO.getAttribute("VOIDVALUE-ATTR"));
     }
+
+    public void XXX_testNullValue() throws Exception { // #16761
+        clearWorkDir();
+        LocalFileSystem local = new LocalFileSystem();
+        local.setRootDirectory(getWorkDir());
+        FileObject baseFile = local.getRoot().createData("file");
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {local});
+        FileObject derivedFile = mfs.findResource("file");
+        assertNull(baseFile.getAttribute("nonexistent"));
+        assertNull(derivedFile.getAttribute("nonexistent"));
+        baseFile.setAttribute("nonexistent", null);
+        assertNull(baseFile.getAttribute("nonexistent"));
+        assertNull(derivedFile.getAttribute("nonexistent"));
+        derivedFile.setAttribute("nonexistent", null); // ought to be a no-op
+        assertNull(baseFile.getAttribute("nonexistent"));
+        assertNull(derivedFile.getAttribute("nonexistent"));
+        assertEquals(Collections.emptyList(), Collections.list(baseFile.getAttributes()));
+        assertEquals(Collections.emptyList(), Collections.list(derivedFile.getAttributes()));
+        assertFalse(new File(getWorkDir(), ".nbattrs").isFile());
+    }
+
 }
-  
-  
-  
