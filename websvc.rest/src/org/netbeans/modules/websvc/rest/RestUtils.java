@@ -457,4 +457,17 @@ public class RestUtils {
         }
         return false;
     }
+    
+    public static boolean hasProfile(Project project, Profile... profiles) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile projectProfile = webModule.getJ2eeProfile();
+            for ( Profile profile: profiles ){
+                if ( projectProfile == profile ){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

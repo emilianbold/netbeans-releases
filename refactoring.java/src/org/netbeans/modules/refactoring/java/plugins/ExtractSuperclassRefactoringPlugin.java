@@ -522,6 +522,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
 
             // create superclass
             Tree superClass = makeSuperclass(make, sourceTypeElm);
+
+            makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
             
             ModifiersTree classModifiersTree = makeAbstract
                     ? RetoucheUtils.makeAbstract(make, classTree.getModifiers())

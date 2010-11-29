@@ -92,9 +92,9 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return null;
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = CndPathUtilitities.naturalize(itemPath);
+        itemPath = CndPathUtilitities.naturalizeSlashes(itemPath);
         String bd = baseDir;
-        bd = CndPathUtilitities.naturalize(bd);
+        bd = CndPathUtilitities.naturalizeSlashes(bd);
         itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
 //        if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
 //            itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(bd, itemPath);
@@ -103,7 +103,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 //        } else {
 //            itemPath = itemPath;
 //        }
-        itemPath = CndPathUtilitities.normalize(itemPath);
+        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
         return itemPath;
     }
 

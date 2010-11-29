@@ -57,6 +57,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -117,14 +118,14 @@ public class CheckoutIndexCommand extends GitCommand {
             return;
         }
         if (file.isDirectory()) {
-            monitor.notifyWarning("Replacing directory " + file.getAbsolutePath());
+            monitor.notifyWarning(NbBundle.getMessage(CheckoutIndexCommand.class, "MSG_Warning_ReplacingDirectory", file.getAbsolutePath())); //NOI18N
             Utils.deleteRecursively(file);
         }
         file.createNewFile();
         if (file.isFile()) {
             DirCacheCheckout.checkoutEntry(repository, file, e, getFileMode(repository));
         } else {
-            monitor.notifyError("Cannot create file " + file.getAbsolutePath());
+            monitor.notifyError(NbBundle.getMessage(CheckoutIndexCommand.class, "MSG_Warning_CannotCreateFile", file.getAbsolutePath())); //NOI18N
         }
     }
 
@@ -143,10 +144,10 @@ public class CheckoutIndexCommand extends GitCommand {
         }
         if (predecessor.isFile()) {
             if (!predecessor.delete()) {
-                monitor.notifyError("Cannot replace file " + predecessor.getAbsolutePath());
+                monitor.notifyError(NbBundle.getMessage(CheckoutIndexCommand.class, "MSG_Warning_CannotCreateFile", predecessor.getAbsolutePath())); //NOI18N
                 return false;
             }
-            monitor.notifyWarning("Replacing file " + predecessor.getAbsolutePath());
+            monitor.notifyWarning(NbBundle.getMessage(CheckoutIndexCommand.class, "MSG_Warning_ReplacingFile", predecessor.getAbsolutePath())); //NOI18N
         }
         return parentFolder.mkdirs() || parentFolder.exists();
     }

@@ -88,6 +88,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (applicable.isApplicable()) {
                 descriptor.setCompilerName(applicable.getCompilerName());
                 descriptor.setDependencies(applicable.getDependencies());
+                descriptor.setSearchPaths(applicable.getSearchPaths());
                 descriptor.setRootFolder(applicable.getSourceRoot());
                 descriptor.setErrors(applicable.getErrors());
             } else {

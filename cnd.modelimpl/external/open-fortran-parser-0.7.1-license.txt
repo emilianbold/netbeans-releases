@@ -1,10 +1,10 @@
 Name: Open Fortran Parser
 Version: 0.7.1
-Description: The Open Fortran Parser (OFP) project provides ANTLR-based 
-parsing tools that support the Fortran 2003 standard.
-License: Eclipse Public License
+Description: The Open Fortran Parser (OFP) project provides ANTLR-based parsing tools that support the Fortran 2003 standard.
+License: EPL-v10
 OSR: 13312
 Origin: http://fortran-parser.sourceforge.net
+Files: open-fortran-parser-0.7.1.2.zip
 
 Use of Open Fortran Parser version 0.7.1 is governed by the terms of the license below:
 

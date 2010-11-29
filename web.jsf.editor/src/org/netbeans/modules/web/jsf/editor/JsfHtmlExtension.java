@@ -447,81 +447,87 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         HtmlParserResult htmlresult = (HtmlParserResult) result;
         Snapshot snapshot = result.getSnapshot();
-        AstNode leaf = htmlresult.findLeaf(caretOffset);
-        if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+        AstNode leaf = htmlresult.findLeafTag(caretOffset, true, true);
+        if (leaf != null && leaf.type() == AstNode.NodeType.OPEN_TAG) {
             String namespace = leaf.getNamespace();
-            FaceletsLibrary lib = JsfSupport.findFor(result.getSnapshot().getSource()).getFaceletsLibraries().get(namespace);
-            if (lib != null) {
-                if (lib instanceof CompositeComponentLibrary) {
-                    String tagName = leaf.getNameWithoutPrefix();
-                    CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
-                    if (component == null) {
-                        return DeclarationLocation.NONE;
-                    }
-		    CompositeComponentModel model = component.getComponentModel();
-                    FileObject file = model.getSourceFile();
+            JsfSupport jsfs = JsfSupport.findFor(result.getSnapshot().getSource());
+            if (jsfs == null) {
+                return DeclarationLocation.NONE;
+            }
+            FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(namespace);
+            if (lib == null) {
+                return DeclarationLocation.NONE;
+            }
+            if (lib instanceof CompositeComponentLibrary) {
+                String tagName = leaf.getNameWithoutPrefix();
+                CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                if (component == null) {
+                    return DeclarationLocation.NONE;
+                }
+                CompositeComponentModel model = component.getComponentModel();
+                FileObject file = model.getSourceFile();
 
-                    //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
-                    int astOffset = snapshot.getEmbeddedOffset(caretOffset);
+                //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
+                int astOffset = snapshot.getEmbeddedOffset(caretOffset);
 
-                    int jumpOffset = 0;
-                    TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
-                    htmlTs.move(astOffset);
-                    if (htmlTs.moveNext() || htmlTs.movePrevious()) {
-                        if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
-                            //jumpOffset = 0;
-                        } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
-                            final String attributeName = htmlTs.token().text().toString();
-                            //find the attribute in the interface
+                int jumpOffset = 0;
+                TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
+                htmlTs.move(astOffset);
+                if (htmlTs.moveNext() || htmlTs.movePrevious()) {
+                    if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
+                        //jumpOffset = 0;
+                    } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
+                        final String attributeName = htmlTs.token().text().toString();
+                        //find the attribute in the interface
 
-                            Source source = Source.create(file);
-                            final int[] attrOffset = new int[1];
-                            try {
-                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        Source source = Source.create(file);
+                        final int[] attrOffset = new int[1];
+                        try {
+                            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                                    @Override
-                                    public void run(ResultIterator resultIterator) throws Exception {
-                                        Result result = resultIterator.getParserResult(caretOffset);
-                                        if (result instanceof HtmlParserResult) {
-                                            HtmlParserResult hresult = (HtmlParserResult) result;
-                                            AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
-                                            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    Result result = resultIterator.getParserResult(caretOffset);
+                                    if (result instanceof HtmlParserResult) {
+                                        HtmlParserResult hresult = (HtmlParserResult) result;
+                                        AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
+                                        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-                                                public void visit(AstNode node) {
-                                                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
-                                                        for (AstNode child : node.children()) {
-                                                            if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
-                                                                String nameAttrvalue = child.getUnqotedAttributeValue("name");
-                                                                if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
-                                                                    //we found it
-                                                                    attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
-                                                                    break;
-                                                                }
+                                            public void visit(AstNode node) {
+                                                if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
+                                                    for (AstNode child : node.children()) {
+                                                        if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
+                                                            String nameAttrvalue = child.getUnqotedAttributeValue("name");
+                                                            if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
+                                                                //we found it
+                                                                attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
+                                                                break;
                                                             }
                                                         }
                                                     }
                                                 }
-                                            });
-                                        }
+                                            }
+                                        });
                                     }
-                                });
-                            } catch (ParseException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            jumpOffset = attrOffset[0];
-
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
+                        jumpOffset = attrOffset[0];
+
                     }
+                }
 
 
-                    if (file != null) {
-                        return new DeclarationLocation(file, jumpOffset);
-                    }
+                if (file != null) {
+                    return new DeclarationLocation(file, jumpOffset);
+                }
 
-                } else {
-                    //TODO - normal components hyperlinking - mostly nav. to java classes
-                    }
+            } else {
+                //TODO - normal components hyperlinking - mostly nav. to java classes
             }
+
 
         }
 

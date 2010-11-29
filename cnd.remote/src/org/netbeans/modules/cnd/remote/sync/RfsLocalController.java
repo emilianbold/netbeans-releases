@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -613,25 +614,34 @@ class RfsLocalController extends NamedRunnable {
                         logger.log(Level.WARNING, "Unexpected ls output: %s", line);
                     }
                 }
-                String linkTarget = parts[parts.length - 1];
-                if (linkTarget.endsWith("/")) { // NOI18N
-                    linkTarget = linkTarget.substring(0, linkTarget.length() - 1);
+                String localLinkTarget = parts[parts.length - 1];
+                if (localLinkTarget.endsWith("/")) { // NOI18N
+                    localLinkTarget = localLinkTarget.substring(0, localLinkTarget.length() - 1);
                 }
                 String linkPath = parts[parts.length - 3];
                 FileGatheringInfo info = map.get(linkPath);
                 CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
                 if (info != null) {
-                    logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, linkTarget);
-                    info.setLinkTarget(linkTarget);
+                    logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, localLinkTarget);
+                    //info.setLinkTarget(localLinkTarget);
                     File linkParentFile = CndFileUtils.createLocalFile(linkPath).getParentFile();
-                    File linkTargetFile = CndFileUtils.createLocalFile(linkParentFile, linkTarget);
-                    linkTargetFile = CndFileUtils.normalizeFile(linkTargetFile);
+                    //File localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
+                    File localLinkTargetFile;
+                    if (CndPathUtilitities.isPathAbsolute(localLinkTarget)) {
+                        String remoteLinkTarget = mapper.getRemotePath(localLinkTarget, false);
+                        info.setLinkTarget(remoteLinkTarget);
+                        localLinkTargetFile = CndFileUtils.createLocalFile(localLinkTarget);
+                    } else {
+                        info.setLinkTarget(localLinkTarget); // it's relative, so it's the same for remote
+                        localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
+                    }
+                    localLinkTargetFile = CndFileUtils.normalizeFile(localLinkTargetFile);
                     FileGatheringInfo targetInfo;
-                    targetInfo = map.get(linkTargetFile.getAbsolutePath());
+                    targetInfo = map.get(localLinkTargetFile.getAbsolutePath());
                     // TODO: try finding in newly added infos. Probably replace List to Map in filesToAdd
                     if (targetInfo == null) {
-                        String remotePath = mapper.getRemotePath(linkTargetFile.getAbsolutePath(), false);
-                        targetInfo = addFileGatheringInfo(filesToAdd, linkTargetFile, remotePath);
+                        String remotePath = mapper.getRemotePath(localLinkTargetFile.getAbsolutePath(), false);
+                        targetInfo = addFileGatheringInfo(filesToAdd, localLinkTargetFile, remotePath);
                         addedInfos.add(targetInfo);
                     }
                 }

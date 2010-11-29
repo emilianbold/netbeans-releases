@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,8 +67,9 @@ public class InitRepositoryCommand extends GitCommand {
     protected boolean prepareCommand () throws GitException {
         boolean repositoryExists = getRepository().getDirectory().exists();
         if (repositoryExists) {
-            monitor.preparationsFailed("Git repository already exists at " + getRepository().getWorkTree());
-            throw new GitException("Git repository already exists at " + getRepository().getWorkTree());
+            String message = NbBundle.getMessage(InitRepositoryCommand.class, "MSG_Error_RepositoryExists", getRepository().getWorkTree()); //NOI18N
+            monitor.preparationsFailed(message);
+            throw new GitException(message);
         }
         return true;
     }
@@ -77,7 +79,7 @@ public class InitRepositoryCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             if (!(workDir.exists() || workDir.mkdirs())) {
-                throw new GitException("Cannot create local folder at " + workDir.getAbsolutePath());
+                throw new GitException(NbBundle.getMessage(InitRepositoryCommand.class, "MSG_Exception_CannotCreateFolder", workDir.getAbsolutePath())); //NOI18N
             }
             repository.create();
         } catch (IllegalStateException ex) {

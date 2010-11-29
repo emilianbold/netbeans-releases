@@ -416,6 +416,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -467,7 +468,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N
             }
-            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -481,7 +482,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 debug.setLinkerConfiguration(linkerConfiguration);
             }
-            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);

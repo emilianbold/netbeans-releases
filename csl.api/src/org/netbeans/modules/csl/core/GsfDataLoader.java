@@ -124,6 +124,7 @@ public class GsfDataLoader extends UniFileLoader {
     @Override
     protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
         FileEntry.Format entry = new FileEntry.Format(obj, primaryFile) {
+            @Override
             protected java.text.Format createFormat (FileObject target, String n, String e) {
                 ClassPath cp = ClassPath.getClassPath(target, ClassPath.SOURCE);
                 String resourcePath = "";
@@ -140,8 +141,10 @@ public class GsfDataLoader extends UniFileLoader {
                 String capitalizedName;
                 if (n.length() > 1) {
                     capitalizedName = Character.toUpperCase(n.charAt(0))+n.substring(1);
-                } else {
+                } else if (n.length() == 1) {
                     capitalizedName = ""+Character.toUpperCase(n.charAt(0));
+                } else {
+                    capitalizedName = "";
                 }
                 m.put("CAPITALIZEDNAME", capitalizedName); //NOI18N
                 m.put("LOWERNAME", n.toLowerCase()); //NOI18N

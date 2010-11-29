@@ -47,6 +47,7 @@ package org.openide.filesystems;
 
 import java.util.*;
 import java.io.*;
+import java.lang.reflect.Method;
 
 /**
  *
@@ -284,6 +285,59 @@ public class AttributesTestHidden extends TestBaseHid {
         assertTrue (TEST_ERR,testedFS != null);                    
     }*/
 
+    public void testFileUtilCopyAttributes() throws Exception {
+        assertTrue(TEST_ERR, testedFS != null);
+        if (testedFS.isReadOnly()) {
+            return;
+        }
+
+        File f = new File(getWorkDir(), "sample.xml");
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(("<?xml version='1.0' encoding='UTF-8'?>" +
+                "<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.2//EN' 'http://www.netbeans.org/dtds/filesystem-1_2.dtd'>" +
+                "<filesystem>" +
+                "<folder name='Templates'>" +
+                "<folder name='Other'>" +
+                "<file name='special'>" +
+                "  <attr name='ii' methodvalue='" + AttributesTestHidden.class.getName() + ".hello'/>" +
+                "  <attr name='temp' boolvalue='true'/>" +
+                "</file></folder></folder></filesystem>"
+        ).getBytes());
+        fos.close();
+
+        XMLFileSystem xfs = new XMLFileSystem(f.toURI().toURL());
+        FileObject template = xfs.findResource("Templates/Other/special");
+        assertNotNull("template found", template);
+        FileObject foTested = testedFS.getRoot().createData("copiedTemplate");
+        FileUtil.copyAttributes(template, foTested);
+        assertEquals("template copied too", Boolean.TRUE, foTested.getAttribute("temp"));
+        assertEquals("instantiatingIterator called", "Hello ii@copiedTemplate", foTested.getAttribute("ii"));
+    }
+
+    public static String hello(FileObject obj, String attr) {
+        return "Hello " + attr + "@" + obj.getNameExt();
+    }
+
+    public void testSetMethodGetResult() throws Exception {
+        assertTrue(TEST_ERR, testedFS != null);
+        if (testedFS.isReadOnly()) {
+            return;
+        }
+
+        FileObject foTested = testedFS.getRoot().createData("copiedTemplate");
+        Method m = AttributesTestHidden.class.getDeclaredMethod("hello", FileObject.class, String.class);
+        foTested.setAttribute("methodvalue:ii", m);
+
+        assertEquals("instantiatingIterator called", "Hello ii@copiedTemplate", foTested.getAttribute("ii"));
+    }
+
+    public static final class Data {
+        static int cnt;
+        
+        public Data() {
+            cnt++;
+        }
+    } // end of Data
 }
 
 

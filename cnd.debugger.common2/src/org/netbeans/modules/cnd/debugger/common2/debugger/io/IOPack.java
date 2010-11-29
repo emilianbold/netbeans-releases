@@ -121,9 +121,7 @@ public class IOPack {
 
         IOPack res;
 
-        if (io == null) { // Attach or other non-start mode
-            res = new IOPack(console, executor.getExecutionEnvironment());
-        } else if (DebuggerManager.isStandalone()) {
+        if (DebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);
@@ -131,6 +129,8 @@ public class IOPack {
                 pio = PioPack.makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
             }
             res = new PioPack(console, pio, executor.getExecutionEnvironment());
+        } else if (io == null) { // Attach or other non-start mode
+            res = new IOPack(console, executor.getExecutionEnvironment());
         } else if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
             res = new ExternalTerminalPack(console, runProfile.getTerminalPath(), executor.getExecutionEnvironment());
         } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {

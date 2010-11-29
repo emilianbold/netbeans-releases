@@ -259,7 +259,7 @@ public final class ProjectImpl extends ProjectBase {
                 //Notificator.instance().endTransaction();
                 Notificator.instance().flush();
                 if (deepReparse) {
-                    DeepReparsingUtils.reparseOnAdded(nativeFile, this);
+                    DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFile), this);
                 }
             }
         }

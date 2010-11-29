@@ -118,7 +118,7 @@ public final class DLightSession implements
     private List<IndicatorDataProvider<?>> idps;
     private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
-    private ServiceInfoDataStorage serviceInfoDataStorage = null;
+    private final ServiceInfoDataStorage serviceInfoDataStorage;
     private List<DataCollector<?>> collectors = null;
     private Map<String, Map<String, Visualizer<?>>> visualizers = null;//toolID, visualizer
     private SessionState state;
@@ -157,12 +157,17 @@ public final class DLightSession implements
         this.useSharedStorage = sharedStorageID != null;
         sessionID = sessionCount++;
         SessionDataFiltersSupport newSupport = new SessionDataFiltersSupport();
+        
         if (useSharedStorage) {
             SessionDataFiltersSupport old = sharedDataFilterSupports.putIfAbsent(sharedStorageID, newSupport);
             if (old != null) {
                 newSupport = old;
             }
+            serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
+        } else {
+            serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
         }
+        
         dataFiltersSupport = newSupport;
     }
 
@@ -267,6 +272,12 @@ public final class DLightSession implements
     void addExecutionContext(ExecutionContext context) {
         contexts.add(context);
         context.validateTools();
+
+        DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(context.getTarget());
+        
+        for (Map.Entry<String, String> entry : targetInfo.getInfo().entrySet()) {
+            serviceInfoDataStorage.put(entry.getKey(), entry.getValue());
+        }
     }
 
     void setExecutionContext(ExecutionContext context) {
@@ -422,12 +433,6 @@ public final class DLightSession implements
 
                 if (storages != null) {
                     storages.clear();
-                }
-                //in case we are using the shared session we need to collect all info of
-                if (useSharedStorage) {//we should share this info
-                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
-                } else {
-                    serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
                 }
 
                 if (collectors != null) {
@@ -709,9 +714,6 @@ public final class DLightSession implements
 
         // init storage with the target values
         DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
-        for (Map.Entry<String, String> entry : targetInfo.getInfo().entrySet()) {
-            serviceInfoDataStorage.put(entry.getKey(), entry.getValue());
-        }
         serviceInfoDataStorage.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());

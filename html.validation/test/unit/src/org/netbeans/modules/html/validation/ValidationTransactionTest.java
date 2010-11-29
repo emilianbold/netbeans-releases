@@ -158,7 +158,7 @@ public class ValidationTransactionTest extends NbTestCase {
     private void validate(String code, boolean expectedPass, HtmlVersion version) throws SAXException {
         System.out.print("Validating code " + code.length() + " chars long...");
         ValidationTransaction vt = ValidationTransaction.create(version);
-        vt.validateCode(code);
+        vt.validateCode(code, null);
 
         Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
 

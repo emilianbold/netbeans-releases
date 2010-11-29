@@ -65,7 +65,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -80,10 +79,8 @@ public class MakeVariableFinal implements ErrorRule<Void> {
     public MakeVariableFinal() {
     }
     
-    private static final String MULTICATCH_ERROR = "compiler.err.multicatch.param.must.be.final";
     private static final Set<String> CODES = new HashSet<String>(Arrays.asList(
-            "compiler.err.local.var.accessed.from.icls.needs.final",
-            MULTICATCH_ERROR
+            "compiler.err.local.var.accessed.from.icls.needs.final"
     ));
     
     public Set<String> getCodes() {
@@ -92,15 +89,6 @@ public class MakeVariableFinal implements ErrorRule<Void> {
 
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         Tree leaf = treePath.getLeaf();
-
-        if (MULTICATCH_ERROR.equals(diagnosticKey)) {
-            if (leaf.getKind() != Kind.VARIABLE) return null;
-
-            VariableTree vt = (VariableTree) leaf;
-            String fixDisplayName = NbBundle.getMessage(MakeVariableFinal.class, "FIX_MakeVariableFinal", vt.getName());
-
-            return Collections.singletonList(FixFactory.addModifiersFix(compilationInfo, new TreePath(treePath, vt.getModifiers()), EnumSet.of(Modifier.FINAL), fixDisplayName));
-        }
 
         if (leaf.getKind() == Kind.IDENTIFIER) {
             Element el = compilationInfo.getTrees().getElement(treePath);

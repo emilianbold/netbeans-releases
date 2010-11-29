@@ -47,6 +47,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +63,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,6 +73,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -99,6 +103,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -126,7 +131,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
-import org.openide.windows.OutputWriter;
 
 /**
  * Base class for CsmProject implementation
@@ -420,10 +424,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
 
-    public final Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
+    public final Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String uniquNamePrefix) {
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
-        return getDeclarationsSorage().getDeclarationsRange(prefix, prefix + maxChar); // NOI18N
+        return getDeclarationsSorage().getDeclarationsRange(uniquNamePrefix, uniquNamePrefix + maxChar); // NOI18N
     }
 
     public final Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
@@ -1533,6 +1537,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
+    }
+
+    public Iterator<CsmUID<CsmFile>> getFilteredFileUIDs(NameAcceptor nameFilter) {
+        FileContainer fileContainer = getFileContainer();
+        Collection<CsmUID<CsmFile>> filesUID = fileContainer.getFilesUID();
+        Collection<CsmUID<CsmFile>> out = new ArrayList<CsmUID<CsmFile>>(filesUID.size());
+        for (CsmUID<CsmFile> fileUID : filesUID) {
+            CharSequence fileName = FileInfoQueryImpl.getFileName(fileUID);
+            if (nameFilter.accept(fileName)) {
+                out.add(fileUID);
+            }
+        }
+        return out.iterator();
     }
 
     private static enum ComparisonResult {
@@ -2772,7 +2789,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fc != null ? fc : FileContainer.empty();
     }
 
-    public void traceContainer(OutputWriter err){
+    public void traceFileContainer(PrintWriter err){
         FileContainer container = getFileContainer();
         Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
         err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
@@ -2810,6 +2827,69 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
+    public void traceProjectContainers(PrintStream printStream) {
+        dumpProjectContainers(getClassifierSorage(), printStream);
+        dumpProjectContainers(getDeclarationsSorage(), printStream);
+    }
+
+    private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream) {
+        printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getClassifiers().entrySet()) {
+            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
+            if (entry.getValue() == null) {
+                printStream.println("null");//NOI18N
+            } else {
+                printStream.println(entry.getValue().getUniqueName());
+            }
+        }
+        printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTypedefs().entrySet()) {
+            printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
+            if (entry.getValue() == null) {
+                printStream.println("null");//NOI18N
+            } else {
+                printStream.println(entry.getValue().getUniqueName());
+            }
+        }
+    }
+
+    private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream) {
+        printStream.println("\n========== Dumping Project declarations");//NOI18N
+        for (Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()) {
+            printStream.println("\t" + entry.getKey().toString());//NOI18N
+            TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
+            Object o = entry.getValue();
+            if (o instanceof CsmUID<?>[]) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked //NOI18N
+                CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
+                for (CsmUID<CsmDeclaration> uidt : uids) {
+                    set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                }
+            } else if (o instanceof CsmUID<?>) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked //NOI18N
+                CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
+                set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+            }
+            for (Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()) {
+                printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N
+            }
+        }
+        printStream.println("\n========== Dumping Project friends");//NOI18N
+        for (Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()) {
+            printStream.println("\t" + entry.getKey().toString());//NOI18N
+            TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
+            for (CsmUID<? extends CsmFriend> uid : entry.getValue()) {
+                CsmFriend f = uid.getObject();
+                set.put(f.getQualifiedName(), f);
+            }
+            for (Map.Entry<CharSequence, CsmFriend> f : set.entrySet()) {
+                printStream.println("\t\t" + f.getKey() + " " + f.getValue());//NOI18N
+            }
+        }
+    }
+    
     public static final class WeakContainer<T> {
 
         private WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;

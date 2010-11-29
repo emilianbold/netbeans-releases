@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -479,8 +480,8 @@ public class SelectModePanel extends javax.swing.JPanel {
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); // NOI18N
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); //NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); 
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); 
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
@@ -488,13 +489,16 @@ public class SelectModePanel extends javax.swing.JPanel {
         controller.getWizardStorage().setExecutionEnvironment(ee);
 
         Object tc = toolchainComboBox.getSelectedItem();
-        if (tc != null && tc instanceof CompilerSet) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, tc);
-            controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
+        if (tc != null && tc instanceof ToolCollectionItem) {
+            ToolCollectionItem item = (ToolCollectionItem) tc;
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, item.getCompilerSet());
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, item.isDefaultCompilerSet());
+            controller.getWizardStorage().setCompilerSet(item.getCompilerSet());
+            controller.getWizardStorage().setDefaultCompilerSet(item.isDefaultCompilerSet());
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); 
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); 
         initialized = false;
     }
 
@@ -558,7 +562,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (ConfigureUtils.findConfigureScript(path) != null){ //XXX:fullRemote
+            if (ConfigureUtils.findConfigureScript(controller.getWizardStorage().getSourcesFileObject()) != null) {
                 return true;
             }
             FileObject makeFO = ConfigureUtils.findMakefile(controller.getWizardStorage().getSourcesFileObject());

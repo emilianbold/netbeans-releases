@@ -49,10 +49,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
-import org.netbeans.modules.cnd.remote.fs.DirectoryAttributesTestCase;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSupportTestCase;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.cnd.remote.fs.RemoteURLTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
@@ -80,9 +76,6 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
        this("Remote Development", // NOI18N
            HostSetupTestCase.class,
            RemoteFileTestCase.class,
-           RemoteFileSupportTestCase.class,
-           DirectoryAttributesTestCase.class,
-           RemoteFileSystemTestCase.class,
            MappingsTestCase.class,
            IncludeMappingsTestCase.class,
            RemoteBuildMakefileTestCase.class,
@@ -99,7 +92,6 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            RemoteBuildUpdatesDownloadTestCase.class,
            RfsRemoteControllerDeathTestCase.class,
            RemoteCodeModelTestCase.class,
-           RemoteURLTestCase.class,
            CndFileUtilTestCase.class
        );
    }

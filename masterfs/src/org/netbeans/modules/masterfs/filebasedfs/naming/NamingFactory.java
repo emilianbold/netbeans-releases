@@ -144,20 +144,25 @@ public final class NamingFactory {
         }
     }
 
-    public static Integer createID(final File file) {
-        return new Integer(file.hashCode());
+    public static synchronized Integer createID(final File file) {
+        assert Thread.holdsLock(NamingFactory.class);
+        
+        Integer[] theKey = { file.hashCode() };
+        final Object value = nameMap.get(theKey[0]);
+        Reference ref = getReference(value, file, theKey);
+        return theKey[0];
     }
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
         return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
     }
 
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
-        FileNaming retVal;
-
         assert Thread.holdsLock(NamingFactory.class);
-        final Object value = nameMap.get(new Integer(file.hashCode()));
-        Reference ref = (Reference) (value instanceof Reference ? value : null);
-        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
+        
+        FileNaming retVal;
+        Integer[] theKey = { file.hashCode() };
+        final Object value = nameMap.get(theKey[0]);
+        Reference ref = getReference(value, file, theKey);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
         if (ignoreCache && cachedElement != null && (
@@ -166,11 +171,12 @@ public final class NamingFactory {
             cachedElement = null;
         }
 
-        if (cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
+        if (cachedElement != null && cachedElement.getFile().equals(file)) {
             retVal = cachedElement;
         } else {
-            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName, type) : newValue;
+            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, theKey[0], parentName, type) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
+            assert theKey[0] == retVal.getId();
 
             final boolean isList = (value instanceof List);
             if (cachedElement != null || isList) {
@@ -181,16 +187,16 @@ public final class NamingFactory {
                     final List l = new ArrayList();
                     l.add(ref); // add the original one
                     l.add(refRetVal); // add the new one
-                    NamingFactory.nameMap.put(retVal.getId(), l); // replace the direct entry with the list
+                    NamingFactory.nameMap.put(theKey[0], l); // replace the direct entry with the list
                 }
             } else {
                 // Reference impl.
-                Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
+                Reference r = (Reference)NamingFactory.nameMap.put(theKey[0], refRetVal);
                 if (r != null && !retVal.equals(r.get())) {
                     final List l = new ArrayList();
                     l.add(r);
                     l.add(refRetVal);
-                    NamingFactory.nameMap.put(retVal.getId(), l);
+                    NamingFactory.nameMap.put(theKey[0], l);
                 }
             }
         }
@@ -200,21 +206,53 @@ public final class NamingFactory {
         return retVal;
     }
     
-    private static Reference getReference(final List list, final File f) {
-        Reference retVal = null;
-        for (int i = 0; retVal == null && i < list.size(); i++) {
-            final Reference ref = (Reference) list.get(i);
-            final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-            if (cachedElement != null && cachedElement.getFile().compareTo(f) == 0) {
-                retVal = ref;
+    private static Reference getReference(Object value, File f, Integer[] theKey) {
+        List list;
+        boolean modify;
+        if (value instanceof List) {
+            list = (List)value;
+            modify = true;
+        } else if (value instanceof Reference) {
+            list = Collections.nCopies(1, value);
+            modify = false;
+        } else {
+            list = Collections.emptyList();
+            modify = false;
+        }
+            
+        boolean initial = true;
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Reference ref = (Reference) it.next();
+            if (ref == null) {
+                if (modify) {
+                    it.remove();
+                }
+                continue;
+            }
+            FileNaming cachedElement = (FileNaming)ref.get();
+            if (cachedElement == null) {
+                if (modify) {
+                    it.remove();
+                }
+                continue;
+            }
+            assert initial || theKey[0] == cachedElement.getId() :
+               "Integer keys shall be shared";
+            theKey[0] = cachedElement.getId();
+            initial = false;
+            
+            if (cachedElement.getFile().equals(f)) {
+                return ref;
             }
         }
-        return retVal;
+        return null;
     }
 
     static enum FileType {file, directory, unknown}
     
-    private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
+    private static FileNaming createFileNaming(
+        final File f, Integer theKey, final FileNaming parentName, FileType type
+    ) {
         FileName retVal = null;
         //TODO: check all tests for isFile & isDirectory
         if (type.equals(FileType.unknown)) {
@@ -227,12 +265,44 @@ public final class NamingFactory {
         }
         switch(type) {
             case file:
-                retVal = new FileName(parentName, f);
+                retVal = new FileName(parentName, f, theKey);
                 break;
             case directory:
-                retVal = new FolderName(parentName, f);
+                retVal = new FolderName(parentName, f, theKey);
                 break;
         }
         return retVal;
+    }
+    
+    public synchronized static String dumpId(Integer id) {
+        StringBuilder sb = new StringBuilder();
+        final String hex = Integer.toHexString(id);
+        
+        Object value = nameMap.get(id);
+        if (value instanceof Reference) {
+            sb.append("One reference to ").
+               append(hex).append("\n");
+            dumpFileNaming(sb, ((Reference)value).get());
+        } else if (value instanceof List) {
+            int cnt = 0;
+            List arr = (List)value;
+            sb.append("There is ").append(arr.size()).append(" references to ").append(hex);
+            for (Object o : arr) {
+                sb.append(++cnt).append(" = ");
+                dumpFileNaming(sb, ((Reference)o).get());
+            }
+        } else {
+            sb.append("For ").append(hex).append(" there is just ").append(value);
+        }
+        return sb.toString();
+    }
+    private static void dumpFileNaming(StringBuilder sb, Object fn) {
+        if (fn == null) {
+            sb.append("null");
+        }
+        sb.append("FileName: ").append(fn).append("#").
+           append(Integer.toHexString(fn.hashCode())).append("@").
+           append(Integer.toHexString(System.identityHashCode(fn)))
+           .append("\n");
     }
 }

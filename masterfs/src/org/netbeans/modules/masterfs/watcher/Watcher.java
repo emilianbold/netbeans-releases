@@ -70,7 +70,7 @@ public class Watcher extends AnnotationProvider {
 
     private static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
-    private final Ext ext;
+    private final Ext<?> ext;
 
     public Watcher() {
         // Watcher disabled manually or for some tests
@@ -79,13 +79,7 @@ public class Watcher extends AnnotationProvider {
             return;
         }
         
-        Notifier<?> notifier = getNotifierForPlatform();
-        ext = notifier == null ? null : new Ext(notifier);
-
-        if (notifier != null) { // turn off the recursive refresh on focus
-            // it would be better to move the refresh infrastructure here
-            System.getProperties().put("netbeans.indexing.noFileRefresh", "true");
-        }
+        ext = make(getNotifierForPlatform());
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
@@ -105,11 +99,15 @@ public class Watcher extends AnnotationProvider {
         return ext;
     }
 
+    private <KEY> Ext<KEY> make(Notifier<KEY> impl) {
+        return impl == null ? null : new Ext<KEY>(impl);
+    }
+
     private class Ext<KEY> extends ProvidedExtensions implements Runnable {
         private final Notifier<KEY> impl;
         private final Map<FileObject, KEY> map = new WeakHashMap<FileObject, KEY>();
 
-
+        @SuppressWarnings("CallToThreadStartDuringObjectConstruction")
         public Ext(Notifier<KEY> impl) {
             this.impl = impl;
             new Thread(this, "File Watcher").start(); // NOI18N
@@ -118,7 +116,9 @@ public class Watcher extends AnnotationProvider {
         // will be called from WHM implementation on lost key
         private void fileObjectFreed(KEY key) {
             try {
-                if (key != null) impl.removeWatch(key);
+                if (key != null) {
+                    impl.removeWatch(key);
+                }
             } catch (IOException ioe) {
               Exceptions.printStackTrace(ioe);  
             }
@@ -128,11 +128,15 @@ public class Watcher extends AnnotationProvider {
             FileObject fo = FileUtil.toFileObject(dir);
             String path = dir.getAbsolutePath();
 
-            if (fo == null && !dir.exists()) return -1;
+            if (fo == null && !dir.exists()) {
+                return -1;
+            }
 
             assert fo != null : "No fileobject for " + path;
 
-            if (map.containsKey(fo)) return -1;
+            if (map.containsKey(fo)) {
+                return -1;
+            }
 
             try {
                 map.put(fo, impl.addWatch(path));
@@ -198,7 +202,7 @@ public class Watcher extends AnnotationProvider {
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);
-                pending = new HashSet();
+                pending = new HashSet<FileObject>();
             }
             pending.add(fo);
         }
@@ -210,7 +214,7 @@ public class Watcher extends AnnotationProvider {
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);
-                pending = new HashSet();
+                pending = new HashSet<FileObject>();
             }
             pending.addAll(fos);
         }
@@ -221,7 +225,7 @@ public class Watcher extends AnnotationProvider {
      *
      * @return a suitable {@link Notifier} implementation or <code>null</code>.
      */
-    private static Notifier getNotifierForPlatform() {
+    private static Notifier<?> getNotifierForPlatform() {
         try {
             if (Utilities.isWindows()) {
                 return new WindowsNotifier();
@@ -250,7 +254,7 @@ public class Watcher extends AnnotationProvider {
                 }
             }
         } catch (LinkageError x) {
-            LOG.log(Level.INFO, null, x);
+            LOG.warning(x.toString());
         }
         return null;
     }

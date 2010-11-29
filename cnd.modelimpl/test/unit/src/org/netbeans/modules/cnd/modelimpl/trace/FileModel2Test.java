@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test191799() throws Exception {
+        // #191799: testSelectModelGetFunctions is failing
+        performTest("iz191799.cc");
+    }
+    
     public void test191598() throws Exception {
         // #191598 -  parser errors in /usr/include/tr1_impl/type_traits
         performTest("iz191598.cc");

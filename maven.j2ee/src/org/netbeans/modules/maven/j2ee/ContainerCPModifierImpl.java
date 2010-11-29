@@ -132,7 +132,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
         if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
+            project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(true);
         }
 
     }

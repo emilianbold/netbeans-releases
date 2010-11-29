@@ -96,11 +96,12 @@ public interface GitClient {
     /**
      * Prints content of an index entry accordant with the given file to output stream
      * @param file
+     * @param stage 
      * @param out output stream
      * @return true if the file was found in the index and printed to out, otherwise false
      * @throws GitException
      */
-    public boolean catIndexEntry (File file, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
+    public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -110,6 +111,15 @@ public interface GitClient {
      */
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
+    /**
+     * Cleans the working tree by recursively removing files that are not under 
+ *   * version control starting from the given roots.
+     * @param roots
+     * @param monitor
+     * @throws GitException 
+     */
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException;
+    
     /**
      * Commits all changes made in the index to all files under the given roots
      * @param roots
@@ -136,6 +146,14 @@ public interface GitClient {
      * @return
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
+     * @param roots 
+     * @param monitor
+     * @return
+     */
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
      * Returns an array of statuses for files under given roots

@@ -173,7 +173,7 @@ public class AddExistingItemAction extends NodeAction {
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDir(), files[i].getPath(), project);
-                    itemPath = CndPathUtilitities.normalize(itemPath);
+                    itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));

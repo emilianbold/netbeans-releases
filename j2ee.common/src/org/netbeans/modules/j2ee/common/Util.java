@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,6 +64,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableColumn;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
@@ -511,5 +516,49 @@ public class Util {
             }
         }
     }
+
+    public static void initTwoColumnTableVisualProperties(Component component, JTable table) {
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        // set the color of the table's JViewport
+        table.getParent().setBackground(table.getBackground());
+        updateColumnWidths(table);
+        component.addComponentListener(new TableColumnSizeComponentAdapter(table));
+    }
+
+    private static void updateColumnWidths(JTable table) {
+        //we'll get the parents width so we can use that to set the column sizes.
+        double pw = table.getParent().getSize().getWidth();
+        
+        //#88174 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(1);
+        int w = ((int)pw/2) - 1;
+        if (w > column.getMaxWidth()) {
+            // second column sometimes might have max width (packace column in Libraries)
+            w = column.getMaxWidth();
+        }
+        column.setWidth(w);
+        column.setPreferredWidth(w);
+        
+        w = (int)pw - w;
+        column = table.getColumnModel().getColumn(0);
+        column.setWidth( w );
+        column.setPreferredWidth( w );
+    }
+
+    private static class TableColumnSizeComponentAdapter extends ComponentAdapter {
+        private JTable table = null;
+        
+        public TableColumnSizeComponentAdapter(JTable table){
+            this.table = table;
+        }
+        
+        public void componentResized(ComponentEvent evt){
+            updateColumnWidths(table);
+        }
+    }
+    
     
 }

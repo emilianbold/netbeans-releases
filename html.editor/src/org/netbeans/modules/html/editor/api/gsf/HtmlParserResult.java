@@ -175,45 +175,17 @@ public class HtmlParserResult extends ParserResult {
     }
 
     /** Returns a leaf most AstNode from the parse tree to which range the given
-     * offset belongs. Uses logical node ranges.
-     *
-     * @param offset of the searched node
-     */
-    public AstNode findLeaf(int offset) {
-        return findLeaf(offset, false);
-    }
-
-    public AstNode findLeaf(int offset, boolean exclusiveStartOffset) {
-        //first try to find the leaf in html content
-        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset, exclusiveStartOffset);
-        //now search the non html trees
-        for (String uri : getNamespaces().keySet()) {
-            AstNode root = root(uri);
-            AstNode leaf = AstNodeUtils.findDescendant(root, offset, exclusiveStartOffset);
-            if (mostLeaf == null) {
-                mostLeaf = leaf;
-            } else {
-                //they cannot overlap, just be nested, at least I think
-                if (leaf.logicalStartOffset() > mostLeaf.logicalStartOffset()) {
-                    mostLeaf = leaf;
-                }
-            }
-        }
-        return mostLeaf;
-    }
-
-    /** Returns a leaf most AstNode from the parse tree to which range the given
      * offset belongs.
      *
      * @param offset of the searched node
      */
-    public AstNode findLeafTag(int offset, boolean useLogicalRanges, boolean forward) {
+    public AstNode findLeafTag(int offset, boolean forward, boolean physicalNodesOnly ) {
         //first try to find the leaf in html content
-        AstNode mostLeaf = AstNodeUtils.findDescendantTag(root(), offset, useLogicalRanges, forward);
+        AstNode mostLeaf = AstNodeUtils.findNode(root(), offset, forward, physicalNodesOnly);
         //now search the non html trees
         for (String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
-            AstNode leaf = AstNodeUtils.findDescendantTag(root, offset, useLogicalRanges, forward);
+            AstNode leaf = AstNodeUtils.findNode(root, offset, forward, physicalNodesOnly);
             if (leaf == null) {
                 continue;
             }
