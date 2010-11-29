@@ -426,11 +426,13 @@ public final class TaskListProvider extends PushTaskScanner {
         if(projects == null || projects.isEmpty()) {
             // one file scope?
             FileObject fo = scope.getLookup().lookup(FileObject.class);
-            Project project = FileOwnerQuery.getOwner(fo);
-            if(project != null) {
-                List<Project> list = new ArrayList<Project>(1);
-                list.add(project);
-                projects = list;
+            if(fo != null) {
+                Project project = FileOwnerQuery.getOwner(fo);
+                if(project != null) {
+                    List<Project> list = new ArrayList<Project>(1);
+                    list.add(project);
+                    projects = list;
+                }
             }
         }
         LinkedList<String> repositoryUrls = new LinkedList<String>();
