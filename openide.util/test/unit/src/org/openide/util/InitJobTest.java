@@ -195,7 +195,7 @@ public class InitJobTest extends NbTestCase {
             fail("Cancellable.cancel was called " + cancelCalls.size() +
                     " times intead of just once.");
         }
-        if (finishCalls.size() != 0) {
+        if (!finishCalls.isEmpty()) {
             fail("AsyncGUIJob.finish should not been called at all, but was called "
                     + finishCalls.size() + " times.");
         }
@@ -237,14 +237,18 @@ public class InitJobTest extends NbTestCase {
         public TimerListener(boolean cancel) {
             this.cancel = cancel;
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
+            LOG.log(Level.INFO, "Disposing dialog: {0}", dlg);
             dlg.dispose();
+            LOG.log(Level.INFO, "Disposing frame: {0}", frame);
             frame.dispose();
             if (cancel) {
                 checkCancelResults();
             } else {
                 checkSimpleResults();
             }
+            LOG.log(Level.INFO, "actionPerformed end {0}", cancel);
         }
     }
     
@@ -257,6 +261,7 @@ public class InitJobTest extends NbTestCase {
          * Always called and completed before {@link #finished} method.
          *
          */
+        @Override
         public void construct() {
             constructCalled(Thread.currentThread(), System.currentTimeMillis());
         }
@@ -266,15 +271,18 @@ public class InitJobTest extends NbTestCase {
          * method completed its execution.
          *
          */
+        @Override
         public void finished() {
             finishCalled(Thread.currentThread(), System.currentTimeMillis());
         }
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             Timer timer = new Timer(1000, new TimerListener(false));
             timer.setRepeats(false);
             timer.start();
+            LOG.log(Level.INFO, "Time started for {0}", this);
         }
         
     } // end of SimpleInitComp
@@ -288,6 +296,7 @@ public class InitJobTest extends NbTestCase {
          * Always called and completed before {@link #finished} method.
          *
          */
+        @Override
         public void construct() {
             // perform loooong task
             try {
@@ -302,20 +311,24 @@ public class InitJobTest extends NbTestCase {
          * method completed its execution.
          *
          */
+        @Override
         public void finished() {
             finishCalled(Thread.currentThread(), System.currentTimeMillis());
         }
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             Timer timer = new Timer(1000, new TimerListener(true));
             timer.setRepeats(false);
             timer.start();
+            LOG.log(Level.INFO, "Time started for {0}", this);
         }
         
         /** Cancel processing of the job.
          *
          */
+        @Override
         public boolean cancel() {
             cancelCalled();
             return true;
