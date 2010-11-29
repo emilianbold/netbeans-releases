@@ -466,11 +466,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private Throwable noteRandomness(Throwable t) {
         Class<?> c = getClass();
         if (c.isAnnotationPresent(RandomlyFails.class)) {
-            return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + " marked @RandomlyFails so try just running test again)");
+            return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + " marked @RandomlyFails so try just running test again)", false);
         }
         try {
             if (c.getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
-                return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + "." + getName() + " marked @RandomlyFails so try just running test again)");
+                return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + "." + getName() + " marked @RandomlyFails so try just running test again)", false);
             }
         } catch (NoSuchMethodException x) {}
         return t;
