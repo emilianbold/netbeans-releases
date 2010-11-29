@@ -527,10 +527,9 @@ public final class DefaultProjectOperationsImplementation {
 		//#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
 		ProjectManager.getDefault().clearNonProjectCache();
 		Project nue = ProjectManager.getDefault().findProject(target);
-		
-		assert nue != null;
-		
-                open(nue, wasMain);
+		if (nue != null) {
+            open(nue, wasMain);
+        }
             }
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
             throw e;

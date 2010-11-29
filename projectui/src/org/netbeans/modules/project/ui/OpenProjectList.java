@@ -91,6 +91,7 @@ import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -684,6 +685,7 @@ public final class OpenProjectList {
         
         while (!toHandle.isEmpty()) {
             Project p = toHandle.remove(0);
+            assert p != null;
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
             
             if (subprojects == null) {
@@ -699,6 +701,7 @@ public final class OpenProjectList {
             projectsToOpen.add(p);
             
             for (Project sub : subprojects) {
+                assert sub != null;
                 if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
                     toHandle.add(sub);
                 }
@@ -1214,8 +1217,8 @@ public final class OpenProjectList {
         return itemAdded;
     }
 
-    private boolean doOpenProject(final Project p) {
-        LOGGER.finer("doOpenProject(): opening project " + p.toString());
+    private boolean doOpenProject(final @NonNull Project p) {
+        LOGGER.log(Level.FINER, "doOpenProject: {0}", p);
         final AtomicBoolean alreadyOpen = new AtomicBoolean();
         boolean recentProjectsChanged = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public @Override Boolean run() {
