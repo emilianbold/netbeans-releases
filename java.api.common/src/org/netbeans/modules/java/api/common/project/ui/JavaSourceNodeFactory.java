@@ -66,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -91,6 +92,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
     public JavaSourceNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project p) {
         Project project = p.getLookup().lookup(Project.class);
         assert project != null;
@@ -164,10 +166,14 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             }
             FileObject genSrc = FileUtil.toFileObject(genSrcDir);
             if (genSrc != null) {
+                final VisibilityQuery vq = VisibilityQuery.getDefault();
                 for (final FileObject child : genSrc.getChildren()) {
                     if (!child.isFolder()) {
                         continue;
-                    }
+                    }                    
+                    if (!vq.isVisible(child)) {
+                        continue;
+                    }                    
                     final File childFile = FileUtil.toFile(child);
                     if (childFile == null) {
                         continue;
@@ -182,32 +188,39 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             return result;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
             FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);
         }
         
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
             FileUtil.removeFileChangeListener(genSrcDirListener, genSrcDir);
         }
         
+        @Override
         public Node node(SourceGroupKey key) {
             return new PackageViewFilterNode(key, project);
         }
         
+        @Override
         public void addNotify() {
             getSources().addChangeListener(this);
         }
         
+        @Override
         public void removeNotify() {
             getSources().removeChangeListener(this);
         }
         
+        @Override
         public void stateChanged(ChangeEvent e) {
             // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     changeSupport.fireChange();
                 }
@@ -272,14 +285,17 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             this.child = child;
         }
 
+        @Override
         public FileObject getRootFolder() {
             return child;
         }
 
+        @Override
         public String getName() {
             return child.getNameExt();
         }
 
+        @Override
         public String getDisplayName() {
             try {
                 // Modules can provide dedicated localizable labels for well-known root names.
@@ -290,16 +306,20 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public Icon getIcon(boolean opened) {
             return null;
         }
 
+        @Override
         public boolean contains(FileObject file) throws IllegalArgumentException {
             return true;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
 
     }
@@ -375,6 +395,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             this.panelName = panelName;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             CustomizerProvider2 cp2 = project.getLookup().lookup(CustomizerProvider2.class);
             if (cp2 != null) {

@@ -41,30 +41,24 @@
  */
 package org.netbeans.modules.dlight.visualizers.ui;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.visualizers.GotoSourceActionProvider;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.nodes.Node;
 
 /**
- * A factory for FunctionCallWithMetric Nodes.
- * This factory creates FunctionCallNodes for given list of FunctionCallWithMetric.
  *
  * @author ak119685
  */
-public final class FunctionCallNodeChildren extends TableViewNodeChildren<FunctionCallWithMetric> {
+public final class AdvancedTableDataRowNodeChildren extends TableViewNodeChildren<DataRow> {
 
-    private final List<Column> metrics;
-    private final GotoSourceActionProvider actionsProvider;
+    private final AbstractDataRowNodeFactory factory;
 
-    public FunctionCallNodeChildren(GotoSourceActionProvider actionsProvider, List<Column> metrics) {
-        this.metrics = metrics;
-        this.actionsProvider = actionsProvider;
+    public AdvancedTableDataRowNodeChildren(AdvancedTableViewVisualizerConfiguration cfg) {
+        factory = new AdvancedTableDataRowNodeFactory(cfg);
     }
-
+    
     @Override
-    protected Node[] createNodes(FunctionCallWithMetric key) {
-        return new Node[]{new FunctionCallNode(actionsProvider, key, metrics)};
+    protected Node[] createNodes(DataRow key) {
+        return new Node[]{factory.createNode(key)};
     }
 }
