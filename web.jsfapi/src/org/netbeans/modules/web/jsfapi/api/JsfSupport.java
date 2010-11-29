@@ -40,64 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.jsfapi.api;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.openide.util.NbBundle;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author marekfukala
  */
-public class FixLibDeclaration implements HintFix{
-    private String nsPrefix;
-    private FaceletsLibrary lib;
-    private Document doc;
+public interface JsfSupport {
 
-    public FixLibDeclaration(Document doc, String nsPrefix, FaceletsLibrary lib) {
-        this.doc = doc;
-        this.nsPrefix = nsPrefix;
-        this.lib = lib;
-    }
+    public Project getProject();
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(FixLibDeclaration.class, "MSG_FixLibDeclaration", nsPrefix, lib.getNamespace());
-    }
+    public ClassPath getClassPath();
 
-    @Override
-    public void implement() throws Exception {
-        JsfUtils.importLibrary(doc, lib, nsPrefix);
-    }
+    public WebModule getWebModule();
 
-    @Override
-    public boolean isSafe() {
-        return true; // hope so...
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
-    }
-
-    public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
-        List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
-        JsfSupportImpl sup = JsfSupportImpl.findFor(doc);
-
-        if (sup != null){
-            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
-                if (prefix.equals(lib.getDefaultPrefix())){
-                    libs.add(lib);
-                }
-            }
-        }
-
-        return libs;
-    }
+    public LibraryDescriptor getLibraryDescriptor(String namespace);
+    
 }

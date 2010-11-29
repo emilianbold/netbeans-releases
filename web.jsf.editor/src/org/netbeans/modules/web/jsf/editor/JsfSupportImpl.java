@@ -41,17 +41,15 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -61,10 +59,12 @@ import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -73,25 +73,31 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-public class JsfSupport {
+public class JsfSupportImpl implements JsfSupport {
 
-    private static final WeakHashMap<WebModule, JsfSupport> INSTANCIES = new WeakHashMap<WebModule, JsfSupport>();
+    public static JsfSupportImpl findFor(Source source) {
+        return getOwnImplementation(JsfSupportProvider.get(source));
+    }
 
-    public static JsfSupport findFor(Source source) {
-        FileObject fo = source.getFileObject();
-        if (fo == null) {
-            return null;
+    public static JsfSupportImpl findFor(FileObject file) {
+        return getOwnImplementation(JsfSupportProvider.get(file));
+    }
+    
+    public static JsfSupportImpl findFor(Document document) {
+        return getOwnImplementation(JsfSupportProvider.get(document));
+    }
+
+    private static JsfSupportImpl getOwnImplementation(JsfSupport instance) {
+        if(instance instanceof JsfSupportImpl) {
+            return (JsfSupportImpl)instance;
         } else {
-            return findFor(fo);
+            //the jsf editor requires its own implementation of the JsfSupport for the time being
+            return null;
         }
     }
 
-    public static JsfSupport findFor(Document doc) {
-        return findFor(DataLoadersBridge.getDefault().getFileObject(doc));
-    }
-
-    public static JsfSupport findFor(FileObject fo) {
-        WebModule wm = WebModule.getWebModule(fo);
+    static JsfSupportImpl findForProject(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm == null) {
             return null;
         }
@@ -99,30 +105,24 @@ public class JsfSupport {
 	if(classPath == null) {
 	    return null;
 	}
-        synchronized (INSTANCIES) {
-            JsfSupport instance = INSTANCIES.get(wm);
-            if (instance == null) {
-                instance = new JsfSupport(wm, classPath);
-                INSTANCIES.put(wm, instance);
-            }
-            return instance;
-        }
+
+        return new JsfSupportImpl(project, wm, classPath);
 
     }
     private TldLibrariesCache tldLibrariesCache;
     private FaceletsLibraryDescriptorCache faceletsDescriptorsCache;
     private FaceletsLibrarySupport faceletsLibrarySupport;
+    private Project project;
     private WebModule wm;
     private ClassPath classpath;
     private JsfIndex index;
     private MetadataModel<WebBeansModel> webBeansModel;
 
-    private JsfSupport(WebModule wm, ClassPath classPath) {
-        assert wm != null;
-
+    private JsfSupportImpl(Project project, WebModule wm, ClassPath classPath) {
+        this.project = project;
         this.wm = wm;
-
         this.classpath = classPath;
+        
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
@@ -131,8 +131,9 @@ public class JsfSupport {
         //adds a classpath listener which invalidates the index instance after classpath change
         //and also invalidates the facelets library descriptors and tld caches
         this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                synchronized (JsfSupport.this) {
+                synchronized (JsfSupportImpl.this) {
                     index = null;
                 }
                 tldLibrariesCache.clearCache();
@@ -145,10 +146,17 @@ public class JsfSupport {
 
     }
 
+    @Override
+    public Project getProject() {
+        return project;
+    }
+
+    @Override
     public ClassPath getClassPath() {
         return classpath;
     }
 
+    @Override
     public WebModule getWebModule() {
         return wm;
     }
@@ -179,11 +187,12 @@ public class JsfSupport {
     /** Returns a library descriptor for facelets library. If there is a .taglib.xml
      *  file returns the data from it otherwise tries to find corresponding .tld file.
      */
-    public LibraryDescriptor getLibraryDescriptor(String namespace) {
+    @Override
+    public AbstractLibraryDescriptor getLibraryDescriptor(String namespace) {
         FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
         return fld != null ? fld : getTldLibrary(namespace);
     }
-
+ 
     /** Library's uri to library map */
     public Map<String, FaceletsLibrary> getFaceletsLibraries() {
         return faceletsLibrarySupport.getLibraries();
