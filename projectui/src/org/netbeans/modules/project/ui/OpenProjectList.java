@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -247,10 +248,10 @@ public final class OpenProjectList {
 
     static void preferredProject(Project lazyP) {
         if (lazyP != null) {
-            getDefault().LOAD.preferredProject(lazyP);
+            getDefault().LOAD.preferredProject(Collections.singleton(lazyP.getProjectDirectory()));
         }
     }
-    
+
     Future<Project[]> openProjectsAPI() {
         return LOAD;
     }
@@ -347,16 +348,13 @@ public final class OpenProjectList {
             }
         }
 
-        final void preferredProject(final Project lazyP) {
+        final void preferredProject(final Set<FileObject> lazyPDirs) {
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
-                for (Project p : toOpenProjects) {
+                for (Project p : new ArrayList<Project>(toOpenProjects)) {
                     FileObject dir = p.getProjectDirectory();
                     assert dir != null : "Project has real directory " + p;
-                    if (dir == null) {
-                        continue;
-                    }
-                    if (dir.equals(lazyP.getProjectDirectory())) {
+                    if (lazyPDirs.contains(dir)) {
                         toOpenProjects.remove(p);
                         toOpenProjects.addFirst(p);
                         return null;
@@ -485,12 +483,21 @@ public final class OpenProjectList {
 
         }
 
-        public void resultChanged(LookupEvent ev) {
+        public @Override void resultChanged(LookupEvent ev) {
+            final Set<FileObject> lazyPDirs = new HashSet<FileObject>();
             for (FileObject fileObject : currentFiles.allInstances()) {
                 Project p = FileOwnerQuery.getOwner(fileObject);
-                OpenProjectList.preferredProject(p);
+                if (p != null) {
+                    lazyPDirs.add(p.getProjectDirectory());
+                }
             }
-
+            if (!lazyPDirs.isEmpty()) {
+                Hacks.RP.post(new Runnable() {
+                    public @Override void run() {
+                        getDefault().LOAD.preferredProject(lazyPDirs);
+                    }
+                });
+            }
         }
 
         final void enter() {
