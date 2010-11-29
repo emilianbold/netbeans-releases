@@ -41,51 +41,22 @@
  */
 
 /*
- * EmptyPanel.java
+ * FunctionListViewBusyPanel.java
  *
- * Created on 17.11.2010, 13:42:48
+ * Created on 24.11.2010, 14:28:48
  */
-package org.netbeans.modules.dlight.visualizers;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.dlight.management.api.DLightSession;
-import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
-import org.netbeans.modules.dlight.management.api.SessionStateListener;
-import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
+package org.netbeans.modules.dlight.visualizers;
 
 /**
  *
  * @author ak119685
  */
-public final class FunctionsListViewEmptyPanel extends javax.swing.JPanel {
+public final class TableViewBusyPanel extends javax.swing.JPanel {
 
-    private final VisualizersSupport support;
-    private final SessionStateListener listener;
-
-    /** Creates new form EmptyPanel */
-    public FunctionsListViewEmptyPanel(final FunctionsListViewVisualizerConfiguration cfg) {
+    /** Creates new form FunctionListViewBusyPanel */
+    public TableViewBusyPanel() {
         initComponents();
-
-        listener = new SessionStateListener() {
-
-            @Override
-            public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
-                final FunctionsListViewVisualizerConfigurationAccessor cfgAccess =
-                        FunctionsListViewVisualizerConfigurationAccessor.getDefault();
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        messageLabel.setText(support.isSessionAnalyzed()
-                                ? cfgAccess.getEmptyAnalyzeMessage(cfg)
-                                : cfgAccess.getEmptyRunningMessage(cfg));
-                    }
-                });
-            }
-        };
-
-        support = new VisualizersSupport(listener);
     }
 
     /** This method is called from within the constructor to
@@ -102,10 +73,13 @@ public final class FunctionsListViewEmptyPanel extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(FunctionsListViewEmptyPanel.class, "FunctionsListViewEmptyPanel.messageLabel.text")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(TableViewBusyPanel.class, "TableViewBusyPanel.waitingForData.text")); // NOI18N
         add(messageLabel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel messageLabel;
     // End of variables declaration//GEN-END:variables
+
 }
