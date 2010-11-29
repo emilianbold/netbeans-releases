@@ -157,21 +157,11 @@ abstract class CollapsiblePanel extends JPanel {
 
         @Override
         public String getUIClassID() {
-            String classID = super.getUIClassID();
-            if (isGTK) {
-                classID = "MetalCheckBoxUI_4_GTK";
-            }
-            return classID;
+            return super.getUIClassID();            
         }
 
         private SectionButton(ActionListener al) {
             this.al = al;
-            if (isGTK) {
-                UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
-            }
-
-            //force initialization of PropSheet look'n'feel values 
-            UIManager.get( "nb.propertysheet" );
 
             setFont( getFont().deriveFont( Font.BOLD ) );
             setMargin(new Insets(0, 3, 0, 3));
