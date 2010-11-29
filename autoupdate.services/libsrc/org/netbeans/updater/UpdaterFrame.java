@@ -242,6 +242,7 @@ implements UpdatingContext {
     
     @Override
     public void unpackingFinished() {
+        runningFinished();
     }
 
     @Override

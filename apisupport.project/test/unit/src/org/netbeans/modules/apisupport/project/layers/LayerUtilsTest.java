@@ -78,6 +78,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.core.startup.layers.LayerCacheManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -426,6 +427,7 @@ public class LayerUtilsTest extends LayerTestBase {
         return files;
     }
 
+    @RandomlyFails // #192590: slow, loads a lot of stuff
     public void testSystemFilesystemStandaloneProject() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         LayerHandle handle = LayerHandle.forProject(project);
