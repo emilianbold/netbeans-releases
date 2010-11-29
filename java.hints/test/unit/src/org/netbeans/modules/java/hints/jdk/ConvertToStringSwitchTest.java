@@ -172,6 +172,115 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
     }
 
+    public void testStringEqualsObject() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         Object g = null;\n" +
+                       "         if (\"j\".equals(g)) {" +
+                       "             System.err.println(1);" +
+                       "         } else if (\"k\".equals(g)) {" +
+                       "             System.err.println(2);" +
+                       "         } else {\n" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}");
+    }
+
+    public void testVariableDeclarations() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         if (g == \"j\") {" +
+                       "             int i = 1;" +
+                       "             int z = 1;" +
+                       "             System.err.println(i + z);" +
+                       "         } else if (g == \"k\") {" +
+                       "             int i = 2;" +
+                       "             System.err.println(i);" +
+                       "         } else if (g == \"l\") {" +
+                       "             int j = 1;" +
+                       "             System.err.println(j);" +
+                       "         } else if (g == \"z\") {" +
+                       "             int z = 1;" +
+                       "             System.err.println(z);" +
+                       "         } else if (g == \"a\") {" +
+                       "             int a = 1;" +
+                       "             System.err.println(a);" +
+                       "         } else if (g == \"b\") {" +
+                       "             int b = 1;" +
+                       "             System.err.println(a + b);" +
+                       "         }\n" +
+                       "     }" +
+                       "}",
+                       "1:9-1:11:verifier:Convert to switch",
+                       "FixImpl",
+                       ("package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         String g = null;" +
+                       "         switch (g) {\n" +
+                       "             case \"j\": {\n" +
+                       "                 int i = 1;" +
+                       "                 int z = 1;" +
+                       "                 System.err.println(i + z);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"k\": {\n" +
+                       "                 int i = 2;" +
+                       "                 System.err.println(i);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"l\":\n" +
+                       "                 int j = 1;" +
+                       "                 System.err.println(j);" +
+                       "                 break;" +
+                       "             case \"z\": {\n" +
+                       "                 int z = 1;" +
+                       "                 System.err.println(z);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"a\": {\n" +
+                       "                 int a = 1;" +
+                       "                 System.err.println(a);" +
+                       "                 break;" +
+                       "             }" +
+                       "             case \"b\":\n" +
+                       "                 int b = 1;" +
+                       "                 System.err.println(a + b);" +
+                       "                 break;" +
+                       "         }\n" +
+                       "     }" +
+                       "}").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testNonConstantString() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     private static String nonConstant = \"a\";" +
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         if (\"j\".equals(g)) {" +
+                       "             System.err.println(1);" +
+                       "         } else if (nonConstant.equals(g)) {" +
+                       "             System.err.println(2);" +
+                       "         } else {\n" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";
