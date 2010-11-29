@@ -87,7 +87,7 @@ public final class CppSettings extends SharedClassObject {
         super.initialize();
     }
     
-    /** Return the signleton cppSettings */
+    /** Return the singleton cppSettings */
     public static CppSettings getDefault() {
         // See IZ 120502
         if (cppSettings == null) {
@@ -110,7 +110,7 @@ public final class CppSettings extends SharedClassObject {
     }
 
     /**
-     * Gets the replacable strings table - used during instantiating
+     * Gets the replaceable strings table - used during instantiating
      * from template.
      */
     public String getReplaceableStringsTable() {
