@@ -152,7 +152,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         public static Location make(NativeDebugger debugger,
 		                    MITList frameTuple,
 				    MITList srcTuple,
-				    boolean visited) {
+				    boolean visited,
+                                    int stackSize) {
 
 	    String src = null;
 	    int line = 0;
@@ -215,7 +216,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  pc,
 				  Location.UPDATE |
 				  (visited ? Location.VISITED: 0) |
-                                  (level == 0 ? Location.TOPFRAME : 0));
+                                  (level == 0 ? Location.TOPFRAME : 0) |
+                                  (level >= stackSize-1 ? Location.BOTTOMFRAME : 0));
         }
 
         public static Location make(Location h, boolean visited) {
@@ -225,7 +227,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  h.pc(),
 				  Location.UPDATE |
 				  (visited ? Location.VISITED: 0) |
-                                  (h.topframe() ? Location.TOPFRAME: 0));
+                                  (h.topframe() ? Location.TOPFRAME: 0) |
+                                  (h.bottomframe() ? Location.BOTTOMFRAME: 0));
 	}
 
 	private MILocation(String src, int line, String func, long pc,
@@ -1050,21 +1053,34 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void makeCalleeCurrent() {
+        GdbFrame frame = getCurrentFrame();
+        if (frame != null) {
+            String number = frame.getNumber();
+            makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
+        }
     }
 
     public void makeCallerCurrent() {
+        GdbFrame frame = getCurrentFrame();
+        if (frame != null) {
+            String number = frame.getNumber();
+            makeFrameCurrent(getStack()[Integer.valueOf(number)+1]);
+        }
     }
 
     public void popToHere(Frame frame) {
     }
 
     public void popTopmostCall() {
+        stepOut();
     }
 
     public void popLastDebuggerCall() {
     }
 
     public void popToCurrentFrame() {
+        makeCalleeCurrent();
+        stepOut();
     }
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
@@ -1419,10 +1435,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         System.out.println("tid_no " + tid);
          */
 
-        if (get_frames || get_locals) { // get new Frames for current thread
-            // would call getMILocals.
-            showStackFrames();
-        }
+//        if (get_frames || get_locals) { // get new Frames for current thread
+//            // would call getMILocals.
+//            showStackFrames();
+//        }
 
         GdbFrame f = null;
 
@@ -1452,10 +1468,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
         GdbFrame f = new GdbFrame(this, frame, null); // args data are included in frame
 
-        if (get_frames || get_locals) {
-            // would call getMILocals.
-            showStackFrames();
-        }
+//        if (get_frames || get_locals) {
+//            // would call getMILocals.
+//            showStackFrames();
+//        }
         if (!f.getLineNo().equals("")) {
             // has source info,
             // get full path for current frame from gdb,
@@ -1485,10 +1501,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
         if (isCurrent) {
             selectFrame(f.getNumber()); // notify gdb to change current frame
-            if (get_frames || get_locals) { // get Frames for current thread
-                // would call getMILocals.
-                showStackFrames();
-            }
+//            if (get_frames || get_locals) { // get Frames for current thread
+//                // would call getMILocals.
+//                showStackFrames();
+//            }
 
             if (!f.getLineNo().equals("")) {
                 // has source info,
@@ -1580,9 +1596,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
-            for (int fx = 0; fx < guiStackFrames.length; fx++) {
-                if (guiStackFrames[fx].isCurrent()) {
-                    return (GdbFrame) guiStackFrames[fx];
+            for (Frame frame : guiStackFrames) {
+                if (frame.isCurrent()) {
+                    return (GdbFrame) frame;
                 }
             }
             return (GdbFrame) guiStackFrames[0];
@@ -1597,18 +1613,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void makeFrameCurrent(Frame f) {
         String fno = f.getNumber();
         boolean changed = false;
-        int current = 0;
         if (guiStackFrames != null) {
-            for (int fx = 0; fx < guiStackFrames.length; fx++) {
-                if ((guiStackFrames[fx]).getNumber().equals(fno)) {
+            for (Frame frame : guiStackFrames) {
+                if (frame.getNumber().equals(fno)) {
                     /* can't break, need it for bring back source
                     if (guiStackFrames[fx].isCurrent())
                     break;              // no change in state
                      */
                     changed = true;
-                    guiStackFrames[fx].setCurrent(true);
+                    frame.setCurrent(true);
                 } else {
-                    guiStackFrames[fx].setCurrent(false);
+                    frame.setCurrent(false);
                 }
             }
         }
@@ -1632,7 +1647,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// create a non-visited location because it may be assigned to
 	// homeLoc
 
-        Location l = MILocation.make(this, f.getMIframe(), srcTuple, false);
+        Location l = MILocation.make(this, f.getMIframe(), srcTuple, false, getStack().length);
 
 	// We really SHOULD not be setting homeLoc in a method called
 	// visitBlahBlah
@@ -1647,6 +1662,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 	visitedLocation = MILocation.make(l, visited);
         setVisitedLocation(visitedLocation);
+        
+        state().isUpAllowed = !l.bottomframe();
+        state().isDownAllowed = !l.topframe();
+        stateChanged();
     }
 
     private void getFullPath(final GdbFrame f) {
@@ -1665,7 +1684,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * notify gdb to switch current frame to fno 
      * also get locals info for new current frame
      */
-    private void selectFrame(final String fno) {
+    private void selectFrame(final Object fno) {
 
         MICommand cmd =
             new MiCommandImpl("-stack-select-frame " + fno) { // NOI18N
@@ -2618,27 +2637,32 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
+                MITList stack = srcResults.valueOf("stack").asList(); // NOI18N
 		if (false) {
 		    // We have information about what src location we're
 		    // stopped in.
 		    MITList frameTuple = null;
 		    if (frameValue != null)
 			frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, srcResults, false);
+		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size());
 
 		} else {
-		    frameValue = srcResults.valueOf("frame"); // NOI18N
+                    frameValue = ((MIResult)stack.asList().get(0)).value();
 		    MITList frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, null, false);
+		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size());
 		}
 
 		visitedLocation = MILocation.make(homeLoc, false);
 		setVisitedLocation(visitedLocation);
+                
+                state().isUpAllowed = !homeLoc.bottomframe();
+                state().isDownAllowed = !homeLoc.topframe();
+                setStack(srcRecord);
 	    }
 
-            if (get_frames || get_locals) {
-                showStackFrames();
-            }
+//            if (get_frames || get_locals) {
+//                showStackFrames();
+//            }
 
             if (get_threads) {
                 showThreads();
@@ -2768,7 +2792,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// check for that first before asking for it.
 	// only valid for gdb 6.6 and up
         MICommand cmd =
-            new MiCommandImpl("-stack-info-frame") { // NOI18N
+            new MiCommandImpl("-stack-list-frames") { // NOI18N
             @Override
                     protected void onDone(MIRecord record) {
                         genericStoppedWithSrc(stopRecord, record);
