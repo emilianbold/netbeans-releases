@@ -91,6 +91,7 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.core.startup.Main;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
@@ -441,10 +442,11 @@ public class InstallSupportImpl {
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
                                         LOG.log(Level.FINE, "Waiting for {0}@{1} #{2}", new Object[]{ impl.getCodeName(), impl.getSpecificationVersion(), rerunWaitCount});
                                         Thread.sleep(100);
+                                        Main.getModuleSystem().refresh();
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
-                                        LOG.log (Level.INFO, "Timeout waiting for loading module {0}@{2}", new Object[]{impl.getCodeName (), impl.getSpecificationVersion ()});
+                                        LOG.log (Level.INFO, "Timeout waiting for loading module {0}@{1}", new Object[]{impl.getCodeName (), impl.getSpecificationVersion ()});
                                         afterInstall ();
                                         synchronized(downloadedFiles) {
                                             downloadedFiles.clear();

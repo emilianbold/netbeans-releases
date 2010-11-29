@@ -846,7 +846,7 @@ final class ModuleList implements Stamps.Updater {
      * May be called within read or write mutex; since it
      * could be in the read mutex, synchronize (on statuses).
      */
-    private void moduleListChanged() {
+    final void moduleListChanged() {
         synchronized (statuses) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("ModuleList: moduleListChanged; statuses=" + statuses);

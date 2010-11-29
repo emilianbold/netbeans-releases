@@ -597,9 +597,12 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
-                tree.collapsePath(getTreePath(n));
+                final TreePath path = getTreePath(n);
+                LOG.log(Level.FINE, "collapseNode: {0} {1}", new Object[] { n, path });
+                tree.collapsePath(path);
+                LOG.fine("collapsePath done");
             }
         });
     }
@@ -625,7 +628,10 @@ public abstract class TreeView extends JScrollPane {
             @Override
             public void run() {
                 LOG.log(Level.FINEST, "Just print the variable so it is not GCed: {0}", prepare);
-                tree.expandPath(getTreePath(n));
+                final TreePath p = getTreePath(n);
+                LOG.log(Level.FINE, "expandNode: {0} {1}", new Object[] { n, p });
+                tree.expandPath(p);
+                LOG.fine("expandPath done");
             }
         });
     }
