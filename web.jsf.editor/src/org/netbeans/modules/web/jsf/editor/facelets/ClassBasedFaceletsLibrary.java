@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -97,12 +97,14 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
         this.components.addAll(components);
     }
 
+    @Override
     public Collection<NamedComponent> getComponents() {
         return Collections.unmodifiableCollection(components);
     }
 
-    public LibraryDescriptor getLibraryDescriptor() {
-        LibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
+    @Override
+    public AbstractLibraryDescriptor getLibraryDescriptor() {
+        AbstractLibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
         return ld == null ? libraryDescriptor : ld;
     }
 

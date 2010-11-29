@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     <api name="winsys"/>
     <summary>Reuse existing JFrame instance (if any) as IDE's main window.</summary>
     <version major="6" minor="36"/>
-    <date day="23" month="1" year="2010"/>
+    <date day="23" month="11" year="2010"/>
     <author login="saubrecht"/>
     <compatibility addition="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
     <description>

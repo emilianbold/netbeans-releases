@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -109,6 +110,7 @@ public class LookupProviderImpl implements LookupProvider {
             new WebModules(project, projectHelper, projectEvaluator, aux), // WebModuleProvider, ClassPathProvider
             new WebFreeFormActionProvider(project, projectHelper, aux),   //ActionProvider
             new HelpIDFragmentProviderImpl(),
+            new JsfSupportHandle()
         });
     }
    

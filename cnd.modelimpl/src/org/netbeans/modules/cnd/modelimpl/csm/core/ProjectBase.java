@@ -1061,7 +1061,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         File file = nativeFile.getFile();
-        CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getSimpleName() + ") returned null file"); //NOI18N
+        CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getName() + ") returned null file; FileObject is " + nativeFile.getFileObject()); //NOI18N
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;

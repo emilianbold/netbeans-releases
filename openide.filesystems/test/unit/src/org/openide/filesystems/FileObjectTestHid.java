@@ -1157,7 +1157,7 @@ public class FileObjectTestHid extends TestBaseHid {
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
     }
     
-    public void  testCaseSensitiveRename() {
+    public void  testCaseSensitiveRename() throws Exception {
         checkSetUp();
         FileObject fo = getTestFile1(root);
         registerDefaultListener(fo);
@@ -1167,6 +1167,9 @@ public class FileObjectTestHid extends TestBaseHid {
             lock = fo.lock();
             fo.rename(lock,fo.getName().toUpperCase(),fo.getExt().toUpperCase());
         } catch (IOException iex) {
+            if (!fs.isReadOnly() && !root.isReadOnly()) {
+                throw iex;
+            }
             fsAssert("FileObject could not be renamed. So there was expected fs or fo are read-only",
             fs.isReadOnly() || root.isReadOnly());
             fileRenamedAssert("fs or fo is read-only. So no event should be fired",0);

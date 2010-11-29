@@ -41,9 +41,10 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Attribute;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
+import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.LibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 public abstract class FaceletsLibrary {
@@ -58,7 +59,7 @@ public abstract class FaceletsLibrary {
 
     public abstract Collection<NamedComponent> getComponents();
 
-    public abstract LibraryDescriptor getLibraryDescriptor();
+    public abstract AbstractLibraryDescriptor getLibraryDescriptor();
 
      public Tag getTag(String name) {
         FaceletsLibraryDescriptor fld = support.getJsfSupport().getFaceletsLibraryDescriptor(getNamespace());
@@ -160,7 +161,7 @@ public abstract class FaceletsLibrary {
             return name;
         }
 
-        public TldLibrary.Tag getTag() {
+        public Tag getTag() {
             return FaceletsLibrary.this.getTag(getName());
         }
 
@@ -373,18 +374,22 @@ public abstract class FaceletsLibrary {
             return tag1.getName() == null && tag2 != null ? tag2.getName() : tag1.getName();
         }
 
+        @Override
         public String getDescription() {
             return tag1.getDescription() == null && tag2 != null ? tag2.getDescription() : tag1.getDescription();
         }
 
+        @Override
         public boolean hasNonGenenericAttributes() {
             return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.hasNonGenenericAttributes() : tag1.hasNonGenenericAttributes();
         }
 
+        @Override
         public Collection<Attribute> getAttributes() {
             return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.getAttributes() : tag1.getAttributes();
         }
 
+        @Override
         public Attribute getAttribute(String name) {
             return tag1.getAttribute(name) == null && tag2 != null ? tag2.getAttribute(name) : tag1.getAttribute(name);
         }

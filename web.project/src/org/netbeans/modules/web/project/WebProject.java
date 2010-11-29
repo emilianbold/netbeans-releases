@@ -74,6 +74,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -590,7 +591,8 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-            new ProjectWebRootProviderImpl()
+            new ProjectWebRootProviderImpl(),
+            new JsfSupportHandle()
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{

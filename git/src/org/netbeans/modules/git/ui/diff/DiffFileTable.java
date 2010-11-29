@@ -61,7 +61,6 @@ import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.conflicts.MarkResolvedAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
@@ -144,9 +143,7 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
         ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
         if (a.isEnabled()) {
             menu.addSeparator();
-            item = menu.add(new SystemActionBridge(a, NbBundle.getMessage(MarkResolvedAction.class, "LBL_ResolveConflictsAction_PopupName"))); //NOI18N);
-            Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(new SystemActionBridge(SystemAction.get(MarkResolvedAction.class), NbBundle.getMessage(MarkResolvedAction.class, "LBL_MarkResolvedAction_PopupName"))); //NOI18N);
+            item = menu.add(new SystemActionBridge(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"))); //NOI18N);
             Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;
