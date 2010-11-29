@@ -84,7 +84,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * @author Tomas Stupka
  */
 abstract class CollapsiblePanel extends JPanel {
-    protected final CategoryButton sectionButton;
+    protected final SectionButton sectionButton;
     protected final JPanel sectionPanel;
     protected final VCSCommitPanel master;
 
@@ -101,7 +101,7 @@ abstract class CollapsiblePanel extends JPanel {
            }
         };
 
-        this.sectionButton = new CategoryButton(al);
+        this.sectionButton = new SectionButton(al);
         this.sectionPanel = new JPanel();
 
         this.sectionButton.setSelected(defaultSectionDisplayed);
@@ -147,7 +147,7 @@ abstract class CollapsiblePanel extends JPanel {
     }
     
     // inspired by org.netbeans.modules.palette.ui.CategoryButton
-    class CategoryButton extends JCheckBox {
+    private class SectionButton extends JCheckBox {
 
         final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
         final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
@@ -157,21 +157,11 @@ abstract class CollapsiblePanel extends JPanel {
 
         @Override
         public String getUIClassID() {
-            String classID = super.getUIClassID();
-            if (isGTK) {
-                classID = "MetalCheckBoxUI_4_GTK";
-            }
-            return classID;
+            return super.getUIClassID();            
         }
 
-        CategoryButton(ActionListener al) {
+        private SectionButton(ActionListener al) {
             this.al = al;
-            if (isGTK) {
-                UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
-            }
-
-            //force initialization of PropSheet look'n'feel values 
-            UIManager.get( "nb.propertysheet" );
 
             setFont( getFont().deriveFont( Font.BOLD ) );
             setMargin(new Insets(0, 3, 0, 3));
