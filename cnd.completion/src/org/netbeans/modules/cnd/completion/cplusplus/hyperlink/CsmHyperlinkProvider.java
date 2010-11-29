@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
@@ -149,8 +150,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(decl);
                 Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(decl);
                 boolean inDeclaration = isInDeclaration(decl, csmFile, offset);
-                Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
-                Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
+                Collection<? extends CsmMethod> baseMethods = new ArrayList<CsmMethod>(0);
+                Collection<? extends CsmMethod> overriddenMethods = new ArrayList<CsmMethod>(0);
                 if (CsmKindUtilities.isMethod(decl)) {
                     CsmMethod meth = (CsmMethod) decl;
                     if (inDeclaration) {
@@ -169,7 +170,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 CsmClass cls = (CsmClass) item;
                 Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
                 Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
-                Collection<CsmClass> subClasses = Collections.<CsmClass>emptyList();
+                Collection<CsmClass> subClasses = new ArrayList<CsmClass>(0);
              
                 Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
                 if (!subRefs.isEmpty()) {

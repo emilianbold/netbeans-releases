@@ -474,7 +474,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 updateNode();               
             } else {
                 // replace local wsdl with downloaded version
-                FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(false);
+                FileObject localWsdlFolder = jaxWsSupport.getWsdlFolder(true);
                 if (localWsdlFolder != null) {
                     String newWsdlUrl = result.getWsdlUrl();
                     boolean wsdlUrlChanged = false;

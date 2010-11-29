@@ -62,10 +62,10 @@ public class FileName implements FileNaming {
     private final Integer id;
     private CharSequence currentName;
 
-    protected FileName(final FileNaming parent, final File file) {
+    protected FileName(final FileNaming parent, final File file, Integer theKey) {
         this.parent = parent;
         this.name = CharSequences.create(parseName(parent, file));
-        id = NamingFactory.createID(file);
+        this.id = theKey == null ? NamingFactory.createID(file) : theKey;
         this.currentName = name;
         boolean debug = false;
         assert debug = true;
