@@ -41,49 +41,22 @@
  */
 package org.netbeans.modules.dlight.visualizers.ui;
 
-import java.awt.dnd.DnDConstants;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.visualizers.FunctionsListSheetCell;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
-import org.netbeans.swing.etable.ETableColumn;
-import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author ak119685
  */
-public final class FunctionsListViewTable extends OutlineView {
-
-    private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
+public final class FunctionsListViewTable extends AbstractListViewTable {
 
     public FunctionsListViewTable(final ExplorerManager explorerManager, String nodeColumnName, ColumnsUIMapping columnsUIMapping, List<Column> metrics) {
         super(nodeColumnName);
-
-        setDragSource(false);
-        setDropTarget(false);
-        setAllowedDragActions(DnDConstants.ACTION_NONE);
-        setAllowedDropActions(DnDConstants.ACTION_NONE);
-
-        final Outline outline = getOutline();
-        outline.setRootVisible(false);
-        outline.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outline.getTableHeader().setReorderingAllowed(false);
-        outline.setRootVisible(false);
 
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null
@@ -96,67 +69,10 @@ public final class FunctionsListViewTable extends OutlineView {
             addPropertyColumn(c.getColumnName(), displayedName, displayedTooltip);
         }
 
+        final Outline outline = getOutline();
         outline.setDefaultRenderer(Object.class, new FunctionCallNodeRenderer(explorerManager));
         outline.setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outline, metrics));
 
-        initActionMap();
-
-        ETableColumnModel colModel = (ETableColumnModel) outline.getColumnModel();
-        TableColumn firstColumn = colModel.getColumn(0);
-        ETableColumn col = (ETableColumn) firstColumn;
-        col.setNestedComparator(new Comparator<FunctionCallNode>() {
-
-            @Override
-            public int compare(FunctionCallNode o1, FunctionCallNode o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-    }
-
-    private void initActionMap() {
-        final Outline outline = getOutline();
-
-        // add Alt + Column Number for sorting
-
-        int columnCount = outline.getColumnCount();
-
-        int firstKey = KeyEvent.VK_1;
-
-        for (int i = 1; i <= columnCount; i++) {
-            final int columnNumber = i - 1;
-            KeyStroke columnKey = KeyStroke.getKeyStroke(firstKey++, KeyEvent.ALT_MASK, true);
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnKey, "ascSortFor" + i); // NOI18N
-            getActionMap().put("ascSortFor" + i, new AbstractAction() { // NOI18N
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // ok, do the sorting
-                    int column = columnNumber;
-                    ETableColumnModel columnModel = null;
-                    if (outline.getColumnModel() instanceof ETableColumnModel) {
-                        columnModel = (ETableColumnModel) outline.getColumnModel();
-                        columnModel.clearSortedColumns();
-                    }
-                    boolean asc = !ascColumnValues.containsKey(column) ? true : ascColumnValues.get(column);
-                    outline.setColumnSorted(column, asc, 1);
-                    ascColumnValues.put(column, !asc);
-                    outline.getTableHeader().resizeAndRepaint();
-                }
-            });
-        }
-
-        // On Escape focus parent component..
-        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
-
-//        outline.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, Collections.singleton(returnKey));
-
-        outline.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); // NOI18N
-        outline.getActionMap().put("return", new AbstractAction() { // NOI18N
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getFocusCycleRootAncestor().getFocusTraversalPolicy().getComponentBefore(getFocusCycleRootAncestor(), outline).requestFocus();
-            }
-        });
+        initActionMap();        
     }
 }

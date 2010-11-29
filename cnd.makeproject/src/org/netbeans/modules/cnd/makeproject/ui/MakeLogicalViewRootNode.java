@@ -157,7 +157,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         ic.add(new FolderSearchInfo(logicalFolders));
         setChildren(new LogicalViewChildren(folder, provider));
-        updateAnnotationFiles();
         stateChanged(null);
     }
 
