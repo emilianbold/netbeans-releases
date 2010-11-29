@@ -41,30 +41,41 @@
  */
 package org.netbeans.modules.dlight.visualizers.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.visualizers.GotoSourceActionProvider;
-import org.openide.nodes.Node;
+import org.netbeans.modules.dlight.visualizers.util.TableViewDataFilter;
+import org.openide.nodes.Children;
 
 /**
- * A factory for FunctionCallWithMetric Nodes.
- * This factory creates FunctionCallNodes for given list of FunctionCallWithMetric.
+ * A base factory for creating children for displaying nodes in TableView.
+ * 
+ * It supports filtering. If lookup, associated with this factory contains an
+ * instance of FunctionCallFilter, then only nodes for functions accepted by
+ * this filter are produced.
  *
  * @author ak119685
  */
-public final class FunctionCallNodeChildren extends TableViewNodeChildren<FunctionCallWithMetric> {
+public abstract class TableViewNodeChildren<Data> extends Children.Keys<Data> {
+    public final void setData(final List<Data> dataList) {        
+        List<Data> filtered;
 
-    private final List<Column> metrics;
-    private final GotoSourceActionProvider actionsProvider;
+        @SuppressWarnings("unchecked")
+        TableViewDataFilter<Data> filter = getNode().getLookup().lookup(TableViewDataFilter.class);
 
-    public FunctionCallNodeChildren(GotoSourceActionProvider actionsProvider, List<Column> metrics) {
-        this.metrics = metrics;
-        this.actionsProvider = actionsProvider;
-    }
+        if (dataList == null) {
+            filtered = Collections.<Data>emptyList();
+        } else if (filter == null) {
+            filtered = dataList;
+        } else {
+            filtered = new ArrayList<Data>(dataList.size());
+            for (Data data : dataList) {
+                if (filter.matches(data)) {
+                    filtered.add(data);
+                }
+            }
+        }
 
-    @Override
-    protected Node[] createNodes(FunctionCallWithMetric key) {
-        return new Node[]{new FunctionCallNode(actionsProvider, key, metrics)};
+        setKeys(filtered);
     }
 }

@@ -39,32 +39,13 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers.ui;
-
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.visualizers.GotoSourceActionProvider;
-import org.openide.nodes.Node;
+package org.netbeans.modules.dlight.visualizers.util;
 
 /**
- * A factory for FunctionCallWithMetric Nodes.
- * This factory creates FunctionCallNodes for given list of FunctionCallWithMetric.
  *
  * @author ak119685
  */
-public final class FunctionCallNodeChildren extends TableViewNodeChildren<FunctionCallWithMetric> {
+public interface TableViewDataFilter<Data> {
 
-    private final List<Column> metrics;
-    private final GotoSourceActionProvider actionsProvider;
-
-    public FunctionCallNodeChildren(GotoSourceActionProvider actionsProvider, List<Column> metrics) {
-        this.metrics = metrics;
-        this.actionsProvider = actionsProvider;
-    }
-
-    @Override
-    protected Node[] createNodes(FunctionCallWithMetric key) {
-        return new Node[]{new FunctionCallNode(actionsProvider, key, metrics)};
-    }
+    public boolean matches(Data data);
 }
