@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.jsfapi.spi;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -87,9 +88,7 @@ public abstract class JsfSupportProvider {
     public static JsfSupport get(Project project) {
         JsfSupportHandle handle = project.getLookup().lookup(JsfSupportHandle.class);
         if(handle == null) {
-            LOGGER.info(
-                    String.format("The project %s doesn't have an instance of JsfSupportHandle in its lookup.", //NOI18N
-                    getProjectDisplayName(project)));
+            LOGGER.log(Level.FINE, "{0} does not have an instance of JsfSupportHandle in its lookup.", project);
             return null;
         }
 
