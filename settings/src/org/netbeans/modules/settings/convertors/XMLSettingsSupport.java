@@ -45,6 +45,7 @@
 package org.netbeans.modules.settings.convertors;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
@@ -602,7 +603,9 @@ final class XMLSettingsSupport {
                         }
                     } else {
                         try {
-                            inst = clazz.newInstance();
+                            Constructor<?> c = clazz.getDeclaredConstructor();
+                            c.setAccessible(true);
+                            inst = c.newInstance();
                         } catch (Exception ex) {
                             IOException ioe = new IOException();
                             ioe.initCause(ex);

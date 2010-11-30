@@ -1175,7 +1175,7 @@ public final class CreatedModifiedFiles {
                                 for (Map.Entry<String,Map<String,Object>> ann : annotations.entrySet()) {
                                     TypeElement annType = wc.getElements().getTypeElement(ann.getKey());
                                     if (annType == null) {
-                                        throw new IllegalArgumentException("No such annotation could be found: " + ann.getKey());
+                                        throw new IOException("No annotation " + ann.getKey() + " in " + wc.getClasspathInfo());
                                     }
                                     ExpressionTree annotationTypeTree = make.QualIdent(annType);
                                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();

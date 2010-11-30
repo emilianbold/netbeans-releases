@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.xam;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * A component in model.
@@ -79,7 +80,7 @@ public interface Component<C extends Component> {
      * @return the model where this element is being used or null if not
      * currently part of a model. 
      */
-    Model getModel();
+    @CheckForNull Model getModel();
 
     /**
      * Returns a copy of this component for adding into the given parent component.

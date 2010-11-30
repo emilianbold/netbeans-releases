@@ -147,7 +147,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                     Map<String,Object> attrs = new LinkedHashMap<String,Object>();
                     attrs.put("helpSet", basename + TEMPLATE_SUFFIX_HS);
                     attrs.put("position", position);
-                    files.add(files.packageInfo(basename + ".docs", Collections.singletonMap("org.netbeans.api.javahelp.HelpSetRegistration", attrs)));
+                    files.add(files.packageInfo(codeNameBase + ".docs", Collections.singletonMap("org.netbeans.api.javahelp.HelpSetRegistration", attrs)));
                 } else {
                     tokens.put("HELPSET_PATH", path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
                     files.add(files.createLayerEntry("Services/JavaHelp/" + basename + "-helpset.xml", // NOI18N
