@@ -59,6 +59,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -70,6 +71,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     private FileSystem rootFileSystem = null;
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
+    private final boolean isWindows = Utilities.isWindows();
 
     @Override
     public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
@@ -95,7 +97,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         if (rootFileSystem == null) {
             File tmpFile = null;
             try {
-                tmpFile = File.createTempFile("NetBeans", ".tmp");
+                tmpFile = File.createTempFile("NetBeans", ".tmp"); //NOI18N
                 tmpFile = FileUtil.normalizeFile(tmpFile);
                 FileObject fo = FileUtil.toFileObject(tmpFile);
                 rootFileSystem = fo.getFileSystem();
@@ -116,7 +118,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     public FileSystem getFileSystem(ExecutionEnvironment env, String root) {
         if (env.isLocal()) {
             synchronized (this) {
-                if ("/".equals(root)) { // NOI18N
+                if ("/".equals(root) || "".equals(root)) { // NOI18N
                     return getRootFileSystem();
                 } else {
                     LocalFileSystem fs = nonRootFileSystems.get(root);
@@ -163,7 +165,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public boolean isMine(String absoluteURL) {
-        return absoluteURL.startsWith("/"); //NOI18N
+        if (isWindows) {
+            return (absoluteURL.length() > 1) && absoluteURL.charAt(1) == ':';
+        } else {
+            return absoluteURL.startsWith("/"); //NOI18N
+        }
     }
 
     @Override
