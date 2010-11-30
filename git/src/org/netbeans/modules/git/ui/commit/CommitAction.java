@@ -72,6 +72,7 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -109,6 +110,8 @@ public class CommitAction extends SingleRepositoryAction {
         if (!canCommit(repository)) {
             return;
         }
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        final GitRepositoryState state = info.getRepositoryState();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -121,7 +124,9 @@ public class CommitAction extends SingleRepositoryAction {
                     LOG.log(Level.WARNING, null, ex);
                 }
                 
-                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user, isFromGitView(context));
+                final GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
+                        ? GitCommitPanelMerged.create(roots, repository, user)
+                        : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
@@ -137,7 +142,7 @@ public class CommitAction extends SingleRepositoryAction {
                         @Override
                         public void perform() {
                             try {
-                                performCommit(panel.getParameters(), commitFiles, selectedFilter, getClient(), this, panel.getHooks());
+                                performCommit(panel.getParameters(), commitFiles, selectedFilter, getClient(), this, panel.getHooks(), state);
                             } catch (GitException ex) {
                                 LOG.log(Level.WARNING, null, ex);
                                 return;
@@ -150,13 +155,15 @@ public class CommitAction extends SingleRepositoryAction {
         });
     }
 
+    //TODO this should be inside the GitProgressSupport, thus all the parameters won't be needed. There's no need to have these dozens of static methods
     private static void performCommit(
             GitCommitParameters parameters, 
             List<VCSFileNode> commitFiles,
             VCSCommitFilter filter,
             GitClient client, 
             GitProgressSupport support, 
-            Collection<GitHook> hooks) 
+            Collection<GitHook> hooks,
+            GitRepositoryState state)
     {
        
         List<File> addCandidates = new LinkedList<File>();
@@ -191,7 +198,7 @@ public class CommitAction extends SingleRepositoryAction {
             String origMessage = message;
             message = beforeCommitHook(commitCandidates, hooks, message);
                         
-            GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support);
+            GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support, state);
             
             GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
             GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
@@ -294,49 +301,12 @@ public class CommitAction extends SingleRepositoryAction {
         }
     }
       
-    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support) throws GitException {  
-        try {                          
-            return client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
+    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support, GitRepositoryState state) throws GitException {
+        try {
+            return client.commit(state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
         } catch (GitException ex) {
-            // XXX
-//                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
-//                        // committing after a merge, all modified files have to be committed, even excluded files
-//                        // ask the user for confirmation
-//                        if (support.isCanceled()) {
-//                            return;
-//                        } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
-//                            return;
-//                        } else {
-//                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
-//                            refreshFiles = new HashSet<File>(Git.getInstance().getSeenRoots(repository));
-//                            commitAfterMerge = true;
-//                        }
-//                    } else {
-//                        throw ex;
-//                    }
             throw ex;
         } 
-        
-// XXX
-//        if (commitAfterMerge) {
-//            support.getLogger().output(
-//                    NbBundle.getMessage(CommitAction.class,
-//                    "MSG_COMMITED_FILES_AFTER_MERGE"));         //NOI18N
-//        } else {
-//            if (commitCandidates.size() == 1) {
-//                support.getLogger().output(
-//                        NbBundle.getMessage(CommitAction.class,
-//                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); //NOI18N
-//            } else {
-//                support.getLogger().output(
-//                        NbBundle.getMessage(CommitAction.class,
-//                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); //NOI18N
-//            }
-//            for (File f : commitCandidates) {
-//                support.getLogger().output("\t" + f.getAbsolutePath());      //NOI18N
-//            }
-//        }
-        // XXX HgUtils.logHgLog(tip, logger);
     }
         
     private static void refreshFS (final Collection<File> filesToRefresh) {

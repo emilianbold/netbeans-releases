@@ -58,7 +58,11 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     private String errroMessage;
     
     public GitCommitTable() {
-        super(new VCSCommitTableModel());
+        this(true);
+    }
+
+    public GitCommitTable (boolean editable) {
+        super(new VCSCommitTableModel(), editable);
     }
 
     @Override
