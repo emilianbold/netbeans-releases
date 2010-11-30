@@ -60,11 +60,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisProgressPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -81,6 +84,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -130,12 +134,29 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static enum RequestMode {FILE, ADDRESS, NONE};
 
     private RequestMode requestMode = RequestMode.FILE;
+    
+    private final BreakpointModel breakpointModel;
+    
+    private final BreakpointModel.Listener breakpointListener =
+	new BreakpointModel.Listener() {
+	    public void bptUpdated() {
+                if (opened) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateAnnotations(true);
+                        }
+                    });
+                }
+	    }
+	};
 
-    public Disassembly(GdbDebuggerImpl debugger) {
+    public Disassembly(GdbDebuggerImpl debugger, BreakpointModel breakpointModel) {
         this.debugger = debugger;
+        this.breakpointModel = breakpointModel;
+        breakpointModel.addListener(breakpointListener);
         //debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
-
+    
     protected void cancel() {
         cancelled = true;
     }
@@ -366,15 +387,31 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
+    private final List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
+    
     private void updateAnnotations(boolean open) {
-//        debugger.fireDisUpdate(open);
-//        DebuggerManager dm = DebuggerManager.getDebuggerManager();
-//        Breakpoint[] bs = dm.getBreakpoints();
-//        for (int i = 0; i < bs.length; i++) {
-//            if (bs[i] instanceof AddressBreakpoint) {
-//                ((AddressBreakpoint)bs[i]).refresh();
-//            }
-//        }
+        debugger.annotateDis();
+        for (DebuggerAnnotation debuggerAnnotation : annotations) {
+            debuggerAnnotation.detach();
+        }
+        annotations.clear();
+        
+        NativeBreakpoint[] bs = breakpointModel.getBreakpoints();
+        for (NativeBreakpoint bpt : bs) {
+            if (bpt instanceof InstructionBreakpoint) {
+                InstructionBreakpoint ibpt = (InstructionBreakpoint)bpt;
+                try {
+                    int addressLine = getAddressLine(Address.parseAddr(ibpt.getAddress()));
+                    if (addressLine >= 0) {
+                        DataObject dobj = DataObject.find(getFileObject());
+                        org.openide.text.Line line = EditorBridge.lineNumberToLine(dobj, addressLine);
+                        annotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, true));
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 
     public void removeUpdate(DocumentEvent e) {
@@ -501,14 +538,22 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     return line.idx;
                 }
             }
-            return -1;
         }
+        return -1;
     }
     
-    public static int getAddressLine(Disassembly dis, String address) {
-        if (dis != null) {
-            return dis.getAddressLine(address);
-        } else {
+    public int getAddressLine(long address) {
+        //TODO : can use binary search
+        synchronized (lines) {
+            for (Line line : lines) {
+                try {
+                    if (Long.decode(line.address) == address) {
+                        return line.idx;
+                    }
+                } catch (NumberFormatException e) {
+                    //do nothing
+                }
+            }
             return -1;
         }
     }
@@ -558,31 +603,18 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
-    private static DataObject getCurrentDataObject() {
-        FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
-        if (fobj == null) {
-            return null;
-        }
-        try {
-            return DataObject.find(fobj);
-        } catch (DataObjectNotFoundException donfex) {
-            return null;
-        }
-    }
-    
     public static boolean isInDisasm() {
         //TODO: optimize
-        DataObject dobj = getCurrentDataObject();
-//        if (dobj == null) {
-//            dobj = EditorContextBridge.getContext().getMostRecentDataObject();
-//        }
-        if (dobj == null) {
-            return false;
+        FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fobj == null) {
+            fobj = EditorContextDispatcher.getDefault().getMostRecentFile();
         }
-        try {
-            return dobj.equals(DataObject.find(getFileObject()));
-        } catch(DataObjectNotFoundException doe) {
-            doe.printStackTrace();
+        if (fobj != null) {
+            try {
+                return DataObject.find(fobj).equals(DataObject.find(getFileObject()));
+            } catch(DataObjectNotFoundException doe) {
+                doe.printStackTrace();
+            }
         }
         return false;
     }
