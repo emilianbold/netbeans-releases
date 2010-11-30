@@ -115,6 +115,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
+    private PropertyChangeListener varChangeListener;
     private final List<ModelListener> listeners = new ArrayList<ModelListener>();
     private PropertyChangeListener[] varListeners;
     //private Map                 cachedLocals = new WeakHashMap();
@@ -124,6 +125,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     public LocalsTreeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
+        varChangeListener = new VarChangeListener();
+        debugger.varChangeSupport.addPropertyChangeListener(
+                WeakListeners.propertyChange(varChangeListener, debugger.varChangeSupport));
     }
     
     public Object getRoot () {
@@ -705,6 +709,18 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     
     // innerclasses ............................................................
+
+    private class VarChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object var = evt.getSource();
+            if (var instanceof Variable) {
+                fireNodeChanged(var);
+            }
+        }
+
+    }
     
     private static class Listener implements PropertyChangeListener {
         
