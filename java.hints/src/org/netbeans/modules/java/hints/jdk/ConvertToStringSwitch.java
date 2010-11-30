@@ -319,6 +319,7 @@ public class ConvertToStringSwitch {
 
                 resolved.add(new CatchDescription<TreePath>(null, s));
                 catch2Declared.put(s, declaredVariables(s));
+                catch2Used.put(s, usedVariables(copy, s, break2Target));
             }
 
             for (CatchDescription<TreePath> d : resolved) {
