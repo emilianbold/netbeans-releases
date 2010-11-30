@@ -99,6 +99,7 @@ import org.openide.nodes.Node;
  * Test writing changes to layers.
  * @author Jesse Glick
  */
+@RandomlyFails
 public class LayerUtilsTest extends LayerTestBase {
     private static final String LAYER_NAME_FMT = "layer-%03d.xml";
     private static final String JAR_NAME_FMT = "module-%03d.jar";
