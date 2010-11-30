@@ -65,7 +65,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Dafe Simonek
  */
-public class InitJobTest extends NbTestCase {
+public class InitJobCancelTest extends NbTestCase {
     /** testing dialog instance */
     Dialog dlg;
     /** arrays which hold calls history */
@@ -79,7 +79,7 @@ public class InitJobTest extends NbTestCase {
     private final Logger LOG;
     
     /** Creates a new instance of UtilProgressCursorTest */
-    public InitJobTest(String testName) {
+    public InitJobCancelTest(String testName) {
         super(testName);
         LOG = Logger.getLogger("test." + testName);
     }
@@ -100,13 +100,11 @@ public class InitJobTest extends NbTestCase {
         return 15000;
     }
     
-    /** Basic testing of Utilities.attachInitJob, if calls to AsyncGUIJob
-     * impl conforms to the API behaviour described in javadoc *
-     */
-    public void testInitJob() throws Exception {
-        LOG.info("Testing simple init job run");
+    public void testCancelAbility() throws Exception {
+        LOG.info("Testing cancel ability of async init job");
         initializeSimple();
-        final SimpleInitComp c = new SimpleInitComp();
+        initCancelResults();
+        final CancelInitComp c = new CancelInitComp();
         comp = c;
         Utilities.attachInitJob(c, c);
         frame = new Frame();
@@ -117,6 +115,7 @@ public class InitJobTest extends NbTestCase {
         dlg.add(comp);
         dlg.setVisible(true);
     }
+    
     
     /**********************************************************************/
     
