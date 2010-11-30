@@ -66,6 +66,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -349,6 +351,9 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /** Finds default instance. Use in client code instead of {@link #getDefault()}. */
+    @ActionID(id = "org.netbeans.modules.favorites.View", category = "Window")
+    @OpenActionRegistration(displayName="#ACT_View")
+    @ActionReference(position = 350, path = "Menu/Window")
     public static synchronized Tab findDefault() {
         if(DEFAULT == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("favorites"); // NOI18N
