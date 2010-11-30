@@ -665,11 +665,11 @@ final class XMLSettingsSupport {
             try {
                 Object instance;
                 try {
-                    Method method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
+                    Method method = clazz.getDeclaredMethod(targetMethod, new Class[]{FileObject.class});
                     method.setAccessible(true);
                     instance = method.invoke(null, source);
                 } catch (NoSuchMethodException ex) {
-                    Method method = clazz.getMethod(targetMethod);
+                    Method method = clazz.getDeclaredMethod(targetMethod);
                     method.setAccessible(true);
                     instance = method.invoke(null, new Object[0]);
                 }
