@@ -89,8 +89,10 @@ public class RemoteFileObjectFactory {
             synchronized (lock) {
                 size = fileObjectsCache.size();
             }
-            RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries and {2}% ({3} of {4}) hits so far",
-                    new Object[] {env, size, (cacheHits*100)/cacheRequests, cacheHits, cacheRequests});
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries and {2}% ({3} of {4}) hits so far",
+                        new Object[] {env, size, (cacheRequests == 0) ? 0 : ((cacheHits*100)/cacheRequests), cacheHits, cacheRequests});
+            }
         }
 
         fileObjectsCache.cleanDeadEntries();
