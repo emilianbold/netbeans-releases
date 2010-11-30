@@ -363,7 +363,8 @@ public class PkgConfigImpl implements PkgConfig {
                     continue;
                 }
             }
-            FileObject dir = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(entry.getKey()), pi.getExecutionEnvironment());
+            String normalizedPath = RemoteFileUtil.normalizeAbsolutePath(entry.getKey(), pi.getExecutionEnvironment());
+            FileObject dir = RemoteFileUtil.getFileObject(normalizedPath, pi.getExecutionEnvironment());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
             if (TRACE) {
                 System.err.println("init search base for "+entry.getKey());
