@@ -91,6 +91,7 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             
             File modeFile = layer(e).
                 file("Windows2/Modes/" + reg.mode() + "/" + id + ".wstcref").
+                position(reg.position()).
                 contents(modeFile(info.preferredID(), reg.openAtStartup()));
             modeFile.write();
         }
