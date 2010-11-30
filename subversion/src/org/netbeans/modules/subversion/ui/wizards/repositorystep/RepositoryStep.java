@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -105,6 +104,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         return new HelpCtx(helpID);
     }        
 
+    @Override
     protected JComponent createComponent() {
         if (repository == null) {         
             repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
@@ -118,6 +118,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         return panel;
     }
 
+    @Override
     protected void validateBeforeNext() {            
         try {
             support = new RepositoryStepProgressSupport(panel.progressPanel);        
@@ -133,6 +134,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         }
     }
     
+    @Override
     public void prepareValidation() {                
     }
 
@@ -166,6 +168,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         }
     }                       
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Repository.PROP_VALID)) {
             if(repository.isValid()) {
@@ -188,6 +191,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             super(panel);
         }
 
+        @Override
         public void perform() {
             final RepositoryConnection rc = getSelectedRepositoryConnection();
             if (rc == null) {
@@ -263,6 +267,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             }
         }
 
+        @Override
         public void setEditable(boolean editable) {
             repository.setEditable(editable);        
         }        
