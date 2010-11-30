@@ -3701,10 +3701,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String nameBase = GeneratorUtils.getCapitalizedName(name).toString();
                         String setterName = "set" + nameBase; //NOI18N
                         String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
-                        if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
+                        if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods)) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, false));
                         }
-                        if ((prefix == null || startsWith(env, setterName, prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods))) {
+                        if ((prefix == null || startsWith(env, setterName, prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, te, variableElement, methods))) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, true));
                         }
                     }

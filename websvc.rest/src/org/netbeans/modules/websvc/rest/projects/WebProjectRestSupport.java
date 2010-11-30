@@ -211,7 +211,7 @@ public class WebProjectRestSupport extends WebRestSupport {
             if (restConfig.isServerJerseyLibSelected()) {
                 added = addDeployableServerJerseyLibrary();
             }
-            if ( !added || restConfig.isJerseyLibSelected()) {
+            if ( !added && restConfig.isJerseyLibSelected()) {
                 if (hasServerJerseeyLibrary) {
                     if (!serverLibraryAdded) {
                         addServerJerseyLibrary();

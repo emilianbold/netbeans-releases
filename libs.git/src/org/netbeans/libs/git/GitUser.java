@@ -85,5 +85,12 @@ public abstract class GitUser {
         hash = 37 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
         hash = 37 * hash + (this.getEmailAddress() != null ? this.getEmailAddress().hashCode() : 0);
         return hash;
-    }    
+    }
+
+    @Override
+    public String toString() {
+        String name = getName();
+        String mail = getEmailAddress();
+        return name + (mail != null && !mail.isEmpty() ? " <" + mail + ">" : ""); //NOI18N
+    }
 }
