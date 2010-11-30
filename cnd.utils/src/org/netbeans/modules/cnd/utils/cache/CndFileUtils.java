@@ -363,6 +363,9 @@ public final class CndFileUtils {
             for (int i = 0; i < listFiles.length; i++) {
                 CndFileSystemProvider.FileInfo curFile = listFiles[i];
                 String absPath = changeStringCaseIfNeeded(curFile.absolutePath);
+                if (isWindows) {
+                    absPath = absPath.replace('/', '\\');
+                }
                 if (curFile.directory) {
                     files.putIfAbsent(absPath, Flags.DIRECTORY);
                 } else {
