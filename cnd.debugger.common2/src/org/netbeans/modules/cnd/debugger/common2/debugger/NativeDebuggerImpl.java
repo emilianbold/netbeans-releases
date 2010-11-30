@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -101,6 +100,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
@@ -129,6 +129,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected DebuggerAnnotation visitMarker = null;
     protected DebuggerAnnotation currentPCMarker = null;
+    protected DebuggerAnnotation currentDisPCMarker = null;
+
     private boolean srcOOD;
     private String srcOODMessage = null;
     protected ListMap<WatchVariable> watches = new ListMap<WatchVariable>();
@@ -173,6 +175,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         session.setDebugger((NativeDebugger) this);
 
         currentPCMarker =
+                new DebuggerAnnotation(null,
+                DebuggerAnnotation.TYPE_CURRENT_PC,
+                null,
+                true);
+        currentDisPCMarker =
                 new DebuggerAnnotation(null,
                 DebuggerAnnotation.TYPE_CURRENT_PC,
                 null,
@@ -768,23 +775,40 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             }
         });
     }
+    
+    public void annotateDis() {
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+        if (disProvider != null) {
+            disProvider.movePC(getVisitedLocation().pc(), currentDisPCMarker);
+        }
+    }
+   
+    private boolean isInDis() {
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+        return disProvider != null && disProvider.isInDis();
+    }
 
     protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
 
         if (l != null) {
-	    if (andShow)
+	    if (andShow && !isInDis()) {
 		EditorBridge.showInEditor(l);
+            }
 
             if (visited) {
                 visitMarker.setLine(l, isCurrent());
                 currentPCMarker.setLine(null, isCurrent());
+                currentDisPCMarker.setLine(null, isCurrent());
             } else {
                 visitMarker.setLine(null, isCurrent());
                 currentPCMarker.setLine(l, isCurrent());
+                // Also annotate dis
+                annotateDis();
             }
         } else {
             visitMarker.setLine(null, isCurrent());
             currentPCMarker.setLine(null, isCurrent());
+            currentDisPCMarker.setLine(null, isCurrent());
         }
 
         // Arrange for DebuggerManager.error_sourceModified()
@@ -968,6 +992,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         visitMarker.attach(true);
         currentPCMarker.attach(true);
+        currentDisPCMarker.attach(true);
         EditorBridge.setStatus(srcOODMessage);
 
         updateActions();
@@ -1004,6 +1029,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         visitMarker.detach();
         currentPCMarker.detach();
+        currentDisPCMarker.detach();        
         EditorBridge.setStatus(null);
     }
 
@@ -1342,10 +1368,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          * Return bpt at this address.
          */
         public Bpt findBptByAddr(long address) {
-            int count = 0;
-            for (int i = 0; i < breakpoints_List.size(); i++) {
-                if (address == breakpoints_List.get(i).addr) {
-                    return breakpoints_List.get(i);
+            for (Bpt bpt : breakpoints_List) {
+                if (address == bpt.addr) {
+                    return bpt;
                 }
             }
             return null;
@@ -1357,9 +1382,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // interface BreakpointModel
         public int findDisabled(long address) {
             int count = 0;
-            for (int i = 0; i < breakpoints_List.size(); i++) {
-                Bpt disBpt = breakpoints_List.get(i);
-                if (address == disBpt.addr && !disBpt.bpt.isEnabled()) {
+            for (Bpt bpt : breakpoints_List) {
+                if (address == bpt.addr && !bpt.bpt.isEnabled()) {
                     count++;
                 }
             }
@@ -1372,8 +1396,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // interface BreakpointModel
         public int find(long address) {
             int count = 0;
-            for (int i = 0; i < breakpoints_List.size(); i++) {
-                if (address == breakpoints_List.get(i).addr) {
+            for (Bpt bpt : breakpoints_List) {
+                if (address == bpt.addr) {
                     count++;
                 }
             }
@@ -1404,6 +1428,15 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             for (Listener l : listeners) {
                 l.bptUpdated();
             }
+        }
+
+        public NativeBreakpoint[] getBreakpoints() {
+            NativeBreakpoint[] res = new NativeBreakpoint[breakpoints_List.size()];
+            int idx = 0;
+            for (Bpt bpt : breakpoints_List) {
+                res[idx++] = bpt.bpt;
+            }
+            return res;
         }
     }
 
