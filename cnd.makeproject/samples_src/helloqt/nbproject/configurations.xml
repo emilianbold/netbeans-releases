@@ -28,7 +28,6 @@
     <conf name="Debug" type="4">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <qt>
         <modules>core gui</modules>
@@ -55,7 +54,6 @@
     <conf name="Release" type="4">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <qt>
         <buildMode>1</buildMode>

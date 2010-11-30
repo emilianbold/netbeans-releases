@@ -57,17 +57,20 @@ public final class ApplicableImpl implements Applicable {
     private final int weight;
     private final boolean sunStudio;
     private final List<String> dependencies;
+    private final List<String> searchPaths;
     private final String sourceRoot;
     private final Position position;
 
-    public ApplicableImpl(boolean applicable, List<String> errors, String compiler, int weight, boolean sunStudio,
-            List<String> dependencies, String sourceRoot, Position position) {
+    public ApplicableImpl(boolean applicable, List<String> errors,
+            String compiler, int weight, boolean sunStudio,
+            List<String> dependencies, List<String> searchPaths, String sourceRoot, Position position) {
         this.compiler = compiler;
         this.applicable = applicable;
         this.errors = errors;
         this.weight = weight;
         this.sunStudio = sunStudio;
         this.dependencies = dependencies;
+        this.searchPaths = searchPaths;
         this.sourceRoot = sourceRoot;
         this.position = position;
     }
@@ -98,6 +101,11 @@ public final class ApplicableImpl implements Applicable {
     }
 
     @Override
+    public List<String> getSearchPaths() {
+        return searchPaths;
+    }
+
+    @Override
     public String getSourceRoot() {
         return sourceRoot;
     }
@@ -113,6 +121,6 @@ public final class ApplicableImpl implements Applicable {
     }
 
     public static Applicable getNotApplicable(List<String> errors) {
-        return new ApplicableImpl(false, errors, null, 0, false, null, null, null);
+        return new ApplicableImpl(false, errors, null, 0, false, null, null, null, null);
     }
 }

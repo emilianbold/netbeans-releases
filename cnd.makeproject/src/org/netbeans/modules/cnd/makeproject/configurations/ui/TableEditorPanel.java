@@ -351,8 +351,8 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
                     workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
                 }
-                makeArtifact.setProjectLocation(CndPathUtilitities.normalize(projectLocation));
-                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalize(workingDirectory));
+                makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
                 listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);

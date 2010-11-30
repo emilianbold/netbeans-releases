@@ -52,7 +52,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.util.Exceptions;
 
 /**
@@ -102,7 +102,7 @@ public class JsfVariablesModel {
         // contexts and sort it by contexts startoffsets.
         // The access is slower however
 
-        JsfSupport sup = JsfSupport.findFor(result.getSnapshot().getSource());
+        JsfSupportImpl sup = JsfSupportImpl.findFor(result.getSnapshot().getSource());
         Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getFaceletsLibraries().keySet();
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
 

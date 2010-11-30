@@ -44,10 +44,7 @@
 
 package org.openide.explorer.view;
 
-import java.awt.AWTException;
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
@@ -66,9 +63,7 @@ import org.openide.nodes.Node;
  * Tests for the quick search feature in the treeview.
  */
 public class TreeViewQuickSearchTest extends NbTestCase {
-    
-    private static final int NO_OF_NODES = 3;
-    
+    private JFrame f;
     
     public TreeViewQuickSearchTest(String name) {
         super(name);
@@ -76,7 +71,14 @@ public class TreeViewQuickSearchTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 15000;
+        return 150000;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        while (f != null && f.isShowing()) {
+            f.setVisible(false);
+        }
     }
     
     public void testSubstringQuickSearch() throws Throwable {
@@ -107,8 +109,8 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         p.add(BorderLayout.CENTER, btv);
         btv.setUseSubstringInQuickSearch(substringSearch);
         
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+        f = new JFrame();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.getContentPane().add(BorderLayout.CENTER, p);
         f.pack();
         f.setVisible(true);
@@ -118,6 +120,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         final Integer[] phase = new Integer[1];
         phase[0] = 0;
         class AWTTst implements Runnable {
+            @Override
             public void run() {
                 try {
                     if (phase[0] == 0) {
@@ -129,13 +132,8 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         }
                     }
                     if (phase[0] == 1) {
-                        Robot robot = new Robot();
-                        Point p = btv.tree.getLocationOnScreen();
-                        robot.mouseMove(p.x + 10, p.y + 10);
-                        robot.mousePress(0);
-                        robot.mouseRelease(0);
-                        robot.keyPress(KeyEvent.VK_A);
-                        robot.keyRelease(KeyEvent.VK_A);
+                        KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'A');
+                        btv.tree.dispatchEvent(ke);
                     }
                     
                     if (phase[0] == 2) {
@@ -145,7 +143,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         assertEquals("One node should be selected, but there are none.", 1, paths.length);
                         assertEquals("Wrong node selected.", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
                     }
-                } catch (AWTException ex) {
+                } catch (Exception ex) {
                     problem[0] = ex;
                 }
             }
@@ -181,6 +179,80 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         }
     }
     
+    public void testQuickSearchEnable() throws Throwable {
+        final AbstractNode root = new AbstractNode(new Children.Array());
+        root.setName("test root");
+        
+        final Node[] children = {
+            createLeaf("foo1"),
+            createLeaf("foo2"),
+            createLeaf("bar1"),
+            createLeaf("bar2"),
+            createLeaf("alpha"),
+        };
+        
+        root.getChildren().add(children);
+        
+        final Panel p = new Panel();
+        p.getExplorerManager().setRootContext(root);
+        
+        final BeanTreeView btv = new BeanTreeView();
+        p.add(BorderLayout.CENTER, btv);
+
+        
+        f = new JFrame();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.getContentPane().add(BorderLayout.CENTER, p);
+        f.pack();
+        f.setVisible(true);
+
+
+        final Exception[] problem = new Exception[1];
+        final Integer[] phase = new Integer[1];
+        phase[0] = 0;
+        class AWTTst implements Runnable {
+
+            @Override
+            public void run() {
+                if (phase[0] == 0) {
+                    btv.tree.requestFocus();
+                    try {
+                        p.getExplorerManager().setSelectedNodes(new Node[]{root});
+                    } catch (PropertyVetoException e) {
+                        fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
+                    }
+                    return;
+                }
+                KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'A');
+                btv.tree.dispatchEvent(ke);
+
+                if (phase[0] != 0) {
+                    if (btv.isQuickSearchAllowed()) {
+                        assertNotNull("Quick Search enabled ", btv.searchpanel);
+                    } else {
+                        assertNull("Quick Search disable", btv.searchpanel);
+                    }
+                }
+            }
+        }
+        AWTTst awt = new AWTTst();
+        SwingUtilities.invokeAndWait(awt);
+        if (problem[0] != null) {
+            throw problem[0];
+        }
+        Thread.sleep(1000);
+        phase[0] = 1;
+        btv.setQuickSearchAllowed(true);
+        SwingUtilities.invokeAndWait(awt);
+        if (problem[0] != null) {
+            throw problem[0];
+        }
+        
+        Thread.sleep(1000);
+        btv.setQuickSearchAllowed(false);
+        SwingUtilities.invokeAndWait(awt);
+    }
+    
     private static Node createLeaf(String name) {
         AbstractNode n = new AbstractNode(Children.LEAF);
         n.setName(name);
@@ -191,6 +263,7 @@ public class TreeViewQuickSearchTest extends NbTestCase {
             implements ExplorerManager.Provider {
         private ExplorerManager em = new ExplorerManager();
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return em;
         }

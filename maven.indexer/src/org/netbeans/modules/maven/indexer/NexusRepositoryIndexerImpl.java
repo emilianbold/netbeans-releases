@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,6 +65,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -80,18 +82,38 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.index.ArtifactAvailablility;
+import org.apache.maven.index.ArtifactContext;
+import org.apache.maven.index.ArtifactContextProducer;
+import org.apache.maven.index.ArtifactInfo;
+import org.apache.maven.index.Field;
+import org.apache.maven.index.FlatSearchRequest;
+import org.apache.maven.index.FlatSearchResponse;
+import org.apache.maven.index.IndexerField;
+import org.apache.maven.index.search.grouping.GGrouping;
+import org.apache.maven.index.GroupedSearchRequest;
+import org.apache.maven.index.GroupedSearchResponse;
+import org.apache.maven.index.IndexerFieldVersion;
+import org.apache.maven.index.NexusIndexer;
+import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.creator.AbstractIndexCreator;
+import org.apache.maven.index.SearchEngine;
+import org.apache.maven.index.context.IndexCreator;
+import org.apache.maven.index.updater.IndexUpdateRequest;
+import org.apache.maven.index.updater.IndexUpdater;
+import org.apache.maven.index.updater.ResourceFetcher;
+import org.apache.maven.index.updater.WagonHelper;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
-import org.apache.maven.repository.legacy.WagonManager;
-import org.apache.maven.wagon.ConnectionException;
-import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.Wagon;
-import org.apache.maven.wagon.WagonException;
-import org.apache.maven.wagon.events.TransferListener;
-import org.apache.maven.wagon.repository.Repository;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -121,28 +143,11 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
-import org.sonatype.nexus.index.ArtifactAvailablility;
-import org.sonatype.nexus.index.ArtifactContext;
-import org.sonatype.nexus.index.ArtifactContextProducer;
-import org.sonatype.nexus.index.ArtifactInfo;
-import org.sonatype.nexus.index.Field;
-import org.sonatype.nexus.index.FlatSearchRequest;
-import org.sonatype.nexus.index.FlatSearchResponse;
-import org.sonatype.nexus.index.IndexerField;
-import org.sonatype.nexus.index.search.grouping.GGrouping;
-import org.sonatype.nexus.index.GroupedSearchRequest;
-import org.sonatype.nexus.index.GroupedSearchResponse;
-import org.sonatype.nexus.index.IndexerFieldVersion;
-import org.sonatype.nexus.index.NexusIndexer;
-import org.sonatype.nexus.index.context.IndexingContext;
-import org.sonatype.nexus.index.creator.AbstractIndexCreator;
-import org.sonatype.nexus.index.SearchEngine;
-import org.sonatype.nexus.index.context.IndexCreator;
-import org.sonatype.nexus.index.updater.AbstractResourceFetcher;
-import org.sonatype.nexus.index.updater.IndexUpdateRequest;
-import org.sonatype.nexus.index.updater.IndexUpdater;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 
 /**
  *
@@ -160,7 +165,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
-    private WagonManager wagonManager;
     private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
@@ -233,7 +237,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
-                wagonManager = embedder.lookup(WagonManager.class);
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
@@ -257,18 +260,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             initIndexer();
 
             IndexingContext context = indexer.getIndexingContexts().get(info.getId());
+            String indexUpdateUrl = findIndexUpdateUrlConsideringMirrors(info);
             if (context != null) {
                 String contexturl = context.getIndexUpdateUrl();
-                String repourl = info.getIndexUpdateUrl();
                 File contextfile = context.getRepository();
                 File repofile = info.getRepositoryPath() != null ? new File(info.getRepositoryPath()) : null;
                 //try to figure if context reload is necessary
-                if ((contexturl == null) != (repourl == null) ||
-                    (contexturl != null && !contexturl.equals(repourl))) {
+                if (!Utilities.compareObjects(contexturl, indexUpdateUrl)) {
                     LOGGER.fine("Remote context changed:" + info.getId() + ", unload/load");//NOI18N
                     unloadIndexingContext(info);
-                } else if ((contextfile == null) != (repofile == null) ||
-                           (contextfile != null && !contextfile.equals(repofile))) {
+                } else if (!Utilities.compareObjects(contextfile, repofile)) {
                     LOGGER.fine("Local context changed:" + info.getId() + ", unload/load");//NOI18N
                     unloadIndexingContext(info);
                 } else {
@@ -301,7 +302,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
-                            info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
+                            info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
@@ -314,7 +315,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
-                            info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
+                            info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 }
                 if (index) {
@@ -344,6 +345,45 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }
+    }
+
+    private String findIndexUpdateUrlConsideringMirrors(RepositoryInfo info) { // #192064
+        String direct = info.getIndexUpdateUrl();
+        if (direct == null) {
+            return null; // local
+        }
+        MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
+        DefaultMirrorSelector selectorNoGroups = new DefaultMirrorSelector();
+        DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
+        for (Mirror mirror : embedder2.getSettings().getMirrors()) {
+            String mirrorOf = mirror.getMirrorOf();
+            if (!mirrorOf.contains("*")/* XXX list might be used just for variant repo names: && !mirrorOf.contains(",")*/) {
+                selectorNoGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+            }
+            selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+        }
+        RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
+        RemoteRepository mirrored = selectorNoGroups.getMirror(original);
+        if (mirrored != null) {
+            String index = addIndex(mirrored.getUrl());
+            LOGGER.log(Level.FINE, "Mirroring {0} to {1}", new Object[] {direct, index});
+            return index;
+        } else {
+            mirrored = selectorWithGroups.getMirror(original);
+            if (mirrored != null) {
+                // XXX consider displaying warning in GUI; use NbPreferences.root().node("org/netbeans/modules/maven/showQuestions")
+                LOGGER.log(Level.WARNING, "Will not mirror {0} to {1}", new Object[] {direct, addIndex(mirrored.getUrl())});
+            } else {
+                LOGGER.log(Level.FINE, "No mirror for {0}", direct);
+            }
+            return direct;
+        }
+    }
+    private String addIndex(String baseURL) {
+        if (!baseURL.endsWith("/")) {
+            baseURL += "/";
+        }
+        return baseURL + ".index/"; // NOI18N
     }
 
     /**
@@ -449,8 +489,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 LOGGER.finer("Indexing Remote Repository :" + repo.getId());//NOI18N
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
-                    IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    iur.setResourceFetcher(new WagonFetcher(listener));
+                    // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
+                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
+                    IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
                     listener.close();
@@ -469,6 +510,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } catch (IOException x) {
             LOGGER.log(Level.INFO, "could not index " + repo.getId(), x);
             //handle index not found
+        } catch (ComponentLookupException x) {
+            LOGGER.log(Level.INFO, "could not find protocol handler for " + repo.getRepositoryUrl(), x);
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
@@ -1139,9 +1182,17 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     private static class NbIndexCreator extends AbstractIndexCreator {
 
-        private WeakReference<MavenEmbedder> embedderRef = null;
+        private final List<ArtifactRepository> remoteRepos;
+        NbIndexCreator() {
+            remoteRepos = new ArrayList<ArtifactRepository>();
+            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                if (!info.isLocal()) {
+                    remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
+                }
+            }
+        }
 
-        private WeakReference<ArtifactRepository> repositoryRef = null;
+        private WeakReference<MavenEmbedder> embedderRef = null;
 
         private MavenEmbedder getEmbedder() {
             MavenEmbedder res = (null!=embedderRef ? embedderRef.get() : null);
@@ -1152,35 +1203,34 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             return res;
         }
 
-        private ArtifactRepository getRepository() {
-            ArtifactRepository res = (null!=repositoryRef ? repositoryRef.get() : null);
-            if (null == res) {
-                res = getEmbedder().getLocalRepository();
-                repositoryRef = new WeakReference<ArtifactRepository>(res);
-            }
-            return res;
-        }
+        private final Map<ArtifactInfo,List<Dependency>> dependenciesByArtifact = new WeakHashMap<ArtifactInfo,List<Dependency>>();
 
-        @Override
-        public void updateDocument(ArtifactInfo context, Document doc) {
-            ArtifactInfo ai = context;
+        public @Override void populateArtifactInfo(ArtifactContext context) throws IOException {
+            ArtifactInfo ai = context.getArtifactInfo();
             if (ai.classifier != null) {
                 //don't process items with classifier
                 return;
             }
             try {
-                MavenProject mp = load(ai, getRepository());
+                MavenProject mp = load(ai);
                 if (mp != null) {
-                    @SuppressWarnings("unchecked")
                     List<Dependency> dependencies = mp.getDependencies();
-                    for (Dependency d : dependencies) {
-                        doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
-                        doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
-                        doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
-                    }
+                    LOGGER.log(Level.FINE, "Successfully loaded project model from repository for {0} with {1} dependencies", new Object[] {ai, dependencies.size()});
+                    dependenciesByArtifact.put(ai, dependencies);
                 }
             } catch (InvalidArtifactRTException ex) {
                 ex.printStackTrace();
+            }
+        }
+
+        public @Override void updateDocument(ArtifactInfo ai, Document doc) {
+            List<Dependency> dependencies = dependenciesByArtifact.get(ai);
+            if (dependencies != null) {
+                for (Dependency d : dependencies) {
+                    doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
+                    doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
+                    doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
+                }
             }
         }
         private static final String NS = "urn:NbIndexCreator"; // NOI18N
@@ -1195,78 +1245,35 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             return Arrays.asList(FLD_NB_DEPENDENCY_GROUP, FLD_NB_DEPENDENCY_ARTIFACT, FLD_NB_DEPENDENCY_VERSION);
         }
 
-        private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
+        private MavenProject load(ArtifactInfo ai) {
             try {
                 Artifact projectArtifact = getEmbedder().createArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
-                        null);
+                        ai.packaging != null ? ai.packaging : "jar");
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
                 dpbr.setLocalRepository(getEmbedder().getLocalRepository());
-                if(repository ==null || repository.equals(getEmbedder().getLocalRepository())) {
-                    dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
-                }else{
-                    dpbr.setRemoteRepositories(Arrays.asList(repository));
-                }
+                dpbr.setRemoteRepositories(remoteRepos);
+                dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+                dpbr.setSystemProperties(getEmbedder().getSystemProperties());
                 
                 ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
                     return res.getProject();
+                } else {
+                    LOGGER.log(Level.FINE, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
                 }
             } catch (ProjectBuildingException ex) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+                LOGGER.log(Level.FINE, "Failed to load project model from repository for {0}: {1}", new Object[] {ai, ex});
             } catch (Exception exception) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", exception);
+                LOGGER.log(Level.FINE, "Failed to load project model from repository for " + ai, exception);
             }
             return null;
         }
 
-        @Override
-        public void populateArtifactInfo(ArtifactContext context) throws IOException {
-        }
-
-        @Override
-        public boolean updateArtifactInfo(Document arg0, ArtifactInfo arg1) {
+        public @Override boolean updateArtifactInfo(Document doc, ArtifactInfo ai) {
             return false;
-        }
-    }
-
-    /** XXX use WagonHelper when available (3.0.5?) */
-    private class WagonFetcher extends AbstractResourceFetcher {
-        private final TransferListener listener;
-        private Wagon wagon = null;
-        WagonFetcher(TransferListener listener) {
-            this.listener = listener;
-        }
-        @SuppressWarnings("deprecation") // XXX what is best replacement for getWagon? getRemoteFile does not hold open a connection
-        public @Override void connect(final String id, final String url) throws IOException {
-            Repository repository = new Repository(id, url);
-            try {
-                wagon = wagonManager.getWagon(repository);
-                wagon.addTransferListener(listener);
-                wagon.connect(repository);
-            } catch (WagonException x) {
-                throw new IOException(url + ": " + x, x);
-            }
-        }
-        public @Override void disconnect() {
-            if (wagon != null) {
-                try {
-                    wagon.disconnect();
-                } catch (ConnectionException x) {
-                    listener.debug(x.toString());
-                }
-            }
-        }
-        public @Override void retrieve(final String name, final File targetFile) throws IOException {
-            try {
-                wagon.get(name, targetFile);
-            } catch (ResourceDoesNotExistException x) {
-                throw (FileNotFoundException) new FileNotFoundException(name + ": " + x).initCause(x);
-            } catch (WagonException x) {
-                throw new IOException(name + ": " + x, x);
-            }
         }
     }
 

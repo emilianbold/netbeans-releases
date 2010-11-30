@@ -592,7 +592,7 @@ public class Util {
         //need to add ap registration lib if exist
         if (libAdded && lib != null) {
             double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(PersistenceUtils.getJPAVersion(project)));
-            if (version > 1.0) {
+            if (version > 1.0 && Util.isJPAVersionSupported(project, Double.toString(version))) {
                 Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");
                 if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
             }

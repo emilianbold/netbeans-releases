@@ -190,8 +190,7 @@ public class ChildrenSupport {
         if (retval != null) {
             addChild(folderName, retval);
         } else {
-            FileName fChild = new FileName(folderName, child) {
-
+            FileName fChild = new FileName(folderName, child, null) {
                 @Override
                 public boolean isDirectory() {
                     return false;

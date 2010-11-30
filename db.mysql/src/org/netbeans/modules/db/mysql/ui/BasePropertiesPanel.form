@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -23,27 +23,32 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="labelHost" max="32767" attributes="1"/>
-                          <Component id="labelPort" alignment="0" max="32767" attributes="1"/>
-                          <Component id="labelPassword" alignment="0" max="32767" attributes="1"/>
-                          <Component id="labelUser" alignment="0" pref="174" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace pref="14" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="txtPort" alignment="1" pref="302" max="32767" attributes="1"/>
-                          <Component id="txtPassword" alignment="1" pref="302" max="32767" attributes="1"/>
-                          <Component id="txtUser" alignment="1" pref="302" max="32767" attributes="1"/>
-                          <Component id="txtHost" alignment="1" pref="302" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="labelHost" max="32767" attributes="1"/>
+                                  <Component id="labelPort" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="labelPassword" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="labelUser" alignment="0" min="-2" max="-2" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="txtUser" alignment="0" pref="505" max="32767" attributes="1"/>
+                                  <Component id="txtPort" alignment="0" pref="505" max="32767" attributes="1"/>
+                                  <Component id="txtPassword" alignment="1" pref="505" max="32767" attributes="1"/>
+                                  <Component id="txtHost" alignment="0" pref="505" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                              <Component id="chkSavePassword" pref="684" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="messageLabel" pref="490" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
-                      <Component id="chkSavePassword" pref="452" max="32767" attributes="0"/>
+                      <Component id="messageLabel" min="-2" pref="696" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -70,14 +75,14 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="txtPassword" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="labelPassword" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtPassword" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="chkSavePassword" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="36" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

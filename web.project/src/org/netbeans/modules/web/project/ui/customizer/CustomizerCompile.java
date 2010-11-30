@@ -45,6 +45,8 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -75,7 +77,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         annotationProcessorsList.setModel(uiProperties.ANNOTATION_PROCESSORS_MODEL);
         enableAPTCheckBoxActionPerformed(null);
         additionalJavacParamsJTextField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );                 
-
+        jCheckBoxCompileOnSave.setModel(uiProperties.COMPILE_ON_SAVE_MODEL);
     }
 
     /** This method is called from within the constructor to
@@ -85,9 +87,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabelOptions = new javax.swing.JLabel();
         jCheckBoxDebugInfo = new javax.swing.JCheckBox();
         jCheckBoxDeprecation = new javax.swing.JCheckBox();
         additionalJavacParamsJLabel = new javax.swing.JLabel();
@@ -95,87 +95,28 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         additionalJavacParamsExampleJLabel = new javax.swing.JLabel();
         jCheckBoxCompileJSP = new javax.swing.JCheckBox();
         enableAPTCheckBox = new javax.swing.JCheckBox();
-        enableAPTEditorCheckBox = new javax.swing.JCheckBox();
-        annotationProcessorsLabel = new javax.swing.JLabel();
         processorsPanel = new javax.swing.JPanel();
+        dosDescription = new javax.swing.JLabel();
+        jCheckBoxCompileOnSave = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         annotationProcessorsList = new javax.swing.JList();
-        addProcessorButton = new javax.swing.JButton();
         removeProcessorButton = new javax.swing.JButton();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelOptions, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Options_JLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabelOptions, gridBagConstraints);
+        annotationProcessorsLabel = new javax.swing.JLabel();
+        addProcessorButton = new javax.swing.JButton();
+        enableAPTEditorCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDebugInfo, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
-        add(jCheckBoxDebugInfo, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle"); // NOI18N
-        jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_Debugging__A11YDesc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeprecation, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
-        add(jCheckBoxDeprecation, gridBagConstraints);
-        jCheckBoxDeprecation.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_Deprecated_A11YDesc")); // NOI18N
 
         additionalJavacParamsJLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"MNE_AdditionalCompilerOptions").charAt(0));
         additionalJavacParamsJLabel.setLabelFor(additionalJavacParamsJTextField);
         org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsJLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptions")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        add(additionalJavacParamsJLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(additionalJavacParamsJTextField, gridBagConstraints);
-        additionalJavacParamsJTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
 
         org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsExampleJLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptionsExample")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(additionalJavacParamsExampleJLabel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCompileJSP, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_CompileJSP_JCheckBox")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
-        add(jCheckBoxCompileJSP, gridBagConstraints);
-        jCheckBoxCompileJSP.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_TestCompile_A11YDesc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(enableAPTCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Enable_Annotation_Processing")); // NOI18N
         enableAPTCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -183,33 +124,14 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
                 enableAPTCheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
-        add(enableAPTCheckBox, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(enableAPTEditorCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Enable_Editor_Annotation_Processing")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 32, 11, 0);
-        add(enableAPTEditorCheckBox, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(annotationProcessorsLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Annotation_Processors")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 32, 11, 0);
-        add(annotationProcessorsLabel, gridBagConstraints);
 
         processorsPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizerCompile_DeployOnSave_Description")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCompileOnSave, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_CompileOnSave_JCheckBox")); // NOI18N
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 20, 1, 1));
 
         jScrollPane1.setMaximumSize(new java.awt.Dimension(32767, 767));
         jScrollPane1.setPreferredSize(new java.awt.Dimension(24, 154));
@@ -226,15 +148,14 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         });
         jScrollPane1.setViewportView(annotationProcessorsList);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 3.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 32, 11, 0);
-        processorsPanel.add(jScrollPane1, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(removeProcessorButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Remove_Annotation_Processors")); // NOI18N
+        removeProcessorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeProcessorButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(annotationProcessorsLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Annotation_Processors")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addProcessorButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Add_Annotation_Processor")); // NOI18N
         addProcessorButton.addActionListener(new java.awt.event.ActionListener() {
@@ -242,37 +163,102 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
                 addProcessorButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        processorsPanel.add(addProcessorButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeProcessorButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Remove_Annotation_Processors")); // NOI18N
-        removeProcessorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeProcessorButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        processorsPanel.add(removeProcessorButton, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(enableAPTEditorCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Enable_Editor_Annotation_Processing")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(processorsPanel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(enableAPTEditorCheckBox)
+            .add(annotationProcessorsLabel)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(addProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(removeProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(enableAPTEditorCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(annotationProcessorsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(addProcessorButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(removeProcessorButton)
+                        .add(41, 41, 41))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, processorsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(jCheckBoxCompileOnSave)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jCheckBoxDebugInfo)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jCheckBoxDeprecation)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, enableAPTCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(dosDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(0, 0, 0)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(additionalJavacParamsJLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(additionalJavacParamsJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                                    .add(additionalJavacParamsExampleJLabel)))
+                            .add(jCheckBoxCompileJSP))))
+                .add(0, 0, 0))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jCheckBoxCompileOnSave)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dosDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxDebugInfo)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxDeprecation)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(enableAPTCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(additionalJavacParamsJLabel)
+                    .add(additionalJavacParamsJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(additionalJavacParamsExampleJLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxCompileJSP)
+                .add(0, 0, 0)
+                .add(processorsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle"); // NOI18N
+        jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_Debugging__A11YDesc")); // NOI18N
+        jCheckBoxDeprecation.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_Deprecated_A11YDesc")); // NOI18N
+        additionalJavacParamsJTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
+        jCheckBoxCompileJSP.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeCompile_TestCompile_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void enableAPTCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableAPTCheckBoxActionPerformed
@@ -321,12 +307,14 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JTextField additionalJavacParamsJTextField;
     private javax.swing.JLabel annotationProcessorsLabel;
     private javax.swing.JList annotationProcessorsList;
+    private javax.swing.JLabel dosDescription;
     private javax.swing.JCheckBox enableAPTCheckBox;
     private javax.swing.JCheckBox enableAPTEditorCheckBox;
     private javax.swing.JCheckBox jCheckBoxCompileJSP;
+    private javax.swing.JCheckBox jCheckBoxCompileOnSave;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
-    private javax.swing.JLabel jLabelOptions;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel processorsPanel;
     private javax.swing.JButton removeProcessorButton;

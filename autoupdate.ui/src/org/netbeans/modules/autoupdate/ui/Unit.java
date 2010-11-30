@@ -522,8 +522,11 @@ public abstract class Unit {
             return container.contains (updateEl);
         }
         
+        @Override
         public void setMarked (boolean marked) {
-            assert marked != isMarked ();
+            if (marked == isMarked()) {
+                return;
+            }
             OperationContainer container = null;
             if (isNbms) {
                 container = Containers.forUpdateNbms ();
@@ -533,7 +536,11 @@ public abstract class Unit {
                 container = Containers.forUpdate ();
             }
             if (marked) {
-                container.add (updateUnit, updateEl);
+                try {
+                    container.add (updateUnit, updateEl);
+                } catch (IllegalArgumentException ex) {
+                    log.log(Level.WARNING, ex.getMessage());
+                }
             } else {
                 container.remove (updateEl);
             }

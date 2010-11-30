@@ -513,7 +513,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         configureNameTextField.setText(path);
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
     
@@ -540,7 +540,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         makefileNameTextField.setText(path);
     }//GEN-LAST:event_makefileBrowseButtonActionPerformed
     

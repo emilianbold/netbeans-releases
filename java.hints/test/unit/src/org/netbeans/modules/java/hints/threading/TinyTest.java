@@ -461,6 +461,26 @@ public class TinyTest extends TestBase {
                             "}\n");
     }
 
+    public void testUnsyncedWait192218a() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private static void n() {\n" +
+                            "         synchronized (Test.class) { Test.class.wait();}\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
+    public void testUnsyncedWait192218b() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private static synchronized void n() {\n" +
+                            "         Test.class.wait();\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
     public void testUnsyncedNotify() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

@@ -80,16 +80,6 @@ public class MessageBoardResourceBean {
         return Response.created(msgURI).build();
     }
 
-    @POST
-    @Consumes("application/xml")
-    public Response addMessage(Message msg) throws URISyntaxException {
-        Message m = singleton.addMessage(msg.getMessage());
-
-        URI msgURI = ui.getRequestUriBuilder().path(Integer.toString(m.getUniqueId())).build();
-
-        return Response.created(msgURI).build();
-    }
-
     @Path("{msgNum}")
     @GET
     @Produces({"application/xml", "text/html"})

@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.maven.model;
 
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
@@ -90,13 +89,10 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public class Utilities {
+
+    private Utilities() {}
+
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
-    private static final String PROFILES_SKELETON =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //NO18N
-"<profilesXml xmlns=\"http://maven.apache.org/PROFILES/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
-"  xsi:schemaLocation=\"http://maven.apache.org/PROFILES/1.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
-"</profilesXml>";//NO18N
-    //a copy is in CustomizerProviderImpl
 
     /**
      * 
@@ -141,8 +137,9 @@ public class Utilities {
             DataObject dObject = DataObject.find(modelSourceFileObject);
             EditorCookie ec = dObject.getCookie(EditorCookie.class);
             Document doc = ec.openDocument();
-            if(doc instanceof BaseDocument)
+            if (doc instanceof BaseDocument) {
                 return doc;
+            }
             
             
 //            result = new org.netbeans.editor.BaseDocument(
@@ -239,7 +236,7 @@ public class Utilities {
      * @param model
      * @throws java.io.IOException if saving fails.
      */
-    public static void saveChanges(AbstractDocumentModel model) throws IOException {
+    public static void saveChanges(AbstractDocumentModel<?> model) throws IOException {
         if (model.isIntransaction()) {
             model.endTransaction();
         }
@@ -259,23 +256,22 @@ public class Utilities {
             if (fParentFo != null) {
                 FileSystem fs = parentFo.getFileSystem();
                 fs.runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
+                    public @Override void run() throws IOException {
+                        String text;
+                        try {
+                            text = doc.getText(0, doc.getLength());
+                        } catch (BadLocationException x) {
+                            throw new IOException(x);
+                        }
                         FileObject fo = fParentFo.getFileObject(file.getName());
                         if (fo == null) {
                             fo = fParentFo.createData(file.getName());
                         }
-                        OutputStream out = null;
+                        OutputStream os = fo.getOutputStream();
                         try {
-                            String text = doc.getText(0, doc.getLength());
-                            //TODO how is encoding handled??
-                            StringInputStream in = new StringInputStream(text);
-                            out = fo.getOutputStream();
-                            FileUtil.copy(in, out);
-                            out.close();
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            os.write(text.getBytes(FileEncodingQuery.getEncoding(fo)));
                         } finally {
-                            IOUtil.close(out);
+                            os.close();
                         }
                     }
                 });
@@ -298,7 +294,7 @@ public class Utilities {
      * @param pomFileObject
      * @param operations
      */
-    public static void performPOMModelOperations(FileObject pomFileObject, List<ModelOperation<POMModel>> operations) {
+    public static void performPOMModelOperations(FileObject pomFileObject, List<? extends ModelOperation<POMModel>> operations) {
         assert pomFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(pomFileObject);
@@ -326,7 +322,7 @@ public class Utilities {
                 }
             }
         } else {
-            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Cannot create model from current content of " + pomFileObject);
+            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Cannot create model from current content of {0}", pomFileObject);
         }
     }
 
@@ -336,7 +332,7 @@ public class Utilities {
      * @param profilesFileObject
      * @param operations
      */
-    public static void performSettingsModelOperations(FileObject settingsFileObject, List<ModelOperation<SettingsModel>> operations) {
+    public static void performSettingsModelOperations(FileObject settingsFileObject, List<? extends ModelOperation<SettingsModel>> operations) {
         assert settingsFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(settingsFileObject);

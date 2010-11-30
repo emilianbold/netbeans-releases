@@ -52,6 +52,7 @@ public class CndPathUtilititiesTest {
 
     @Test
     public void testGetPathNameArray() {
+        CndPathUtilitities.testSetWindows(true);
         assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
                      CndPathUtilitities.getPathNameArray("C:\\tmp\\test.cpp")); // NOI18N
         assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
@@ -66,6 +67,7 @@ public class CndPathUtilititiesTest {
 
     @Test
     public void testIsPathAbsolute() {
+        CndPathUtilitities.testSetWindows(true);
         assertTrue(CndPathUtilitities.isPathAbsolute("C:\\tmp\\test.cpp")); // NOI18N
         assertTrue(CndPathUtilitities.isPathAbsolute("C:/tmp/test.cpp")); // NOI18N
         assertTrue(CndPathUtilitities.isPathAbsolute("C:/./test.cpp")); // NOI18N

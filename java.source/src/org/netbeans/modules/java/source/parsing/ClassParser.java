@@ -57,7 +57,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -71,7 +70,9 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 //@NotThreadSafe
-class ClassParser extends Parser {
+public class ClassParser extends Parser {
+    
+    public static final String MIME_TYPE = "application/x-class-file";  //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(Parser.class.getName());
     
@@ -80,7 +81,7 @@ class ClassParser extends Parser {
     private final ChangeSupport changeSupport;
     private final ClasspathInfoListener cpInfoListener;
 
-    public ClassParser(ClasspathInfo info) {
+    ClassParser(ClasspathInfo info) {
         assert info != null;
         this.info = info;
         this.changeSupport = new ChangeSupport(this);

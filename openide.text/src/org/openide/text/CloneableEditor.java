@@ -117,7 +117,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * and initialization time. */
     private int cursorPosition = -1;
     
-    private final Object CLOSE_LAST_LOCK = new Object();
+    private final boolean[] CLOSE_LAST_LOCK = new boolean[1];
 
     private static List<AWTQuery> tbdList = Collections.synchronizedList(new ArrayList<AWTQuery>());
 
@@ -327,10 +327,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             switch (phase++) {
             case 0:
                 synchronized (CLOSE_LAST_LOCK) {
-                    phase = initNonVisual(phase);
-                    if (phase == Integer.MAX_VALUE) {
-                        break;
+                    CLOSE_LAST_LOCK[0] = true;
+                }
+                phase = initNonVisual(phase);
+                synchronized (CLOSE_LAST_LOCK) {
+                    if (!CLOSE_LAST_LOCK[0]) {
+                        support.notifyClosed();
+                        phase = Integer.MAX_VALUE;
                     }
+                    CLOSE_LAST_LOCK[0] = false;
+                }
+                if (phase == Integer.MAX_VALUE) {
+                    break;
                 }
                 if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
@@ -872,7 +880,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         // close everything and do not ask
         synchronized (CLOSE_LAST_LOCK) {
-            support.notifyClosed();
+            if (CLOSE_LAST_LOCK[0]) {
+                CLOSE_LAST_LOCK[0] = false;
+            } else {
+                support.notifyClosed();
+            }
         }
 
         if (support.getLastSelected() == this) {

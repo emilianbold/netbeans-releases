@@ -44,9 +44,12 @@ package org.netbeans.modules.openide.util;
 
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -63,8 +66,13 @@ public final class ProxyURLStreamHandlerFactory implements URLStreamHandlerFacto
     /** prevents GC only */
     private final Map<String, Lookup.Result<URLStreamHandler>> results = new HashMap<String, Lookup.Result<URLStreamHandler>>();
     private final Map<String, URLStreamHandler> handlers = new HashMap<String, URLStreamHandler>();
+    private static final Set<String> STANDARD_PROTOCOLS = new HashSet<String>(Arrays.asList("jar", "file", "http", "https", "resource")); // NOI18N
 
     public @Override synchronized URLStreamHandler createURLStreamHandler(final String protocol) {
+        if (STANDARD_PROTOCOLS.contains(protocol)) {
+            // Well-known handlers in JRE. Do not try to initialize lookup.
+            return null;
+        }
         if (!results.containsKey(protocol)) {
             final Lookup.Result<URLStreamHandler> result = Lookups.forPath(URLStreamHandlerRegistrationProcessor.REGISTRATION_PREFIX + protocol).lookupResult(URLStreamHandler.class);
             LookupListener listener = new LookupListener() {

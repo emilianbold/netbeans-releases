@@ -145,7 +145,7 @@ public class JoinCatches {
 
             for (CatchTree ct : tt.getCatches()) {
                 if (c == first) {
-                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjointType(disjointTypes));
+                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjunctiveType(disjointTypes));
                     wc.rewrite(ct.getParameter().getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));
                 }
                 

@@ -214,10 +214,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return new HelpCtx("NewAppWizard"); // NOI18N
     }
 
-    public CompilerSet getProjectCompilerSet() {
-        return (CompilerSet) this.toolchainComboBox.getSelectedItem();
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -449,7 +445,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             ServerRecord newItem = (ServerRecord) evt.getItem();
-            updateToolchains(this.toolchainComboBox, newItem);
+            updateToolchains(toolchainComboBox, newItem);
             controller.fireChangeEvent(); // Notify that the panel changed
         }
     }
@@ -458,10 +454,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         // change toolchains
         CompilerSetManager csm = CompilerSetManager.get(newItem.getExecutionEnvironment());
         toolchainComboBox.removeAllItems();
-        for (CompilerSet compilerSet : csm.getCompilerSets()) {
-            toolchainComboBox.addItem(compilerSet);
+        CompilerSet defaultCompilerSet  = csm.getDefaultCompilerSet();
+        if (defaultCompilerSet != null) {
+            toolchainComboBox.addItem(new ToolCollectionItem(defaultCompilerSet, true));
         }
-        toolchainComboBox.setSelectedItem(csm.getDefaultCompilerSet());
+        for (CompilerSet compilerSet : csm.getCompilerSets()) {
+            toolchainComboBox.addItem(new ToolCollectionItem(compilerSet, false));
+        }
+        if (toolchainComboBox.getModel().getSize() > 0) {
+            toolchainComboBox.setSelectedIndex(0);
+        }
     }//GEN-LAST:event_hostComboBoxItemStateChanged
 
     @Override
@@ -676,7 +678,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             ServerRecord sr = (ServerRecord)obj;
             d.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment()));
         }
-        d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, toolchainComboBox.getSelectedItem());
+        Object selectedItem = toolchainComboBox.getSelectedItem();
+        if (selectedItem instanceof ToolCollectionItem) {
+            ToolCollectionItem item = (ToolCollectionItem) selectedItem;
+            d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, item.getCompilerSet());
+            d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, item.isDefaultCompilerSet());
+        }
     }
 
     @Override
@@ -905,10 +912,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             if (loadingMarker.equals(value)) {
                 label.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "Loading_Toolchain_Text")); // NOI18N
             } else {
-                CompilerSet cs = (CompilerSet) value;
-                if (cs != null) {
-                    label.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "Toolchain_Name_Text", cs.getName(), cs.getDisplayName())); // NOI18N
-                }
+                label.setText(value.toString());
             }
             return label;
         }
@@ -970,4 +974,30 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         public abstract void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled);
     }
 
+    public final static class ToolCollectionItem {
+        private final boolean defaultCompilerSet;
+        private final CompilerSet compilerSet;
+        private ToolCollectionItem(CompilerSet compilerSet, boolean defaultCompilerSet){
+            this.defaultCompilerSet = defaultCompilerSet;
+            this.compilerSet = compilerSet;
+        }
+
+        @Override
+        public String toString() {
+            String name = NbBundle.getMessage(PanelProjectLocationVisual.class, "Toolchain_Name_Text", compilerSet.getName(), compilerSet.getDisplayName());
+            if (isDefaultCompilerSet()) {
+                return getString("DefaultToolCollection")+" ("+name+")";
+            } else {
+                return name;
+            }
+        }
+
+        public boolean isDefaultCompilerSet() {
+            return defaultCompilerSet;
+        }
+
+        public CompilerSet getCompilerSet() {
+            return compilerSet;
+        }
+    }
 }

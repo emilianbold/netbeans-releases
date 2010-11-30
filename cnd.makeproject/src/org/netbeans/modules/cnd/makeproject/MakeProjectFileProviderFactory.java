@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +56,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -74,14 +77,15 @@ import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -115,7 +119,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 projectSearchBase.remove(folder);
             } else {
                 if (list.isEmpty()) {
-                    projectSearchBase.put(folder, Collections.<CharSequence>emptyList());
+                    projectSearchBase.put(folder, new ArrayList<CharSequence>(0));
                 } else {
                     projectSearchBase.put(folder, list);
                 }
@@ -212,7 +216,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             computeFiles(project, descriptor, matcher, result);
                         }
                     }
-                    return true;
+                    return false;
                 }
             }
             return false;
@@ -369,20 +373,83 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
     }
 
-    private static final class ItemFD extends FileDescriptor {
+    private static abstract class FDImpl extends FileDescriptor {
+        private final String fileName;
+        private final String prjName;
+
+        public FDImpl(String fileName, String prjName) {
+            this.fileName = fileName;
+            this.prjName = prjName;
+        }
+        
+        @Override
+        public final String getFileName() {
+            return fileName;
+        }
+        
+        @Override
+        public final String getProjectName() {
+            return prjName;
+        }   
+        
+        @Override
+        public final Icon getProjectIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+        }       
+        
+        @Override
+        public final void open() {
+            DataObject od = getDataObject();
+            if (od != null) {
+                // use trick due to CR7002932
+                EditorCookie erc = od.getCookie(EditorCookie.class);
+                if (erc != null) {
+                    try {
+                        try {
+                            erc.openDocument();
+                        } catch (UserQuestionException e) {
+                            e.confirmed();
+                            erc.openDocument();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    erc.open();
+                } else {
+                    Editable ec = od.getLookup().lookup(Editable.class);
+                    if (ec != null) {
+                        ec.edit();
+                    } else {
+                        Openable oc = od.getLookup().lookup(Openable.class);
+                        if (oc != null) {
+                            oc.open();
+                        }
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public final Icon getIcon() {
+            DataObject od = getDataObject();
+            if (od != null) {
+                Image i = od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+                return new ImageIcon(i);
+            }
+            return null;
+        }
+        
+        protected abstract DataObject getDataObject();
+        
+    }
+    
+    private static final class ItemFD extends FDImpl {
 
         private final Item item;
-        private final Project project;
 
         public ItemFD(Item item, Project project) {
+            super(item.getName(), ((MakeProject)project).getName());
             this.item = item;
-            this.project = project;
-        }
-
-
-        @Override
-        public String getFileName() {
-            return item.getName();
         }
 
         @Override
@@ -400,64 +467,28 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
 
         @Override
-        public Icon getIcon() {
-            DataObject od = item.getDataObject();
-            if (od != null) {
-                Image i = od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-                return new ImageIcon(i);
-            }
-            return null;
-        }
-
-        @Override
-        public String getProjectName() {
-            return ((MakeProject)project).getName();
-        }
-
-        @Override
-        public Icon getProjectIcon() {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
-        }
-
-        @Override
-        public void open() {
-            DataObject od = item.getDataObject();
-            if (od != null) {
-                EditCookie ec = od.getCookie(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
-                } else {
-                    OpenCookie oc = od.getCookie(OpenCookie.class);
-                    if (oc != null) {
-                        oc.open();
-                    }
-                }
-            }
-        }
-
-        @Override
         public FileObject getFileObject() {
             return item.getFileObject();
         }
+
+        @Override
+        protected DataObject getDataObject() {
+            return item.getDataObject();
+        }
     }
 
-    private static final class OtherFD extends FileDescriptor {
+    private static final class OtherFD extends FDImpl {
 
         private final String name;
         private final Project project;
         private final Folder folder;
         private final String baseDir;
         public OtherFD(String name, Project project, String baseDir, Folder folder) {
+            super(name, ((MakeProject)project).getName());
             this.name = name;
             this.project = project;
             this.folder = folder;
             this.baseDir = baseDir;
-        }
-
-
-        @Override
-        public String getFileName() {
-            return name;
         }
 
         @Override
@@ -466,42 +497,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
 
         @Override
-        public Icon getIcon() {
-            DataObject od = getDataObject();
-            if (od != null) {
-                Image i = od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-                return new ImageIcon(i);
-            }
-            return null;
-        }
-
-        @Override
-        public String getProjectName() {
-            return ((MakeProject)project).getName();
-        }
-
-        @Override
-        public Icon getProjectIcon() {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
-        }
-
-        @Override
-        public void open() {
-            DataObject od = getDataObject();
-            if (od != null) {
-                EditCookie ec = od.getCookie(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
-                } else {
-                    OpenCookie oc = od.getCookie(OpenCookie.class);
-                    if (oc != null) {
-                        oc.open();
-                    }
-                }
-            }
-        }
-
-        private DataObject getDataObject(){
+        protected DataObject getDataObject(){
             try {
                 FileObject fo = getFileObject();
                 if (fo != null && fo.isValid()) {

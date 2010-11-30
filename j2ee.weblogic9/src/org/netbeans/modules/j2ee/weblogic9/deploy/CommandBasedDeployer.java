@@ -90,6 +90,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 
@@ -679,13 +680,14 @@ public final class CommandBasedDeployer {
         // TODO configurable ? or use the jdk server is running on ?
         JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = "java"; // NOI18N
+        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
         if (folders.size() > 0) {
             FileObject folder = folders.iterator().next();
             File file = FileUtil.toFile(folder);
             if (file != null) {
                 javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator + "java"; // NOI18N
+                        + "bin" + File.separator
+                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
             }
         }
         return javaBinary;

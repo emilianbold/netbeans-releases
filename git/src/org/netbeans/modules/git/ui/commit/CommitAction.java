@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -60,7 +61,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
@@ -68,27 +72,46 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.git.ui.commit.CommitAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_CommitAction_Name")
 public class CommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
 
     @Override
     protected void performAction (final File repository, final File[] roots, final VCSContext context) {
-
+        if (!canCommit(repository)) {
+            return;
+        }
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        final GitRepositoryState state = info.getRepositoryState();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -101,22 +124,25 @@ public class CommitAction extends SingleRepositoryAction {
                     LOG.log(Level.WARNING, null, ex);
                 }
                 
-                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, user, context);
+                final GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
+                        ? GitCommitPanelMerged.create(roots, repository, user)
+                        : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
                 if (ok) {
-                    final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
+                    final List<VCSFileNode> commitFiles = table.getCommitFiles();
 
                     GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
                     panel.getParameters().storeCommitMessage();
 
+                    final VCSCommitFilter selectedFilter = panel.getSelectedFilter();
                     RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
                     GitProgressSupport support = new GitProgressSupport() {
                         @Override
                         public void perform() {
                             try {
-                                performCommit(panel.getParameters(), commitFiles, panel.getSelectedFilter(), getClient(), this, panel.getHooks());
+                                performCommit(panel.getParameters(), commitFiles, selectedFilter, getClient(), this, panel.getHooks(), state);
                             } catch (GitException ex) {
                                 LOG.log(Level.WARNING, null, ex);
                                 return;
@@ -129,13 +155,15 @@ public class CommitAction extends SingleRepositoryAction {
         });
     }
 
+    //TODO this should be inside the GitProgressSupport, thus all the parameters won't be needed. There's no need to have these dozens of static methods
     private static void performCommit(
             GitCommitParameters parameters, 
-            Map<VCSFileNode, VCSCommitOptions> commitFiles,
+            List<VCSFileNode> commitFiles,
             VCSCommitFilter filter,
             GitClient client, 
             GitProgressSupport support, 
-            Collection<GitHook> hooks) 
+            Collection<GitHook> hooks,
+            GitRepositoryState state)
     {
        
         List<File> addCandidates = new LinkedList<File>();
@@ -164,10 +192,13 @@ public class CommitAction extends SingleRepositoryAction {
                 client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, support);           
             }            
             
+            if(GitModuleConfig.getDefault().getSignOff() && commiter != null) {
+                message += "\nSigned-off-by:" + GitCommitParameters.getUserString(commiter); // NOI18N
+            }
             String origMessage = message;
             message = beforeCommitHook(commitCandidates, hooks, message);
-            
-            GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support);
+                        
+            GitRevisionInfo info = commit(commitCandidates, client, message, author, commiter, support, state);
             
             GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
             GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
@@ -189,7 +220,7 @@ public class CommitAction extends SingleRepositoryAction {
 
     private static void populateCandidates(
             VCSCommitFilter filter,
-            Map<VCSFileNode, VCSCommitOptions> commitFiles, 
+            List<VCSFileNode> commitFiles, 
             List<File> addCandidates,
             List<File> deleteCandidates,
             List<File> commitCandidates,
@@ -198,7 +229,7 @@ public class CommitAction extends SingleRepositoryAction {
         List<String> excPaths = new ArrayList<String>();        
         List<String> incPaths = new ArrayList<String>();
         
-        Iterator<VCSFileNode> it = commitFiles.keySet().iterator();
+        Iterator<VCSFileNode> it = commitFiles.iterator();
         while (it.hasNext()) {
             if (support.isCanceled()) {
                 return;
@@ -206,7 +237,7 @@ public class CommitAction extends SingleRepositoryAction {
             GitFileNode node = (GitFileNode) it.next();
             FileInformation info = node.getInformation();
              
-            VCSCommitOptions option = commitFiles.get(node);
+            VCSCommitOptions option = node.getCommitOptions();
             File file = node.getFile();
             if (option != VCSCommitOptions.EXCLUDE) {                
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||
@@ -270,49 +301,12 @@ public class CommitAction extends SingleRepositoryAction {
         }
     }
       
-    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support) throws GitException {  
-        try {                          
-            return client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
+    private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support, GitRepositoryState state) throws GitException {
+        try {
+            return client.commit(state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
         } catch (GitException ex) {
-            // XXX
-//                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
-//                        // committing after a merge, all modified files have to be committed, even excluded files
-//                        // ask the user for confirmation
-//                        if (support.isCanceled()) {
-//                            return;
-//                        } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
-//                            return;
-//                        } else {
-//                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
-//                            refreshFiles = new HashSet<File>(Git.getInstance().getSeenRoots(repository));
-//                            commitAfterMerge = true;
-//                        }
-//                    } else {
-//                        throw ex;
-//                    }
             throw ex;
         } 
-        
-// XXX
-//        if (commitAfterMerge) {
-//            support.getLogger().output(
-//                    NbBundle.getMessage(CommitAction.class,
-//                    "MSG_COMMITED_FILES_AFTER_MERGE"));         //NOI18N
-//        } else {
-//            if (commitCandidates.size() == 1) {
-//                support.getLogger().output(
-//                        NbBundle.getMessage(CommitAction.class,
-//                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); //NOI18N
-//            } else {
-//                support.getLogger().output(
-//                        NbBundle.getMessage(CommitAction.class,
-//                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); //NOI18N
-//            }
-//            for (File f : commitCandidates) {
-//                support.getLogger().output("\t" + f.getAbsolutePath());      //NOI18N
-//            }
-//        }
-        // XXX HgUtils.logHgLog(tip, logger);
     }
         
     private static void refreshFS (final Collection<File> filesToRefresh) {
@@ -322,6 +316,61 @@ public class CommitAction extends SingleRepositoryAction {
                 FileUtil.refreshFor(filesToRefresh.toArray(new File[filesToRefresh.size()]));
             }
         }, 100);
-    }    
-    
+    }
+
+    private boolean canCommit (File repository) {
+        boolean commitPermitted = true;
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        GitRepositoryState state = info.getRepositoryState();
+        if (!state.canCommit()) {
+            commitPermitted = false;
+            Map<File, GitStatus> conflicts = Collections.emptyMap();
+            if (state.equals(GitRepositoryState.MERGING)) {
+                try {
+                    GitClient client = Git.getInstance().getClient(repository);
+                    conflicts = client.getConflicts(new File[] { repository }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+            }
+            NotifyDescriptor nd;
+            if (conflicts.isEmpty()) {
+                nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "LBL_CommitAction_CommitNotAllowed_State", state.toString()), //NOI18N
+                        NbBundle.getMessage(CommitAction.class, "LBL_CommitAction_CannotCommit"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE); //NOI18N
+            } else {
+                nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "LBL_CommitAction_CommitNotAllowed_Conflicts"), //NOI18N
+                        NbBundle.getMessage(CommitAction.class, "LBL_CommitAction_CannotCommit"), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE); //NOI18N
+            }
+            Object retval = DialogDisplayer.getDefault().notify(nd);
+            if (retval == NotifyDescriptor.YES_OPTION) {
+                List<Node> nodes = new LinkedList<Node>();
+                for (Map.Entry<File, GitStatus> conflict : conflicts.entrySet()) {
+                    Node node = new AbstractNode(Children.LEAF, Lookups.fixed(conflict.getKey()));
+                    nodes.add(node);
+                    // this will refresh seen roots
+                }
+                Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, conflicts.keySet()));
+                final VCSContext context = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemAction.get(StatusAction.class).performContextAction(context);
+                    }
+                });
+            }
+        }
+        return commitPermitted;
+    }
+
+    protected boolean isFromGitView (VCSContext context) {
+        return GitUtils.isFromInternalView(context);
+    }
+
+    public static class GitViewCommitAction extends CommitAction {
+        @Override
+        protected boolean isFromGitView(VCSContext context) {
+            return true;
+        }
+    }
+
 }

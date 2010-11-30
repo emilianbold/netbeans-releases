@@ -44,12 +44,11 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
 import java.util.List;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemManager;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.AbstractNode;
@@ -99,7 +98,7 @@ public class FileSystemRootNode extends AbstractNode {
     }
 
     private static FileObject getRootFileObject(ExecutionEnvironment env) {
-        FileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+        FileSystem fs = FileSystemProvider.getFileSystem(env);
         FileObject fo = fs.getRoot();
         return fo;
     }

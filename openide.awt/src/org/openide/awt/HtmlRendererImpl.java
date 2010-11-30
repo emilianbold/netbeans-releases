@@ -53,6 +53,8 @@ import java.beans.VetoableChangeListener;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -546,7 +548,13 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         if (b == null) {
             result = EMPTY_INSETS;
         } else {
-            result = b.getBorderInsets(this);
+            //workaround for open jdk bug, see issue #192388
+            try {
+                result = b.getBorderInsets(this);
+            } catch( NullPointerException e ) {
+                Logger.getLogger(HtmlRendererImpl.class.getName()).log(Level.FINE, null, e);
+                result = EMPTY_INSETS;
+            }
         }
 
         return result;

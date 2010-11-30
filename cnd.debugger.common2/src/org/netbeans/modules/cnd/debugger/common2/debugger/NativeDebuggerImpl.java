@@ -53,6 +53,7 @@ import java.util.List;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.SwingUtilities;
 
 import org.openide.text.Line;
 
@@ -375,7 +376,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * - debuggercore now multiplexes action enabledness between sessions
      *   for us so all the accomodation and worries about that are gone.
      */
-    protected List<StateListener> actions = new LinkedList<StateListener>();
+    protected final List<StateListener> actions = new LinkedList<StateListener>();
     protected javax.swing.Timer runTimer;		// see stateSetRunning()
     protected int runDelay = -1;	// -1 == first time through
 
@@ -428,15 +429,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Each action decides on it's own what it needs to do.
      */
     protected void updateActions() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // update explicitly registered actions
+                for (StateListener action : actions) {
+                    action.update(state);
+                }
 
-        // update explicitly registered actions
-        for (int ax = 0; ax < actions.size(); ax++) {
-            StateListener action = actions.get(ax);
-            action.update(state);
-        }
-
-        // update actions managed by ActionEnabler
-        actionEnabler().update(state);
+                // update actions managed by ActionEnabler
+                actionEnabler().update(state);
+            }
+        });
     }
 
     /**
@@ -751,11 +754,19 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * session switching when they have been removed.
      */
     protected final void deleteMarkLocations() {
-        setCurrentLine(null, false, false, true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setCurrentLine(null, false, false, true);
+            }
+        });
     }
 
     protected final void resetCurrentLine() {
-        setCurrentLine(null, false, false, true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setCurrentLine(null, false, false, true);
+            }
+        });
     }
 
     protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
@@ -796,7 +807,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     // A kind of a HACK which allows registerDisassemblerWindow to know whether
     // it was called by clicking tabs or via other switching actions.
-    protected boolean viaShowLocation = false;
+    protected volatile boolean viaShowLocation = false;
 
     /**
      * Show the current visiting location in the editor area.
@@ -805,40 +816,43 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Else, if user has requested disassembly or no source information is
      * available, bring up the disassembler.
      */
-    private void updateLocation(boolean andShow) {
-	if (isSrcRequested() && haveSource()) {
-	    // this will cause registerDisassemblerWindow(null) to get called
-	    try {
-		viaShowLocation = true;
-		disassemblerWindow().componentHidden();
-	    } finally {
-		viaShowLocation = false;
-	    }
+    private void updateLocation(final boolean andShow) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (isSrcRequested() && haveSource()) {
+                    // this will cause registerDisassemblerWindow(null) to get called
+                    try {
+                        viaShowLocation = true;
+                        disassemblerWindow().componentHidden();
+                    } finally {
+                        viaShowLocation = false;
+                    }
 
-	    // Locations should already be in local path form.
-	    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
-            Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
-            if (l != null) {
-                setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), andShow);
+                    // Locations should already be in local path form.
+                    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
+                    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
+                    if (l != null) {
+                        setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), andShow);
+                    }
+                } else {
+                    setCurrentLine(null, false, false, andShow);
+
+                    if (getVisitedLocation() != null) {
+                        disStateModel().updateStateModel(getVisitedLocation(), true);
+
+                        // this will cause registerDisassemblerWindow(...) to get called
+                        try {
+                            viaShowLocation = true;
+                            disassemblerWindow().open();
+        // CR 6986846	    disassemblerWindow().requestActive();
+                            disassemblerWindow().componentShowing();
+                        } finally {
+                            viaShowLocation = false;
+                        }
+                    }
+                }
             }
-
-	} else {
-            setCurrentLine(null, false, false, andShow);
-
-	    if (getVisitedLocation() != null) {
-		disStateModel().updateStateModel(getVisitedLocation(), true);
-
-		// this will cause registerDisassemblerWindow(...) to get called
-		try {
-		    viaShowLocation = true;
-		    disassemblerWindow().open();
-// CR 6986846	    disassemblerWindow().requestActive();
-		    disassemblerWindow.componentShowing();
-		} finally {
-		    viaShowLocation = false;
-		}
-	    }
-	}
+        });
     }
 
     private void setSrcRequested(boolean srcRequested) {
@@ -1513,19 +1527,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 	 */
 
-	String csname;
-        if (csconf.isValid()) {
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
-        } else {
-            csname = csconf.getOldName();
-
-
+        cs = csconf.getCompilerSet();
+	String csname = csconf.getOption();
+        if (cs == null) {
             final int platform = conf.getPlatformInfo().getPlatform();
             CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
             flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
             cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
-            csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
         if (debuggerTool != null)
