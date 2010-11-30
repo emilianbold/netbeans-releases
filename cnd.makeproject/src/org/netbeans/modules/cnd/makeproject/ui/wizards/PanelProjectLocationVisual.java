@@ -590,12 +590,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
             if (CndFileUtils.isValidLocalFile(destFolder.getPath(), makefileTextField.getText())) {
                 // Folder exists and is not empty
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_MakefileExists", makefileTextField.getText()));  // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", makefileTextField.getText()));  // NOI18N
                 return false;
             }
             if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
                 // Folder exists and is not empty
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_MakefileExists", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
                 return false;
             }
             if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
