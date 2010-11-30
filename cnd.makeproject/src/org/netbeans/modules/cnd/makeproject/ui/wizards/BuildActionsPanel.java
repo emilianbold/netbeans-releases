@@ -153,21 +153,21 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (buildCommandWorkingDirTextField.getText().length() == 0) {
             String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
             controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-            return false;
+            //return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
                     || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), controller.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-                return false;
+                //return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-                return false;
+                //return false;
             }
         }
         return true;

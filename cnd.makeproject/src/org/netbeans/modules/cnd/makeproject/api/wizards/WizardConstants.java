@@ -80,6 +80,7 @@ public class WizardConstants {
     public static final String PROPERTY_MACROS = "macroTextField"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_PATH = "configureName"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_ARGS = "configureArguments"; // String // NOI18N
+    public static final String PROPERTY_CONFIGURE_RUN_FOLDER = "configureRunFolder"; // String // NOI18N
     public static final String PROPERTY_RUN_CONFIGURE = "runConfigure"; // String // NOI18N
     public static final String PROPERTY_CONSOLIDATION_LEVEL = "consolidationLevel"; // String // NOI18N
     public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N
