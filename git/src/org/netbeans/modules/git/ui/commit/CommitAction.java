@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -183,7 +184,6 @@ public class CommitAction extends SingleRepositoryAction {
 
             support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE")); // NOI18N
             support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE_SEP")); // NOI18N
-            support.output(message); // NOI18N
 
             if(addCandidates.size() > 0) {
                 client.add(addCandidates.toArray(new File[addCandidates.size()]), support);
@@ -303,12 +303,60 @@ public class CommitAction extends SingleRepositoryAction {
       
     private static GitRevisionInfo commit(List<File> commitCandidates, GitClient client, String message, GitUser author, GitUser commiter, GitProgressSupport support, GitRepositoryState state) throws GitException {
         try {
-            return client.commit(state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
+            GitRevisionInfo info = client.commit(state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]), message, author, commiter, support);
+            printInfo(info, support);
+            return info;
         } catch (GitException ex) {
             throw ex;
         } 
     }
+
+    private static void printInfo (GitRevisionInfo info, GitProgressSupport support) {
+        String lbrevision = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.revision");   // NOI18N
+        String lbauthor =      NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.author");      // NOI18N
+        String lbcommitter =      NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.committer");      // NOI18N
+        String lbdate =      NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.date");        // NOI18N
+        String lbsummary =   NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.summary");     // NOI18N
         
+        String author = info.getAuthor().toString();
+        String committer = info.getCommitter().toString();
+        StringBuilder sb = new StringBuilder("\n").append(NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.title")).append("\n"); //NOI18N
+        sb.append(lbrevision);
+        sb.append(info.getRevision());
+        sb.append('\n'); // NOI18N
+        sb.append(lbauthor);
+        sb.append(author);
+        sb.append('\n'); // NOI18N
+        if (!author.equals(committer)) {
+            sb.append(lbcommitter);
+            sb.append(committer);
+            sb.append('\n'); // NOI18N
+        }
+        sb.append(lbdate);
+        sb.append(DateFormat.getDateTimeInstance().format(new Date(info.getCommitTime())));
+        sb.append('\n'); // NOI18N
+        sb.append(lbsummary);
+        int prefixLen = lbsummary.length();
+        sb.append(formatMultiLine(prefixLen, info.getFullMessage()));
+        sb.append('\n'); // NOI18N
+
+        support.getLogger().output(sb.toString());
+    }
+
+    private static String formatMultiLine (int prefixLen, String message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < prefixLen; ++i) {
+            sb.append(" "); //NOI18N
+        }
+        String prefix = sb.toString();
+        String[] lines = message.split("\n"); //NOI18N
+        sb = new StringBuilder(lines.length > 0 ? lines[0] : ""); //NOI18N
+        for (int i = 1; i < lines.length; ++i) {
+            sb.append("\n").append(prefix).append(lines[i]); //NOI18N
+        }
+        return sb.toString();
+    }
+
     private static void refreshFS (final Collection<File> filesToRefresh) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
