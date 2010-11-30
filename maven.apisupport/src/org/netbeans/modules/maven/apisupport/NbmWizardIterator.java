@@ -130,7 +130,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         return new NbmWizardIterator(NB_SUITE_ARCH);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
             return new WizardDescriptor.Panel[] {
                 ArchetypeWizards.basicWizardPanel(vg, false, archetype),
@@ -252,7 +252,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); //NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
             }
@@ -267,7 +267,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     @Override
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(NbmWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+                new Object[] {index + 1, panels.length});
     }
     
     @Override
@@ -334,7 +334,6 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 if (prj == null) {
                     return;
                 }
-                NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
                     public @Override void performOperation(POMModel model) {
                         Repository repo = model.getFactory().createRepository();
