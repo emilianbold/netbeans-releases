@@ -337,6 +337,7 @@ implements Runnable, ExplorerManager.Provider {
 
     /** Gets default instance. Don't use directly, it reserved for deserialization routines only,
      * e.g. '.settings' file in xml layer, otherwise you can get non-deserialized instance. */
+    @Registration(mode="explorer", openAtStartup=false, position=300)
     public static synchronized Tab getDefault() {
         if (DEFAULT == null) {
             DEFAULT = new Tab();
