@@ -146,8 +146,17 @@ public final class RepositoryPreferences {
             synchronized (infoCache) {
                 for (FileObject fo : repoFolder.getChildren()) {
                     if (!infoCache.containsKey(fo)) {
-                        RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
-                        infoCache.put(fo, ri);
+                        try {
+                            RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
+                            infoCache.put(fo, ri);
+                        } catch (IllegalArgumentException x) {
+                            LOG.log(Level.INFO, fo.getPath(), x);
+                            try {
+                                fo.delete();
+                            } catch (IOException x2) {
+                                LOG.log(Level.INFO, null, x2);
+                            }
+                        }
                     }
                 }
                 HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());

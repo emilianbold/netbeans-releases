@@ -79,7 +79,9 @@ public final class RepositoryInfo {
         }
         this.repositoryUrl = repositoryUrl;
         this.indexUpdateUrl = indexUpdateUrl != null ? indexUpdateUrl : repositoryUrl != null ? repositoryUrl + DEFAULT_INDEX_SUFFIX : null;
-        assert isLocal() ^ isRemoteDownloadable() : "Cannot have both local and remote index fields filled in. Repository: " + id + " Path=" + repositoryPath + " Remote URL:" + indexUpdateUrl;
+        if (!isLocal() ^ isRemoteDownloadable()) {
+            throw new IllegalArgumentException("Cannot have both local and remote index fields filled in. Repository: " + id + " Path=" + repositoryPath + " Remote URL:" + indexUpdateUrl);
+        }
     }
 
     public static RepositoryInfo createRepositoryInfo(FileObject fo) {
