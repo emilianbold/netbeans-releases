@@ -102,6 +102,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
     private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
+    private RequestProcessor contextWaitingProcessor = new RequestProcessor("Annotation Refresh Context Waiting", 1);
 
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
@@ -289,7 +290,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     }
     
     /** @return The annotation lines or <code>null</code>. */
-    private static int[] getAnnotationLines(JPDABreakpoint b, FileObject fo) {
+    private int[] getAnnotationLines(JPDABreakpoint b, FileObject fo) {
         if (b instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) b;
             try {
@@ -309,6 +310,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             Future<Integer> fi = EditorContextImpl.getFieldLineNumber(fo, className, fieldName);
             int line;
             if (fi != null) {
+                if (!fi.isDone()) {
+                    delayedAnnotation(b, fo, fi);
+                    return null;
+                }
                 try {
                     line = fi.get();
                 } catch (InterruptedException ex) {
@@ -334,6 +339,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                             mb.getMethodSignature());
                     int[] newlns;
                     if (futurelns != null) {
+                        if (!futurelns.isDone()) {
+                            delayedAnnotation2(b, fo, futurelns);
+                        } else
                         try {
                             newlns = futurelns.get();
                             if (lns.length == 0) {
@@ -363,6 +371,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                             fo, filters[i], cb.getClassExclusionFilters());
                     Integer newline;
                     if (futurelns != null) {
+                        if (!futurelns.isDone()) {
+                            delayedAnnotation(b, fo, futurelns);
+                        } else
                         try {
                             newline = futurelns.get();
                             if (newline == null) {
@@ -388,10 +399,49 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             throw new IllegalStateException(b.toString());
         }
     }
+
+    private void delayedAnnotation(final JPDABreakpoint b, final FileObject fo,
+                                   final Future<Integer> fi) {
+        contextWaitingProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int line = fi.get();
+                    addAnnotationTo(b, fo, new int[] { line });
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
     
+    private void delayedAnnotation2(final JPDABreakpoint b, final FileObject fo,
+                                    final Future<int[]> futurelns) {
+        contextWaitingProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int[] lines = futurelns.get();
+                    if (lines.length > 0) {
+                        addAnnotationTo(b, fo, lines);
+                    }
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
+
     // Is called under synchronized (breakpointToAnnotations)
     private void addAnnotationTo(JPDABreakpoint b, FileObject fo) {
         int[] lines = getAnnotationLines(b, fo);
+        addAnnotationTo(b, fo, lines);
+    }
+
+    // Is called under synchronized (breakpointToAnnotations)
+    private void addAnnotationTo(JPDABreakpoint b, FileObject fo, int[] lines) {
         if (lines == null || lines.length == 0) {
             return ;
         }

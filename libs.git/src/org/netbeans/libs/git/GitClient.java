@@ -178,6 +178,14 @@ public interface GitClient {
     public void init (ProgressMonitor monitor) throws GitException;
 
     /**
+     * TODO is this method really necessary?
+     * Returns files that are marked as modified between the HEAD and Index.
+     * @param roots
+     * @throws GitException when an error occurs
+     */
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove, can not be empty
      * @param cached if <code>true</code> the working tree will not be affected
