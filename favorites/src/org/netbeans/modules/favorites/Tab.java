@@ -47,7 +47,6 @@ package org.netbeans.modules.favorites;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -93,12 +92,10 @@ import org.openide.windows.WindowManager;
 /**
  * Physical tree view showing list of favorites.
  */
+@TopComponent.Description(preferredID="favorites", persistenceType=TopComponent.PERSISTENCE_ALWAYS, iconBase="org/netbeans/modules/favorites/resources/actionView.png")
 public class Tab extends TopComponent
 implements Runnable, ExplorerManager.Provider {
     static final long serialVersionUID =-8178367548546385799L;
-
-    /** data object which should be selected in EQ; synch array when accessing */
-    private static final DataObject[] needToSelect = new DataObject[1];
 
     private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
@@ -138,12 +135,6 @@ implements Runnable, ExplorerManager.Provider {
     @Override
     public ExplorerManager getExplorerManager() {
         return manager;
-    }
-    
-    /** Return preferred ID */
-    @Override
-    protected String preferredID () {
-        return "favorites"; //NOI18N
     }
     
     /** Initialize visual content of component */
@@ -208,7 +199,7 @@ implements Runnable, ExplorerManager.Provider {
         }
     }
 
-    /** Sets new root context to view. Name, icon, tooltip
+    /** Sets new root context to view. Name,  tooltip
     * of this top component will be updated properly */
     public void setRootContext (Node rc) {
         Node oldRC = getExplorerManager().getRootContext();
@@ -229,7 +220,7 @@ implements Runnable, ExplorerManager.Provider {
 
     /** Implementation of DeferredPerformer.DeferredCommand
     * Performs initialization of component's attributes
-    * after deserialization (component's name, icon etc, 
+    * after deserialization (component's name, etc, 
     * according to the root context) */
     @Override
     public void run() {
@@ -261,7 +252,6 @@ implements Runnable, ExplorerManager.Provider {
     * obtained from specified root context node */
     private void initializeWithRootContext (Node rc) {
         // update TC's attributes
-        setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
         setToolTipText(rc.getDisplayName());
         setName(rc.getDisplayName());
         updateTitle();
@@ -310,7 +300,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /** Multi - purpose listener, listens to: <br>
-    * 1) Changes of name, icon, short description of root context.
+    * 1) Changes of name, short description of root context.
     * 2) Changes of IDE settings, namely delete confirmation settings */
     private final class RootContextListener implements NodeListener {
         @Override
@@ -323,8 +313,6 @@ implements Runnable, ExplorerManager.Provider {
             if (Node.PROP_DISPLAY_NAME.equals(propName) ||
                     Node.PROP_NAME.equals(propName)) {
                 setName(n.getDisplayName());
-            } else if (Node.PROP_ICON.equals(propName)) {
-                setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
             } else if (Node.PROP_SHORT_DESCRIPTION.equals(propName)) {
                 setToolTipText(n.getShortDescription());
             }
@@ -377,13 +365,6 @@ implements Runnable, ExplorerManager.Provider {
         return DEFAULT;
     }
 
-    /** Overriden to explicitely set persistence type of ProjectsTab
-     * to PERSISTENCE_ALWAYS */
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
-    }
-    
     // ---- private implementation
     
     /** Finds a node for given data object.
