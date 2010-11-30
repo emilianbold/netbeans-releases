@@ -900,6 +900,9 @@ public class EjbJarProject implements Project, FileChangeListener {
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                props.setProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE, "true");
+            }
             if (props.getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
                 props.setProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE, 
                         props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));

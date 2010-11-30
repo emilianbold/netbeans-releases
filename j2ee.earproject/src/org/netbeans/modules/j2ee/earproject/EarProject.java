@@ -486,6 +486,9 @@ public final class EarProject implements Project, AntProjectListener {
             J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
             J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
+            if (props.getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                props.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, "true");
+            }
             if (props.getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
                 props.setProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE, 
                         props.getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
