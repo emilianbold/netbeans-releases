@@ -86,6 +86,10 @@ public class GdbDisassemblyService implements DisassemblyService {
     public boolean isDis(String url) {
         return Disassembly.isDisasm(url);
     }
+    
+    public boolean isInDis() {
+        return Disassembly.isInDisasm();
+    }
 
 //    public boolean showBreakpoint(AddressBreakpoint b) {
 //        return showLine(getBreakpointLine(b));
@@ -120,9 +124,12 @@ public class GdbDisassemblyService implements DisassemblyService {
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
-                DataObject dobj = EditorBridge.dataObjectFor(fo);
                 try {
+                    DataObject dobj = DataObject.find(fo);
                     Line disLine = EditorBridge.lineNumberToLine(dobj, line);
+                    if (isInDis()) {
+                        EditorBridge.showInEditor(disLine);
+                    }
                     pcMarker.setLine(disLine, true);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);

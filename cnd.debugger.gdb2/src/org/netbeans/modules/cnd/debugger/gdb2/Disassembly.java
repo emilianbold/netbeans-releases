@@ -140,7 +140,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final BreakpointModel.Listener breakpointListener =
 	new BreakpointModel.Listener() {
 	    public void bptUpdated() {
-		updateAnnotations(true);
+                if (opened) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateAnnotations(true);
+                        }
+                    });
+                }
 	    }
 	};
 
@@ -397,7 +403,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 try {
                     int addressLine = getAddressLine(Address.parseAddr(ibpt.getAddress()));
                     if (addressLine >= 0) {
-                        org.openide.text.Line line = EditorBridge.lineNumberToLine(getDataObject(), addressLine);
+                        DataObject dobj = DataObject.find(getFileObject());
+                        org.openide.text.Line line = EditorBridge.lineNumberToLine(dobj, addressLine);
                         annotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, true));
                     }
                 } catch (Exception ex) {
@@ -596,28 +603,18 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
-    private static DataObject getDataObject() {
+    public static boolean isInDisasm() {
+        //TODO: optimize
         FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
         if (fobj == null) {
             fobj = EditorContextDispatcher.getDefault().getMostRecentFile();
         }
-        try {
-            return DataObject.find(fobj);
-        } catch (DataObjectNotFoundException donfex) {
-            return null;
-        }
-    }
-    
-    public static boolean isInDisasm() {
-        //TODO: optimize
-        DataObject dobj = getDataObject();
-        if (dobj == null) {
-            return false;
-        }
-        try {
-            return dobj.equals(DataObject.find(getFileObject()));
-        } catch(DataObjectNotFoundException doe) {
-            doe.printStackTrace();
+        if (fobj != null) {
+            try {
+                return DataObject.find(fobj).equals(DataObject.find(getFileObject()));
+            } catch(DataObjectNotFoundException doe) {
+                doe.printStackTrace();
+            }
         }
         return false;
     }

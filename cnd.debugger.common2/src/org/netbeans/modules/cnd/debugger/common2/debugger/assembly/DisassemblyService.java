@@ -100,4 +100,6 @@ public interface DisassemblyService {
      * @return true if url is from disassembly file
      */
     boolean isDis(String url);
+    
+    boolean isInDis();
 }

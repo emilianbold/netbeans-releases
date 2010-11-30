@@ -782,12 +782,18 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             disProvider.movePC(getVisitedLocation().pc(), currentDisPCMarker);
         }
     }
+   
+    private boolean isInDis() {
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+        return disProvider != null && disProvider.isInDis();
+    }
 
     protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
 
         if (l != null) {
-	    if (andShow)
+	    if (andShow && !isInDis()) {
 		EditorBridge.showInEditor(l);
+            }
 
             if (visited) {
                 visitMarker.setLine(l, isCurrent());
