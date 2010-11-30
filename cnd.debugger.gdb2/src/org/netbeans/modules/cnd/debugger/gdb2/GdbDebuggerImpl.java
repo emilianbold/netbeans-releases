@@ -130,7 +130,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
-    private final Disassembly disassembly = new Disassembly(this);
+    private final Disassembly disassembly;
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -258,6 +258,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         profileBridge = new GdbDebuggerSettingsBridge(this);
         handlerExpert = new GdbHandlerExpert(this);
+        disassembly = new Disassembly(this, breakpointModel());
     }
 
     public String debuggerType() {
@@ -561,6 +562,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * was: sessionExited() and if(cleanup) portion of finishDebugger()
      */
     public final void kill() {
+        Disassembly.close();
         super.preKill();
 
         optionLayers().save();
@@ -3359,6 +3361,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// 6582172
 	if (update_dis)
 	    disStateModel().updateStateModel(visitedLocation, false);
+    }
+
+    @Override
+    public void requestDisassembly() {
+        Disassembly.open();
     }
 
     public void registerRegistersWindow(RegistersWindow w) {
