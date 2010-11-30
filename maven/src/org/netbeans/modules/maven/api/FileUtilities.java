@@ -217,7 +217,7 @@ public final class FileUtilities {
         if (basedir.equals(file)) {
             return "."; // NOI18N
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         File base = basedir;
         String filepath = file.getAbsolutePath();
         while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
