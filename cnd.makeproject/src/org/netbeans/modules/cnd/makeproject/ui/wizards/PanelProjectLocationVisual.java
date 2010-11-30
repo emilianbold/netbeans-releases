@@ -593,12 +593,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_MakefileExists", makefileTextField.getText()));  // NOI18N
                 return false;
             }
-            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER) ||
-                    CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.BUILD_FOLDER) ||
-                    CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.DIST_FOLDER)) {
+            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
                 // Folder exists and is not empty
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_MakefileExists", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
                 return false;
+            }
+            if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
+                if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.BUILD_FOLDER) ||
+                        CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.DIST_FOLDER)) {
+                    // Folder exists and is not empty
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
+                    return false;
+                }
             }
         }
         ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
