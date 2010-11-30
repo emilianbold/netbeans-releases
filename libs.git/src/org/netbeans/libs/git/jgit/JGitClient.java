@@ -71,6 +71,7 @@ import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
+import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -244,6 +245,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         Repository repository = gitRepository.getRepository();
         InitRepositoryCommand cmd = new InitRepositoryCommand(repository, monitor);
         cmd.execute();
+    }
+
+    @Override
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListModifiedIndexEntriesCommand cmd = new ListModifiedIndexEntriesCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getFiles();
     }
 
     /**
