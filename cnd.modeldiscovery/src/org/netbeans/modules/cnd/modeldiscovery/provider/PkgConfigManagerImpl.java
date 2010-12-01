@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.PkgConfigManager.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.class)
 public class PkgConfigManagerImpl extends PkgConfigManager {
 
     @Override
