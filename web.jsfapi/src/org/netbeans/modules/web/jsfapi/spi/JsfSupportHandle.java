@@ -59,7 +59,7 @@ public final class JsfSupportHandle {
 
     /** can be called only once per session. */
     synchronized void install(JsfSupport instance) {
-        if(instance != null) {
+        if(this.instance != null) {
             throw new IllegalStateException(
                     String.format("An instance of JsfSupport has already been installed to this project %s!",
                     FileUtil.getFileDisplayName(instance.getProject().getProjectDirectory())), caller);
