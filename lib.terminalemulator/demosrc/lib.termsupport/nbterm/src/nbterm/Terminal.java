@@ -64,7 +64,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -133,7 +132,7 @@ class Terminal extends JFrame implements Runnable {
         term.setRowsColumns(rows, cols);
 
         term.setHorizontallyScrollable(false);
-        term.setEmulation("dtterm");
+        term.setEmulation("ansi");
         term.setBackground(Color.white);
         term.setHistorySize(4000);
 
