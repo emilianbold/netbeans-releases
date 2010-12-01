@@ -985,9 +985,8 @@ public final class WebProject implements Project {
             }
             
             if (Boolean.parseBoolean(evaluator().getProperty(
-                    WebProjectProperties.J2EE_DEPLOY_ON_SAVE))) {
+                    WebProjectProperties.J2EE_COMPILE_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
-                // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
 
@@ -1016,6 +1015,12 @@ public final class WebProject implements Project {
             filterBrokenLibraryRefs();
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+            if (props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                String server = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                props.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                    server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
+            }
+            
             if (props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
                 props.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE, 
                         props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
@@ -1995,7 +2000,7 @@ public final class WebProject implements Project {
         boolean setCoSEnabledAndXor()
         {
             boolean nue = Boolean.parseBoolean(project.evaluator().getProperty(
-                                     WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+                                     WebProjectProperties.J2EE_COMPILE_ON_SAVE));
             boolean old = cosEnabled.getAndSet(nue);
 
             return old != nue;
