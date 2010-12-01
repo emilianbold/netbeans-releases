@@ -478,7 +478,7 @@ public final class MavenModelUtils {
         String javaNet = "java.net";                                    // NOI18N
         pluginRepository.setName( javaNet );
         pluginRepository.setId(javaNet);
-        pluginRepository.setUrl("http://download.java.net/maven/2");    // NOI18N
+        pluginRepository.setUrl("http://download.java.net/maven/2/");    // NOI18N
         
         org.netbeans.modules.maven.model.pom.Project project = model.getProject();
         project.addPluginRepository(pluginRepository);

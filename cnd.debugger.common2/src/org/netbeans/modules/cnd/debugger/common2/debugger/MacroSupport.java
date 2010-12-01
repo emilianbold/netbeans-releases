@@ -37,22 +37,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+package org.netbeans.modules.cnd.debugger.common2.debugger;
+
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
+ * @author Egor Ushakov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.class)
-public class PkgConfigManagerImpl extends PkgConfigManager {
+public class MacroSupport {
+    // utility class
+    private MacroSupport() {
+    }
+    
+    public static String expandMacro(NativeDebugger debugger, String expr) {
+        Frame currentFrame = debugger.getCurrentFrame();
+        if (currentFrame != null) {
+            StyledDocument doc = getDocument(currentFrame);
+            if (doc != null) {
+                int offset = getOffset(currentFrame, doc);
+                if (offset >= 0) {
+                    String expand = CsmMacroExpansion.expand(doc, offset, expr);
+                    if (expand != null) {
+                        return expand;
+                    }
+                }
+            }
+        }
+        return expr;
+    }
+    
+    private static StyledDocument getDocument(Frame frame) {
+        String fullPath = frame.getFullPath();
+        if (fullPath == null) {
+            return null;
+        } 
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fullPath));
+        if (fo != null /*paranoia*/ && fo.isValid()) {
+            return (StyledDocument) CsmUtilities.getDocument(fo);
+        }
+        return null;
+    }
 
-    @Override
-    public PkgConfig getPkgConfig(MakeConfiguration conf) {
-        return new PkgConfigImpl(conf);
+    private static int getOffset(Frame frame, StyledDocument doc) {
+        try {
+            int lineNumber = Integer.valueOf(frame.getLineNo());
+            if (lineNumber >= 0 && doc != null) {
+                return NbDocument.findLineOffset(doc, lineNumber-1);
+            }
+        } catch(NumberFormatException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return -1;
     }
 }

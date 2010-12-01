@@ -154,7 +154,8 @@ public final class GdbFrame extends Frame {
 	return args_list;
     }
     
-    public String getFullName() {
+    @Override
+    public String getFullPath() {
         return fullname;
     }
 

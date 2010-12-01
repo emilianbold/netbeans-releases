@@ -47,7 +47,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +57,9 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -322,6 +322,21 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         @Override
         public Collection<String> getMacros() {
             return macros;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return executable;
+        }
+
+        @Override
+        public String getLibs() {
+            return ""; //NOI18N
+        }
+
+        @Override
+        public String getVersion() {
+            return ""; //NOI18N
         }
     }
 }

@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -589,6 +590,31 @@ public class ImportExecutable implements PropertyChangeListener {
                                 if (i >= 0){
                                     String folderPath = path.substring(0,i);
                                     Folder prefferedFolder = prefferedFolders.get(folderPath);
+                                    if (prefferedFolder == null) {
+                                        LinkedList<String> mkFolder = new LinkedList<String>();
+                                        while(true) {
+                                            i = folderPath.lastIndexOf('/');
+                                            if (i > 0) {
+                                                mkFolder.addLast(folderPath.substring(i+1));
+                                                folderPath = folderPath.substring(0,i);
+                                                prefferedFolder = prefferedFolders.get(folderPath);
+                                                if (prefferedFolder != null) {
+                                                    break;
+                                                }
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                        if (prefferedFolder != null) {
+                                            while(true) {
+                                                if (mkFolder.isEmpty()) {
+                                                    break;
+                                                }
+                                                String segment = mkFolder.pollLast();
+                                                prefferedFolder = prefferedFolder.addNewFolder(segment, segment, true, (Folder.Kind)null);
+                                            }
+                                        }
+                                    }
                                     if (prefferedFolder != null) {
                                         Item item = bridge.createItem(name);
                                         item = prefferedFolder.addItem(item);

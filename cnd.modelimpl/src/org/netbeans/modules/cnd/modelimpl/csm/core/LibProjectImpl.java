@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 public final class LibProjectImpl extends ProjectBase {
 
     private final CharSequence includePath;
+    private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, includePathName, includePathName);
@@ -172,6 +173,11 @@ public final class LibProjectImpl extends ProjectBase {
             return !ParserQueue.instance().hasPendingProjectRelatedWork(this, (FileImpl) skipFile);
         }
         return false;
+    }
+
+    @Override
+    protected SourceRootContainer getProjectRoots() {
+        return projectRoots;
     }
 
     ////////////////////////////////////////////////////////////////////////////
