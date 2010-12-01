@@ -962,7 +962,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 							  breakpointModel());
 	updateLocation(true);
 	// CR 6986846
-	if (!(isSrcRequested() && haveSource())) {
+	//if (!(isSrcRequested() || haveSource())) {
+	if ((getVisitedLocation() != null) && !haveSource()) {
 	   disassemblerWindow().requestActive();
 	}
 
