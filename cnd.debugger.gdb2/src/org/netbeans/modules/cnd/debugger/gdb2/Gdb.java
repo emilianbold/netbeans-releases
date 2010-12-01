@@ -564,6 +564,9 @@ public class Gdb {
     private final MIProxy myMIProxy;
 
     private boolean connected;
+    
+    // set to true when sending signal to pause gdb
+    private volatile boolean signalled = false;
 
     private void initializeGdb(String version) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
@@ -599,6 +602,14 @@ public class Gdb {
 
     protected Executor getExecutor() {
 	return executor;
+    }
+
+    boolean isSignalled() {
+        return signalled;
+    }
+    
+    void resetSignalled() {
+        signalled = false;
     }
 
     Tap tap() {
@@ -655,6 +666,7 @@ public class Gdb {
         if (debugger.state().isRunning && debugger.state().isProcess) {
 	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
+                signalled = true;
 		signaller.interrupt(pid);
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
