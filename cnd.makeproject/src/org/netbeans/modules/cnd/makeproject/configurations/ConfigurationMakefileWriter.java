@@ -944,6 +944,18 @@ public class ConfigurationMakefileWriter {
         }
     }
 
+    private static String changeToNoMain(String target, String name) {
+        String nomainTarget;
+        if (target.indexOf("/") >= 0) { // NOI18N
+            String baseDir = CndPathUtilitities.getDirName(target);
+            String baseName = CndPathUtilitities.getBaseName(target);
+            nomainTarget = baseDir + "/" + baseName.replace(name, name + "_nomain"); // NOI18N;
+        } else {
+            nomainTarget = target.replace(name, name + "_nomain"); // NOI18N
+        }
+        return nomainTarget;
+    }
+
     public static void writeCompileTargetsWithoutMain(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
@@ -989,7 +1001,7 @@ public class ConfigurationMakefileWriter {
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
 
-                    nomainTarget = target.replace(name, name + "_nomain"); // NOI18N
+                    nomainTarget = changeToNoMain(target, name);
 
                     if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
@@ -1029,7 +1041,7 @@ public class ConfigurationMakefileWriter {
                 } else {
                     assert false;
                 }
-                nomainTarget = target.replace(name, name + "_nomain"); // NOI18N
+                nomainTarget = changeToNoMain(target, name);
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
                 if (target.contains(" ")) { // NOI18N
