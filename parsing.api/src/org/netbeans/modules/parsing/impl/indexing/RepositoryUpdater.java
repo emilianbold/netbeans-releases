@@ -85,6 +85,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -111,6 +113,7 @@ import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -1431,6 +1434,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         return sb;
     }
+    
+    private static void storeChanges(
+            @NonNull final DocumentIndex docIndex,
+            final boolean optimize,
+            @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
+        if (indexables != null) {
+            final List<String> keysToRemove = new ArrayList<String>();
+            for (Indexable indexable : indexables) {
+                keysToRemove.add(indexable.getRelativePath());
+            }
+            docIndex.removeDirtyKeys(keysToRemove);
+        }
+        docIndex.store(optimize);
+    }
 
     private static final Comparator<URL> C = new Comparator<URL>() {
         public @Override int compare(URL o1, URL o2) {
@@ -1570,9 +1587,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(entry.second).getIndex(entry.second.getIndexFolder());
+                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(entry.second).getIndex(entry.second.getIndexFolder());
                     if (index != null) {
-                        index.store(isSteady(), null);
+                        storeChanges(index, isSteady(), null);
                     }
                 }
             }
@@ -1605,9 +1622,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 for(Context ctx : transactionContexts) {
-                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                     if (index != null) {
-                        index.store(isSteady(), ci.getIndexablesFor(null));
+                        storeChanges(index, isSteady(), ci.getIndexablesFor(null));
                     }
                 }
             }
@@ -1779,9 +1796,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         if (getShuttdownRequest().isRaised()) {
                             return false;
                         }
-                        IndexImpl index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
+                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                         if (index != null) {
-                            index.store(isSteady(),proxyIterable);
+                            storeChanges(index,isSteady(),proxyIterable);
                         }
                     }
                 }
@@ -1823,9 +1840,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 for(Context ctx : contexts.values()) {
-                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                     if (index != null) {
-                        index.store(isSteady(), null);
+                        storeChanges(index, isSteady(), null);
                     }
                 }
             }
@@ -1878,9 +1895,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     crawler.storeTimestamps();
                 }
                 for(Context ctx : transactionContexts) {
-                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                     if (index != null) {
-                        index.store(isSteady(), null);
+                        storeChanges(index, isSteady(), null);
                     }
                 }
             }
@@ -2397,9 +2414,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             } finally {
                                 final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
                                 for(Context ctx : transactionContexts) {
-                                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                                     if (index != null) {
-                                        index.store(isSteady(), proxyIterable);
+                                        storeChanges(index, isSteady(), proxyIterable);
                                     }
                                 }
                             }
@@ -2510,9 +2527,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             } finally {
                                 final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
                                 for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
-                                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
+                                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                                     if (index != null) {
-                                        index.store(isSteady(), proxyIterable);
+                                        storeChanges(index, isSteady(), proxyIterable);
                                     }
                                 }
                             }
@@ -3264,9 +3281,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 } finally {
                     for(Context ctx : transactionContexts) {
-                        IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                         if (index != null) {
-                            index.store(isSteady(), null);
+                            storeChanges(index, isSteady(), null);
                         }
                     }
                 }

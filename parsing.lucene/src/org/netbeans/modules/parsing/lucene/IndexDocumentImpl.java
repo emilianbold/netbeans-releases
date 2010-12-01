@@ -37,35 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.lucene;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class DocumentUtil {
+public final class IndexDocumentImpl implements IndexDocument {
+    
+    static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
+    
+    final Document doc;    
+    
+    public IndexDocumentImpl (final String primaryKey) {
+        assert primaryKey != null;
+        this.doc = new Document();
+        this.doc.add(sourceNameField(primaryKey));
+    }        
 
-    static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
+    public IndexDocumentImpl (final Document doc) {
+        assert doc != null;
+        this.doc = doc;
+    }
+        
+    @Override
+    public void addPair(String key, String value, boolean searchable, boolean stored) {
+        @SuppressWarnings("deprecation") //NOI18N
+        final Field field = new Field (key, value,
+                stored ? Field.Store.YES : Field.Store.NO,
+                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
+        doc.add (field);
+    }
+    
+    @Override
+    public String getValue(String key) {
+        return doc.get(key);
+    }
+    
+    @Override
+    public String[] getValues(String key) {
+        return doc.getValues(key);
+    }
+    
+    @Override
+    public String getPrimaryKey() {
+        return doc.get(FIELD_PRIMARY_KEY);
+    }          
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + "; " + getPrimaryKey(); //NOI18N
+    }        
 
     @SuppressWarnings("deprecation") //NOI18N
-    static Fieldable sourceNameField(String relativePath) {
-        return new Field(DocumentUtil.FIELD_SOURCE_NAME, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
+    private static Fieldable sourceNameField(String relativePath) {
+        return new Field(FIELD_PRIMARY_KEY, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
     }
+    
     static Query sourceNameQuery(String relativePath) {
         return new TermQuery(sourceNameTerm(relativePath));
     }
 
     static Term sourceNameTerm (final String relativePath) {
         assert relativePath != null;
-        return new Term (FIELD_SOURCE_NAME, relativePath);
+        return new Term (FIELD_PRIMARY_KEY, relativePath);
     }
+        
 }

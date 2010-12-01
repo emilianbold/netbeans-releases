@@ -37,30 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing.support;
+package org.netbeans.modules.parsing.lucene.support;
 
-import org.openide.util.Parameters;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * An IndexDocument lets you store a series of [key,value] pairs in the
+ * Index document represents a single file produced by an Indexer.
+ * It lets you store a series of [key,value] pairs in the
  * persistent store.
- *
- * @author Tor Norbye
+ * 
+ * @since 1.1
+ * 
  * @author Tomas Zezula
+ * 
  */
-//@ThreadSafe
-public final class IndexDocument {
-
-    final org.netbeans.modules.parsing.lucene.support.IndexDocument spi;
-
-    IndexDocument (final org.netbeans.modules.parsing.lucene.support.IndexDocument spi) {
-        Parameters.notNull("spi", spi);
-        this.spi = spi;
-    }
-
+public interface IndexDocument {            
+    
+    /**
+     * Returns the value of the primary key of this document.
+     * This key is used to delete document using the {@link DocumentIndex#removeDocument(java.lang.String)}
+     * @return the value of the primary key
+     */
+    public @NonNull String getPrimaryKey ();
+    
+    
     /**
      * Add a [key,value] pair to this document. Note that the document really
      * contains a multi-map, so it is okay and normal to call addPair multiple
@@ -72,15 +76,26 @@ public final class IndexDocument {
      *   since these are reserved (and in fact used) by GSF.
      * @param value The value that will be retrieved for this key
      * @param searchable A boolean which if set to true will store the pair with
-     *   an indexed/searchable field key, otherwise with an unindexed field (that cannot be
+     *   an indexed/searchable field key, otherwise with an un indexed field (that cannot be
      *   searched).  You <b>must</b> be consistent in how keys are identified
      *   as searchable; the same key must always be referenced with the same
      *   value for searchable when pairs are added (per document).
      */
-    public void addPair( /*@NonNull*/ String key, /*@NonNull*/ String value, boolean searchable, boolean stored) {
-        Parameters.notNull("key", key); //NOI18N
-        Parameters.notEmpty("key", key);    //NOI18N
-        Parameters.notNull("value", value); //NOI18N
-        this.spi.addPair(key, value, searchable, stored);
-    }    
+    public void addPair (@NonNull String key, @NonNull String value, boolean searchable, boolean stored);
+    
+    /**
+     * Returns the value of the field with the given name. If it does not exist
+     * it returns null. If multiple fields exist it returns the first value added.
+     * @param key to obtain the value for.
+     * @return value or null
+     */    
+    public @CheckForNull String getValue (@NonNull String key);
+    
+    
+    /**
+     * Returns the values of the field with the given name. If it does not exist
+     * it returns an empty array.
+     * @return an array of value, never returns null
+     */
+    public @NonNull String[] getValues (@NonNull String key);    
 }
