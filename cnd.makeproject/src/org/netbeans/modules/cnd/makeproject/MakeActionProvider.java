@@ -921,7 +921,7 @@ public final class MakeActionProvider implements ActionProvider {
 
                 MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                 String buildCommand;
-                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "TEST=" + target); // NOI18N
+                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "test TEST=" + target); // NOI18N
                 String args = "";
                 int index = getArgsIndex(buildCommand);
                 if (index > 0) {
