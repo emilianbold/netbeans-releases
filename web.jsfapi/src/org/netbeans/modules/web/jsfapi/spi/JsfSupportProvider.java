@@ -85,7 +85,7 @@ public abstract class JsfSupportProvider {
 
     }
     
-    public static JsfSupport get(Project project) {
+    public static synchronized JsfSupport get(Project project) {
         JsfSupportHandle handle = project.getLookup().lookup(JsfSupportHandle.class);
         if(handle == null) {
             LOGGER.log(Level.FINE, "{0} does not have an instance of JsfSupportHandle in its lookup.", project);
@@ -110,6 +110,9 @@ public abstract class JsfSupportProvider {
                         getProjectDisplayName(project)));
                 return null;
             }
+
+            //and finally remember the created instance for the project
+            handle.install(instance);
         
         }
 

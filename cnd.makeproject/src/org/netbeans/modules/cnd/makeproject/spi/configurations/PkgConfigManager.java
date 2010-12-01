@@ -40,9 +40,10 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.api;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.Lookup;
 
@@ -68,13 +69,17 @@ public abstract class PkgConfigManager {
     
     public static interface PkgConfig {
         PackageConfiguration getPkgConfig(String pkg);
+        List<PackageConfiguration> getAvaliablePkgConfigs();
         Collection<ResolvedPath> getResolvedPath(String include);
     }
 
     public static interface PackageConfiguration {
         String getName();
+        String getDisplayName();
+        String getVersion();
         Collection<String> getIncludePaths();
         Collection<String> getMacros();
+        String getLibs();
     }
 
     public static interface ResolvedPath {

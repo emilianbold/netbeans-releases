@@ -128,7 +128,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
                     public void actionPerformed(ActionEvent e) {
                         if (nodeActionsProvider != null) {
                             try {
-                                nodeActionsProvider.performDefaultAction(this);
+                                nodeActionsProvider.performDefaultAction(AdvancedDataRowNode.this);
                             } catch (UnknownTypeException ex) {
                                 Exceptions.printStackTrace(ex);
                             }

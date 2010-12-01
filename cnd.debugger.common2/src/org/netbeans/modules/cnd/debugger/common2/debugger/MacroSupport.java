@@ -40,38 +40,64 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsfapi.spi;
+package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import org.netbeans.modules.web.jsfapi.api.JsfSupport;
-import org.openide.filesystems.FileUtil;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
- * Supposed to be in web project's lookup.
  *
- * Hold a reference for an instance of JsfSupport for the project.
- *
- * @author marekfukala
+ * @author Egor Ushakov
  */
-public final class JsfSupportHandle {
-
-    private JsfSupport instance;
-    private Throwable caller;
-
-    /** can be called only once per session. */
-    synchronized void install(JsfSupport instance) {
-        if(this.instance != null) {
-            throw new IllegalStateException(
-                    String.format("An instance of JsfSupport has already been installed to this project %s!",
-                    FileUtil.getFileDisplayName(instance.getProject().getProjectDirectory())), caller);
-        }
-
-        this.instance = instance;
-        this.caller = new Throwable();
-    }
-
-    synchronized JsfSupport get() {
-        return instance;
+public class MacroSupport {
+    // utility class
+    private MacroSupport() {
     }
     
+    public static String expandMacro(NativeDebugger debugger, String expr) {
+        Frame currentFrame = debugger.getCurrentFrame();
+        if (currentFrame != null) {
+            StyledDocument doc = getDocument(currentFrame);
+            if (doc != null) {
+                int offset = getOffset(currentFrame, doc);
+                if (offset >= 0) {
+                    String expand = CsmMacroExpansion.expand(doc, offset, expr);
+                    if (expand != null) {
+                        return expand;
+                    }
+                }
+            }
+        }
+        return expr;
+    }
+    
+    private static StyledDocument getDocument(Frame frame) {
+        String fullPath = frame.getFullPath();
+        if (fullPath == null) {
+            return null;
+        } 
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fullPath));
+        if (fo != null /*paranoia*/ && fo.isValid()) {
+            return (StyledDocument) CsmUtilities.getDocument(fo);
+        }
+        return null;
+    }
 
+    private static int getOffset(Frame frame, StyledDocument doc) {
+        try {
+            int lineNumber = Integer.valueOf(frame.getLineNo());
+            if (lineNumber >= 0 && doc != null) {
+                return NbDocument.findLineOffset(doc, lineNumber-1);
+            }
+        } catch(NumberFormatException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return -1;
+    }
 }
