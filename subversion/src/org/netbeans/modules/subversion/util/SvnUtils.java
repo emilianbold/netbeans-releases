@@ -484,7 +484,7 @@ public class SvnUtils {
             ISVNInfo info = null;
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
@@ -573,7 +573,7 @@ public class SvnUtils {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
@@ -671,7 +671,7 @@ public class SvnUtils {
 
             ISVNInfo info = null;
             try {
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
@@ -848,6 +848,27 @@ public class SvnUtils {
      */
     public static String fixLineEndings(String text) {
         return text.replaceAll("\r\n", "\n").replace('\r', '\n');
+    }
+
+    private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
+        ISVNInfo info = null;
+        try {
+            info = client.getInfoFromWorkingCopy(file);
+        } catch (SVNClientException ex) {
+            if (!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                throw ex;
+            }
+        }
+        if (info == null) {
+            try {
+                // this might be a symlink
+                info = client.getInfoFromWorkingCopy(file.getCanonicalFile());
+            } catch (IOException ex) {
+                Subversion.LOG.log(Level.INFO, "getInfoFromWorkingCopy", ex); //NOI18N
+                // pfff, don't know what now
+            }
+        }
+        return info;
     }
 
     /**
