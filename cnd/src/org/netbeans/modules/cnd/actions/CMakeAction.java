@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -148,6 +149,11 @@ public class CMakeAction extends AbstractExecutorRunAction {
         for (int i = 0; i < arguments.length; i++) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(arguments[i]);
+        }
+        String relativePathToScript = CndPathUtilitities.toRelativePath(buildDir, fileObject.getParent().getPath());
+        if (relativePathToScript.length()>1) {
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(relativePathToScript);
         }
         if (inputOutput == null) {
             // Tab Name
