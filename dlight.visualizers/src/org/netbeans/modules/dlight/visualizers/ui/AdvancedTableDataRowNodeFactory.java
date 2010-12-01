@@ -148,7 +148,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
         @Override
         public Action[] getActions(boolean context) {
             if (nodeActionsProvider == null) {
-                return null;
+                return new Action[0];
             }
 
             try {

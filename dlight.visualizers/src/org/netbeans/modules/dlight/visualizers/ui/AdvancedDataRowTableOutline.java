@@ -70,8 +70,6 @@ public final class AdvancedDataRowTableOutline extends AbstractListViewTable {
         this.nodeColumnName = nodeColumnName;
         this.configuration = configuration;
 
-        setPopupAllowed(false);
-
         AdvancedTableViewVisualizerConfigurationAccessor accessor =
                 AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 
