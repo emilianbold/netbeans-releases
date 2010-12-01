@@ -118,23 +118,6 @@ public class InitJobTest extends NbTestCase {
         dlg.setVisible(true);
     }
     
-    public void testCancelAbility() throws Exception {
-        LOG.info("Testing cancel ability of async init job");
-        initializeSimple();
-        initCancelResults();
-        final CancelInitComp c = new CancelInitComp();
-        comp = c;
-        Utilities.attachInitJob(c, c);
-        frame = new Frame();
-        frame.setSize(100, 100);
-        frame.setVisible(true);
-        dlg = new Dialog(frame, true);
-        dlg.setSize(50, 50);
-        dlg.add(comp);
-        dlg.setVisible(true);
-    }
-    
-    
     /**********************************************************************/
     
     private void constructCalled(Thread thread, long time) {

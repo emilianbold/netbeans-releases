@@ -86,11 +86,17 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     private VCSCommitPanel commitPanel;
 
     private String errroMessage;
+    private final boolean editable;
         
     public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
+        this(tableModel, true);
+    }
+
+    public VCSCommitTable (VCSCommitTableModel<F> tableModel, boolean isEditable) {
+        this.editable = isEditable;
         init(tableModel);
-        this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
-        setSortingStatus();            
+        this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };
+        setSortingStatus();
     }
 
     private void init(VCSCommitTableModel<F> tableModel) {
@@ -356,6 +362,11 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
                     }
                 }
             }
+
+            @Override
+            public boolean isEnabled() {
+                return editable;
+            }
         });
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
@@ -449,6 +460,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
+            setEnabled(editable);
             setBackground(hasFocus || isSelected ? table.getSelectionBackground() : table.getBackground());
             setHorizontalAlignment(SwingConstants.LEFT);
             return this;
@@ -466,6 +478,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
             JCheckBox checkbox = (JCheckBox) editorComponent;
             checkbox.setSelected(value == null ? false : (Boolean) value);
             checkbox.setHorizontalAlignment(SwingConstants.LEFT);
+            checkbox.setEnabled(editable);
             return super.getTableCellEditorComponent(table, value, isSelected, row, column);
         }
     }
