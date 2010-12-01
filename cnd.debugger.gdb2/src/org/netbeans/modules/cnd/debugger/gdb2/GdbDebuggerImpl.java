@@ -2773,22 +2773,51 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     void genericStopped(final MIRecord stopRecord) {
-	// Get as much info about the stopped src code location
-	/* OLD
-	 * for gdb 6.3/6.4 ( can debug gcc-build dbx on linux ) 
-	 * 6.3/6.4 does not support "-stack-info-frame"
-	 * On the Mac -file-list-exec-source-file seems to return some
-	 * unrelated constant value
+        // Get as much info about the stopped src code location
+        /* OLD
+         * for gdb 6.3/6.4 ( can debug gcc-build dbx on linux )
+         * 6.3/6.4 does not support "-stack-info-frame"
+         * On the Mac -file-list-exec-source-file seems to return some
+         * unrelated constant value
 
         MICommand cmd =
-            new AbstractMICommand(0, "-file-list-exec-source-file") {
-                    protected void onDone(MIRecord record) {
-                        genericStoppedWithSrc(stopRecord, record);
-                        finish();
-                    }
-                };
+        new AbstractMICommand(0, "-file-list-exec-source-file") {
+        protected void onDone(MIRecord record) {
+        genericStoppedWithSrc(stopRecord, record);
+        finish();
+        }
+        };
         gdb.sendCommand(cmd);
-	*/
+         */
+        //detect silent stop
+        if (gdb.isSignalled()) {
+            MIValue reasonValue = stopRecord.results().valueOf("reason"); //NOI18N
+            if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
+                MIValue signalValue = stopRecord.results().valueOf("signal-name"); //NOI18N
+                if (signalValue != null) {
+                    String signal = signalValue.asConst().value();
+                    if ("SIGCONT".equals(signal)) { // NOI18N
+                        // continue after silent stop
+                        gdb.resetSignalled();
+                        go();
+                        return;
+                    } else if ("SIGINT".equals(signal)) { // NOI18N
+                        // silent stop
+                        state().isRunning = false;
+                        return;
+                    } else if ("SIGTRAP".equals(signal) && // NOI18N
+                            (getHost().getPlatform() == Platform.Windows_x86 ||
+                            getHost().getPlatform() == Platform.MacOSX_x86)) {
+                        // see IZ 172855 (On windows we need to skip SIGTRAP)
+                        gdb.resetSignalled();
+                        // silent stop
+                        state().isRunning = false;
+                        return;
+                    }
+                }
+            }
+            gdb.resetSignalled();
+        }
 
 	// stopRecord may contain a "frame" attribute so SHOULD
 	// check for that first before asking for it.
@@ -3567,13 +3596,23 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * Common behaviour for -break command.
      */
     abstract class MIBreakCommand extends MiCommandImpl {
+        private final boolean wasRunning;
 
         protected MIBreakCommand(int rt, String cmdString) {
             super(rt, cmdString);
+            this.wasRunning = state().isRunning;
         }
 
         @Override
         protected abstract void onDone(MIRecord record);
+
+        @Override
+        protected void finish() {
+            if (wasRunning) {
+                go();
+            }
+            super.finish();
+        }
     };
 
     public void runFailed() {
@@ -3701,7 +3740,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// which will come to us as an onError(). 'overloadCancelled' helps us 
 	// bypass creating a broken bpt.
 	private boolean overloadCancelled = false;
-
+        
         MIBreakLineCommand(int rt, String cmdString) {
             super(rt, cmdString);
         }
@@ -3858,7 +3897,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void postDeleteHandlerImpl(final int rt, final int hid) {
-
+        pause();
 	MICommand cmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
 
 	    protected void onDone(MIRecord record) {
@@ -3871,20 +3910,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
 	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
+        pause();
 	gdb.sendCommand(cmd);
 	// We'll continue in newHandler() or ?error?
     }
 
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
-
-        final MICommand cmd =
-	    new MIReplaceBreakLineCommand(rt, hc.toString());
+        final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
+        pause();
         gdb.sendCommand(cmd);
     }
 
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd =
-	    new MIRepairBreakLineCommand(rt, hc.toString());
+        final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
+        pause();
         gdb.sendCommand(cmd);
     }
 
