@@ -133,6 +133,7 @@ public class SvnUtils {
     private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
 
     private static final FileFilter svnFileFilter = new FileFilter() {
+        @Override
         public boolean accept(File pathname) {
             if (isAdministrative(pathname)) return false;
             return SharabilityQuery.getSharability(pathname) != SharabilityQuery.NOT_SHARABLE;
@@ -484,7 +485,7 @@ public class SvnUtils {
             ISVNInfo info = null;
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
@@ -512,7 +513,7 @@ public class SvnUtils {
                     }
 
                     Iterator it = path.iterator();
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
                         sb.append("/"); // NOI18N
@@ -573,7 +574,7 @@ public class SvnUtils {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
@@ -633,7 +634,7 @@ public class SvnUtils {
      */
     public static SVNUrl getRepositoryUrl(File file) throws SVNClientException {
 
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         SVNUrl fileURL = null;
         SvnClient client = null;
         try {
@@ -671,7 +672,7 @@ public class SvnUtils {
 
             ISVNInfo info = null;
             try {
-                info = client.getInfoFromWorkingCopy(file);
+                info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
@@ -765,7 +766,7 @@ public class SvnUtils {
     public static SVNUrl decode(SVNUrl url) {
         if (url == null) return null;
         String s = url.toString();
-        StringBuffer sb = new StringBuffer(s.length());
+        StringBuilder sb = new StringBuilder(s.length());
 
         boolean inQuery = false;
         for (int i = 0; i < s.length(); i++) {
@@ -850,10 +851,32 @@ public class SvnUtils {
         return text.replaceAll("\r\n", "\n").replace('\r', '\n');
     }
 
+    private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
+        ISVNInfo info = null;
+        try {
+            info = client.getInfoFromWorkingCopy(file);
+        } catch (SVNClientException ex) {
+            if (!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                throw ex;
+            }
+        }
+        if (info == null) {
+            try {
+                // this might be a symlink
+                info = client.getInfoFromWorkingCopy(file.getCanonicalFile());
+            } catch (IOException ex) {
+                Subversion.LOG.log(Level.INFO, "getInfoFromWorkingCopy", ex); //NOI18N
+                // pfff, don't know what now
+            }
+        }
+        return info;
+    }
+
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
+        @Override
         public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
@@ -1305,6 +1328,7 @@ public class SvnUtils {
         }
         if (!sorted) {
             Collections.sort(ret, new Comparator<ISVNLogMessage>() {
+                @Override
                 public int compare(ISVNLogMessage m1, ISVNLogMessage m2) {
                     long revNum1 = m1.getRevision().getNumber();
                     long revNum2 = m2.getRevision().getNumber();
@@ -1469,6 +1493,7 @@ public class SvnUtils {
             } else {
                 final org.openide.text.CloneableEditorSupport support = ces;
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
