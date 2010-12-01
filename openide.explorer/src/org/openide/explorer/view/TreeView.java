@@ -242,6 +242,8 @@ public abstract class TreeView extends JScrollPane {
     /** reference to the last visible search field */
     private static Reference<TreeView> lastSearchField = new WeakReference<TreeView>(null);
 
+    transient private boolean removedNodeWasSelected = false;
+
     /** Constructor.
     */
     public TreeView() {
@@ -1182,6 +1184,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
         
+        removedNodeWasSelected = remSel != null;
         if (remSel != null) {
             try {
                 sm.removeSelectionPaths(remSel.toArray(new TreePath[remSel.size()]));
@@ -2370,13 +2373,15 @@ public abstract class TreeView extends JScrollPane {
             public void treeNodesRemoved(TreeModelEvent e) {
                 // called to removed from JTree.expandedState
                 super.treeNodesRemoved(e);
+                
+                boolean wasSelected = removedNodeWasSelected;
+                removedNodeWasSelected = false;
 
                 // part of bugfix #37279, if DnD is active then is useless select a nearby node
                 if (ExplorerDnDManager.getDefault().isDnDActive()) {
                     return;
                 }
-
-                if (tree.getSelectionCount() == 0) {
+                if (wasSelected && tree.getSelectionCount() == 0) {
                     TreePath path = findSiblingTreePath(e.getTreePath(), e.getChildIndices());
 
                     // bugfix #39564, don't select again the same object
