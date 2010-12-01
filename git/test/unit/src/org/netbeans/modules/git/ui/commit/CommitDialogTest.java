@@ -70,16 +70,22 @@ public class CommitDialogTest extends AbstractGitTestCase {
     }
 
     public void testPrefilledPanel() throws IOException, GitException, InterruptedException, InvocationTargetException {
-        File repository = getRepositoryLocation();
-        File[] roots = new File[] {repository};  
+        final File repository = getRepositoryLocation();
+        final File[] roots = new File[] {repository};
         File file = createFile(repository, "file");                
         add(file);
         
-        GitUser user = GitTestKit.creategGitUser();
+        final GitUser user = GitTestKit.creategGitUser();
         String  message = "msg";        
         GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
                 
-        GitCommitPanel p = GitCommitPanel.create(roots, repository, user);
+        final GitCommitPanel[] panels = new GitCommitPanel[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override public void run() {
+                panels[0] = GitCommitPanel.create(roots, repository, user, false);
+            }
+        });
+        GitCommitPanel p = panels[0];
         p.computeNodesIntern().waitFinished();
         EventQueue.invokeAndWait(new Runnable() {@Override public void run() {}});
         

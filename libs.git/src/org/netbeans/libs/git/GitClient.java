@@ -96,11 +96,12 @@ public interface GitClient {
     /**
      * Prints content of an index entry accordant with the given file to output stream
      * @param file
+     * @param stage 
      * @param out output stream
      * @return true if the file was found in the index and printed to out, otherwise false
      * @throws GitException
      */
-    public boolean catIndexEntry (File file, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
+    public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -175,6 +176,14 @@ public interface GitClient {
      * XXX init what???
      */
     public void init (ProgressMonitor monitor) throws GitException;
+
+    /**
+     * TODO is this method really necessary?
+     * Returns files that are marked as modified between the HEAD and Index.
+     * @param roots
+     * @throws GitException when an error occurs
+     */
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree

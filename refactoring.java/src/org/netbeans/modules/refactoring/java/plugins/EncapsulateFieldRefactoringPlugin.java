@@ -894,7 +894,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             
             String fieldName = field.getSimpleName().toString();
             boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
-            String parName = staticMod ? "a" + getCapitalizedName(field) : stripPrefix(fieldName); //NOI18N
+            String parName = staticMod ? "a" + getCapitalizedName(field) : Utilities.isJavaIdentifier(stripPrefix(fieldName))?stripPrefix(fieldName):fieldName; //NOI18N
             String getterBody = "{return " + fieldName + ";}"; //NOI18N
             String setterBody = (staticMod? "{": "{this.") + fieldName + " = " + parName + ";}"; //NOI18N
             

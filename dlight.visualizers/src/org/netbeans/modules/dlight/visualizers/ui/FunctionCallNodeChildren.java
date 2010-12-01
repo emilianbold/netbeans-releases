@@ -41,27 +41,19 @@
  */
 package org.netbeans.modules.dlight.visualizers.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.visualizers.GotoSourceActionProvider;
-import org.netbeans.modules.dlight.visualizers.util.FunctionCallFilter;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
  * A factory for FunctionCallWithMetric Nodes.
  * This factory creates FunctionCallNodes for given list of FunctionCallWithMetric.
  *
- * It supports filtering. If lookup, associated with this factory contains an
- * instance of FunctionCallFilter, then only nodes for functions accepted by
- * this filter are produced.
- *
  * @author ak119685
  */
-public final class FunctionCallNodeChildren extends Children.Keys<FunctionCallWithMetric> {
+public final class FunctionCallNodeChildren extends TableViewNodeChildren<FunctionCallWithMetric> {
 
     private final List<Column> metrics;
     private final GotoSourceActionProvider actionsProvider;
@@ -74,26 +66,5 @@ public final class FunctionCallNodeChildren extends Children.Keys<FunctionCallWi
     @Override
     protected Node[] createNodes(FunctionCallWithMetric key) {
         return new Node[]{new FunctionCallNode(actionsProvider, key, metrics)};
-    }
-
-    public void setData(final List<FunctionCallWithMetric> functions) {
-        List<FunctionCallWithMetric> filtered;
-
-        FunctionCallFilter filter = getNode().getLookup().lookup(FunctionCallFilter.class);
-
-        if (functions == null) {
-            filtered = Collections.<FunctionCallWithMetric>emptyList();
-        } else if (filter == null) {
-            filtered = functions;
-        } else {
-            filtered = new ArrayList<FunctionCallWithMetric>(functions.size());
-            for (FunctionCallWithMetric function : functions) {
-                if (filter.matches(function)) {
-                    filtered.add(function);
-                }
-            }
-        }
-
-        setKeys(filtered);
     }
 }

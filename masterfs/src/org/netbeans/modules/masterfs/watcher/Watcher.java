@@ -79,13 +79,7 @@ public class Watcher extends AnnotationProvider {
             return;
         }
         
-        Notifier<?> notifier = getNotifierForPlatform();
-        ext = notifier == null ? null : make(notifier);
-
-        if (notifier != null) { // turn off the recursive refresh on focus
-            // it would be better to move the refresh infrastructure here
-            System.getProperties().put("netbeans.indexing.noFileRefresh", "true");
-        }
+        ext = make(getNotifierForPlatform());
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
@@ -105,9 +99,8 @@ public class Watcher extends AnnotationProvider {
         return ext;
     }
 
-    /** captures type parameter */
     private <KEY> Ext<KEY> make(Notifier<KEY> impl) {
-        return new Ext<KEY>(impl);
+        return impl == null ? null : new Ext<KEY>(impl);
     }
 
     private class Ext<KEY> extends ProvidedExtensions implements Runnable {

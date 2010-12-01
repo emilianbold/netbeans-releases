@@ -121,6 +121,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug190668.cpp", 16, 6, "bug190668.cpp", 11, 5);
     }
 
+    public void testBug187258() throws Exception {
+        // Bug 187258 - code model does not find template specialization for unsigned type
+        performTest("bug187258.cpp", 22, 50, "bug187258.cpp", 14, 5);
+        performTest("bug187258.cpp", 21, 45, "bug187258.cpp", 6, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

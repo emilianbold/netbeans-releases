@@ -230,7 +230,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Result localCompletionResult;
-                synchronized (this) {
+                synchronized (CompletionImpl.this) {
                     localCompletionResult = completionResult;
                 }
                 if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
@@ -255,7 +255,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 String waitText = PLEASE_WAIT;
                 boolean politeWaitText = false;
                 Result localCompletionResult;
-                synchronized (this) {
+                synchronized (CompletionImpl.this) {
                     localCompletionResult = completionResult;
                 }
                 List<CompletionResultSetImpl> resultSets;
@@ -953,7 +953,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
-                synchronized(this) {
+                synchronized(CompletionImpl.this) {
                     if (result != completionResult)
                         return;
                 }

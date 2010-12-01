@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.openide.util.Utilities;
 
 /**
@@ -421,7 +422,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
         assertTrue(new File(objFileName).exists());
-        List<String> res =  null;
+        SharedLibraries res =  null;
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
@@ -439,11 +440,14 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         }
         assertNotNull(res);
         System.err.println(res);
-        assertEquals(dlls.length, res.size());
+        assertEquals(dlls.length, res.getDlls().size());
         int i = 0;
-        for(String dll: res) {
+        for(String dll: res.getDlls()) {
             assertEquals(dlls[i], dll);
             i++;
         }
+        //for(String searchPath: res.getPaths()) {
+        //    System.err.println("Search path="+searchPath);
+        //}
     }
 }

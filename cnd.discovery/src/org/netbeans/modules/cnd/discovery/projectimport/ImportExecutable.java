@@ -72,11 +72,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
@@ -91,6 +88,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
@@ -102,9 +100,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -277,7 +272,8 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                             String additionalDependencies = null;
                             if (projectKind == ProjectKind.IncludeDependencies) {
-                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
+                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration(),
+                                        DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                 if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
                                     map.put("DW:libraries", additionalDependencies); // NOI18N
                                 }
@@ -288,7 +284,8 @@ public class ImportExecutable implements PropertyChangeListener {
                                     discoverScripts(lastSelectedProject);
                                     saveMakeConfigurationDescriptor(lastSelectedProject);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
-                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies);
+                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
+                                                DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     }
                                 } catch (IOException ex) {
                                     ex.printStackTrace();
@@ -429,7 +426,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration) {
+    private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration, String binary) {
         if (dependencies == null) {
             String root = sourcesPath;
             if (root == null || root.length()==0) {
@@ -442,7 +439,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 return null;
             }
             Map<String,String> dllPaths = new HashMap<String, String>();
-            String ldLibPath = getLdLibraryPath(activeConfiguration);
+            String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
+            ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, applicable.getSearchPaths(), binary);
             boolean search = false;
             for(String dll : applicable.getDependencies()) {
                 String p = findLocation(dll, ldLibPath);
@@ -453,7 +451,7 @@ public class ImportExecutable implements PropertyChangeListener {
                     dllPaths.put(dll, null);
                 }
             }
-            if (search) {
+            if (search && root.length() > 1) {
                 gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
             }
             StringBuilder buf = new StringBuilder();
@@ -477,54 +475,6 @@ public class ImportExecutable implements PropertyChangeListener {
                 buf.append(path);
             }
             return buf.toString();
-        }
-    }
-
-    static String getLdLibraryPath(MakeConfiguration activeConfiguration) {
-        String ldLibraryPathName = getLdLibraryPathName(activeConfiguration);
-        String ldLibPath = activeConfiguration.getProfile().getEnvironment().getenv(ldLibraryPathName); // NOI18N
-        ExecutionEnvironment eenv = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        if (ldLibPath != null) {
-            try {
-                ldLibPath = MacroExpanderFactory.getExpander(eenv).expandMacros(ldLibPath, HostInfoUtils.getHostInfo(eenv).getEnvironment());
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (ldLibPath == null) {
-            ldLibPath = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName); // NOI18N
-        }
-        if (ldLibPath == null) {
-            ldLibPath = "";  // NOI18N
-        }
-        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
-        switch (platformInfo.getPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                break;
-            case PlatformTypes.PLATFORM_MACOSX:
-                ldLibPath += ":/usr/lib:/usr/local/lib:/Library/Frameworks:/System/Library/Frameworks";  // NOI18N
-                break;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                ldLibPath += ":/lib:/usr/lib";  // NOI18N
-        }
-        return ldLibPath;
-    }
-
-    private static String getLdLibraryPathName(MakeConfiguration conf) {
-        switch (conf.getDevelopmentHost().getBuildPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                PlatformInfo pi = conf.getPlatformInfo();
-                return pi.getPathName();
-            case PlatformTypes.PLATFORM_MACOSX:
-                return "DYLD_LIBRARY_PATH"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                return "LD_LIBRARY_PATH"; // NOI18N
         }
     }
 

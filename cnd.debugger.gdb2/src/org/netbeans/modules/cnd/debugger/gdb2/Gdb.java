@@ -312,12 +312,12 @@ public class Gdb {
 		} else {
 		    avec.add(gdbname);
 		}
-
+                
 		if (gdbInitFile != null) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
-
+                    
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
 		avec.add("mi"); // NOI18N
@@ -462,10 +462,10 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(1,
 		    Color.green.darker());
 		ioPack.console().getTerm().setCustomColor(2,
-		    Color.blue.brighter());
+		    Color.red.darker());
 
 		pid = executor.startEngine(gdbname, gdb_argv, null,
-		    ioPack.console(), true);
+		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
 				      "startEngine -> pid %d\n", pid); // NOI18N
@@ -564,6 +564,9 @@ public class Gdb {
     private final MIProxy myMIProxy;
 
     private boolean connected;
+    
+    // set to true when sending signal to pause gdb
+    private volatile boolean signalled = false;
 
     private void initializeGdb(String version) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
@@ -599,6 +602,14 @@ public class Gdb {
 
     protected Executor getExecutor() {
 	return executor;
+    }
+
+    boolean isSignalled() {
+        return signalled;
+    }
+    
+    void resetSignalled() {
+        signalled = false;
     }
 
     Tap tap() {
@@ -655,6 +666,7 @@ public class Gdb {
         if (debugger.state().isRunning && debugger.state().isProcess) {
 	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
+                signalled = true;
 		signaller.interrupt(pid);
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
@@ -1024,18 +1036,33 @@ public class Gdb {
             super(injector, "(gdb)"); // NOI18N
         }
 
+        private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
+        
         @Override
         protected void consoleStreamOutput(MIRecord record) {
-	    super.consoleStreamOutput(record);
+            if (record.isStream() && record.stream().startsWith(SWITCHING_PREFIX)) {
+                String msg = record.stream();
+                try {
+                    int end = SWITCHING_PREFIX.length();
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
+                    }
+                    debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+                    debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
+                } catch (NumberFormatException ex) {
+                }
+            } else {
+                super.consoleStreamOutput(record);
 
-            if (version == null &&
-		record.isStream() &&
-		record.stream().startsWith(versionString)) {
+                if (version == null &&
+                    record.isStream() &&
+                    record.stream().startsWith(versionString)) {
 
-		version = record.stream();
-                // OLD debugger.gdbVersionString(record.stream());
-		return;
-	    }
+                    version = record.stream();
+                    // OLD debugger.gdbVersionString(record.stream());
+                    return;
+                }
+            }
         }
 
         @Override
@@ -1051,6 +1078,25 @@ public class Gdb {
                 dispatch(record);
             }
         }
+        
+        @Override
+        protected void notifyAsyncOutput(MIRecord record) {
+            if (record.token() == 0) {
+                if (record.cls().equals("thread-group-added") || //NOI18N
+                    record.cls().equals("thread-group-removed") || //NOI18N
+                    record.cls().equals("thread-group-started") || //NOI18N
+                    record.cls().equals("thread-group-exited") || //NOI18N
+                    record.cls().equals("thread-created") || //NOI18N
+                    record.cls().equals("thread-exited") || //NOI18N
+                    record.cls().equals("thread-selected") || //NOI18N
+                    record.cls().equals("library-loaded") || //NOI18N
+                    record.cls().equals("library-unloaded")) { //NOI18N
+                        // just skip
+                    }
+            } else {
+                dispatch(record);
+            }
+        }
 
         @Override
         protected void targetStreamOutput(MIRecord record) {
@@ -1059,13 +1105,6 @@ public class Gdb {
         @Override
         protected void logStreamOutput(MIRecord record) {
 	    super.logStreamOutput(record);
-        }
-
-        @Override
-        protected void prompt() {
-            /* DEBUG
-            System.out.println(" PROMPT: ");
-             */
         }
 
         @Override
@@ -1090,7 +1129,7 @@ public class Gdb {
 	}
     }
 
-    public void sendCommand(MICommand cmd) {
+    void sendCommand(MICommand cmd) {
         myMIProxy.send(cmd);
     }
 }

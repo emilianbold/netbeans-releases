@@ -80,6 +80,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -148,6 +149,8 @@ abstract public class CsmCompletionQuery {
 
     abstract protected FileReferencesContext getFileReferencesContext();
 
+    abstract public CsmFile getCsmFile();
+    
     public static enum QueryScope {
 
         LOCAL_QUERY,
@@ -228,6 +231,19 @@ abstract public class CsmCompletionQuery {
 //        }
 //        return processedToken;
 //    }
+    private final static String TOKEN_PROCESSOR_CACHE_KEY = "TokenProcessorCache"; // NOI18N
+    private static final class TokenProcessorCache {
+        private final int queryOffset;
+        private final long docVersion;
+        private final CsmCompletionTokenProcessor tp;
+
+        public TokenProcessorCache(int queryOffset, long docVersion, CsmCompletionTokenProcessor tp) {
+            this.queryOffset = queryOffset;
+            this.docVersion = docVersion;
+            this.tp = tp;
+        }        
+    }
+        
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
@@ -243,19 +259,32 @@ abstract public class CsmCompletionQuery {
         }
 
         try {
-            // find last separator position
-            final int lastSepOffset = sup.getLastCommandSeparator(offset);
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-            final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
-            if(etp instanceof CsmExpandedTokenProcessor) {
-                tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+            TokenProcessorCache property = (TokenProcessorCache) baseDocument.getProperty(TOKEN_PROCESSOR_CACHE_KEY);
+            long docVersion = DocumentUtilities.getDocumentVersion(doc);
+            CsmCompletionTokenProcessor tp = null;
+            if (property != null) {
+                if (property.queryOffset == offset && property.docVersion == docVersion) {
+                    tp = property.tp;
+                }
             }
-            tp.enableTemplateSupport(true);
-            doc.readLock();
-            try {
-                CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
-            } finally {
-                doc.readUnlock();
+            if (tp == null) {
+                // find last separator position
+                final int lastSepOffset = sup.getLastCommandSeparator(offset);
+                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(getCsmFile(), doc, tp, offset);
+                if(etp instanceof CsmExpandedTokenProcessor) {
+                    tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+                }
+                tp.enableTemplateSupport(true);
+                doc.readLock();
+                try {
+                    CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
+                } finally {
+                    doc.readUnlock();
+                }
+                baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));
+            } else {
+                // hit
             }
             sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
@@ -316,7 +345,7 @@ abstract public class CsmCompletionQuery {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
-            CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
+            CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
             ctx.resolveExp(exp, true);
             if (ctx.result != null) {
@@ -1266,7 +1295,7 @@ abstract public class CsmCompletionQuery {
                     switch (item.getTokenID(0)) {
                         case THIS: // 'this' keyword
                             if (first) { // first item in expression
-                                CsmClass cls = sup.getClass(item.getTokenOffset(0));
+                                CsmClass cls = sup.getClass(getCsmFile(), item.getTokenOffset(0));
                                 if (cls != null) {
                                     derefOfThisOUT.set(true);
                                     lastType = CsmCompletion.getType(cls, 0, false, 0, false);
@@ -2136,8 +2165,8 @@ abstract public class CsmCompletionQuery {
                         CsmFileReferences.isTemplateParameterInvolved(lastType) ||
                         CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
                     Collection<CsmObject> data = new ArrayList<CsmObject>();
-                    data.add(new TemplateBasedReferencedObjectImpl());
-                    result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                    data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
+                    result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                 }
             }
 
@@ -2160,8 +2189,8 @@ abstract public class CsmCompletionQuery {
                     if(instantiatedByTemplateParam) {
                         if(!CsmInstantiationProvider.getDefault().getSpecializations(classifier, contextFile, endOffset).isEmpty()) {
                             Collection<CsmObject> data = new ArrayList<CsmObject>();
-                            data.add(new TemplateBasedReferencedObjectImpl());
-                            result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                            data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
+                            result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                         }
                     }
                 }
@@ -2981,6 +3010,15 @@ abstract public class CsmCompletionQuery {
     }
 
     private static class TemplateBasedReferencedObjectImpl implements CsmTemplateBasedReferencedObject {
+        private final CsmType lastType;
+        private final CharSequence textAfterType;
+
+        private TemplateBasedReferencedObjectImpl(CsmType lastType, CharSequence textAfterType) {
+            this.lastType = lastType;
+            assert lastType != null;
+            this.textAfterType = textAfterType;
+            assert textAfterType != null;
+        }
 
         @Override
         public int getNameStartOffset() {
@@ -2994,38 +3032,70 @@ abstract public class CsmCompletionQuery {
 
         @Override
         public CharSequence getName() {
-            return "template based ref object"; // NOI18N
+            return NbBundle.getMessage(CsmCompletionQuery.class, "completion-template-based-object", lastType.getCanonicalText(), textAfterType); // NOI18N
         }
 
         @Override
         public CsmFile getContainingFile() {
-            return null;
+            return lastType.getContainingFile();
         }
 
         @Override
         public int getStartOffset() {
-            return 0;
+            return lastType.getStartOffset();
         }
 
         @Override
         public int getEndOffset() {
-            return 0;
+            return lastType.getEndOffset();
         }
 
         @Override
         public Position getStartPosition() {
-            return null;
+            return lastType.getStartPosition();
         }
 
         @Override
         public Position getEndPosition() {
-            return null;
+            return lastType.getEndPosition();
         }
 
         @Override
         public CharSequence getText() {
             return getName();
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TemplateBasedReferencedObjectImpl other = (TemplateBasedReferencedObjectImpl) obj;
+            if (!this.lastType.equals(other.lastType)) {
+                return false;
+            }
+            if (!this.textAfterType.equals(other.textAfterType)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + this.lastType.hashCode();
+            hash = 71 * hash + this.textAfterType.hashCode();
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "lastType=" + lastType + ", textAfterType=" + textAfterType; // NOI18N
+        }
+        
     }
 
     private static class TemplateBasedReferencedObjectResultItem extends CsmResultItem {

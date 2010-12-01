@@ -180,7 +180,7 @@ public class EditableComboBox extends JComboBox {
      * @param listener
      */
     public void addChangeListener(final ActionListener listener){
-        addActionListener(listener);
+        //addActionListener(listener);
         Component component = editor.getEditorComponent();
         if (component instanceof JTextField) {
             ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {

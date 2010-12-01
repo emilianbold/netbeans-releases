@@ -766,6 +766,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
                         break;
                     case STATIC_CAST:
+                    case DYNAMIC_CAST:
+                    case CONST_CAST:
+                    case REINTERPRET_CAST:
                         pushExp(createTokenExp(CONVERSION_OPEN));
                         break;
                     case TRUE:

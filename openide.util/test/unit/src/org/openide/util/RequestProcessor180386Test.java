@@ -240,7 +240,7 @@ public class RequestProcessor180386Test extends NbTestCase {
             lock.notifyAll();
         }
         rp.shutdown();
-        boolean awaitTermination = rp.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        boolean awaitTermination = rp.awaitTermination(1, TimeUnit.DAYS);
         assertTrue(awaitTermination);
         assertTrue(rp.isShutdown());
         assertTrue(rp.isTerminated());
@@ -916,9 +916,9 @@ public class RequestProcessor180386Test extends NbTestCase {
                 }
             }
             C c = new C();
-            int delay = 5000;
+            long delay = 5000;
             //Use a 20 second timeout to have a reasonable chance of accuracy
-            ScheduledFuture<String> f = rp.schedule(c, delay, TimeUnit.MILLISECONDS);
+            ScheduledFuture<String> f = rp.schedule(c, delay * 1000, TimeUnit.MICROSECONDS);
             assertEquals (5000, f.getDelay(TimeUnit.MILLISECONDS));
             assertNotNull(f.get());
             //Allow 4 seconds fudge-factor

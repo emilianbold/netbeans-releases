@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,20 +85,35 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.index.ArtifactAvailablility;
+import org.apache.maven.index.ArtifactContext;
+import org.apache.maven.index.ArtifactContextProducer;
+import org.apache.maven.index.ArtifactInfo;
+import org.apache.maven.index.Field;
+import org.apache.maven.index.FlatSearchRequest;
+import org.apache.maven.index.FlatSearchResponse;
+import org.apache.maven.index.IndexerField;
+import org.apache.maven.index.search.grouping.GGrouping;
+import org.apache.maven.index.GroupedSearchRequest;
+import org.apache.maven.index.GroupedSearchResponse;
+import org.apache.maven.index.IndexerFieldVersion;
+import org.apache.maven.index.NexusIndexer;
+import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.creator.AbstractIndexCreator;
+import org.apache.maven.index.SearchEngine;
+import org.apache.maven.index.context.IndexCreator;
+import org.apache.maven.index.updater.IndexUpdateRequest;
+import org.apache.maven.index.updater.IndexUpdater;
+import org.apache.maven.index.updater.ResourceFetcher;
+import org.apache.maven.index.updater.WagonHelper;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
-import org.apache.maven.repository.legacy.WagonManager;
 import org.apache.maven.settings.Mirror;
-import org.apache.maven.wagon.ConnectionException;
-import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
-import org.apache.maven.wagon.WagonException;
-import org.apache.maven.wagon.events.TransferListener;
-import org.apache.maven.wagon.repository.Repository;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -132,26 +148,6 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.util.repository.DefaultMirrorSelector;
-import org.sonatype.nexus.index.ArtifactAvailablility;
-import org.sonatype.nexus.index.ArtifactContext;
-import org.sonatype.nexus.index.ArtifactContextProducer;
-import org.sonatype.nexus.index.ArtifactInfo;
-import org.sonatype.nexus.index.Field;
-import org.sonatype.nexus.index.FlatSearchRequest;
-import org.sonatype.nexus.index.FlatSearchResponse;
-import org.sonatype.nexus.index.IndexerField;
-import org.sonatype.nexus.index.search.grouping.GGrouping;
-import org.sonatype.nexus.index.GroupedSearchRequest;
-import org.sonatype.nexus.index.GroupedSearchResponse;
-import org.sonatype.nexus.index.IndexerFieldVersion;
-import org.sonatype.nexus.index.NexusIndexer;
-import org.sonatype.nexus.index.context.IndexingContext;
-import org.sonatype.nexus.index.creator.AbstractIndexCreator;
-import org.sonatype.nexus.index.SearchEngine;
-import org.sonatype.nexus.index.context.IndexCreator;
-import org.sonatype.nexus.index.updater.AbstractResourceFetcher;
-import org.sonatype.nexus.index.updater.IndexUpdateRequest;
-import org.sonatype.nexus.index.updater.IndexUpdater;
 
 /**
  *
@@ -169,7 +165,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
-    private WagonManager wagonManager;
     private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
@@ -242,7 +237,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
-                wagonManager = embedder.lookup(WagonManager.class);
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
@@ -495,8 +489,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 LOGGER.finer("Indexing Remote Repository :" + repo.getId());//NOI18N
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
-                    IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    iur.setResourceFetcher(new WagonFetcher(listener));
+                    // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
+                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
+                    IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
                     listener.close();
@@ -515,6 +510,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } catch (IOException x) {
             LOGGER.log(Level.INFO, "could not index " + repo.getId(), x);
             //handle index not found
+        } catch (ComponentLookupException x) {
+            LOGGER.log(Level.INFO, "could not find protocol handler for " + repo.getRepositoryUrl(), x);
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
@@ -1277,45 +1274,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         public @Override boolean updateArtifactInfo(Document doc, ArtifactInfo ai) {
             return false;
-        }
-    }
-
-    /** XXX use WagonHelper when available (3.0.5?) */
-    private class WagonFetcher extends AbstractResourceFetcher {
-        private final TransferListener listener;
-        private Wagon wagon = null;
-        WagonFetcher(TransferListener listener) {
-            this.listener = listener;
-        }
-        @SuppressWarnings("deprecation") // XXX what is best replacement for getWagon? getRemoteFile does not hold open a connection
-        public @Override void connect(final String id, final String url) throws IOException {
-            Repository repository = new Repository(id, url);
-            try {
-                wagon = wagonManager.getWagon(repository);
-                wagon.addTransferListener(listener);
-                wagon.connect(repository);
-            } catch (WagonException x) {
-                throw new IOException(url + ": " + x, x);
-            }
-        }
-        public @Override void disconnect() {
-            if (wagon != null) {
-                try {
-                    wagon.disconnect();
-                } catch (ConnectionException x) {
-                    listener.debug(x.toString());
-                }
-            }
-        }
-        public @Override void retrieve(final String name, final File targetFile) throws IOException {
-            LOGGER.log(Level.FINE, "retrieving {0} from {1}", new Object[] {name, wagon.getRepository().getUrl()});
-            try {
-                wagon.get(name, targetFile);
-            } catch (ResourceDoesNotExistException x) {
-                throw (FileNotFoundException) new FileNotFoundException(name + ": " + x).initCause(x);
-            } catch (WagonException x) {
-                throw new IOException(name + ": " + x, x);
-            }
         }
     }
 

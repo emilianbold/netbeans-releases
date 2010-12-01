@@ -1537,6 +1537,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 @SuppressWarnings("unchecked")
                 List<T> lst = (List<T>) comp;
                 for (T c : lst) {
+                    if (c.getModel() == null) {
+                        LOG.log(Level.WARNING, "#177548: null model for {0}", c);
+                        continue;
+                    }
                     Object keyGen = keyGenerator.generate(c);
                     List<T> currentCut = cut.get(keyGen);
                     if (currentCut == null) {

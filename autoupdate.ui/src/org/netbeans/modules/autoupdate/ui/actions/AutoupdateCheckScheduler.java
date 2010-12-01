@@ -109,15 +109,17 @@ public class AutoupdateCheckScheduler {
             // schedule refresh providers
             // install update checker when UI is ready (main window shown)
             WindowManager.getDefault().invokeWhenUIReady(new Runnable () {
+                @Override
                 public void run () {
-                    RequestProcessor.getDefault ().post (doCheck, 5000);
+                    Installer.RP.post (doCheck, 5000);
                 }
             });
         } else {
             // install update checker when UI is ready (main window shown)
             WindowManager.getDefault().invokeWhenUIReady(new Runnable () {
+                @Override
                 public void run () {
-                    RequestProcessor.getDefault ().post (doCheckLazyUpdates, 11000);
+                    Installer.RP.post (doCheckLazyUpdates, 11000);
                 }
             });
         }
@@ -127,7 +129,7 @@ public class AutoupdateCheckScheduler {
         refreshUpdateCenters (null);
         final int delay = 500;
         final long startTime = System.currentTimeMillis ();
-        RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
+        RequestProcessor.Task t = Installer.RP.post (doCheckAvailableUpdates, delay);
         t.addTaskListener (new TaskListener () {
             public void taskFinished (Task task) {
                 task.removeTaskListener (this);
@@ -167,7 +169,7 @@ public class AutoupdateCheckScheduler {
     private static Runnable doCheckAvailableUpdates = new Runnable () {
         public void run () {
             if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+                Installer.RP.post (doCheckAvailableUpdates);
                 return ;
             }
             boolean hasUpdates = false;
@@ -179,12 +181,12 @@ public class AutoupdateCheckScheduler {
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
                 LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
             }
-            RequestProcessor.getDefault ().post (doCheckLazyUpdates, 500);
+            Installer.RP.post (doCheckLazyUpdates, 500);
         }
     };
     
     public static void runCheckAvailableUpdates (int delay) {
-        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
+        Installer.RP.post (doCheckAvailableUpdates, delay);
     }
 
     public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
@@ -421,9 +423,10 @@ public class AutoupdateCheckScheduler {
     }
     
     private static Runnable doCheck = new Runnable () {
+        @Override
         public void run() {
             if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doCheck);
+                Installer.RP.post (doCheck);
                 return ;
             }
             if (timeToCheck ()) {
@@ -437,9 +440,10 @@ public class AutoupdateCheckScheduler {
     };
     
     private static Runnable doCheckLazyUpdates = new Runnable () {
+        @Override
         public void run () {
             if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doCheckLazyUpdates);
+                Installer.RP.post (doCheckLazyUpdates);
                 return ;
             }
             Collection<LazyUnit> updates = LazyUnit.loadLazyUnits (OperationType.UPDATE);
@@ -504,7 +508,7 @@ public class AutoupdateCheckScheduler {
                         if (pluginManagerUI != null) {
                             pluginManagerUI.updateUnitsChanged();
                         }
-                        RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+                        Installer.RP.post (doCheckAvailableUpdates);
                     }
                 }
             }

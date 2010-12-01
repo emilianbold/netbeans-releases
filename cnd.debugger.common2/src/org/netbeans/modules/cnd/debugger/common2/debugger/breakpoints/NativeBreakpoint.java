@@ -1885,8 +1885,7 @@ public abstract class NativeBreakpoint
 		c.removeAnnotations();
 	    }
 	} else {
-	    for (int ax = 0; ax < annotations.size(); ax++) {
-		DebuggerAnnotation a = annotations.get(ax);
+	    for (DebuggerAnnotation a : annotations) {
 		a.setLine(null, true);
 		a.removeInstBpt(this);
 	    } 
@@ -1991,7 +1990,7 @@ public abstract class NativeBreakpoint
     public boolean isVisitable() {
 	if (annotations == null)
 	    return false;
-	else if (annotations.size() == 0)
+	else if (annotations.isEmpty())
 	    return false;
 	else
 	    return true;
@@ -2017,8 +2016,7 @@ public abstract class NativeBreakpoint
      * Return true if this NativeBreakpoint has an annotation on the given line.
      */
     public boolean matchesLine(String src, int line) {
-	for (int ax = 0; ax < annotations.size(); ax++) {
-	    DebuggerAnnotation a = annotations.get(ax);
+	for (DebuggerAnnotation a : annotations) {
 	    if (a.matchesLine(src, line))
 		return true;
 	}
@@ -2168,7 +2166,7 @@ public abstract class NativeBreakpoint
 	return pos.equals(((NativeBreakpoint)that).pos, comparator);
     }
 
-    private String getAnnotationType() {
+    public String getAnnotationType() {
         StringBuilder type = new StringBuilder();
         if (!isEnabled()) {
 	    type.append(DebuggerAnnotation.TYPE_BPTX_DISABLED);
@@ -2196,13 +2194,13 @@ public abstract class NativeBreakpoint
 	}
 
 	String type = getAnnotationType();
-	for (int ax = 0; ax < annotations.size(); ax++) {
-	    DebuggerAnnotation a = annotations.get(ax);
+	for (DebuggerAnnotation a : annotations) {
 	    a.setAnnotationType(type);
 	    a.setShortDescription(getError());
 	    long addr = a.getAddr();
-	    if (addr != 0)
+	    if (addr != 0) {
 		a.enableInstBpt(this);
+            }
 	}
     }
 

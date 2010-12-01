@@ -156,7 +156,7 @@ public class TaskCache {
             PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8")); //NOI18N
             
             for (T err : errors) {
-                pw.print(convertor.getKind(err));
+                pw.print(convertor.getKind(err).name());
                 pw.print(':'); //NOI18N
                 pw.print(convertor.getLineNumber(err));
                 pw.print(':'); //NOI18N

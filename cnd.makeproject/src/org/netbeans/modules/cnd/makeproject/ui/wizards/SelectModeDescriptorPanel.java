@@ -250,7 +250,11 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             if (path.length() == 0) {
                 return null;
             }
-            return ConfigureUtils.findConfigureScript(path);
+            if (fileObject != null) {
+                return ConfigureUtils.findConfigureScript(fileObject);
+            } else {
+                return ConfigureUtils.findConfigureScript(path);
+            }
         }
 
         public String getMake(){

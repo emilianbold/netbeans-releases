@@ -192,19 +192,42 @@ public class SvnClientFactory {
             SvnConfigFiles.getInstance();
 
             if(factoryType == null ||
-               factoryType.trim().equals("") ||
-               factoryType.trim().equals("javahl"))
+               factoryType.trim().equals("")) {
+                if(setupJavaHl()) {
+                    return;
+                }
+                LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
+                if(setupSvnKit()) {
+                    return;
+                }          
+                LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
+                setupCommandline();
+            }
+            
+            if(factoryType.trim().equals("javahl"))
             {
-                if(!setupJavaHl()) {
-                    setupCommandline() ;
+                if(setupJavaHl()) {
+                    return;
                 }
+                LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
+                if(setupSvnKit()) {
+                    return;
+                }          
+                LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
+                setupCommandline();
             } else if(factoryType.trim().equals("svnkit")) {
-                if(!setupSvnKit()) {
-                    setupCommandline();
+                if(setupSvnKit()) {
+                    return;
                 }
+                LOG.log(Level.INFO, "SvnKit not available. Falling back on javahl.");
+                if(setupJavaHl()) {
+                    return;
+                }
+                LOG.log(Level.INFO, "JavaHL not available. Falling back on comandline.");
+                setupCommandline();
             } else if(factoryType.trim().equals("commandline")) {
                 setupCommandline();
-            } else {
+            } else {              
                 throw new SVNClientException("Unknown factory: " + factoryType);
             }
         } catch (SVNClientException e) {
@@ -334,8 +357,7 @@ public class SvnClientFactory {
 
     private boolean  setupSvnKit () {
         final SvnClientAdapterFactory f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.SVNKIT);
-        if(f == null) {
-            LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
+        if(f == null) {            
             return false;
         }
         factory = new ClientAdapterFactory() {

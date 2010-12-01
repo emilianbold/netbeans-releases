@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.ThrowTree;
+import java.util.Stack;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePathScanner;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +60,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -888,7 +892,8 @@ public class Utilities {
     private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
 
         private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
+        private final Set<Tree> seenTrees = new HashSet<Tree>();
+        private final Stack<Set<TypeMirror>> caughtExceptions = new Stack<Set<TypeMirror>>();
 
         public ExitsFromAllBranches(CompilationInfo info) {
             this.info = info;
@@ -924,6 +929,45 @@ public class Utilities {
         public Boolean visitClass(ClassTree node, Void p) {
             return false;
         }
+
+        @Override
+        public Boolean visitTry(TryTree node, Void p) {
+            Set<TypeMirror> caught = new HashSet<TypeMirror>();
+
+            for (CatchTree ct : node.getCatches()) {
+                TypeMirror t = info.getTrees().getTypeMirror(new TreePath(new TreePath(getCurrentPath(), ct), ct.getParameter()));
+
+                if (t != null) {
+                    caught.add(t);
+                }
+            }
+
+            caughtExceptions.push(caught);
+            
+            try {
+                return scan(node.getBlock(), p) == Boolean.TRUE || scan(node.getFinallyBlock(), p) == Boolean.TRUE;
+            } finally {
+                caughtExceptions.pop();
+            }
+        }
+
+        @Override
+        public Boolean visitThrow(ThrowTree node, Void p) {
+            TypeMirror type = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
+            boolean isCaught = false;
+
+            OUTER: for (Set<TypeMirror> caught : caughtExceptions) {
+                for (TypeMirror c : caught) {
+                    if (info.getTypes().isSubtype(type, c)) {
+                        isCaught = true;
+                        break OUTER;
+                    }
+                }
+            }
+
+            return super.visitThrow(node, p) == Boolean.TRUE || !isCaught;
+        }
+
     }
 
     public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {

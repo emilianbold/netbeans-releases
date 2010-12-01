@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.openide.text.Annotation;
 
 /**
@@ -70,6 +71,8 @@ public interface DisassemblyService {
      * @return
      */
     Annotation annotateAddress(String address, String annotationType);
+    
+    void movePC(long address, DebuggerAnnotation pcMarket);
 
     /**
      * Returns line number of the instruction with the address specified, -1 if not found
@@ -97,4 +100,6 @@ public interface DisassemblyService {
      * @return true if url is from disassembly file
      */
     boolean isDis(String url);
+    
+    boolean isInDis();
 }

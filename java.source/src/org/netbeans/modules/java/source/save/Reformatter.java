@@ -84,7 +84,6 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private CompilationController controller;
     private Document doc;
-    private int shift;
 
     public Reformatter(Source source, Context context) {
         this.source = source;
@@ -173,8 +172,8 @@ public class Reformatter implements ReformatTask {
     
     private void reformatImpl(Context.Region region, CodeStyle cs) throws BadLocationException {
         boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
-        int startOffset = region.getStartOffset() - shift;
-        int endOffset = region.getEndOffset() - shift;
+        int startOffset = region.getStartOffset();
+        int endOffset = region.getEndOffset();
         int originalEndOffset = endOffset;
         startOffset = controller.getSnapshot().getEmbeddedOffset(startOffset);
         if (startOffset < 0)
@@ -315,13 +314,10 @@ public class Reformatter implements ReformatTask {
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
             if (start == (-1) || end == (-1)) continue;
-            start += shift;
-            end += shift;
             doc.remove(start, end - start);
             if (text != null && text.length() > 0)
                 doc.insertString(start, text, null);
         }
-        shift = region.getEndOffset() - originalEndOffset;
         return;
     }
 
@@ -1062,7 +1058,7 @@ public class Reformatter implements ReformatTask {
                         lastBlankLines = lbl;
                         lastBlankLinesTokenIndex = lblti;
                         lastBlankLinesDiff = lbld;
-                        if (!isStandalone) {
+                        if (!isStandalone || !afterAnnotation) {
                             scan(annotations.next(), p);
                         } else {
                             wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
@@ -2905,6 +2901,9 @@ public class Reformatter implements ReformatTask {
                     diffs.removeFirst();
             }
             this.col = col;
+            if (index < lastBlankLinesTokenIndex) {
+                lastBlankLinesTokenIndex = -1;
+            }
         }
         
         private void appendToDiff(String s) {

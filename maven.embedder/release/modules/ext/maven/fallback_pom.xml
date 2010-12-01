@@ -1,12 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>error</groupId>
     <artifactId>error</artifactId>
     <packaging>pom</packaging>
     <version>0</version>
-    <name>&lt;misconfigured Maven project&gt;</name>
-    <description>This project could not be loaded by the NetBeans integration.
-    That usually means something is wrong with your pom.xml, or plugins are missing.
-    Select "Show and Resolve Problems" from the project's context menu for additional information.</description>
 </project>

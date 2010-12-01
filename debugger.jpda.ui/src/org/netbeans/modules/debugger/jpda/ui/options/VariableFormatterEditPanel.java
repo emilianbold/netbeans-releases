@@ -330,6 +330,10 @@ public class VariableFormatterEditPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        nameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.nameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classTypesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.classTypesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        subtypesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.subtypesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(valueFormatCheckBox, org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.valueFormatCheckBox.text")); // NOI18N
         valueFormatCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -438,6 +442,11 @@ public class VariableFormatterEditPanel extends javax.swing.JPanel {
                 .add(moveDownVarButton))
         );
 
+        addVarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.addVarButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeVarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.removeVarButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveUpVarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.moveUpVarButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveDownVarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.moveDownVarButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(testChildrenCheckBox, org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.testChildrenCheckBox.text")); // NOI18N
         testChildrenCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.testChildrenCheckBox.tooltip")); // NOI18N
         testChildrenCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -512,6 +521,11 @@ public class VariableFormatterEditPanel extends javax.swing.JPanel {
                 .add(testChildrenScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0))
         );
+
+        valueFormatCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.valueFormatCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        childrenFormatCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.childrenFormatCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        childrenCodeRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.childrenCodeRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        childrenVariablesRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.childrenVariablesRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

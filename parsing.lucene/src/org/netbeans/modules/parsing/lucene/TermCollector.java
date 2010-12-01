@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -74,6 +75,9 @@ public final class TermCollector {
         return doc2Terms.get(docId);
     }
     
+    Set<? extends Integer> docs() {
+        return Collections.unmodifiableSet(doc2Terms.keySet());
+    }    
     
     public static interface TermCollecting {
         void attach (TermCollector collector);

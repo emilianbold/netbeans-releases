@@ -344,7 +344,6 @@ public class ProcedureNode extends BaseNode {
     
     public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
-        private final MetadataElementHandle<Procedure> procedureHandle;
         private final ProcedureNodeProvider provider;
         private final String schema;
 
@@ -352,7 +351,6 @@ public class ProcedureNode extends BaseNode {
         private Oracle(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
-            procedureHandle = getLookup().lookup(MetadataElementHandle.class);
             this.provider = provider;
             this.schema = schema;
         }
@@ -403,7 +401,11 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public String getIconBase() {
-        switch (getType()) {
+        Type type = getType();
+        if (type == null) {
+            return null;
+        }
+        switch (type) {
             case Function:
                 return provider.getStatus(getName())  ? ICON_VALID_F : ICON_INVALID_F;
             case Procedure:

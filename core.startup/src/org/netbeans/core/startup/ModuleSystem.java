@@ -263,6 +263,13 @@ public final class ModuleSystem {
         }
     }
     
+    /** Refreshes the list of modules. Used from autoupdate.services.
+     * @since 1.28
+     */
+    public final void refresh() {
+        list.moduleListChanged();
+    }
+    
     /** Read disk settings and determine what the known modules are.
      */
     public void readList() {

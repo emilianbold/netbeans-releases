@@ -76,6 +76,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
+            "listModifiedIndexEntries", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
      * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
@@ -93,6 +94,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
+            "listModifiedIndexEntries", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.

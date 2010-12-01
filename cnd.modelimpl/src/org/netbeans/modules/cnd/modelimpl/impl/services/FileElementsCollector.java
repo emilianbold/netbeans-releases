@@ -217,7 +217,16 @@ public class FileElementsCollector {
             }
         }
         // gather this file maps
-        gatherDeclarationsMaps(CsmSelect.getDeclarations(file, filter), startOffset, endOffset, true);
+        if (endOffset == Integer.MAX_VALUE) {
+            filter = CsmSelect.getFilterBuilder().createKindFilter(
+                    CsmDeclaration.Kind.NAMESPACE_DEFINITION,
+                    CsmDeclaration.Kind.NAMESPACE_ALIAS,
+                    CsmDeclaration.Kind.USING_DECLARATION,
+                    CsmDeclaration.Kind.USING_DIRECTIVE);
+            gatherDeclarationsMaps(CsmSelect.getDeclarations(file, filter), startOffset, endOffset, true);
+        } else {
+            gatherDeclarationsMaps(CsmSelect.getDeclarations(file, filter), startOffset, endOffset, true);
+        }
     }
 
     protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset, boolean global) {
@@ -317,7 +326,7 @@ public class FileElementsCollector {
         }
     }
     
-    protected void gatherLocalNamespaceElementsFromMaps(CsmNamespaceDefinition ns, int end, int endOffset, boolean global) {
+    private void gatherLocalNamespaceElementsFromMaps(CsmNamespaceDefinition ns, int end, int endOffset, boolean global) {
         CharSequence nsName = ns.getQualifiedName();
         if (global) {
             for (CsmNamespaceDefinition nsd : globalDirectVisibleNamespaceDefinitions) {

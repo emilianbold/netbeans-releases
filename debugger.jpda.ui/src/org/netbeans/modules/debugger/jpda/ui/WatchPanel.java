@@ -369,7 +369,7 @@ public class WatchPanel {
         Runnable bindComponentToDocument = new Runnable() {
             public void run() {
                 String origText = editorPane.getText();
-                DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+                DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
                 Document editPaneDoc = editorPane.getDocument();
                 editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
                 editPaneDoc.putProperty(WrapperFactory.class,

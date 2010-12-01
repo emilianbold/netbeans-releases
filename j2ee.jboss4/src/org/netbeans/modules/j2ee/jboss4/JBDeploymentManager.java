@@ -168,11 +168,12 @@ public class JBDeploymentManager implements DeploymentManager {
                 final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
                 String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
 
+                env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
+                env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
+
                 File securityConf = new File(props.getRootDir(), "/client/auth.conf");
                 if (securityConf.exists()) {
                     env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
-                    env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
-                    env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
                     System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
                 }
 

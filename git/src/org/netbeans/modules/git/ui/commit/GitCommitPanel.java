@@ -45,7 +45,9 @@ package org.netbeans.modules.git.ui.commit;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,12 +61,15 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.MultiDiffPanelController;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -76,12 +81,11 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
-import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -106,15 +110,18 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
     private final Collection<GitHook> hooks;
     private final File[] roots;
     private final File repository;
+    private final boolean fromGitView;
 
-    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
-        super(table, parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
+    private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, 
+            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, boolean fromGitView, List<VCSCommitFilter> filters) {
+        super(table, parameters, preferences, hooks, hooksContext, filters, diffProvider);
         this.roots = roots;
         this.repository = repository;
-        this.hooks = hooks;        
+        this.hooks = hooks;
+        this.fromGitView = fromGitView;
     }
 
-    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user) {
+    public static GitCommitPanel create(final File[] roots, final File repository, GitUser user, boolean fromGitView) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
@@ -126,14 +133,22 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         
         DiffProvider diffProvider = new DiffProvider();
         
-        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        return new GitCommitPanel(new GitCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, fromGitView, createFilters(fromGitView));
+    }
+
+    private static void disableFilters () {
+        for (GitCommitFilter f : Arrays.asList(FILTER_HEAD_VS_INDEX, FILTER_HEAD_VS_WORKING)) {
+            f.setSelected(false);
+        }
     }
     
-    private static List<VCSCommitFilter> createFilters() {
-        List<VCSCommitFilter> filters = new LinkedList<VCSCommitFilter>();
-        filters.add(FILTER_HEAD_VS_WORKING);            
-        filters.add(FILTER_HEAD_VS_INDEX);
-        return filters;
+    private static List<VCSCommitFilter> createFilters (boolean gitViewStoredMode) {
+        // synchronize access to this static field
+        assert EventQueue.isDispatchThread();
+        disableFilters();
+        Mode mode = gitViewStoredMode ? GitModuleConfig.getDefault().getLastUsedModificationContext() : GitModuleConfig.getDefault().getLastUsedCommitViewMode();
+        (Mode.HEAD_VS_INDEX.equals(mode) ? GitCommitPanel.FILTER_HEAD_VS_INDEX : GitCommitPanel.FILTER_HEAD_VS_WORKING).setSelected(true);
+        return Arrays.<VCSCommitFilter>asList(FILTER_HEAD_VS_INDEX, FILTER_HEAD_VS_WORKING);
     }
     
     @Override
@@ -149,31 +164,74 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
     protected void computeNodes() {      
         computeNodesIntern();
     }
+
+    @Override
+    public boolean open (VCSContext context, HelpCtx helpCtx) {
+        // synchronize access to this static field
+        assert EventQueue.isDispatchThread();
+        boolean ok = super.open(context, helpCtx);
+        GitProgressSupport supp = support;
+        if (supp != null) {
+            supp.cancel();
+        }
+        if (ok && !fromGitView) {
+            GitModuleConfig.getDefault().setLastUsedCommitViewMode(getSelectedFilter() == GitCommitPanel.FILTER_HEAD_VS_INDEX ? Mode.HEAD_VS_INDEX : Mode.HEAD_VS_WORKING_TREE);
+        }
+        return ok;
+    }
     
     /** used by unit tests */
+    GitProgressSupport support;
     RequestProcessor.Task computeNodesIntern() {      
         final boolean refreshFinnished[] = new boolean[] { false };
         RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
-        final GitProgressSupport support = new GitProgressSupport( /*, cancel*/) {
+
+        GitProgressSupport supp = this.support;
+        if (supp != null) {
+            supp.cancel();
+        }
+        support = getProgressSupport(refreshFinnished);
+        final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"); //NOI18N
+        setupProgress(preparingMessage, support.getProgressComponent());
+        Task task = support.start(rp, repository, preparingMessage);
+        
+        // do not show progress in dialog if task finnished early        
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(!(refreshFinnished[0])) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProgress();                            
+                        }
+                    });                     
+                }
+            }
+        }, 1000);
+        return task;
+    }
+
+    // merge-type commit dialog can hook into this method
+    protected GitProgressSupport getProgressSupport (final boolean[] refreshFinished) {
+        return new GitProgressSupport() {
             @Override
             public void perform() {
                 try {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getCommitTable().setNodes(new GitFileNode[0]);                            
+                            getCommitTable().setNodes(new GitFileNode[0]);
                         }
                     });
-                    
                     // Ensure that cache is uptodate
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(roots);
-
-                    // the realy time consuming part is over; 
-                    // no need to show the progress component, 
+                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(roots)), this);
+                    // the realy time consuming part is over;
+                    // no need to show the progress component,
                     // which only makes the dialog flicker
-                    refreshFinnished[0] = true;
-                    
+                    refreshFinished[0] = true;
                     File[][] split = Utils.splitFlatOthers(roots);
                     List<File> fileList = new ArrayList<File>();
                     for (int c = 0; c < split.length; c++) {
@@ -219,36 +277,16 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                         }
                     });
                 } finally {
-                    refreshFinnished[0] = true;
+                    refreshFinished[0] = true;
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             stopProgress();
                         }
-                    });         
+                    });
                 }
             }
         };
-        final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit");        
-        setupProgress(preparingMessage, support.getProgressComponent());
-        Task task = support.start(rp, repository, preparingMessage);
-        
-        // do not show progress in dialog if task finnished early        
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(!(refreshFinnished[0])) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            showProgress();                            
-                        }
-                    });                     
-                }
-            }
-        }, 1000);
-        return task;
     }
     
     private EnumSet<Status> getAcceptedStatus() {
@@ -341,6 +379,126 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         public String getID() {
             return id;
         }
+
+        @Override
+        public void setSelected (boolean selected) {
+            super.setSelected(selected);
+        }
         
     }
+// <editor-fold defaultstate="collapsed" desc="dialog for merged repository">
+    static class GitCommitPanelMerged extends GitCommitPanel {
+
+        private final File repository;
+
+        static GitCommitPanel create(File[] roots, File repository, GitUser user) {
+            Preferences preferences = GitModuleConfig.getDefault().getPreferences();
+            String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
+
+            DefaultCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage, user);
+
+            Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
+            GitHookContext hooksCtx = new GitHookContext(roots, null, new GitHookContext.LogEntry[]{});
+
+            DiffProvider diffProvider = new DiffProvider();
+
+            return new GitCommitPanelMerged(new GitCommitTable(false), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        }
+
+        private GitCommitPanelMerged(GitCommitTable gitCommitTable, File[] roots, File repository, DefaultCommitParameters parameters,
+                Preferences preferences, Collection<GitHook> hooks, GitHookContext hooksCtx, DiffProvider diffProvider) {
+            super(gitCommitTable, roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, true, createFilters());
+            this.repository = repository;
+        }
+
+        private static List<VCSCommitFilter> createFilters() {
+            disableFilters();
+            FILTER_HEAD_VS_INDEX.setSelected(true);
+            return Collections.<VCSCommitFilter>singletonList(FILTER_HEAD_VS_INDEX);
+        }
+
+        @Override
+        protected GitProgressSupport getProgressSupport(boolean[] refreshFinnished) {
+            return new MergedCommitDialogProgressSupport(refreshFinnished);
+        }
+
+        private class MergedCommitDialogProgressSupport extends GitProgressSupport {
+
+            private final boolean refreshFinished[];
+
+            MergedCommitDialogProgressSupport(boolean[] refreshFinished) {
+                this.refreshFinished = refreshFinished;
+            }
+
+            @Override
+            public void perform() {
+                try {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            getCommitTable().setNodes(new GitFileNode[0]);
+                        }
+                    });
+                    // get list of modifications
+                    File[] files;
+                    try {
+                        files = getClient().listModifiedIndexEntries(new File[] { repository }, this);
+                    } catch (GitException ex) {
+                        GitClientExceptionHandler.notifyException(ex, true);
+                        return;
+                    }
+                    FileStatusCache cache = Git.getInstance().getFileStatusCache();
+                    if (isCanceled()) {
+                        return;
+                    }
+                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(files)), this);
+                    if (isCanceled()) {
+                        return;
+                    }
+
+                    // the realy time consuming part is over;
+                    // no need to show the progress component,
+                    // which only makes the dialog flicker
+                    refreshFinished[0] = true;
+                    files = cache.listFiles(new File[]{repository}, FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
+                    if (files.length == 0) {
+                        return;
+                    }
+
+                    ArrayList<GitFileNode> nodesList = new ArrayList<GitFileNode>(files.length);
+
+                    for (File file : files) {
+                        GitFileNode node = new GitFileNode(repository, file);
+                        nodesList.add(node);
+                    }
+                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[files.length]);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            getCommitTable().setNodes(nodes);
+                        }
+                    });
+                } finally {
+                    refreshFinished[0] = true;
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            stopProgress();
+                        }
+                    });
+                }
+            }
+        }
+
+        @Override
+        public void setErrorLabel (String htmlErrorLabel) {
+            if (htmlErrorLabel == null || htmlErrorLabel.isEmpty()) {
+                htmlErrorLabel = NbBundle.getMessage(GitCommitPanel.class, "MSG_CommitPanel.afterMerge"); //NOI18N
+            }
+            super.setErrorLabel(htmlErrorLabel);
+        }
+
+    }// </editor-fold>
 }

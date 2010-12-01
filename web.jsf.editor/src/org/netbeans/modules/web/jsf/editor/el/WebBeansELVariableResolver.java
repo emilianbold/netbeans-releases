@@ -48,7 +48,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -104,7 +104,7 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     }
 
     private List<WebBean> getWebBeans(FileObject context) {
-        JsfSupport jsfSupport = JsfSupport.findFor(context);
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context);
         return jsfSupport != null 
                 ? WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel())
                 : Collections.<WebBean>emptyList();

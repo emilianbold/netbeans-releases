@@ -5,4 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/kenai/ui/Bundle.propertie
 OpenIDE-Module-Layer: org/netbeans/modules/kenai/ui/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/kenai/ui/ModuleLifecycleManager.class
 OpenIDE-Module-Specification-Version: 1.5
-
