@@ -1426,6 +1426,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     public static @interface Registration {
         /** Name of the mode the component shall be opened in */
         String mode();
+        /** Position of the component within its mode. */
+        int position() default Integer.MAX_VALUE;
         /** Shall the component be opened at start */
         boolean openAtStartup();
     }

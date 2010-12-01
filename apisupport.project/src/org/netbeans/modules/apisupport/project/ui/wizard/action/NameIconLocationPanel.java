@@ -440,11 +440,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File iconFile =  chooser.getSelectedFile();
-            icon.setText(iconFile.getAbsolutePath());
-            {
+                icon.setText(iconFile.getAbsolutePath());
                 Set<File> allFiles = getPossibleIcons(getIconPath());
-                assert allFiles.contains(iconFile) : "#186459: icon.text=" + icon.getText() + " allFiles=" + allFiles + " iconFile=" + iconFile;
-                allFiles.remove(iconFile);
+                if (!allFiles.remove(iconFile)) {
+                    return; // #186459: user somehow selected a directory
+                }
                 boolean isIconSmall = UIUtil.isValidIcon(iconFile, 16, 16);
  
                 File secondIcon = null;
@@ -467,7 +467,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
                     largeIconPath = null;
                 }
                 
-            }
             updateData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed

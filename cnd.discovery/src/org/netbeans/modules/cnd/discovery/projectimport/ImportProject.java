@@ -84,6 +84,8 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -142,6 +144,7 @@ public class ImportProject implements PropertyChangeListener {
     private String makefileName = "Makefile";  // NOI18N
     private String makefilePath;
     private String configurePath;
+    private String configureRunFolder;
     private String configureArguments;
     private boolean runConfigure = false;
     private boolean manualCA = false;
@@ -192,12 +195,12 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
-        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);  // NOI18N
-        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);  // NOI18N
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); 
+        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
+        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
         projectName = projectFolder.getName();
         workingDir = nativeProjectPath;
-        configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);  // NOI18N
+        configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH); 
         if (configurePath != null) {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
@@ -206,6 +209,7 @@ public class ImportProject implements PropertyChangeListener {
             if (makefilePath == null) {
                 makefilePath = nativeProjectPath + "/Makefile"; // NOI18N;
             }
+            configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
         } else {
             makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
         }
@@ -265,6 +269,7 @@ public class ImportProject implements PropertyChangeListener {
             makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME); 
         }
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);
+        configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
         configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS);
         runConfigure = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)); // NOI18N
         consolidationStrategy = (String) wizard.getProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL); 
@@ -497,11 +502,17 @@ public class ImportProject implements PropertyChangeListener {
                         // duplicate configure variables in environment
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
                         ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                        if (configureRunFolder != null) {
+                            FileObject createdFolder = mkDir(configureFileObject.getParent(), configureRunFolder);
+                            if (createdFolder != null) {
+                                ses.setRunDirectory(createdFolder.getPath());
+                            }
+                        }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    CMakeExecSupport ses = node.getCookie(CMakeExecSupport.class);
                     try {
                         // extract configure variables in environment
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
@@ -513,13 +524,25 @@ public class ImportProject implements PropertyChangeListener {
                         }
                         ses.setArguments(new String[]{configureArguments});
                         ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                        if (configureRunFolder != null) {
+                            FileObject createdFolder = mkDir(configureFileObject.getParent(), configureRunFolder);
+                            if (createdFolder != null) {
+                                ses.setRunDirectory(createdFolder.getPath());
+                            }
+                        }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    QMakeExecSupport ses = node.getCookie(QMakeExecSupport.class);
                     try {
                         ses.setArguments(new String[]{configureArguments});
+                        if (configureRunFolder != null) {
+                            FileObject createdFolder = mkDir(configureFileObject.getParent(), configureRunFolder);
+                            if (createdFolder != null) {
+                                ses.setRunDirectory(createdFolder.getPath());
+                            }
+                        }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -588,6 +611,33 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
             isFinished = true;
         }
+    }
+
+    private FileObject mkDir(FileObject parent, String relative) {
+         if (relative != null) {
+            try {
+                relative.replace('\\', '/'); // NOI18N
+                for(String segment : relative.split("/")) { // NOI18N
+                    if (parent == null) {
+                        return null;
+                    }
+                    if (segment.isEmpty()) {
+                        continue;
+                    } else if (".".equals(segment)) { // NOI18N
+                        continue;
+                    } else if ("..".equals(segment)) { // NOI18N
+                        parent = parent.getParent();
+                    } else {
+                        parent = parent.createFolder(segment);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+             return parent;
+         }
+         return null;
     }
 
     private void downloadRemoteFile(File file){
