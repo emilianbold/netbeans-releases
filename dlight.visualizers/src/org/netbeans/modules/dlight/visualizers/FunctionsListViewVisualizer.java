@@ -71,7 +71,7 @@ public final class FunctionsListViewVisualizer extends TableViewVisualizer<Funct
     private final FunctionsListDataProvider dataProvider;
 
     FunctionsListViewVisualizer(final FunctionsListDataProvider dataProvider, final FunctionsListViewVisualizerConfiguration cfg) {
-        super(cfg);
+        super(dataProvider, cfg);
 
         this.dataProvider = dataProvider;
         this.metadata = cfg.getMetadata();

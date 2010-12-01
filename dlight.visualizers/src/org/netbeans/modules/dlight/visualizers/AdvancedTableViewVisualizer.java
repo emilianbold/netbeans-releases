@@ -71,7 +71,8 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
     private final String emptyRunningMessage;
 
     public AdvancedTableViewVisualizer(final TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
-        super(configuration);
+        super(provider, configuration);
+        
         this.provider = provider;
 
         final AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
@@ -90,7 +91,7 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
 
     @Override
     protected TableViewNodeChildren<DataRow> initChildren() {
-        return new AdvancedTableDataRowNodeChildren(getVisualizerConfiguration());
+        return new AdvancedTableDataRowNodeChildren(getVisualizerConfiguration(), getLookup());
     }
 
     @Override
