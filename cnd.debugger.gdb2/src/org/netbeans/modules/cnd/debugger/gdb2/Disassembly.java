@@ -447,7 +447,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         if (force || getAddressLine(curAddress) == -1) {
             intFileName = null; //frame.getOriginalFullName();
-            resolvedFileName = frame.getFullName();
+            resolvedFileName = frame.getFullPath();
             if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
                 requestMode = RequestMode.ADDRESS;
             }
