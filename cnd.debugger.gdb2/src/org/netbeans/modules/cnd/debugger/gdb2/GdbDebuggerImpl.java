@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -1055,7 +1056,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void makeCalleeCurrent() {
-        GdbFrame frame = getCurrentFrame();
+        Frame frame = getCurrentFrame();
         if (frame != null) {
             String number = frame.getNumber();
             makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
@@ -1063,7 +1064,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void makeCallerCurrent() {
-        GdbFrame frame = getCurrentFrame();
+        Frame frame = getCurrentFrame();
         if (frame != null) {
             String number = frame.getNumber();
             makeFrameCurrent(getStack()[Integer.valueOf(number)+1]);
@@ -1596,7 +1597,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
-    GdbFrame getCurrentFrame() {
+    public GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
                 if (frame.isCurrent()) {
@@ -1858,7 +1859,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void dataMIEval(final String expr) {
-        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        String expandedExpr = MacroSupport.expandMacro(this, expr);
+        String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -2390,7 +2392,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void createMIVar(final GdbVariable v) {
-        String expr = v.getVariableName();
+        String expr = MacroSupport.expandMacro(this, v.getVariableName());
         String cmdString = "-var-create - * " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
@@ -2399,6 +2401,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 protected void onDone(MIRecord record) {
 		    v.setAsText("{...}");// clear any error messages // NOI18N
 		    v.setInScope(true);
+                    updateValue(v, record);
                     interpVar(v, record);
                     finish();
                 }
