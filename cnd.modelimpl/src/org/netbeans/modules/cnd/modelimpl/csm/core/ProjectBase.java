@@ -759,13 +759,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 reopenUnit();
             }
 
-            projectRoots.fixFolder(nativeProject.getProjectRoot());
+            getProjectRoots().fixFolder(nativeProject.getProjectRoot());
             for (String root : nativeProject.getSourceRoots()) {
-                projectRoots.fixFolder(root);
+                getProjectRoots().fixFolder(root);
             }
-            projectRoots.addSources(sources);
-            projectRoots.addSources(headers);
-            projectRoots.addSources(excluded);
+            getProjectRoots().addSources(sources);
+            getProjectRoots().addSources(headers);
+            getProjectRoots().addSources(excluded);
             CreateFilesWorker worker = new CreateFilesWorker(this);
             worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
@@ -1552,6 +1552,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out.iterator();
     }
 
+    /**
+     * @return the projectRoots
+     */
+    protected abstract SourceRootContainer getProjectRoots();
+
     private static enum ComparisonResult {
 
         BETTER,
@@ -1715,7 +1720,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final boolean isMySource(String includePath) {
-        return projectRoots.isMySource(includePath);
+        return getProjectRoots().isMySource(includePath);
     }
 
     public abstract void onFileAdded(NativeFileItem nativeFile);
@@ -2689,7 +2694,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
-    protected final SourceRootContainer projectRoots = new SourceRootContainer();
     private NativeProjectListenerImpl projectListener;
 
     // test variables.

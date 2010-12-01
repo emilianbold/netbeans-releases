@@ -419,6 +419,12 @@ public final class ProjectImpl extends ProjectBase {
     }
     private final NativeFileContainer nativeFiles = new NativeFileContainer();
 
+    private final SourceRootContainer projectRoots = new SourceRootContainer(false);
+    @Override
+    protected SourceRootContainer getProjectRoots() {
+        return projectRoots;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     public 
