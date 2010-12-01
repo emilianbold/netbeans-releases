@@ -547,7 +547,10 @@ public final class ProjectSupport {
 		assert seed.conf == null;
 		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
 
+		/* CR 7000724 don't override configuration of existing project
 		populateConfiguration(seed);
+		 *
+		 */
 		break;
 	}
 	return;
