@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -132,11 +133,14 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -294,6 +298,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
+                } else {
+                    creators.add(new NotifyingIndexCreator());
                 }
                 try {
                     indexer.addIndexingContextForced(
@@ -492,7 +498,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
                     ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
-                    remoteIndexUpdater.fetchAndUpdateIndex(iur);
+                    NotifyingIndexCreator.beingIndexed = repo;
+                    NotifyingIndexCreator.handle = null;
+                    NotifyingIndexCreator.canceled = new AtomicBoolean();
+                    try {
+                        remoteIndexUpdater.fetchAndUpdateIndex(iur);
+                    } finally {
+                        NotifyingIndexCreator.beingIndexed = null;
+                        if (NotifyingIndexCreator.handle != null) {
+                            NotifyingIndexCreator.handle.finish();
+                            NotifyingIndexCreator.handle = null;
+                        }
+                        NotifyingIndexCreator.canceled = null;
+                    }
                 } finally {
                     listener.close();
                 }
@@ -515,6 +533,35 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
+        }
+    }
+    /** Just tracks what is being unpacked after a remote index has been downloaded. */
+    private static final class NotifyingIndexCreator implements IndexCreator {
+        static RepositoryInfo beingIndexed;
+        static ProgressHandle handle;
+        static AtomicBoolean canceled;
+        public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
+            if (canceled.get()) {
+                throw new Cancellation();
+            }
+            if (handle == null) {
+                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "LBL_unpacking", beingIndexed.getName()), new Cancellable() {                    {
+                        Cancellation.register(this);
+                    }
+                    public @Override boolean cancel() {
+                        return canceled.compareAndSet(false, true);
+                    }
+                });
+                handle.start();
+            }
+            handle.progress(artifactInfo.groupId + ':' + artifactInfo.artifactId);
+        }
+        public @Override Collection<IndexerField> getIndexerFields() {
+            return Collections.emptySet();
+        }
+        public @Override void populateArtifactInfo(ArtifactContext artifactContext) throws IOException {}
+        public @Override boolean updateArtifactInfo(Document document, ArtifactInfo artifactInfo) {
+            return false;
         }
     }
 
