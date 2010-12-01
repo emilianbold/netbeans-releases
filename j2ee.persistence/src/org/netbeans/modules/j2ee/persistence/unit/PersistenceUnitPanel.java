@@ -420,6 +420,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         }
     }
     
+    @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (source == nameTextField) {
             persistenceUnit.setName((String) value);
@@ -433,9 +434,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             }
         } else if (source == libraryComboBox){
             setProvider();
+            //store some common properties valid for all providers
+
+            //
             setTableGeneration();
         } else if (providerCombo == source){
             String prevProvider = persistenceUnit.getProvider();
+            //store some common properties valid for all providers
+            //
             setProvider();
             setDataSource();
             String curProvider = persistenceUnit.getProvider();
