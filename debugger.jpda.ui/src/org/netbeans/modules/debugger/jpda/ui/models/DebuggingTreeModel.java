@@ -404,6 +404,19 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         fireModelChange(ev);
     }
 
+    private void fireNodeChildrenChanged (Object node) {
+        //System.err.println("FIRE node children changed ("+node+")");
+        //Thread.dumpStack();
+        try {
+            recomputeChildren();
+        } catch (UnknownTypeException ex) {
+            Exceptions.printStackTrace(ex);
+            return ;
+        }
+        ModelEvent ev = new ModelEvent.NodeChanged(this, node, ModelEvent.NodeChanged.CHILDREN_MASK);
+        fireModelChange(ev);
+    }
+
 
     /**
      * Listens on JPDADebugger state property and updates all threads hierarchy.
@@ -478,9 +491,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 JPDAThread t = (JPDAThread) e.getOldValue();
                 if (showThreadGroups) {
                     tg = t.getParentThreadGroup();
-                    while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
+                    /*while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
                         tg = tg.getParentThreadGroup();
-                    }
+                    }*/
                 }
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_GROUP_ADDED) {
                 if (showThreadGroups) {
@@ -523,7 +536,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                     nodesToRefresh.clear();
                 }
                 for (Object node : nodes) {
-                    tm.fireNodeChanged(node);
+                    tm.fireNodeChildrenChanged(node);
                 }
             }
         }
@@ -531,12 +544,23 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     
     private void fireThreadStateChanged (JPDAThread node) {
+        boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
         if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
-            fireNodeChanged(ROOT);
+            Object parent = null;
+            if (showThreadGroups) {
+                parent = node.getParentThreadGroup();
+            }
+            if (parent == null) parent = ROOT;
+            fireNodeChildrenChanged(parent);
         } else if (!preferences.getBoolean(SHOW_SYSTEM_THREADS, false)
                    && isSystem(node)) {
 
-            fireNodeChanged(ROOT);
+            Object parent = null;
+            if (showThreadGroups) {
+                parent = node.getParentThreadGroup();
+            }
+            if (parent == null) parent = ROOT;
+            fireNodeChildrenChanged(parent);
         }
         try {
             recomputeChildren(node);

@@ -495,13 +495,13 @@ public class ProviderUtil {
         if (providers == null) {
             providers = getAllProviders();
         }
-        HashSet<Provider> candidates = new HashSet<Provider>();
+        Set<Provider> candidates = new HashSet<Provider>();
         for (Provider each : providers) {
             if (each.getProviderClass().equals(persistenceUnit.getProvider())) {
                 candidates.add(each);
             }
         }
-        //Property[] properties = persistenceUnit.getProperties().getProperty2();
+        candidates = filterProvidersByProperties(candidates, persistenceUnit.getProperties().getProperty2());
         //
         if (candidates.size() == 1) {
             return candidates.iterator().next();
@@ -531,12 +531,12 @@ public class ProviderUtil {
     }
 
     //analize properties for best match provider version
-    private Set<Provider> filterProvidersByProperties(Set<Provider> providers, Property[] properties){
+    private static Set<Provider> filterProvidersByProperties(Set<Provider> providers, Property[] properties){
         Set<Provider> ret = null;
         if(providers == null || properties==null || properties.length==0){}
         else if(providers.size()<= 1) ret = new HashSet(providers);
         else {
-            ret = new HashSet();
+            ret = new HashSet(providers);
             HashMap <Integer, ArrayList<Provider>> rates = new HashMap<Integer, ArrayList<Provider>>();
             int lowrate = Integer.MAX_VALUE;
             for(Provider each : providers){
@@ -549,9 +549,8 @@ public class ProviderUtil {
                 if(rate<lowrate)lowrate=rate;
             }
             if(rates.size()>1){
-                rates.remove(lowrate);//remove only worst providers
+                for(Provider prov:rates.get(lowrate))ret.remove(prov);
             }
-            ret = new HashSet(rates.values());
         }
         return ret;
     }

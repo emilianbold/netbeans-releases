@@ -346,7 +346,7 @@ public class TaskProcessor {
                 if (frqs != null) {
                     for (Iterator<Request> it = frqs.iterator(); it.hasNext(); ) {
                         final Request rq = it.next();
-                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                        if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                             it.remove();
                             found = true;
 //                      break; todo: Some tasks are duplicated (racecondition?), remove even them, Prevent duplication of tasks
@@ -360,7 +360,7 @@ public class TaskProcessor {
                 //Sencond) Try to find it among started task
                 for (Iterator<Request> it = requests.iterator(); it.hasNext();) {
                     final Request rq = it.next();
-                    if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                    if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                         it.remove();
                         found = true;
                     }
@@ -369,7 +369,7 @@ public class TaskProcessor {
                 if (wrqs != null) {
                     for (Iterator<Request> it = wrqs.iterator(); it.hasNext(); ) {
                         final Request rq = it.next();
-                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                        if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                             it.remove();
                             found = true;
                         }
@@ -724,13 +724,16 @@ public class TaskProcessor {
                                                             waitingRequests.put (source, rc);
                                                         }
                                                         rc.add(r);
+                                                        LOGGER.log(Level.FINE, "Waiting Task: {0}", r.toString());      //NOI18N
                                                     } else {
                                                         requests.add(r);
+                                                        LOGGER.log(Level.FINE, "Rescheduling Waiting Task: {0}", r.toString()); //NOI18N
                                                     }
                                                 }
                                                 else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                     //The JavaSource was changed or canceled rechedule it now
                                                     requests.add(r);
+                                                    LOGGER.log(Level.FINE, "Rescheduling Canceled Task: {0}", r.toString()); //NOI18N
                                                 } else if (r.reschedule == ReschedulePolicy.ON_CHANGE) {
                                                     //Up to date JavaSource add it to the finishedRequests
                                                     Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
@@ -739,7 +742,10 @@ public class TaskProcessor {
                                                         finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
                                                     }
                                                     rc.add(r);
+                                                    LOGGER.log(Level.FINE, "Finished ON_CHANGE Task: {0}", r.toString()); //NOI18N
                                                 }
+                                            } else {
+                                                LOGGER.log(Level.FINE, "Removing Task: {0}", r.toString()); //NOI18N
                                             }
                                             toRemove.clear();
                                         }
@@ -753,9 +759,13 @@ public class TaskProcessor {
                                                         waitingRequests.put (source, rc);
                                                     }
                                                     rc.add(r);
+                                                    LOGGER.log(Level.FINE, "Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                } else {
                                                    requests.add(r);
+                                                   LOGGER.log(Level.FINE, "Rescheduling Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                }
+                                           } else {
+                                               LOGGER.log(Level.FINE, "Finished NEVER task: {0}", r.toString()); //NOI18N
                                            }
                                            toRemove.clear();
                                        }

@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -293,24 +294,25 @@ public class SourceUtilsTest extends NbTestCase {
 
         final Map<URL,List<URL>> deps = new HashMap<URL,List<URL>> ();
         deps.put (url1,deps0);
+        deps.put (url2,Collections.<URL>emptyList());
         deps.put (url3,deps1);
         deps.put (url4,deps2);
         deps.put (url5,deps3);
         
-        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps);
+        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps, Collections.<URL, List<URL>>emptyMap());
         assertEquals (1, result.size());
         assertEquals (url5,result.iterator().next());
         
-        result = SourceUtils.getDependentRootsImpl(url4, deps);
+        result = SourceUtils.getDependentRootsImpl(url4, deps, Collections.<URL, List<URL>>emptyMap());
         assertEquals (new URL[] {url4, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url3, deps);
+        result = SourceUtils.getDependentRootsImpl(url3, deps, Collections.<URL, List<URL>>emptyMap());
         assertEquals (new URL[] {url3, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url2, deps);
+        result = SourceUtils.getDependentRootsImpl(url2, deps, Collections.<URL, List<URL>>emptyMap());
         assertEquals (new URL[] {url2, url3, url4, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url1, deps);
+        result = SourceUtils.getDependentRootsImpl(url1, deps, Collections.<URL, List<URL>>emptyMap());
         assertEquals (new URL[] {url1, url3, url5}, result);
     }
     

@@ -115,6 +115,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -402,7 +403,7 @@ public class SourceUtils {
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
 
     /**
@@ -600,14 +601,50 @@ public class SourceUtils {
      */
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     public static Set<URL> getDependentRoots (final URL root) {
-        final Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
-        return getDependentRootsImpl (root, deps);
+        final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
+        final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
+        return getDependentRootsImpl (root, sourceDeps, binaryDeps);
     }
     
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
-    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> deps) {
-        //Create inverse dependencies        
+    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps) {
+        Set<URL> urls;
+
+        if (sourceDeps.containsKey(root)) {
+            urls = findReverseSourceRoots(root, sourceDeps);
+        } else {
+            FileObject rootFO = URLMapper.findFileObject(root);
+
+            if (rootFO != null) {
+                urls = new HashSet<URL>();
+
+                for (URL binary : findBinaryRootsForSourceRoot(rootFO, binaryDeps)) {
+                    List<URL> deps = binaryDeps.get(binary);
+
+                    if (deps != null) {
+                        urls.addAll(deps);
+                    }
+                }
+            } else {
+                urls = new HashSet<URL>();
+            }
+        }
+
+        //Filter non opened projects
+        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+        Set<URL> toRetain = new HashSet<URL>();
+        for (ClassPath cp : cps) {
+            for (ClassPath.Entry e : cp.entries()) {
+                toRetain.add(e.getURL());
+            }
+        }
+        urls.retainAll(toRetain);
+        return urls;
+    }    
+    
+    private static Set<URL> findReverseSourceRoots(final URL thisSourceRoot, Map<URL, List<URL>> deps) {
+        //Create inverse dependencies
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
             final URL u1 = entry.getKey();
@@ -624,7 +661,7 @@ public class SourceUtils {
         //Collect dependencies
         final Set<URL> result = new HashSet<URL>();
         final LinkedList<URL> todo = new LinkedList<URL> ();
-        todo.add (root);
+        todo.add (thisSourceRoot);
         while (!todo.isEmpty()) {
             final URL u = todo.removeFirst();
             if (!result.contains(u)) {
@@ -635,19 +672,25 @@ public class SourceUtils {
                 }
             }
         }
-        //Filter non opened projects
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
-        Set<URL> toRetain = new HashSet<URL>();
-        for (ClassPath cp : cps) {
-            for (ClassPath.Entry e : cp.entries()) {
-                toRetain.add(e.getURL());
+
+        return result;
+    }
+
+    private static Set<URL> findBinaryRootsForSourceRoot(FileObject sourceRoot, Map<URL, List<URL>> binaryDeps) {
+        Set<URL> result = new HashSet<URL>();
+
+        for (URL bin : binaryDeps.keySet()) {
+            for (FileObject s : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
+                if (s == sourceRoot) {
+                    result.add(bin);
+                }
             }
         }
-        result.retainAll(toRetain);
+
         return result;
-    }    
-    
-    //Helper methods    
+    }
+
+    //Helper methods
     
     /**
      * Returns classes declared in the given source file which have the main method.

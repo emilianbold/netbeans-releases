@@ -286,8 +286,6 @@ public class Reformatter implements ReformatTask {
                             if (text != null && t != null)
                                 text = text.length() > t.length() ? text.substring(t.length()) : null;
                         }
-                    } else if (templateEdit) {
-                        text = null;
                     }
                 }
                 start = startOffset;

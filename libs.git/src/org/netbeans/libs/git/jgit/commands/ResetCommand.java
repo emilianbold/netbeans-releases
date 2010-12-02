@@ -110,7 +110,7 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git reset"); //NOI18N
+        StringBuilder sb = new StringBuilder("git reset "); //NOI18N
         if (moveHead) {
             sb.append(resetType.toString()).append(" ").append(revisionStr); //NOI18N
         } else {
