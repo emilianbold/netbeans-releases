@@ -44,6 +44,7 @@ package org.netbeans.modules.dlight.visualizers.ui;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -53,8 +54,8 @@ public final class AdvancedTableDataRowNodeChildren extends TableViewNodeChildre
 
     private final AbstractDataRowNodeFactory factory;
 
-    public AdvancedTableDataRowNodeChildren(AdvancedTableViewVisualizerConfiguration cfg) {
-        factory = new AdvancedTableDataRowNodeFactory(cfg);
+    public AdvancedTableDataRowNodeChildren(AdvancedTableViewVisualizerConfiguration cfg, Lookup lookup) {
+        factory = new AdvancedTableDataRowNodeFactory(cfg, lookup);
     }
     
     @Override
