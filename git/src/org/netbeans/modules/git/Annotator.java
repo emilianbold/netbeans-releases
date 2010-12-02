@@ -72,6 +72,7 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.reset.ResetAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -146,6 +147,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(a);
                 }
+                actions.add(SystemAction.get(ResetAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
