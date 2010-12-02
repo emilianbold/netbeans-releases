@@ -1538,7 +1538,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
      * Put up a dialog to display an error message originating from the engine.
      * There is a fair bit of smarts and heuristics in here.
      */
-    public void error(int rt, Error error, NativeDebugger originatingDebugger) {
+    public void error(int rt, final Error error, NativeDebugger originatingDebugger) {
 
         // XXX WORKAROUND for dbx problem - see bugid (bugid here)
         if (error.isRedundantPathmap()) {
@@ -1633,7 +1633,11 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 
 
         if (!handled && (error.maxSeverity() == Error.Severity.ERROR)) {
-	    IpeUtils.postError(error.text());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    IpeUtils.postError(error.text());
+                }
+            });
         }
 
         refocusDialog();
