@@ -50,6 +50,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
@@ -93,7 +94,7 @@ public final class NamingFactory {
     
     public static synchronized FileNaming checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
         if (!childName.getFile().getName().equals(f.getName())) {
-            boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
+            boolean isCaseSensitive = !Utils.equals(new File(f,"a"), new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
                 FileName fn = (FileName)childName;
                 fn.updateCase(f.getName());
@@ -135,9 +136,9 @@ public final class NamingFactory {
             }
         }
     }
-
+    
     public static Integer createID(final File file) {
-        return file.hashCode();
+        return Utils.hashCode(file);
     }
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
         return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
@@ -190,7 +191,7 @@ public final class NamingFactory {
             cachedElement = null;
         }
 
-        if (cachedElement != null && cachedElement.getFile().equals(file)) {
+        if (cachedElement != null && Utils.equals(cachedElement.getFile(), file)) {
             retVal = cachedElement;
         } else {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
@@ -213,7 +214,7 @@ public final class NamingFactory {
     private static Reference getReference(NameRef value, File f) {
         while (value != null) {
             FileNaming fn = value.get();
-            if (fn != null && fn.getFile().equals(f)) {
+            if (fn != null && Utils.equals(fn.getFile(), f)) {
                 return value;
             }
             value = value.next();
