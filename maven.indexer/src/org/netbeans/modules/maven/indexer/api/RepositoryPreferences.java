@@ -45,13 +45,12 @@ import java.io.IOException;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -94,7 +93,7 @@ public final class RepositoryPreferences {
     public static final int FREQ_ONCE_DAY = 1;
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
-    private final Map<FileObject, RepositoryInfo> infoCache = new TreeMap<FileObject, RepositoryInfo>(new Comp());
+    private final Map<FileObject, RepositoryInfo> infoCache = new HashMap<FileObject, RepositoryInfo>();
     private static final String REPO_FOLDER = "Projects/org-netbeans-modules-maven/Repositories";
 
     //---------------------------------------------------------------------------
@@ -144,10 +143,13 @@ public final class RepositoryPreferences {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
         if (repoFolder != null) {
             synchronized (infoCache) {
-                for (FileObject fo : repoFolder.getChildren()) {
-                    if (!infoCache.containsKey(fo)) {
+                List<FileObject> repos = FileUtil.getOrder(Arrays.asList(repoFolder.getChildren()), false);
+                HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
+                for (FileObject fo : repos) {
+                    RepositoryInfo ri = infoCache.get(fo);
+                    if (ri == null) {
                         try {
-                            RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
+                            ri = RepositoryInfo.createRepositoryInfo(fo);
                             infoCache.put(fo, ri);
                         } catch (IllegalArgumentException x) {
                             LOG.log(Level.INFO, fo.getPath(), x);
@@ -156,15 +158,15 @@ public final class RepositoryPreferences {
                             } catch (IOException x2) {
                                 LOG.log(Level.INFO, null, x2);
                             }
+                            continue;
                         }
                     }
+                    toRet.add(ri);
+                    gone.remove(fo);
                 }
-                HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
-                gone.removeAll(Arrays.asList(repoFolder.getChildren()));
                 for (FileObject g : gone) {
                     infoCache.remove(g);
                 }
-                toRet.addAll(infoCache.values());
             }
         }
         return toRet;
@@ -289,41 +291,6 @@ public final class RepositoryPreferences {
 
     public void setIncludeSnapshots(boolean includeSnapshots) {
         getPreferences().putBoolean(PROP_SNAPSHOTS, includeSnapshots);
-    }
-
-
-    private static class Comp implements Comparator<FileObject> {
-
-        @Override
-        public int compare(FileObject o1, FileObject o2) {
-            if (!o1.isValid() && !o2.isValid()) {
-                return 0;
-            }
-            if (!o1.isValid()) {
-                return 1;
-            }
-            if (!o2.isValid()) {
-                return -1;
-            }
-            Integer pos1 = (Integer)o1.getAttribute("position");
-            if (pos1 == null) {
-                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
-                pos1 = o1.hashCode();
-            }
-            Integer pos2 = (Integer)o2.getAttribute("position");
-            if (pos2 == null) {
-                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
-                pos2 = o1.hashCode();
-            }
-            if (pos2 > pos1) {
-                return -1;
-            }
-            if (pos2 < pos1) {
-                return 1;
-            }
-            return 0;
-        }
-
     }
 
 }
