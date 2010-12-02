@@ -956,6 +956,34 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz179095.cc", 89, 25, "iz179095.cc", 51, 5);
     }
 
+    public void test1() throws Exception {
+        // TODO: doesn't work yet
+        performTest("ClassA.h", 12, 11, "ClassA.cc", 33, 1); // void publicFoo(ClassA a);
+    }
+    public void test2() throws Exception {
+        // TODO: doesn't work yet
+        performTest("ClassA.h", 13, 11, "ClassA.cc", 36, 1); // void publicFoo(const ClassA &a);
+    }
+    public void test4() throws Exception {
+        // TODO: doesn't work yet
+        performTest("ClassA.cc", 33, 15, "ClassA.h", 12, 5); // void ClassA::publicFoo(ClassA a)
+    }
+    public void test5() throws Exception {
+        // TODO: doesn't work yet
+        performTest("ClassA.cc", 36, 15, "ClassA.h", 13, 5); // void ClassA::publicFoo(const ClassA &a)
+    }
+
+    public void testMyInnerInt1() throws Exception {
+        // type name in return type to typedef
+        performTest("ClassA.h", 66, 10, "ClassA.h", 62, 5); // myInnerInt classMethodRetMyInnerInt();
+    }
+
+    public void testIZ145037() throws Exception {
+        // IZ#145037: "operator string" defintion incorrectly resolved
+        performTest("IZ145037_conversion_operators.cc", 20, 22, "IZ145037_conversion_operators.cc", 10, 9);
+        performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -980,34 +1008,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             performTest("ClassA.cc", 51, 15, "ClassA.h", 23, 5); // void ClassA::protectedFoo(const ClassA* const ar[])
         }
 
-        public void test1() throws Exception {
-            // TODO: doesn't work yet
-            performTest("ClassA.h", 12, 11, "ClassA.cc", 33, 1); // void publicFoo(ClassA a);
-        }
-        public void test2() throws Exception {
-            // TODO: doesn't work yet
-            performTest("ClassA.h", 13, 11, "ClassA.cc", 36, 1); // void publicFoo(const ClassA &a);
-        }
         public void test3() throws Exception {
             // TODO: doesn't work yet
             performTest("ClassA.h", 23, 11, "ClassA.cc", 51, 1); // void protectedFoo(const ClassA* const ar[]);
         }
-        public void test4() throws Exception {
-            // TODO: doesn't work yet
-            performTest("ClassA.cc", 33, 15, "ClassA.h", 12, 5); // void ClassA::publicFoo(ClassA a)
-        }
-        public void test5() throws Exception {
-            // TODO: doesn't work yet
-            performTest("ClassA.cc", 36, 15, "ClassA.h", 13, 5); // void ClassA::publicFoo(const ClassA &a)
-        }
+
         public void test6() throws Exception {
             // TODO: doesn't work yet
             performTest("ClassA.cc", 51, 15, "ClassA.h", 23, 5); // void ClassA::protectedFoo(const ClassA* const ar[])
-        }
-
-        public void testMyInnerInt1() throws Exception {
-            // type name in return type to typedef
-            performTest("ClassA.h", 66, 10, "ClassA.h", 62, 5); // myInnerInt classMethodRetMyInnerInt();
         }
 
         public void testMyInnerInt2() throws Exception {
@@ -1020,12 +1028,6 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             performTest("ClassB.h", 20, 15, "ClassB.h", 20, 5); //void method(const char*);
             performTest("ClassB.h", 12, 15, "ClassB.h", 22, 5); //void method(char*, double);
             performTest("ClassB.h", 24, 15, "ClassB.h", 24, 5); //void method(char*, char*);
-        }
-
-        public void testIZ145037() throws Exception {
-            // IZ#145037: "operator string" defintion incorrectly resolved
-            performTest("IZ145037_conversion_operators.cc", 20, 22, "IZ145037_conversion_operators.cc", 10, 9);
-            performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
         }
     }
 

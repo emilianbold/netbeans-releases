@@ -143,6 +143,19 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("explicit_specializations.cpp", 37, 9, "explicit_specializations.cpp", 8, 1);
     }
 
+    public void testIZ144156_func_spec_main() throws Exception {
+        performTest("template_fun_spec.cc", 9, 33, "template_fun_spec.cc", 35, 1); // base template
+        performTest("template_fun_spec.cc", 35, 33, "template_fun_spec.cc", 9, 1); // and back
+    }
+    public void testIZ144156_func_partial_spec_pair() throws Exception {
+        performTest("template_fun_spec.cc", 15, 33, "template_fun_spec.cc", 45, 1); // partial spec. for pair<T,T>
+        performTest("template_fun_spec.cc", 45, 33, "template_fun_spec.cc", 15, 1); // and back
+    }
+    public void testIZ144156_func_full_spec_pair_char() throws Exception {
+        performTest("template_fun_spec.cc", 21, 26, "template_fun_spec.cc", 55, 1); // full spec. for pair<char,char>
+        performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -150,19 +163,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
             return TemplateSpecializationsTestCase.class;
         }
 
-        public void testIZ144156_func_spec_main() throws Exception {
-            performTest("template_fun_spec.cc", 9, 33, "template_fun_spec.cc", 35, 1); // base template
-            performTest("template_fun_spec.cc", 35, 33, "template_fun_spec.cc", 9, 1); // and back
+        public void testExplicitSpecializations2() throws Exception {
+            // Improving specializations
+            performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
         }
-        public void testIZ144156_func_partial_spec_pair() throws Exception {
-            performTest("template_fun_spec.cc", 15, 33, "template_fun_spec.cc", 45, 1); // partial spec. for pair<T,T>
-            performTest("template_fun_spec.cc", 45, 33, "template_fun_spec.cc", 15, 1); // and back
-        }
-        public void testIZ144156_func_full_spec_pair_char() throws Exception {
-            performTest("template_fun_spec.cc", 21, 26, "template_fun_spec.cc", 55, 1); // full spec. for pair<char,char>
-            performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
-        }
-        
+
         public void testIZ143977_Parm_in_Loki_1() throws Exception {
             performTest("iz143977_1.cc", 45, 33, "iz143977_1.cc", 11, 9);
             performTest("iz143977_1.cc", 46, 33, "iz143977_1.cc", 12, 9);
@@ -171,11 +176,6 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         public void testIZ143977_Parm_in_Loki_4() throws Exception {
             performTest("iz143977_3.cc", 22, 36, "iz143977_3.cc", 8, 9);
             performTest("iz143977_3.cc", 23, 36, "iz143977_3.cc", 12, 9);
-        }
-
-        public void testExplicitSpecializations2() throws Exception {
-            // Improving specializations
-            performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
         }
 
         public Failed(String testName) {
