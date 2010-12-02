@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -128,6 +129,10 @@ public final class SourceCache {
             }
             return snapshot;
         }
+    }
+    
+    public @NonNull Source getSource() {
+        return this.source;
     }
 
     Snapshot createSnapshot (long[] idHolder) {

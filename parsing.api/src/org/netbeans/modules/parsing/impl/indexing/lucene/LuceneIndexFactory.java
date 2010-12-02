@@ -43,9 +43,10 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.IOException;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
@@ -56,28 +57,31 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Zezula
  */
 public class LuceneIndexFactory implements IndexFactoryImpl {
+    
+    private static final int VERSION = 1;
+
 
     @Override
-    public IndexDocumentImpl createDocument(final Indexable indexable) {
+    public IndexDocument createDocument(final Indexable indexable) {
         assert indexable !=null;
-        return new LuceneDocument(indexable);
+        return IndexManager.createDocument(indexable.getRelativePath());
     }
 
     @Override
-    public IndexImpl createIndex (Context ctx) throws IOException {
+    public DocumentIndex createIndex (Context ctx) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
         return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.CREATE);
     }
 
     @Override
-    public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
+    public DocumentIndex getIndex(final FileObject indexFolder) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
         return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.IF_EXIST);
     }
 
     private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
-        final String indexVersion = Integer.toString(DocumentBasedIndex.VERSION);
+        final String indexVersion = Integer.toString(VERSION);
         final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
         return luceneIndexFolder;
     }
