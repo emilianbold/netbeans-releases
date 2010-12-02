@@ -127,6 +127,22 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug187258.cpp", 21, 45, "bug187258.cpp", 6, 5);
     }
 
+    public void testExplicitSpecializations() throws Exception {
+        // Improving specializations
+        performTest("explicit_specializations.cpp", 5, 11, "explicit_specializations.cpp", 8, 1);
+//        performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
+        performTest("explicit_specializations.cpp", 15, 11, "explicit_specializations.cpp", 18, 1);
+        performTest("explicit_specializations.cpp", 18, 64, "explicit_specializations.cpp", 15, 5);
+        performTest("explicit_specializations.cpp", 22, 56, "explicit_specializations.cpp", 24, 1);
+        performTest("explicit_specializations.cpp", 24, 56, "explicit_specializations.cpp", 22, 1);
+        
+        performTest("explicit_specializations.cpp", 25, 5, "explicit_specializations.cpp", 4, 5);
+
+        performTest("explicit_specializations.cpp", 31, 9, "explicit_specializations.cpp", 24, 1);
+        performTest("explicit_specializations.cpp", 34, 9, "explicit_specializations.cpp", 18, 1);
+        performTest("explicit_specializations.cpp", 37, 9, "explicit_specializations.cpp", 8, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -155,6 +171,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         public void testIZ143977_Parm_in_Loki_4() throws Exception {
             performTest("iz143977_3.cc", 22, 36, "iz143977_3.cc", 8, 9);
             performTest("iz143977_3.cc", 23, 36, "iz143977_3.cc", 12, 9);
+        }
+
+        public void testExplicitSpecializations2() throws Exception {
+            // Improving specializations
+            performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
         }
 
         public Failed(String testName) {

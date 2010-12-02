@@ -262,7 +262,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
 
-    private void addMember(CsmMember member, boolean global) {
+    protected void addMember(CsmMember member, boolean global) {
         if (global) {
             RepositoryUtils.put(member);
         }
