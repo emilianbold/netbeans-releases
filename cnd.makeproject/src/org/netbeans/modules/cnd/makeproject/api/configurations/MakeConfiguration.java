@@ -171,8 +171,8 @@ public class MakeConfiguration extends Configuration {
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
-        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
-        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
+        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null, this);
+        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null, this);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
         assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
@@ -436,7 +436,9 @@ public class MakeConfiguration extends Configuration {
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
+        getCCompilerConfiguration().setOwner(makeConf);
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
+        getCCCompilerConfiguration().setOwner(makeConf);
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
         getAssemblerConfiguration().assign(makeConf.getAssemblerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
@@ -575,7 +577,9 @@ public class MakeConfiguration extends Configuration {
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        clone.getCCompilerConfiguration().setOwner(clone);
         clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        clone.getCCCompilerConfiguration().setOwner(clone);
         clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
         clone.setAssemblerConfiguration(getAssemblerConfiguration().clone());
         clone.setLinkerConfiguration(getLinkerConfiguration().clone());

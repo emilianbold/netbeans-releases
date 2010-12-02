@@ -42,7 +42,6 @@
       </toolsSet>
       <compileType>
         <ccTool>
-          <commandLine>`pkg-config --cflags gtk+-2.0`</commandLine>
         </ccTool>
         <linkerTool>
           <linkerLibItems>
