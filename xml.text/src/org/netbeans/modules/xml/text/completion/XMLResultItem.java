@@ -68,7 +68,6 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  */
 class XMLResultItem implements CompletionItem {
     
-    private static final int XML_ITEMS_SORT_PRIORITY = 20;
     // text to be diplayed to user
     public final String displayText;
     private final String replacementText;
@@ -80,6 +79,7 @@ class XMLResultItem implements CompletionItem {
     public Color selectionBackground = new Color(204, 204, 255);
     private static JLabel rubberStamp = new JLabel();
     private boolean shift = false;
+    private final int position;
     
     static {
         rubberStamp.setOpaque( true );
@@ -89,16 +89,17 @@ class XMLResultItem implements CompletionItem {
      *
      * @param replacementText replacement text that is used as display name too
      */
-    public XMLResultItem(String replacementText){
-        this(replacementText, null);
+    public XMLResultItem(int position, String replacementText){
+        this(position, replacementText, null);
     }
     
     /**
      * @param displayText text to display or null if replacementText is OK
      */
-    public XMLResultItem(String replacementText, String displayText) {
+    public XMLResultItem(int position, String replacementText, String displayText) {
         this.replacementText = replacementText;
         this.displayText = displayText != null ? displayText : replacementText;
+        this.position = position;
     }
     
     /**
@@ -328,7 +329,7 @@ class XMLResultItem implements CompletionItem {
     }
     
     public int getSortPriority() {
-        return XML_ITEMS_SORT_PRIORITY;
+        return position;
     }
     
     public CharSequence getSortText() {
