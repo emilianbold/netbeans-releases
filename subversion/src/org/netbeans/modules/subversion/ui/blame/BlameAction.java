@@ -87,6 +87,11 @@ public class BlameAction extends ContextAction {
     }
 
     @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/subversion/resources/icons/annotate.png"; // NOI18N
+    }
+
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY;
     }

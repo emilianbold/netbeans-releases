@@ -26,7 +26,6 @@
     <conf name="Debug" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
@@ -40,7 +39,7 @@
                             WD="../hello1lib"
                             BC="${MAKE} -f Makefile CONF=Debug"
                             CC="${MAKE} -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-PLATFORM-X/libhello1lib.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libhello1lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -52,7 +51,7 @@
                             WD="../hello2lib"
                             BC="${MAKE} -f Makefile CONF=Debug"
                             CC="${MAKE} -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-PLATFORM-X/libhello2lib.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -64,7 +63,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-PLATFORM-X/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -76,7 +75,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-PLATFORM-X/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
@@ -89,7 +88,6 @@
     <conf name="Release" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -115,7 +113,7 @@
                             WD="../hello1lib"
                             BC="${MAKE} -f Makefile CONF=Release"
                             CC="${MAKE} -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-PLATFORM-X/libhello1lib.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libhello1lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -127,7 +125,7 @@
                             WD="../hello2lib"
                             BC="${MAKE} -f Makefile CONF=Release"
                             CC="${MAKE} -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-PLATFORM-X/libhello2lib.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -139,7 +137,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-PLATFORM-X/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -151,7 +149,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-PLATFORM-X/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

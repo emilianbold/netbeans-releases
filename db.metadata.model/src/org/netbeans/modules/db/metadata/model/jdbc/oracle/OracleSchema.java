@@ -109,7 +109,13 @@ public class OracleSchema extends JDBCSchema {
         try {
             driverName = dmd.getDriverName();
             driverVer = dmd.getDriverVersion();
-            if (dmd.getDatabaseMajorVersion() < 10 || types == null) {
+            int databaseMajorVersion = 0;
+            try {
+                databaseMajorVersion = dmd.getDatabaseMajorVersion();
+            } catch (UnsupportedOperationException use) {
+                LOGGER.log(Level.FINEST, "getDatabaseMajorVersion() on " + dmd, use);
+            }
+            if (databaseMajorVersion < 10 || types == null) {
                 return Collections.emptySet();
             }
             Set<String> result = new HashSet<String>();

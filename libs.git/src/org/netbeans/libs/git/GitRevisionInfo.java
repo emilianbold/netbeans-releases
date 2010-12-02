@@ -77,6 +77,12 @@ public interface GitRevisionInfo {
      * @return
      */
     public GitUser getAuthor ();
+
+    /**
+     * returns committer of this change set
+     * @return
+     */
+    public GitUser getCommitter ();
     
     /**
      * files affected by this change set

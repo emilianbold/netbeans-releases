@@ -146,8 +146,17 @@ public final class RepositoryPreferences {
             synchronized (infoCache) {
                 for (FileObject fo : repoFolder.getChildren()) {
                     if (!infoCache.containsKey(fo)) {
-                        RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
-                        infoCache.put(fo, ri);
+                        try {
+                            RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
+                            infoCache.put(fo, ri);
+                        } catch (IllegalArgumentException x) {
+                            LOG.log(Level.INFO, fo.getPath(), x);
+                            try {
+                                fo.delete();
+                            } catch (IOException x2) {
+                                LOG.log(Level.INFO, null, x2);
+                            }
+                        }
                     }
                 }
                 HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
@@ -200,7 +209,13 @@ public final class RepositoryPreferences {
             }
             if (info.getRepositoryUrl() != null) {
                 fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
+                String inferred = info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX;
+                Object stored = fo.getAttribute(KEY_INDEX_URL);
+                String updated = info.getIndexUpdateUrl();
+                // #16761 workaround; would prefer to simply store updated == inferred ? null : updated
+                if (!updated.equals(inferred) || (stored != null && !stored.equals(updated))) {
+                    fo.setAttribute(KEY_INDEX_URL, updated);
+                }
             }
         } catch (SyncFailedException x) {
             LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
@@ -261,7 +276,7 @@ public final class RepositoryPreferences {
     }
 
     public int getIndexUpdateFrequency() {
-        return getPreferences().getInt(PROP_INDEX_FREQ, FREQ_ONCE_WEEK);
+        return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
     }
 
     public Date getLastIndexUpdate(String repoId) {

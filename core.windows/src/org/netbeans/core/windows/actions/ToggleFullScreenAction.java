@@ -74,6 +74,7 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     public ToggleFullScreenAction() {
         addPropertyChangeListener( new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( Action.ACCELERATOR_KEY.equals(evt.getPropertyName()) ) {
                     synchronized( ToggleFullScreenAction.this ) {
@@ -86,12 +87,14 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
         });
     }
     
+    @Override
     public JComponent[] getMenuPresenters() {
         createItems();
         updateState();
         return menuItems;
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         updateState();
         return menuItems;
@@ -112,8 +115,7 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
         synchronized( this ) {
             createItems();
             menuItems[0].setSelected(null != frame 
-                    && (frame instanceof MainWindow)
-                    && ((MainWindow)frame).isFullScreenMode());
+                    && MainWindow.getInstance().isFullScreenMode());
         }
     }
     
@@ -129,22 +131,25 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     }
 
     /** Perform the action. Sets/unsets maximzed mode. */
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
-        MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
-        frame.setFullScreenMode( !frame.isFullScreenMode() );
+        MainWindow mainWindow = MainWindow.getInstance();
+        mainWindow.setFullScreenMode( !mainWindow.isFullScreenMode() );
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ToggleFullScreenAction.class, "CTL_ToggleFullScreenAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ToggleFullScreenAction.class);
     }
 
     @Override
     public boolean isEnabled() {
-        return WindowManager.getDefault().getMainWindow() instanceof MainWindow;
+        return WindowManager.getDefault().getMainWindow() == MainWindow.getInstance().getFrame();
     }
 }
 

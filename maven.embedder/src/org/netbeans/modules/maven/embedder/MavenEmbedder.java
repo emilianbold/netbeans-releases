@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
@@ -115,6 +116,10 @@ public final class MavenEmbedder {
         return plexus;
     }
 
+    public Properties getSystemProperties() {
+        return embedderConfiguration.getSystemProperties();
+    }
+
     private String getLocalRepositoryPath() {
         if (embedderConfiguration.getLocalRepository() != null) {
             return embedderConfiguration.getLocalRepository().getAbsolutePath();
@@ -139,7 +144,7 @@ public final class MavenEmbedder {
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
         req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
         req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
-        req.setSystemProperties(embedderConfiguration.getSystemProperties());
+        req.setSystemProperties(getSystemProperties());
         try {
             return settingsBuilder.build(req).getEffectiveSettings();
         } catch (SettingsBuildingException ex) {
@@ -289,7 +294,7 @@ public final class MavenEmbedder {
           req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
         }
         
-        req.setSystemProperties(embedderConfiguration.getSystemProperties());
+        req.setSystemProperties(getSystemProperties());
         req.setOffline(embedderConfiguration.isOffline());
         try {
             populator.populateDefaults(req);

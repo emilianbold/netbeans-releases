@@ -70,20 +70,20 @@ public class NbmsInDownloadedTabTest extends NbmAdvancedTestCase {
         super(testName);
     }
     
-    public void testNbmDependsOnLowerVersion () {
+    public void testNbmDependsOnLowerVersion () throws IOException {
         URL higherEngineURL = TestUtils.class.getResource ("data/org-yourorghere-engine-1-2.nbm");
         assertNotNull ("URL data/org-yourorghere-engine-1-2.nbm exits", higherEngineURL);
-        File higherEngineNbm = new File (higherEngineURL.getFile ());
+        File higherEngineNbm = TestUtils.getFile(this, higherEngineURL);
         assertTrue ("File data/org-yourorghere-engine-1-2.nbm exits.", higherEngineNbm.exists ());
         
         URL dependingURL = TestUtils.class.getResource ("data/org-yourorghere-depending.nbm");
         assertNotNull ("URL data/org-yourorghere-depending.nbm exits", higherEngineURL);
-        File dependingNbm = new File (dependingURL.getFile ());
+        File dependingNbm = TestUtils.getFile(this, dependingURL);
         assertTrue ("File data/org-yourorghere-depending.nbm exits.", dependingNbm.exists ());
         
         URL independentURL = TestUtils.class.getResource ("data/org-yourorghere-independent-1-1.nbm");
         assertNotNull ("URL data/org-yourorghere-independent-1-1.nbm exits", independentURL);
-        File independentNbm = new File (independentURL.getFile ());
+        File independentNbm = TestUtils.getFile(this, independentURL);
         assertTrue ("File data/org-yourorghere-independent-1-1.nbm exits.", independentNbm.exists ());
         
         List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (

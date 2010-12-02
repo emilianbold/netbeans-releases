@@ -133,8 +133,11 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         assertSame(getExpectedVersion(), result[0].getSyntaxAnalyzerResult().getHtmlVersion());
 
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
-//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
-
+        
+        if(type != Match.EMPTY) {
+            assertNotNull("null completion query result", completionResult);
+        }
+        
         if (expectedItemsNames.length == 0 && completionResult == null) {
             //result may be null if we do not expect any result, nothing to test then
             return;
@@ -197,9 +200,8 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         assertNotNull(result[0]);
 
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
-//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
-        assertNotNull(result);
+        assertNotNull(completionResult);
         Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 

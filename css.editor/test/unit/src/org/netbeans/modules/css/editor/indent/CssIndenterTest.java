@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.css.editor.indent;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -66,7 +67,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 public class CssIndenterTest extends TestBase {
 
@@ -86,6 +86,12 @@ public class CssIndenterTest extends TestBase {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/x-jsp"), HTMLTokenId.language());
     }
 
+    public static Test xxsuite() throws IOException, BadLocationException {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new CssIndenterTest("testNativeEmbeddingFormattingCase2"));
+        return suite;
+    }
+    
     @Override
     protected boolean runInEQ() {
         return true;

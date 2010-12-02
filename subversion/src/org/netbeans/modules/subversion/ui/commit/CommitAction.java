@@ -137,6 +137,11 @@ public class CommitAction extends ContextAction {
         commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
     }
 
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/commit.png"; // NOI18N
+    }
+
     /**
      * Returns true if the given nodes are from the versioning view or the diff view.
      * In such case the deep scan is not required because the files and their statuses should already be known

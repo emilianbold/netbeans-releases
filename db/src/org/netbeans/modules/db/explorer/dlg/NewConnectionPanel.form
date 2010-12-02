@@ -5,6 +5,11 @@
     <Component class="javax.swing.ButtonGroup" name="inputModeButtonGroup">
     </Component>
   </NonVisualComponents>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ACD_NewConnectionPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
@@ -42,13 +47,13 @@
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="userField" alignment="1" pref="379" max="32767" attributes="2"/>
-                          <Component id="sidField" alignment="0" pref="379" max="32767" attributes="2"/>
-                          <Component id="serviceField" alignment="0" pref="379" max="32767" attributes="2"/>
-                          <Component id="tnsField" alignment="0" pref="379" max="32767" attributes="2"/>
-                          <Component id="dsnField" alignment="0" pref="379" max="32767" attributes="2"/>
-                          <Component id="serverNameField" alignment="0" pref="379" max="32767" attributes="2"/>
-                          <Component id="instanceField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="userField" alignment="1" pref="383" max="32767" attributes="2"/>
+                          <Component id="sidField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="serviceField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="tnsField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="dsnField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="serverNameField" alignment="0" pref="383" max="32767" attributes="2"/>
+                          <Component id="instanceField" alignment="0" pref="383" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="hostField" pref="230" max="32767" attributes="2"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -56,12 +61,12 @@
                               <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Component id="portField" min="-2" pref="105" max="-2" attributes="2"/>
                           </Group>
-                          <Component id="databaseField" alignment="1" pref="379" max="32767" attributes="2"/>
-                          <Component id="passwordField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="databaseField" alignment="1" pref="383" max="32767" attributes="2"/>
+                          <Component id="passwordField" alignment="0" pref="383" max="32767" attributes="2"/>
                           <Component id="bTestConnection" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="passwordCheckBox" alignment="0" min="-2" pref="256" max="-2" attributes="0"/>
-                          <Component id="urlField" alignment="1" pref="379" max="32767" attributes="2"/>
-                          <Component id="templateComboBox" alignment="1" pref="379" max="32767" attributes="2"/>
+                          <Component id="urlField" alignment="1" pref="383" max="32767" attributes="2"/>
+                          <Component id="templateComboBox" alignment="1" pref="383" max="32767" attributes="2"/>
                       </Group>
                   </Group>
                   <Component id="directUrlLabel" alignment="0" min="-2" max="-2" attributes="1"/>
@@ -397,8 +402,15 @@
     </Component>
     <Component class="javax.swing.JButton" name="bTestConnection">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Test Connection"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionPanel.bTestConnection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="NewConnectionWizard.bTestConnection.ACD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bTestConnectionActionPerformed"/>
       </Events>

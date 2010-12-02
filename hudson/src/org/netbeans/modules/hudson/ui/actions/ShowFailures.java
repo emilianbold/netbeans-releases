@@ -197,6 +197,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                         out.println(name, new OutputListener() {
                             public void outputLineAction(OutputEvent ev) {
                                 try {
+                                    // XXX try to find name in Java method index and open it instead
                                     URLDisplayer.getDefault().showURL(new URL(url +
                                             "testReport/" + c.className.replaceFirst("[.][^.]+$", "") + "/" + // NOI18N
                                             c.className.replaceFirst(".+[.]", "") + "/" + c.name + "/")); // NOI18Nb

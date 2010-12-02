@@ -6,7 +6,11 @@ all:
 	diff orig_dir/file_in_orig_dir lnk_dir/file_in_orig_dir
 	echo "new line" >> orig_dir/file_in_orig_dir
 	diff orig_dir/file_in_orig_dir lnk_dir/file_in_orig_dir
-	
+
+	diff orig_file abs_lnk_file
+	echo "new line" >> orig_file
+	diff orig_file abs_lnk_file
+
 clean:
 	
 create_links:

@@ -191,8 +191,8 @@ public class ProjectCreator {
 
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
-        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(workingDir));
-        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir));
+        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
@@ -214,7 +214,8 @@ public class ProjectCreator {
                         sub, // String workingDirectory
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                        "" //String output
+                        "", //String output // NOI18N
+                        extConf
                         )));
             }
         }
@@ -232,8 +233,8 @@ public class ProjectCreator {
         Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
-            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            makefilePath = CndPathUtilitities.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath));
+            makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
             importantItems.add(makefilePath);
             importantItemsIterator = importantItems.iterator();
         }
@@ -480,7 +481,8 @@ public class ProjectCreator {
                     sub, // String workingDirectory
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                    "" //String output
+                    "", //String output // NOI18N
+                    conf
                     )));
         }
         makeConfigurationDescriptor.save();

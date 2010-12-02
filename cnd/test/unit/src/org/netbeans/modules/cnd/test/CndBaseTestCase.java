@@ -256,6 +256,15 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         }
     }
 
+    protected final void cleanUserDir()  {
+        File userDir = getUserDir();
+        if (userDir.exists()) {
+            if (!removeDirectoryContent(userDir)) {
+                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
+            }
+        }
+    }
+
     protected List<Class<?>> getServices(){
         return Collections.<Class<?>>emptyList();
     }

@@ -239,7 +239,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeMakeLog.class, "NotFoundMakeLog")));
         }
-        return new ApplicableImpl(true, null, null, 80, false, null, null, null);
+        return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);
     }
 
     @Override

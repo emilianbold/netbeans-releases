@@ -256,6 +256,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("ClassNameAfterDeref.cc", 39, 25);
     }
 
+    public void test187254() throws Exception {
+        // #187254 -  unresolved full method name
+        performTest("ClassNameAfterDeref.cc", 43, 20, "ClassNameAfterDeref.cc", 12, 5);
+        performTest("ClassNameAfterDeref.cc", 44, 20, "ClassNameAfterDeref.cc", 12, 5);
+        performTest("ClassNameAfterDeref.cc", 43, 25, "ClassNameAfterDeref.cc", 16, 9);
+        performTest("ClassNameAfterDeref.cc", 44, 25, "ClassNameAfterDeref.cc", 15, 9);
+    }
+    
     public void testClassFwdTemplateParameters() throws Exception {
         // template parameters of class member forward template class declaration
         performTest("templateParameters.h", 36, 23, "templateParameters.h", 36, 13);

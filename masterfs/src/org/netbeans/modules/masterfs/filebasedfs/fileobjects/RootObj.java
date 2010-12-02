@@ -142,6 +142,9 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
     
     static void invokeRefreshFor(RefreshSlow slow, File[] files) {
+        invokeRefreshFor(slow, files, false);
+    }
+    static void invokeRefreshFor(RefreshSlow slow, File[] files, boolean ignoreRecursiveListeners) {
         //first normalize
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -191,15 +194,15 @@ public final class RootObj<T extends FileObject> extends FileObject {
             if (lf.size() == 1) {
                 for (File file : lf) {
                     if (file.getParentFile() == null) {
-                        factory.refresh(slow, true);
+                        factory.refresh(slow, ignoreRecursiveListeners, true);
                     } else {
-                        factory.refreshFor(slow, file);
+                        factory.refreshFor(slow, ignoreRecursiveListeners, file);
                     }
                 }
             } else if (lf.size() > 1) {
                 final File[] arr = lf.toArray(new File[lf.size()]);
                 Arrays.sort(arr);
-                factory.refreshFor(slow, arr);
+                factory.refreshFor(slow, ignoreRecursiveListeners, arr);
             }
         }
     }

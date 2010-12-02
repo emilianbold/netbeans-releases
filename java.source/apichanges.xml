@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="jdk7-update-2">
+             <api name="general"/>
+             <summary>DisjointTypeTree renamed to DisjunctiveTypeTree, AnnotationTypeTree has been removed</summary>
+             <version major="0" minor="70"/>
+             <date day="12" month="11" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility binary="incompatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="incompatible"/>
+             <description>
+                 <code>com.sun.source.tree.DisjointTypeTree</code> renamed to <code>com.sun.source.tree.DisjunctiveTypeTree</code> from javac,
+                 so adjusting <code>TreeMaker</code> to it. <code>com.sun.source.tree.AnnotationTypeTree</code> has been removed from javac and
+                 is no longer available.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+        </change>
         <change id="jdk7-update">
              <api name="general"/>
              <summary>Added several methods to support new API for modeling JDK7 features.</summary>

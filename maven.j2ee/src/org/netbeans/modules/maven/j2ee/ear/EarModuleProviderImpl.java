@@ -55,6 +55,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -62,8 +64,10 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
+import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -80,6 +84,8 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     private J2eeModule j2eemodule;
 
     private NbMavenProject mavenproject;
+    
+    private final DeployOnSaveSupport deployOnSaveSupport = new DeployOnSaveSupportProxy();
 
     
     /** Creates a new instance of MavenEarProvider */
@@ -92,7 +98,11 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     public EarImplementation2 getEarImplementation() {
         return earimpl;
     }
-    
+
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+    }
     
     public Ear findEar(FileObject file) {
         Project proj = FileOwnerQuery.getOwner(file);
@@ -242,5 +252,99 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         }
         return toRet.toArray(new FileObject[0]);
     }
+
+    @Override
+    public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
+        return new DeployOnSaveClassInterceptor() {
+
+            @Override
+            public Artifact convert(Artifact original) {
+                for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                    DeployOnSaveClassInterceptor interceptor = provider.getDeployOnSaveClassInterceptor();
+                    if (interceptor != null) {
+                        Artifact converted = interceptor.convert(original);
+                        if (converted != original) {
+                            return converted;
+                        }
+                    }
+                }
+                return original;
+            }
+        };
+    }
+
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return deployOnSaveSupport;
+    }
     
+    /**
+     * This class is proxying events from child listeners.
+     */
+    private class DeployOnSaveSupportProxy implements ArtifactListener, DeployOnSaveSupport {
+
+        private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+
+        public DeployOnSaveSupportProxy() {
+            super();
+        }
+
+        public synchronized void addArtifactListener(ArtifactListener listener) {
+            //copyOnSaveSupport.addArtifactListener(listener);
+
+            boolean register = listeners.isEmpty();
+            if (listener != null) {
+                listeners.add(listener);
+            }
+
+            if (register) {
+                for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                    DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                    if (support != null) {
+                        support.addArtifactListener(this);
+                    }
+                }
+            }
+        }
+
+        public synchronized void removeArtifactListener(ArtifactListener listener) {
+            //copyOnSaveSupport.removeArtifactListener(listener);
+
+            if (listener != null) {
+                listeners.remove(listener);
+            }
+
+            if (listeners.isEmpty()) {
+                for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                    DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                    if (support != null) {
+                        support.removeArtifactListener(this);
+                    }
+                }
+            }
+        }
+
+        public boolean containsIdeArtifacts() {
+            for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                if (support != null) {
+                    if (support.containsIdeArtifacts()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        
+        public void artifactsUpdated(Iterable<Artifact> artifacts) {
+            List<ArtifactListener> toFire = null;
+            synchronized (this) {
+                toFire = new ArrayList<ArtifactListener>(listeners);
+            }
+            for (ArtifactListener listener : toFire) {
+                listener.artifactsUpdated(artifacts);
+            }
+        }
+    }    
 }

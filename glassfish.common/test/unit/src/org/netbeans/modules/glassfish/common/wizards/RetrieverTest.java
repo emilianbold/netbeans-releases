@@ -161,7 +161,7 @@ public class RetrieverTest implements Retriever.Updater {
                 // bad url prefix
                 r = new Retriever(file,"http://localhost:" + server.getPort() + "/glassfishv3/preludezipfilename.tx",
                         "http://java.tent/download/",
-                        "http://java.net/download/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
+                        "http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
                         "glassfishv3");
                 r.run();
                 System.out.println("message="+message);
