@@ -301,7 +301,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         moduleCh.setComparator(MODULES_COMPARATOR);
         Set<NbModuleProject> modules = SuiteUtils.getSubProjects(ci.getProject());
         for (NbModuleProject modPrj : modules) {
-            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, 
+            NbModuleProvider nbmp = modPrj.getLookup().lookup(NbModuleProvider.class);
+            if (nbmp == null || nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT) {
+                continue;
+            }
+            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, nbmp,
                     ! disabledModuleCNB.contains(modPrj.getCodeNameBase()) && ci.isEnabled()) });
         }
         return new ClusterNode(ci, moduleCh);
@@ -987,22 +991,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     final class SuiteComponentNode extends Enabled {
-        private Project project;
+        private final Project project;
+        private final NbModuleProvider nbmp;
 
-        public SuiteComponentNode(Project prj, boolean enabled) {
+        public SuiteComponentNode(Project prj, NbModuleProvider nbmp, boolean enabled) {
             super(Children.LEAF, enabled);
             this.project = prj;
-            NbModuleProvider nbmp = prj.getLookup().lookup(NbModuleProvider.class);
-            if (nbmp == null) {
-                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                        "MSG_NotANBMProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
-                throw new IllegalArgumentException(msg);
-            }
-            if (nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT) {
-                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                        "MSG_NotASuiteComponentProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
-                throw new IllegalArgumentException(msg);
-            }
+            this.nbmp = nbmp;
             final String cnb = nbmp.getCodeNameBase();
             setName(cnb);
             setDisplayName(ProjectUtils.getInformation(prj).getDisplayName());
@@ -1016,7 +1011,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         public boolean isDeprecated() {
-            return ManifestManager.getInstance(Util.getManifest(project.getLookup().lookup(NbModuleProvider.class).getManifestFile()), false).isDeprecated();
+            return ManifestManager.getInstance(Util.getManifest(nbmp.getManifestFile()), false).isDeprecated();
         }
 
         @Override

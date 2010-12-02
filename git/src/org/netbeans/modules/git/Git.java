@@ -254,4 +254,13 @@ public final class Git {
     public boolean isDisconnected (File repository) {
         return gitVCS.isDisconnected(repository);
     }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getVCSInterceptor().getSeenRoots(repositoryRoot);
+    }
 }

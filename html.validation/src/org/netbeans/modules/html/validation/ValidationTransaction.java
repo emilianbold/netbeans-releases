@@ -628,10 +628,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
             reader.parse(documentInput);
         } catch (TooManyErrorsException e) {
-            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
         } catch (SAXException e) {
-            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
         } catch (IOException e) {
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.ioError(e);

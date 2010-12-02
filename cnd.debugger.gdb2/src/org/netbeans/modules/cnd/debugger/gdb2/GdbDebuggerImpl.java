@@ -3291,19 +3291,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		cmd += " -- 1";		// provide src lines as well // NOI18N
 
 	    } else {
-		// request by function name
-		String start = disStateModel().getFunction();
-		// Analogous to 6582172 for dbx
-		// The "??" for a function name comes from gdb itself.
-		if (start != null && (start.contains("@plt") || start.contains("??"))) { // NOI18N
-		    start = Address.toHexString0x(disStateModel().getPC(),
-						  true);
-		    cmd += " -s " + start; // NOI18N
-		    cmd += " -e " + start + "+1000"; // NOI18N
-		    // cmd += " -n " + -1;	// disassemble the whole function
-		    cmd += " -- 1";		// provide disassembly only // NOI18N
-		} else
-		    cmd = null;
+                cmd += " -s $pc -e \"$pc+1000\" -- 1"; //NOI18N
 	    }
 	    requestDisFromGdb(cmd);
         }
