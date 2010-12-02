@@ -37,43 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.spi;
+package org.netbeans.modules.maven.indexer.api;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider.Association;
 
-public class ProjectHudsonProviderTest extends NbTestCase {
+public class RepositoryPreferencesTest extends NbTestCase {
 
-    public ProjectHudsonProviderTest(String n) {
-        super(n);
+    public RepositoryPreferencesTest(String name) {
+        super(name);
     }
 
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testAssociation() throws Exception {
-        assertEquals("http://nowhere.net/", new Association("http://nowhere.net/", null).toString());
-        assertEquals("http://nowhere.net/job/foo%20bar/", new Association("http://nowhere.net/", "foo bar").toString());
-        try {
-            new Association("http://nowhere.net", null);
-            fail();
-        } catch (IllegalArgumentException x) {}
-        try {
-            new Association("http://nowhere.net/", "");
-            fail();
-        } catch (IllegalArgumentException x) {}
-        try {
-            new Association("http://nowhere.net/", " foo ");
-            fail();
-        } catch (IllegalArgumentException x) {}
-        assertEquals("http://nowhere.net/", Association.fromString("http://nowhere.net/").getServerUrl());
-        assertNull("http://nowhere.net/", Association.fromString("http://nowhere.net/").getJobName());
-        assertEquals("http://nowhere.net/", Association.fromString("http://nowhere.net/job/foo%20bar/").getServerUrl());
-        assertEquals("foo bar", Association.fromString("http://nowhere.net/job/foo%20bar/").getJobName());
-        assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/site/")); // #189254
-        assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/"));
-        assertEquals("Some Job", Association.fromString("http://nowhere.net/hudson/view/someview/job/Some%20Job/").getJobName());
+    public void testGetRepositoryInfos() throws Exception {
+        assertEquals("[local, central, java.net2]", RepositoryPreferences.getInstance().getRepositoryInfos().toString());
     }
 
 }

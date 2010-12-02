@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
@@ -147,31 +148,12 @@ public final class MavenEmbedder {
         req.setSystemProperties(getSystemProperties());
         try {
             return settingsBuilder.build(req).getEffectiveSettings();
-        } catch (SettingsBuildingException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (SettingsBuildingException x) {
+            Logger.getLogger(MavenEmbedder.class.getName()).log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
             return new Settings();
         }
     }
 
-// Can this be removed?
-//    public SettingsValidationResult validateSettings(File settingsFile) {
-//        SettingsValidationResult result = new SettingsValidationResult();
-//        if (settingsFile != null) {
-//            if (settingsFile.canRead()) {
-//                @SuppressWarnings("unchecked")
-//                List<String> messages = settingsBuilder.validateSettings(settingsFile).getMessages();
-//                for (String message : messages) {
-//                    result.addMessage(message);
-//                }
-//            } else {
-//                result.addMessage("Can not read settings file " + settingsFile.getAbsolutePath());
-//            }
-//        }
-//
-//        return result;
-//    }
-    
- 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
