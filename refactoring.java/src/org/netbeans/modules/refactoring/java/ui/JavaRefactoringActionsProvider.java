@@ -473,7 +473,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         //should the TreePathHandle handle elements of kind PACKAGE?
                         return null;
                     }
-                    return wrap(ChangeParametersUI.create(TreePathHandle.create(selected, info), info));
+                    return wrap(ChangeParametersUI.create(selectedElement, info));
                 }
             };
         } else {
