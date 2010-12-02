@@ -83,7 +83,7 @@ public class RemotePathTestCase extends RemoteFileTestBase {
         if (lastAssertion != null) {
             throw lastAssertion;
         }
-        String content = readFile(absPath);
+        String content = readRemoteFile(absPath);
         String text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
