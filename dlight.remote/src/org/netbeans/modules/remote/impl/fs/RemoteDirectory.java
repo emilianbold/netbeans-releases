@@ -48,10 +48,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
-import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,7 +60,7 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
-    private DirectoryAttributes attrs;
+    private volatile DirectoryAttributes attrs;
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             FileObject parent, String remotePath, File cache) {
@@ -81,18 +82,25 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
-    public boolean canWrite(String childNameExt) throws IOException {
+    /*package*/ boolean canWrite(String childNameExt) throws IOException {
         return getDirectoryAttrs().isWritable(childNameExt);
     }
 
     private DirectoryAttributes getDirectoryAttrs() throws IOException {
-        synchronized (this) {
-            if (attrs == null) {
-                attrs = new DirectoryAttributes(new File(cache, ChildrenSupport.FLAG_FILE_NAME));
-                attrs.load();
+        DirectoryAttributes result;
+        if (attrs != null) {
+            result = attrs;
+        } else {
+            result = fileSystem.getChildrenSupport().createDirectoryAttrs(cache);
+            synchronized (this) {
+                if (attrs == null) {
+                    attrs = result;
+                } else {
+                    result = attrs;
+                }
             }
         }
-        return attrs;
+        return result;
     }
 
     @Override
@@ -103,53 +111,40 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (relativePath.endsWith("/")) { // NOI18N
             relativePath = relativePath.substring(0,relativePath.length()-1);
         }
+        int slashPos = relativePath.lastIndexOf('/');
+        if (slashPos > 0) { // can't be 0 - see the check above
+            // relative path contains '/' => delegate to direct parent
+            String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
+            String childNameExt = relativePath.substring(slashPos + 1);
+            FileObject parentFileObject = fileSystem.findResource(parentRemotePath);
+            if (parentFileObject != null &&  parentFileObject.isFolder()) {
+                return parentFileObject.getFileObject(childNameExt);
+            } else {
+                return null;
+            }
+        }
+        RemoteLogger.assertTrue(slashPos == -1);
         try {
-            File file = new File(cache, relativePath);
-            if (!file.exists()) {
-                int slashPos = relativePath.lastIndexOf('/');
-                if (slashPos == -1) {
-                    String parentRemotePath = (remotePath.length() == 0) ? "/" : remotePath; // NOI18N
-                    DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, parentRemotePath);
-                    if (newAttrs != null) {
-                        attrs = newAttrs;
-                    }
+            DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, (remotePath.length() == 0) ? "/" : remotePath); // NOI18N
+            if (newAttrs != null) {
+                synchronized (this) {
+                    attrs = newAttrs;
+                }
+            }
+            if (!getDirectoryAttrs().exists(relativePath)) {
+                return null;
+            }
+            File cacheFile = new File(cache, relativePath);
+            if (!cacheFile.exists()) {
+                return null;
+            } else {
+                String remoteAbsPath = remotePath + '/' + relativePath;
+                if (cacheFile.isDirectory()) {
+                    return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, cacheFile);
                 } else {
-                    File parentFile = file.getParentFile();
-                    String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
-                    getChildrenSupport().ensureDirSync(parentFile, parentRemotePath);
-                }
-                
-                if (!file.exists()) {
-                    return null;
+                    return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, cacheFile);
                 }
             }
-
-            if (relativePath.indexOf('/') < 0) { // XXX: get rid of empty files; delegate to directories recursively, then remove this check
-                getChildrenSupport().ensureDirSync(cache, remotePath);
-                if (!getDirectoryAttrs().exists(relativePath)) {
-                    return null;
-                }
-            }
-
-            boolean resultIsDirectory = file.isDirectory();
-
-            StringBuilder remoteAbsPath = new StringBuilder(remotePath);
-//            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
-            File cacheFile = cache;
-            FileObject resultFileObject = this;
-            StringTokenizer pathTokenizer = new StringTokenizer(relativePath, "/"); // NOI18N
-            while (pathTokenizer.hasMoreTokens()) {
-                String pathComponent = pathTokenizer.nextToken();
-                remoteAbsPath.append('/').append(pathComponent);
-                cacheFile = new File(cacheFile.getPath() + '/' + pathComponent);
-                if (pathTokenizer.hasMoreElements() || resultIsDirectory) {
-                    resultFileObject = fileSystem.getFactory().createRemoteDirectory(resultFileObject, remoteAbsPath.toString(), cacheFile);
-                } else {
-                    resultFileObject = fileSystem.getFactory().createRemotePlainFile((RemoteDirectory) resultFileObject, remoteAbsPath.toString(), cacheFile);
-                }
-            }
-            return resultFileObject;
-
         } catch (CancellationException ex) {
             // TODO: clear CndUtils cache
             return null;
@@ -157,7 +152,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // don't report, this just means that we aren't connected
             return null;
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
@@ -188,7 +183,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             // never report CancellationException
         }

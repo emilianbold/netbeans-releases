@@ -110,6 +110,14 @@ public class ChildrenSupport {
         }
     }
 
+    public DirectoryAttributes createDirectoryAttrs(File directoryCacheFile) throws IOException {
+        synchronized (getLock(directoryCacheFile)) {
+            DirectoryAttributes attrs = new DirectoryAttributes(new File(directoryCacheFile, ChildrenSupport.FLAG_FILE_NAME));
+            attrs.load();
+            return attrs;
+        }
+    }
+
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         if (!file.exists() || file.length() == 0) {
             synchronized (getLock(file)) {
@@ -194,7 +202,7 @@ public class ChildrenSupport {
         final AtomicReference<IOException> criticalException = new AtomicReference<IOException>();
         final AtomicReference<IOException> nonCriticalException = new AtomicReference<IOException>();
         final AtomicBoolean dirCreated = new AtomicBoolean(false);
-        final DirectoryAttributes attrs = new DirectoryAttributes(flagFile);
+        final DirectoryAttributes attrs = new DirectoryAttributes(flagFile); // locking is a caller's responsibility
 
         LineProcessor outputProcessor = new LineProcessor() {
             @Override
