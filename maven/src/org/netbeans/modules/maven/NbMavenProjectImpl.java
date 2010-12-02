@@ -787,7 +787,7 @@ public final class NbMavenProjectImpl implements Project {
                             !("webapp".equalsIgnoreCase(name)) && //NOI18N
                             !("groovy".equalsIgnoreCase(name)) && //NOI18N
                             !("scala".equalsIgnoreCase(name)) //NOI18N
-                            && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
+                            && VisibilityQuery.getDefault().isVisible(new File(dir, name));
                 }
             });
             if (fls != null) { //#166709 listFiles() shall not return null for existing folders
