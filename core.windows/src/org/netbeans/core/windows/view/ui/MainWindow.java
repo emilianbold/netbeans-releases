@@ -147,7 +147,6 @@ public final class MainWindow {
         }
         inited = true;
 
-        frame.setLayeredPane(new JLayeredPane());
         JPanel contentPane = new JPanel(new BorderLayout()) {
             @Override
             public void paint(Graphics g) {
