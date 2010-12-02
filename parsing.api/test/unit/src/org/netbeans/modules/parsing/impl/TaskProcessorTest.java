@@ -47,14 +47,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -65,10 +68,18 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -120,6 +131,76 @@ public class TaskProcessorTest extends NbTestCase {
         assertNotNull("No warning when calling ParserManager.parse from AWT", warning[0]);
         assertEquals("Wrong message", msgTemplate, warning[0].getMessage());
         assertEquals("Suspiciosly wrong warning message (is the caller identified correctly?)", stackTraceUserTask.caller, warning[0].getParameters()[0]);
+    }
+    
+    public void testDeadlock() throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FooParserFactory(), new PlainKit());
+        final File workingDir = getWorkDir();        
+        final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
+        final Source src = Source.create(file);
+        final DataObject dobj = DataObject.find(file);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        final CountDownLatch start_a = new CountDownLatch(1);
+        final CountDownLatch start_b = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(1);
+        final CountDownLatch taskEnded = new CountDownLatch(1);
+        final Collection<SchedulerTask> tasks = Collections.<SchedulerTask>singleton(
+            new ParserResultTask<Parser.Result>() {
+                @Override
+                public void run(Result result, SchedulerEvent event) {
+                    taskEnded.countDown();
+                }
+
+                @Override
+                public int getPriority() {
+                    return 1000;
+                }
+
+                @Override
+                public Class<? extends Scheduler> getSchedulerClass() {
+                    return null;
+                }
+
+                @Override
+                public void cancel() {
+                }                    
+            });
+        TaskProcessor.addPhaseCompletionTasks(
+                tasks,
+                SourceAccessor.getINSTANCE().getCache(src),
+                true,
+                null);
+        taskEnded.await();
+        final Thread t = new Thread () {
+            @Override
+            public void run() {
+                NbDocument.runAtomic(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        start_a.countDown();
+                        try {
+                            start_b.await();
+                            synchronized(TaskProcessor.INTERNAL_LOCK) {
+                                end.await();
+                            }
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });                    
+            }
+        };
+        t.start();        
+        synchronized(TaskProcessor.INTERNAL_LOCK) {
+            start_b.countDown();
+            start_a.await();
+            SourceAccessor.getINSTANCE().getCache(src).invalidate();
+            TaskProcessor.removePhaseCompletionTasks(tasks, src);
+        }
+        end.countDown();
     }
 
     private static final class FooParserFactory extends ParserFactory {
