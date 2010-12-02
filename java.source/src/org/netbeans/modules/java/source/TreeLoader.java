@@ -393,6 +393,7 @@ public class TreeLoader extends LazyTreeLoader {
 
                     private static final String ctor_summary_name = "constructor_summary"; //NOI18N
                     private static final String method_summary_name = "method_summary"; //NOI18N
+                    private static final String field_detail_name = "field_detail"; //NOI18N
                     private static final String ctor_detail_name = "constructor_detail"; //NOI18N
                     private static final String method_detail_name = "method_detail"; //NOI18N
 
@@ -410,6 +411,8 @@ public class TreeLoader extends LazyTreeLoader {
                             } else if (method_summary_name.equals(attrName)) {
                                 // we have found desired javadoc method info anchor
                                 state = 20; //methods open
+                            } else if (field_detail_name.equals(attrName)) {
+                                state = 30; //end
                             } else if (ctor_detail_name.equals(attrName)) {
                                 state = 30; //end
                             } else if (method_detail_name.equals(attrName)) {
@@ -424,7 +427,7 @@ public class TreeLoader extends LazyTreeLoader {
                                     }
                                 }
                             }
-                        } else if (t == HTML.Tag.TR) {
+                        } else if (t == HTML.Tag.TABLE) {
                             if (state == 10 || state == 20)
                                 state++;
                         } else if (t == HTML.Tag.CODE) {
@@ -435,8 +438,13 @@ public class TreeLoader extends LazyTreeLoader {
 
                     @Override
                     public void handleEndTag(Tag t, int pos) {
-                        if (t == HTML.Tag.CODE && (state == 12 || state == 22))
-                            state--;
+                        if (t == HTML.Tag.CODE) {
+                            if (state == 12 || state == 22)
+                                state--;
+                        } else if (t == HTML.Tag.TABLE) {
+                            if (state == 11 || state == 22)
+                                state--;
+                        }
                     }
 
                     @Override
@@ -449,13 +457,13 @@ public class TreeLoader extends LazyTreeLoader {
                     public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
                         if (t == HTML.Tag.BR) {
                             if (state == 11) {
-                                state--;
                                 setParamNames(signature, sb.toString().trim(), true);
-                                sb = new StringBuilder();
+                                signature = null;
+                                sb = null;
                             } else if (state == 21) {
-                                state--;
                                 setParamNames(signature, sb.toString().trim(), false);
-                                sb = new StringBuilder();
+                                signature = null;
+                                sb = null;
                             }
                         }
                     }
