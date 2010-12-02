@@ -223,7 +223,7 @@ public class Util {
         } catch (InstanceNotFoundException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+            LOGGER.log(Level.FINE, null, ex);
         } catch (MalformedObjectNameException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (NullPointerException ex) {
