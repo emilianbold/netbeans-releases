@@ -1064,9 +1064,24 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         return false;
                     }
                     Element m = workingCopy.getTrees().getElement(path);
-                    return m.getKind() == ElementKind.CONSTRUCTOR
-                            && (m.getEnclosingElement() == field.getEnclosingElement()
-                                || isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()));
+                    boolean result = m.getKind() == ElementKind.CONSTRUCTOR && (m.getEnclosingElement() == field.getEnclosingElement() || isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()));
+                    if (m.getKind() == ElementKind.CONSTRUCTOR &&
+                            m.getEnclosingElement() != field.getEnclosingElement() &&
+                            isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()) &&
+                            fields.get(field).refactoring.getFieldModifiers().contains(Modifier.PRIVATE)
+                            ) {
+
+                        problem = createProblem(
+                                problem,
+                                false,
+                                NbBundle.getMessage(
+                                EncapsulateFieldRefactoringPlugin.class,
+                                "ERR_EncapsulateInsideConstructor", // NOI18N
+                                field.getSimpleName(),
+                                m.getEnclosingElement().getSimpleName()));
+                        }
+                    return result;
+
                 case COMPILATION_UNIT:
                 case ANNOTATION_TYPE:
                 case CLASS:
