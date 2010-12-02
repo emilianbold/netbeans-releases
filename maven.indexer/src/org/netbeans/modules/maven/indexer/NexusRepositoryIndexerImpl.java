@@ -500,7 +500,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     NotifyingIndexCreator.beingIndexed = repo;
                     NotifyingIndexCreator.handle = null;
-                    NotifyingIndexCreator.canceled = new AtomicBoolean();
+                    NotifyingIndexCreator.canceled.set(false);
                     try {
                         remoteIndexUpdater.fetchAndUpdateIndex(iur);
                     } finally {
@@ -509,7 +509,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             NotifyingIndexCreator.handle.finish();
                             NotifyingIndexCreator.handle = null;
                         }
-                        NotifyingIndexCreator.canceled = null;
+                        NotifyingIndexCreator.canceled.set(false);
                     }
                 } finally {
                     listener.close();
@@ -539,7 +539,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private static final class NotifyingIndexCreator implements IndexCreator {
         static RepositoryInfo beingIndexed;
         static ProgressHandle handle;
-        static AtomicBoolean canceled;
+        static final AtomicBoolean canceled = new AtomicBoolean();
         public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
             if (canceled.get()) {
                 throw new Cancellation();
