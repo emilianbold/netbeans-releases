@@ -53,7 +53,7 @@ public final class GdbFrame extends Frame {
   
     private MITList MIframe;
     private MITList args_list = null;
-    private String fullname = "";
+    private String fullname = null;
 
     public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs) {
 	super(debugger);

@@ -51,6 +51,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -60,7 +61,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -122,19 +122,26 @@ abstract class TerminalAction implements ActionListener {
                             }
                         }
 
-                        InputOutput io = null;
+                        final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                         try {
-                            io = term.getIO(env.getDisplayName(), null, ioContainer);
+                            ioRef.set(term.getIO(env.getDisplayName(), null, ioContainer));
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
-                            npb.addNativeProcessListener(new NativeProcessListener(io, destroyed));
+                            npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                             String shell = hostInfo.getLoginShell();
 //                            npb.setWorkingDirectory("${HOME}");
                             npb.setExecutable(shell);
                             NativeExecutionDescriptor descr;
-                            descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
+                            descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(ioRef.get());
+                            descr.postExecution(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    ioRef.get().closeInputOutput();
+                                }
+                            });
                             NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
                             Future<Integer> result = es.run();
                             // ask terminal to become active
@@ -153,10 +160,10 @@ abstract class TerminalAction implements ActionListener {
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
-                            reportInIO(io, ex);
+                            reportInIO(ioRef.get(), ex);
                         } catch (CancellationException ex) {
                             Exceptions.printStackTrace(ex);
-                            reportInIO(io, ex);
+                            reportInIO(ioRef.get(), ex);
                         }
                     }
 
@@ -183,38 +190,21 @@ abstract class TerminalAction implements ActionListener {
     }
 
     private final static class NativeProcessListener implements ChangeListener, PropertyChangeListener {
-        private final InputOutput io;
-        private NativeProcess process;
+        private final AtomicReference<NativeProcess> processRef;
         private final AtomicBoolean destroyed;
 
         public NativeProcessListener(InputOutput io, AtomicBoolean destroyed) {
-            this.io = io;
             assert destroyed != null;
             this.destroyed = destroyed;
-            IONotifier.addPropertyChangeListener(io, WeakListeners.propertyChange(this, io));
+            this.processRef = new AtomicReference<NativeProcess>();
+            IONotifier.addPropertyChangeListener(io, WeakListeners.propertyChange(NativeProcessListener.this, io));
         }
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            if (e instanceof NativeProcessChangeEvent) {
-                NativeProcessChangeEvent npce = (NativeProcessChangeEvent) e;
-                System.err.printf("%s:%d[%s]\n", npce.getSource(), npce.pid,  npce.state);
-                initProcess(npce);
-                if (destroyed.get()) {
-                    return;
-                }
-                switch (npce.state) {
-                    case RUNNING:
-                        break;
-                    case CANCELLED:
-                    case FINISHED:
-                        io.closeInputOutput();
-                        break;
-                    case ERROR:
-                        io.getErr().close();
-                        io.getOut().close();
-                        break;
-                }
+            NativeProcess process = processRef.get();
+            if (process == null && e.getSource() instanceof NativeProcess) {
+                processRef.compareAndSet(null, (NativeProcess)e.getSource());
             }
         }
 
@@ -223,17 +213,11 @@ abstract class TerminalAction implements ActionListener {
             if (IOVisibility.PROP_VISIBILITY.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())) {
                 if (destroyed.compareAndSet(false, true)) {
                     // term is closing => destroy process
-                    NativeProcess proc = this.process;
+                    NativeProcess proc = processRef.get();
                     if (proc != null) {
                         proc.destroy();
                     }
                 }
-            }
-        }
-
-        private void initProcess(NativeProcessChangeEvent npce) {
-            if (this.process == null) {
-                this.process = (NativeProcess) npce.getSource();
             }
         }
     }

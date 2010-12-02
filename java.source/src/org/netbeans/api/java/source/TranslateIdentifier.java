@@ -613,6 +613,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         
         if (typeDecls != node.getTypeDecls()) {
             node = make.CompilationUnit(
+                    node.getPackageAnnotations(),
                     node.getPackageName(),
                     node.getImports(),
                     typeDecls,
