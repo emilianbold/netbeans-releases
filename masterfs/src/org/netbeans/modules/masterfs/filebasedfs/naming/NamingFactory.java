@@ -281,8 +281,10 @@ public final class NamingFactory {
                 return;
             }
             int index = nr.getIndex();
-            names[index] = names[index].remove(nr);
-            namesCount--;
+            if (names[index] != null) {
+                names[index] = names[index].remove(nr);
+                namesCount--;
+            }
         }
     }
     
