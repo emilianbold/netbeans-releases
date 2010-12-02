@@ -41,18 +41,21 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -70,10 +73,11 @@ import org.netbeans.modules.terminal.api.IOVisibility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -82,8 +86,16 @@ import org.openide.windows.InputOutput;
  *
  * @author Vladimir Voskresensky
  */
-abstract class TerminalAction implements ActionListener {
+abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
+
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
+
+    public TerminalAction(String name, String descr, ImageIcon icon) {
+        putValue(Action.NAME, name);
+        putValue(Action.SMALL_ICON, icon);
+        putValue(Action.SHORT_DESCRIPTION, descr);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
@@ -178,18 +190,25 @@ abstract class TerminalAction implements ActionListener {
         }
     }
 
-    protected abstract ExecutionEnvironment getEnvironment();
-    private static Action[] actions;
-
-    private synchronized static Action[] getActions() {
-        if (actions == null) {
-            List<? extends Action> termActions = Utilities.actionsForPath("Actions/Terminal");// NOI18N
-            actions = termActions.toArray(new Action[termActions.size()]);
+    @Override
+    public Component getToolbarPresenter() {
+        JButton button = new JButton(this);
+        button.setBorderPainted(false);
+        button.setOpaque(false);
+        button.setText(null);
+        button.putClientProperty("hideActionText", Boolean.TRUE); // NOI18N
+        Object icon = getValue(Action.SMALL_ICON);
+        if (!(icon instanceof Icon)) {
+            throw new IllegalStateException("No icon provided for " + this); // NOI18N
         }
-        return actions;
+        button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
+        return button;
     }
 
+    protected abstract ExecutionEnvironment getEnvironment();
+
     private final static class NativeProcessListener implements ChangeListener, PropertyChangeListener {
+
         private final AtomicReference<NativeProcess> processRef;
         private final AtomicBoolean destroyed;
 
@@ -204,7 +223,7 @@ abstract class TerminalAction implements ActionListener {
         public void stateChanged(ChangeEvent e) {
             NativeProcess process = processRef.get();
             if (process == null && e.getSource() instanceof NativeProcess) {
-                processRef.compareAndSet(null, (NativeProcess)e.getSource());
+                processRef.compareAndSet(null, (NativeProcess) e.getSource());
             }
         }
 

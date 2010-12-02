@@ -39,51 +39,75 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.terminal.action;
+
+package org.netbeans.modules.git.ui.reset;
 
 import java.awt.Dialog;
-import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import javax.swing.JButton;
+import javax.swing.JRadioButton;
+import org.netbeans.libs.git.GitClient.ResetType;
+import org.netbeans.modules.git.ui.repository.RevisionPicker;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.ImageUtilities;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ondra
  */
-@ActionID(id = "RemoteTerminalAction", category = "Window")
-@ActionRegistration(iconInMenu = true, displayName = "#CTL_RemoteTerminalAction", iconBase = "org/netbeans/modules/dlight/terminal/action/remote_term.png")
-@ActionReference(path = "Actions/Terminal", name = "org-netbeans-modules-dlight-terminal-action-RemoteTerminalAction", position = 200)
-public final class RemoteTerminalAction extends TerminalAction {
+public class Reset implements ActionListener {
+    private ResetPanel panel;
+    private RevisionPicker revisionPicker;
+    private JButton okButton;
+    private DialogDescriptor dd;
 
-    private final RemoteInfoDialog cfgPanel;
+    Reset (File repository) {
+        revisionPicker = new RevisionPicker(repository);
+        panel = new ResetPanel(revisionPicker.getPanel());
+    }
 
-    public RemoteTerminalAction() {
-        super("RemoteTerminalAction", NbBundle.getMessage(LocalTerminalAction.class, "RemoteTerminalShortDescr"), // NOI18N
-                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/remote_term.png", false)); // NOI18N
-        cfgPanel = new RemoteInfoDialog(System.getProperty("user.name"));
+    String getRevision () {
+        return revisionPicker.getRevision();
+    }
+
+    boolean show () {
+        panel.rbSoft.addActionListener(this);
+        panel.rbMixed.addActionListener(this);
+        panel.rbHard.addActionListener(this);
+        
+        okButton = new JButton(NbBundle.getMessage(Reset.class, "LBL_Reset.OKButton.text")); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
+        dd = new DialogDescriptor(panel, NbBundle.getMessage(Reset.class, "LBL_Reset.title"), true,  //NOI18N
+                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(Reset.class), null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        valid(false);
+        d.setVisible(true);
+        return okButton == dd.getValue();
     }
 
     @Override
-    protected ExecutionEnvironment getEnvironment() {
-        String title = NbBundle.getMessage(RemoteTerminalAction.class, "RemoteConnectionTitle");
-        DialogDescriptor dd = new DialogDescriptor(cfgPanel, title, // NOI18N
-                true, DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION, null);
-
-        Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
-        cfgDialog.setVisible(true);
-
-        if (dd.getValue() != DialogDescriptor.OK_OPTION) {
-            return null;
-        }
-
-        final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
-        return env;
+    public void actionPerformed (ActionEvent e) {
+        valid(panel.rbHard.isSelected() || panel.rbMixed.isSelected() || panel.rbSoft.isSelected());
     }
+
+    private void valid (boolean b) {
+        okButton.setEnabled(b);
+        dd.setValid(b);
+    }
+
+    ResetType getType () {
+        String cmd = null;
+        for (JRadioButton btn : new JRadioButton[] { panel.rbHard, panel.rbMixed, panel.rbSoft }) {
+            if (btn.isSelected()) {
+                cmd = btn.getActionCommand();
+                break;
+            }
+        }
+        return ResetType.valueOf(cmd);
+    }
+
 }
