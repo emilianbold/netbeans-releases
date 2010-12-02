@@ -669,9 +669,7 @@ public class TaskProcessor {
                                                                     try {
                                                                         final long startTime = System.currentTimeMillis();
                                                                         if (r.task instanceof ParserResultTask) {
-                                                                            if (LOGGER.isLoggable(Level.FINE)) {
-                                                                                LOGGER.log(Level.FINE, "Running Task: {0}", r.toString());
-                                                                            }
+                                                                            LOGGER.log(Level.FINE, "Running Task: {0}", r);
                                                                             ParserResultTask parserResultTask = (ParserResultTask) r.task;
                                                                             SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
                                                                             parserResultTask.run (currentResult, schedulerEvent);                                                                        
@@ -724,16 +722,16 @@ public class TaskProcessor {
                                                             waitingRequests.put (source, rc);
                                                         }
                                                         rc.add(r);
-                                                        LOGGER.log(Level.FINE, "Waiting Task: {0}", r.toString());      //NOI18N
+                                                        LOGGER.log(Level.FINE, "Waiting Task: {0}", r);      //NOI18N
                                                     } else {
                                                         requests.add(r);
-                                                        LOGGER.log(Level.FINE, "Rescheduling Waiting Task: {0}", r.toString()); //NOI18N
+                                                        LOGGER.log(Level.FINE, "Rescheduling Waiting Task: {0}", r); //NOI18N
                                                     }
                                                 }
                                                 else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                     //The JavaSource was changed or canceled rechedule it now
                                                     requests.add(r);
-                                                    LOGGER.log(Level.FINE, "Rescheduling Canceled Task: {0}", r.toString()); //NOI18N
+                                                    LOGGER.log(Level.FINE, "Rescheduling Canceled Task: {0}", r); //NOI18N
                                                 } else if (r.reschedule == ReschedulePolicy.ON_CHANGE) {
                                                     //Up to date JavaSource add it to the finishedRequests
                                                     Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
@@ -742,10 +740,12 @@ public class TaskProcessor {
                                                         finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
                                                     }
                                                     rc.add(r);
-                                                    LOGGER.log(Level.FINE, "Finished ON_CHANGE Task: {0}", r.toString()); //NOI18N
+                                                    LOGGER.log(Level.FINE, "Finished ON_CHANGE Task: {0}", r); //NOI18N
+                                                } else {
+                                                    LOGGER.log(Level.FINE, "Finished  CANCELED Task: {0}", r); //NOI18N
                                                 }
                                             } else {
-                                                LOGGER.log(Level.FINE, "Removing Task: {0}", r.toString()); //NOI18N
+                                                LOGGER.log(Level.FINE, "Removing Task: {0}", r); //NOI18N
                                             }
                                             toRemove.clear();
                                         }
@@ -852,12 +852,14 @@ public class TaskProcessor {
         
         public @Override String toString () {            
             if (reschedule != ReschedulePolicy.NEVER) {
-                return String.format("Periodic request to perform: %s on: %s",  //NOI18N
+                return String.format("Periodic request %d to perform: %s on: %s",  //NOI18N
+                        System.identityHashCode(this),
                         task == null ? null : task.toString(),
                         cache == null ? null : cache.toString());
             }
             else {
-                return String.format("One time request to perform: %s on: %s",  //NOI18N
+                return String.format("One time request %d to perform: %s on: %s",  //NOI18N
+                        System.identityHashCode(this),
                         task == null ? null : task.toString(),
                         cache == null ? null : cache.toString());
             }
