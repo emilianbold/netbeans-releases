@@ -320,6 +320,9 @@ public final class NamingFactory {
             }
             NameRef me = this;
             while (me.next != what) {
+                if (me.next instanceof Integer) {
+                    return this;
+                }
                 me = (NameRef)me.next;
             }
             me.next = ((NameRef)me.next).next;
