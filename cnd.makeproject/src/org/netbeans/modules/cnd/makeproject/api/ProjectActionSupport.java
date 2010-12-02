@@ -529,7 +529,7 @@ public class ProjectActionSupport {
                 }
             }
             Type type = paes[currentAction].getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS || type == PredefinedType.RUN) {
                 // Refresh all files
                 refreshProjectFiles(paes[currentAction].getProject());
             }
