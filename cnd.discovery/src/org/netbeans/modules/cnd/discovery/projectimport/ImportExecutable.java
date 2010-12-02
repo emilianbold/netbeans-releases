@@ -584,16 +584,16 @@ public class ImportExecutable implements PropertyChangeListener {
                             for(String path : needAdd) {
                                 String name = path;
                                 if (Utilities.isWindows()) {
-                                    path = path.replace('\\', '/');
+                                    path = path.replace('\\', '/'); // NOI18N
                                 }
-                                int i = path.lastIndexOf('/');
+                                int i = path.lastIndexOf('/'); // NOI18N
                                 if (i >= 0){
                                     String folderPath = path.substring(0,i);
                                     Folder prefferedFolder = prefferedFolders.get(folderPath);
                                     if (prefferedFolder == null) {
                                         LinkedList<String> mkFolder = new LinkedList<String>();
                                         while(true) {
-                                            i = folderPath.lastIndexOf('/');
+                                            i = folderPath.lastIndexOf('/'); // NOI18N
                                             if (i > 0) {
                                                 mkFolder.addLast(folderPath.substring(i+1));
                                                 folderPath = folderPath.substring(0,i);
@@ -612,6 +612,8 @@ public class ImportExecutable implements PropertyChangeListener {
                                                 }
                                                 String segment = mkFolder.pollLast();
                                                 prefferedFolder = prefferedFolder.addNewFolder(segment, segment, true, (Folder.Kind)null);
+                                                folderPath+="/"+segment; // NOI18N
+                                                prefferedFolders.put(folderPath, prefferedFolder);
                                             }
                                         }
                                     }
