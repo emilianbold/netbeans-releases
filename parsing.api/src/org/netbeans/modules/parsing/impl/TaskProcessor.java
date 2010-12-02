@@ -346,7 +346,7 @@ public class TaskProcessor {
                 if (frqs != null) {
                     for (Iterator<Request> it = frqs.iterator(); it.hasNext(); ) {
                         final Request rq = it.next();
-                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                        if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                             it.remove();
                             found = true;
 //                      break; todo: Some tasks are duplicated (racecondition?), remove even them, Prevent duplication of tasks
@@ -360,7 +360,7 @@ public class TaskProcessor {
                 //Sencond) Try to find it among started task
                 for (Iterator<Request> it = requests.iterator(); it.hasNext();) {
                     final Request rq = it.next();
-                    if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                    if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                         it.remove();
                         found = true;
                     }
@@ -369,7 +369,7 @@ public class TaskProcessor {
                 if (wrqs != null) {
                     for (Iterator<Request> it = wrqs.iterator(); it.hasNext(); ) {
                         final Request rq = it.next();
-                        if (rq.task == task && rq.cache != null && rq.cache.getSnapshot().getSource() == source) {
+                        if (rq.task == task && rq.cache != null && rq.cache.getSource() == source) {
                             it.remove();
                             found = true;
                         }
