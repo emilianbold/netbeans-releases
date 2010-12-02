@@ -144,6 +144,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             tempFile = res.output;
             final String referenceText = "...jumps over a lazy dog";
             FileObject fo = rootFO.getFileObject(tempFile);
+            assertNotNull("Null file object for " + tempFile, fo);
             URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
             assertNotNull("null URL", url);
             URLConnection conn = url.openConnection();

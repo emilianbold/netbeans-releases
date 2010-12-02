@@ -763,6 +763,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 188925 - unable to resolve identifier in templates
         performTest("bug188925.cpp", 40, 24, "bug188925.cpp", 26, 13);
     }
+
+    public void testBug159328() throws Exception {
+        // Bug 159328 - Unresolved static cast to template
+        performTest("bug159328.cpp", 9, 42, "bug159328.cpp", 5, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

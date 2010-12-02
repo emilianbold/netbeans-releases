@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@HelpSetRegistration(helpSet = "kenai-hs.xml", position = 3408)
+@HelpSetRegistration(helpSet = "kenai.hs", position = 3408)
 package org.netbeans.modules.kenai.docs;
 
 import org.netbeans.api.javahelp.HelpSetRegistration;

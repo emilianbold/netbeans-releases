@@ -151,7 +151,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(constructor, handle, layerFileObject);
+        return handle.getLayerFile() != null ? new LayerSafeDeleteRefactoringElement(constructor, handle, layerFileObject) : null;
             
     }
 
@@ -159,7 +159,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(fqname, handle, layerFileObject, layerAttribute);
+        return handle.getLayerFile() != null ? new LayerSafeDeleteRefactoringElement(fqname, handle, layerFileObject, layerAttribute) : null;
     
     }
 
@@ -167,7 +167,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(method, handle, layerFileObject);
+        return handle.getLayerFile() != null ? new LayerSafeDeleteRefactoringElement(method, handle, layerFileObject) : null;
     }
     
     
@@ -178,8 +178,8 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         private String oldContent;
         
         public ManifestSafeDeleteRefactoringElement(FileObject parentFile, String attributeValue, String attributeName) {
+            super(parentFile);
             this.name = attributeValue;
-            this.parentFile = parentFile;
             attrName = attributeName;
             // read old content here. in the unprobable case when 2 classes are to be removed
             // and both are placed in same services file, we need the true original content
@@ -267,9 +267,9 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public LayerSafeDeleteRefactoringElement(String name, LayerHandle handle, FileObject layerFO) {
+            super(handle.getLayerFile());
             this.name = name;
             this.handle = handle;
-            parentFile = handle.getLayerFile();
             this.layerFO = layerFO;
         }
         

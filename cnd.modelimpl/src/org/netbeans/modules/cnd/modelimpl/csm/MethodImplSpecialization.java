@@ -40,57 +40,46 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.support.RemoteLogger;
-import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.openide.util.CharSequences;
 
 /**
+ * Template function explicit specialization declaration.
  *
- * @author Vladimir Kvashin
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class RemotePathTestCase extends RemoteFileTestBase {
+public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
-
-    public RemotePathTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    protected MethodImplSpecialization(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, nameHolder, global);
     }
 
-    @ForAllEnvironments
-    public void testPath() throws Exception {
-        String absPath = "/usr/include/stdio.h";
-        String[] parts = absPath.split("/");
-        FileObject parent = rootFO;
-        for (String name : parts) {
-            FileObject child;
-            if (name.length() == 0) {
-                child = rootFO;
-            } else {
-                child = parent.getFileObject(name);
-            }
-            assertNotNull("Null file object for \"" + name + "\" in " + parent.getPath(), child);
-            System.err.printf("Child: %s\n", child.getPath());
-            if (child == null) {
-                break;
-            }
-            parent = child;
-        }
-        Exception lastAssertion = RemoteLogger.getLastAssertion();
-        if (lastAssertion != null) {
-            throw lastAssertion;
-        }
-        String content = readFile(absPath);
-        String text2search = "printf";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                content.indexOf(text2search) >= 0);
+    public static<T> MethodImplSpecialization<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);//NameHolder.createName(getFunctionName(ast));
+        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<T>(ast, cls, visibility, nameHolder, register);
+        postObjectCreateRegistration(register, methodImpl);
+        nameHolder.addReference(cls.getContainingFile(), methodImpl);
+        return methodImpl;
     }
 
-    public static Test suite() {
-        return RemoteApiTest.createSuite(RemotePathTestCase.class);
+    private static String getFunctionName(AST ast) {
+        CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+        return getFunctionNameFromFunctionSpecialicationName(funName.toString());
+    }
+
+    private static String getFunctionNameFromFunctionSpecialicationName(CharSequence functionName) {
+        CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
+        StringBuilder className = new StringBuilder("");
+        if(nameParts.length > 0) {
+            className.append(nameParts[nameParts.length - 1]);
+        }
+        return className.toString();
     }
 
 }

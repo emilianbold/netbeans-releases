@@ -119,4 +119,16 @@ public class JsfSupportImplTest extends TestBase {
         assertNotNull(instance);
     }
 
+    public void testIsTheJsfSupportInstanceCached() {
+        FileObject file = getTestFile("testWebProject/web/index.xhtml");
+        assertNotNull(file);
+        JsfSupportImpl instance1 = JsfSupportImpl.findFor(file);
+        assertNotNull(instance1);
+        JsfSupportImpl instance2 = JsfSupportImpl.findFor(file);
+        assertNotNull(instance2);
+
+        assertSame(instance1, instance2);
+
+    }
+
 }

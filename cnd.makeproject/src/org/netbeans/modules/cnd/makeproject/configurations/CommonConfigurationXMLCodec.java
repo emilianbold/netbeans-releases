@@ -80,6 +80,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V73 - NB 7.0
+ * add C/C++ flag USE_LINKER_PKG_CONFIG_LIBRARIES
  * V72 - NB 7.0
  *   move platform in private project area
  * V71 - NB 7.0
@@ -208,7 +210,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 72;
+    public final static int CURRENT_VERSION = 73;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -262,6 +264,7 @@ public abstract class CommonConfigurationXMLCodec
     public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
+    protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -672,6 +675,9 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
         }
+        if (cCompilerConfiguration.getUseLinkerLibraries().getModified()) {
+            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + cCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+        }
         if (cCompilerConfiguration.getWarningLevel().getModified()) {
             xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
         }
@@ -721,6 +727,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getUseLinkerLibraries().getModified()) {
+            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + ccCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getWarningLevel().getModified()) {
             xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N

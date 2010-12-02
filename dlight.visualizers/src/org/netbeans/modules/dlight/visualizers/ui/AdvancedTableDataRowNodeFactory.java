@@ -58,6 +58,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -70,8 +71,10 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
     private final String nodeColumnName;
     private final String iconColumnID;
     private final String resourceID;
+    private final Lookup lookup;
 
-    public AdvancedTableDataRowNodeFactory(AdvancedTableViewVisualizerConfiguration configuration) {
+    public AdvancedTableDataRowNodeFactory(AdvancedTableViewVisualizerConfiguration configuration, Lookup lookup) {
+        this.lookup = lookup;
         metadata = configuration.getMetadata();
         AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
         nodeActionsProvider = accessor.getNodeActionProvider(configuration);
@@ -91,7 +94,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
         private Action defaultAction;
 
         AdvancedDataRowNode(final DataRow row) {
-            super(row);
+            super(row, lookup);
         }
 
         @Override
@@ -148,7 +151,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
         @Override
         public Action[] getActions(boolean context) {
             if (nodeActionsProvider == null) {
-                return null;
+                return new Action[0];
             }
 
             try {

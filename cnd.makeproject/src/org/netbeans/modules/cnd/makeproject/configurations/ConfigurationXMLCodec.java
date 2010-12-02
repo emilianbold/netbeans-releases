@@ -738,6 +738,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getInheritPreprocessor().setValue(ds);
             }
+        } else if (element.equals(USE_LINKER_PKG_CONFIG_LIBRARIES)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            if (currentCCCCompilerConfiguration != null) {
+                currentCCCCompilerConfiguration.getUseLinkerLibraries().setValue(ds);
+            }
         } else if (element.equals(SUPRESS_WARNINGS_ELEMENT)) { // FIXUP: <= 21
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentCCCCompilerConfiguration != null) {

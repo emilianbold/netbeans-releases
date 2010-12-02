@@ -67,6 +67,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.ui.TextFilterPanel;
@@ -89,7 +90,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author ak119685
  */
 public abstract class TableViewVisualizer<Config extends TableBasedVisualizerConfiguration, Data> extends JPanel implements
-        Visualizer<Config>, ExplorerManager.Provider, VisualizerToolbarComponentsProvider {
+        Visualizer<Config>, ExplorerManager.Provider, Lookup.Provider, VisualizerToolbarComponentsProvider {
 
     private static final RequestProcessor RP = new RequestProcessor("TableViewVisualizer Data Refresh", 10); // NOI18N
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
@@ -112,8 +113,11 @@ public abstract class TableViewVisualizer<Config extends TableBasedVisualizerCon
     private TableViewNodeChildren<Data> children;
     private JPanel emptyPanel;
 
-    protected TableViewVisualizer(final Config configuration) {
+    protected TableViewVisualizer(final DataProvider provider, final Config configuration) {
         this.configuration = configuration;
+
+        content.add(provider);
+        
         setLayout(new BorderLayout());
 
         busyPanel = new TableViewBusyPanel();
@@ -238,6 +242,11 @@ public abstract class TableViewVisualizer<Config extends TableBasedVisualizerCon
                 }
             }
         };
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 
     private void registerListeners() {
