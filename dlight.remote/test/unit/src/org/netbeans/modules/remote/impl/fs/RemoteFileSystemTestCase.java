@@ -125,10 +125,42 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        String content = readFile(absPath);
+        String content = readRemoteFile(absPath);
         String text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
+    }
+
+    @ForAllEnvironments
+    public void testDifferentPaths() {
+        class Pair {
+            final String parent;
+            final String relative;
+            public Pair(String parent, String relative) {
+                this.parent = parent;
+                this.relative = relative;
+            }
+        }
+        Pair[] pairs = new Pair[] {
+            new Pair(null, "/usr/include/stdlib.h"),
+            new Pair("/usr", "include/stdlib.h"),
+            new Pair("/usr/include", "stdlib.h"),
+            new Pair("/usr/lib", "libc.so"),
+            new Pair("/usr", "lib/libc.so"),
+            new Pair(null, "/usr/lib/libc.so")            
+        };
+        for (int i = 0; i < pairs.length; i++) {
+            Pair pair = pairs[i];
+            FileObject parentFO;
+            if (pair.parent == null) {
+                parentFO = rootFO;
+            } else {
+                parentFO = rootFO.getFileObject(pair.parent);
+                assertNotNull("Null file object for " + pair.parent, parentFO);
+            }
+            FileObject childFO = parentFO.getFileObject(pair.relative);
+            assertNotNull("Null file object for " + pair.relative + " from " + parentFO, childFO);
+        }
     }
 
     @ForAllEnvironments
@@ -230,7 +262,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 super(name, barrier, exceptions);
             }
             protected void work() throws Exception {
-                String content = readFile(absPath);
+                String content = readRemoteFile(absPath);
                 int currSize = content.length();
                 size.compareAndSet(-1, currSize);
                 String text2search = "printf";
@@ -250,7 +282,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         for (int i = 0; i < threadCount; i++) {
             threads[i].join();
         }
-        assertEquals("Dir. sync count differs", 1, fs.getChildrenSupport().getDirSyncCount());
+        assertEquals("Dir. sync count differs", 3, fs.getChildrenSupport().getDirSyncCount());
         assertEquals("File transfer count differs", 1, fs.getChildrenSupport().getFileCopyCount());
         if (!exceptions.isEmpty()) {
             System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());

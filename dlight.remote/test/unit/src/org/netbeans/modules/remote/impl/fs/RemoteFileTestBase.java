@@ -83,7 +83,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         ConnectionManager.getInstance().connectTo(env);
     }
 
-    protected String readFile(String absPath) throws Exception {
+    protected String readRemoteFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
