@@ -51,6 +51,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -376,12 +378,22 @@ class OutWriter extends PrintWriter {
     /** write buffer size in chars */
     private static final int WRITE_BUFF_SIZE = 16*1024;
     static final String TAB_REPLACEMENT = "        ";
-    public synchronized int doWrite(CharSequence s, int off, int len) {
+    private synchronized void doWrite(CharSequence s, int off, int len) {
         if (checkError() || len == 0) {
-            return 0;
+            return;
         }
+        
+        // XXX will not pick up ANSI sequences broken across write blocks, but this is likely rare
+        if (printANSI(s.subSequence(off, off + len), false, false, false)) {
+            return;
+        }
+        /* XXX causes stack overflow
+        if (ansiColor != null) {
+            print(s, null, false, null, false, false);
+            return;
+        }
+         */
 
-        int lineCount = 0;
         try {
             boolean written = false;
             ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
@@ -405,7 +417,6 @@ class OutWriter extends PrintWriter {
                     charBuff.put(c);
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), true);
                     written = true;
-                    lineCount++;
                 } else {
                     charBuff.put(c);
                 }
@@ -417,7 +428,7 @@ class OutWriter extends PrintWriter {
             onWriteException();
         }
         lines.delayedFire();
-        return lineCount;
+        return;
     }
 
     @Override
@@ -455,6 +466,12 @@ class OutWriter extends PrintWriter {
     }
 
     synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean err, boolean addLS) {
+        if (c == null) {
+            if (l == null && printANSI(s, important, err, addLS)) {
+                return;
+            }
+            c = ansiColor; // carry over from previous line
+        }
         int lastLine = lines.getLineCount() - 1;
         int lastPos = lines.getCharCount();
         doWrite(s, 0, s.length());
@@ -462,6 +479,77 @@ class OutWriter extends PrintWriter {
             println();
         }
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c);
+    }
+    private Color ansiColor;
+    private boolean ansiBright;
+    private static final Pattern ANSI_CSI_SGR = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?m");
+    private static final Color[] COLORS = { // xterm from http://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+        new Color(0, 0, 0),
+        new Color(205, 0, 0),
+        new Color(0, 205, 0),
+        new Color(205, 205, 0),
+        new Color(0, 0, 238),
+        new Color(205, 0, 205),
+        new Color(0, 205, 205),
+        new Color(229, 229, 229),
+        new Color(127, 127, 127),
+        new Color(255, 0, 0),
+        new Color(0, 255, 0),
+        new Color(255, 255, 0),
+        new Color(92, 92, 255),
+        new Color(255, 0, 255),
+        new Color(0, 255, 255),
+        new Color(255, 255, 255),
+    };
+    private boolean printANSI(CharSequence s, boolean important, boolean err, boolean addLS) { // #192779
+        int len = s.length();
+        boolean hasEscape = false; // fast initial check
+        for (int i = 0; i < len - 1; i++) {
+            if (s.charAt(i) == '\u001B' && s.charAt(i + 1) == '[') {
+                hasEscape = true;
+                break;
+            }
+        }
+        if (!hasEscape) {
+            return false;
+        }
+        Matcher m = ANSI_CSI_SGR.matcher(s);
+        int text = 0;
+        while (m.find()) {
+            int esc = m.start();
+            if (esc > text) {
+                print(s.subSequence(text, esc), null, important, ansiColor, err, false);
+            }
+            text = m.end();
+            String paramsS = m.group(1);
+            if (Controller.VERBOSE) {
+                Controller.log("ANSI CSI+SGR: " + paramsS);
+            }
+            if (paramsS == null) { // like ["0"]
+                ansiColor = null;
+                ansiBright = false;
+            } else {
+                for (String param : paramsS.split(";")) {
+                    int code = Integer.parseInt(param);
+                    if (code == 0 || code == 22) {
+                        ansiColor = null;
+                        ansiBright = false;
+                    } else if (code == 1) {
+                        ansiBright = true;
+                    } else if (code == 21) {
+                        ansiBright = false;
+                    } else if (code >= 30 && code <= 37) {
+                        ansiColor = COLORS[code - 30 + (ansiBright ? 8 : 0)];
+                    }
+                }
+            }
+        }
+        if (text < len) { // final segment
+            print(s.subSequence(text, len), null, important, ansiColor, err, addLS);
+        } else if (addLS) { // line ended w/ control seq
+            println();
+        }
+        return true;
     }
 
     synchronized void print(CharSequence s, LineInfo info, boolean important) {
