@@ -609,32 +609,27 @@ public class RetoucheUtils {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
-            Project p = null;
+            ClassPath cp = null;
             FileObject ownerRoot = null;
             if (fo != null) {
-                p = FileOwnerQuery.getOwner(fo);
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                 if (cp!=null) {
                     ownerRoot = cp.findOwnerRoot(fo);
                 }
             }
-            if (p != null && ownerRoot != null) {
+            if (cp != null && ownerRoot != null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 } else {
                     dependentRoots.add(sourceRoot);
                 }
-                final Set<URL> toExclude = new HashSet<URL>(Arrays.asList(UnitTestForSourceQuery.findSources(ownerRoot)));
-                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    final URL rootURL = URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL);
-                    if (!toExclude.contains(rootURL)) {
-                        dependentRoots.add(rootURL);
-                    }
+                for (FileObject f : cp.getRoots()) {
+                    dependentRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
                 }
             } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
+                for(ClassPath scp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                    for (FileObject root:scp.getRoots()) {
                         dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
                 }
