@@ -67,6 +67,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final ExecutionEnvironment execEnv;
     protected final String remotePath;
     protected final File cache;
+    private boolean valid;
     private volatile EventListenerList eventSupport;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
@@ -76,7 +77,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
-        this.cache = cache;        
+        this.cache = cache;
+        valid = true;
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -206,7 +208,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isValid() {
-        return cache.exists();
+        return valid;
+    }
+
+    /*package*/ void invalidate() {
+        valid = false;
     }
 
     @Override
@@ -248,6 +254,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
 //    protected abstract void ensureSync() throws IOException, ConnectException;
+
+    public abstract FileType getType();
 
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {

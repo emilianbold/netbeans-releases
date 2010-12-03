@@ -59,40 +59,6 @@ import org.netbeans.modules.remote.support.RemoteLogger;
  * @author Vladimir Kvashin
  */
 public class DirectoryStorage {
-    /**
-     * Represents file type - see ls command manual.
-     * Letters correspond to ls command syntax.
-     */
-    public static enum  FileType {
-        Directory('d'),
-        File('-'),
-        Door('D'),
-        Symlink('l'),
-        BlockSpecialFile('b'),
-        CharacterSpecialFile('c'),
-        FIFO('p'),
-        EventPort('P'),
-        Socket('s');
-
-        private final char letter;
-
-        private FileType(char letter) {
-            this.letter = letter;
-        }
-
-        public char toChar() {
-            return letter;
-        }
-
-        public static FileType fromChar(char letter) {
-            for (FileType type : values()) {
-                if (type.letter == letter) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
 
     public static class Entry {
 

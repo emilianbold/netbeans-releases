@@ -142,7 +142,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (cacheFile.isDirectory()) {
                     return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, cacheFile);
                 } else {
-                    return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, cacheFile);
+                    return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, cacheFile, FileType.File);
                 }
             }
         } catch (CancellationException ex) {
@@ -176,7 +176,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (childrenFiles[i].isDirectory()) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childrenFiles[i]);
                 } else {
-                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childrenFiles[i]);
+                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childrenFiles[i], FileType.File);
                 }
             }
             return childrenFO;
@@ -193,6 +193,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 //    @Override
 //    protected void ensureSync() throws IOException, ConnectException {
 //    }
+
+    @Override
+    public FileType getType() {
+        return FileType.Directory;
+    }
     
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
