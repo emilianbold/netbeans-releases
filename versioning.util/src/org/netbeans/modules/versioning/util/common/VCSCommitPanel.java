@@ -292,7 +292,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         basePanel.add(filesPanel);
         
         // hooks area
-        if(!hooks.isEmpty()) {            
+        if(!hooks.isEmpty()) {
             HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);                                                              
             hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
             basePanel.add(hooksPanel);
@@ -509,7 +509,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
 
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-        dialog.addWindowListener(new DialogBoundsPreserver(preferences, "git.commit.dialog")); // NOI18N
+        dialog.addWindowListener(new DialogBoundsPreserver(preferences, this.getClass().getName())); 
         dialog.pack();
         dialog.setVisible(true);
         
