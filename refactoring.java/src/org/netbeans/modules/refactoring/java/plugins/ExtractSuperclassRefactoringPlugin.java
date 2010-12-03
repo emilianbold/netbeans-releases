@@ -608,6 +608,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                                 ))), false);
                                 // create constructor
                                 MethodTree newConstr = make.Method(superclassConstr, block);
+
+                                newConstr = removeRuntimeExceptions(javac, superclassConstr, make, newConstr);
+
                                 newConstr = genUtils.importFQNs(newConstr);
                                 members.add(newConstr);
                             }
@@ -619,6 +622,23 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 }
             }
         }
+
+        private static MethodTree removeRuntimeExceptions(final WorkingCopy javac, ExecutableElement superclassConstr, final TreeMaker make, MethodTree newConstr) {
+            int i = 0;
+            TypeMirror rte = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); //NOI18N
+            ArrayList<Integer> rtes = new ArrayList<Integer>();
+            for (TypeMirror throwz : superclassConstr.getThrownTypes()) {
+                if (javac.getTypes().isSubtype(throwz, rte)) {
+                    rtes.add(i);
+                }
+                i++;
+            }
+            for (int j = rtes.size()-1; j >= 0; j--) {
+                newConstr = make.removeMethodThrows(newConstr, rtes.get(j));
+            }
+            return newConstr;
+        }
+
         
         private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableElement> params) {
             if (params.isEmpty()) {
