@@ -55,8 +55,8 @@ import org.netbeans.modules.xml.api.model.*;
  */
 class EntityRefResultItem extends XMLResultItem {
 
-    public EntityRefResultItem(GrammarResult res){
-        super(res.getNodeName());
+    public EntityRefResultItem(int position, GrammarResult res){
+        super(position, res.getNodeName());
         selectionForeground = foreground = Color.red.darker();
     }
 
