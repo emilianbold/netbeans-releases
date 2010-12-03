@@ -68,7 +68,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final String remotePath;
     protected final File cache;
     private volatile EventListenerList eventSupport;
-    protected final String nameExt;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -78,8 +77,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
         this.execEnv = execEnv;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
-        int slashPos = this.remotePath.lastIndexOf('/');
-        nameExt = (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -133,6 +130,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public String getExt() {
+        String nameExt = getNameExt();
         int pointPos = nameExt.lastIndexOf('.');
         return (pointPos < 0) ? "" : nameExt.substring(pointPos + 1);
     }
@@ -152,8 +150,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public String getName() {
+        String nameExt = getNameExt();
         int pointPos = nameExt.lastIndexOf('.');
         return (pointPos < 0) ? nameExt : nameExt.substring(0, pointPos);
+    }
+
+    @Override
+    public String getNameExt() {
+        int slashPos = this.remotePath.lastIndexOf('/');
+        return (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
     }
 
     @Override
