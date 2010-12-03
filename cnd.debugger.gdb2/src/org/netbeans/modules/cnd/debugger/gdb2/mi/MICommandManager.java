@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /*
@@ -105,21 +106,28 @@ class MICommandManager {
      */
 
     public void dispatch(MIRecord record) {
+        int token = record.token();
 	MICommand cmd = pendingCommands.peek();
         
-        while (cmd != null && cmd.getToken() < record.token()) {
+        while (cmd != null && cmd.getToken() < token) {
             // an error happened somewhere
             // delete all unanswered commands
             cmd = pendingCommands.poll();
             injector.log(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
             cmd = pendingCommands.peek();
         }
-	if (cmd == null || cmd.getToken() != record.token()) {
+	if (cmd == null || cmd.getToken() != token) {
 	    injector.log(String.format("No command for record %s\n\r", record)); // NOI18N
+            streamMessages.clear();
+            consoleMessages.clear();
 	    return;
 	}
 
 	record.setCommand(cmd);
+        cmd.recordLogStream(streamMessages);
+        streamMessages.clear();
+        cmd.recordConsoleStream(consoleMessages);
+        consoleMessages.clear();
 
 	if (record.isError()) {
 	    injector.log(record.error() + "\n\r"); // NOI18N
@@ -150,24 +158,20 @@ class MICommandManager {
 	} 
     }
 
+    private final LinkedList<String> streamMessages = new LinkedList<String>();
     /**
      * Record logStream data into the current pending command.
      */
     void logStream(String data) {
-        MICommand command = pendingCommands.peek();
-        if (command != null) {
-            command.recordLogStream(data);
-        }
+        streamMessages.add(data);
     }
 
+    private final LinkedList<String> consoleMessages = new LinkedList<String>();
     /**
      * Record logConsole data into the current pending command.
      */
     void logConsole(String data) {
-        MICommand command = pendingCommands.peek();
-        if (command != null) {
-            command.recordConsoleStream(data);
-        }
+        consoleMessages.add(data);
     }
 
     /**
