@@ -41,17 +41,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-public abstract class SourceFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class AllBinaryFileFilter extends SourceFileFilter {
 
-    public SourceFileFilter() {
-        super();
+    private static AllBinaryFileFilter instance = null;
+    private static String[] suffixes = null;
+
+    public static AllBinaryFileFilter getInstance() {
+        if (instance == null) {
+            instance = new AllBinaryFileFilter();
+        }
+        return instance;
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(AllBinaryFileFilter.class, "FILECHOOSER_All_BINARIES_FILEFILTER"); // NOI18N
     }
 
     @Override
@@ -60,67 +78,37 @@ public abstract class SourceFileFilter extends FileFilterFactory.FileAndFileObje
             if (f.isDirectory()) {
                 return true;
             }
-            int index = f.getName().lastIndexOf('.');
-            if (index >= 0) {
-                // Match suffix
-                String suffix = f.getName().substring(index + 1);
-                if (amongSuffixes(suffix, getSuffixes())) {
-                    return true;
+            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+                // could be binary without extension
+                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(f));
+                if (fo != null && fo.isValid()) {
+                    return MIMENames.isBinary(FileUtil.getMIMEType(fo));
                 }
             } else {
-                // Match entire name
-                if (amongSuffixes(f.getName(), getSuffixes())) {
-                    return true;
-                }
+                return super.accept(f);
             }
         }
         return false;
     }
-
+    
     @Override
-    public boolean accept(FileObject f) {
-        if (f != null) {
-            if (f.isFolder()) {
-                return true;
-            }
-            String suffix = f.getExt();
-            if (amongSuffixes(suffix, getSuffixes())) {
-                return true;
-            }
+    public String[] getSuffixes() {
+        if (suffixes == null) {
+            suffixes = getAllSuffixes();
         }
-        return false;
+        return suffixes;
     }
-
-    public abstract String[] getSuffixes();
-
-    public String getSuffixesAsString() {
-        String[] suffixes = getSuffixes();
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < suffixes.length; i++) {
-            if (0 < i) {
-                ret.append(' '); // NOI18N
-            }
-            ret.append('.').append(suffixes[i]); // NOI18N
-        }
-        return ret.toString();
+    
+    private String[] getAllSuffixes() {
+        Set<String> allSuffixes = new HashSet<String>();
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.EXE_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.DLL_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_EXE_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_CORE_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_SHOBJ_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_STOBJ_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_GENERIC_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_OBJECT_MIME_TYPE).getValues());
+        return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
-
-    private boolean amongSuffixes(String suffix, String[] suffixes) {
-        for (int i = 0; i < suffixes.length; i++) {
-            if (SourceFileFilter.areFilenamesEqual(suffixes[i], suffix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return getDescription();
-    }
-
-    protected static boolean areFilenamesEqual(String firstFile, String secondFile) {
-        return CndFileUtils.isSystemCaseSensitive() ? firstFile.equals(secondFile) : firstFile.equalsIgnoreCase(secondFile);
-    }
-
 }
