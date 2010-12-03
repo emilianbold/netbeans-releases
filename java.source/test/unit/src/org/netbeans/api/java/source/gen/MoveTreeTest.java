@@ -52,12 +52,17 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -65,6 +70,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.ui.FmtOptions;
 
 /**
  * Tests method type parameters changes.
@@ -173,6 +179,59 @@ public class MoveTreeTest extends GeneratorTest {
             "}\n");
     }
 
+    private static final Map<String, String> TAB_SIZE_PREFERENCES =
+            Utils.MapBuilder.<String, String>create().add(FmtOptions.indentSize, "4")
+                                                      .add(FmtOptions.tabSize, "8")
+                                                      .build();
+
+    public void testMoveExpression2Tab() throws Exception {
+        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        performMoveExpressionTest(
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "\tint i1 = 1+    \n" +
+            "\t         2    *3;\n" +
+            "        int foo = 0;\n" +
+            "    }\n" +
+            "}\n",
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "\tint i1 = 1+    \n" +
+            "\t         2    *3;\n" +
+            "        int foo = 1+    \n" +
+            "                  2    *3;\n" +
+            "    }\n" +
+            "}\n");
+        Utils.setCodePreferences(origValues);
+    }
+
+    public void testMoveExpression3Tab() throws Exception {
+        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        performMoveExpressionTest(
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "\tint i1 =\n" +
+            "\t    1+    \n" +
+            "\t    2    *3;\n" +
+            "        int foo = 0;\n" +
+            "    }\n" +
+            "}\n",
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "\tint i1 =\n" +
+            "\t    1+    \n" +
+            "\t    2    *3;\n" +
+            "        int foo = 1+    \n" +
+            "                  2    *3;\n" +
+            "    }\n" +
+            "}\n");
+        Utils.setCodePreferences(origValues);
+    }
+
     private void performMoveExpressionTest(String code, String golden) throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, code);
@@ -236,6 +295,48 @@ public class MoveTreeTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+
+    public void testMoveExpressionToStatementTab() throws Exception {
+        Map<String, String> origValues = Utils.setCodePreferences(TAB_SIZE_PREFERENCES);
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String s1, String s2) {\n" +
+            "\tint i1 = taragui(\"foo\",\n" +
+            "\t\t\t \"bar\");\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(String s1, String s2) {\n" +
+            "        taragui(\"foo\",\n" +
+            "                \"bar\");\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+
+                workingCopy.rewrite(var, workingCopy.getTreeMaker().ExpressionStatement(var.getInitializer()));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        Utils.setCodePreferences(origValues);
     }
 
     public void testMoveMethod() throws Exception {
@@ -447,6 +548,60 @@ public class MoveTreeTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+
+    private static final Map<String, String> NO_TAB_EXPAND_PREFERENCES =
+            Utils.MapBuilder.<String, String>create().add(FmtOptions.indentSize, "4")
+                                                      .add(FmtOptions.tabSize, "8")
+                                                      .add(FmtOptions.expandTabToSpaces, "false")
+                                                      .build();
+    public void test192753() throws Exception {
+        Map<String, String> origValues = Utils.setCodePreferences(NO_TAB_EXPAND_PREFERENCES);
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(String str) {\n" +
+            "\tint a = 0;\n" +
+            "\tSystem.err.println(1);\n" +
+            "\tSystem.err.println(2);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(String str) {\n" +
+            "\tint a = 0;\n" +
+            "    }\n\n" +
+            "    void nue() {\n" +
+            "\tSystem.err.println(1);\n" +
+            "\tSystem.err.println(2);\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree body = method.getBody();
+                BlockTree nueBlock = make.Block(body.getStatements().subList(1, body.getStatements().size()), false);
+                MethodTree nueMethod = make.Method(make.Modifiers(EnumSet.noneOf(Modifier.class)), "nue", make.PrimitiveType(TypeKind.VOID), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null);
+
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, nueMethod));
+                workingCopy.rewrite(body, make.Block(body.getStatements().subList(0, 1), false));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        Utils.setCodePreferences(origValues);
     }
 
     String getGoldenPckg() {
