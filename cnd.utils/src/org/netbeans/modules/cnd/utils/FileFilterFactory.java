@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.utils;
 
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.utils.filters.AllBinaryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CCSourceFileFilter;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.utils.filters.QtFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ResourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ShellFileFilter;
 import org.netbeans.modules.cnd.utils.filters.WorkshopProjectFilter;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,11 +79,42 @@ public final class FileFilterFactory {
 
     private FileFilterFactory() {
     }
+
+    public static FileFilter[] getBinaryFilters() {
+        FileFilter[] filters = null;
+        if (Utilities.isWindows()) {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllBinaryFileFilter(),
+                        FileFilterFactory.getPeExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getPeDynamicLibraryFileFilter()
+                    };
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllBinaryFileFilter(),
+                        FileFilterFactory.getMacOSXExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getMacOSXDynamicLibraryFileFilter()
+                    };
+        } else {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllBinaryFileFilter(),
+                        FileFilterFactory.getElfExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getElfDynamicLibraryFileFilter()
+                    };
+        }
+        return filters;
+    }
+    
     public static FileAndFileObjectFilter getAllFileFilter(){
         return AllFileFilter.getInstance();
     }
     public static FileAndFileObjectFilter getAllSourceFileFilter(){
         return AllSourceFileFilter.getInstance();
+    }
+    public static FileAndFileObjectFilter getAllBinaryFileFilter(){
+        return AllBinaryFileFilter.getInstance();
     }
     public static FileAndFileObjectFilter getCCSourceFileFilter(){
         return CCSourceFileFilter.getInstance();

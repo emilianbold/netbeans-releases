@@ -388,6 +388,7 @@ public class MakefileConfiguration {
             public void run() {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                    chooser.addChoosableFileFilter(FileFilterFactory.getAllBinaryFileFilter());
                     if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.WINDOWS) {
                         chooser.addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
                         chooser.addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());

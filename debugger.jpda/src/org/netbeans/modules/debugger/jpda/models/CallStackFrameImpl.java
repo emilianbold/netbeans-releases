@@ -825,6 +825,11 @@ public class CallStackFrameImpl implements CallStackFrame {
         return equalsInfo.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "CallStackFrameImpl["+thread+", depth = "+depth+"]";
+    }
+
     public List<MonitorInfo> getOwnedMonitors() {
         List<MonitorInfo> threadMonitors;
         try {
