@@ -339,20 +339,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
-        FileFilter[] filters;
-        if (Utilities.isWindows()){
-            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-        } else {
-            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getElfDynamicLibraryFileFilter()};
-        }
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),

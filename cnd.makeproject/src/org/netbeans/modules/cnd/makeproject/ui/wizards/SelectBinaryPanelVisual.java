@@ -713,23 +713,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private String selectBinaryFile(String path) {
-        FileFilter[] filters = null;
-        if (Utilities.isWindows()) {
-            filters = new FileFilter[]{FileFilterFactory.getPeExecutableFileFilter(),
-                FileFilterFactory.getElfStaticLibraryFileFilter(),
-                FileFilterFactory.getPeDynamicLibraryFileFilter()
-            };
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[]{FileFilterFactory.getMacOSXExecutableFileFilter(),
-                FileFilterFactory.getElfStaticLibraryFileFilter(),
-                FileFilterFactory.getMacOSXDynamicLibraryFileFilter()
-            };
-        } else {
-            filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter(),
-                FileFilterFactory.getElfStaticLibraryFileFilter(),
-                FileFilterFactory.getElfDynamicLibraryFileFilter()
-            };
-        }
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
 
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
