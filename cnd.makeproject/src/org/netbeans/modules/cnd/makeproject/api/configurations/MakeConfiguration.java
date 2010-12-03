@@ -85,6 +85,7 @@ public class MakeConfiguration extends Configuration {
     public static final String PROJECT_XML = "project.xml"; // NOI18N
     public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N
     public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
+    public static final String MAKEFILE_VARIABLES = "Makefile-variables.mk"; // NOI18N
     public static final String BUILD_FOLDER = "build"; // NOI18N
     public static final String DIST_FOLDER = "dist"; // NOI18N
     public static final String EXT_FOLDER = "_ext"; // NOI18N

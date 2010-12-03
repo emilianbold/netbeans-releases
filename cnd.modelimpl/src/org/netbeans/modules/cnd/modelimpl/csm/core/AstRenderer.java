@@ -191,7 +191,10 @@ public class AstRenderer {
                         try {
                             if (isMemberDefinition(token)) {
                                 // this is a template method specialization declaration (without a definition)
-                                FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                                ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                container.addDeclaration(spec);
+                                MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
                                 if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
                                     currentNamespace.addDeclaration(explicitSpecializationDeclaration);
                                 }
@@ -228,6 +231,8 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
+                            ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                            container.addDeclaration(spec);
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(funcDef);
                             if (currentNamespace != null && NamespaceImpl.isNamespaceScope(funcDef)) {

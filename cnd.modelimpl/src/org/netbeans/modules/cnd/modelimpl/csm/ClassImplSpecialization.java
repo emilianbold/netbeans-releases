@@ -61,13 +61,13 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements 
  * @author Vladimir Kvashin
  */
-public final class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
+public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
     private CharSequence qualifiedNameSuffix = "";
 
     private SpecializationDescriptor specializationDesctiptor;
 
-    private ClassImplSpecialization(AST ast, NameHolder name, CsmFile file) {
+    protected ClassImplSpecialization(AST ast, NameHolder name, CsmFile file) {
         super(name, ast, file);
     }
 

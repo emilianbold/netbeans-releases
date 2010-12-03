@@ -1409,36 +1409,26 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
-        FileOutputStream os = null;
         try {
+            String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
+            FileOutputStream os = null;
             os = new FileOutputStream(outputFileName);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-        try {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefileFixedVariablesBody(bw);
             writeMakefileVariablesRedirector(bw);
             bw.flush();
             bw.close();
-        } catch (IOException e) {
-            // FIXUP
-        }
 
-        outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
-        try {
+            outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
             os = new FileOutputStream(outputFileName);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        bw = new BufferedWriter(new OutputStreamWriter(os));
-        try {
+            bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefilePrivateVariablesBody(bw);
             bw.flush();
             bw.close();
         } catch (IOException e) {
             // FIXUP
+            Exceptions.printStackTrace(e);
+            return;
         }
     }
 
