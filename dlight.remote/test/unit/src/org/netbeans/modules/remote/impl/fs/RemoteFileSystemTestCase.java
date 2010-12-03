@@ -164,9 +164,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             new Pair(null, "/usr/include/stdlib.h"),
             new Pair("/usr", "include/stdlib.h"),
             new Pair("/usr/include", "stdlib.h"),
-            new Pair("/usr/lib", "libc.so"),
-            new Pair("/usr", "lib/libc.so"),
-            new Pair(null, "/usr/lib/libc.so")            
+            new Pair("/usr/lib", "libc" + sharedLibExt),
+            new Pair("/usr", "lib/libc" + sharedLibExt),
+            new Pair(null, "/usr/lib/libc" + sharedLibExt)
         };
         for (int i = 0; i < pairs.length; i++) {
             Pair pair = pairs[i];
@@ -326,9 +326,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             fo = rootFO.getFileObject(stdio_h);
             assertNotNull("null file object for " + stdio_h, fo);
             assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
-            ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
-            assertEquals("mktemp failed", 0, res.exitCode);
-            tempFile = res.output;
+            tempFile = mkTemp();
             fo = rootFO.getFileObject(tempFile);
             assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
             String content = "a quick brown fox...";

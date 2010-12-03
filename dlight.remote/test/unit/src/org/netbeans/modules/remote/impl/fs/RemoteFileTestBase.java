@@ -50,7 +50,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 
@@ -63,6 +66,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected final RemoteFileSystem fs;
     protected final FileObject rootFO;
     protected final ExecutionEnvironment execEnv;
+
+    protected String sharedLibExt;
+    protected String[] mkTempArgs;
 
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -81,6 +87,19 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+            sharedLibExt = ".dylib";
+            mkTempArgs = new String[] { "-t", "/tmp" };
+        } else {
+            sharedLibExt = ".so";
+            mkTempArgs = new String[0];
+        }
+    }
+
+    protected String mkTemp() throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
+        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
+        return res.output;
     }
 
     protected String readRemoteFile(String absPath) throws Exception {

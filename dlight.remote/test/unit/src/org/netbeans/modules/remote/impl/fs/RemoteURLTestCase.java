@@ -101,9 +101,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     public void testURLConnectionRead() throws Exception {
         String tempFile = null;
         try {
-            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
-            assertEquals("mktemp failed", 0, res.exitCode);
-            tempFile = res.output;
+            tempFile = mkTemp();
             FileObject fo = rootFO.getFileObject(tempFile);
             assertNotNull("Null file object for " + tempFile, fo);
             assertTrue("FileObject should be readable: " + fo.getPath(), fo.canRead());
@@ -139,9 +137,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     public void testURLConnectionWrite() throws Exception {
         String tempFile = null;
         try {
-            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
-            assertEquals("mktemp failed", 0, res.exitCode);
-            tempFile = res.output;
+            tempFile = mkTemp();
             final String referenceText = "...jumps over a lazy dog";
             FileObject fo = rootFO.getFileObject(tempFile);
             assertNotNull("Null file object for " + tempFile, fo);
@@ -160,8 +156,8 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
                 }
             }
             WritingQueue.getInstance(execEnv).waitFinished(null);
-            res = ProcessUtils.execute(execEnv, "cat", tempFile);
-            assertEquals("cat failed", 0, res.exitCode);
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "cat", tempFile);
+            assertEquals("cat failed: " + res.error, 0, res.exitCode);
             assertEquals(referenceText, res.output);
         } finally {
             if (tempFile != null) {
