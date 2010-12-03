@@ -65,7 +65,7 @@ import org.openide.util.CharSequences;
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
+public final class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
         super(ast, name, file);
@@ -106,11 +106,6 @@ public class ClassImplFunctionSpecialization extends ClassImplSpecialization imp
             }
         }
         return out;
-    }
-
-    @Override
-    public boolean isTemplate() {
-        return true;
     }
 
     @Override
