@@ -517,13 +517,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     private void setProvider(){
-        
+
+        String tableGeneration = getTableGeneration();
+
         if (isContainerManaged && providerCombo.getSelectedItem() instanceof Provider) {
             Provider provider = (Provider) providerCombo.getSelectedItem();
             ProviderUtil.removeProviderProperties(persistenceUnit);
             
             if (!(provider instanceof DefaultProvider)) {
                 persistenceUnit.setProvider(provider.getProviderClass());
+                ProviderUtil.setTableGeneration(persistenceUnit, tableGeneration, provider);//preserv table generation property
                 setTableGeneration();
             }
             ProviderUtil.makePortableIfPossible(project, persistenceUnit);
@@ -533,7 +536,8 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             ProviderUtil.removeProviderProperties(persistenceUnit);
             if (!(provider instanceof DefaultProvider)) {
                 ProviderUtil.setProvider(persistenceUnit, provider, getSelectedConnection(), getTableGeneration());
-            }
+                ProviderUtil.setTableGeneration(persistenceUnit, tableGeneration, provider);//preserv table generation property
+           }
         }
     }
     

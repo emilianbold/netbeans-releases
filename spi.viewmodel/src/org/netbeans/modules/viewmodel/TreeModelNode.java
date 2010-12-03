@@ -375,7 +375,20 @@ public class TreeModelNode extends AbstractNode {
     
     @Override
     public String getHtmlDisplayName () {
-        return htmlDisplayName;
+        synchronized (displayNameLock) {
+            // Compute the HTML display name if the ordinary display name is not available (e.g. was reset)
+            if (displayName == null) {
+                try {
+                    setModelDisplayName();
+                } catch (UnknownTypeException ex) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
+            }
+            if (displayName == null) {
+                displayName = "";   // display name was computed
+            }
+            return htmlDisplayName;
+        }
     }
     
     @Override

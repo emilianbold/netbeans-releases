@@ -303,10 +303,10 @@ abstract class CollapsiblePanel extends JPanel {
             this.filters = filters;
             
             Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
-                        
+            master.getCommitTable().labelFor(filesLabel);
+            
             JComponent table = master.getCommitTable().getComponent();
             
-            filesLabel.setLabelFor(table);
             filesLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesLabel.getMaximumSize().height));
             
             Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
@@ -379,14 +379,10 @@ abstract class CollapsiblePanel extends JPanel {
             this.hooks = hooks;
             this.hookContext = hookContext;
             
-            sectionButton.setText((hooks.size() == 1)
+            Mnemonics.setLocalizedText(sectionButton, (hooks.size() == 1)
                                            ? hooks.iterator().next().getDisplayName()
-                                           : getMessage("LBL_Advanced"));   //NOI18N                        
-        }
+                                           : getMessage("LBL_Advanced")); // NOI18N                 
 
-        @Override
-        public void addNotify() {
-            super.addNotify();
             // need this to happen in addNotify() - depends on how 
             // repositoryComboSupport in hook.createComponents works for bugzilla|jira
             if (hooks.size() == 1) {                
@@ -394,10 +390,14 @@ abstract class CollapsiblePanel extends JPanel {
             } else {
                 JTabbedPane hooksTabbedPane = new JTabbedPane();
                 for (VCSHook hook : hooks) {
-                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName());
+                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName().replaceAll("\\&", ""));
                 }
                 sectionPanel.add(hooksTabbedPane);
-            }                
+            }
+        }
+            
+        int getPreferedWidth() {
+            return sectionPanel.getPreferredSize().width;
         }
     }    
     

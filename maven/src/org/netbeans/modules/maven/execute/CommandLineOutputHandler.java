@@ -96,7 +96,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
     @Override
     protected final void checkSleepiness() {
-        handle.progress(currentProject != null && currentTag != null ? currentProject + " " + currentTag : ""); // NOI18N
+        handle.progress(currentProject == null ? "" : currentTag == null ? currentProject : currentProject + " " + currentTag); // NOI18N
         super.checkSleepiness();
     }
 
@@ -125,9 +125,16 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         return this.inputOutput;
     }
 
+    private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N
+    private void closeCurrentTag() {
+        if (currentTag != null) {
+            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
+            currentTag = null;
+        }
+    }
+
     private class Output implements Runnable {
 
-        private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N
         private BufferedReader str;
         private boolean skipLF = false;
 
@@ -138,7 +145,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         private String readLine() throws IOException {
             char[] char1 = new char[1];
             boolean isReady = true;
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             while (isReady) {
                 int ret = str.read(char1);
                 if (ret != 1) {
@@ -182,7 +189,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
         }
 
-        public void run() {
+        public @Override void run() {
             CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE,null), stdOut);
             try {
 
@@ -196,10 +203,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                     if (line.startsWith("[INFO] Final Memory:")) { //NOI18N
                         // previous value [INFO] --------------- is too early, the compilation errors don't get processed in this case.
                         //heuristics..
-                        if (currentTag != null) {
-                            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
-                        }
-                        currentTag = null;
+                        closeCurrentTag();
                     }
                     String tag = null;
                     Matcher match = startPatternM3.matcher(line);
@@ -224,11 +228,9 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         }
                     }
                     if (tag != null) {
-                        if (currentTag != null) {
-                            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
-                        }
-                        CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+                        closeCurrentTag();
                         currentTag = tag;
+                        CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
                         checkSleepiness();
                     } else {
                         match = linePattern.matcher(line);
@@ -265,7 +267,6 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         private InputOutput inputOutput;
         private OutputStream str;
         private boolean stopIn = false;
-        private Thread runningThread;
 
         public Input(OutputStream out, InputOutput inputOutput) {
             str = out;
@@ -281,8 +282,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             }
         }
 
-        public void run() {
-            runningThread = Thread.currentThread();
+        public @Override void run() {
             Reader in = inputOutput.getIn();
             try {
                 while (true) {
@@ -353,6 +353,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         case GOT_DASHES:
             if (text.startsWith("Building ") && !text.startsWith("Building in ") || text.startsWith("Skipping ")) { // NOI18N
                 currentProject = text.substring(9);
+                closeCurrentTag();
                 handle.progress(currentProject, Math.min(++projectCount, reactorSize));
                 LOG.log(java.util.logging.Level.FINE, "got project #{0}: {1}", new Object[] {projectCount, currentProject});
             }

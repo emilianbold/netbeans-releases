@@ -161,7 +161,10 @@ public final class RepositoryInfo {
             }
         }
 
-    }    
+    }
+
+    public @Override String toString() {
+        return id;
+    }
     
 }
-
