@@ -100,7 +100,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         ClassImpl out = null;
         CsmFile file = getContainingFile();
         if (file != null) {
-            CsmClassifier base = file.getProject().findClassifier(super.getQualifiedNamePostfix());
+            CsmClassifier base = file.getProject().findClassifier(getQualifiedNameWithoutSuffix());
             if (base instanceof ClassImpl) {
                 out = (ClassImpl) base;
             }
