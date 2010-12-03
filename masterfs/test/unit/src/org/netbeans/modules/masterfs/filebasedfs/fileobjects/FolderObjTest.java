@@ -101,7 +101,8 @@ public class FolderObjTest extends NbTestCase {
     protected Level logLevel() {
         String[] testsWithEnabledLogger = new String[] {
             "testCreateFolder72617",
-            "testCreateData72617"
+            "testCreateData72617",
+            ".testBug127256"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
             Level.FINEST : Level.OFF;

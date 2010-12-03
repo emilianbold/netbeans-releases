@@ -74,6 +74,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 /**
@@ -291,7 +292,18 @@ public final class FolderObj extends BaseFileObj {
         final FileObjectFactory factory = getFactory();
         retVal = null;
         if (factory != null) {
-            retVal = (FileObj) factory.getValidFileObject(file2Create, FileObjectFactory.Caller.Others);
+            final BaseFileObj fo = factory.getValidFileObject(file2Create, FileObjectFactory.Caller.Others);
+            try {
+                retVal = (FileObj) fo;
+            } catch (ClassCastException ex) {
+                boolean dir = file2Create.isDirectory();
+                boolean file = file2Create.isFile();
+                Exceptions.attachMessage(ex, "isDir: " + dir); // NOI18N
+                Exceptions.attachMessage(ex, "isFile: " + file); // NOI18N
+                Exceptions.attachMessage(ex, "file: " + file2Create); // NOI18N
+                Exceptions.attachMessage(ex, "fo: " + fo); // NOI18N
+                throw ex;
+            }
         }
 
         if (retVal != null) {            
