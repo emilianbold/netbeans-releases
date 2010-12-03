@@ -60,8 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -301,25 +299,20 @@ public final class TaskProvider extends PushTaskScanner {
                 return ;
             }
 
-            callback.started();
-            try {
-                if (file.isData()) {
-                    List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
-                    Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
+            if (file.isData()) {
+                List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
+                Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
 
-                    if (tasks.isEmpty()) {
-                        filesWithErrors.remove(file);
-                    } else {
-                        filesWithErrors.add(file);
-                    }
-
-                    LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
-                    getCallback().setTasks(file, tasks);
+                if (tasks.isEmpty()) {
+                    filesWithErrors.remove(file);
                 } else {
-                    updateErrorsInRoot(getCallback(), root);
+                    filesWithErrors.add(file);
                 }
-            } finally {
-                callback.finished();
+
+                LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
+                getCallback().setTasks(file, tasks);
+            } else {
+                updateErrorsInRoot(getCallback(), root);
             }
         }
     }
