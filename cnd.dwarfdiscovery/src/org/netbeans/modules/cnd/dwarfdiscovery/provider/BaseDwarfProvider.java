@@ -378,7 +378,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     private String getCommonPart(String path, String commonRoot) {
-        String[] splitPath = path.split("/");
+        String[] splitPath = path.split("/"); // NOI18N
         ArrayList<String> list1 = new ArrayList<String>();
         boolean isUnixPath = false;
         for (int i = 0; i < splitPath.length; i++) {
@@ -390,7 +390,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
         }
-        String[] splitRoot = commonRoot.split("/");
+        String[] splitRoot = commonRoot.split("/"); // NOI18N
         ArrayList<String> list2 = new ArrayList<String>();
         boolean isUnixRoot = false;
         for (int i = 0; i < splitRoot.length; i++) {
@@ -434,7 +434,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 continue;
             }
             String s = getCommonPart(entry.getKey(), current);
-            String[] split = s.split("/");
+            String[] split = s.split("/"); // NOI18N
             int length = (split.length > 0 && split[0].isEmpty()) ? split.length - 1 : split.length;
             if (length >= 2) {
                 current = s;
