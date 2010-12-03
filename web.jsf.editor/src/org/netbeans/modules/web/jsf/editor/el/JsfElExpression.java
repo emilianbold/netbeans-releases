@@ -211,7 +211,7 @@ public class JsfElExpression extends ELExpression {
                     public void run(ResultIterator resultIterator) throws Exception {
                         Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                         if (result instanceof HtmlParserResult) {
-                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
+                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result, resultIterator.getSnapshot());
                             _value[0] = model.resolveExpression(expr, findNearestMapableOffsetForward(result.getSnapshot(), offset), NESTING_AWARE);
                         }
                     }
@@ -462,7 +462,7 @@ public class JsfElExpression extends ELExpression {
                     //one level - works only if xhtml is top level
                     Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (result instanceof HtmlParserResult) {
-                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
+                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result, resultIterator.getSnapshot());
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
                         for (JsfVariableContext var : contexts) {
                             if (var.getVariableName().startsWith(prefix)) {
