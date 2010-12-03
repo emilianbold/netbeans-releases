@@ -536,7 +536,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
                 updateDbxPath(host);
 
 		if (dbxname == null) {
-		    // getDbxPath has already posted an error dialog.
+                    listener.connectFailed("dbx", Catalog.get("MSG_CantFindDbx"), null); // NOI18N
 		    return;
 		}
 

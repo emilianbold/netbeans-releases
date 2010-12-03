@@ -555,17 +555,17 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             System.out.printf("DbxDebuggerImpl.start2() exec32 = %s\n", exec32); // NOI18N
         }
 
-        // Figure out dbx command
-        // Copied from GdbProfile
-        String dbxPath = getDebuggerString((MakeConfiguration)ddi.getConfiguration());
-        if (dbxPath != null) {
-            factory = new Dbx.DbxFactory(executor, additionalArgv,
-                                         listener, exec32, isShortName(),
-                                         dbxInitFile, host, connectExisting, dbxPath,
-                                         ddi.getInputOutput(), ddi);
-        
-            factory.start();
+        // Figure out dbx command for IDE
+        String dbxPath = null;
+        if (!DebuggerManager.isStandalone()) {
+            dbxPath = getDebuggerString((MakeConfiguration)ddi.getConfiguration());
         }
+        factory = new Dbx.DbxFactory(executor, additionalArgv,
+                                     listener, exec32, isShortName(),
+                                     dbxInitFile, host, connectExisting, dbxPath,
+                                     ddi.getInputOutput(), ddi);
+
+        factory.start();
     }
 
     // interface Dbx.Factory.Listener
@@ -1083,7 +1083,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         state().isLoaded = false;
         stateChanged();
 
-        getIOPack().close();
+        if (getIOPack() != null) {
+            getIOPack().close();
+        }
 
         if (executor != null) {
             // executor may sometimes be null if a session fail to start
