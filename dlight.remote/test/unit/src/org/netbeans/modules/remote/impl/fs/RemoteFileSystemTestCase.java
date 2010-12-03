@@ -291,7 +291,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             }
         }
 
-        fs.getChildrenSupport().resetStatistic();
+        fs.resetStatistic();
         Thread[] threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++) {
             threads[i] = new Thread(new Worker(absPath, barrier, exceptions));
@@ -301,8 +301,8 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         for (int i = 0; i < threadCount; i++) {
             threads[i].join();
         }
-        assertEquals("Dir. sync count differs", 3, fs.getChildrenSupport().getDirSyncCount());
-        assertEquals("File transfer count differs", 1, fs.getChildrenSupport().getFileCopyCount());
+        assertEquals("Dir. sync count differs", 3, fs.getDirSyncCount());
+        assertEquals("File transfer count differs", 1, fs.getFileCopyCount());
         if (!exceptions.isEmpty()) {
             System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
             throw exceptions.iterator().next();

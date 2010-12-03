@@ -44,10 +44,15 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -76,6 +81,16 @@ public class RemoteFileSystem extends FileSystem {
     private final ChildrenSupport childrenSupport;
     private final File cache;
     private final RemoteFileObjectFactory factory;
+
+    /** File transfer statistics */
+    private static int fileCopyCount;
+
+    /** Directory synchronization statistics */
+    private static int dirSyncCount;
+
+    private final Object mainLock = new Object();
+    private Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -119,6 +134,39 @@ public class RemoteFileSystem extends FileSystem {
     /*package-local, for testing*/
     File getCache() {
         return cache;
+    }
+
+    public ReadWriteLock getLock(File file) {
+        synchronized(mainLock) {
+            WeakReference<ReadWriteLock> ref = locks.get(file);
+            ReadWriteLock result = (ref == null) ? null : ref.get();
+            if (result == null) {
+                result = new ReentrantReadWriteLock();
+                locks.put(file, new WeakReference<ReadWriteLock>(result));
+            }
+            return result;
+        }
+    }
+
+    /*package-local test method*/ final void resetStatistic() {
+        dirSyncCount = 0;
+        fileCopyCount = 0;
+    }
+
+    /*package-local test method*/ final int getDirSyncCount() {
+        return dirSyncCount;
+    }
+
+    /*package-local test method*/ final int getFileCopyCount() {
+        return fileCopyCount;
+    }
+
+    /*package-local test method*/ final void incrementDirSyncCount() {
+        dirSyncCount++;
+    }
+
+    /*package-local test method*/ final void incrementFileCopyCount() {
+        fileCopyCount++;
     }
 
     @Override
