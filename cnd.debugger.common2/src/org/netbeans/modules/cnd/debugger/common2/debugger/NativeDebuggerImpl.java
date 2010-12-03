@@ -65,8 +65,12 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
+import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -104,6 +108,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblySe
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Stuff that is common to native DebuggerImpl's.
@@ -1544,7 +1549,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // Figure out dbx command
         // Copied from GdbProfile
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        CompilerSet cs;
 
 	/* OLD
         if (csconf.isValid()) {
@@ -1560,17 +1564,42 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 	 */
 
-        cs = csconf.getCompilerSet();
-	String csname = csconf.getOption();
+        CompilerSet cs = csconf.getCompilerSet();
+        ExecutionEnvironment exEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        String csname = csconf.getOption();
         if (cs == null) {
             final int platform = conf.getPlatformInfo().getPlatform();
             CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
             flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
-            cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
+            cs = CompilerSetFactory.getCompilerSet(exEnv, flavor, csname);
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null)
-            return debuggerTool.getPath();
+        if (debuggerTool != null) {
+            String path = debuggerTool.getPath();
+            if (path != null && !path.isEmpty()) {
+                return path;
+            }
+        }
+        // ask for debugger, IZ 192540
+        ToolsPanelModel model = new LocalToolsPanelModel();
+        model.setCRequired(false);
+        model.setCppRequired(false);
+        model.setFortranRequired(false);
+        model.setMakeRequired(false);
+        model.setDebuggerRequired(true);
+        model.setShowRequiredBuildTools(false);
+        model.setShowRequiredDebugTools(true);
+        model.setCompilerSetName(null); // means don't change
+        model.setSelectedCompilerSetName(csname);
+        model.setSelectedDevelopmentHost(exEnv);
+        model.setEnableDevelopmentHostChange(false);
+        BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
+        bt.setTitle(Catalog.get("LBL_ResolveMissingDebugger_Title")); // NOI18N
+        if (bt.initBuildTools(model, new ArrayList<String>(), cs)) {
+            conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
+            cs = CompilerSetManager.get(exEnv).getCompilerSet(model.getSelectedCompilerSetName());
+            return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
+        }
         return null;
     }
 }
