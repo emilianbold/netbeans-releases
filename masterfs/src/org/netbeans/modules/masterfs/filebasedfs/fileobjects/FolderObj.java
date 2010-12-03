@@ -303,7 +303,8 @@ public final class FolderObj extends BaseFileObj {
                 Exceptions.attachMessage(ex, "isFile: " + file); // NOI18N
                 Exceptions.attachMessage(ex, "file: " + file2Create); // NOI18N
                 Exceptions.attachMessage(ex, "fo: " + fo); // NOI18N
-                Exceptions.attachMessage(ex, "fn: " + childName); // NOI18N
+                Exceptions.attachMessage(ex, "fn: " + Integer.toHexString(System.identityHashCode(childName))); // NOI18N
+                Exceptions.attachMessage(ex, "dump: " + NamingFactory.dumpId(childName.getId())); // NOI18N
                 throw ex;
             }
         }
