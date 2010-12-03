@@ -66,10 +66,13 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -181,45 +184,84 @@ public class MakeSampleProjectGenerator {
                     variant = MakeConfiguration.getVariant(compilerSet, platform);
                     csVariant = compilerSet.getName();
                     if (compilerSet.getCompilerFlavor() != null) {
-                        csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
-                    }
-                }
-                //changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
-                changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
-                changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
-                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
-                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                    if (variant != null) {
-                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
-                    }
-                }
-                if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                    if (variant != null) {
-                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                        csVariant += "|" + compilerSet.getCompilerFlavor().toString(); // NOI18N
                     }
                 } else {
-                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
+                    CndUtils.assertTrue(false, "Expected not null tool collection"); // NOI18N
+                }
+                CndUtils.assertTrue(platform != PlatformTypes.PLATFORM_NONE, "Expected not Unknown platform"); // NOI18N
+                if (prjParams.isDefaultToolchain()) {
+                    csVariant = CompilerSet2Configuration.DEFAULT_CS;
+                }
+                //changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT, csVariant, "X-TOOLCHAIN-X"); // NOI18N
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dll", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "dll", "X-LIBSUFFIX-X"); // NOI18N
                     if (variant != null) {
-                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                        changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                } else if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                } else {
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, CommonConfigurationXMLCodec.OUTPUT_ELEMENT, "so", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT, "so", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, CommonConfigurationXMLCodec.MAKE_ARTIFACT_ELEMENT, "OP", variant, "X-PLATFORM-X"); // NOI18N
                     }
                 }
                 saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
                 FileObject privateConfiguration = prjLoc.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
                 if (privateConfiguration != null) {
                     projXml = FileUtil.toFile(privateConfiguration);
-                    doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-                    changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
-                    saveXml(doc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
+                    Document secodaryDoc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                    changeXmlFileByTagName(secodaryDoc, CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT, prjHostUID, "X-HOST-UID-X"); // NOI18N
+                    changeXmlFileByTagName(secodaryDoc, CommonConfigurationXMLCodec.PLATFORM_ELEMENT, "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
+                    saveXml(secodaryDoc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
+                } else {
+                    // Create privete configuration with selected host
+                    Document secodaryDoc = XMLUtil.createDocument(CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT, null, null, null);
+                    Element masterRoot = doc.getDocumentElement();
+                    if (masterRoot != null) {
+                        Element secodaryRoot = secodaryDoc.getDocumentElement();
+                        secodaryRoot.setAttribute("version", masterRoot.getAttribute("version")); // NOI18N
+                        NodeList masterConfsList = masterRoot.getElementsByTagName(CommonConfigurationXMLCodec.CONFS_ELEMENT);
+                        if (masterConfsList.getLength() > 0) {
+                            Element secondaryConfs = secodaryDoc.createElement(CommonConfigurationXMLCodec.CONFS_ELEMENT);
+                            secodaryRoot.appendChild(secondaryConfs);
+                            Node masterConfs = masterConfsList.item(0);
+                            NodeList masterConfList = masterConfs.getChildNodes();
+                            for (int i = 0; i < masterConfList.getLength(); i++) {
+                                if ( masterConfList.item(i).getNodeType() != Node.ELEMENT_NODE) {
+                                    continue;
+                                }
+                                Element masterConf = (Element) masterConfList.item(i);
+                                Element secondaryConf = secodaryDoc.createElement(CommonConfigurationXMLCodec.CONF_ELEMENT);
+                                secondaryConf.setAttribute("name", masterConf.getAttribute("name")); // NOI18N
+                                secondaryConf.setAttribute("type", masterConf.getAttribute("type")); // NOI18N
+                                secondaryConfs.appendChild(secondaryConf);
+                                Element secondaryToolSet = secodaryDoc.createElement(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
+                                secondaryConf.appendChild(secondaryToolSet);
+                                Element secondaryDevelopmentServer = secodaryDoc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
+                                secondaryToolSet.appendChild(secondaryDevelopmentServer);
+                                secondaryDevelopmentServer.setTextContent(prjHostUID);
+                                Element secondaryPlatform = secodaryDoc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+                                secondaryToolSet.appendChild(secondaryPlatform);
+                                secondaryPlatform.setTextContent("" + platform); // NOI18N
+                            }
+                        }
+                    }
+                    saveXml(secodaryDoc, prjLoc, PROJECT_PRIVATE_CONFIGURATION_FILE);
                 }
                 recordCreateSampleProject(env);
             }

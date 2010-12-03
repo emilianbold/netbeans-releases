@@ -130,7 +130,7 @@ public interface NbModuleProvider {
      * returns the location of the module's manifest
      * @return manifest FileObject.
      */ 
-    FileObject getManifestFile();
+    @CheckForNull FileObject getManifestFile();
     
     /**
      * add/updates the given dependency to the project

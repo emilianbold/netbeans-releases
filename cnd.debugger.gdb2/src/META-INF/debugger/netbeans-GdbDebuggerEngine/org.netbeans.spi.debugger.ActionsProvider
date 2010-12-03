@@ -9,7 +9,7 @@ org.netbeans.modules.cnd.debugger.common2.debugger.actions.ToggleBreakpointActio
 org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToCursorActionProvider
 # org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunIntoMethodActionProvider
 # org.netbeans.modules.cnd.debugger.common2.debugger.actions.FixActionProvider
-# org.netbeans.modules.cnd.debugger.common2.debugger.actions.MakeCalleeCurrentActionProvider
-# org.netbeans.modules.cnd.debugger.common2.debugger.actions.MakeCallerCurrentActionProvider
-# org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopTopmostCallActionProvider
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.MakeCalleeCurrentActionProvider
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.MakeCallerCurrentActionProvider
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopTopmostCallActionProvider
 org.netbeans.modules.cnd.debugger.common2.debugger.actions.AddWatchAction

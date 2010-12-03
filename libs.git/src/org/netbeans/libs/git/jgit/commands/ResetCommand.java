@@ -73,6 +73,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -109,7 +110,7 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git reset"); //NOI18N
+        StringBuilder sb = new StringBuilder("git reset "); //NOI18N
         if (moveHead) {
             sb.append(resetType.toString()).append(" ").append(revisionStr); //NOI18N
         } else {
@@ -198,14 +199,14 @@ public class ResetCommand extends GitCommand {
                                         continue;
                                     }
                                     if (file.isDirectory()) {
-                                        monitor.notifyWarning("Replacing directory " + file.getAbsolutePath());
+                                        monitor.notifyWarning(NbBundle.getMessage(ResetCommand.class, "MSG_Warning_ReplacingDirectory", file.getAbsolutePath())); //NOI18N
                                         Utils.deleteRecursively(file);
                                     }
                                     file.createNewFile();
                                     if (file.isFile()) {
                                         DirCacheCheckout.checkoutEntry(repository, file, e.getValue(), getFileMode(repository));
                                     } else {
-                                        monitor.notifyWarning("Cannot create file " + file.getAbsolutePath());
+                                        monitor.notifyWarning(NbBundle.getMessage(ResetCommand.class, "MSG_Warning_CannotCreateFile", file.getAbsolutePath())); //NOI18N
                                     }
                                 }
                             }
@@ -214,7 +215,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException("Cannot update HEAD reference to " + revisionStr + ": ");
+                                throw new GitException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr)); //NOI18N
                             }
                         }
                     } finally {

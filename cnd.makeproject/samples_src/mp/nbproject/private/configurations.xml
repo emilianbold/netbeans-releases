@@ -6,6 +6,7 @@
     <conf name="Debug" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
@@ -24,6 +25,7 @@
     <conf name="Debug_mp" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
@@ -42,6 +44,7 @@
     <conf name="Release" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>
@@ -60,6 +63,7 @@
     <conf name="Release_mp" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <advancedprofiling version="1">
       </advancedprofiling>

@@ -47,6 +47,7 @@ import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 import java.util.*;
 import org.openide.filesystems.test.StatFiles;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -66,13 +67,7 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
     private String resourcePrefix = "";
     
     static {        
-        URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory() {
-            public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
-                if (protocol.equals(FileURL.PROTOCOL)) {
-                    return new FileURL.Handler();
-                } 
-                return null;
-        }});
+        URL.setURLStreamHandlerFactory(Lookup.getDefault().lookup(URLStreamHandlerFactory.class));
     }    
     
     

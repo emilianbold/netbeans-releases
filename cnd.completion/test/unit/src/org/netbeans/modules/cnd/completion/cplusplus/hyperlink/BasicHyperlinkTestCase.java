@@ -445,6 +445,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
     }
 
+    public void test186780() throws Exception {
+        // #186780 -  Random resolving of variable type  
+        performTest("IZ186780.cc", 16, 30, "IZ186780.cc", 7, 1);
+        performTest("IZ186780.cc", 16, 50, "IZ186780.cc", 3, 5);
+        performTest("IZ186780.cc", 17, 40, "IZ186780.cc", 4, 5);
+        performTest("IZ186780.c", 3, 15, "IZ186780.c", 3, 1);
+        performTest("IZ186780.c", 5, 15, "IZ186780.c", 3, 1);
+    }
+    
     public void testIZ140795() throws Exception {
         // IZ#140795 : Usage of enumerators of nested enums
         // of the template specializations are unresolved
@@ -516,7 +525,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
-        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
+        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 9);
     }
 
     public void testIZ136731() throws Exception {
@@ -644,7 +653,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ145071_2() throws Exception {
         // IZ#145071 : forward declarations in function body marked as error
         performTest("IZ145071_2.cc", 2, 12, "IZ145071_2.cc", 2, 5);
-        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 5);
+        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 13);
         performTest("IZ145071_2.cc", 10, 12, "IZ145071_2.cc", 10, 5);
         performTest("IZ145071_2.cc", 11, 20, "IZ145071_2.cc", 10, 5);
     }
@@ -753,6 +762,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testBug188925() throws Exception {
         // Bug 188925 - unable to resolve identifier in templates
         performTest("bug188925.cpp", 40, 24, "bug188925.cpp", 26, 13);
+    }
+
+    public void testBug159328() throws Exception {
+        // Bug 159328 - Unresolved static cast to template
+        performTest("bug159328.cpp", 9, 42, "bug159328.cpp", 5, 5);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

@@ -75,8 +75,7 @@ public class HyperlinkTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
-        FileObject root = FileUtil.toFileObject(getWorkDir());
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         f1 = root.createData("f1");
         PrintStream ps = new PrintStream(f1.getOutputStream());
         ps.println("#comment 1");

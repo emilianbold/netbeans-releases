@@ -45,15 +45,19 @@ import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,12 +65,17 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * openhook implementation, register global classpath and also
@@ -74,6 +83,7 @@ import org.openide.util.NbBundle;
  * dependencies to work.
  * @author  Milos Kleint
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_BINARIES_CHECKED = "binariesChecked";
     private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
@@ -89,13 +99,14 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
     static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
 
-
+    private static final Logger LOGGER = Logger.getLogger(ProjectOpenedHookImpl.class.getName());
+    private static final AtomicBoolean checkedIndices = new AtomicBoolean();
     
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
     
-    protected void projectOpened() {
+    protected @Override void projectOpened() {
         checkBinaryDownloads();
         checkSourceDownloads();
         checkJavadocDownloads();
@@ -139,9 +150,65 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
         USG_LOGGER.log(record);
 
+        for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
+            if (RepositoryPreferences.getInstance().getRepositoryInfoById(rep.getId()) == null) {
+                RepositoryInfo ri = new RepositoryInfo(rep.getId(), RepositoryPreferences.TYPE_NEXUS, rep.getId(), null, rep.getUrl(), null);
+                RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(ri);
+            }
+        }
+
+        CopyResourcesOnSave.opened();
+
+        //only check for the updates of index, if the indexing was already used.
+        if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
+            final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
+            new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() { // #138102
+                public @Override void run() {
+                    List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
+                    for (final RepositoryInfo ri : ris) {
+                        //check this repo can be indexed
+                        if (!ri.isRemoteDownloadable() && !ri.isLocal()) {
+                            continue;
+                        }
+                        if (freq != RepositoryPreferences.FREQ_NEVER) {
+                            boolean run = false;
+                            if (freq == RepositoryPreferences.FREQ_STARTUP) {
+                                LOGGER.log(Level.FINER, "Index At Startup :{0}", ri.getId());//NOI18N
+                                run = true;
+                            } else if (freq == RepositoryPreferences.FREQ_ONCE_DAY && checkDiff(ri.getId(), 86400000L)) {
+                                LOGGER.log(Level.FINER, "Index Once a Day :{0}", ri.getId());//NOI18N
+                                run = true;
+                            } else if (freq == RepositoryPreferences.FREQ_ONCE_WEEK && checkDiff(ri.getId(), 604800000L)) {
+                                LOGGER.log(Level.FINER, "Index once a Week :{0}", ri.getId());//NOI18N
+                                run = true;
+                            }
+                            if (run && ri.isRemoteDownloadable()) {
+                                RepositoryIndexer.indexRepo(ri);
+                            }
+                        }
+                    }
+                }
+            }, 1000 * 60 * 2);
+        }
     }
-    
-    protected void projectClosed() {
+    private boolean existsDefaultIndexLocation() {
+        String userdir = System.getProperty("netbeans.user"); //NOI18N
+        assert userdir != null;
+        File cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+        return cacheDir.exists() && cacheDir.isDirectory();
+    }
+    private boolean checkDiff(String repoid, long amount) {
+        Date date = RepositoryPreferences.getInstance().getLastIndexUpdate(repoid);
+        Date now = new Date();
+        LOGGER.log(Level.FINER, "Check Date Diff :{0}", repoid);//NOI18N
+        LOGGER.log(Level.FINER, "Last Indexed Date :{0}", SimpleDateFormat.getInstance().format(date));//NOI18N
+        LOGGER.log(Level.FINER, "Now :{0}", SimpleDateFormat.getInstance().format(now));//NOI18N
+        long diff = now.getTime() - date.getTime();
+        LOGGER.log(Level.FINER, "Diff :{0}", diff);//NOI18N
+        return (diff < 0 || diff > amount);
+    }
+
+    protected @Override void projectClosed() {
         uriReferences.clear();
         detachUpdater();
         // unregister project's classpaths to GlobalPathRegistry
@@ -150,6 +217,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
 //        GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
+        CopyResourcesOnSave.closed();
     }
    
     void attachUpdater() {

@@ -256,8 +256,8 @@ public final class TaskProvider extends PushTaskScanner {
     }
     
     private static final class Work implements Runnable {
-        private FileObject fileOrRoot;
-        private Callback callback;
+        private final FileObject fileOrRoot;
+        private final Callback callback;
 
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
@@ -272,6 +272,7 @@ public final class TaskProvider extends PushTaskScanner {
             return callback;
         }
         
+        @Override
         public void run() {
             FileObject file = getFileOrRoot();
 
@@ -300,20 +301,25 @@ public final class TaskProvider extends PushTaskScanner {
                 return ;
             }
 
-            if (file.isData()) {
-                List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
-                Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
+            callback.started();
+            try {
+                if (file.isData()) {
+                    List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
+                    Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
 
-                if (tasks.isEmpty()) {
-                    filesWithErrors.remove(file);
+                    if (tasks.isEmpty()) {
+                        filesWithErrors.remove(file);
+                    } else {
+                        filesWithErrors.add(file);
+                    }
+
+                    LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
+                    getCallback().setTasks(file, tasks);
                 } else {
-                    filesWithErrors.add(file);
+                    updateErrorsInRoot(getCallback(), root);
                 }
-
-                LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
-                getCallback().setTasks(file, tasks);
-            } else {
-                updateErrorsInRoot(getCallback(), root);
+            } finally {
+                callback.finished();
             }
         }
     }

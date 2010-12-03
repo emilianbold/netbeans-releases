@@ -83,7 +83,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -292,7 +292,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             if (wm == null) return;
 
 	    //try web beans first
-	    List<WebBean> webBeans = WebBeansModelSupport.getNamedBeans(JsfSupport.findFor(wm.getDocumentBase()).getWebBeansModel());
+	    List<WebBean> webBeans = WebBeansModelSupport.getNamedBeans(JsfSupportImpl.findFor(wm.getDocumentBase()).getWebBeansModel());
 	    for(WebBean wb : webBeans) {
 		if(wb.getName().equals(beanName)) {
 		    JavaSource javaSource = JavaSource.create( getClassPathInfo() );

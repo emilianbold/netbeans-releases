@@ -48,9 +48,9 @@ import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
@@ -122,7 +122,7 @@ public class IndexingSupportTest extends NbTestCase {
         doc2.addPair("package", "java.lang", true, true);
         doc2.addPair("flag", "true", true, true);
         is.addDocument(doc2);
-        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true, null);
+        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
 
         // query
         QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);
@@ -193,13 +193,13 @@ public class IndexingSupportTest extends NbTestCase {
         doc2.addPair("class", "Object", true, true);
         doc2.addPair("package", "java.lang", true, true);
         is.addDocument(doc2);
-        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true, null);
+        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
 
         class LIF extends LuceneIndexFactory {
             boolean getIndexCalled = false;
 
             @Override
-            public IndexImpl getIndex(FileObject indexFolder) throws IOException {
+            public DocumentIndex getIndex(FileObject indexFolder) throws IOException {
                 getIndexCalled = true;
                 return super.getIndex(indexFolder);
             }

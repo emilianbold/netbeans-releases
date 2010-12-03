@@ -59,8 +59,11 @@ import java.awt.event.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.TopComponent;
 
 /**
@@ -124,19 +127,33 @@ final class ViewHierarchy {
     
     public MainWindow getMainWindow() {
         if (mainWindow == null) {
-            mainWindow = new MainWindow();
+            JFrame mainFrame = null;
+            for( Frame f : Frame.getFrames() ) {
+                if( f instanceof JFrame ) {
+                    JFrame frame = (JFrame)f;
+                    if( "NbMainWindow".equals(frame.getName())) { //NOI18N
+                        mainFrame = frame;
+                        break;
+                    }
+                }
+            }
+            if( null == mainFrame ) {
+                mainFrame = new JFrame();
+            }
+            Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, "Installing MainWindow into " + mainFrame); //NOI18N
+            mainWindow = MainWindow.install(mainFrame);
         }
         return mainWindow;
     }
     
     public void installMainWindowListeners() {
-        mainWindow.addComponentListener(mainWindowListener);
-        mainWindow.addWindowStateListener(mainWindowListener);
+        mainWindow.getFrame().addComponentListener(mainWindowListener);
+        mainWindow.getFrame().addWindowStateListener(mainWindowListener);
     }
     
     public void uninstallMainWindowListeners() {
-        mainWindow.removeComponentListener(mainWindowListener);
-        mainWindow.removeWindowStateListener(mainWindowListener);
+        mainWindow.getFrame().removeComponentListener(mainWindowListener);
+        mainWindow.getFrame().removeWindowStateListener(mainWindowListener);
     }
     
     /** Updates the view hierarchy according to new structure. */
@@ -598,17 +615,18 @@ final class ViewHierarchy {
     }
     
     public void updateMainWindowBounds(WindowSystemAccessor wsa) {
+        JFrame frame = mainWindow.getFrame();
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            mainWindow.setBounds(wsa.getMainWindowBoundsJoined());
+            frame.setBounds(wsa.getMainWindowBoundsJoined());
         } else {
             // #45832 clear the desktop when going to SDI,
             setMainWindowDesktop(null);
             // invalidate to recalculate the main window's preffered size..
-            mainWindow.invalidate();
-            mainWindow.setBounds(wsa.getMainWindowBoundsSeparated());
+            frame.invalidate();
+            frame.setBounds(wsa.getMainWindowBoundsSeparated());
         }
         // #38146 So the updateSplit works with correct size.
-        mainWindow.validate();
+        frame.validate();
         // PENDING consider better handling this event so there is not doubled
         // validation (one in MainWindow - needs to be provided here) and this as second one.
     }
@@ -815,6 +833,7 @@ final class ViewHierarchy {
     private EditorAreaFrame createEditorAreaFrame() {
         final EditorAreaFrame frame = new EditorAreaFrame();
         frame.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent evt) {
                 if(frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
                     // Ignore changes when the frame is in maximized state.
@@ -823,6 +842,7 @@ final class ViewHierarchy {
                 controller.userResizedEditorArea(frame.getBounds());
             }
             
+            @Override
             public void componentMoved(ComponentEvent evt) {
                 if(frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
                     // Ignore changes when the frame is in maximized state.
@@ -834,6 +854,7 @@ final class ViewHierarchy {
         frame.setWindowActivationListener(controller);
         
         frame.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent evt) {
                 closeEditorModes();
             }
@@ -923,7 +944,7 @@ final class ViewHierarchy {
     }
     
     public void updateUI() {
-        SwingUtilities.updateComponentTreeUI(mainWindow);
+        SwingUtilities.updateComponentTreeUI(mainWindow.getFrame());
         if(editorAreaFrame != null) {
             SwingUtilities.updateComponentTreeUI(editorAreaFrame);
         }
@@ -946,6 +967,7 @@ final class ViewHierarchy {
         return s;
     }
     
+    @Override
     public String toString() {
         return dumpElement(desktop.getSplitRoot(), 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
     }

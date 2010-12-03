@@ -142,6 +142,9 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.actions</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                         <recursive/>
                         <compile-dependency/>

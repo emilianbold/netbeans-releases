@@ -632,8 +632,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case CATCH:
                     insideCatch(env);
                     break;
-                case DISJOINT_TYPE:
-                    insideDisjointType(env);
+                case DISJUNCTIVE_TYPE:
+                    insideDisjunctiveType(env);
                     break;
                 case IF:
                     insideIf(env);
@@ -1818,10 +1818,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void insideDisjointType(Env env) throws IOException {
+        private void insideDisjunctiveType(Env env) throws IOException {
             TreePath path = env.getPath();
             String prefix = env.getPrefix();
-            DisjointTypeTree dtt = (DisjointTypeTree)path.getLeaf();
+            DisjunctiveTypeTree dtt = (DisjunctiveTypeTree)path.getLeaf();
             CompilationController controller = env.getController();
             TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, dtt, env.getOffset());
             if (last != null && last.token().id() == JavaTokenId.BAR) {
@@ -2343,8 +2343,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
-            if (et.getKind() == Tree.Kind.DISJOINT_TYPE) {
-                for(Tree t : ((DisjointTypeTree)et).getTypeComponents()) {
+            if (et.getKind() == Tree.Kind.DISJUNCTIVE_TYPE) {
+                for(Tree t : ((DisjunctiveTypeTree)et).getTypeAlternatives()) {
                     et = t;
                     exPath = new TreePath(exPath, t);
                 }
@@ -2717,7 +2717,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case METHOD:
                         ExecutableType et = (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, isOfSmartType(env, et.getReturnType(), smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                 }
             }
@@ -2947,11 +2947,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case CONSTRUCTOR:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, type, smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, type, smartTypes)));
                         break;
                     case METHOD:
                         et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, et.getReturnType(), smartTypes)));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                     case CLASS:
                     case ENUM:
@@ -3701,10 +3701,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String nameBase = GeneratorUtils.getCapitalizedName(name).toString();
                         String setterName = "set" + nameBase; //NOI18N
                         String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
-                        if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
+                        if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods)) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, false));
                         }
-                        if ((prefix == null || startsWith(env, setterName, prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods))) {
+                        if ((prefix == null || startsWith(env, setterName, prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, te, variableElement, methods))) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, true));
                         }
                     }
@@ -4916,6 +4916,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Set<? extends TypeMirror> smartTypes = null;
             private Set<Element> excludes = null;
             private boolean checkAccessibility;
+            private boolean addSemicolon = false;
+            private boolean checkAddSemicolon = true;
             
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
@@ -5058,6 +5060,25 @@ public class JavaCompletionProvider implements CompletionProvider {
                         && getController().getTrees().isAccessible(scope, (TypeElement)((DeclaredType)type).asElement())
                         && (member.getKind() != METHOD
                         || getController().getElementUtilities().getImplementationOf((ExecutableElement)member, (TypeElement)((DeclaredType)type).asElement()) == member);
+            }
+            
+            public boolean addSemicolon() {
+                if (checkAddSemicolon) {
+                    TreePath tp = getPath();
+                    Tree tree = tp.getLeaf();
+                    if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        tp = tp.getParentPath();
+                        if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                            addSemicolon = true;
+                    }
+                    if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
+                        (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
+                        tp = tp.getParentPath();
+                    if (tp.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT || tp.getLeaf().getKind() == Tree.Kind.BLOCK)
+                        addSemicolon = true;
+                    checkAddSemicolon = false;
+                }
+                return addSemicolon;
             }
         }
         

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -71,19 +72,25 @@ public final class ConfigureUtils {
     private ConfigureUtils() {
     }
 
-    public static String findConfigureScript(String folder){
+    public static String findConfigureScript(String path){
+        return findConfigureScript(FileUtil.toFileObject(new File(path)));
+    }
+
+    public static String findConfigureScript(FileObject folder){
+        if (folder == null) {
+            return null;
+        }
         String pattern[] = new String[]{"configure"}; // NOI18N
-        File file = new File(folder);
-        if (!(file.isDirectory() && (file.canRead()||file.canExecute()))) {
+        if (!(folder.isFolder() && (folder.canRead()))) {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder, name); // NOI18N
-            if (isRunnable(file)){
-                return file.getAbsolutePath();
+            FileObject child = folder.getFileObject(name); // NOI18N
+            if (isRunnable(child)){
+                return child.getPath();
             }
         }
-        String res = detectQTProject(new File(folder));
+        String res = detectQTProject(folder);
         if (res != null) {
             return res;
         }
@@ -94,15 +101,18 @@ public final class ConfigureUtils {
         return null;
     }
 
-    private static String detectQTProject(File folder){
-        final File[] listFiles = folder.listFiles();
+    private static String detectQTProject(FileObject folder){
+        if (folder == null) {
+            return null;
+        }
+        final FileObject[] listFiles = folder.getChildren();
         if (listFiles == null) {
             return null;
         }
-        for(File file : listFiles){
-            if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
+        for(FileObject file : listFiles){
+            if (file.getExt().equals("pro")){ // NOI18N
                 if (AbstractExecutorRunAction.findTools("qmake") != null){ // NOI18N
-                    return file.getAbsolutePath();
+                    return file.getPath();
                 }
                 break;
             }
@@ -110,11 +120,14 @@ public final class ConfigureUtils {
         return null;
     }
 
-    private static String detectCMake(String path){
-        File configure = new File(path, "CMakeLists.txt"); // NOI18N
-        if (configure.exists()) {
+    private static String detectCMake(FileObject folder){
+        if (folder == null) {
+            return null;
+        }
+        FileObject configure = folder.getFileObject("CMakeLists.txt"); // NOI18N
+        if (configure != null && configure.isValid()) {
             if (AbstractExecutorRunAction.findTools("cmake") != null) { // NOI18N
-                return configure.getAbsolutePath();
+                return configure.getPath();
             }
         }
         return null;

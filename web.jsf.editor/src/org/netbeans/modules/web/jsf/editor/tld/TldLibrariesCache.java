@@ -43,7 +43,7 @@ package org.netbeans.modules.web.jsf.editor.tld;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,9 +55,9 @@ public class TldLibrariesCache {
 
     //uri -> library map
     private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private JsfSupport support;
+    private JsfSupportImpl support;
 
-    public TldLibrariesCache(JsfSupport support) {
+    public TldLibrariesCache(JsfSupportImpl support) {
         this.support = support;
     }
 

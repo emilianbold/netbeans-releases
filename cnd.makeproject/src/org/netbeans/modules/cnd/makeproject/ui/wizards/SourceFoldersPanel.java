@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -80,7 +81,7 @@ import org.openide.util.NbBundle;
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
+            String workingdir = ((File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)).getAbsolutePath();
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
 //            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N

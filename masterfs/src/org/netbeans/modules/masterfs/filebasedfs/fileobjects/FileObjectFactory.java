@@ -82,6 +82,7 @@ public final class FileObjectFactory {
     final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
     private BaseFileObj root;
     private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
+
     public static enum Caller {
         ToFileObject, GetFileObject, GetChildern, GetParent, Others
     }
@@ -432,12 +433,12 @@ public final class FileObjectFactory {
         return null;
     }
 
-    final void refreshAll(RefreshSlow slow, final boolean expected) {
-        Set<BaseFileObj> all2Refresh = collectForRefresh();
+    final void refreshAll(RefreshSlow slow, boolean ignoreRecursiveListeners, boolean expected) {
+        Set<BaseFileObj> all2Refresh = collectForRefresh(ignoreRecursiveListeners);
         refresh(all2Refresh, slow, expected);
     }
 
-    private Set<BaseFileObj> collectForRefresh() {
+    private Set<BaseFileObj> collectForRefresh(boolean noRecListeners) {
         final Set<BaseFileObj> all2Refresh;
         synchronized (allIBaseFileObjects) {
             all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3 + 11);
@@ -448,7 +449,9 @@ public final class FileObjectFactory {
                     for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
                         @SuppressWarnings("unchecked")
                         WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
-                        final BaseFileObj fo = (ref != null) ? ref.get() : null;
+                        BaseFileObj fo = shallBeChecked(
+                            ref != null ? ref.get() : null, noRecListeners
+                        );
                         if (fo != null) {
                             all2Refresh.add(fo);
                         }
@@ -456,7 +459,9 @@ public final class FileObjectFactory {
                 } else {
                     @SuppressWarnings("unchecked")
                     final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
-                    final BaseFileObj fo = (ref != null) ? ref.get() : null;
+                    BaseFileObj fo = shallBeChecked(
+                        ref != null ? ref.get() : null, noRecListeners
+                    );
                     if (fo != null) {
                         all2Refresh.add(fo);
                     }
@@ -465,6 +470,17 @@ public final class FileObjectFactory {
         }
         all2Refresh.remove(root); // #182793
         return all2Refresh;
+    }
+
+    private BaseFileObj shallBeChecked(BaseFileObj fo, boolean noRecListeners) {
+        if (fo != null && noRecListeners) {
+            FolderObj p = (FolderObj) (fo instanceof FolderObj ? fo : fo.getExistingParent());
+            if (p != null && p.hasRecursiveListener()) {
+                LOG_REFRESH.log(Level.FINER, "skip: {0}", fo);
+                fo = null;
+            }
+        }
+        return fo;
     }
 
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
@@ -684,12 +700,15 @@ public final class FileObjectFactory {
     public void refresh(boolean expected) {
         refresh(null, expected);
     }
-    final void refresh(final RefreshSlow slow, final boolean expected) {
+    void refresh(RefreshSlow slow, boolean expected) {
+        refresh(slow, false, expected);
+    }
+    final void refresh(final RefreshSlow slow, final boolean ignoreRecursiveListeners, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                refreshAll(slow, expected);
+                refreshAll(slow, ignoreRecursiveListeners, expected);
             }            
         };        
         
@@ -731,12 +750,12 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    final void refreshFor(final RefreshSlow slow, final File... files) {
+    final void refreshFor(final RefreshSlow slow, final boolean ignoreRecursiveListeners, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                Set<BaseFileObj> all2Refresh = collectForRefresh();
+                Set<BaseFileObj> all2Refresh = collectForRefresh(ignoreRecursiveListeners);
                 refresh(all2Refresh, slow, files);
                 if (LOG_REFRESH.isLoggable(Level.FINER)) {
                     LOG_REFRESH.log(Level.FINER, "Refresh for {0} objects", all2Refresh.size());

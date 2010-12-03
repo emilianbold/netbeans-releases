@@ -85,6 +85,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         arrayInitCombo.addFocusListener(this);
         tryCombo.putClientProperty(OPTION_ID, wrapTryResources);
         tryCombo.addFocusListener(this);
+        multiCatchCombo.putClientProperty(OPTION_ID, wrapDisjunctiveCatchTypes);
+        multiCatchCombo.addFocusListener(this);
         forCombo.putClientProperty(OPTION_ID, wrapFor);
         forCombo.addFocusListener(this);
         forStatementCombo.putClientProperty(OPTION_ID, wrapForStatement );
@@ -164,6 +166,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         arrayInitCombo = new javax.swing.JComboBox();
         tryLabel = new javax.swing.JLabel();
         tryCombo = new javax.swing.JComboBox();
+        multiCatchLabel = new javax.swing.JLabel();
+        multiCatchCombo = new javax.swing.JComboBox();
         forLabel = new javax.swing.JLabel();
         forCombo = new javax.swing.JComboBox();
         forStatementLabel = new javax.swing.JLabel();
@@ -341,6 +345,20 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(tryCombo, gridBagConstraints);
+
+        multiCatchLabel.setLabelFor(multiCatchCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(multiCatchLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_multiCatches")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(multiCatchLabel, gridBagConstraints);
+
+        multiCatchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(multiCatchCombo, gridBagConstraints);
 
         forLabel.setLabelFor(forCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_for")); // NOI18N
@@ -565,6 +583,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel methodCallArgsLabel;
     private javax.swing.JComboBox methodParamsCombo;
     private javax.swing.JLabel methodParamsLabel;
+    private javax.swing.JComboBox multiCatchCombo;
+    private javax.swing.JLabel multiCatchLabel;
     private javax.swing.JPanel panel1;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel spacerPanel1;

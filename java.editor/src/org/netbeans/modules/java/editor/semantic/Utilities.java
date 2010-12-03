@@ -201,12 +201,11 @@ public class Utilities {
             return null;
         }
 
-        ts.moveNext();
-
-        if (ts.offset() >= start) {
-            Token<JavaTokenId> t = ts.token();
-
-            return t;
+        if (ts.moveNext()) {
+            if (ts.offset() >= start) {
+                Token<JavaTokenId> t = ts.token();
+                return t;
+            }
         }
         
         return null;

@@ -45,6 +45,7 @@
 package org.netbeans.api.project.ui;
 
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
@@ -169,6 +170,9 @@ public final class OpenProjects {
      * @since org.netbeans.modules.projectuiapi/0 1.2
      */
     public void open (Project[] projects, boolean openSubprojects) {
+        if (Arrays.asList(projects).contains(null)) {
+            throw new NullPointerException();
+        }
         trampoline.openAPI (projects,openSubprojects, false);
     }
 
@@ -193,6 +197,9 @@ public final class OpenProjects {
      * @since 1.35
      */
     public void open (Project[] projects, boolean openSubprojects, boolean showProgress) {
+        if (Arrays.asList(projects).contains(null)) {
+            throw new NullPointerException();
+        }
         trampoline.openAPI (projects,openSubprojects, showProgress);
     }
 

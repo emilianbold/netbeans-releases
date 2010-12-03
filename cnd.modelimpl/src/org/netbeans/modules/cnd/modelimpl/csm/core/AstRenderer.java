@@ -191,7 +191,14 @@ public class AstRenderer {
                         try {
                             if (isMemberDefinition(token)) {
                                 // this is a template method specialization declaration (without a definition)
-                                container.addDeclaration(FunctionImplEx.create(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                                ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                container.addDeclaration(spec);
+                                MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
+                                if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
+                                    currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                }
+                                container.addDeclaration(explicitSpecializationDeclaration);
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
                                     break;
@@ -224,7 +231,13 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            container.addDeclaration(FunctionDefinitionImpl.create(token, file, null, !isRenderingLocalContext()));
+                            ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                            container.addDeclaration(spec);
+                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                            container.addDeclaration(funcDef);
+                            if (currentNamespace != null && NamespaceImpl.isNamespaceScope(funcDef)) {
+                                currentNamespace.addDeclaration(funcDef);
+                            }
                         } else {
                             FunctionDDImpl<?> fddit = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(fddit);

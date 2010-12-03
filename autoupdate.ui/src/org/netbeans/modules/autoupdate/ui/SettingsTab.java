@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -380,70 +381,83 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     OptionsDisplayer.getDefault ().open ("General"); //NOI18N
 }//GEN-LAST:event_bProxyActionPerformed
 
-public SettingsTableModel getSettingsTableModel() {
-    return ((SettingsTableModel)table.getModel());
-}
+    public SettingsTableModel getSettingsTableModel() {
+        return ((SettingsTableModel) table.getModel());
+    }
 
-private class Listener implements ListSelectionListener,  TableModelListener {
-    public void valueChanged(ListSelectionEvent arg0) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                modelOrSelectionChanged ();
+    private class Listener implements ListSelectionListener, TableModelListener, Runnable {
+        @Override
+        public void valueChanged(ListSelectionEvent arg0) {
+            modelOrSelectionChanged();
+        }
+
+        @Override
+        public void tableChanged(TableModelEvent arg0) {
+            modelOrSelectionChanged();
+        }
+
+        private void modelOrSelectionChanged() {
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeLater(this);
+                return;
             }
-        });
-    }
-       
-    public void tableChanged(TableModelEvent arg0) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                modelOrSelectionChanged ();
-            }
-        });
-    }
-    
-    private void modelOrSelectionChanged() {
-        int rowIndex = table.getSelectedRow();
-        if (rowIndex != -1 && table.getRowCount() > 0) {
-            UpdateUnitProvider uup = ((SettingsTableModel)table.getModel()).getUpdateUnitProvider(rowIndex);
-            if (uup != null) {
-                StringBuffer sb = new StringBuffer();
-                details.setTitle(uup.getDisplayName());
-                long lastTime = lastModification(uup);
-                if (lastTime > 0) {
-                    sb.append("<b>" + NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
-                            "</b>")).append(new SimpleDateFormat().format(new Date(lastTime))).append("<br>");
-                } else {
-                    String never = getMessage("UnitTab_ReloadTime_Never");//NOI18N
-                    sb.append("<b>" + NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "</b>")).append(never).append("<br>");//NOI18N                            
-                }                                
-                URL u = uup.getProviderURL();
-                String desc = uup.getDescription () == null ? "" : uup.getDescription ();
-                if (u != null) {
-                    if (desc.length() > 0) {
-                        sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
-                        sb.append(desc + "<br><br>"); // NOI18N
-                    }
-                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") + // NOI18N
-                            " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
-                    editAction.setEnabled (true);
-                } else {
-                    editAction.setEnabled (false);
+            int rowIndex = table.getSelectedRow();
+            if (rowIndex != -1 && table.getRowCount() > 0) {
+                uup = ((SettingsTableModel) table.getModel()).getUpdateUnitProvider(rowIndex);
+                if (uup != null) {
+                    details.setTitle(uup.getDisplayName());
+                    UnitDetails.UNIT_DETAILS_PROCESSOR.post(this);
                 }
+            } else {
+                details.setTitle(null);
+                details.setText(null);
+                details.setActionListener2(null);
+                details.setActionListener(null);
 
+                ListSelectionModel lsm = table.getSelectionModel();
+                lsm.setSelectionInterval(0, 0);
+            }
+        }
+        
+        private final StringBuffer sb = new StringBuffer();
+        private boolean sbEnabled;
+        private UpdateUnitProvider uup;
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()) {
                 details.setText(sb.toString());
                 details.setActionListener(removeAction);
                 details.setActionListener2(editAction);
+                editAction.setEnabled(sbEnabled);
+                
+                sb.setLength(0);
+                return;
             }
-        } else {
-            details.setTitle(null);
-            details.setText(null);
-            details.setActionListener2(null);            
-            details.setActionListener(null);
             
-            ListSelectionModel lsm = table.getSelectionModel();
-            lsm.setSelectionInterval(0, 0);
+            long lastTime = lastModification(uup);
+            if (lastTime > 0) {
+                sb.append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
+                  "</b>")).append(new SimpleDateFormat().format(new Date(lastTime))).append("<br>");
+            } else {
+                String never = getMessage("UnitTab_ReloadTime_Never");//NOI18N
+                sb.append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "</b>")).append(never).append("<br>"); //NOI18N                            
+            }
+            URL u = uup.getProviderURL();
+            String desc = uup.getDescription() == null ? "" : uup.getDescription();
+            if (u != null) {
+                if (desc.length() > 0) {
+                    sb.append("<b>").append(getMessage("SettingsTab_UpdateUnitProvider_Description")).append("</b><br>"); // NOI18N
+                    sb.append(desc).append("<br><br>"); // NOI18N
+                }
+                sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") + // NOI18N
+                      " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
+                sbEnabled = true;
+            } else {
+                sbEnabled = false;
+            }
+            EventQueue.invokeLater(this);
         }
-    }
     }
 
     private long lastModification(UpdateUnitProvider unitProvider) {

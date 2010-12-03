@@ -18,17 +18,22 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mt154047
  */
 @ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
-public class AdvancedTableViewVisualizerFactory implements VisualizerFactory<AdvancedTableViewVisualizerConfiguration> {
+public final class AdvancedTableViewVisualizerFactory implements VisualizerFactory<AdvancedTableViewVisualizerConfiguration> {
 
+    @Override
     public String getID() {
         return VisualizerConfigurationIDsProvider.ADVANCED_TABLE_VISUALIZER;
     }
 
+    @Override
     public Visualizer<AdvancedTableViewVisualizerConfiguration> create(AdvancedTableViewVisualizerConfiguration configuration, VisualizerDataProvider provider) {
         if (!(provider instanceof TableDataProvider)){
             return null;
         }
-        return new AdvancedTableViewVisualizer((TableDataProvider)provider, configuration);
+        
+        AdvancedTableViewVisualizer result = new AdvancedTableViewVisualizer((TableDataProvider)provider, configuration);
+        result.init();
+        return result;
     }
 
 }

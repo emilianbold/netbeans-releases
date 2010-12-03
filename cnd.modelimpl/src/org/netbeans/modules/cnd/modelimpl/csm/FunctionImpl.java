@@ -89,7 +89,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence[] rawName;
 
-    private TemplateDescriptor templateDescriptor = null;
+    private final TemplateDescriptor templateDescriptor;
 
     protected final CharSequence classTemplateSuffix;
 
@@ -393,7 +393,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequences.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(scopeQName.toString() + (!CsmKindUtilities.isSpecialization(scope) ? getScopeSuffix() : "") + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();
@@ -570,6 +570,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
+    }
+
+    @Override
+    public boolean isSpecialization() {
+        return templateDescriptor != null && templateDescriptor.isSpecialization();
     }
 
     /**

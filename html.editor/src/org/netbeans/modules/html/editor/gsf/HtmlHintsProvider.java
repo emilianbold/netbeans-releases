@@ -92,7 +92,7 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         HtmlVersion version = result.getDetectedHtmlVersion();
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        Project project = FileOwnerQuery.getOwner(file);
+        Project project = file != null ? FileOwnerQuery.getOwner(file) : null;
 
         if (version == null) {
             //the version can be determined

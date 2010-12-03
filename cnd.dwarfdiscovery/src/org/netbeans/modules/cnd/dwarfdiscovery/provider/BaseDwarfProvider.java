@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
@@ -216,6 +217,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         String commonRoot = null;
         Position position = null;
         List<String> errors = new ArrayList<String>();
+        List<String> searchPaths = new ArrayList<String>();
         int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
@@ -319,12 +321,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
             if (dlls != null) {
-                List<String> pubNames = dump.readPubNames();
+                SharedLibraries pubNames = dump.readPubNames();
                 synchronized (dlls) {
-                    for (String dll : pubNames) {
+                    for (String dll : pubNames.getDlls()) {
                         dlls.add(dll);
                     }
-
+                    searchPaths.addAll(pubNames.getPaths());
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -366,8 +368,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (dlls != null) {
             dllResult = new ArrayList<String>(dlls);
         }
+        ArrayList<String> pathsResult = null;
+        if (dlls != null) {
+            pathsResult = new ArrayList<String>(searchPaths);
+        }
         if (res > 0) {
-            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, commonRoot, position);
+            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
         } else {
             if (errors.isEmpty()) {
                 if (foundDebug > 0) {
@@ -376,7 +382,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
                 }
             }
-            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, commonRoot, position);
+            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
         }
     }
 
@@ -451,9 +457,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
             if (dlls != null) {
-                List<String> pubNames = dump.readPubNames();
+                SharedLibraries pubNames = dump.readPubNames();
                 synchronized(dlls) {
-                    for(String dll : pubNames) {
+                    for(String dll : pubNames.getDlls()) {
                         dlls.add(dll);
                     }
 

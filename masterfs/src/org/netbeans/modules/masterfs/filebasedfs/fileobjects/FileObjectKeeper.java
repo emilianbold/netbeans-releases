@@ -315,4 +315,12 @@ final class FileObjectKeeper implements FileChangeListener {
         return timeStamp;
     }
 
+    boolean isOn() {
+        if (kept != null) {
+            return true;
+        }
+        FolderObj obj = root.getExistingParent();
+        return obj != null && obj.hasRecursiveListener();
+    }
+
 }

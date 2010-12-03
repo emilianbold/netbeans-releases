@@ -334,17 +334,11 @@ public final class AttachPanel extends TopComponent {
         filterCombo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                String ac = evt.getActionCommand();
-                if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
-                    JComboBox cb = (JComboBox) evt.getSource();
-                    if (cb != null) {
-                        String filter = (String) cb.getSelectedItem();
-                        if (filter != null) {
-                            lastFilter = filter;
-                        }
-                    }
+                String filter = (String) filterCombo.getSelectedItem();
+                if (filter != null && !filter.equals(lastFilter)) {
+                    lastFilter = filter;
+                    refreshProcesses(null, false);
                 }
-                refreshProcesses(null, false);
 
             // An attempt to fix 6642223 ...
 		/* LATER
@@ -364,9 +358,10 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+        final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
+                lastFilter = cbEditor.getText();
                 refreshProcesses(null, false);
             }
         });

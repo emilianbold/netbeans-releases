@@ -90,7 +90,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.TestBase;
 import org.netbeans.modules.web.jsf.editor.hints.ElContextChecker;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -201,7 +201,7 @@ public class JsfElExpressionTest extends TestBase {
 
 
         //initialize the html extension
-        JsfSupport.findFor(file);
+        JsfSupportImpl.findFor(file);
         Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
         assertNotNull(extensions);
         assertEquals(1, extensions.size());
@@ -272,7 +272,7 @@ public class JsfElExpressionTest extends TestBase {
         assertNotNull(wm);
 
         //initialize the html extension
-        JsfSupport.findFor(file);
+        JsfSupportImpl.findFor(file);
         Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
         assertNotNull(extensions);
         assertEquals(1, extensions.size());
@@ -326,7 +326,7 @@ public class JsfElExpressionTest extends TestBase {
         assertNotNull(wm);
 
         //initialize the html extension
-        JsfSupport.findFor(file);
+        JsfSupportImpl.findFor(file);
         Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
         assertNotNull(extensions);
         assertEquals(1, extensions.size());
@@ -419,7 +419,7 @@ public class JsfElExpressionTest extends TestBase {
 
     private HtmlExtension getHtmlExtension(FileObject file) {
         //initialize the html extension
-        JsfSupport.findFor(file);
+        JsfSupportImpl.findFor(file);
         Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
         assertNotNull(extensions);
         assertEquals(1, extensions.size());

@@ -69,7 +69,11 @@ public class StepOutActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-	getDebugger().stepOut();
+        if (inDis()) {
+            getDebugger().stepOutInst();
+        } else {
+            getDebugger().stepOut();
+        }
     }
 
     /* interface NativeActionsProvider */
