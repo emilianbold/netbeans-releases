@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -140,6 +141,22 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     @Override
     public String getQualifiedNamePostfix() {
         return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
+    }
+
+    protected String getQualifiedNameWithoutSuffix() {
+        CsmScope scope = getScope();
+        String name = getName().toString();
+        if (CsmKindUtilities.isNamespace(scope)) {
+            return Utils.getQualifiedName(name, (CsmNamespace) scope);
+        } else if (CsmKindUtilities.isClass(scope)) {            
+            String n = name;
+            if (name.contains("::")) { // NOI18N
+                name = name.substring(name.lastIndexOf("::") + 2); // NOI18N
+            }
+            return ((CsmClass) scope).getQualifiedName() + "::" + name; // NOI18N
+        } else {
+             return name;
+        }
     }
 
     public List<CsmSpecializationParameter> getSpecializationParameters() {
