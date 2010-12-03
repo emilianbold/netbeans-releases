@@ -1594,7 +1594,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         model.setSelectedDevelopmentHost(exEnv);
         model.setEnableDevelopmentHostChange(false);
         BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
-        bt.setTitle(Catalog.get("LBL_ResolveMissingDebugger_Title"));
+        bt.setTitle(Catalog.get("LBL_ResolveMissingDebugger_Title")); // NOI18N
         if (bt.initBuildTools(model, new ArrayList<String>(), cs)) {
             conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
             cs = CompilerSetManager.get(exEnv).getCompilerSet(model.getSelectedCompilerSetName());
