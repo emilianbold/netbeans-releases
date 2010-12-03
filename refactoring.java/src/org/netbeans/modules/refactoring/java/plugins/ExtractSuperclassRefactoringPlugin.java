@@ -156,9 +156,13 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             if (result != null) {
                 return result;
             }
-            if (sourceElm == null || (sourceElm.getKind() != ElementKind.CLASS)) {
+            if (sourceElm == null) {
                 // fatal error -> return
                 return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            }
+
+            if (sourceElm.getKind() != ElementKind.CLASS) {
+                return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ExtractSC_MustBeClass"));
             }
             
             classHandle = ElementHandle.<TypeElement>create((TypeElement) sourceElm);

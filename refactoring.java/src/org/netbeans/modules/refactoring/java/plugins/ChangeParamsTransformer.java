@@ -267,7 +267,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             }
 
             // apply new access modifiers if necessary
-            Set<Modifier> modifiers = new HashSet<Modifier>(el.getModifiers());
+            Set<Modifier> modifiers = new HashSet<Modifier>(current.getModifiers().getFlags());
             if (!el.getEnclosingElement().getKind().isInterface()) {
                 modifiers.removeAll(ALL_ACCESS_MODIFIERS);
                 modifiers.addAll(refactoring.getModifiers());
