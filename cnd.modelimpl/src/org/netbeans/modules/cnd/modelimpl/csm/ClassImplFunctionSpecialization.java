@@ -63,7 +63,7 @@ import org.openide.util.CharSequences;
 /**
  * Template function specialization container.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 

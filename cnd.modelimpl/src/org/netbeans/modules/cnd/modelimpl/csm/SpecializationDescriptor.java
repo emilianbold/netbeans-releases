@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 /**
  * Container for template specialization parameters
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class SpecializationDescriptor {
     private final List<CsmSpecializationParameter> specializationParams;

@@ -74,8 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
- *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver.class)
 public final class IncludeResolverImpl extends CsmIncludeResolver {
