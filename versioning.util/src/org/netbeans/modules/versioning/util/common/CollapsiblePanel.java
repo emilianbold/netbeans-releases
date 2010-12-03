@@ -382,11 +382,7 @@ abstract class CollapsiblePanel extends JPanel {
             sectionButton.setText((hooks.size() == 1)
                                            ? hooks.iterator().next().getDisplayName()
                                            : getMessage("LBL_Advanced"));   //NOI18N                        
-        }
 
-        @Override
-        public void addNotify() {
-            super.addNotify();
             // need this to happen in addNotify() - depends on how 
             // repositoryComboSupport in hook.createComponents works for bugzilla|jira
             if (hooks.size() == 1) {                
@@ -397,7 +393,11 @@ abstract class CollapsiblePanel extends JPanel {
                     hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName());
                 }
                 sectionPanel.add(hooksTabbedPane);
-            }                
+            }  
+        }
+            
+        int getPreferedWidth() {
+            return sectionPanel.getPreferredSize().width;
         }
     }    
     
