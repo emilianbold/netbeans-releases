@@ -261,6 +261,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
      * The only public method to create a new instantiation
      */
     public static CsmObject create(CsmTemplate template, CsmType type) {
+//        System.err.println("Instantiation.create for " + template + " with type " + type);
         if (template instanceof CsmClass) {
             return new Class((CsmClass)template, type);
         } else if (template instanceof CsmFunction) {
@@ -274,6 +275,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     }
 
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+//        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
         if (template instanceof CsmClass) {
             return new Class((CsmClass)template, mapping);
         } else if (template instanceof CsmFunction) {
@@ -563,6 +565,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         @Override
         public CsmScope getScope() {
             return inheritance.getScope();
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTION OF INHERITANCE: " + inheritance + " with " + type; // NOI18N
         }
     }
 
@@ -975,6 +982,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     }
 
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
+//        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
             if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
