@@ -169,7 +169,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
                 return f;
             }
         }
-        assert false : "no filter selected"; // there always must be one
+        assert false : "no filter selected"; // there always must be one NOI18N
         return null;
     }
 
@@ -178,7 +178,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
-        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>");
+        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>"); // NOI18N
         errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
