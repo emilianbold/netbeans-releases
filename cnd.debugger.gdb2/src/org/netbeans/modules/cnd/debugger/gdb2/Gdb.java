@@ -239,6 +239,10 @@ public class Gdb {
 		// Figure gdb'a exec path
 		//
 		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)ndi.getConfiguration());
+                if (gdbname == null) {
+                    listener.connectFailed("gdb", Catalog.get("MSG_NoGgb"), null); // NOI18N
+                    return;
+                }
 	    }
 
 
