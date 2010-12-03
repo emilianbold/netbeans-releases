@@ -154,7 +154,7 @@ public class JoinCatches {
                 newCatches.add(ct);
             }
 
-            TryTree nue = wc.getTreeMaker().Try(tt.getBlock(), newCatches, tt.getFinallyBlock());
+            TryTree nue = wc.getTreeMaker().Try(tt.getResources(), tt.getBlock(), newCatches, tt.getFinallyBlock());
 
             wc.rewrite(tt, nue);
         }
