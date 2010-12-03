@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.text.completion;
 
-import java.awt.Color;
+package org.netbeans.modules.remote.impl.fs;
 
-import java.beans.BeanInfo;
-import org.netbeans.modules.xml.api.model.*;
-
+import java.io.File;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
- * Represents value option (attribute one or element content one).
- * <p>
- * It takes advatage of replacent text vs. display name. Providers
- * should use shorted display name for list values. e.g. for
- * <code>&lt;example enums="one two three fo|"</code>
- * provider can return nodeValue <code>"one two three four"</code>
- * and display name <code>"four"</code> to denote that it actually
- * completed only the suffix.
- * 
- * @author  sands
- * @author  Petr Kuzel
+ *
+ * @author Vladimir Kvashin
  */
-class ValueResultItem extends XMLResultItem {
+public class TestDirectoryStorage extends NativeExecutionBaseTestCase {
 
-    private final String replacementText;
-
-    public ValueResultItem(int position, GrammarResult res) {
-        super(position, res.getDisplayName(), res.getDisplayName());
-        foreground = Color.magenta;
-        selectionForeground = Color.magenta.darker();
-        replacementText = res.getNodeValue();
-        icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
+    public TestDirectoryStorage(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String getReplacementText(int modifiers) {
-        return replacementText;
+    public void testDirectoryStorage() throws Exception {
+        File file = File.createTempFile("directoryStorage", ".dat");
+        DirectoryStorage ds1 = new DirectoryStorage(file);
+        DirectoryStorage.Entry entry1;
+        entry1 = new DirectoryStorage.Entry("name", "name.cache", "-rwxrwxrwx", "vk", "staff", 1024, "t i m e s t a m p", null);
+        ds1.testAddEntry(entry1);
+        ds1.store();
+        DirectoryStorage ds2 = new DirectoryStorage(file);
+        ds2.load();
+        DirectoryStorage.Entry entry2 = ds2.getEntry(entry1.getName());
+        assertNotNull("No entry restored for " + entry1.getName(), entry2);
+        file.delete();
     }
-    
-    @Override
-    Color getPaintColor() { return Color.blue; }
-
 }

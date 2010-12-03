@@ -198,7 +198,7 @@ public class TestBase extends CslTestBase {
         return HtmlKit.HTML_MIME_TYPE;
     }
 
-    public HtmlParserResult getHtmlParserResult(String fileName) throws ParseException {
+    public ResultIterator getResultIterator(String fileName) throws ParseException {
         FileObject file = getTestFile(fileName);
 
         assertNotNull(file);
@@ -206,16 +206,23 @@ public class TestBase extends CslTestBase {
         Source source = getTestSource(file);
         assertNotNull(source);
 
-        final HtmlParserResult[] _result = new HtmlParserResult[1];
+        final ResultIterator[] _result = new ResultIterator[1];
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
+                _result[0] = resultIterator;
             }
         });
 
-        HtmlParserResult result = _result[0];
+        
+        assertNotNull(_result[0]);
+
+        return _result[0];
+    }
+
+    public HtmlParserResult getHtmlParserResult(ResultIterator ri) throws ParseException {
+        HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(ri, "text/html").getParserResult();
         assertNotNull(result);
 
         return result;
@@ -350,7 +357,7 @@ public class TestBase extends CslTestBase {
         private ClassPathProvider provider;
         private Sources sources;
 
-        protected TestProjectFactory(ClassPathProvider provider, Sources sources) {
+        public  TestProjectFactory(ClassPathProvider provider, Sources sources) {
             this.provider = provider;
             this.sources = sources;
         }

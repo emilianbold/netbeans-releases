@@ -533,8 +533,8 @@ public class ProviderUtil {
     //analize properties for best match provider version
     private static Set<Provider> filterProvidersByProperties(Set<Provider> providers, Property[] properties){
         Set<Provider> ret = null;
-        if(providers == null || properties==null || properties.length==0){}
-        else if(providers.size()<= 1) ret = new HashSet(providers);
+        if(providers == null){}
+        else if(providers.size()<= 1 || properties==null || properties.length==0) ret = new HashSet(providers);
         else {
             ret = new HashSet(providers);
             HashMap <Integer, ArrayList<Provider>> rates = new HashMap<Integer, ArrayList<Provider>>();
