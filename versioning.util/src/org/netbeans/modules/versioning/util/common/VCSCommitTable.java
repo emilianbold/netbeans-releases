@@ -113,6 +113,8 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VCSCommitTable.class, "ACSN_CommitTable")); // NOI18N        
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VCSCommitTable.class, "ACSD_CommitTable")); // NOI18N        
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
@@ -126,6 +128,10 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         setColumns(VCSCommitTableModel.COMMIT_COLUMNS);
     }
 
+    void labelFor(JLabel label) {
+        label.setLabelFor(table);
+    }
+    
     @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();

@@ -151,6 +151,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         private JLabel comboLabel;
         private DatabaseConnectionModel model;
         private boolean waiting;
+        private SQLExecution waitingSQLExecution = null;
         private static final RequestProcessor RP = new RequestProcessor(ToolbarPresenter.class);
 
         public ToolbarPresenter(final Lookup actionContext) {
@@ -160,6 +161,10 @@ public class ConnectionAction extends SQLExecutionBaseAction {
                 @Override
                 public void run() {
                     model = new DatabaseConnectionModel();
+                    if (waitingSQLExecution != null) {
+                        model.setSQLExecution(waitingSQLExecution);
+                        waitingSQLExecution = null;
+                    }
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -183,6 +188,8 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         public void setSQLExecution(SQLExecution sqlExecution) {
             if (model != null) {
                 model.setSQLExecution(sqlExecution);
+            } else {
+                waitingSQLExecution = sqlExecution;
             }
         }
 
