@@ -178,5 +178,10 @@ public class RemoteFileSystem extends FileSystem {
         public boolean isValid() {
             return true;
         }
+
+        @Override
+        public FileObject getParent() {
+            return null;
+        }
     }
 }

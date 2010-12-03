@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -129,6 +130,24 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
+    }
+    
+    @ForAllEnvironments
+    public void testParents() throws Exception {
+        String absPath = "/usr/include/sys/time.h";
+        FileObject fo = rootFO.getFileObject(absPath);
+        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject p = getParentAssertNotNull(fo); // /usr/include/sys
+        p = getParentAssertNotNull(p); // /usr/include
+        p = getParentAssertNotNull(p); // /usr
+        p = getParentAssertNotNull(p); // /
+        assertTrue(p == rootFO);
+    }
+
+    private FileObject getParentAssertNotNull(FileObject fo) {
+        FileObject parent = fo.getParent(); // /usr/include
+        assertNotNull("Null parent for " + fo, parent);
+        return parent;
     }
 
     @ForAllEnvironments
