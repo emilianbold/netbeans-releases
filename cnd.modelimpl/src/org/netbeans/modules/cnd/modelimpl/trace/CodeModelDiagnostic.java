@@ -184,6 +184,26 @@ public final class CodeModelDiagnostic {
             }            
         }
     }    
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
+    public final static class FileImplASTTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "File AST";// NOI18N
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if(csmFile instanceof FileImpl) {
+                    ASTFrameEx frame = new ASTFrameEx(csmFile.getName().toString(), ((FileImpl) csmFile).debugParse());
+                    frame.setVisible(true);
+                }
+            }
+        }
+    }
     
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
     public final static class ProjectDeclarationsTrace implements CndDiagnosticProvider {

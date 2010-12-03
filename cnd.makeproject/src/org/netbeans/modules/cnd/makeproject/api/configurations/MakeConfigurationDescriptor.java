@@ -734,13 +734,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         // Check metadata files are writable
         List<String> metadataFiles = new ArrayList<String>();
         List<String> notOkFiles = new ArrayList<String>();
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
-        Configuration[] confs = getConfs().toArray();
-        for (int i = 0; i < confs.length; i++) {
-            metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
-        } // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER); // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
             File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
