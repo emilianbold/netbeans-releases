@@ -142,7 +142,16 @@ public class CheckoutIndex {
         }
         file.createNewFile();
         if (file.isFile()) {
-            DirCacheCheckout.checkoutEntry(repository, file, e, getFileMode(repository));
+            try {
+                DirCacheCheckout.checkoutEntry(repository, file, e, getFileMode(repository));
+            } catch (LargeObjectException ex) {
+                LOG.log(Level.FINE, "checking out a large file: " + file, ex); //NOI18N
+                // Should be removed when jgit is able to checkout large files
+                if (fit.isModified(e, true, true, FS.DETECTED)) {
+                    // do not checkout large if not modified
+                    checkoutLargeEntry(file, e);
+                }
+            }
         } else {
             monitor.notifyError(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_CannotCreateFile", file.getAbsolutePath())); //NOI18N
         }
@@ -168,5 +177,45 @@ public class CheckoutIndex {
             monitor.notifyWarning(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_ReplacingFile", predecessor.getAbsolutePath())); //NOI18N
         }
         return parentFolder.mkdirs() || parentFolder.exists();
+    }
+
+    /**
+     * JGit cannot checkout a large object by itself, it throws an exception
+     */
+    private void checkoutLargeEntry (File f, DirCacheEntry entry) throws IOException, MissingObjectException {
+                ObjectLoader ol = repository.open(entry.getObjectId());
+        if (ol == null) {
+            throw new MissingObjectException(entry.getObjectId().getName(), GitObjectType.BLOB);
+        }
+
+        if (!ol.isLarge()) {
+            throw new IllegalStateException("Must be a large object: " + entry.getObjectId().getName());
+        }
+
+        File parentDir = f.getParentFile();
+        File tmpFile = File.createTempFile("._" + f.getName(), null, parentDir);
+
+        FileOutputStream fos = new FileOutputStream(tmpFile);
+        ol.copyTo(fos);
+
+        FS fs = repository.getFS();
+        boolean config_filemode = getFileMode(repository);
+        if (config_filemode && fs.supportsExecute()) {
+            if (FileMode.EXECUTABLE_FILE.equals(entry.getRawMode())) {
+                if (!fs.canExecute(tmpFile))
+                    fs.setExecute(tmpFile, true);
+            } else {
+                if (fs.canExecute(tmpFile))
+                    fs.setExecute(tmpFile, false);
+            }
+        }
+        if (!tmpFile.renameTo(f)) {
+            f.delete();
+            if (!tmpFile.renameTo(f)) {
+                throw new IOException(MessageFormat.format(JGitText.get().couldNotWriteFile, tmpFile.getPath(), f.getPath()));
+            }
+        }
+        entry.setLastModified(f.lastModified());
+        entry.setLength((int) ol.getSize());
     }
 }
