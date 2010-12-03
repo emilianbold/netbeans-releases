@@ -247,7 +247,7 @@ public class ClassImplFunctionSpecialization extends ClassImplSpecialization imp
 
         @Override
         public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
     }
 
