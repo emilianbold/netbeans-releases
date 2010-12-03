@@ -92,20 +92,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
 
     @Override
     public String addAction() {
-        FileFilter[] filters;
-        if (Utilities.isWindows()){
-            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-        }  else {
-            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getElfDynamicLibraryFileFilter()};
-        }
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
         FileChooser fileChooser = new FileChooser(
                 getString("LIBRARY_CHOOSER_TITLE_TXT"),
                 getString("LIBRARY_CHOOSER_BUTTON_TXT"),
