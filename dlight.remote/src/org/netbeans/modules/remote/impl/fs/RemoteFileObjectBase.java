@@ -45,7 +45,6 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.ConnectException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -70,7 +69,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final File cache;
     private volatile EventListenerList eventSupport;
     protected final String nameExt;
-    protected final FileObject parent;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -78,7 +76,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
         RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
-        this.parent = parent;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
         int slashPos = this.remotePath.lastIndexOf('/');
@@ -169,8 +166,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
     
     @Override
     public FileObject getParent() {
-        // TODO: should we just ask fileSystem to find it?
-        return parent;
+        int slashPos = remotePath.lastIndexOf('/');
+        if (slashPos > 0) {
+            String parentPath = remotePath.substring(0, slashPos);
+            FileObject parent = fileSystem.findResource(parentPath);
+            RemoteLogger.assertTrue(parent != null, "Null parent for " + remotePath); //NOI18N
+            return parent;
+        } else {
+            return fileSystem.getRoot();
+        }
     }
 
     @Override

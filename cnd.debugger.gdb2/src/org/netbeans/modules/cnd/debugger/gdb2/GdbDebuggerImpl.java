@@ -585,13 +585,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
          */
 
-        getIOPack().bringDown();
+        IOPack ioPack = getIOPack();
+        if (ioPack != null) {
+            ioPack.bringDown();
+            ioPack.close();
+        }
 
         session = null;
 	state().isLoaded = false;
 	stateChanged();
-
-        getIOPack().close();
 
 	if (executor != null) {
 	    // executor may sometimes be null if a session fail to start

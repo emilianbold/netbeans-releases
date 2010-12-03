@@ -47,12 +47,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -73,15 +72,6 @@ import org.openide.util.Parameters;
  */
 public class ChildrenSupport {
 
-    /** File transfer statistics */
-    private static int fileCopyCount;
-
-    /** Directory synchronization statistics */
-    private static int dirSyncCount;
-
-    private final Object mainLock = new Object();
-    private Map<File, Object> locks = new HashMap<File, Object>();
-
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     private final ExecutionEnvironment execEnv;
@@ -90,42 +80,32 @@ public class ChildrenSupport {
     public ChildrenSupport(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
         this.execEnv = fileSystem.getExecutionEnvironment();
-        resetStatistic();
-    }
-
-    private Object getLock(File file) {
-        synchronized(mainLock) {
-            Object lock = locks.get(file);
-            if (lock == null) {
-                lock = new Object();
-                locks.put(file, lock);
-            }
-            return lock;
-        }
-    }
-
-    private void removeLock(File file) {
-        synchronized(mainLock) {
-            locks.remove(file);
-        }
+        fileSystem.resetStatistic();
     }
 
     public DirectoryAttributes createDirectoryAttrs(File directoryCacheFile) throws IOException {
-        synchronized (getLock(directoryCacheFile)) {
+        Lock lock = fileSystem.getLock(directoryCacheFile).readLock();
+        try {
+            lock.lock();
             DirectoryAttributes attrs = new DirectoryAttributes(new File(directoryCacheFile, ChildrenSupport.FLAG_FILE_NAME));
             attrs.load();
             return attrs;
+        } finally {
+            lock.unlock();
         }
     }
 
     public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         if (!file.exists() || file.length() == 0) {
-            synchronized (getLock(file)) {
+            Lock lock = fileSystem.getLock(file).writeLock();
+            try {
+                lock.lock();
                 // dbl check is ok here since it's file-based
                 if (!file.exists() || file.length() == 0) {
                     syncFile(file, remotePath); // fromFixedCaseSensitivePathIfNeeded(remotePath));
-                    removeLock(file);
                 }
+            } finally {
+                lock.unlock();
             }
         }
     }
@@ -137,7 +117,7 @@ public class ChildrenSupport {
         try {
             int rc = task.get().intValue();
             if (rc == 0) {
-                fileCopyCount++;
+                fileSystem.incrementFileCopyCount();
             } else {
                 throw new IOException("Can't copy file " + file.getAbsolutePath() + // NOI18N
                         " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
@@ -172,13 +152,16 @@ public class ChildrenSupport {
     public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         DirectoryAttributes attrs = null;
         if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
-            synchronized (getLock(dir)) {
-                // dbl check is ok here since it's file-based
-                File flagFile = new File(dir, FLAG_FILE_NAME);
+            Lock lock = fileSystem.getLock(dir).writeLock();
+            try {
+                lock.lock();
+                // dbl check is ok here since it's file-based                
                 if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
+                    File flagFile = new File(dir, FLAG_FILE_NAME);
                     attrs = syncDirStruct(dir, /*fromFixedCaseSensitivePathIfNeeded(*/remoteDir/*)*/, flagFile);
-                    removeLock(dir);
                 }
+            } finally {
+                lock.unlock();
             }
         }
         return attrs;
@@ -297,7 +280,7 @@ public class ChildrenSupport {
                 RemoteLogger.getInstance().log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
                 criticalException.set(ie);
             }
-            dirSyncCount++;
+            fileSystem.incrementDirSyncCount();
         }
         if (rc == 0) {
             RemoteLogger.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
@@ -311,19 +294,6 @@ public class ChildrenSupport {
             }
             return null;
         }
-    }
-
-    /*package-local test method*/ final void resetStatistic() {
-        dirSyncCount = 0;
-        fileCopyCount = 0;
-    }
-
-    /*package-local test method*/ int getDirSyncCount() {
-        return dirSyncCount;
-    }
-
-    /*package-local test method*/ int getFileCopyCount() {
-        return fileCopyCount;
     }
 
     private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
