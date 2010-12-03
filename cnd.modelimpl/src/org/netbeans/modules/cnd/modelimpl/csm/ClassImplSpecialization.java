@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.openide.util.CharSequences;
 
 /**
  * Implements 
@@ -63,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  */
 public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
-    private CharSequence qualifiedNameSuffix = "";
+    private CharSequence qualifiedNameSuffix = CharSequences.empty();
 
     private SpecializationDescriptor specializationDesctiptor;
 
@@ -72,7 +73,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    protected void init(CsmScope scope, AST ast, boolean register) {
+    protected final void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
@@ -81,15 +82,19 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         temporaryRepositoryRegistration(register, this);
         render(ast, !register);
 
+        initQualifiedName(ast, scope, register);
+
+        if (register) {
+            register(getScope(), false);
+        }
+    }
+
+    protected final void initQualifiedName(AST ast, CsmScope scope, boolean register) {
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         assert qIdToken != null;
         qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope);
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
-
-        if (register) {
-            register(getScope(), false);
-        }
     }
 
     public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {

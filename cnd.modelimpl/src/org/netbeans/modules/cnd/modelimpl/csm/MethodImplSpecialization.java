@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -82,4 +85,15 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         return className.toString();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+
+    public MethodImplSpecialization(DataInput input) throws IOException {
+        super(input);
+    }
 }

@@ -47,22 +47,17 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;
 
 /**
@@ -72,39 +67,14 @@ import org.openide.util.CharSequences;
  */
 public class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 
-    private CharSequence qualifiedNameSuffix = "";
-
-    private SpecializationDescriptor specializationDesctiptor;
-
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
         super(ast, name, file);
-    }
-
-    @Override
-    protected void init(CsmScope scope, AST ast, boolean register) {
-        // does not call super.init(), but copies super.init() with some changes:
-        // it needs to initialize qualifiedNameSuffix
-        // after rendering, but before calling initQualifiedName() and register()
-
-        initScope(scope);
-        temporaryRepositoryRegistration(register, this);
-        render(ast, !register);
-
-        AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        assert qIdToken != null;
-        qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
-        initQualifiedName(scope);
-        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
-
-        if (register) {
-            register(getScope(), false);
-        }
     }
 
     public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
         ClassImplFunctionSpecialization impl = new ClassImplFunctionSpecialization(ast, nameHolder, file);
-        impl.init(scope, ast, false);
+        impl.initQualifiedName(ast, scope, false);
         ClassImplFunctionSpecialization clsImpl = findExistingClassImplClassImplFunctionSpecializationInProject(file, impl);
         if (clsImpl != null) {
             impl = clsImpl;
@@ -170,21 +140,6 @@ public class ClassImplFunctionSpecialization extends ClassImplSpecialization imp
         }
     }
 
-    @Override
-    public boolean isSpecialization() {
-        return true;
-    }
-
-    @Override
-    public String getQualifiedNamePostfix() {
-        return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
-    }
-
-    @Override
-    public List<CsmSpecializationParameter> getSpecializationParameters() {
-        return (specializationDesctiptor != null) ? specializationDesctiptor.getSpecializationParameters() : Collections.<CsmSpecializationParameter>emptyList();
-    }
-
     private static String getClassName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
         return getClassNameFromFunctionSpecialicationName(funName.toString());
@@ -204,19 +159,10 @@ public class ClassImplFunctionSpecialization extends ClassImplSpecialization imp
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        PersistentUtils.writeUTF(qualifiedNameSuffix, output);
-        PersistentUtils.writeSpecializationDescriptor(specializationDesctiptor, output);
     }
 
     public ClassImplFunctionSpecialization(DataInput input) throws IOException {
         super(input);
-        qualifiedNameSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
-        specializationDesctiptor = PersistentUtils.readSpecializationDescriptor(input);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return getName() + qualifiedNameSuffix.toString();
     }
 
     private static class MultiIterator<T> implements Iterator<T> {
