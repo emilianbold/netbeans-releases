@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
@@ -2047,11 +2046,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void updateValue(Variable v, MIRecord varvalue) {
         MITList value_results = varvalue.results();
-        String value = value_results.valueOf("value").asConst().value(); // NOI18N
-	GdbVariable gv = (GdbVariable) v;
-	if (value == null)
+        MIValue miValue = value_results.valueOf("value"); //NOI18N
+        String value = null;
+        if (miValue != null) {
+            value = miValue.asConst().value();
+        }
+	if (value == null) {
 	    value = "{...}"; // NOI18N
+        }
         v.setAsText(value);
+        GdbVariable gv = (GdbVariable) v;
         if (gv.isWatch()) {
             watchUpdater().treeNodeChanged((Object) v); // just update this node
         } else {
