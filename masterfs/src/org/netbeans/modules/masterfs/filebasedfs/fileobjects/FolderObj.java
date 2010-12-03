@@ -273,11 +273,12 @@ public final class FolderObj extends BaseFileObj {
 
         FileObj retVal;
         File file2Create;
+        FileNaming childName;
         try {
             file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
             createData(file2Create);
 
-            FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
+            childName = getChildrenCache().getChild(file2Create.getName(), true);
             if (childName != null && childName.isDirectory()) {
                 childName = NamingFactory.fromFile(getFileName(), file2Create, true);
             }
@@ -302,6 +303,7 @@ public final class FolderObj extends BaseFileObj {
                 Exceptions.attachMessage(ex, "isFile: " + file); // NOI18N
                 Exceptions.attachMessage(ex, "file: " + file2Create); // NOI18N
                 Exceptions.attachMessage(ex, "fo: " + fo); // NOI18N
+                Exceptions.attachMessage(ex, "fn: " + childName); // NOI18N
                 throw ex;
             }
         }
