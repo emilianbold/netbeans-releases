@@ -188,7 +188,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         
         preferences.addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
-        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);        
+        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);          
     }
 
     public VCSCommitParameters getParameters() {
@@ -292,11 +292,13 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         basePanel.add(filesPanel);
         
         // hooks area
-        if(!hooks.isEmpty()) {            
-            HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);                                                              
+        int hooksWidth = -1;
+        if(!hooks.isEmpty()) {
+            HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);
             hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
             basePanel.add(hooksPanel);
             basePanel.add(makeVerticalStrut(hooksPanel, errorLabel, RELATED, this));
+            hooksWidth = hooksPanel.getPreferedWidth();
         } else {
             basePanel.add(makeVerticalStrut(filesPanel, errorLabel, RELATED, this));            
         }
@@ -319,8 +321,19 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
                                     getContainerGap(EAST)));  // right
         
         basePanel.add(bottomPanel);
+        
+        int baseWidth = basePanel.getPreferredSize().width;
+        int baseHeight = basePanel.getPreferredSize().height;
+        int parametersWidth = parametersPane1.getPreferredSize().width;
+        
+        if(baseWidth < parametersWidth) baseWidth = parametersWidth;
+        if(baseWidth < hooksWidth) baseWidth = hooksWidth;
+        basePanel.setPreferredSize(new Dimension(baseWidth, baseHeight));
+        
         setLayout(new BoxLayout(this, Y_AXIS));
-        add(basePanel);                    
+        add(basePanel);  
+        
+        
     }// </editor-fold>
 
     static Component makeVerticalStrut(JComponent compA,
@@ -509,7 +522,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
 
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-        dialog.addWindowListener(new DialogBoundsPreserver(preferences, "git.commit.dialog")); // NOI18N
+        dialog.addWindowListener(new DialogBoundsPreserver(preferences, this.getClass().getName())); 
         dialog.pack();
         dialog.setVisible(true);
         
