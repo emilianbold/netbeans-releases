@@ -158,7 +158,7 @@ public class JsfElExpressionTest extends TestBase {
                 new OpenProject(),
                 new TestUserCatalog(),
                 testJsfBeansProviderInstance,
-                new TestProjectFactory(),
+                new TestProjectFactory(classpathProvider, sources),
                 new SimpleFileOwnerQueryImplementation(),
                 classpathProvider,
                 new TestLanguageProvider(),
@@ -217,7 +217,7 @@ public class JsfElExpressionTest extends TestBase {
                 HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
-                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result, resultIterator.getSnapshot());
 
                 //enable EL
                 ((JsfHtmlExtension) hext).checkELEnabled(result);
@@ -288,7 +288,7 @@ public class JsfElExpressionTest extends TestBase {
                 HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
-                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result, resultIterator.getSnapshot());
 
                 //enable EL
                 ((JsfHtmlExtension) hext).checkELEnabled(result);
@@ -342,7 +342,7 @@ public class JsfElExpressionTest extends TestBase {
                 HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
-                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result, resultIterator.getSnapshot());
 
                 //enable EL
                 ((JsfHtmlExtension) hext).checkELEnabled(result);
@@ -468,57 +468,7 @@ public class JsfElExpressionTest extends TestBase {
 
     }
 
-    private final class TestProjectFactory implements ProjectFactory {
-
-        TestProjectFactory() {
-        }
-
-        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-            return new TestProject(projectDirectory, state);
-        }
-
-        public void saveProject(Project project) throws IOException, ClassCastException {
-        }
-
-        public boolean isProject(FileObject dir) {
-            FileObject testproject = dir.getFileObject("web");
-            return testproject != null && testproject.isFolder();
-        }
-    }
-
-    private final class TestProject implements Project {
-
-        private final FileObject dir;
-        final ProjectState state;
-        Throwable error;
-        int saveCount = 0;
-        private Lookup lookup;
-
-        public TestProject(FileObject dir, ProjectState state) {
-            this.dir = dir;
-            this.state = state;
-
-            InstanceContent ic = new InstanceContent();
-            ic.add(classpathProvider);
-            ic.add(sources);
-
-            this.lookup = new AbstractLookup(ic);
-
-        }
-
-        public Lookup getLookup() {
-            return lookup;
-        }
-
-        public FileObject getProjectDirectory() {
-            return dir;
-        }
-
-        public String toString() {
-            return "testproject:" + getProjectDirectory().getNameExt();
-        }
-    }
-
+  
     private final class TestSources implements Sources {
 
         private FileObject[] roots;
