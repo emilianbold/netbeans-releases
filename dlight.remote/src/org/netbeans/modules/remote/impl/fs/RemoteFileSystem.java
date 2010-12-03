@@ -88,8 +88,8 @@ public class RemoteFileSystem extends FileSystem {
     /** Directory synchronization statistics */
     private static int dirSyncCount;
 
-    private final Object mainLock = new Object();
-    private Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private static final Object mainLock = new Object();
+    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
 
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
@@ -136,7 +136,7 @@ public class RemoteFileSystem extends FileSystem {
         return cache;
     }
 
-    public ReadWriteLock getLock(File file) {
+    public static ReadWriteLock getLock(File file) {
         synchronized(mainLock) {
             WeakReference<ReadWriteLock> ref = locks.get(file);
             ReadWriteLock result = (ref == null) ? null : ref.get();
