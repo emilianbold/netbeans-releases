@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
+import java.util.Collection;
+
 /**
  * A command to be sent to the engine and to handle results.
  */
@@ -194,23 +196,27 @@ public abstract class MICommand {
     /**
      * Used by MICommandManager.
      */
-    void recordLogStream(String data) {
-	if (logStream == null)
+    void recordLogStream(Collection<String> data) {
+	if (logStream == null) {
 	    logStream = new java.util.LinkedList<String>();
-	logStream.add(data);
+        }
+	logStream.addAll(data);
     }
 
     /**
      * Used by MICommandManager.
      */
-    void recordConsoleStream(String data) {
-	if (consoleStream == null)
+    void recordConsoleStream(Collection<String> data) {
+	if (consoleStream == null) {
 	    consoleStream = new java.util.LinkedList<String>();
-	if (data.startsWith("> ")) {		// NOI18N
-	    onUserInteraction(new MIUserInteraction(getConsoleStream()));
-	} else {
-	    consoleStream.add(data);
-	}
+        }
+        for (String elem : data) {
+            if (elem.startsWith("> ")) {		// NOI18N
+                onUserInteraction(new MIUserInteraction(getConsoleStream()));
+            } else {
+                consoleStream.add(elem);
+            }
+        }
     }
 
     /**
