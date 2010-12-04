@@ -1213,9 +1213,12 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    /**
-     * was: DbxDebugger.runToCursor() and Dbx.goTo()
-     */
+    public void contAt(String src, int line) {
+	src = localToRemote("contAt", src); // NOI18N
+        String cmd = "cont at " + src + ":" + line;	// NOI18N
+        runProgram(cmd);				// NOI18N
+    }
+
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
         String cmd = "stop at " + src + ":" + line;	// NOI18N
@@ -1286,7 +1289,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (!state().isRunning) {
 
             if (deliverSignal != -1) {
-                if (cmd.equals("cont") || // NOI18N
+                if (cmd.startsWith("cont") || // NOI18N
                         cmd.startsWith("step") || // NOI18N
                         cmd.equals("next")) {		// NOI18N
                     cmd = cmd + " -sig " + deliverSignal; // NOI18N
