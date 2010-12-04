@@ -67,8 +67,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final ExecutionEnvironment execEnv;
     protected final String remotePath;
     protected final File cache;
+    private boolean valid;
     private volatile EventListenerList eventSupport;
-    protected final String nameExt;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -77,9 +77,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
-        this.cache = cache;        
-        int slashPos = this.remotePath.lastIndexOf('/');
-        nameExt = (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
+        this.cache = cache;
+        valid = true;
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -133,6 +132,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public String getExt() {
+        String nameExt = getNameExt();
         int pointPos = nameExt.lastIndexOf('.');
         return (pointPos < 0) ? "" : nameExt.substring(pointPos + 1);
     }
@@ -152,8 +152,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public String getName() {
+        String nameExt = getNameExt();
         int pointPos = nameExt.lastIndexOf('.');
         return (pointPos < 0) ? nameExt : nameExt.substring(0, pointPos);
+    }
+
+    @Override
+    public String getNameExt() {
+        int slashPos = this.remotePath.lastIndexOf('/');
+        return (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
     }
 
     @Override
@@ -201,7 +208,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isValid() {
-        return cache.exists();
+        return valid;
+    }
+
+    /*package*/ void invalidate() {
+        valid = false;
     }
 
     @Override
@@ -243,6 +254,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
 //    protected abstract void ensureSync() throws IOException, ConnectException;
+
+    public abstract FileType getType();
 
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {
