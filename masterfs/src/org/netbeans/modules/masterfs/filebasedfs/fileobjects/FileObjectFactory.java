@@ -65,6 +65,7 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -541,7 +542,7 @@ public final class FileObjectFactory {
 
     public static boolean isParentOf(final File dir, final File file) {
         File tempFile = file;
-        while (tempFile != null && !tempFile.equals(dir)) {
+        while (tempFile != null && !Utils.equals(tempFile, dir)) {
             tempFile = tempFile.getParentFile();
         }
         return tempFile != null;
@@ -608,7 +609,7 @@ public final class FileObjectFactory {
         BaseFileObj retval = (BaseFileObj) o;
         if (retval != null && checkExtension) {
             if (!file.getName().equals(retval.getNameExt())) {
-                if (!file.equals(retval.getFileName().getFile())) {
+                if (!Utils.equals(file, retval.getFileName().getFile())) {
                     retval = null;
                 }
             }
