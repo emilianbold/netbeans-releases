@@ -49,8 +49,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -68,7 +71,8 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
-    protected String[] mkTempArgs;
+    private String[] mkTempArgsPlain;
+    private String[] mkTempArgsDir;
 
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -89,15 +93,42 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         ConnectionManager.getInstance().connectTo(env);
         if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
             sharedLibExt = ".dylib";
-            mkTempArgs = new String[] { "-t", "/tmp" };
+            mkTempArgsPlain = new String[] { "-t", "/tmp" };
+            mkTempArgsDir = new String[] { "-t", "/tmp", "-d" };
         } else {
             sharedLibExt = ".so";
-            mkTempArgs = new String[0];
+            mkTempArgsPlain = new String[0];
+            mkTempArgsDir = new String[] { "-d" };
         }
     }
 
     protected String mkTemp() throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
+        return mkTemp(false);
+    }
+
+    protected String execute(String command, String... args) {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
+        assertEquals(command + ' ' + args + " failed: " + res.error, 0, res.exitCode);
+        return res.output;
+    }
+
+    protected FileObject getFileObject(String path) throws Exception {
+        FileObject fo = rootFO.getFileObject(path);
+        assertNotNull("Null file object for " + path, fo);
+        return fo;
+    }
+
+    protected void upload(File file, String remotePath) throws Exception {
+        StringWriter errWriter = new StringWriter();
+        Future<Integer> task = CommonTasksSupport.uploadFile(file, execEnv, remotePath, -1, errWriter);
+        assertEquals("Failed uploading " + file.getAbsolutePath() + " to " + execEnv + ":" + remotePath
+                + ": " + errWriter.toString(),
+                0, task.get().intValue());
+    }
+
+    protected String mkTemp(boolean directory) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp",
+                directory ? mkTempArgsDir : mkTempArgsPlain);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
         return res.output;
     }
