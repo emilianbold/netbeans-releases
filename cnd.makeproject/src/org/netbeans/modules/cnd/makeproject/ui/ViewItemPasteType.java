@@ -145,7 +145,9 @@ final class ViewItemPasteType extends PasteType {
                 } else {
                     Project toProject = toFolder.getProject();
                     FileObject fo = item.getFileObject();
-                    FileObject copy = fo.copy(toProject.getProjectDirectory(), fo.getName(), fo.getExt());
+                    String toFolderPath = FileUtil.toFile(toProject.getProjectDirectory()).getAbsolutePath();
+                    String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, fo.getName(), fo.getExt());
+                    FileObject copy = fo.copy(toProject.getProjectDirectory(), newName, fo.getExt());
                     String newPath = CndPathUtilitities.toRelativePath(FileUtil.toFile(toProject.getProjectDirectory()).getPath(), FileUtil.toFile(copy).getPath());
                     if (viewItemNode.getFolder().removeItemAction(item)) {
                         fo.delete();
