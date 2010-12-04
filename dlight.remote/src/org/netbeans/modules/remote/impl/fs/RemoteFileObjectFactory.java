@@ -124,24 +124,30 @@ public class RemoteFileObjectFactory {
                 cacheHits++;
                 return (RemoteDirectory) fo;
             }
+            if (fo != null) {
+                fo.invalidate();
+            }
             fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
             fileObjectsCache.put(remotePath, fo);
             return (RemoteDirectory) fo;
         }        
     }
 
-    public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile) {
+    public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
         cacheRequests++;
         synchronized (lock) {
             if (fileObjectsCache.size() == 0) {
                 scheduleCleanDeadEntries(); // schedule on 1-st request
             }
             RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-            if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile)) {
+            if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile) && fo.getType() == fileType) {
                 cacheHits++;
                 return (RemotePlainFile) fo;
             }
-            fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile);
+            if (fo != null) {
+                fo.invalidate();
+            }
+            fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
             fileObjectsCache.put(remotePath, fo);
             return (RemotePlainFile) fo;
         }

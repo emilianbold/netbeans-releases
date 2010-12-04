@@ -64,10 +64,12 @@ import org.openide.util.Exceptions;
 public class RemotePlainFile extends RemoteFileObjectBase {
 
     private FileLock lock;
+    private final char fileTypeChar;
 
     public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, File cache) {
+            RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
         super(fileSystem, execEnv, parent, remotePath, cache);
+        fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
     @Override
@@ -165,6 +167,11 @@ public class RemotePlainFile extends RemoteFileObjectBase {
 //    @Override
 //    protected void ensureSync() throws IOException, ConnectException {
 //    }
+
+    @Override
+    public FileType getType() {
+        return FileType.fromChar(fileTypeChar);
+    }
 
     private class DelegateOutputStream extends OutputStream {
 

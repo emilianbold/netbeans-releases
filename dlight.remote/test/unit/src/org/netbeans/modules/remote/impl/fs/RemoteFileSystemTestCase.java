@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -164,9 +162,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             new Pair(null, "/usr/include/stdlib.h"),
             new Pair("/usr", "include/stdlib.h"),
             new Pair("/usr/include", "stdlib.h"),
-            new Pair("/usr/lib", "libc.so"),
-            new Pair("/usr", "lib/libc.so"),
-            new Pair(null, "/usr/lib/libc.so")            
+            new Pair("/usr/lib", "libc" + sharedLibExt),
+            new Pair("/usr", "lib/libc" + sharedLibExt),
+            new Pair(null, "/usr/lib/libc" + sharedLibExt)
         };
         for (int i = 0; i < pairs.length; i++) {
             Pair pair = pairs[i];
@@ -326,9 +324,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             fo = rootFO.getFileObject(stdio_h);
             assertNotNull("null file object for " + stdio_h, fo);
             assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
-            ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
-            assertEquals("mktemp failed", 0, res.exitCode);
-            tempFile = res.output;
+            tempFile = mkTemp();
             fo = rootFO.getFileObject(tempFile);
             assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
             String content = "a quick brown fox...";
