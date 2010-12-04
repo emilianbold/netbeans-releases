@@ -331,6 +331,7 @@ public class TaskProcessor {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
+            boolean wakeUp = false;
             Collection<Request> frqs = finishedRequests.get(source);
             Collection<Request> wrqs = waitingRequests.get(source);
             for (SchedulerTask task : tasks) {
@@ -383,10 +384,13 @@ public class TaskProcessor {
                 //Fourh) Not found either due to weak consistency (1 task) or removing task which is not added
                 if (!found) {
                     toRemove.add (new RemovedTask(source,task));
-                    // there was a modification in toRemove, wake up the thread
-                    requests.add(Request.NONE);
+                    wakeUp = true;
                 }
                 SourceAccessor.getINSTANCE().taskRemoved(source);
+            }
+            if (wakeUp) {
+                // there was a modification in toRemove, wake up the thread
+                requests.add(Request.NONE);
             }
         }
     }
@@ -529,9 +533,6 @@ public class TaskProcessor {
         int priority = Integer.MAX_VALUE;
         synchronized (INTERNAL_LOCK) {
             for (Request request : requests) {
-                if (source != null) {
-                    toRemove.remove(new RemovedTask(source, request.task));
-                }
                 priority = Math.min(priority, request.task.getPriority());
             }
             TaskProcessor.requests.addAll (requests);
@@ -774,6 +775,10 @@ public class TaskProcessor {
                                 }
                             } finally {
                                 currentRequest.setCurrentTask(null);                   
+                            }
+                        } else if (r != null) {
+                            synchronized (INTERNAL_LOCK) {
+                                toRemove.clear();
                             }
                         } 
                     } catch (Throwable e) {

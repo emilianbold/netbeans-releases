@@ -624,13 +624,15 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     public Tree visitTry(TryTree node, Boolean p) {
+        List<? extends Tree> resources = translateTree(node.getResources());
         BlockTree block = (BlockTree) translateTree(node.getBlock());
         List<? extends CatchTree> catches = translateTree(node.getCatches());
         BlockTree finallyBlock = (BlockTree) translateTree(node.getFinallyBlock());
         
         if (make == null) return node;
         
-        if (block != node.getBlock() ||
+        if (resources != node.getResources() ||
+            block != node.getBlock() ||
             catches != node.getCatches() ||
             finallyBlock != node.getFinallyBlock())
         {

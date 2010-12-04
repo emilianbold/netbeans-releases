@@ -950,20 +950,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                     return true;
                 }
 
-                for (TreePath thisPath : prepareThis(getCurrentPath())) {
-                    State origState = State.copyOf(bindState);
-                    try {
-                        MemberSelectTree t = (MemberSelectTree) p.getLeaf();
-
-                        if (scan(thisPath.getLeaf(), t.getExpression(), p) == Boolean.TRUE) {
-                            return true;
-                        }
-                    } finally {
-                        bindState = origState;
-                    }
-                }
-
-                return false;
+                return deepVerifyIdentifier2MemberSelect(getCurrentPath(), p);
             case MATCH:
                 return true;
             default:
@@ -973,6 +960,23 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
     }
 
+    private boolean deepVerifyIdentifier2MemberSelect(TreePath identifier, TreePath memberSelect) {
+        for (TreePath thisPath : prepareThis(identifier)) {
+            State origState = State.copyOf(bindState);
+            try {
+                MemberSelectTree t = (MemberSelectTree) memberSelect.getLeaf();
+
+                if (scan(thisPath.getLeaf(), t.getExpression(), memberSelect) == Boolean.TRUE) {
+                    return true;
+                }
+            } finally {
+                bindState = origState;
+            }
+        }
+
+        return false;
+    }
+    
     public Boolean visitIf(IfTree node, TreePath p) {
         if (p == null)
             return super.visitIf(node, p);
@@ -1155,8 +1159,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
                         return scan(node.getExpression(), t.getExpression(), p) == Boolean.TRUE;
                     } else {
-                        //TODO: what to do here?
-                        return true;
+                        return deepVerifyIdentifier2MemberSelect(p, getCurrentPath());
                     }
                 case MATCH:
                     return true;

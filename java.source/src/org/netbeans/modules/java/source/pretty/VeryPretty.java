@@ -352,15 +352,18 @@ public final class VeryPretty extends JCTree.Visitor {
             int i = from - 1;
             int originalColumn = 0;
             int originalIndent = 0;
+            int originalLeadingWhitespaceChars = 0;
             boolean originalIndented = true;
 
             while (i >= 0) {
                 if (origText.charAt(i) == ' ') {
                     originalColumn++;
                     originalIndent++;
+                    originalLeadingWhitespaceChars++;
                 } else if (origText.charAt(i) == '\t') {
                     originalColumn += cs.getTabSize();
                     originalIndent += cs.getTabSize();
+                    originalLeadingWhitespaceChars++;
                 } else if (origText.charAt(i) == '\n') {
                     break;
                 } else {
@@ -380,7 +383,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 text = text.substring(text.indexOf("\n") + 1);
             } else if (originalIndented) {
                 if (out.isWhitespaceLine()) {
-                    text = origText.substring(from - originalColumn, from) + text;
+                    text = origText.substring(from - originalLeadingWhitespaceChars, from) + text;
                     relativeIndent = getIndent() - originalColumn;
 
                     out.toLineStart();
@@ -413,17 +416,19 @@ public final class VeryPretty extends JCTree.Visitor {
                 first = false;
                 if (l.isEmpty()) continue;//don't uselesly indent empty lines
                 int currentIndent = 0;
-                while (currentIndent < l.length()) {
-                    if (l.charAt(currentIndent) == ' ') {
+                int leadingWhitespaceChars = 0;
+                while (leadingWhitespaceChars < l.length()) {
+                    if (l.charAt(leadingWhitespaceChars) == ' ') {
                         currentIndent++;
-                    } else if (l.charAt(currentIndent) == '\t') {
+                    } else if (l.charAt(leadingWhitespaceChars) == '\t') {
                         currentIndent += cs.getTabSize();
                     } else {
                         break;
                     }
+                    leadingWhitespaceChars++;
                 }
                 print(getIndent(currentIndent + relativeIndent));
-                print(l.substring(currentIndent));
+                print(l.substring(leadingWhitespaceChars));
             }
 
             setIndent(oldIndent);
