@@ -259,6 +259,7 @@ public final class NamingFactory {
         while (value != null) {
             cnt++;
             dumpFileNaming(sb, value.get());
+            value = value.next();
         } 
         sb.append("There was ").append(cnt).append(" references");
         return sb.toString();
