@@ -103,11 +103,11 @@ public class ChildrenSupport {
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
-            retval = rescanChild(folderName, childName, false);
+            retval = rescanChild(folderName, childName, rescan);
         } else if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
             if (retval == null && lookupChildInCache(folderName, childName, false) == null) {
-                retval = rescanChild(folderName, childName, false);
+                retval = rescanChild(folderName, childName, rescan);
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
