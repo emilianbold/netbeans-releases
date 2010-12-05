@@ -268,10 +268,18 @@ public final class NamingFactory {
         if (fn == null) {
             sb.append("null");
         }
-        sb.append("FileName: ").append(fn).append("#").
-           append(Integer.toHexString(fn.hashCode())).append("@").
-           append(Integer.toHexString(System.identityHashCode(fn)))
+        if (fn instanceof FolderName) {
+            sb.append("FolderName: ");
+        } else {
+            sb.append("FileName: ");
+        }
+        sb.append(fn).append("#")
+           .append(Integer.toHexString(fn.hashCode())).append("@")
+           .append(Integer.toHexString(System.identityHashCode(fn)))
            .append("\n");
+        if (fn instanceof FileName) {
+            ((FileName)fn).dumpCreation(sb);
+        }
     }
     
     private static final ReferenceQueue<FileNaming> QUEUE = new ReferenceQueue<FileNaming>();
