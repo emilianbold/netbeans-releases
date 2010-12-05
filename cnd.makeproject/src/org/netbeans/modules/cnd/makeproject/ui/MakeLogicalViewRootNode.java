@@ -249,12 +249,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             }
         }
         setFiles(set);
-        List<Folder> allFolders = new ArrayList<Folder>();
-        allFolders.add(folder);
-        allFolders.addAll(folder.getAllFolders(true));
-        Iterator<Folder> iter = allFolders.iterator();
-        while (iter.hasNext()) {
-            iter.next().addChangeListener(this);
+        Folder aFolder = folder;
+        if (aFolder != null) {
+            List<Folder> allFolders = new ArrayList<Folder>();
+            allFolders.add(aFolder);
+            allFolders.addAll(aFolder.getAllFolders(true));
+            Iterator<Folder> iter = allFolders.iterator();
+            while (iter.hasNext()) {
+                iter.next().addChangeListener(this);
+            }
         }
     }
 
