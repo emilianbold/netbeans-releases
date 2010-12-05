@@ -389,7 +389,6 @@ public final class LibraryManager {
     final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
             librariesEntries.remove(entry.getPath().toString());
-            UIDManager.instance().clearProjectCache(RepositoryUtils.UIDtoKey(entry.getUID()));
             entry.dispose(true);
         }
     }
