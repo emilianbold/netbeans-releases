@@ -294,7 +294,19 @@ import org.openide.windows.OutputListener;
 
         mouseAdapter = new MouseAdapter() {
             @Override
+	    // On UNIX popup on press
+	    // On Windows popup on release.
+	    // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4119064
             public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    Point p = SwingUtilities.convertPoint((Component) e.getSource(),
+                                                          e.getPoint(),
+                                                          term.getScreen());
+                    postPopupMenu(p);
+                }
+            }
+	    @Override
+            public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     Point p = SwingUtilities.convertPoint((Component) e.getSource(),
                                                           e.getPoint(),
