@@ -389,7 +389,6 @@ public final class LibraryManager {
     final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
             librariesEntries.remove(entry.getPath().toString());
-            UIDManager.instance().clearProjectCache(RepositoryUtils.UIDtoKey(entry.getUID()));
             entry.dispose(true);
         }
     }
@@ -504,6 +503,7 @@ public final class LibraryManager {
                 if (library == null) {
                     printOut.printf("Library was NOT restored from repository\n");// NOI18N
                 } else if (library instanceof ProjectBase) {
+                    printOut.printf("[%d] disposing=\n", ind, ((ProjectBase)library).isDisposing());// NOI18N
                     ((ProjectBase)library).traceFileContainer(printOut);
                 } else {
                     printOut.printf("Library's project has unexpected class type %s\n", library.getClass().getName());// NOI18N

@@ -743,17 +743,19 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Map.Entry<Object, CsmUID<CsmProject>> entry : platf2csm.entrySet()) {
             final Object key = entry.getKey();
             CsmUID<CsmProject> value = entry.getValue();
-            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind++, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
             if (withContainers) {
                 CsmProject prj = UIDCsmConverter.UIDtoProject(value);
                 if (prj == null) {
-                    printOut.printf("Library was NOT restored from repository\n");// NOI18N
+                    printOut.printf("Project was NOT restored from repository\n");// NOI18N
                 } else if (prj instanceof ProjectBase) {
+                    printOut.printf("[%d] disposing=\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
                     ((ProjectBase) prj).traceFileContainer(printOut);
                 } else {
-                    printOut.printf("Library's project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
+                    printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
                 }
             }
+            ind++;
         }
     }
 }

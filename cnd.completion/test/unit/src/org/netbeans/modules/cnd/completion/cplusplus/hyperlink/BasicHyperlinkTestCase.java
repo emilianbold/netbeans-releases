@@ -54,6 +54,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test191446_2() throws Exception {
+        // #191446 -  no code assistance for elementes #include'ed in namespace body
+        performTest("iz191446_2.cc", 24, 30, "iz191446_2.h", 18, 5);
+        performTest("iz191446_2.cc", 15, 34, "iz191446_2.cc", 13, 17);
+        performTest("iz191446_2.cc", 24, 10, "iz191446_2.cc", 23, 9);
+        performTest("iz191446_2.cc", 17, 25, "iz191446_2.cc", 12, 17);
+        performTest("iz191446_2.cc", 15, 20, "iz191446_2.cc", 14, 17);
+    }
+    
     public void test191446() throws Exception {
         // #191446 -  no code assistance for elementes #include'ed in namespace body
         performTest("iz191446.cc", 7, 25, "iz191446.h", 5, 1);
