@@ -1660,7 +1660,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             if (file != null && file.isValid()) {
                                 TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
                                 if (ts != null) {
-                                    CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
+                                    int flags = CPPParserEx.CPP_CPLUSPLUS;
+                                    if (!TraceFlags.TRACE_ERROR_PROVIDER) {
+                                        flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+                                    }
+                                    CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, flags);
                                     if (container instanceof ClassImpl) {
                                         ClassImpl cls = (ClassImpl) container;
                                         parser.fix_fake_class_members();
@@ -2042,8 +2046,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public void dumpInfo(PrintWriter printOut) {
         ProjectBase projectImpl = this.getProjectImpl(false);
-        printOut.printf("FI: %s, of %s prj=%s (%d)\n\tprjUID=(%d) %s\n\tfileType=%s, hasSnap=%s hasBroken=%s\n", getName(), // NOI18N 
-                projectImpl.getClass().getSimpleName(), projectImpl.getName(), System.identityHashCode(projectImpl),
+        printOut.printf("FI: %s, of %s prj=%s disposing=%s (%d)\n\tprjUID=(%d) %s\n\tfileType=%s, hasSnap=%s hasBroken=%s\n", getName(), // NOI18N 
+                projectImpl.getClass().getSimpleName(), projectImpl.getName(), projectImpl.isDisposing(), System.identityHashCode(projectImpl), 
                 System.identityHashCode(projectUID), projectUID,
                 this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(this.hasBrokenIncludes.get()));
         if (this.hasBrokenIncludes.get()) {

@@ -214,6 +214,8 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     out.println(line);
                 } while (true);
                 err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N 
+                err.close();
+                out.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
