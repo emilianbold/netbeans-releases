@@ -254,7 +254,8 @@ public final class NamingFactory {
 
         sb.append("Showing references to ").append(hex).append("\n");
         int cnt = 0;
-        NameRef value = names[id];
+        int index = Math.abs(id) % names.length;
+        NameRef value = names[index];
         while (value != null) {
             cnt++;
             dumpFileNaming(sb, value.get());
