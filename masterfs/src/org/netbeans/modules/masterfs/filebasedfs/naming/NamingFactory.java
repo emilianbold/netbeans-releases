@@ -196,13 +196,25 @@ public final class NamingFactory {
         } else {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
             NameRef refRetVal = new NameRef(retVal);
-            
+
             refRetVal.next = names[index];
             names[index] = refRetVal;
-            namesCount++;
             if (refRetVal.next == null) {
                 refRetVal.next = index;
             }
+            if (ref != null) {
+                ref.clear();
+                NameRef nr = refRetVal;
+                for (;;) {
+                    if (nr.next() == ref) {
+                        nr.next = nr.next().next();
+                        break;
+                    }
+                    nr = nr.next();
+                }
+            } else {
+                namesCount++;
+            }                
             if (namesCount * 4 > names.length * 3) {
                 rehash(names.length * 2);
             }
@@ -248,7 +260,10 @@ public final class NamingFactory {
         return retVal;
     }
     
-    public synchronized static String dumpId(Integer id) {
+    public static String dumpId(Integer id) {
+        return dump(id, null);
+    }
+    synchronized static String dump(Integer id, File file) {
         StringBuilder sb = new StringBuilder();
         final String hex = Integer.toHexString(id);
 
@@ -257,16 +272,19 @@ public final class NamingFactory {
         int index = Math.abs(id) % names.length;
         NameRef value = names[index];
         while (value != null) {
-            cnt++;
-            dumpFileNaming(sb, value.get());
+            if (file == null || file.equals(value.getFile())) {
+                cnt++;
+                dumpFileNaming(sb, value.get());
+            }
             value = value.next();
         } 
-        sb.append("There was ").append(cnt).append(" references");
+        sb.append("References: ").append(cnt);
         return sb.toString();
     }
     private static void dumpFileNaming(StringBuilder sb, Object fn) {
         if (fn == null) {
             sb.append("null");
+            return;
         }
         if (fn instanceof FolderName) {
             sb.append("FolderName: ");
@@ -323,6 +341,10 @@ public final class NamingFactory {
             }
             return (NameRef)next;
         }
+        public File getFile() {
+            FileNaming r = get();
+            return r == null ? null : r.getFile();
+        }
         
         public NameRef remove(NameRef what) {
             if (what == this) {
@@ -338,5 +360,6 @@ public final class NamingFactory {
             me.next = ((NameRef)me.next).next;
             return this;
         }
+
     }
 }
