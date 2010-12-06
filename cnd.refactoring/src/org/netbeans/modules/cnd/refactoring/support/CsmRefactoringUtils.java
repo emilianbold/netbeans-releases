@@ -215,6 +215,10 @@ public final class CsmRefactoringUtils {
             } else if (CsmKindUtilities.isOffsetable(element) ) {
                 text = ((CsmOffsetable)element).getText().toString();
             }
+            // cut off destructor prefix
+            if (text.startsWith("~")) { // NOI18N
+                text = text.substring(1);
+            }
         }
         return text;
     }
@@ -243,7 +247,7 @@ public final class CsmRefactoringUtils {
            }
         }
         if (out == null) {
-            CsmUID uid = lookup.lookup(CsmUID.class);
+            CsmUID<?> uid = lookup.lookup(CsmUID.class);
             if (uid != null) {
                 out = (CsmObject) uid.getObject();
             }
