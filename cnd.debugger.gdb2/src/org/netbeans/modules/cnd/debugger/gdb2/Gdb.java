@@ -571,6 +571,9 @@ public class Gdb {
     
     // set to true when sending signal to pause gdb
     private volatile boolean signalled = false;
+    
+    // set to true when silent stop is requested
+    private volatile boolean silentStop = false;
 
     private void initializeGdb(String version) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
@@ -614,6 +617,14 @@ public class Gdb {
     
     void resetSignalled() {
         signalled = false;
+    }
+
+    boolean isSilentStop() {
+        return silentStop;
+    }
+
+    void resetSilentStop() {
+        silentStop = false;
     }
 
     Tap tap() {
@@ -665,12 +676,13 @@ public class Gdb {
      * action, we're NOT asking dbx to do it - this we're actually doing
      * ourselves!!
      */
-    void pause(int pid) {
+    void pause(int pid, boolean silentStop) {
         // The following predicate is _not_ the same as isReceptive()
         if (debugger.state().isRunning && debugger.state().isProcess) {
 	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
                 signalled = true;
+                this.silentStop = silentStop;
 		signaller.interrupt(pid);
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
