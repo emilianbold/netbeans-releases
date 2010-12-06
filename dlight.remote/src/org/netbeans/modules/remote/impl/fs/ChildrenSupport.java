@@ -72,8 +72,6 @@ import org.openide.util.Parameters;
  */
 public class ChildrenSupport {
 
-    public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
-
     private final ExecutionEnvironment execEnv;
     private final RemoteFileSystem fileSystem;
 
@@ -87,7 +85,7 @@ public class ChildrenSupport {
         Lock lock = fileSystem.getLock(directoryCacheFile).readLock();
         try {
             lock.lock();
-            DirectoryAttributes attrs = new DirectoryAttributes(new File(directoryCacheFile, ChildrenSupport.FLAG_FILE_NAME));
+            DirectoryAttributes attrs = new DirectoryAttributes(new File(directoryCacheFile, RemoteDirectory.FLAG_FILE_NAME));
             attrs.load();
             return attrs;
         } finally {
@@ -151,13 +149,13 @@ public class ChildrenSupport {
      */
     public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         DirectoryAttributes attrs = null;
-        if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
+        if( ! dir.exists() || ! isValidLocalFile(dir, RemoteDirectory.FLAG_FILE_NAME)) {
             Lock lock = fileSystem.getLock(dir).writeLock();
             try {
                 lock.lock();
                 // dbl check is ok here since it's file-based                
-                if( ! dir.exists() || ! isValidLocalFile(dir, FLAG_FILE_NAME)) {
-                    File flagFile = new File(dir, FLAG_FILE_NAME);
+                if( ! dir.exists() || ! isValidLocalFile(dir, RemoteDirectory.FLAG_FILE_NAME)) {
+                    File flagFile = new File(dir, RemoteDirectory.FLAG_FILE_NAME);
                     attrs = syncDirStruct(dir, /*fromFixedCaseSensitivePathIfNeeded(*/remoteDir/*)*/, flagFile);
                 }
             } finally {
@@ -272,7 +270,7 @@ public class ChildrenSupport {
         }
 
         if (dirCreated.get()) {
-            File flag = new File(dir, FLAG_FILE_NAME);
+            File flag = new File(dir, RemoteDirectory.FLAG_FILE_NAME);
             RemoteLogger.getInstance().log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
