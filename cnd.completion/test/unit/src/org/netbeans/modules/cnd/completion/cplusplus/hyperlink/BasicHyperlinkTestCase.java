@@ -54,6 +54,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test192897() throws Exception {
+        // #192897 -  unstable LiteSQL accuracy test
+        performTest("iz192897.h", 23, 20, "iz192897.h", 6, 13);
+        performTest("iz192897.cc", 10, 15, "iz192897.h", 8, 13);
+        performTest("iz192897.h", 24, 20, "iz192897.h", 9, 13);
+        performTest("iz192897.cc", 11, 20, "iz192897.h", 9, 13);        
+    }
+    
     public void test191446_2() throws Exception {
         // #191446 -  no code assistance for elementes #include'ed in namespace body
         performTest("iz191446_2.cc", 24, 30, "iz191446_2.h", 18, 5);
