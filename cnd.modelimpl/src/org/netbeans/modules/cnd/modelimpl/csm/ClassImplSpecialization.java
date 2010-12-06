@@ -73,6 +73,10 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         super(name, ast, file);
     }
 
+    protected ClassImplSpecialization(AST ast, NameHolder name, CsmFile file, int start, int end) {
+        super(name, ast, file, start, end);
+    }
+
     @Override
     protected final void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
