@@ -57,8 +57,6 @@ public final class Installer extends ModuleInstall {
     @Override
     public void close() {
         Watcher w = Lookup.getDefault().lookup(Watcher.class);
-        System.err.println("shut");
         w.shutdown();
-        System.err.println("down");
     }
 }
