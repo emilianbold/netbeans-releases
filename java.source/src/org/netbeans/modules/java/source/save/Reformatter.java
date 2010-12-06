@@ -1056,13 +1056,13 @@ public class Reformatter implements ReformatTask {
                         lastBlankLines = lbl;
                         lastBlankLinesTokenIndex = lblti;
                         lastBlankLinesDiff = lbld;
+                        wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
                         if (!isStandalone || !afterAnnotation) {
                             scan(annotations.next(), p);
                         } else {
-                            wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
                             wrapTree(cs.wrapAnnotations(), -1, 0, annotations.next());
-                            wrapAnnotation = false;
                         }
+                        wrapAnnotation = false;
                         afterAnnotation = true;
                         ret = false;
                         continue;
