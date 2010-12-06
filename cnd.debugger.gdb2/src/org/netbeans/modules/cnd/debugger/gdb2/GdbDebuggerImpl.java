@@ -1091,7 +1091,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     public void popToCurrentFrame() {
         makeCalleeCurrent();
-        stepOut();
+        execFinish();
     }
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
