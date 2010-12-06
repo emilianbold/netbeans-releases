@@ -115,7 +115,7 @@ public final class APTMacroImpl implements APTMacro {
         return retValue;
     }
     
-    private static final boolean equals(APTMacroImpl one, APTMacroImpl other) {
+    private static boolean equals(APTMacroImpl one, APTMacroImpl other) {
         if (one.macroType != other.macroType) {
             return false;
         }

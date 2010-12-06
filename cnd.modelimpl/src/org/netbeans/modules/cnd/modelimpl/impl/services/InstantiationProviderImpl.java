@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
@@ -159,21 +160,28 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     @Override
     public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
         if (CsmKindUtilities.isSpecialization(declaration)) {
-            if (CsmKindUtilities.isOffsetable(declaration)) {
+            if (CsmKindUtilities.isOffsetable(declaration) && CsmKindUtilities.isQualified(declaration)) {
+                CharSequence qualifiedName = ((CsmQualifiedNamedElement)declaration).getQualifiedName();
+                String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");// NOI18N               
                 CsmFile contextFile = ((CsmOffsetable) declaration).getContainingFile();
                 CsmProject proj = contextFile != null ? contextFile.getProject() : null;
-                if (proj instanceof ProjectBase) {
-                    CharSequence qualifiedName = declaration.getUniqueName();
-                    String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");// NOI18N
-                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)proj).findDeclarationsByPrefix(removedSpecialization);
-                    Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>(0);
-                    for (CsmOffsetableDeclaration decl : decls) {
-                        if (CsmKindUtilities.isTemplate(decl) && !CsmKindUtilities.isSpecialization(decl)) {
-                            out.add(decl);
-                        }
+                Iterator<? extends CsmObject> decls = Collections.<CsmObject>emptyList().iterator();
+                if (CsmKindUtilities.isClass(declaration)) {
+                    if (proj instanceof ProjectBase) {
+                        decls = ((ProjectBase)proj).findClassifiers(removedSpecialization).iterator();
                     }
-                    return out;
+                } else if (proj != null && CsmKindUtilities.isFunction(declaration)) {
+                    String removedParams = removedSpecialization.replaceAll("\\(.*", "");// NOI18N   
+                    decls = CsmSelect.getFunctions(proj, removedParams);
                 }
+                Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>();
+                while (decls.hasNext()) {
+                    CsmObject decl = decls.next();
+                    if (!CsmKindUtilities.isSpecialization(decl)) {
+                        out.add((CsmOffsetableDeclaration) decl);
+                    }
+                }
+                return out;
             }
         }
         return Collections.<CsmOffsetableDeclaration>emptyList();

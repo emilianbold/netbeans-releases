@@ -86,6 +86,8 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -152,6 +154,18 @@ public class TreeEvaluator {
         } else {
             line = LocationWrapper.lineNumber(StackFrameWrapper.location(frame));
             url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
+            if (url == null) {
+                // Debugger suspended in an unknown location. Evaluator will not work without some context.
+                // Try to define some context that should work...
+                FileObject systemFO = org.netbeans.api.java.classpath.GlobalPathRegistry.getDefault().findResource("java/lang/System.java");    // NOI18N
+                if (systemFO != null) {
+                    try {
+                        url = systemFO.getURL().toString();
+                        line = 100;
+                    } catch (FileStateInvalidException ex) {
+                    }
+                }
+            }
         }
         /*try {
             url = frame.location().sourcePath(expression.getLanguage());
