@@ -1942,12 +1942,29 @@ public class EditorContextImpl extends EditorContext {
             this.context = context;
         }
 
+        private StyledDocument getDocument(CompilationController ci) {
+            // Do NOT use ci.getDocument(), since it returns null when the document is not loaded yet!
+            try {
+                DataObject od = DataObject.find(ci.getFileObject());
+                EditorCookie ec = od.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    return  ec.openDocument();
+                } else {
+                    return null;
+                }
+            } catch (DataObjectNotFoundException e) {
+                return null;
+            } catch (IOException ioex) {
+                return null;
+            }
+        }
+
         public void run(CompilationController ci) throws Exception {
             if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
                 return ;
             Scope scope = null;
             int offset = 0;
-            StyledDocument doc = (StyledDocument) ci.getDocument();
+            StyledDocument doc = getDocument(ci);
             if (doc != null) {
                 offset = findLineOffset(doc, line);
                 scope = ci.getTreeUtilities().scopeFor(offset);
