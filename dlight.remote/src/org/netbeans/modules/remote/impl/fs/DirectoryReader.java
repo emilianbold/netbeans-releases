@@ -118,11 +118,11 @@ public class DirectoryReader {
             StringBuilder curr = name;
             for (int i = 5 + timestampWordCount; i < words.length; i++) {
                 String word = words[i];
-                if ("->".equals(word)) {
+                if ("->".equals(word)) { // NOI18N
                     curr = link;
                 } else {
                     if (curr.length() > 0) {
-                        curr.append(' ');
+                        curr.append(' '); // NOI18N
                     }
                     curr.append(word);
                 }
