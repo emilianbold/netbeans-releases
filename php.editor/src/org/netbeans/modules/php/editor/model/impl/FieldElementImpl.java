@@ -182,7 +182,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
         if  (retval.isEmpty()) {
             retval = getDefaultTypes();
-            if (retval.isEmpty()) {
+            if (retval.isEmpty() && getInScope() instanceof ClassScope) {
                 ClassScope classScope = (ClassScope) getInScope();
                 for (VariableName variableName : classScope.getDeclaredVariables()) {
                     if (variableName.representsThis()) {
