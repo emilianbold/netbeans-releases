@@ -582,7 +582,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             } else {
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
                 if (simpleMode.isSelected()) {
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                             NbBundle.getMessage(SelectModePanel.class, "CleanInfoMessageSimpleMode")); // NOI18N
                 } else {
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
