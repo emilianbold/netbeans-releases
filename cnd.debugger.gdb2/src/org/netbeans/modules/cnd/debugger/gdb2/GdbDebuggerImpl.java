@@ -3406,11 +3406,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void registerMemoryWindow(MemoryWindow w) {
-        notImplemented("registerMemoryWindow()");	// NOI18N
+        memoryWindow = w;
     }
 
     public void requestMems(String start, String length, String format, int index) {
-        notImplemented("requestMems()");	// NOI18N
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 1 " + length) { // NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                if (memoryWindow != null) {
+                    //update memory window here
+                    //memoryWindow.updateData();
+                }
+                //update memory window
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     public void registerEvaluationWindow(EvaluationWindow w) {
@@ -4051,6 +4062,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	if (isConnected()) {
 
 	    super.activate(redundant);
+
+            if (memoryWindow != null) {
+                memoryWindow.setDebugger(this);
+            }
 
 	} else {
 	    // See big comment in dbx side
