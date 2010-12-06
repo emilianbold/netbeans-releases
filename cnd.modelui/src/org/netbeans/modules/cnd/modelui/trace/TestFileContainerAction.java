@@ -92,5 +92,6 @@ public class TestFileContainerAction extends TestProjectActionBase {
                 ((ProjectBase) lib).traceFileContainer(out);
             }
         }
+        out.close();
     }
 }
