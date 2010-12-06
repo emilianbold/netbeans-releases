@@ -677,7 +677,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public final void stepOut() {
         MICommand cmd = new MIResumptiveCommand("-stack-select-frame 0"); // NOI18N
         gdb.sendCommand(cmd);
-        cmd = new MIResumptiveCommand("-exec-finish"); // NOI18N
+        execFinish();
+    }
+
+    private void execFinish() {
+        MICommand cmd = new MIResumptiveCommand("-exec-finish"); // NOI18N
         gdb.sendCommand(cmd);
     }
 
@@ -1073,6 +1077,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void popToHere(Frame frame) {
+        String number = frame.getNumber();
+        makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
+        execFinish();
     }
 
     public void popTopmostCall() {
@@ -4082,8 +4089,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     public void stepOutInst() {
-        MICommand cmd = new MIResumptiveCommand("-exec-finish"); // NOI18N
-        gdb.sendCommand(cmd);
+        execFinish();
     }
 
     // interface NativeDebugger
