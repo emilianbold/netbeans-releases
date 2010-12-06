@@ -837,8 +837,8 @@ public class ProviderUtil {
             return false;
         }
 
-        if (defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())
-                && persistenceUnit.getProperties().sizeProperty2() == 0) {
+        if (defaultProvider.getProviderClass()!=null && defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())
+                && (persistenceUnit.getProperties() == null || persistenceUnit.getProperties().sizeProperty2() == 0)) {
 
             persistenceUnit.setProvider(null);
             return true;
