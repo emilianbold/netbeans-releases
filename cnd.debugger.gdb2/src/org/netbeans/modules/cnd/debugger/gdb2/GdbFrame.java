@@ -156,7 +156,7 @@ public final class GdbFrame extends Frame {
     
     @Override
     public String getFullPath() {
-        return fullname;
+        return debugger.remoteToLocal("Gdb frame", debugger.fmap().engineToWorld(fullname)); //NOI18N
     }
 
 }

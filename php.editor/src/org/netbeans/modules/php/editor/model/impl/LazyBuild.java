@@ -40,50 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.actions;
-
-import java.io.File;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.git.utils.GitUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor.Task;
+package org.netbeans.modules.php.editor.model.impl;
 
 /**
- *
- * @author ondra
+ * This interface says that the scope is not build directly, but lazy, when 
+ * it's needed. One example are bodies of methods. The model for the bodies
+ * doesn't have to be build for all method at once, if it's necessary.
+ * Through this interface a feature can find out, whether the model contains
+ * information from the ASTNode and also can invoke to build model for the ASTNode.
+ * 
+ * @author PetrPisl
  */
-public abstract class MultipleRepositoryAction extends GitAction {
+public interface LazyBuild {
+   
+    /**
+     * 
+     * @return true, if the model already contains information, false when
+     * the model doesn't contain the information.
+     */
+    boolean isScanned();
+    
+    /**
+     * Create the model for the scope.
+     */
+    void scan();
 
-    private static final Logger LOG = Logger.getLogger(MultipleRepositoryAction.class.getName());
-
-    @Override
-    protected final void performContextAction (final Node[] nodes) {
-        Utils.postParallel(new Runnable () {
-            @Override
-            public void run() {
-                VCSContext context = getCurrentContext(nodes);
-                performAction(context);
-            }
-        }, 0);
-    }
-
-    public final void performAction (VCSContext context) {
-        Set<File> repositories = GitUtils.getRepositoryRoots(context);
-        if (repositories.isEmpty()) {
-            LOG.log(Level.FINE, "No repository in the current context: {0}", context.getRootFiles()); //NOI18N
-            return;
-        }
-        for (File repository : repositories) {
-            Task runningTask = performAction(repository, GitUtils.filterForRepository(context, repository), context);
-            if (runningTask != null) {
-                runningTask.waitFinished();
-            }
-        }
-    }
-
-    protected abstract Task performAction (File repository, File[] roots, VCSContext context);
 }

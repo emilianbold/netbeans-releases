@@ -231,7 +231,11 @@ public class NameHolder {
         if (token != null) {
             token = AstUtil.findChildOfType(token, CPPTokenTypes.TILDE);
             if (token != null) {
-                start = OffsetableBase.getStartOffset(token);
+                AST startNameToken = token.getNextSibling();
+                if (startNameToken == null) {
+                    startNameToken = token;
+                }
+                start = OffsetableBase.getStartOffset(startNameToken);
                 isMacroExpanded = isMacroExpandedToken(token);
                 end = OffsetableBase.getEndOffset(token);
                 token = token.getNextSibling();
