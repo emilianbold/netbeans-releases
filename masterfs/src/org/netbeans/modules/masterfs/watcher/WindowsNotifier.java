@@ -57,6 +57,7 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIFunctionMapper;
 import com.sun.jna.win32.W32APITypeMapper;
+import java.io.InterruptedIOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.openide.util.Exceptions;
@@ -335,10 +336,11 @@ public class WindowsNotifier extends Notifier<Void> {
                                   + ": " + err);
         }
         if (watcher == null) {
-            watcher = new Thread("W32 File Monitor") {
+            Thread t = new Thread("W32 File Monitor") {
+                @Override
                 public void run() {
                     FileInfo finfo;
-                    while (true) {
+                    while (watcher != null) {
                         finfo = waitForChange();
                         if (finfo == null) continue;
 
@@ -350,13 +352,28 @@ public class WindowsNotifier extends Notifier<Void> {
                     }
                 }
             };
-            watcher.setDaemon(true);
-            watcher.start();
+            t.setDaemon(true);
+            t.start();
+            watcher = t;
         }
 
         return null;
     }
-
+    
+    @Override
+    public void stop() throws IOException {
+        try {
+            Thread w = watcher;
+            if (w == null) {
+                return;
+            }
+            watcher = null;
+            w.interrupt();
+            w.join();
+        } catch (InterruptedException ex) {
+            throw (IOException)new InterruptedIOException().initCause(ex);
+        }
+    }
 
     private void notify(File file) {
         if (!file.isDirectory()) file = file.getParentFile();
