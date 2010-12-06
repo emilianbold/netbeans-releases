@@ -49,9 +49,9 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
  *
  * @author Vladimir Kvashin
  */
-public class TestDirectoryStorage extends NativeExecutionBaseTestCase {
+public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
 
-    public TestDirectoryStorage(String testName) {
+    public DirectoryStorageTestCase(String testName) {
         super(testName);
     }
 
