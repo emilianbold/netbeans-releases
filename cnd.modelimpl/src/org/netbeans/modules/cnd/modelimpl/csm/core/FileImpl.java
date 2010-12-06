@@ -610,7 +610,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized (changeStateLock) {
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
-                if (lastModified > lastParsed) {
+                if (lastModified != lastParsed) {
                     if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
@@ -1297,7 +1297,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         clearStateCache();
-        lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
+        lastParsed = fileBuffer.lastModified();
         lastMacroUsages = null;
         if (TraceFlags.TRACE_VALIDATION) {
             System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",

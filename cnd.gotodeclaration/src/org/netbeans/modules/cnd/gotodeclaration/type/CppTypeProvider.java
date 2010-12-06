@@ -78,7 +78,7 @@ public class CppTypeProvider implements TypeProvider {
 	
 	if( TRACE ) System.err.printf("CppTypeProvider.getTypeNames(%s, %s, %s)\n", project, text, type);
 	
-	CsmSelect.CsmFilter filter = createTypeFilter();
+	CsmSelect.CsmFilter filter = CsmSelect.CLASSIFIER_KIND_FILTER;
 	NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
 	if( project == null ) {
             Collection<CsmProject> csmProjects = CsmModelAccessor.getModel().projects();
@@ -193,13 +193,4 @@ public class CppTypeProvider implements TypeProvider {
                 break;
         }
     }    
-
-    private CsmSelect.CsmFilter createTypeFilter() {
-        return CsmSelect.getFilterBuilder().createKindFilter(
-                CsmDeclaration.Kind.CLASS,
-                CsmDeclaration.Kind.STRUCT,
-                CsmDeclaration.Kind.UNION,
-                CsmDeclaration.Kind.ENUM,
-                CsmDeclaration.Kind.TYPEDEF);
-    }
 }
