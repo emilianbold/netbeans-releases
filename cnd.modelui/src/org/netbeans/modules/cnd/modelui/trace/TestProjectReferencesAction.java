@@ -210,5 +210,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         out.println("Analyzing " + p.getName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
         err.flush();
         out.flush();
+        out.close();
+        err.close();
     }
 }
