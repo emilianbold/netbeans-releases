@@ -72,9 +72,11 @@ import org.openide.util.Lookup;
 public class CsmSelect {
 
     private static CsmSelectProvider DEFAULT = new Default();
-    private static final CsmFilter funcKindFilter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+    public static final CsmFilter FUNCTION_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
                                                     CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
-
+    public static final CsmFilter CLASSIFIER_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT,
+                                                    CsmDeclaration.Kind.UNION, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.TYPEDEF);
+    
     public static CsmFilterBuilder getFilterBuilder() {
         return getDefault().getFilterBuilder();
     }
@@ -135,7 +137,7 @@ public class CsmSelect {
             if (pos == -1) {
                 // qName resides in global namespace
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         funcKindFilter,
+                         FUNCTION_KIND_FILTER,
                          CsmSelect.getFilterBuilder().createNameFilter(qName, true, true, false));
                 getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
             } else {
@@ -159,13 +161,13 @@ public class CsmSelect {
                     funcName = qName;
                 }
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         funcKindFilter,
+                         FUNCTION_KIND_FILTER,
                          CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
                 getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
                 
                 if (!shortFuncName.equals(funcName)) {
                     filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                            funcKindFilter,
+                            FUNCTION_KIND_FILTER,
                             CsmSelect.getFilterBuilder().createNameFilter(shortFuncName, true, true, false));
                 }
 

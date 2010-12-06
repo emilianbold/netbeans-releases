@@ -47,8 +47,11 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.locks.Lock;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
@@ -60,7 +63,10 @@ import org.openide.util.Exceptions;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
+    public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
+
     private volatile DirectoryAttributes attrs;
+    private Reference<DirectoryStorage> storageRef;
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             FileObject parent, String remotePath, File cache) {
@@ -167,7 +173,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             File[] childrenFiles = cache.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return ! ChildrenSupport.FLAG_FILE_NAME.equals(name);
+                    return ! FLAG_FILE_NAME.equals(name);
                 }
             });
             FileObject[] childrenFO = new FileObject[childrenFiles.length];
@@ -188,6 +194,34 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // never report CancellationException
         }
         return new FileObject[0];
+    }
+
+    private DirectoryStorage getStorage() throws IOException {
+        DirectoryStorage result = null;
+        synchronized (this) {
+            if (storageRef != null) {
+                result = storageRef.get();
+            }
+            if (result == null) {
+                File storageFile = new File(cache, FLAG_FILE_NAME);
+                result = new DirectoryStorage(storageFile);
+                // 1. Should we lock by cache file?
+                // 2. locking within synchronized block - potentially dangerous!
+                Lock lock = RemoteFileSystem.getLock(storageFile).readLock();
+                try {
+                    lock.lock();
+                    result.load();
+                } finally {
+                    lock.unlock();
+                }
+                storageRef = new WeakReference<DirectoryStorage>(result);
+            }
+        }
+        return result;
+    }
+
+    private void fillStorage() {
+        
     }
 
 //    @Override

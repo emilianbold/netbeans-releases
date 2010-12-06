@@ -40,32 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
-
-import java.io.File;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+package org.netbeans.modules.php.editor.model.impl;
 
 /**
- *
- * @author Vladimir Kvashin
+ * This interface says that the scope is not build directly, but lazy, when 
+ * it's needed. One example are bodies of methods. The model for the bodies
+ * doesn't have to be build for all method at once, if it's necessary.
+ * Through this interface a feature can find out, whether the model contains
+ * information from the ASTNode and also can invoke to build model for the ASTNode.
+ * 
+ * @author PetrPisl
  */
-public class TestDirectoryStorage extends NativeExecutionBaseTestCase {
+public interface LazyBuild {
+   
+    /**
+     * 
+     * @return true, if the model already contains information, false when
+     * the model doesn't contain the information.
+     */
+    boolean isScanned();
+    
+    /**
+     * Create the model for the scope.
+     */
+    void scan();
 
-    public TestDirectoryStorage(String testName) {
-        super(testName);
-    }
-
-    public void testDirectoryStorage() throws Exception {
-        File file = File.createTempFile("directoryStorage", ".dat");
-        DirectoryStorage ds1 = new DirectoryStorage(file);
-        DirectoryStorage.Entry entry1;
-        entry1 = new DirectoryStorage.Entry("name", "name.cache", "-rwxrwxrwx", "vk", "staff", 1024, "t i m e s t a m p", null);
-        ds1.testAddEntry(entry1);
-        ds1.store();
-        DirectoryStorage ds2 = new DirectoryStorage(file);
-        ds2.load();
-        DirectoryStorage.Entry entry2 = ds2.getEntry(entry1.getName());
-        assertNotNull("No entry restored for " + entry1.getName(), entry2);
-        file.delete();
-    }
 }

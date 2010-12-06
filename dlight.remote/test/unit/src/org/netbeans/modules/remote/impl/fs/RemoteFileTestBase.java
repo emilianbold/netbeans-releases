@@ -74,6 +74,13 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     private String[] mkTempArgsPlain;
     private String[] mkTempArgsDir;
 
+    public RemoteFileTestBase(String testName) {
+        super(testName);
+        fs = null;
+        rootFO = null;
+        execEnv = null;
+    }
+
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         this.execEnv = execEnv;
@@ -86,6 +93,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (execEnv == null) {
+            return;
+        }
         File cache = fs.getCache();
         removeDirectoryContent(cache);
         assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());

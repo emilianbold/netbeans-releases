@@ -42,15 +42,38 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public class RemoteFileSystemUtils {
+
+    private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
+
+    static {
+        boolean caseSenstive;
+        try {
+            File tmpFile = File.createTempFile("CaseSensitiveFile", ".check"); // NOI18N
+            String absPath = tmpFile.getAbsolutePath();
+            absPath = absPath.toUpperCase();
+            caseSenstive = !new File(absPath).exists();
+            tmpFile.delete();
+        } catch (IOException ex) {
+            caseSenstive = Utilities.isUnix() && !Utilities.isMac();
+        }
+        TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
+    }
+
+    public static boolean isSystemCaseSensitive() {
+        return TRUE_CASE_SENSITIVE_SYSTEM;
+    }
 
     private RemoteFileSystemUtils() {
     }

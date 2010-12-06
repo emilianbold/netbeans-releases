@@ -265,8 +265,6 @@ public final class Model extends TabbedPanelModel {
         String path = "OptionsDialog/"+subpath; // NOI18N
         Lookup lookup = Lookups.forPath(path);
         lkpResult = lookup.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
-        lkpResult.addLookupListener(lkpListener);
-        lkpListener = null;
         for(Item<AdvancedOption> item : lkpResult.allItems()) {
             // don't lookup in subfolders
             if(item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
@@ -280,6 +278,8 @@ public final class Model extends TabbedPanelModel {
                 }
             }
         }
+        lkpResult.addLookupListener(lkpListener);
+        lkpListener = null;
     }
     
     void setLoookup (Lookup masterLookup) {

@@ -410,10 +410,20 @@ class OccurenceBuilder {
      *
      * @param offset
      * @return true if ElementInfo was set and even more represents different element than the previous one and
-     * thus makes sense to recompute occurences. If false is returned then makes no sense to recompute occurences
+     * thus makes sense to recompute occurrences. If false is returned then makes no sense to recompute occurences
      */
     private boolean setElementInfo(final int offset) {
         elementInfo = null;
+        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
+            if (entry.getValue() instanceof LazyBuild) {
+                LazyBuild scope = (LazyBuild)entry.getValue();
+                if (!scope.isScanned()) {
+                    scope.scan();
+                }
+            }
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+
         for (Entry<ASTNodeInfo<GotoStatement>, Scope> entry : gotoStatement.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
@@ -503,10 +513,6 @@ class OccurenceBuilder {
         }
 
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
-        }
-
-        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 

@@ -62,9 +62,22 @@ public class DirectoryStorage {
 
     public static class Entry {
 
+        private static final short USR_R = 256;
+        private static final short USR_W = 128;
+        private static final short USR_X = 64;
+        private static final short GRP_R = 32;
+        private static final short GRP_W = 16;
+        private static final short GRP_X = 8;
+        private static final short ALL_R = 4;
+        private static final short ALL_W = 2;
+        private static final short ALL_X = 1;
+
         private final String name;
         private final String cache;
-        private final String access;
+
+        private char type;
+        private short access;
+
         private final String user;
         private final String group;
         private final long size;
@@ -74,8 +87,10 @@ public class DirectoryStorage {
         public Entry(String name, String cache, String access, String user, String group, long size, String timestamp, String link) {
             this.name = name;
             this.cache = cache;
-            RemoteLogger.assertTrue(FileType.fromChar(access.charAt(0)) != null, "Can't get file type from access string: " + access); //NOI18N
-            this.access = access;
+            RemoteLogger.assertTrue(access.length() == 10, "Wrong access format: " + access); //NOI18N
+            this.type = access.charAt(0);
+            RemoteLogger.assertTrue(FileType.fromChar(this.type) != null, "Can't get file type from access string: " + access); //NOI18N
+            this.access = stringToAcces(access);
             this.user = user;
             this.group = group;
             this.size = size;
@@ -83,18 +98,139 @@ public class DirectoryStorage {
             this.link = link;
         }
 
+
         FileType getFileType() {
-            return FileType.fromChar(access.charAt(0));
+            return FileType.fromChar(type);
         }
 
         public String getName() {
             return name;
         }
+
+        public String getCache() {
+            return cache;
+        }
+
+        public String getGroup() {
+            return group;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public boolean canRead(String user, String... groups) {
+            if ((access & ALL_R) > 0) {
+                return true;
+            }
+            if ((access & USR_R) > 0) {
+                if (this.user.equals(user)) {
+                    return true;
+                }
+            }
+            if ((access & GRP_R) > 0 && groups != null) {
+                for (String g : groups) {
+                    if (group.equals(g)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public boolean canWrite(String user, String... groups) {
+            if ((access & ALL_W) > 0) {
+                return true;
+            }
+            if ((access & USR_W) > 0) {
+                if (this.user.equals(user)) {
+                    return true;
+                }
+            }
+            if ((access & GRP_W) > 0 && groups != null) {
+                for (String g : groups) {
+                    if (group.equals(g)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public boolean canExecute(String user, String... groups) {
+            if ((access & ALL_X) > 0) {
+                return true;
+            }
+            if ((access & USR_X) > 0) {
+                if (this.user.equals(user)) {
+                    return true;
+                }
+            }
+            if ((access & GRP_X) > 0 && groups != null) {
+                for (String g : groups) {
+                    if (group.equals(g)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public String getAccessAsString() {
+            char[] accessChars = new char[9];
+
+            accessChars[0] = ((access & USR_R) == 0) ? '-' : 'r';
+            accessChars[1] = ((access & USR_W) == 0) ? '-' : 'w';
+            accessChars[2] = ((access & USR_X) == 0) ? '-' : 'x';
+
+            accessChars[3] = ((access & GRP_R) == 0) ? '-' : 'r';
+            accessChars[4] = ((access & GRP_W) == 0) ? '-' : 'w';
+            accessChars[5] = ((access & GRP_X) == 0) ? '-' : 'x';
+
+            accessChars[6] = ((access & ALL_R) == 0) ? '-' : 'r';
+            accessChars[7] = ((access & ALL_W) == 0) ? '-' : 'w';
+            accessChars[8] = ((access & ALL_X) == 0) ? '-' : 'x';
+
+            return new String(accessChars);
+        }
+
+        private short stringToAcces(String accessString) {
+            short result = 0;
+
+            // 0-th character is file type => start with 1
+            result |= (accessString.charAt(1) == 'r') ? USR_R : 0;
+            result |= (accessString.charAt(2) == 'w') ? USR_W : 0;
+            result |= (accessString.charAt(3) == 'x') ? USR_X : 0;
+
+            result |= (accessString.charAt(4) == 'r') ? GRP_R : 0;
+            result |= (accessString.charAt(5) == 'w') ? GRP_W : 0;
+            result |= (accessString.charAt(6) == 'x') ? GRP_X : 0;
+
+            result |= (accessString.charAt(7) == 'r') ? ALL_R : 0;
+            result |= (accessString.charAt(8) == 'w') ? ALL_W : 0;
+            result |= (accessString.charAt(9) == 'x') ? ALL_X : 0;
+
+            return result;
+        }
     }
 
     private Map<String, Entry> entries = new HashMap<String, Entry>();
     private final File file;
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
+    /* Incompatible version to discard */
+    private static final int ODD_VERSION = 1;
 
     public DirectoryStorage(File file) {
         this.file = file;
@@ -130,6 +266,10 @@ public class DirectoryStorage {
                 if (version > VERSION) {
                     throw new IOException("attributes file version " + version +  //NNOI18N
                             " not supported: " + file.getAbsolutePath()); //NOI18N
+                }
+                if (version < ODD_VERSION) {
+                    throw new IOException("Discarding old attributes file version " + version +  //NNOI18N
+                            ' ' + file.getAbsolutePath()); //NOI18N
                 }
                 while ((line = br.readLine()) != null) {
                     if (line.length() == 0) {
@@ -190,10 +330,6 @@ public class DirectoryStorage {
         cycle:
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-//            if (escape) {
-//                currText.append(c);
-//                continue;
-//            }
             switch (c) {
                 case '\\':
                     if (currIndex == name && ! escape) {
@@ -253,7 +389,8 @@ public class DirectoryStorage {
                     wr.write(' ');
                     wr.write(entry.cache);
                     wr.write(' ');
-                    wr.write(entry.access);
+                    wr.write(entry.type);
+                    wr.write(entry.getAccessAsString());
                     wr.write(' ');
                     wr.write(entry.user);
                     wr.write(' ');
