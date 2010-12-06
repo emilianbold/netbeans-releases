@@ -295,8 +295,7 @@ public final class CsmRefactoringUtils {
         Collection<CsmFunction> out = new ArrayList<CsmFunction>();
         CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
         CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
-                filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
+                CsmSelect.FUNCTION_KIND_FILTER,
                 filterBuilder.createNameFilter(cls.getName(), true, true, false));
         Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
         while (classMembers.hasNext()) {
