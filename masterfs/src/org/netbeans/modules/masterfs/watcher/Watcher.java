@@ -56,7 +56,6 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -107,9 +106,9 @@ public final class Watcher extends AnnotationProvider {
             try {
                 ext.shutdown();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "Error on shutdown", ex);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "Error on shutdown", ex);
             }
         }
     }
@@ -130,6 +129,7 @@ public final class Watcher extends AnnotationProvider {
             (watcher = new Thread(this, "File Watcher")).start(); // NOI18N
         }
 
+        /*
         // will be called from WHM implementation on lost key
         private void fileObjectFreed(KEY key) {
             try {
@@ -140,6 +140,7 @@ public final class Watcher extends AnnotationProvider {
               Exceptions.printStackTrace(ioe);  
             }
         }
+         */
 
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
             FileObject fo = FileUtil.toFileObject(dir);
@@ -159,8 +160,8 @@ public final class Watcher extends AnnotationProvider {
                 map.put(fo, impl.addWatch(path));
             } catch (IOException ex) {
                 // XXX: handle resource overflow gracefully
-                Exceptions.printStackTrace(ex);
-
+                LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}", path);
+                LOG.log(Level.INFO, "Exception", ex);
             }
 
             return -1;
@@ -188,7 +189,7 @@ public final class Watcher extends AnnotationProvider {
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
-                    Exceptions.printStackTrace(t);
+                    LOG.log(Level.INFO, "Error dispatching FS changes", t);
                 }
             }
         }
