@@ -252,7 +252,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 ArrayBrowserWindow.getDefault().setArrayBrowserController(arrayBrowserController);
             }
 
-            if (currentMemoryWindow != null) {
+            if (memoryWindow != null) {
                 ((MemoryWindow) MemoryWindow.getDefault()).setDebugger(this);
                 // will call requestMems() in setControlPanelData
                 ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData(memory_start, memory_length, memory_format_index);
@@ -815,8 +815,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	localUpdater.batchOffForce();	// cause a pull to clear view
 
         resetCurrentLine();
-        if (currentMemoryWindow != null) {
-            currentMemoryWindow.setDebugger(null);
+        if (memoryWindow != null) {
+            memoryWindow.setDebugger(null);
             // CR 6660966
             //currentMemoryWindow = null;
             ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData("main", "80", 0); // NOI18N
@@ -3455,7 +3455,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    public void setRegs(String regs) {
+    void setRegs(String regs) {
 	if (currentRegistersWindow != null)
 	    currentRegistersWindow.updateData(regs);
     }
@@ -3509,14 +3509,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public void updateVItem(int nitems, GPDbxVItemDynamic items[]) {
         ArrayBrowserWindow.getDefault().updateArrayView(nitems, items);
     }
-    private MemoryWindow currentMemoryWindow = null;
+    
     private String memory_start;
     private String memory_length;
     private String memory_format;
     private int memory_format_index;
 
     public void registerMemoryWindow(MemoryWindow mw) {
-        currentMemoryWindow = mw;
+        memoryWindow = mw;
         if (postedKillEngine) {
             return;
         }
@@ -3530,9 +3530,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    public void setMems(String mems) {
-	if (currentMemoryWindow != null)
-	    currentMemoryWindow.updateData(mems);
+    void setMems(String mems) {
+	if (memoryWindow != null)
+	    memoryWindow.updateData(mems);
     }
 
     public void requestMems(String start, String length, String format, int index) {
