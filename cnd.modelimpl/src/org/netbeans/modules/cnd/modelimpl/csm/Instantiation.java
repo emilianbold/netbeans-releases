@@ -813,6 +813,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
+        private CsmFunctionDefinition definition = null;
+        private CsmClass containingClass = null;
 
         public Method(CsmMethod method, CsmInstantiation instantiation) {
             super(method, instantiation.getMapping());
@@ -837,7 +839,28 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmClass getContainingClass() {
-            return declaration.getContainingClass();
+            if(containingClass == null) {
+                containingClass = _getContainingClass();
+            }
+            return containingClass;
+        }
+
+        public CsmClass _getContainingClass() {
+            CsmClass containingClass = declaration.getContainingClass();
+            if(CsmKindUtilities.isTemplate(containingClass)) {
+                CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+                if (p instanceof InstantiationProviderImpl) {
+                    List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+                    for (CsmTemplateParameter ip : instantiation.getMapping().keySet()) {
+                        params.add(instantiation.getMapping().get(ip));
+                    }
+                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, params, getContainingFile(), getStartOffset());
+                    if (inst instanceof CsmClass) {
+                        return (CsmClass) inst;
+                    }
+                }
+            }
+            return containingClass;
         }
 
         public boolean isTemplate() {
@@ -881,6 +904,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmFunctionDefinition getDefinition() {
+            if(definition == null) {
+                definition = _getDefinition();
+            }
+            return definition;
+        }
+
+        public CsmFunctionDefinition _getDefinition() {
+            CsmClass cls = getContainingClass();
+            if (CsmKindUtilities.isSpecialization(cls) && declaration instanceof FunctionImpl) {
+                FunctionImpl decl = (FunctionImpl) declaration;
+                return decl.getDefinition(cls);
+            }
             return declaration.getDefinition();
         }
 
