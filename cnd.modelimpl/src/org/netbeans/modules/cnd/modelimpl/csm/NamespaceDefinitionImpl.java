@@ -304,9 +304,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void fixFakeRender(FileImpl file, AST ast, boolean b) {
         final CsmNamespace ns = getNamespace();
         if (ast != null && ns instanceof NamespaceImpl) {
-            CsmAST root = new CsmAST();
-            root.addChild(ast);
-            new AstRenderer(file).render(root, (NamespaceImpl)ns, this);
+            new AstRenderer(file).render(ast, (NamespaceImpl)ns, this);
         }
     }
 }
