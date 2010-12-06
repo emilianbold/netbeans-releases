@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 import java.io.File;
@@ -119,6 +120,38 @@ public class FileNameTest extends NbTestCase {
         
         FileNaming n4 = NamingFactory.fromFile(file2);
         assertSame("This has to remain same as before", n2, n4);
+    }
+    
+    public void testFolderAndName() throws IOException {
+        FileNaming parent = NamingFactory.fromFile(getWorkDir());
+        
+        File f = new File(getWorkDir(), "test");
+        f.createNewFile();
+        assertTrue("Is file", f.isFile());
+        FileNaming first = NamingFactory.fromFile(parent, f, true);
+        assertEquals("First it is file", FileName.class, first.getClass());
+        f.delete();
+        
+        f.mkdirs();
+        assertTrue("Is dir", f.isDirectory());
+        
+        FileNaming dir = NamingFactory.fromFile(parent, f, true);
+        assertEquals("Is folder name", FolderName.class, dir.getClass());
+        
+        f.delete();
+        f.createNewFile();
+        assertTrue("Is file", f.isFile());
+        
+        FileNaming file = NamingFactory.fromFile(parent, f, true);
+        assertEquals("Is file name", FileName.class, file.getClass());
+        
+        FileNaming cache = NamingFactory.fromFile(f);
+        assertEquals("Is file name too", FileName.class, cache.getClass());
+        
+        String dump = NamingFactory.dump(f.hashCode(), f);
+        if (!dump.contains("References: 1")) {
+            fail("We expect just one reference:\n" + dump);
+        }
     }
     
     protected File getTestFile() throws Exception {
