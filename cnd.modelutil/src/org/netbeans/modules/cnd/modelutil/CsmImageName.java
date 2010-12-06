@@ -140,6 +140,11 @@ public interface CsmImageName {
     static final String PROJECT_OPENED =  RESOURCE_BASE+"project_open.png"; // NOI18N
     static final String LIB_PROJECT =  RESOURCE_BASE+"libraries.png"; // NOI18N
     static final String LIB_PROJECT_OPENED =  RESOURCE_BASE+"libraries.png"; // NOI18N
+    
+    static final String HEADER_FILE = RESOURCE_BASE+"header.gif"; // NOI18N
+    static final String CPP_SOUCE_FILE = RESOURCE_BASE+"cppsource.gif"; // NOI18N
+    static final String C_SOUCE_FILE = RESOURCE_BASE+"csource.gif"; // NOI18N
+    static final String FORTRAN_SOUCE_FILE = RESOURCE_BASE+"fortran.gif"; // NOI18N
 
     static final String TEMPLATE_PARAMETER =  RESOURCE_BASE+"template_parameter_16.png"; // NOI18N
 

@@ -108,6 +108,19 @@ is the proper place.
 
     <changes>
 
+        <change id="IndentUtils.createIndentString.added">
+            <summary>Adding org.netbeans.modules.editor.indent.api.IndentUtils.createIndentString</summary>
+            <version major="1" minor="22"/>
+            <date day="3" month="12" year="2010"/>
+            <author login="mmetelka"/>
+            <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+            <description>
+                Method IndentUtils.createIndentString(int indent, boolean expandTabs, int tabSize) added.
+            </description>
+            <class package="org.netbeans.modules.editor.indent.api" name="IndentUtils"/>
+            <issue number="192289"/>
+        </change>
+
         <change id="AutomatedIndentation.added">
             <summary>Adding org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting</summary>
             <version major="1" minor="20"/>

@@ -70,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
@@ -116,13 +115,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         if (prj != null) {
             final NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
             if (mvn != null) {
-                //see #163529 for reasoning
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mvn.downloadDependencyAndJavadocSource();
-                    }
-                });
+                mvn.downloadDependencyAndJavadocSource(false);
             }
         }
         handle.progress(3);
@@ -136,7 +129,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
                 if (prj != null) {
                     NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
                     if (mvn != null) {
-                        mvn.downloadDependencyAndJavadocSource();
+                        mvn.downloadDependencyAndJavadocSource(false);
                     }
                     resultSet.add(subfolder);
                 }

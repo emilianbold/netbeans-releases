@@ -60,9 +60,9 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -79,6 +79,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PropertyEditorSupport editor;
     private JButton addProjectButton;
     private JButton addStandardLibraryButton;
+    private JButton addPkgConfigLibraryButton;
     private JButton addLibraryButton;
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
@@ -98,6 +99,10 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         addStandardLibraryButton.setToolTipText(getString("ADD_STANDARD_LIBRARY_BUTTON_TT")); // NOI18N
         addStandardLibraryButton.setMnemonic(getString("ADD_STANDARD_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
 
+        addPkgConfigLibraryButton = new JButton(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_TXT")); // NOI18N
+        addPkgConfigLibraryButton.setToolTipText(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_TT")); // NOI18N
+        addPkgConfigLibraryButton.setMnemonic(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
+
         addLibraryButton = new JButton(getString("ADD_LIBRARY_BUTTON_TXT")); // NOI18N
         addLibraryButton.setToolTipText(getString("ADD_LIBRARY_BUTTON_TT")); // NOI18N
         addLibraryButton.setMnemonic(getString("ADD_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
@@ -110,10 +115,12 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         addLibraryOption.setToolTipText(getString("ADD_OPTION_BUTTON_TT")); // NOI18N
         addLibraryOption.setMnemonic(getString("ADD_OPTION_BUTTON_MN").charAt(0)); // NOI18N
 
-        JButton[] extraButtons = new JButton[]{addProjectButton, addStandardLibraryButton, addLibraryButton, addLibraryFileButton, addLibraryOption};
+        JButton[] extraButtons = new JButton[]{addProjectButton, addStandardLibraryButton, addPkgConfigLibraryButton,
+                                               addLibraryButton, addLibraryFileButton, addLibraryOption};
         myListEditorPanel = new MyListEditorPanel(data, extraButtons);
         addProjectButton.addActionListener(new AddProjectButtonAction());
         addStandardLibraryButton.addActionListener(new AddStandardLibraryButtonAction());
+        addPkgConfigLibraryButton.addActionListener(new AddPkgCongigLibraryButtonAction());
         addLibraryButton.addActionListener(new AddLibraryButtonAction());
         addLibraryOption.addActionListener(new AddLinkerOptionButtonAction());
         addLibraryFileButton.addActionListener(new AddLibraryFileButtonAction());
@@ -238,8 +245,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalize(location);
-                    workingdir = CndPathUtilitities.normalize(workingdir);
+                    location = CndPathUtilitities.normalizeSlashes(location);
+                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -264,6 +271,24 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
         }
     }
+
+    private final class AddPkgCongigLibraryButtonAction implements java.awt.event.ActionListener {
+
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            PkgConfigLibrary stdLibPanel = new PkgConfigLibrary(conf);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE"));
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+                return;
+            }
+            PackageConfiguration[] libs = stdLibPanel.getPkgConfigLibs();
+            for (int i = 0; i < libs.length; i++) {
+                myListEditorPanel.addObjectAction(new LibraryItem.OptionItem("`pkg-config --libs "+libs[i].getName()+"`")); //NOI18N
+            }
+        }
+    }
+
 
     private final class AddLibraryButtonAction implements java.awt.event.ActionListener {
 
@@ -346,7 +371,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             // FIXUP: why are baseDir UNIX path when remote?
             String path = ProjectSupport.toProperPath(baseDir, fileChooser.getSelectedFile().getPath(), project);
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }
     }

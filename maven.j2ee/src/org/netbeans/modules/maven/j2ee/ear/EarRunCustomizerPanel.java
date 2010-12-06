@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import static org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel.PROP_SHOW_IN_BROWSER;
@@ -57,7 +59,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.openide.util.Exceptions;
@@ -74,6 +79,8 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     private Ear module;
     private ComboBoxUpdater<Wrapper> listener;
 
+    private CheckBoxUpdater deployOnSaveUpdater;
+    
     /**
      * Creates new form EjbRunCustomizerPanel
      */
@@ -95,8 +102,53 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         String browser = (String)project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
         boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
         cbBrowser.setSelected(bool);
+        
+        deployOnSaveUpdater = new CheckBoxUpdater(jCheckBoxDeployOnSave) {
+            @Override
+            public Boolean getValue() {
+                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+                if (s != null) {
+                    return Boolean.valueOf(s);
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public void setValue(Boolean value) {
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
+                        value == null ? null : Boolean.toString(value), true);
+            }
+
+            @Override
+            public boolean getDefaultValue() {
+                return true;
+            }
+        };
+        addAncestorListener(new AncestorListener() {
+
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                updateDoSEnablement();
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
     }
 
+    private void updateDoSEnablement() {
+        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
+        jCheckBoxDeployOnSave.setEnabled(enabled);
+        dosDescription.setEnabled(enabled);
+    }
+    
     private void loadComboModel() {
         String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(J2eeModule.Type.EAR), module.getJ2eeProfile());
         Collection<Wrapper> col = new ArrayList<Wrapper>();
@@ -161,6 +213,8 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         lblJ2EEVersion = new javax.swing.JLabel();
         txtJ2EEVersion = new javax.swing.JTextField();
         cbBrowser = new javax.swing.JCheckBox();
+        jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        dosDescription = new javax.swing.JLabel();
 
         lblServer.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "LBL_Server")); // NOI18N
 
@@ -170,22 +224,35 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
 
         cbBrowser.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "LBL_Display_on_Run")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+
+        dosDescription.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.dosDescription.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblJ2EEVersion)
-                            .add(lblServer))
-                        .add(14, 14, 14)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lblJ2EEVersion)
+                                    .add(lblServer))
+                                .add(14, 14, 14)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 277, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                            .add(cbBrowser)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 277, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
-                    .add(cbBrowser))
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(dosDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE))
+                            .add(jCheckBoxDeployOnSave))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -201,7 +268,11 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
                     .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(cbBrowser)
-                .addContainerGap(198, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxDeployOnSave)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dosDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
         cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
@@ -210,6 +281,8 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbBrowser;
     private javax.swing.JComboBox comServer;
+    private javax.swing.JLabel dosDescription;
+    private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JLabel lblJ2EEVersion;
     private javax.swing.JLabel lblServer;
     private javax.swing.JTextField txtJ2EEVersion;

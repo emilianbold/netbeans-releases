@@ -74,8 +74,8 @@ final class SQLStackRequestsProvider {
         return new AddNodeRequest(nodeId, callerId, funcId, offset, lineNumber);
     }
 
-    public AddFunctionRequest addFunction(Long funcId, String funcName, int source_file_index, String fullFuncName) {
-        return new AddFunctionRequest(funcId, funcName, source_file_index, fullFuncName);
+    public AddFunctionRequest addFunction(Long funcId, String funcName, int source_file_index, int line_number) {
+        return new AddFunctionRequest(funcId, funcName, source_file_index, line_number);
     }
 
     public SQLRequest updateNodeMetrics(long id, long bucket) {
@@ -126,25 +126,25 @@ final class SQLStackRequestsProvider {
         public final long id;
         public final CharSequence name;
         public final int sourceFileIndex;
-        public final CharSequence full_name;
+        public final int line_number;
 
-        public AddFunctionRequest(long id, CharSequence name, int sourceFileIndex, CharSequence full_name) {
+        public AddFunctionRequest(long id, CharSequence name, int sourceFileIndex, int line_number) {
             this.id = id;
             this.name = name;
             this.sourceFileIndex = sourceFileIndex;
-            this.full_name = full_name;
+            this.line_number = line_number;
         }
 
         @Override
         public void execute() throws SQLException {
             PreparedStatement stmt = cache.getPreparedStatement(
                     "INSERT INTO Func " + // NOI18N
-                    "(func_id, func_full_name, func_name, func_source_file_id) " + // NOI18N
+                    "(func_id, func_name, func_source_file_id, line_number) " + // NOI18N
                     "VALUES (?, ?, ?, ?)"); // NOI18N
             stmt.setLong(1, id);
-            stmt.setString(2, truncateString(full_name.toString()));
-            stmt.setString(3, truncateString(name.toString()));
-            stmt.setInt(4, sourceFileIndex);
+            stmt.setString(2, truncateString(name.toString()));
+            stmt.setInt(3, sourceFileIndex);
+            stmt.setLong(4, line_number);
             stmt.executeUpdate();
         }
     }

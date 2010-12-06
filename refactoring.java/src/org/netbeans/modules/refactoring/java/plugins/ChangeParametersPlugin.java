@@ -200,62 +200,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         fireProgressListenerStop();
         return null;
-//        JavaMetamodel.getManager().getProgressSupport().addProgressListener(this);
-//        Problem problem = null;
-//        try {
-//            // get the original access modifier and check, if the original
-//            // modifier is weaker than the new modifier. If so, set checkMod
-//            // to true and in following code check, if all usages will have 
-//            // sufficient access privileges.
-//            int origAccessMods = method.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE);
-//            boolean checkMod = compareModifiers(origAccessMods, modifier) == -1;
-//            // get all the callers and usages of the callable and add them
-//            // the the collection of refactored elements
-//            referencesIterator = ((CallableFeatureImpl) method).findDependencies(true, true, true).iterator();
-//            elements.add(refactoring, new SignatureElement(method, paramTable, modifier));
-//            int parNum = ((CallableFeature) refactoring.getRefactoredObject()).getParameters().size();
-//            while (referencesIterator.hasNext()) {
-//                if (cancelRequest) {
-//                    return null;
-//                }
-//                Object ref = referencesIterator.next();
-//                if (ref instanceof Invocation) {
-//                    // Callers. Refactored method has to have the same number
-//                    // of parameters as its caller. (see issue #53041 for details)
-//                    if (((Invocation) ref).getParameters().size() == parNum) {
-//                        if (problem == null && checkMod) {
-//                            // check the access to refactored method
-//                            Feature f = JavaModelUtil.getDeclaringFeature((Invocation)ref);
-//                            if (Modifier.isPrivate(modifier)) { // changing to private
-//                                if (!Utilities.compareObjects(getOutermostClass(f), getOutermostClass(method))) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "private" })); // NOI18N
-//                                }
-//                            } else if (Modifier.isProtected(modifier)) { // changing to protected
-//                                if (!method.getResource().getPackageName().equals(f.getResource().getPackageName())) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "protected" })); // NOI18N
-//                                }
-//                            } else if (modifier == 0) { // default modifier check
-//                                if (!f.getResource().getPackageName().equals(method.getResource().getPackageName())) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "default" })); // NOI18N
-//                                }
-//                            }
-//                        }
-//                        elements.add(refactoring, new CallerElement((Invocation) ref, paramTable));
-//                    }
-//                } else {
-//                    // declaration/declarations (in case of overriden or overrides)
-//                    elements.add(refactoring, new SignatureElement((CallableFeature) ref, paramTable, modifier));
-//                }
-//            }
-//            return problem;
-//        } 
-//        finally {
-//            referencesIterator = null;
-//            JavaMetamodel.getManager().getProgressSupport().removeProgressListener(this);
-//        }
     }
     
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {

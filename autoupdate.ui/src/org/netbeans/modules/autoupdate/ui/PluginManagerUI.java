@@ -229,12 +229,15 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     
     private void initialize () {
         try {
-        units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+            final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
+            List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
+            List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (uu, true);
             // postpone later
             // getLocalDownloadSupport().getUpdateUnits();
             SwingUtilities.invokeAndWait (new Runnable () {
+                @Override
                 public void run () {
-                    refreshUnits ();
+                    refreshUnits(uu);
                     setSelectedTab ();
                 }
             });
@@ -573,7 +576,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         }
     }
     
-    private void refreshUnits () {
+    private void refreshUnits(List<UpdateUnit> newUnits) {
         //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
         synchronized(initLock) {
             //return immediatelly if uninialization(after removeNotify) was alredy called
@@ -583,7 +586,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             //long terming starvation because in fact impl. of this method calls AutoUpdateCatalogCache.getCatalogURL
             //which is synchronized and may wait until cache is created
             //even more AutoUpdateCatalog.getUpdateItems () can at first start call refresh and thus writeToCache again
-            units = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes());
+            units = newUnits;
             InstalledTableModel installTableModel = (InstalledTableModel)installedTable.getModel();
             UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
@@ -636,7 +639,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task
     public void updateUnitsChanged () {
-        refreshUnits ();
+        refreshUnits (UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
     }
     
     public void tableStructureChanged () {

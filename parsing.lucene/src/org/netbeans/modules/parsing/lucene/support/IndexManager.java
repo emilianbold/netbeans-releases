@@ -47,8 +47,11 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.parsing.lucene.DocumentIndexImpl;
+import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
 import org.openide.util.Parameters;
@@ -170,6 +173,44 @@ public final class IndexManager {
         Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
         Parameters.notNull("analyzer", analyzer);       //NOI18N
         return factory.createIndex(cacheFolder, analyzer);
+    }
+    
+    /**
+     * Creates a document based index
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param index the low level index to which the document based index delegates
+     * @return the document based index
+     * @since 1.1
+     */
+    public static DocumentIndex createDocumentIndex (final @NonNull Index index) {
+        Parameters.notNull("index", index);
+        return new DocumentIndexImpl(index);
+    }
+    
+    /**
+     * Creates a document based index
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param cacheFolder the folder in which the index should be stored
+     * @return the document based index
+     * @since 1.1
+     */
+    public static DocumentIndex createDocumentIndex (final @NonNull File cacheFolder) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder);
+        return createDocumentIndex(createIndex(cacheFolder, new KeywordAnalyzer()));
+    }
+
+    /**
+     * Creates a new instance of {@link IndexDocument} to store in {@link DocumentIndex}
+     * @param primaryKey the primary key of the document, for example relative path to the file.
+     * The primary key is used in {@link DocumentIndex#removeDocument(java.lang.String)}
+     * @return the document
+     * @since 1.1
+     */
+    public static IndexDocument createDocument (final @NonNull String primaryKey) {
+        Parameters.notNull("primaryKey", primaryKey);
+        return new IndexDocumentImpl(primaryKey);
     }
 
 }

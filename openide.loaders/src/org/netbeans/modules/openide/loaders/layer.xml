@@ -4,7 +4,7 @@
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
-                <file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
+                <file name="Entity_Mapping_Registration_1_0" url="EntityCatalog.dtd" >
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
                 </file>
             </folder>

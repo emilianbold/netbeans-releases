@@ -46,7 +46,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -64,7 +63,7 @@ public class JsfCompletionItem {
         return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport);
     }
 
-    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, FaceletsLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, FaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
         return new JsfTagAttribute(name, substitutionOffset, library, tag, attr);
     }
 
@@ -108,7 +107,7 @@ public class JsfCompletionItem {
         //use bold font
         @Override
         protected String getLeftHtmlText() {
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             buff.append(BOLD_OPEN_TAG);
             buff.append(super.getLeftHtmlText());
             buff.append(BOLD_END_TAG);
@@ -122,7 +121,7 @@ public class JsfCompletionItem {
 
         @Override
         public String getHelp() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getLibraryHelpHeader(component.getLibrary()));
             sb.append("<h1>"); //NOI18N
             sb.append(component.getName());
@@ -135,7 +134,7 @@ public class JsfCompletionItem {
                 sb.append("</div>");
             }
 
-            TldLibrary.Tag tag = component.getTag();
+            org.netbeans.modules.web.jsfapi.api.Tag tag = component.getTag();
             if (tag != null) {
                 //there is TLD available
                 String descr = tag.getDescription();
@@ -173,10 +172,10 @@ public class JsfCompletionItem {
     public static class JsfTagAttribute extends HtmlCompletionItem.Attribute {
 
         private FaceletsLibrary library;
-        private TldLibrary.Tag tag;
-        private TldLibrary.Attribute attr;
+        private org.netbeans.modules.web.jsfapi.api.Tag tag;
+        private org.netbeans.modules.web.jsfapi.api.Attribute attr;
 
-        public JsfTagAttribute(String value, int offset, FaceletsLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+        public JsfTagAttribute(String value, int offset, FaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
             super(value, offset, attr.isRequired(), null);
             this.library = library;
             this.tag = tag;
@@ -185,7 +184,7 @@ public class JsfCompletionItem {
 
         @Override
         public String getHelp() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getLibraryHelpHeader(library));
             sb.append("<div><b>Tag:</b> "); //NOI18N
             sb.append(tag.getName());
@@ -216,7 +215,7 @@ public class JsfCompletionItem {
     }
 
     private static String getLibraryHelpHeader(FaceletsLibrary library) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<div><b>Library:</b> "); //NOI18N
         sb.append(library.getNamespace());
         if(library.getDisplayName() != null) {

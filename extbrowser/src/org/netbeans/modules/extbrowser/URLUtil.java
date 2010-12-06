@@ -209,11 +209,12 @@ public class URLUtil {
     }
         
     /** Returns true if the protocol is acceptable for usual web browsers.
-     * Specifically, returns true for file, http and ftp protocols.
+     * Specifically, returns true for file, http(s) and ftp protocols.
      */
     private static boolean isAcceptableProtocol(URL url, boolean allowJar) {
         String protocol = url.getProtocol().toLowerCase();
         if ("http".equals(protocol)          // NOI18N
+        ||  "https".equals(protocol)         // NOI18N
         ||  "ftp".equals(protocol)           // NOI18N
         ||  "file".equals(protocol))         // NOI18N
             return true;

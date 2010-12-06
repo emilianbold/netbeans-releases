@@ -132,6 +132,7 @@ public interface NativeDebugger {
     public void moreFrame();
     public void makeFrameCurrent(Frame f);
     public Frame[] getStack();
+    Frame getCurrentFrame();
     
     public boolean isMultiThreading();
     public void registerThreadModel(ThreadModel model);

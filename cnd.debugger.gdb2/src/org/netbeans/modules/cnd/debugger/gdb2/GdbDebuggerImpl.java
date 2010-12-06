@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
@@ -115,6 +114,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -130,6 +130,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
+    private final Disassembly disassembly;
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -151,12 +152,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         public static Location make(NativeDebugger debugger,
 		                    MITList frameTuple,
 				    MITList srcTuple,
-				    boolean visited) {
+				    boolean visited,
+                                    int stackSize) {
 
 	    String src = null;
 	    int line = 0;
 	    String func = null;
 	    long pc = 0;
+            int level = 0;
 
             if (frameTuple != null) {
 		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
@@ -180,6 +183,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    }
 		}
 
+                MIValue levelValue = frameTuple.valueOf("level"); // NOI18N
+                if (levelValue != null) {
+                    String lineString = levelValue.asConst().value();
+                    level = Integer.parseInt(lineString);
+                }
+                
                 MIValue lineValue = frameTuple.valueOf("line"); // NOI18N
                 if (lineValue != null) {
                     String lineString = lineValue.asConst().value();
@@ -206,7 +215,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  func,
 				  pc,
 				  Location.UPDATE |
-				  (visited? Location.VISITED: 0));
+				  (visited ? Location.VISITED: 0) |
+                                  (level == 0 ? Location.TOPFRAME : 0) |
+                                  (level >= stackSize-1 ? Location.BOTTOMFRAME : 0));
         }
 
         public static Location make(Location h, boolean visited) {
@@ -215,7 +226,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  h.func(),
 				  h.pc(),
 				  Location.UPDATE |
-				  (visited? Location.VISITED: 0));
+				  (visited ? Location.VISITED: 0) |
+                                  (h.topframe() ? Location.TOPFRAME: 0) |
+                                  (h.bottomframe() ? Location.BOTTOMFRAME: 0));
 	}
 
 	private MILocation(String src, int line, String func, long pc,
@@ -245,6 +258,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         profileBridge = new GdbDebuggerSettingsBridge(this);
         handlerExpert = new GdbHandlerExpert(this);
+        disassembly = new Disassembly(this, breakpointModel());
     }
 
     public String debuggerType() {
@@ -548,6 +562,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * was: sessionExited() and if(cleanup) portion of finishDebugger()
      */
     public final void kill() {
+        Disassembly.close();
         super.preKill();
 
         optionLayers().save();
@@ -570,13 +585,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
          */
 
-        getIOPack().bringDown();
+        IOPack ioPack = getIOPack();
+        if (ioPack != null) {
+            ioPack.bringDown();
+            ioPack.close();
+        }
 
         session = null;
 	state().isLoaded = false;
 	stateChanged();
-
-        getIOPack().close();
 
 	if (executor != null) {
 	    // executor may sometimes be null if a session fail to start
@@ -590,14 +607,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         engineProvider.getDestructor().killEngine();
 
 	// It all ends here
-    }
-
-    /**
-     * Set current line (in editor) and LATER manage state.
-     */
-    @Override
-    protected final void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
-        super.setCurrentLine(l, visited, srcOOD, andShow);
     }
 
     public void postKill() {
@@ -620,7 +629,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             pause();
             
             // Ask gdb to quit (shutdown)
-            MICommand cmd = new AbstractMICommand(0, "-gdb-exit") { // NOI18N
+            MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
 
                 @Override
                 protected void onError(MIRecord record) {
@@ -697,7 +706,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // gdb 6.1, 6.6, use CLI command "attach" instead.
         String cmdString = "attach " + Long.toString(pid); // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
                     @Override
                     protected void onDone(MIRecord record) {
@@ -720,7 +729,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
          * ^done,frame={level="0",addr="0x080508ae",func="main",args=[],file="t.cc",line="4"},line="4",file="t.cc"
          */
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
                     @Override
                     protected void onDone(MIRecord record) {
@@ -781,19 +790,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         notImplemented("detach");	// NOI18N
     }
 
-    private class AbstractMICommand extends MICommand {
+    private class MiCommandImpl extends MICommand {
 	private MICommand successChain;
 	private MICommand failureChain;
 
 	private boolean emptyDoneIsError;
-
-	protected AbstractMICommand(int rt, String cmd) {
+        
+        protected MiCommandImpl(String cmd) {
+	    super(0, cmd);
+	}
+        
+	protected MiCommandImpl(int rt, String cmd) {
 	    super(rt, cmd);
 	}
-
-        protected AbstractMICommand(int rt, String cmd, String args) {
-            super(rt, cmd, args);
-        }
 
 	public void chain(MICommand successChain, MICommand failureChain) {
 	    this.successChain = successChain;
@@ -911,11 +920,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    private final class InfoThreadsMICmd extends AbstractMICommand {
+    private final class InfoThreadsMICmd extends MiCommandImpl {
         final boolean resume;
 
 	public InfoThreadsMICmd(boolean resume) {
-	    super(0, "info threads");// NOI18N
+	    super("info threads");// NOI18N
 	    this.resume = resume;
 	}
 
@@ -947,20 +956,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
 
-    private final class InfoProcMICmd extends AbstractMICommand {
+    private final class InfoProcMICmd extends MiCommandImpl {
 	final boolean resume;
 
 	public InfoProcMICmd(boolean resume) {
-	    // I was hoping that that using -interpreter-exec
-	    // would make the ~ output come out with tokens 
-	    // but it doesn't, at least in gdb 6.4. If it did
-	    // it would help associate ~ output with the right command
-	    //
-	    // What we SHOULD tryis flag "console" commands as such and
-	    // have ~ go to the most recent outstanding "console" command
-	    // as opposed to just the most recent one.
-
-	    super(0, "-interpreter-exec console \"info proc\"");// NOI18N
+	    super("info proc");// NOI18N
 	    this.resume = resume;
 	}
 
@@ -1012,13 +1012,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    // Note that the implicit resumption after a stoppage on main
 	    // will interfere with a normal "break main"!
 
-	    AbstractMICommand startHook1Cmd =
-		new AbstractMICommand(0, "-break-insert -t _start");// NOI18N
-	    startHook1Cmd.setEmptyDoneIsError(true);
+	    MiCommandImpl breakStartCmd =
+		new MiCommandImpl("-break-insert -t _start");// NOI18N
+	    breakStartCmd.setEmptyDoneIsError(true);
 
-	    AbstractMICommand startHook2Cmd =
-		new AbstractMICommand(0, "-break-insert -t main");// NOI18N
-	    startHook2Cmd.setEmptyDoneIsError(true);
+	    MiCommandImpl breakMainCmd =
+		new MiCommandImpl("-break-insert -t main");// NOI18N
+	    breakMainCmd.setEmptyDoneIsError(true);
 
 	    //
 	    // The actual run command
@@ -1026,33 +1026,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MICommand runCmd =
                 new MIResumptiveCommand("-exec-run") {		// NOI18N
 
-		    private int pid = 0;
-
                 @Override
                     protected void onRunning(MIRecord record) {
                         state().isProcess = true;
-
-			// On some gdb's (Mac 10.4) we get something like:
-			// ~"[Switching to process 446 ...]\n"
-			// Which is captured in the console stream for
-			// this command.
-			String console = record.command().getConsoleStream();
-
-			if (console != null) {
-			    pid = extractPid2(console);
-
-			    session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
-			    if (pid != 0)
-				session().setPid(pid);
-			}
-
                         super.onRunning(record);
                     }
 
                 @Override
                     protected void onStopped(MIRecord record) {
 			// Are we sure we hit '_start' or 'main'?
-			if (pid == 0) {
+			if (session().getPid() <= 0) {
                             sendPidCommand(true);
                         } else {
 			    go();	// resume
@@ -1061,31 +1044,52 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    }
                 };
 
-	    startHook1Cmd.chain(runCmd, startHook2Cmd);
-	    startHook2Cmd.chain(runCmd, null);
+	    breakStartCmd.chain(runCmd, breakMainCmd);
+	    breakMainCmd.chain(runCmd, null);
 
-            gdb.sendCommand(startHook1Cmd);
+            // _start does not work on MacOS
+            if (getHost().getPlatform() == Platform.MacOSX_x86) {
+                gdb.sendCommand(breakMainCmd);
+            } else {
+                gdb.sendCommand(breakStartCmd);
+            }
         }
     }
 
     public void makeCalleeCurrent() {
+        Frame frame = getCurrentFrame();
+        if (frame != null) {
+            String number = frame.getNumber();
+            makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
+        }
     }
 
     public void makeCallerCurrent() {
+        Frame frame = getCurrentFrame();
+        if (frame != null) {
+            String number = frame.getNumber();
+            makeFrameCurrent(getStack()[Integer.valueOf(number)+1]);
+        }
     }
 
     public void popToHere(Frame frame) {
     }
 
     public void popTopmostCall() {
+        stepOut();
     }
 
     public void popLastDebuggerCall() {
     }
 
     public void popToCurrentFrame() {
+        makeCalleeCurrent();
+        stepOut();
     }
 
+    private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
+    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
+    
     public void initializeGdb() {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 	    System.out.printf("GdbDebuggerImpl.initializeGdb()\n"); // NOI18N
@@ -1102,6 +1106,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	} else {
 	    assert getCaptureState() == CaptureState.NONE;
 	}
+        
+        //init global parameters
+        MICommand cmd1 = new MiCommandImpl("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
+        gdb.sendCommand(cmd1);
+        MICommand cmd2 = new MiCommandImpl("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
+        gdb.sendCommand(cmd2);
 
         // Tell gdb what to debug
         debug(gdi);
@@ -1282,6 +1292,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         stateSetRunning(true);
         stateChanged();
 	session().setSessionState(state());
+        setStatusText(Catalog.get("MSG_running"));//NOI18N
     }
 
     private boolean dontKillOnExit() {
@@ -1428,10 +1439,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         System.out.println("tid_no " + tid);
          */
 
-        if (get_frames || get_locals) { // get new Frames for current thread
-            // would call getMILocals.
-            showStackFrames();
-        }
+//        if (get_frames || get_locals) { // get new Frames for current thread
+//            // would call getMILocals.
+//            showStackFrames();
+//        }
 
         GdbFrame f = null;
 
@@ -1461,10 +1472,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
         GdbFrame f = new GdbFrame(this, frame, null); // args data are included in frame
 
-        if (get_frames || get_locals) {
-            // would call getMILocals.
-            showStackFrames();
-        }
+//        if (get_frames || get_locals) {
+//            // would call getMILocals.
+//            showStackFrames();
+//        }
         if (!f.getLineNo().equals("")) {
             // has source info,
             // get full path for current frame from gdb,
@@ -1494,10 +1505,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
         if (isCurrent) {
             selectFrame(f.getNumber()); // notify gdb to change current frame
-            if (get_frames || get_locals) { // get Frames for current thread
-                // would call getMILocals.
-                showStackFrames();
-            }
+//            if (get_frames || get_locals) { // get Frames for current thread
+//                // would call getMILocals.
+//                showStackFrames();
+//            }
 
             if (!f.getLineNo().equals("")) {
                 // has source info,
@@ -1522,7 +1533,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // the last call will be the current thread.
     private void selectThread(final int index, final String id_no, final boolean isCurrent) {
         MICommand cmd =
-            new AbstractMICommand(0, "-thread-select " + id_no) { // NOI18N
+            new MiCommandImpl("-thread-select " + id_no) { // NOI18N
             @Override
                 protected void onDone(MIRecord record) {
                     setCurrentThread(index, record, isCurrent);
@@ -1539,7 +1550,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// to work around the problem, but we don't know
 	// which thread is the current thread
         MICommand cmd =
-            new AbstractMICommand(0, "-thread-list-ids") { // NOI18N
+            new MiCommandImpl("-thread-list-ids") { // NOI18N
             @Override
 		protected void onDone(MIRecord record) {
 		    getAllThreads(record);
@@ -1587,11 +1598,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
-    private GdbFrame getCurrentFrame() {
+    public GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
-            for (int fx = 0; fx < guiStackFrames.length; fx++) {
-                if (guiStackFrames[fx].isCurrent()) {
-                    return (GdbFrame) guiStackFrames[fx];
+            for (Frame frame : guiStackFrames) {
+                if (frame.isCurrent()) {
+                    return (GdbFrame) frame;
                 }
             }
             return (GdbFrame) guiStackFrames[0];
@@ -1606,18 +1617,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void makeFrameCurrent(Frame f) {
         String fno = f.getNumber();
         boolean changed = false;
-        int current = 0;
         if (guiStackFrames != null) {
-            for (int fx = 0; fx < guiStackFrames.length; fx++) {
-                if ((guiStackFrames[fx]).getNumber().equals(fno)) {
+            for (Frame frame : guiStackFrames) {
+                if (frame.getNumber().equals(fno)) {
                     /* can't break, need it for bring back source
                     if (guiStackFrames[fx].isCurrent())
                     break;              // no change in state
                      */
                     changed = true;
-                    guiStackFrames[fx].setCurrent(true);
+                    frame.setCurrent(true);
                 } else {
-                    guiStackFrames[fx].setCurrent(false);
+                    frame.setCurrent(false);
                 }
             }
         }
@@ -1641,7 +1651,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// create a non-visited location because it may be assigned to
 	// homeLoc
 
-        Location l = MILocation.make(this, f.getMIframe(), srcTuple, false);
+        Location l = MILocation.make(this, f.getMIframe(), srcTuple, false, getStack().length);
 
 	// We really SHOULD not be setting homeLoc in a method called
 	// visitBlahBlah
@@ -1656,11 +1666,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 	visitedLocation = MILocation.make(l, visited);
         setVisitedLocation(visitedLocation);
+        
+        state().isUpAllowed = !l.bottomframe();
+        state().isDownAllowed = !l.topframe();
+        stateChanged();
     }
 
     private void getFullPath(final GdbFrame f) {
         MICommand cmd =
-            new AbstractMICommand(0, "-file-list-exec-source-file") { // NOI18N
+            new MiCommandImpl("-file-list-exec-source-file") { // NOI18N
             @Override
 		protected void onDone(MIRecord record) {
 		    visitCurrentSrc(f, record);
@@ -1674,10 +1688,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * notify gdb to switch current frame to fno 
      * also get locals info for new current frame
      */
-    private void selectFrame(final String fno) {
+    private void selectFrame(final Object fno) {
 
         MICommand cmd =
-            new AbstractMICommand(0, "-stack-select-frame " + fno) { // NOI18N
+            new MiCommandImpl("-stack-select-frame " + fno) { // NOI18N
             @Override
 		protected void onDone(MIRecord record) {
 		    updateLocalsForSelectFrame();
@@ -1742,7 +1756,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String args_command = "-stack-list-arguments 1"; // NOI18N
 
         MICommand cmd =
-            new AbstractMICommand(0, args_command) {
+            new MiCommandImpl(args_command) {
 
             @Override
                     protected void onDone(MIRecord record) {
@@ -1786,7 +1800,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private void showStackFrames() {
         MICommand cmd =
-            new AbstractMICommand(0, "-stack-list-frames") { // NOI18N
+            new MiCommandImpl("-stack-list-frames") { // NOI18N
 
             @Override
                     protected void onDone(MIRecord record) {
@@ -1846,9 +1860,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void dataMIEval(final String expr) {
-        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        String expandedExpr = MacroSupport.expandMacro(this, expr);
+        String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
             @Override
                     protected void onDone(MIRecord record) {
@@ -2033,11 +2048,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void updateValue(Variable v, MIRecord varvalue) {
         MITList value_results = varvalue.results();
-        String value = value_results.valueOf("value").asConst().value(); // NOI18N
-	GdbVariable gv = (GdbVariable) v;
-	if (value == null)
+        MIValue miValue = value_results.valueOf("value"); //NOI18N
+        String value = null;
+        if (miValue != null) {
+            value = miValue.asConst().value();
+        }
+	if (value == null) {
 	    value = "{...}"; // NOI18N
+        }
         v.setAsText(value);
+        GdbVariable gv = (GdbVariable) v;
         if (gv.isWatch()) {
             watchUpdater().treeNodeChanged((Object) v); // just update this node
         } else {
@@ -2078,6 +2098,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 					exp.equals("protected")) { // NOI18N
                 getMIChildren(parent, qname, level+1);
             } else {
+                // Show array name and index instead of only index, IZ 192123
+                try {
+                    Integer.parseInt(exp);
+                    exp = parent.getVariableName() + '[' + exp + ']';
+                } catch (Exception e) {
+                    // do nothing
+                }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, ((GdbVariable)parent).isWatch());
 		if (value == null)
@@ -2172,7 +2199,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    cmdString = "set print object on";			// NOI18N
 	else
 	    cmdString = "set print object off";			// NOI18N
-	MICommand cmd = new AbstractMICommand(0, cmdString);
+	MICommand cmd = new MiCommandImpl(cmdString);
         gdb.sendCommand(cmd);
 	dynamicType = b;
 
@@ -2224,7 +2251,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// update variable output format
         String cmdString = "-var-set-format " + expr + " " + format; // NOI18N
         MICommand cmd =
-                new AbstractMICommand(0, cmdString) {
+                new MiCommandImpl(cmdString) {
 
 		    @Override
                     protected void onDone(MIRecord record) {
@@ -2258,7 +2285,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// editable ?
         String cmdString = "-var-show-attributes " + expr; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
             @Override
                     protected void onDone(MIRecord record) {
                         updateVarAttr(v, record);
@@ -2272,7 +2299,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void updateMIVar() {
         String cmdString = "-var-update * "; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
             @Override
                     protected void onDone(MIRecord record) {
@@ -2308,7 +2335,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// value of mi_name
         String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
         final MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
             @Override
                     protected void onDone(MIRecord record) {
@@ -2335,12 +2362,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	});
     }
 
-    private class DeleteMIVarCommand extends AbstractMICommand {
+    private class DeleteMIVarCommand extends MiCommandImpl {
 
 	private final GdbVariable v;
 
 	public DeleteMIVarCommand(GdbVariable v) {
-	    super(0, "-var-delete " + v.getMIName()); // NOI18N
+	    super("-var-delete " + v.getMIName()); // NOI18N
 	    this.v = v;
 	}
 
@@ -2360,7 +2387,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         String cmdString = "-var-list-children --all-values " + expr; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 		    @Override
                     protected void onDone(MIRecord record) {
                         interpMIChildren(parent, record, level);
@@ -2371,15 +2398,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void createMIVar(final GdbVariable v) {
-        String expr = v.getVariableName();
+        String expr = MacroSupport.expandMacro(this, v.getVariableName());
         String cmdString = "-var-create - * " + expr; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
             @Override
                 protected void onDone(MIRecord record) {
 		    v.setAsText("{...}");// clear any error messages // NOI18N
 		    v.setInScope(true);
+                    updateValue(v, record);
                     interpVar(v, record);
                     finish();
                 }
@@ -2531,7 +2559,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void getMILocals(final boolean update_var) {
         MICommand cmd =
-            new AbstractMICommand(0, "-stack-list-locals --simple-values") { // NOI18N
+            new MiCommandImpl("-stack-list-locals --simple-values") { // NOI18N
             @Override
                     protected void onDone(MIRecord record) {
                         setLocals(update_var, record);
@@ -2543,7 +2571,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void getMIDis(String command) {
         MICommand cmd =
-            new AbstractMICommand(0, command) {
+            new MiCommandImpl(command) {
             @Override
 		protected void onDone(MIRecord record) {
 		    setDis(record);
@@ -2620,27 +2648,32 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
+                MITList stack = srcResults.valueOf("stack").asList(); // NOI18N
 		if (false) {
 		    // We have information about what src location we're
 		    // stopped in.
 		    MITList frameTuple = null;
 		    if (frameValue != null)
 			frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, srcResults, false);
+		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size());
 
 		} else {
-		    frameValue = srcResults.valueOf("frame"); // NOI18N
+                    frameValue = ((MIResult)stack.asList().get(0)).value();
 		    MITList frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, null, false);
+		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size());
 		}
 
 		visitedLocation = MILocation.make(homeLoc, false);
 		setVisitedLocation(visitedLocation);
+                
+                state().isUpAllowed = !homeLoc.bottomframe();
+                state().isDownAllowed = !homeLoc.topframe();
+                setStack(srcRecord);
 	    }
 
-            if (get_frames || get_locals) {
-                showStackFrames();
-            }
+//            if (get_frames || get_locals) {
+//                showStackFrames();
+//            }
 
             if (get_threads) {
                 showThreads();
@@ -2701,7 +2734,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    newIgnore = GdbHandlerExpert.infinity;
 	else
 	    newIgnore = (int) limit - 1;
-	MICommand cmd = new AbstractMICommand(0, "-break-after " + // NOI18N
+	MICommand cmd = new MiCommandImpl("-break-after " + // NOI18N
 				      b.getId() +
 				      " " + // NOI18N
 				      newIgnore) {
@@ -2749,28 +2782,57 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     void genericStopped(final MIRecord stopRecord) {
-	// Get as much info about the stopped src code location
-	/* OLD
-	 * for gdb 6.3/6.4 ( can debug gcc-build dbx on linux ) 
-	 * 6.3/6.4 does not support "-stack-info-frame"
-	 * On the Mac -file-list-exec-source-file seems to return some
-	 * unrelated constant value
+        // Get as much info about the stopped src code location
+        /* OLD
+         * for gdb 6.3/6.4 ( can debug gcc-build dbx on linux )
+         * 6.3/6.4 does not support "-stack-info-frame"
+         * On the Mac -file-list-exec-source-file seems to return some
+         * unrelated constant value
 
         MICommand cmd =
-            new AbstractMICommand(0, "-file-list-exec-source-file") {
-                    protected void onDone(MIRecord record) {
-                        genericStoppedWithSrc(stopRecord, record);
-                        finish();
-                    }
-                };
+        new AbstractMICommand(0, "-file-list-exec-source-file") {
+        protected void onDone(MIRecord record) {
+        genericStoppedWithSrc(stopRecord, record);
+        finish();
+        }
+        };
         gdb.sendCommand(cmd);
-	*/
+         */
+        //detect silent stop
+        if (gdb.isSignalled()) {
+            MIValue reasonValue = stopRecord.results().valueOf("reason"); //NOI18N
+            if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
+                MIValue signalValue = stopRecord.results().valueOf("signal-name"); //NOI18N
+                if (signalValue != null) {
+                    String signal = signalValue.asConst().value();
+                    if ("SIGCONT".equals(signal)) { // NOI18N
+                        // continue after silent stop
+                        gdb.resetSignalled();
+                        go();
+                        return;
+                    } else if ("SIGINT".equals(signal)) { // NOI18N
+                        // silent stop
+                        state().isRunning = false;
+                        return;
+                    } else if ("SIGTRAP".equals(signal) && // NOI18N
+                            (getHost().getPlatform() == Platform.Windows_x86 ||
+                            getHost().getPlatform() == Platform.MacOSX_x86)) {
+                        // see IZ 172855 (On windows we need to skip SIGTRAP)
+                        gdb.resetSignalled();
+                        // silent stop
+                        state().isRunning = false;
+                        return;
+                    }
+                }
+            }
+            gdb.resetSignalled();
+        }
 
 	// stopRecord may contain a "frame" attribute so SHOULD
 	// check for that first before asking for it.
 	// only valid for gdb 6.6 and up
         MICommand cmd =
-            new AbstractMICommand(0, "-stack-info-frame") { // NOI18N
+            new MiCommandImpl("-stack-list-frames") { // NOI18N
             @Override
                     protected void onDone(MIRecord record) {
                         genericStoppedWithSrc(stopRecord, record);
@@ -2787,7 +2849,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// If we have any counting bpts poll the bpt list in order to
 	// learn the current bpt counts.
 	if (haveCountingBreakpoints()) {
-	    cmd = new AbstractMICommand(0, "-break-list") { // NOI18N
+	    cmd = new MiCommandImpl("-break-list") { // NOI18N
                 @Override
 		protected void onDone(MIRecord record) {
 		    updateCounts(stopRecord, record);
@@ -2852,9 +2914,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MICommand ciCmd;
 	    if (sd.isIgnore()) {
 		// gdb seems to not be able to ignore caught signals???
-		ciCmd = new AbstractMICommand(0, "ignore signal " + sigName); // NOI18N
+		ciCmd = new MiCommandImpl("ignore signal " + sigName); // NOI18N
 	    } else {
-		ciCmd = new AbstractMICommand(0, "catch signal " + sigName); // NOI18N
+		ciCmd = new MiCommandImpl("catch signal " + sigName); // NOI18N
 	    }
 	    gdb.sendCommand(ciCmd);
 	}
@@ -2885,11 +2947,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String signalName = "<UNKNOWN>"; // NOI18N
 
         if (reason.equals("end-stepping-range")) {		// NOI18N
-            // Perhaps "stepped" is uninteresting.
-            //stateMsg = Catalog.get("Dbx_stepped"); // NOI18N
-            // Let's just set it to null instead to suppress these
-            stateMsg = null;
-
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("signal-received")) {		// NOI18N
 	    final MIValue signalNameValue =
 		results.valueOf("signal-name");		// NOI18N
@@ -2901,7 +2959,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else if (reason.equals("function-finished")) { // NOI18N
             stateMsg = Catalog.get("Dbx_function_returned");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
-            stateMsg = Catalog.get("Dbx_breakpoint_hit");	// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }
@@ -3006,7 +3064,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// -file-core-file is not implemented in gdb 6.1
 	// use CLI command "core-file" instead
         MICommand cmd =
-            new AbstractMICommand(0, mi_command, mprogram) {
+            new MiCommandImpl(mi_command + ' ' + mprogram) {
 
             @Override
             protected void onDone(MIRecord record) {
@@ -3239,19 +3297,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		cmd += " -- 1";		// provide src lines as well // NOI18N
 
 	    } else {
-		// request by function name
-		String start = disStateModel().getFunction();
-		// Analogous to 6582172 for dbx
-		// The "??" for a function name comes from gdb itself.
-		if (start != null && (start.contains("@plt") || start.contains("??"))) { // NOI18N
-		    start = Address.toHexString0x(disStateModel().getPC(),
-						  true);
-		    cmd += " -s " + start; // NOI18N
-		    cmd += " -e " + start + "+1000"; // NOI18N
-		    // cmd += " -n " + -1;	// disassemble the whole function
-		    cmd += " -- 1";		// provide disassembly only // NOI18N
-		} else
-		    cmd = null;
+                cmd += " -s $pc -e \"$pc+1000\" -- 1"; //NOI18N
 	    }
 	    requestDisFromGdb(cmd);
         }
@@ -3317,7 +3363,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     protected Controller disController() {
 	return disController;
     }
+    
+    Disassembly getDisassembly() {
+        return disassembly;
+    }
 
+//    @Override
+//    public void requestDisassembly() {
+//        disassembly.open();
+//    }
 
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
@@ -3328,10 +3382,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void setDis(MIRecord record) {
 	disModel.parseRecord(record);
+        disassembly.update(record.toString());
 
 	// 6582172
 	if (update_dis)
 	    disStateModel().updateStateModel(visitedLocation, false);
+    }
+
+    @Override
+    public void requestDisassembly() {
+        Disassembly.open();
     }
 
     public void registerRegistersWindow(RegistersWindow w) {
@@ -3358,7 +3418,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-	    newHandler(rt, cmd, result);
+            if (result.matches("bkpt")) { //NOI18N
+                newHandler(rt, cmd, result);
+            }
 	}
     }
 
@@ -3442,7 +3504,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // we don't want.
 
         final int hid = targetHandler.getId();
-        MICommand deleteCmd = new MIBreakCommand(rt, "-break-delete ", "" + hid) { // NOI18N
+        MICommand deleteCmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
 
             protected void onDone(MIRecord record) {
 		// Don't use deleteHandlerById ... it ties back to
@@ -3494,14 +3556,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * While these commands are mostly in the -exec family not all
      * -exec comamnds are resumptive (e.g. -exec-arguments)
      */
-    private class MIResumptiveCommand extends AbstractMICommand {
+    private class MIResumptiveCommand extends MiCommandImpl {
 
         protected MIResumptiveCommand(String cmdString) {
-            super(0, cmdString);
-        }
-
-        protected MIResumptiveCommand(String cmdString, String args) {
-            super(0, cmdString, args);
+            super(cmdString);
         }
 
         @Override
@@ -3534,18 +3592,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Common behaviour for -break command.
      */
-    abstract class MIBreakCommand extends AbstractMICommand {
+    abstract class MIBreakCommand extends MiCommandImpl {
+        private final boolean wasRunning;
 
-        protected MIBreakCommand(int rt, String cmdString ) {
+        protected MIBreakCommand(int rt, String cmdString) {
             super(rt, cmdString);
-        }
-
-        protected MIBreakCommand(int rt, String cmdString, String args) {
-            super(rt, cmdString, args);
+            this.wasRunning = state().isRunning;
         }
 
         @Override
         protected abstract void onDone(MIRecord record);
+
+        @Override
+        protected void finish() {
+            if (wasRunning) {
+                go();
+            }
+            super.finish();
+        }
     };
 
     public void runFailed() {
@@ -3673,7 +3737,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// which will come to us as an onError(). 'overloadCancelled' helps us 
 	// bypass creating a broken bpt.
 	private boolean overloadCancelled = false;
-
+        
         MIBreakLineCommand(int rt, String cmdString) {
             super(rt, cmdString);
         }
@@ -3761,24 +3825,31 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void postEnableAllHandlersImpl(final boolean enable) {
-
-        String hids = "";
-        for (Handler h : bm().getHandlers()) {
-            hids += " " + h.getId(); // NOI18N
+        final Handler[] handlers = bm().getHandlers();
+        
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
         }
-
-        String cmdString;
+        
+        StringBuilder command = new StringBuilder();
         if (enable) {
-            cmdString = "-break-enable"; // NOI18N
+            command.append("-break-enable"); // NOI18N
         } else {
-            cmdString = "-break-disable"; // NOI18N
+            command.append("-break-disable"); // NOI18N
+        }
+        
+        for (Handler h : handlers) {
+            command.append(' ');
+            command.append(h.getId());
         }
 
-        MICommand cmd = new MIBreakCommand(0, cmdString, "" + hids) {
+        MICommand cmd = new MIBreakCommand(0, command.toString()) {
 
             protected void onDone(MIRecord record) {
-		for (Handler h : bm().getHandlers())
+		for (Handler h : handlers) {
                     h.setEnabled(enable);
+                }
                 finish();
             }
         };
@@ -3786,7 +3857,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void postDeleteAllHandlersImpl() {
-        String hids = "";
+        final Handler[] handlers = bm().getHandlers();
+        
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
+        }
 
         // To test error recovery:
         // gdb sent back a &"warning: ..." and a ^done and seemed to have
@@ -3798,13 +3874,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         //
         // hids += " " + "junk";
 
-	for (Handler h : bm().getHandlers())
-            hids += " " + h.getId(); // NOI18N
+        StringBuilder command = new StringBuilder("-break-delete"); //NOI18N
+        
+	for (Handler h : handlers) {
+            command.append(' ');
+            command.append(h.getId());
+        }
 
-        MICommand cmd = new MIBreakCommand(0, "-break-delete ", "" + hids) { // NOI18N
+        MICommand cmd = new MIBreakCommand(0, command.toString()) {
 
             protected void onDone(MIRecord record) {
-		for (Handler h : bm().getHandlers()) {
+		for (Handler h : handlers) {
                     bm().deleteHandlerById(0, h.getId());
 		}
                 finish();
@@ -3814,8 +3894,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void postDeleteHandlerImpl(final int rt, final int hid) {
-
-	MICommand cmd = new MIBreakCommand(rt, "-break-delete ", "" + hid) { // NOI18N
+        pause();
+	MICommand cmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
 
 	    protected void onDone(MIRecord record) {
 		bm().deleteHandlerById(rt, hid);
@@ -3827,20 +3907,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
 	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
+        pause();
 	gdb.sendCommand(cmd);
 	// We'll continue in newHandler() or ?error?
     }
 
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
-
-        final MICommand cmd =
-	    new MIReplaceBreakLineCommand(rt, hc.toString());
+        final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
+        pause();
         gdb.sendCommand(cmd);
     }
 
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd =
-	    new MIRepairBreakLineCommand(rt, hc.toString());
+        final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
+        pause();
         gdb.sendCommand(cmd);
     }
 
@@ -3851,12 +3931,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postEnableHandler(int rt, final int hid, final boolean enable) {
         String cmdString;
         if (enable) {
-            cmdString = "-break-enable"; // NOI18N
+            cmdString = "-break-enable "; // NOI18N
         } else {
-            cmdString = "-break-disable"; // NOI18N
+            cmdString = "-break-disable "; // NOI18N
         }
 
-        MICommand cmd = new MIBreakCommand(rt, cmdString, "" + hid) {
+        MICommand cmd = new MIBreakCommand(rt, cmdString + hid) {
 
             protected void onDone(MIRecord record) {
                 // SHOULD factor with code in Dbx.java
@@ -3883,7 +3963,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface GdbDebugger
     public void runArgs(String args) {
         String cmdString = "-exec-arguments " + args;		// NOI18N
-        MICommand cmd = new AbstractMICommand(0, cmdString) {
+        MICommand cmd = new MiCommandImpl(cmdString) {
 
             @Override
             protected void onError(MIRecord record) {
@@ -3896,7 +3976,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void runDir(String dir) {
 	dir = localToRemote("runDir", dir); // NOI18N
         String cmdString = "cd " + dir;		// NOI18N
-        MICommand cmd = new AbstractMICommand(0, cmdString) {
+        MICommand cmd = new MiCommandImpl(cmdString) {
 
             @Override
             protected void onError(MIRecord record) {
@@ -3908,7 +3988,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     public void setEnv(String envVar) {
         String cmdString = "set environment " + envVar;		// NOI18N
-        MICommand cmd = new AbstractMICommand(0, cmdString) {
+        MICommand cmd = new MiCommandImpl(cmdString) {
 
             @Override
             protected void onError(MIRecord record) {
@@ -3921,7 +4001,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void assignMIVar(String expr, String value) {
         String cmdString = "-var-assign  " + expr + " " + value; // NOI18N
         MICommand cmd =
-            new AbstractMICommand(0, cmdString) {
+            new MiCommandImpl(cmdString) {
 
             @Override
                     protected void onDone(MIRecord record) {

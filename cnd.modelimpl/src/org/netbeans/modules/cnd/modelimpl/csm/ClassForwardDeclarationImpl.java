@@ -166,6 +166,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
@@ -226,7 +231,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
      * Creates a fake class this forward declaration refers to
      */
     protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
+        return ForwardClass.create(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
     }
 
     @Override

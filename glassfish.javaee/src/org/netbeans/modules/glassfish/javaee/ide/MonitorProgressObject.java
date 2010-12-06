@@ -213,7 +213,7 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                     moduleId.getModuleID(), null, moduleId.getLocation(), true);
             // build the tree of submodule
             String query = getNameToQuery(moduleId.getModuleID());
-            GetPropertyCommand gpc = new GetPropertyCommand("*." + query + ".*");
+            GetPropertyCommand gpc = new GetPropertyCommand("applications.application." + query + ".*");
             Future<OperationState> result =
                     dm.getCommonServerSupport().execute(gpc);
             if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {

@@ -53,30 +53,40 @@ import java.util.ArrayList;
 import org.openide.util.NbBundle;
 
 /**
- * Represents real or virtual (non-local) file.
+ * Represents a versioned file.
  *
- * @author Padraig O'Briain
+ * @author Tomas Stupka
  */
-public abstract class VCSFileNode {
+public abstract class VCSFileNode<I extends VCSFileInformation> {
 
     private final File file;
     private final File root;
     private String shortPath;
+    private VCSCommitOptions commitOption;
 
     public VCSFileNode(File root, File file) {
         assert file != null && root != null;
         this.file = file;
-        this.root = root;
+        this.root = root;        
     }
 
-    public abstract VCSCommitOptions getCommitOptions();
-    public abstract VCSCommitOptions getDefaultCommitOption();
-    public abstract VCSFileInformation getInformation();
+    public abstract VCSCommitOptions getDefaultCommitOption (boolean withExclusions);
+    public abstract I getInformation();
     
+    public VCSCommitOptions getCommitOptions() {
+        if(commitOption == null) {
+            commitOption = getDefaultCommitOption(true);
+        }
+        return commitOption;
+    }
+    
+    void setCommitOptions(VCSCommitOptions option) {
+        commitOption = option;
+    }
+        
     public String getName() {
         return file.getName();
     }
-
 
     public File getFile() {
         return file;

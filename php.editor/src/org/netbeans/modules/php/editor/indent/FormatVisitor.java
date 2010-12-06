@@ -868,11 +868,16 @@ public class FormatVisitor extends DefaultVisitor {
                 if (document.getText(startText, endText - startText).contains("\n")) {
                     shift = true;
                     addAllUntilOffset(node.getStartOffset());
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                    boolean addIndent = !(path.size() > 1 && (path.get(1) instanceof Assignment));
+                    if (addIndent) {
+                        formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                    }
                     isMethodInvocationShifted = true;
                     super.visit(node);
                     addAllUntilOffset(indentLevel);
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
+                    if (addIndent) {
+                        formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
+                    }
                     isMethodInvocationShifted = false;
                 }
             } catch (BadLocationException ex) {

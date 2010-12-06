@@ -145,7 +145,7 @@ public class JoinCatches {
 
             for (CatchTree ct : tt.getCatches()) {
                 if (c == first) {
-                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjointType(disjointTypes));
+                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjunctiveType(disjointTypes));
                     wc.rewrite(ct.getParameter().getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));
                 }
                 
@@ -154,7 +154,7 @@ public class JoinCatches {
                 newCatches.add(ct);
             }
 
-            TryTree nue = wc.getTreeMaker().Try(tt.getBlock(), newCatches, tt.getFinallyBlock());
+            TryTree nue = wc.getTreeMaker().Try(tt.getResources(), tt.getBlock(), newCatches, tt.getFinallyBlock());
 
             wc.rewrite(tt, nue);
         }

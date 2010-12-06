@@ -104,6 +104,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -764,14 +765,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        boolean deployOnSaveEnabled = false;
-        try {
-            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
-                    .isDeployOnSaveSupported();
-        } catch (InstanceRemovedException ex) {
-            // false
-        }
-        ep.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
+        ep.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE, "true");
+        ep.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, DeployOnSaveUtils.isDeployOnSaveSupported(serverInstanceID));
         
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N

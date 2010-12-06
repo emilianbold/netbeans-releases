@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -139,12 +140,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
-    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
-        if (CsmKindUtilities.isTemplate(classifier) && CsmKindUtilities.isClass(classifier)) {
-            CsmProject proj = contextFile.getProject();
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset) {
+        if (CsmKindUtilities.isTemplate(templateDecl)) {
+            if (contextFile == null && CsmKindUtilities.isOffsetable(templateDecl)) {
+                contextFile = ((CsmOffsetable)templateDecl).getContainingFile();
+            }
+            CsmProject proj = contextFile != null ? contextFile.getProject() : null;
             if (proj instanceof ProjectBase) {
-                CsmClass cls = (CsmClass) classifier;
-                StringBuilder fqn = new StringBuilder(cls.getUniqueName());
+                StringBuilder fqn = new StringBuilder(templateDecl.getUniqueName());
                 fqn.append('<'); // NOI18N
                 Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
                 return specs;
@@ -153,6 +156,29 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return Collections.<CsmOffsetableDeclaration>emptyList();
     }
 
+    @Override
+    public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
+        if (CsmKindUtilities.isSpecialization(declaration)) {
+            if (CsmKindUtilities.isOffsetable(declaration)) {
+                CsmFile contextFile = ((CsmOffsetable) declaration).getContainingFile();
+                CsmProject proj = contextFile != null ? contextFile.getProject() : null;
+                if (proj instanceof ProjectBase) {
+                    CharSequence qualifiedName = declaration.getUniqueName();
+                    String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");// NOI18N
+                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)proj).findDeclarationsByPrefix(removedSpecialization);
+                    Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>(0);
+                    for (CsmOffsetableDeclaration decl : decls) {
+                        if (CsmKindUtilities.isTemplate(decl) && !CsmKindUtilities.isSpecialization(decl)) {
+                            out.add(decl);
+                        }
+                    }
+                    return out;
+                }
+            }
+        }
+        return Collections.<CsmOffsetableDeclaration>emptyList();
+    }
+    
     private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
 
     public static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {

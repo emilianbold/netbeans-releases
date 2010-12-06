@@ -63,7 +63,7 @@ import javax.servlet.ServletContext;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  */
 public class FaceletsLibrarySupport implements PropertyChangeListener {
 
-    private JsfSupport jsfSupport;
+    private JsfSupportImpl jsfSupport;
 
     /**
      * Library's namespace to library instance map.
@@ -104,7 +104,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     
     private static final String DD_FILE_NAME = "web.xml"; //NOI18N
 
-    public FaceletsLibrarySupport(JsfSupport jspSupport) {
+    public FaceletsLibrarySupport(JsfSupportImpl jspSupport) {
         this.jsfSupport = jspSupport;
 
         //listen on classpath and refresh the libraries when changed
@@ -148,7 +148,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         faceletsLibraries = null; //invalidate libraries, force refresh
     }
 
-    public JsfSupport getJsfSupport() {
+    public JsfSupportImpl getJsfSupport() {
         return jsfSupport;
     }
 

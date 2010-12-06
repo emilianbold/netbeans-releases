@@ -45,7 +45,6 @@ package org.netbeans.modules.parsing.spi.indexing.support;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -67,7 +66,7 @@ public final class IndexingSupport {
     
     private final Context context;
     private final IndexFactoryImpl spiFactory;
-    private final IndexImpl spiIndex;
+    private final org.netbeans.modules.parsing.lucene.support.DocumentIndex spiIndex;
 
     private IndexingSupport (final Context ctx) throws IOException {
         IndexFactoryImpl factory = SPIAccessor.getInstance().getIndexFactory(ctx);
@@ -172,7 +171,7 @@ public final class IndexingSupport {
      */
     public void markDirtyDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        spiIndex.fileModified(indexable.getRelativePath());
+        spiIndex.markKeyDirty(indexable.getRelativePath());
     }
 
 }

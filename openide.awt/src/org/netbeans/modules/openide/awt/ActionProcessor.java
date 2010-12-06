@@ -277,7 +277,13 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
-            throw new LayerGenerationException("Don't use @ActionReference without @ActionRegistration", e);
+            ActionID id = e.getAnnotation(ActionID.class);
+            if (id != null) {
+                ActionReference ref = e.getAnnotation(ActionReference.class);
+                processReferences(e, ref, id);
+                continue;
+            }
+            throw new LayerGenerationException("Don't use @ActionReference without @ActionID", e);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
             if (e.getAnnotation(ActionRegistration.class) != null) {
