@@ -90,6 +90,35 @@ public class DirectoryStorage {
         public String getName() {
             return name;
         }
+
+        public String getAccess() {
+            return access.substring(1);
+        }
+
+        public String getCache() {
+            return cache;
+        }
+
+        public String getGroup() {
+            return group;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
     }
 
     private Map<String, Entry> entries = new HashMap<String, Entry>();
@@ -190,10 +219,6 @@ public class DirectoryStorage {
         cycle:
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-//            if (escape) {
-//                currText.append(c);
-//                continue;
-//            }
             switch (c) {
                 case '\\':
                     if (currIndex == name && ! escape) {
