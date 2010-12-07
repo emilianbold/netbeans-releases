@@ -81,10 +81,13 @@ public class RerunAction extends CallableSystemAction implements StateListener {
 
     // interface SystemAction
     public String getName() {
-	if (DebuggerManager.isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(DebuggerManager.get().globalOptions()))
+        // removed call to DebuggerManager.isStandalone() to prevent loading of class
+        // standalone tool rebrands LBL_RerunProcess and set text of LBL_RunProcess
+	if (!DebuggerOption.RUN_AUTOSTART.isEnabled(DebuggerManager.get().globalOptions())) {
 	    return Catalog.get("LBL_RunProcess"); // NOI18N
-	else
+        } else {
 	    return Catalog.get("LBL_RerunProcess"); // NOI18N
+        }
     }
     
 
