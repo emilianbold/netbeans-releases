@@ -821,8 +821,11 @@ public class AstRenderer {
         if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
 
             AST classNode = typedefNode.getNextSibling();
-            if (isVolatileQualifier(classNode.getType())) {
+            while (classNode != null && isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType())) {
                 classNode = classNode.getNextSibling();
+            }
+            if (classNode == null) {
+                return results;
             }
             switch (classNode.getType()) {
 
