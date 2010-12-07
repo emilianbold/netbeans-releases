@@ -956,12 +956,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmCompoundStatement getBody() {
-            return ((CsmFunctionDefinition)declaration).getBody();
+            if (CsmKindUtilities.isFunctionDefinition(declaration)) {
+                return ((CsmFunctionDefinition)declaration).getBody();
+            }
+            return null;
         }
 
         @Override
         public CsmFunction getDeclaration() {
-            return ((CsmFunctionDefinition)declaration).getDeclaration();
+            if (CsmKindUtilities.isFunctionDefinition(declaration)) {
+                return ((CsmFunctionDefinition)declaration).getDeclaration();
+            }
+            return this;
         }
 
         @Override
