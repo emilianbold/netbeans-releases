@@ -344,6 +344,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                         } else
                         try {
                             newlns = futurelns.get();
+                            if (newlns == null) {
+                                continue;
+                            }
                             if (lns.length == 0) {
                                 lns = newlns;
                             } else {
@@ -406,8 +409,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             @Override
             public void run() {
                 try {
-                    int line = fi.get();
-                    addAnnotationTo(b, fo, new int[] { line });
+                    Integer line = fi.get();
+                    if (line != null) {
+                        addAnnotationTo(b, fo, new int[] { line.intValue() });
+                    }
                 } catch (InterruptedException ex) {
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
@@ -423,7 +428,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             public void run() {
                 try {
                     int[] lines = futurelns.get();
-                    if (lines.length > 0) {
+                    if (lines != null && lines.length > 0) {
                         addAnnotationTo(b, fo, lines);
                     }
                 } catch (InterruptedException ex) {

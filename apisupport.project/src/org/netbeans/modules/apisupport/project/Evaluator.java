@@ -801,32 +801,6 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             }
         }
 
-        /* debug print
-         if (ttName.equals("unit")) {
-            StringBuilder debugCPs = new StringBuilder();
-            String[] labels = {"compile", "run", "TEST compile", "TEST run"};
-            Set<?>[] cps = new Set<?>[]{compileCnbs, runtimeCnbs, testCompileCnbs, testRuntimeCnbs};
-
-            Map<String, String> processed = new HashMap<String, String>();
-            for (int i = 0; i < cps.length; i++) {
-                Set<?> cpSet = cps[i];
-                for (Object entry : cpSet) {
-                    String se = (String) entry;
-                    if (processed.containsKey(se))
-                        processed.put(se, processed.get(se) + ", " + labels[i]);
-                    else
-                        processed.put(se, labels[i]);
-                }
-            }
-            for (Map.Entry<String, String> entry : processed.entrySet()) {
-                debugCPs.append(entry.getKey());
-                debugCPs.append(": ");
-                debugCPs.append(entry.getValue());
-                debugCPs.append("\n  ");
-            }
-            Logger.getLogger(Evaluator.class.getName()).info("'" + ttName + "' CPs for '" + project.getCodeNameBase() + "':\n" + debugCPs);
-        }*/
-        
         StringBuilder extra = new StringBuilder();
         TestClasspath testClasspath = new TestClasspath(
                 mergePaths(compileCnbs,false,ttName,testDistDir, ml) + extra,
