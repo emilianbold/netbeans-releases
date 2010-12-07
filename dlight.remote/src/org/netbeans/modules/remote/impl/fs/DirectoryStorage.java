@@ -49,8 +49,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.remote.support.RemoteLogger;
 
@@ -59,6 +59,17 @@ import org.netbeans.modules.remote.support.RemoteLogger;
  * @author Vladimir Kvashin
  */
 public class DirectoryStorage {
+
+    public static class FormatException extends Exception {
+
+        public FormatException(String text) {
+            super(text);
+        }
+
+        public FormatException(String string, Throwable thrwbl) {
+            super(string, thrwbl);
+        }
+    }
 
     public static class Entry {
 
@@ -73,7 +84,7 @@ public class DirectoryStorage {
         private static final short ALL_X = 1;
 
         private final String name;
-        private final String cache;
+        private String cache;
 
         private char type;
         private short access;
@@ -85,11 +96,36 @@ public class DirectoryStorage {
         private final String link;
 
         public Entry(String name, String cache, String access, String user, String group, long size, String timestamp, String link) {
+            if (name == null) {
+                throw new NullPointerException("Null name"); //NOI18N
+            }
+            boolean assertions = false;
+            assert (assertions = true);
+            if (assertions) {
+                String assertionText = "Wrong access format: " + access; //NOI18N
+                RemoteLogger.assertTrue(access.length() >= 10, assertionText);
+                for (int i = 1; i < 0; i++) {
+                    char c = access.charAt(i);
+                    switch (i%3) {
+                        case 1:
+                            RemoteLogger.assertTrue(c == 'r' || c == '-', assertionText);
+                            break;
+                        case 2:
+                            RemoteLogger.assertTrue(c == 'w' || c == '-', assertionText);
+                            break;
+                        case 0:
+                            RemoteLogger.assertTrue(c == 'x' || c == '-' || c == 's' || c == 'S' || c == 't' || c == 'T', assertionText);
+                            break;
+                    }
+                }
+                for (int i = 1; i < 9; i+= 3) {
+                    char c = access.charAt(i);
+                }
+                RemoteLogger.assertTrue(FileType.fromChar(access.charAt(0)) != null, "Can't get file type from access string: " + access); //NOI18N
+            }
+            this.type = access.charAt(0);
             this.name = name;
             this.cache = cache;
-            RemoteLogger.assertTrue(access.length() == 10, "Wrong access format: " + access); //NOI18N
-            this.type = access.charAt(0);
-            RemoteLogger.assertTrue(FileType.fromChar(this.type) != null, "Can't get file type from access string: " + access); //NOI18N
             this.access = stringToAcces(access);
             this.user = user;
             this.group = group;
@@ -98,8 +134,7 @@ public class DirectoryStorage {
             this.link = link;
         }
 
-
-        FileType getFileType() {
+        public FileType getFileType() {
             return FileType.fromChar(type);
         }
 
@@ -109,6 +144,10 @@ public class DirectoryStorage {
 
         public String getCache() {
             return cache;
+        }
+
+        public void setCache(String cache) {
+            this.cache = cache;
         }
 
         public String getGroup() {
@@ -226,8 +265,9 @@ public class DirectoryStorage {
         }
     }
 
-    private Map<String, Entry> entries = new HashMap<String, Entry>();
+    private final Map<String, Entry> entries = new HashMap<String, Entry>();
     private final File file;
+    private long fileLastModified = 0;
     private static final int VERSION = 2;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = 1;
@@ -246,7 +286,7 @@ public class DirectoryStorage {
      *      access and timestamp is as in ls output on remote system
      * @throws IOException
      */
-    public void load() throws IOException {
+    public void load() throws IOException, FormatException {
         synchronized (this) {
             BufferedReader br = null;
             try {
@@ -261,14 +301,14 @@ public class DirectoryStorage {
                 try {
                     version = Integer.parseInt(line.substring(prefix.length()));
                 } catch (NumberFormatException nfe) {
-                    throw new IOException("wrong version format " + file.getAbsolutePath(), nfe); // NOI18N
+                    throw new FormatException("wrong version format " + file.getAbsolutePath(), nfe); // NOI18N
                 }
                 if (version > VERSION) {
-                    throw new IOException("attributes file version " + version +  //NNOI18N
+                    throw new FormatException("attributes file version " + version +  //NNOI18N
                             " not supported: " + file.getAbsolutePath()); //NOI18N
                 }
                 if (version < ODD_VERSION) {
-                    throw new IOException("Discarding old attributes file version " + version +  //NNOI18N
+                    throw new FormatException("Discarding old attributes file version " + version +  //NNOI18N
                             ' ' + file.getAbsolutePath()); //NOI18N
                 }
                 while ((line = br.readLine()) != null) {
@@ -278,6 +318,7 @@ public class DirectoryStorage {
                     Entry entry = parseLine(line);
                     entries.put(entry.name, entry);
                 }
+                fileLastModified = file.lastModified();
              } finally {
                 if (br != null) {
                     br.close();
@@ -309,7 +350,7 @@ public class DirectoryStorage {
         }
     }
 
-    private Entry parseLine(String line) throws IOException {
+    private Entry parseLine(String line) throws FormatException {
         // array of entity creation parameters
         String[] params = new String[8];
         FileType fileType;
@@ -407,6 +448,9 @@ public class DirectoryStorage {
                     }
                     wr.write('\n');
                 }
+                wr.close();
+                wr = null;
+                fileLastModified = file.lastModified();
             } finally {
                 if (wr != null) {
                     wr.close();
@@ -415,13 +459,26 @@ public class DirectoryStorage {
         }
     }
 
+    public boolean isFileMOdifiedExternally() {
+        return file.lastModified() != fileLastModified;
+    }
+
     public Entry getEntry(String fileName) {
         synchronized (this) {
             return entries.get(fileName);
         }
     }
 
-    public Collection<Entry> list() {
+    void setEntries(List<Entry> newEntries) {
+        synchronized (this) {
+            this.entries.clear();
+            for (Entry entry : newEntries) {
+                entries.put(entry.name, entry);
+            }
+        }
+    }
+
+    public List<Entry> list() {
         synchronized (this) {
             return new ArrayList<Entry>(entries.values());
         }
@@ -433,7 +490,7 @@ public class DirectoryStorage {
         }
     }
 
-    private IOException wrongFormatException() {
-        return new IOException("Wrong file format " + file.getAbsolutePath()); //NOI18N)
+    private FormatException wrongFormatException() {
+        return new FormatException("Wrong file format " + file.getAbsolutePath()); //NOI18N)
     }
 }
