@@ -167,6 +167,9 @@ public final class NamingFactory {
                 }
             }
         }
+        for (int i = 0; i < arr.length; i++) {
+            assert checkIndex(arr, i);
+        }
         names = arr;
     }
 
@@ -200,6 +203,7 @@ public final class NamingFactory {
             } else {
                 refRetVal.setNext(prev);
             }
+            assert checkIndex(names, index);
             if (ref != null) {
                 ref.clear();
                 NameRef nr = refRetVal;
@@ -213,6 +217,7 @@ public final class NamingFactory {
             } else {
                 namesCount++;
             }                
+            assert checkIndex(names, index);
             if (namesCount * 4 > names.length * 3) {
                 rehash(names.length * 2);
             }
@@ -310,6 +315,14 @@ public final class NamingFactory {
                 names[index] = names[index].remove(nr);
                 namesCount--;
             }
+            assert checkIndex(names, index);
+        }
+    }
+    private static boolean checkIndex(NameRef[] arr, int index) {
+        if (arr[index] == null) {
+            return true;
+        } else {
+            return index == arr[index].getIndex();
         }
     }
 }
