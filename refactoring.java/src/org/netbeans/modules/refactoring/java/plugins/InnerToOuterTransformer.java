@@ -392,7 +392,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         }
 
         TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
-        return workingCopy.getTypes().isSubtype(encl.asType(), inner.asType()) ;
+        return encl!=null && workingCopy.getTypes().isSubtype(encl.asType(), inner.asType()) ;
     }
     
     private boolean isThisReferenceToOuter() {
