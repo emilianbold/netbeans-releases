@@ -481,10 +481,12 @@ class OutWriter extends PrintWriter {
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c);
     }
     private Color ansiColor;
+    private int ansiColorCode;
     private boolean ansiBright;
-    private static final Pattern ANSI_CSI_SGR = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?m");
+    private boolean ansiFaint;
+    private static final Pattern ANSI_CSI_SGR = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?m"); // XXX or x9B for single-char CSI?
     private static final Color[] COLORS = { // xterm from http://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-        new Color(0, 0, 0),
+        null, // default color (black for stdout)
         new Color(205, 0, 0),
         new Color(0, 205, 0),
         new Color(205, 205, 0),
@@ -492,6 +494,7 @@ class OutWriter extends PrintWriter {
         new Color(205, 0, 205),
         new Color(0, 205, 205),
         new Color(229, 229, 229),
+        // bright variants:
         new Color(127, 127, 127),
         new Color(255, 0, 0),
         new Color(0, 255, 0),
@@ -505,7 +508,7 @@ class OutWriter extends PrintWriter {
         int len = s.length();
         boolean hasEscape = false; // fast initial check
         for (int i = 0; i < len - 1; i++) {
-            if (s.charAt(i) == '\u001B' && s.charAt(i + 1) == '[') {
+            if (s.charAt(i) == '\u001B' && s.charAt(i + 1) == '[') { // XXX or x9B for single-char CSI?
                 hasEscape = true;
                 break;
             }
@@ -526,22 +529,39 @@ class OutWriter extends PrintWriter {
                 Controller.log("ANSI CSI+SGR: " + paramsS);
             }
             if (paramsS == null) { // like ["0"]
-                ansiColor = null;
+                ansiColorCode = 0;
                 ansiBright = false;
+                ansiFaint = false;
             } else {
                 for (String param : paramsS.split(";")) {
                     int code = Integer.parseInt(param);
-                    if (code == 0 || code == 22) {
-                        ansiColor = null;
+                    if (code == 0) { // Reset / Normal
+                        ansiColorCode = 0;
                         ansiBright = false;
-                    } else if (code == 1) {
+                        ansiFaint = false;
+                    } else if (code == 1) { // Bright (increased intensity) or Bold
                         ansiBright = true;
-                    } else if (code == 21) {
+                        ansiFaint = false;
+                    } else if (code == 2) { // Faint (decreased intensity)
                         ansiBright = false;
-                    } else if (code >= 30 && code <= 37) {
-                        ansiColor = COLORS[code - 30 + (ansiBright ? 8 : 0)];
+                        ansiFaint = true;
+                    } else if (code == 21) { // Bright/Bold: off or Underline: Double
+                        ansiBright = false;
+                    } else if (code == 22) { // Normal color or intensity
+                        ansiBright = false;
+                        ansiFaint = false;
+                    } else if (code >= 30 && code <= 37) { // Set text color
+                        ansiColorCode = code - 30;
+                    } else if (code == 39) { // Default text color
+                        ansiColorCode = 0;
                     }
                 }
+            }
+            assert ansiColorCode >= 0 && ansiColorCode <= 7;
+            assert !(ansiBright && ansiFaint);
+            ansiColor = COLORS[ansiColorCode + (ansiBright ? 8 : 0)];
+            if (ansiFaint && ansiColor != null) {
+                ansiColor = ansiColor.darker();
             }
         }
         if (text < len) { // final segment
