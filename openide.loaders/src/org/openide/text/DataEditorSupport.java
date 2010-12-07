@@ -454,9 +454,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 if (len > 0) {
                     try {
                         decoder.decode(ByteBuffer.wrap(buffer, 0, len));
-                        return true;
                     } catch (CharacterCodingException e) {
                         ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                        return false;
                     }
                 }
             } finally {
@@ -465,7 +465,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         } catch (IOException ex) {
             ERR.log(Level.FINE, "Encoding problem using " + charset, ex); // NOI18N
         }
-        return false;
+        return true;
     }
 
     private static Set<FileObject> warnedEncodingFiles = new WeakSet<FileObject>();
