@@ -71,6 +71,7 @@ import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
+import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.reset.ResetAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
@@ -127,6 +128,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 } else {
                     actions.add(SystemAction.get(InitAction.class));
                 }
+                actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(SystemAction.get(CheckoutPathsAction.class));
@@ -140,6 +142,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 } else {
                     actions.add(SystemAction.get(DisconnectAction.class));
                 }
+                actions.add(SystemAction.get(RepositoryBrowserAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
