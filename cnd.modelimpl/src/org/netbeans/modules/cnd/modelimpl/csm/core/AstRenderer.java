@@ -729,6 +729,7 @@ public class AstRenderer {
             token = token.getNextSibling();
             boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
+            Outer:
             for (; token != null; token = token.getNextSibling()) {
                 switch (token.getType()) {
                     case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -768,7 +769,21 @@ public class AstRenderer {
                             classifier.addEnclosingVariable(var);
                             ptrOperator = null;
                         }
+                        break;
                     }
+                    case CPPTokenTypes.ID:
+                        {
+                            nothingBeforSemicolon = false;
+                            if (token.getNextSibling() != null && token.getNextSibling().getType() == CPPTokenTypes.COLON) {
+                                // it could be bit field
+                                // common type for all bit fields
+                                CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
+                                if (renderBitFieldImpl(token, token, type, classifier)) {
+                                    break Outer;
+                                }
+                            }
+                            break;
+                        }
                     case CPPTokenTypes.SEMICOLON: {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
@@ -790,6 +805,10 @@ public class AstRenderer {
                 }
             }
         }
+    }
+    
+    protected boolean renderBitFieldImpl(AST startOffsetAST, AST afterTypeAST, CsmType type, ClassEnumBase<?> classifier) {
+        return false;
     }
 
     @SuppressWarnings("fallthrough")
