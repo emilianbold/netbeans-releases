@@ -121,6 +121,7 @@ public class ImportExecutable implements PropertyChangeListener {
     private CreateDependencies cd;
     private final boolean createProjectMode;
     private String sourcesPath;
+    private boolean addSourceRoot;
     private List<String> dependencies;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
@@ -131,6 +132,7 @@ public class ImportExecutable implements PropertyChangeListener {
             createProjectMode = true;
             postCreateProject();
         } else {
+            addSourceRoot = true;
             createProjectMode = false;
         }
     }
@@ -155,9 +157,9 @@ public class ImportExecutable implements PropertyChangeListener {
 
     @SuppressWarnings("unchecked")
     private void createProject() {
-        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); 
-        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); 
-        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER); 
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT);
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH);
+        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
         dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
@@ -176,7 +178,7 @@ public class ImportExecutable implements PropertyChangeListener {
             projectFolder = CndFileUtils.createLocalFile(baseDir);
         }
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
-        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); 
+        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalizeSlashes(baseDir),  sourcesPath,
@@ -218,6 +220,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 }
             });
             prjParams.setSourceFolders(list.iterator());
+        } else {
+            addSourceRoot = true;
         }
         prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
@@ -266,6 +270,9 @@ public class ImportExecutable implements PropertyChangeListener {
                     try {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                         MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        if (addSourceRoot) {
+                            configurationDescriptor.addSourceRoot(sourcesPath);
+                        }
                         applicable = extension.isApplicable(map, lastSelectedProject);
                         if (applicable.isApplicable()) {
                             if (!createProjectMode) {
