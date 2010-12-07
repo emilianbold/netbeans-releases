@@ -176,7 +176,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     //private DebuggerEngine              debuggerEngine;
     private VirtualMachine              virtualMachine = null;
     private final Object                virtualMachineLock = new Object();
-    private Exception                   exception;
+    private Throwable                   throwable;
     private int                         state = 0;
     private final Object                stateLock = new Object();
     private Operator                    operator;
@@ -373,26 +373,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK2) {
             int state = getState();
             if (state == STATE_DISCONNECTED) {
-                if (exception != null)
-                    throw new DebuggerStartException (exception);
+                if (throwable != null)
+                    throw new DebuggerStartException (throwable);
                 else
                     return true;
             }
-            if (!starting && state != STATE_STARTING || exception != null) {
+            if (!starting && state != STATE_STARTING || throwable != null) {
                 return true; // We're already running
             }
             try {
-                logger.fine("JPDADebuggerImpl.waitRunning(): starting = "+starting+", state = "+state+", exception = "+exception);
+                logger.fine("JPDADebuggerImpl.waitRunning(): starting = "+starting+", state = "+state+", exception = "+throwable);
                 LOCK2.wait (timeout);
-                if ((starting || state == STATE_STARTING) && exception == null) {
+                if ((starting || state == STATE_STARTING) && throwable == null) {
                     return false; // We're still not running and the time expired
                 }
             } catch (InterruptedException e) {
                  throw new DebuggerStartException (e);
             }
 
-            if (exception != null)
-                throw new DebuggerStartException (exception);
+            if (throwable != null)
+                throw new DebuggerStartException (throwable);
             else
                 return true;
         }
@@ -636,12 +636,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public void setException (Exception e) {
+    public void setException (Throwable t) {
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JPDADebuggerImpl.setException("+e+")");
+            logger.fine("JPDADebuggerImpl.setException("+t+")");
         }
         synchronized (LOCK2) {
-            exception = e;
+            throwable = t;
             starting = false;
             LOCK2.notifyAll ();
         }
