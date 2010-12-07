@@ -45,9 +45,12 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -73,7 +76,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());
-        RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
+        //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
@@ -140,10 +143,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public RemoteFileSystem getFileSystem() throws FileStateInvalidException {
         return fileSystem;
-    }
-
-    public ChildrenSupport getChildrenSupport() {
-        return fileSystem.getChildrenSupport();
     }
 
     protected RemoteFileSupport getRemoteFileSupport() {
@@ -253,7 +252,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
         // Deprecated. Noithing to do.
     }
 
-//    protected abstract void ensureSync() throws IOException, ConnectException;
+    protected abstract void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     public abstract FileType getType();
 
