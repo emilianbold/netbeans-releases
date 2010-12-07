@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToCursorInstAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ContinueAtAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.StepInstAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxObjectAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.TerminateProcessAction;
@@ -94,7 +95,9 @@ class ActionEnabler {
 	// StepOverActionProvider
 	// RunToCursorActionProvider
 	// RunIntoMethodActionProvider
+
 	actions.add(SystemAction.get(RunToFunctionAction.class));
+	actions.add(SystemAction.get(ContinueAtAction.class));
 
 	actions.add(SystemAction.get(RerunAction.class));
 	actions.add(SystemAction.get(TerminateProcessAction.class));
