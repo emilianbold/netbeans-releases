@@ -101,7 +101,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     public InputStream getInputStream() throws FileNotFoundException {
         // TODO: check error processing
         try {
-            getChildrenSupport().ensureFileSync(cache, remotePath);
+            getParent().ensureChildSync(this);
         } catch (ConnectException ex) {
             return null;
         } catch (IOException ex) {             
@@ -164,9 +164,10 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         return new DelegateOutputStream();
     }
 
-//    @Override
-//    protected void ensureSync() throws IOException, ConnectException {
-//    }
+    @Override
+    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        getParent().ensureChildSync(this);
+    }
 
     @Override
     public FileType getType() {
