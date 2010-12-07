@@ -134,12 +134,18 @@ public enum HtmlVersion {
     }
 
     /** The default html version. */
-    private static final HtmlVersion DEFAULT_VERSION = HTML5;
+    private static final HtmlVersion DEFAULT_HTML_VERSION = HTML5;
+    private static final HtmlVersion DEFAULT_XHTML_VERSION = XHTML5;
     public static HtmlVersion DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = null;
     
     public static HtmlVersion getDefaultVersion() {
-        return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_VERSION;
+        return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_HTML_VERSION;
     }
+
+    public static HtmlVersion getDefaultXhtmlVersion() {
+        return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_XHTML_VERSION;
+    }
+
 
     private final String displayName;
     private final String publicID, systemID;
@@ -177,6 +183,10 @@ public enum HtmlVersion {
     }
 
     public String getDoctypeDeclaration() {
+        //no doctype for xhtml5
+        if(this == HtmlVersion.XHTML5) {
+            return "";
+        }
         if (getPublicID() == null) {
             return HTML5_DOCTYPE;
         } else {
