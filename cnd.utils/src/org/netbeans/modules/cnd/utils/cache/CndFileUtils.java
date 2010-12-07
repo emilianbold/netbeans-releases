@@ -405,15 +405,6 @@ public final class CndFileUtils {
         return map;
     }
 
-    private static boolean existsImpl(File file) {
-       Boolean exists = CndFileSystemProvider.exists(file.getAbsolutePath());
-       if (exists == null) {
-            return file.exists();
-       } else {
-            return exists.booleanValue();
-       }
-    }
-
     private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
        CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
        if (info == null) {
@@ -444,8 +435,9 @@ public final class CndFileUtils {
         private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
 
         private static Flags get(File file) {
-            if (existsImpl(file)) {
-                if (file.isDirectory()) {
+           FileObject fo =CndFileSystemProvider.toFileObject(file.getAbsolutePath());
+            if (fo != null && fo.isValid()) {
+                if (fo.isFolder()) {
                     return DIRECTORY;
                 } else {
                     return FILE;
