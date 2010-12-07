@@ -93,7 +93,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject getFileObject(String relativePath) {
+    public RemoteFileObjectBase getFileObject(String relativePath) {
         return null;
     }
 

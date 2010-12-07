@@ -48,6 +48,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
+import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
 import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
 
@@ -61,6 +62,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
     public RemoteApiTest() {
         this("Remote API",
            RemoteFileSystemTestCase.class,
+           RemoteLinksTestCase.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
            //CaseSensivityTestCase.class,

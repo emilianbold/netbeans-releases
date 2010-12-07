@@ -153,6 +153,26 @@ public class RemoteFileObjectFactory {
         }
     }
 
+    public RemoteLink createRemoteLink(RemoteDirectory parent, String remotePath, File cacheFile, String link) {
+        cacheRequests++;
+        synchronized (lock) {
+            if (fileObjectsCache.size() == 0) {
+                scheduleCleanDeadEntries(); // schedule on 1-st request
+            }
+            RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
+            if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile) && fo.getType() == FileType.Symlink) {
+                cacheHits++;
+                return (RemoteLink) fo;
+            }
+            if (fo != null) {
+                fo.invalidate();
+            }
+            fo = new RemoteLink(fileSystem, env, parent, remotePath, link);
+            fileObjectsCache.put(remotePath, fo);
+            return (RemoteLink) fo;
+        }
+    }
+
 //    /*package*/ int testGetCacheSize() {
 //        return fileObjectsCache.size();
 //    }
