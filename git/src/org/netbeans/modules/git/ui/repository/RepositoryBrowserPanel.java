@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git.ui.repository;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,7 +72,6 @@ import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -94,9 +92,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
     private static final Logger LOG = Logger.getLogger(RepositoryBrowserPanel.class.getName());
     private final ExplorerManager manager;
-    private final BeanTreeView tree;
     private final EnumSet<Option> options;
-    private ControlToolbar toolbar;
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
@@ -118,11 +114,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES) ? new AbstractNode(new RepositoriesChildren()) : new RepositoryNode(repository, info);
         this.manager = new ExplorerManager();
         this.options = options;
-        setLayout(new BorderLayout());
-        if (options.contains(Option.DISPLAY_TOOLBAR)) {
-            add(toolbar = new ControlToolbar(), BorderLayout.NORTH);
+        initComponents();
+        if (!options.contains(Option.DISPLAY_TOOLBAR)) {
+            toolbar.setVisible(false);
         }
-        add(tree = new BeanTreeView(), BorderLayout.CENTER);
         tree.setRootVisible(false);
         tree.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     }
@@ -251,14 +246,14 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             }
         }
     }
-    
+
     private class RepositoryNode extends RepositoryBrowserNode implements PropertyChangeListener {
         private final PropertyChangeListener list;
 
         public RepositoryNode (File file, RepositoryInfo info) {
             super(new RepositoryChildren(), Lookups.fixed(file));
             setName(info);
-            
+
             info.addPropertyChangeListener(list = WeakListeners.propertyChange(this, info));
         }
 
@@ -541,4 +536,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
     //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        setLayout(new java.awt.BorderLayout());
+        add(toolbar, java.awt.BorderLayout.PAGE_START);
+        add(tree, java.awt.BorderLayout.CENTER);
+    }// </editor-fold>//GEN-END:initComponents
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private final org.netbeans.modules.git.ui.repository.ControlToolbar toolbar = new org.netbeans.modules.git.ui.repository.ControlToolbar();
+    private final org.openide.explorer.view.BeanTreeView tree = new org.openide.explorer.view.BeanTreeView();
+    // End of variables declaration//GEN-END:variables
+
 }
