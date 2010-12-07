@@ -38,3 +38,8 @@
         (*dd).Bass::method1();
         (*dd).Bass::method11(); // not visible!
     }
+
+    int ptrCheck187254(Derived* ptr) {
+        ptr->Derived::method1();
+        ptr->Derived::~Derived();
+    }

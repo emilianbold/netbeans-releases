@@ -47,8 +47,9 @@ build: .build-post
 	cp nbexec.exe ../../../nbbuild/netbeans/platform/lib/
 	cp nbexec.dll ../../../nbbuild/netbeans/platform/lib/
 
-nbexec.exe: nbexecexe.cpp nbexecloader.h utilsfuncs.cpp
-	g++ -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp -o nbexec.exe
+nbexec.exe: nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
+	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
+	g++ -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
 
 # clean
 clean: .clean-post
@@ -59,7 +60,7 @@ clean: .clean-post
 
 .clean-post: .clean-impl
 # Add your post 'clean' code here...
-	rm -f nbexec.exe
+	rm -f nbexec_exe.res nbexec.exe
 
 
 # clobber

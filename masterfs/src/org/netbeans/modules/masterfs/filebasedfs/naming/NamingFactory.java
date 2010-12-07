@@ -47,15 +47,18 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
 /**
  * @author Radek Matous
  */
 public final class NamingFactory {
-    private static final Map nameMap = new WeakHashMap();
+    private static NameRef[] names = new NameRef[2];
+    private static int namesCount;
 
     public static synchronized FileNaming fromFile(final File file) {
         final LinkedList<File> list = new LinkedList<File>();
@@ -82,7 +85,7 @@ public final class NamingFactory {
     }
 
     public static synchronized int getSize () {
-        return nameMap.size();
+        return namesCount;
     }
     
     public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
@@ -91,7 +94,7 @@ public final class NamingFactory {
     
     public static synchronized FileNaming checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
         if (!childName.getFile().getName().equals(f.getName())) {
-            boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
+            boolean isCaseSensitive = !Utils.equals(new File(f,"a"), new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
                 FileName fn = (FileName)childName;
                 fn.updateCase(f.getName());
@@ -115,21 +118,10 @@ public final class NamingFactory {
 
     private static void renameChildren(FileNaming root, List<FileNaming> all) {
         assert Thread.holdsLock(NamingFactory.class);
-        for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            
-            List list;
-            Object value = entry.getValue();
-            if (value instanceof Reference) {
-                list = Collections.singletonList((Reference)value);
-            } else if (value instanceof List) {
-                list = (List)value;
-            } else {
-                list = Collections.emptyList();
-            }
-            
-            for (int i = 0; i < list.size(); i++) {
-                FileNaming fN = (FileNaming)((Reference) list.get(i)).get();
+        for (int i = 0; i < names.length; i++) {
+            NameRef value = names[i];
+            while (value != null) {
+                FileNaming fN = value.get();
                 for (FileNaming up = fN;;) {
                     if (up == null) {
                         break;
@@ -140,24 +132,57 @@ public final class NamingFactory {
                     }
                     up = up.getParent();
                 }
+                value = value.next();
             }
         }
     }
-
+    
     public static Integer createID(final File file) {
-        return new Integer(file.hashCode());
+        return Utils.hashCode(file);
     }
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
         return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
     }
+    
+    private static void rehash(int newSize) {
+        assert Thread.holdsLock(NamingFactory.class);
+        NameRef[] arr = new NameRef[newSize];
+        for (int i = 0; i < names.length; i++) {
+            NameRef v = names[i];
+            if (v == null) {
+                continue;
+            }
+            List<NameRef> linked = new LinkedList<NameRef>();
+            while (v != null) {
+                linked.add(v);
+                v = v.next();
+            }
+            for (NameRef nr : linked) {
+                FileNaming fn = nr.get();
+                if (fn == null) {
+                    continue;
+                }
+                Integer id = createID(fn.getFile());
+                int index = Math.abs(id) % arr.length;
+                nr.next = arr[index];
+                arr[index] = nr;
+                if (nr.next == null) {
+                    nr.next = index;
+                }
+            }
+        }
+        names = arr;
+    }
 
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
-        FileNaming retVal;
-
         assert Thread.holdsLock(NamingFactory.class);
-        final Object value = nameMap.get(new Integer(file.hashCode()));
-        Reference ref = (Reference) (value instanceof Reference ? value : null);
-        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
+        
+        cleanQueue();
+        
+        FileNaming retVal;
+        Integer key = createID(file);
+        int index = Math.abs(key) % names.length;
+        Reference ref = getReference(names[index], file);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
         if (ignoreCache && cachedElement != null && (
@@ -166,55 +191,54 @@ public final class NamingFactory {
             cachedElement = null;
         }
 
-        if (cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
+        if (cachedElement != null && Utils.equals(cachedElement.getFile(), file)) {
             retVal = cachedElement;
         } else {
-            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName, type) : newValue;
-            final WeakReference refRetVal = new WeakReference(retVal);
+            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
+            NameRef refRetVal = new NameRef(retVal);
 
-            final boolean isList = (value instanceof List);
-            if (cachedElement != null || isList) {
-                // List impl.
-                if (isList) { // more than one preexisting entry, just add another one
-                    ((List) value).add(refRetVal);
-                } else { // just one entry, convert from entry to list of entries
-                    final List l = new ArrayList();
-                    l.add(ref); // add the original one
-                    l.add(refRetVal); // add the new one
-                    NamingFactory.nameMap.put(retVal.getId(), l); // replace the direct entry with the list
+            refRetVal.next = names[index];
+            names[index] = refRetVal;
+            if (refRetVal.next == null) {
+                refRetVal.next = index;
+            }
+            if (ref != null) {
+                ref.clear();
+                NameRef nr = refRetVal;
+                for (;;) {
+                    if (nr.next() == ref) {
+                        nr.next = nr.next().next();
+                        break;
+                    }
+                    nr = nr.next();
                 }
             } else {
-                // Reference impl.
-                Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
-                if (r != null && !retVal.equals(r.get())) {
-                    final List l = new ArrayList();
-                    l.add(r);
-                    l.add(refRetVal);
-                    NamingFactory.nameMap.put(retVal.getId(), l);
-                }
+                namesCount++;
+            }                
+            if (namesCount * 4 > names.length * 3) {
+                rehash(names.length * 2);
             }
         }
-
         assert retVal != null;
-
         return retVal;
     }
     
-    private static Reference getReference(final List list, final File f) {
-        Reference retVal = null;
-        for (int i = 0; retVal == null && i < list.size(); i++) {
-            final Reference ref = (Reference) list.get(i);
-            final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-            if (cachedElement != null && cachedElement.getFile().compareTo(f) == 0) {
-                retVal = ref;
+    private static Reference getReference(NameRef value, File f) {
+        while (value != null) {
+            FileNaming fn = value.get();
+            if (fn != null && Utils.equals(fn.getFile(), f)) {
+                return value;
             }
+            value = value.next();
         }
-        return retVal;
+        return null;
     }
 
     static enum FileType {file, directory, unknown}
     
-    private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
+    private static FileNaming createFileNaming(
+        final File f, Integer theKey, final FileNaming parentName, FileType type
+    ) {
         FileName retVal = null;
         //TODO: check all tests for isFile & isDirectory
         if (type.equals(FileType.unknown)) {
@@ -227,12 +251,115 @@ public final class NamingFactory {
         }
         switch(type) {
             case file:
-                retVal = new FileName(parentName, f);
+                retVal = new FileName(parentName, f, theKey);
                 break;
             case directory:
-                retVal = new FolderName(parentName, f);
+                retVal = new FolderName(parentName, f, theKey);
                 break;
         }
         return retVal;
+    }
+    
+    public static String dumpId(Integer id) {
+        return dump(id, null);
+    }
+    synchronized static String dump(Integer id, File file) {
+        StringBuilder sb = new StringBuilder();
+        final String hex = Integer.toHexString(id);
+
+        sb.append("Showing references to ").append(hex).append("\n");
+        int cnt = 0;
+        int index = Math.abs(id) % names.length;
+        NameRef value = names[index];
+        while (value != null) {
+            if (file == null || file.equals(value.getFile())) {
+                cnt++;
+                dumpFileNaming(sb, value.get());
+            }
+            value = value.next();
+        } 
+        sb.append("References: ").append(cnt);
+        return sb.toString();
+    }
+    private static void dumpFileNaming(StringBuilder sb, Object fn) {
+        if (fn == null) {
+            sb.append("null");
+            return;
+        }
+        if (fn instanceof FolderName) {
+            sb.append("FolderName: ");
+        } else {
+            sb.append("FileName: ");
+        }
+        sb.append(fn).append("#")
+           .append(Integer.toHexString(fn.hashCode())).append("@")
+           .append(Integer.toHexString(System.identityHashCode(fn)))
+           .append("\n");
+        if (fn instanceof FileName) {
+            ((FileName)fn).dumpCreation(sb);
+        }
+    }
+    
+    private static final ReferenceQueue<FileNaming> QUEUE = new ReferenceQueue<FileNaming>();
+    private static void cleanQueue() {
+        assert Thread.holdsLock(NamingFactory.class);
+        for (;;) {
+            NameRef nr = (NameRef)QUEUE.poll();
+            if (nr == null) {
+                return;
+            }
+            int index = nr.getIndex();
+            if (names[index] != null) {
+                names[index] = names[index].remove(nr);
+                namesCount--;
+            }
+        }
+    }
+    
+    
+    private static final class NameRef extends WeakReference<FileNaming> {
+        /** either reference to NameRef or to Integer as an index to names array */
+        Object next;
+        
+        public NameRef(FileNaming referent) {
+            super(referent, QUEUE);
+        }
+        
+        public Integer getIndex() {
+            NameRef nr = this;
+            for (;;) {
+                if (nr.next instanceof Integer) {
+                    return (Integer)nr.next;
+                }
+                nr = (NameRef) nr.next;
+            }
+        }
+        
+        public NameRef next() {
+            if (next instanceof Integer) {
+                return null;
+            }
+            return (NameRef)next;
+        }
+        public File getFile() {
+            FileNaming r = get();
+            return r == null ? null : r.getFile();
+        }
+        
+        public NameRef remove(NameRef what) {
+            if (what == this) {
+                return next();
+            }
+            NameRef me = this;
+            while (me.next != what) {
+                if (me.next instanceof Integer) {
+                    return this;
+                }
+                me = (NameRef)me.next;
+            }
+            me.next = ((NameRef)me.next).next;
+            return this;
+        }
+
     }
 }

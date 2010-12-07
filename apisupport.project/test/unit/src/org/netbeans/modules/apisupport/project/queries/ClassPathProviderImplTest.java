@@ -948,14 +948,16 @@ public class ClassPathProviderImplTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"compile"}, null);
         et.waitFinished();
         assertEquals("Error during ant ...",0,et.result());
-        assertTrue("Classes dir of testing project should exist", prj.getClassesDirectory().exists());
         TestAntLogger.getDefault().setEnabled(false);
-        
-        FileObject classes = prj.getProjectDirectory().getFileObject("build/classes");
+        File classesF = prj.getClassesDirectory();
+        assertTrue("Classes dir of testing project should exist", classesF.exists());
+        FileUtil.refreshFor(classesF); // XXX seems necessary occasionally on deadlock - why?
+        FileObject classes = FileUtil.toFileObject(classesF);
+        assertNotNull(classes);
         ClassPath cp = ClassPath.getClassPath(classes, ClassPath.EXECUTE);
         assertNotNull("have exec CP for " + classes, cp);
         Set<String> expectedRoots = new TreeSet<String>();
-        expectedRoots.add(FileUtil.urlForArchiveOrDir(prj.getClassesDirectory()).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(classesF).toExternalForm());
         assertEquals("right compiled EXECUTE classpath", expectedRoots, urlsOfCp(cp));
     }
 

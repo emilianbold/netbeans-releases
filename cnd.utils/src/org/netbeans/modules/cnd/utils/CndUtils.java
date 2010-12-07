@@ -144,19 +144,6 @@ public class CndUtils {
         return getNumberCndWorkerThreads();
     }
 
-    private static final class FileNamePrefixAccessor {
-        // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
-    }
-
-    public static String getIncludeFileBase() {
-        return FileNamePrefixAccessor.path;
-    }
-
-    public static String getIncludeFilePrefix(String hostid) {
-        return getIncludeFileBase() + hostid + "/"; //NOI18N
-    }
-    
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N

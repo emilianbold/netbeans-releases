@@ -64,8 +64,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -283,7 +283,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-        return new ApplicableImpl(true, null, null, 40, false, null, null, null);
+        return new ApplicableImpl(true, null, null, 40, false, null, null, null, null);
     }
     
     private class MyConfiguration implements Configuration{

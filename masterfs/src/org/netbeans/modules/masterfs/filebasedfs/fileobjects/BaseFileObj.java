@@ -68,10 +68,10 @@ import java.util.Set;
 import java.util.Stack;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 
 /**
@@ -116,10 +116,7 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getNameExt() {
-        final File file = getFileName().getFile();
-        final String retVal = BaseFileObj.getNameExt(file);
-        return retVal;
-
+        return getFileName().getName();
     }
 
     /** Returns true is file is \\ComputerName\sharedFolder. */
@@ -353,17 +350,14 @@ public abstract class BaseFileObj extends FileObject {
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
-        boolean targetFileExists = FileChangedManager.getInstance().exists(file2Rename) && !file2Rename.equals(file);
-        //#108690
-        if (targetFileExists && Utilities.isMac()) {
-            final File parentFile2 = file2Rename.getParentFile();
-            final File parentFile = file.getParentFile();
-            if (parentFile2 != null && parentFile != null && parentFile.equals(parentFile2)) {
-                if (file2Rename.getName().equalsIgnoreCase(file.getName())) {
-                    targetFileExists = false;
-                }
-            }
+        if (Utils.equals(file2Rename, file)) {
+            // just a case sensitive update of the file name
+            NamingFactory.checkCaseSensitivity(fileName, file2Rename);
+            fireFileRenamedEvent(file.getName(), file2Rename.getName());
+            return;
         }
+        
+        boolean targetFileExists = FileChangedManager.getInstance().exists(file2Rename) && !Utils.equals(file2Rename, file);
 
         if (targetFileExists) {
             FileObject parentFo = getExistingParent();

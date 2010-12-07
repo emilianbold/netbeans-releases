@@ -63,6 +63,7 @@ public interface CsmTemplate extends CsmObject {
      */
     boolean isTemplate();
 
+    boolean isSpecialization();
 
     List<CsmTemplateParameter> getTemplateParameters();
 

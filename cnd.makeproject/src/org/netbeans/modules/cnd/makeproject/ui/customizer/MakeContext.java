@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -178,17 +179,17 @@ public class MakeContext {
 
     public PredefinedToolKind getItemTool() {
         PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
-        int compilerSet = -1;
+        CompilerSet compilerSet = null;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-            int compilerSet2 = makeConfiguration.getCompilerSet().getValue();
+            CompilerSet compilerSet2 = makeConfiguration.getCompilerSet().getCompilerSet();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             if (itemConfiguration == null) {
                 continue;
             }
             PredefinedToolKind tool2 = itemConfiguration.getTool();
-            if (tool == PredefinedToolKind.UnknownTool && compilerSet == -1) {
+            if (tool == PredefinedToolKind.UnknownTool && compilerSet == null) {
                 tool = tool2;
                 compilerSet = compilerSet2;
             }

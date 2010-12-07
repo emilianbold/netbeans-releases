@@ -49,6 +49,7 @@ import javax.swing.JCheckBox;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /*
  * Tests for class NodeTableModelTest
@@ -59,6 +60,7 @@ public class NodeTableModelTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -173,7 +175,11 @@ public class NodeTableModelTest extends NbTestCase {
         assertEquals( "Invalid display name:", 
                 p.getValue("ColumnDisplayNameWithMnemonicTTV"),
                 model.getDisplayNameWithMnemonic(p) );
-        assertEquals( "Invalid mnemonic", 'D', checkBox.getMnemonic() );
+        if (Utilities.isMac()) {
+            assertEquals( "No mnemonic on mac", 0, checkBox.getMnemonic() );
+        } else {
+            assertEquals( "Invalid mnemonic", 'D', checkBox.getMnemonic() );
+        }
     }
 
     private static class MyNodeTableModel extends NodeTableModel {
@@ -199,28 +205,33 @@ public class NodeTableModelTest extends NbTestCase {
             super( Object.class );
         }
         
+        @Override
         public void setValue(Object val) 
             throws IllegalAccessException, 
                 IllegalArgumentException, 
                 InvocationTargetException {
         }
 
+        @Override
         public Object getValue() 
             throws IllegalAccessException, 
                 InvocationTargetException {
             return null;
         }
 
+        @Override
         public boolean canWrite() {
             return true;
         }
 
+        @Override
         public boolean canRead() {
             return true;
         }
     }
     
     private static class NullGetValueProperty extends MyProperty {
+        @Override
         public Object getValue(String attributeName) {
             return null;
         }

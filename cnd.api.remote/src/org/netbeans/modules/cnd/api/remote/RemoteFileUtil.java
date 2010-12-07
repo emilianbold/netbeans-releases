@@ -47,12 +47,14 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,9 +70,30 @@ public class RemoteFileUtil {
         return (fo != null && fo.isValid());
     }
 
+    public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment, RemoteProject.Mode remoteMode) {
+        executionEnvironment = (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
+        return fileExists(absolutePath, executionEnvironment);
+    }
+
     public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {
         FileObject fo = getFileObject(absolutePath, executionEnvironment);
         return (fo != null && fo.isFolder());
+    }
+
+    /**
+     * In many places, standard sequence is as follows:
+     *  - convert path to absolute if need
+     *  - normalize it
+     *  - find file object
+     * In the case of non-local file systems we should delegate it to correspondent file systems.
+     */
+    public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        FileObject result = FileSystemProvider.getFileObject(baseFileObject, relativeOrAbsolutePath);
+        if (result == null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
+            result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+        }
+        return result;
     }
 
     private RemoteFileUtil() {}
@@ -87,32 +110,61 @@ public class RemoteFileUtil {
     }
 
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv) {
-        String normalizedPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
-        if (CndUtils.isDebugMode() && ! normalizedPath.equals(absolutePath)) {
-            CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
-        }
+        CndUtils.assertAbsolutePathInConsole(absolutePath, "path for must be absolute"); //NOI18N
         if (execEnv.isRemote()) {
-            return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
+            if (CndUtils.isDebugMode()) {
+                String normalizedPath = normalizeAbsolutePath(absolutePath, execEnv);
+                if (! normalizedPath.equals(absolutePath)) {
+                    CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
+                }
+                //absolutePath = normalizedPath;
+            }
+            return FileSystemProvider.getFileSystem(execEnv).findResource(absolutePath); //NOI18N
         } else {
-            return CndFileUtils.toFileObject(normalizedPath);
+            return CndFileUtils.toFileObject(absolutePath);
         }
     }
 
-    public static FileObject getFileObject(String absolutePath, Project project) {
-        String normalizedPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
-        if (CndUtils.isDebugMode() && ! normalizedPath.equals(absolutePath)) {
-            CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
-        }
+    private static ExecutionEnvironment getFileSystemExecutionEnvironment(Project project) {
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    ExecutionEnvironment execEnv = remoteProject.getSourceFileSystemHost();
-                    return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
+                    return remoteProject.getSourceFileSystemHost();
                 }
             }
         }
-        return CndFileUtils.toFileObject(normalizedPath);
+        return ExecutionEnvironmentFactory.getLocal();
+    }
+
+    public static FileObject getFileObject(String absolutePath, Project project) {
+        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        if (execEnv != null && execEnv.isRemote()) {
+            return getFileObject(absolutePath, execEnv);
+        }
+        return CndFileUtils.toFileObject(absolutePath);
+    }
+
+    public static String normalizeAbsolutePath(String absPath, Project project) {
+        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        if (execEnv != null && execEnv.isRemote()) {
+            return normalizeAbsolutePath(absPath, execEnv);
+        } else {
+            return CndFileUtils.normalizeAbsolutePath(absPath);
+        }
+
+    }
+
+    public static String normalizeAbsolutePath(String absPath, ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
+            return FileSystemProvider.normalizeAbsolutePath(absPath, execEnv);
+        } else {
+            return FileUtil.normalizePath(absPath);
+        }
+    }
+
+    public static FileObject normalizeFileObject(FileObject fileObject) {
+        return FileSystemProvider.normalizeFileObject(fileObject);
     }
 
     public static String getAbsolutePath(FileObject fileObject) {
@@ -161,5 +213,10 @@ public class RemoteFileUtil {
             }
         }
         return fileChooser;
+    }
+
+    /** A temporary stuff to replace CndUtils.getIncludeFilePrefix */
+    public static String getIncludeFilePrefix(ExecutionEnvironment executionEnvironment) {
+        return FileSystemCacheProvider.getCacheRoot(executionEnvironment);
     }
 }

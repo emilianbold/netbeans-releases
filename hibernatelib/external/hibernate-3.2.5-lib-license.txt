@@ -5,6 +5,7 @@ OSR: 8144
 Files: hibernate-3.2.5-lib.zip
 Origin: http://hibernate.org
 Description: The Hibernate library contains all the requried jars to implement the hibernate technologies.
+Source: http://sourceforge.net/projects/hibernate/files/hibernate3/3.2.5.ga/hibernate-3.2.5.ga.zip/download
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999

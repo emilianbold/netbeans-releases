@@ -2117,6 +2117,7 @@ public class Installer extends ModuleInstall implements Runnable {
              File tempFile = null;
              try {
                 tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
+                tempFile = FileUtil.normalizeFile(tempFile);
                 OutputStream os = new FileOutputStream(tempFile);
                 os.write(slownData.getNpsContent());
                 os.close();

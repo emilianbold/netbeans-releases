@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -82,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
@@ -139,12 +141,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
-    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
-        if (CsmKindUtilities.isTemplate(classifier) && CsmKindUtilities.isClass(classifier)) {
-            CsmProject proj = contextFile.getProject();
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset) {
+        if (CsmKindUtilities.isTemplate(templateDecl)) {
+            if (contextFile == null && CsmKindUtilities.isOffsetable(templateDecl)) {
+                contextFile = ((CsmOffsetable)templateDecl).getContainingFile();
+            }
+            CsmProject proj = contextFile != null ? contextFile.getProject() : null;
             if (proj instanceof ProjectBase) {
-                CsmClass cls = (CsmClass) classifier;
-                StringBuilder fqn = new StringBuilder(cls.getUniqueName());
+                StringBuilder fqn = new StringBuilder(templateDecl.getUniqueName());
                 fqn.append('<'); // NOI18N
                 Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
                 return specs;
@@ -153,6 +157,36 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return Collections.<CsmOffsetableDeclaration>emptyList();
     }
 
+    @Override
+    public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
+        if (CsmKindUtilities.isSpecialization(declaration)) {
+            if (CsmKindUtilities.isOffsetable(declaration) && CsmKindUtilities.isQualified(declaration)) {
+                CharSequence qualifiedName = ((CsmQualifiedNamedElement)declaration).getQualifiedName();
+                String removedSpecialization = qualifiedName.toString().replaceAll("<.*>", "");// NOI18N               
+                CsmFile contextFile = ((CsmOffsetable) declaration).getContainingFile();
+                CsmProject proj = contextFile != null ? contextFile.getProject() : null;
+                Iterator<? extends CsmObject> decls = Collections.<CsmObject>emptyList().iterator();
+                if (CsmKindUtilities.isClass(declaration)) {
+                    if (proj instanceof ProjectBase) {
+                        decls = ((ProjectBase)proj).findClassifiers(removedSpecialization).iterator();
+                    }
+                } else if (proj != null && CsmKindUtilities.isFunction(declaration)) {
+                    String removedParams = removedSpecialization.replaceAll("\\(.*", "");// NOI18N   
+                    decls = CsmSelect.getFunctions(proj, removedParams);
+                }
+                Collection<CsmOffsetableDeclaration> out = new ArrayList<CsmOffsetableDeclaration>();
+                while (decls.hasNext()) {
+                    CsmObject decl = decls.next();
+                    if (!CsmKindUtilities.isSpecialization(decl)) {
+                        out.add((CsmOffsetableDeclaration) decl);
+                    }
+                }
+                return out;
+            }
+        }
+        return Collections.<CsmOffsetableDeclaration>emptyList();
+    }
+    
     private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
 
     public static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {

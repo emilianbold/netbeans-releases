@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -193,6 +193,42 @@ public class DatabaseConnectionTest extends DBTestBase {
             shutdownDerby();
             assertNull(dbconn.getJDBCConnection(true));
         }
+    }
+
+    /**
+     * Verifies that the {@link DatabaseConnection#create(org.netbeans.api.db.explorer.JDBCDriver, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, java.lang.String)}
+     * factory method creates a valid connection with the given display name
+     *
+     * @throws Exception
+     */
+    public void testDatabaseConnectionCreatedWithDisplayName() throws Exception {
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+
+        JDBCDriver driver = Util.createDummyDriver();
+        DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true, "displayName");
+
+        assertEquals("The connection was created with a display name different that the one provided", "displayName", dbconn.getDisplayName());
+
+        Util.clearConnections();
+
+    }
+
+    /**
+     * Verifies that the {@link DatabaseConnection#create(org.netbeans.api.db.explorer.JDBCDriver, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)}
+     * creates some default display name that is not null
+     * @throws Exception
+     */
+    public void testDatabaseConnectionCreatedWithDefaultDisplayName() throws Exception {
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+
+        JDBCDriver driver = Util.createDummyDriver();
+        DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
+
+        assertEquals("The connection was created with the default display name ", "database [user on schema]", dbconn.getDisplayName());
+
+        Util.clearConnections();
     }
 
     private static boolean connectionIsValid(Connection conn) throws Exception {

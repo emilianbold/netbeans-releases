@@ -129,6 +129,9 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
                 idx = 0;
             }
             if (element.equals(CONSOLE_TYPE_ELEMENT)) {
+                if (idx == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                    idx = RunProfile.getDefaultConsoleType();
+                }
                 profile.getConsoleType().setValue(idx);
             } else if (element.equals(TERMINAL_TYPE_ELEMENT)) {
                 profile.getTerminalType().setValue(idx);
@@ -175,7 +178,9 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	xes.element(ARGS_ELEMENT, profile.getArgsFlat());
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
-        xes.element(CONSOLE_TYPE_ELEMENT, Integer.toString(profile.getConsoleType().getValue()));
+        if (profile.getConsoleType().getModified()) {
+            xes.element(CONSOLE_TYPE_ELEMENT, Integer.toString(profile.getConsoleType().getValue()));
+        }
         xes.element(TERMINAL_TYPE_ELEMENT, Integer.toString(profile.getTerminalType().getValue()));
         xes.element(REMOVE_INSTRUMENTATION_ELEMENT, Integer.toString(profile.getRemoveInstrumentation().getValue()));
 	encode(xes, profile.getEnvironment());

@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
@@ -141,7 +143,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     @SuppressWarnings("unchecked")
     private void checkRealUpdates () {
         final Collection<String> problems=new ArrayList<String>();
-        checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
+        checkRealUpdatesTask = Installer.RP.post (new Runnable () {
             public void run () {
                 final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType,problems, forceReload);
                 hasUpdates = updates != null && ! updates.isEmpty ();
@@ -183,43 +185,45 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                 }
             }
         });
-        checkRealUpdatesTask.addTaskListener (new TaskListener () {
+        class TLAndR implements TaskListener, Runnable { 
+            @Override
             public void taskFinished (Task task) {
                 task.removeTaskListener (this);
-                if (! hasUpdates) {
-                    JPanel bodyTmp = null;
-                    if(problems==null || problems.isEmpty())
-                    {
-                        bodyTmp = new OperationDescriptionPanel (
-                            getBundle ("LazyOperationDescriptionStep_NoUpdates_Title"), // NOI18N
-                            getBundle ("LazyOperationDescriptionStep_NoUpdates"), // NOI18N
-                            "", "",
-                            false);
-                    }
-                    else
-                    {
-                        bodyTmp = new OperationDescriptionPanel (
-                            getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems_Title"), // NOI18N
-                            getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems"), // NOI18N
-                            "", "",
-                            false);
-                    }
-                    final JPanel body = bodyTmp;
+                if (!hasUpdates) {
                     installModel = Collections.EMPTY_SET;
-                    new InstallUnitWizardModel (null, null).modifyOptionsForDoClose (wd);
+                    new InstallUnitWizardModel(null, null).modifyOptionsForDoClose(wd);
                     canClose = true;
-                    LazyUnit.storeLazyUnits (operationType, installModel);
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            component.setBody (body);
-                            component.setWaitingState (false);
-                            AutoupdateCheckScheduler.notifyAvailable (installModel, operationType);
-                            fireChange ();
-                        }
-                    });
+                    LazyUnit.storeLazyUnits(operationType, installModel);
+                    EventQueue.invokeLater(this);
                 }
             }
-        });
+            
+            @Override
+            public void run() {
+                JPanel body = null;
+                if(problems==null || problems.isEmpty())
+                {
+                    body = new OperationDescriptionPanel (
+                        getBundle ("LazyOperationDescriptionStep_NoUpdates_Title"), // NOI18N
+                        getBundle ("LazyOperationDescriptionStep_NoUpdates"), // NOI18N
+                        "", "",
+                        false);
+                }
+                else
+                {
+                    body = new OperationDescriptionPanel (
+                        getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems_Title"), // NOI18N
+                        getBundle ("LazyOperationDescriptionStep_NoUpdatesWithProblems"), // NOI18N
+                        "", "",
+                        false);
+                }
+                component.setBody (body);
+                component.setWaitingState (false);
+                AutoupdateCheckScheduler.notifyAvailable (installModel, operationType);
+                fireChange ();
+            }
+        }
+        checkRealUpdatesTask.addTaskListener (new TLAndR());
     }
     
     private String preparePluginsForShow (Collection<LazyUnit> units, OperationType type) {

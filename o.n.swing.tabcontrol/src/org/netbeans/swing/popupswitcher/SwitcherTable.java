@@ -59,7 +59,6 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.openide.util.Utilities;
 
@@ -171,7 +170,7 @@ public class SwitcherTable extends JTable {
         }
         boolean active = item.isActive();
         if( null != lbl ) {
-            lbl.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+            lbl.setText((selected || (active && !TABNAMES_HTML)) ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
             lbl.setIcon(icon);
             lbl.setBorder(rendererBorder);
             lbl.setIconTextGap(26 - icon.getIconWidth());
@@ -204,7 +203,7 @@ public class SwitcherTable extends JTable {
         res = res.trim();
         return res;
     }
-    
+
     private static class NullIcon implements Icon {
         public int getIconWidth() { return 0; }
         public int getIconHeight() { return 0; }

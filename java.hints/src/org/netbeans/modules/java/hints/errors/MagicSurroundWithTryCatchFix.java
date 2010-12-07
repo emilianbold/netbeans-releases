@@ -227,7 +227,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             catches.addAll(tt.getCatches());
             
             if (!streamAlike) {
-                info.rewrite(tt, make.Try(tt.getBlock(), catches, tt.getFinallyBlock()));
+                info.rewrite(tt, make.Try(tt.getResources(), tt.getBlock(), catches, tt.getFinallyBlock()));
             } else {
                 VariableTree originalDeclaration = (VariableTree) statement.getLeaf();
                 VariableTree declaration = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), originalDeclaration.getName(), originalDeclaration.getType(), make.Literal(null));
@@ -240,7 +240,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 
                 info.rewrite(originalDeclaration, assignment);
                 
-                TryTree nueTry = make.Try(tt.getBlock(), catches, finallyTree);
+                TryTree nueTry = make.Try(tt.getResources(), tt.getBlock(), catches, finallyTree);
                 
                 TreePath currentBlockCandidate = statement;
                 

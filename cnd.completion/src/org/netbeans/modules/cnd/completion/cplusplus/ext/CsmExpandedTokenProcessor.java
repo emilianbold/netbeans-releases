@@ -81,9 +81,11 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         this.macros = macros;
     }
 
-    public static CndTokenProcessor<Token<TokenId>> create(Document doc, CndTokenProcessor<Token<TokenId>> tp, int offset) {
+    public static CndTokenProcessor<Token<TokenId>> create(CsmFile file, Document doc, CndTokenProcessor<Token<TokenId>> tp, int offset) {
         if (doc != null) {
-            CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
+            if (file == null) {
+                file = CsmUtilities.getCsmFile(doc, true, false);
+            }
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
                 if (macros != null) {

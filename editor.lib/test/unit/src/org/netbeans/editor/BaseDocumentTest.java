@@ -51,6 +51,21 @@ public class BaseDocumentTest extends NbTestCase {
         super(testName);
     }
 
+    public void testRowUtilities() throws Exception {
+        BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        doc.insertString(0, "a\nbc", null);
+        int offset = Utilities.getRowStart(doc, doc.getLength() + 1);
+        assertEquals("Invalid offset", 2, offset); // NOI18N
+        offset = Utilities.getFirstNonWhiteBwd(doc, 2, doc.getLength() + 1);
+        assertEquals("Invalid offset", 2, offset); // NOI18N
+        offset = Utilities.getRowLastNonWhite(doc, doc.getLength() + 1);
+        assertEquals("Invalid offset", 3, offset); // NOI18N
+        offset = Utilities.getRowEnd(doc, doc.getLength() + 1);
+        assertEquals("Invalid offset", 4, offset); // NOI18N
+        int index = Utilities.getLineOffset(doc, doc.getLength() + 1);
+        assertEquals("Invalid index", 1, index); // NOI18N
+    }
+
     public void testGetText() throws Exception {
         BaseDocument doc = new BaseDocument(false, "text/plain");
         CharSequence text = DocumentUtilities.getText(doc);
@@ -161,3 +176,4 @@ public class BaseDocumentTest extends NbTestCase {
         assertEquals("Expecting no events on removed listener", 0, events.size());
     }
 }
+    

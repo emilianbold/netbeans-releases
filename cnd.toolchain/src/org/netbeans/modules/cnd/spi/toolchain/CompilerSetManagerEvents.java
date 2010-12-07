@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.ConnectionNotifier;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -92,7 +92,7 @@ public final class CompilerSetManagerEvents {
             tasks.add(task);
             final ServerRecord record = ServerList.get(executionEnvironment);
             if (record.isOffline()) {
-                ConnectionNotifier.addTask(executionEnvironment, new NamedRunnable(task.getName()) {
+                ConnectionNotifier.addTask(executionEnvironment, new ConnectionNotifier.NamedRunnable(task.getName()) {
                     @Override
                     protected void runImpl() {
                         // nothing :)

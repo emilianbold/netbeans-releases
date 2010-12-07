@@ -107,7 +107,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
-                return null;
+                return declaration;
             }
             _setDeclaration(null);
             declaration = findDeclaration(parent);

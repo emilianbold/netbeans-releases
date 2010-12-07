@@ -68,7 +68,10 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
+import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.ConflictCommand;
+import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -78,6 +81,7 @@ import org.netbeans.libs.git.progress.StatusListener;
 /**
  *
  * @author ondra
+ * @author Tomas Stupka
  */
 public class JGitClient implements GitClient, StatusListener, FileListener {
     private final JGitRepository gitRepository;
@@ -117,9 +121,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public boolean catIndexEntry (File file, OutputStream out, ProgressMonitor monitor) throws GitException {
+    public boolean catIndexEntry (File file, int stage, OutputStream out, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CatCommand cmd = new CatCommand(repository, file, out, monitor);
+        CatCommand cmd = new CatCommand(repository, file, stage, out, monitor);
         cmd.execute();
         return cmd.foundInRevision();
     }
@@ -135,6 +139,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
             CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, roots, monitor, this);
             cmd.execute();
         }
+    }
+   
+    @Override
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CleanCommand cmd = new CleanCommand(repository, roots, monitor, this);
+        cmd.execute();        
     }
 
     /**
@@ -171,6 +182,17 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         BranchCommand cmd = new BranchCommand(gitRepository.getRepository(), all, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    /**
+     * Much faster then an equivalent call to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor) }
+     */
+    @Override
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ConflictCommand cmd = new ConflictCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     @Override
@@ -223,6 +245,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         Repository repository = gitRepository.getRepository();
         InitRepositoryCommand cmd = new InitRepositoryCommand(repository, monitor);
         cmd.execute();
+    }
+
+    @Override
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListModifiedIndexEntriesCommand cmd = new ListModifiedIndexEntriesCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getFiles();
     }
 
     /**

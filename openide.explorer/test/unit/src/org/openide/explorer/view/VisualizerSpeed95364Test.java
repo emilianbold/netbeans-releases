@@ -44,11 +44,9 @@
 
 package org.openide.explorer.view;
 
-import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -59,40 +57,31 @@ import org.openide.nodes.Node;
 public class VisualizerSpeed95364Test extends NbTestCase {
     private int size;
     private TreeNode toCheck;
+    private MyKeys chK;
     
-    /**
-     *
-     * @param name
-     */
     public VisualizerSpeed95364Test(String name) {
         super(name);
     }
     
-    /**
-     *
-     * @return
-     */
     public static NbTestSuite suite() {
         return NbTestSuite.speedSuite(
-                VisualizerSpeed95364Test.class, /* what tests to run */
-                10 /* ten times slower */,
-                3 /* try three times if it fails */
-                );
+            VisualizerSpeed95364Test.class, /* what tests to run */
+            10 /* ten times slower */,
+            17 /* try seventeen times if it fails */
+        );
     }
     
-    /**
-     *
-     */
+    @Override
     protected void setUp() {
         size = getTestNumber();
-        final MyKeys chK = new MyKeys();
+        chK = new MyKeys();
         final AbstractNode root = new AbstractNode(chK);
         root.setName("test root");
         
         final String[] childrenNames = new String[size];
         for (int i = 0; i < size; i++) {
             childrenNames[i] = "test"+i;
-        };
+        }
         chK.mySetKeys(childrenNames);
         toCheck = Visualizer.findVisualizer(root);
     }
@@ -102,20 +91,13 @@ public class VisualizerSpeed95364Test extends NbTestCase {
         for (int i = 0; i < 100000; i++) {
             tn = toCheck.getChildAt(size/2);
         }
+        assertEquals("One node created + 50 at begining", 51, chK.cnt);
     }
     
-    /**
-     *
-     */
-    public void test10() { doTest(); }
-    /**
-     *
-     */
     public void test100() { doTest(); }
-    /**
-     *
-     */
     public void test1000() { doTest(); }
+    public void test10000() { doTest(); }
+    public void test100000() { doTest(); }
     
     
     private static Node createLeaf(String name) {
@@ -124,8 +106,16 @@ public class VisualizerSpeed95364Test extends NbTestCase {
         return n;
     }
     
-    private static final class MyKeys extends Children.Keys {
+    private static final class MyKeys extends Children.Keys<Object> {
+        int cnt;
+        
+        public MyKeys() {
+            super(true);
+        }
+        
+        @Override
         protected Node[] createNodes(Object key) {
+            cnt++;
             return new Node[] { createLeaf(key.toString())};
         }
         

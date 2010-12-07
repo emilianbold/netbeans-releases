@@ -240,7 +240,9 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            assert CharSequences.isCompact(st);
+            if(!CharSequences.isCompact(st)) {
+                assert CharSequences.isCompact(st);
+            }
             aStream.writeUTF(st.toString());
         }
     }
