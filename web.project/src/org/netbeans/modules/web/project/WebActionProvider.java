@@ -294,11 +294,15 @@ class WebActionProvider extends BaseActionProvider {
             if (!isSelectedServer()) {
                 return null;
             }
+            String targetNames[];
             if (command.equals(COMMAND_DEBUG_SINGLE)) {
+                targetNames = new String[]{"debug"};
                 boolean keepDebugging = setJavaScriptDebuggerProperties(p);
                 if (!keepDebugging) {
                     return null;
                 }
+            } else {
+                targetNames = new String[]{"run"};
             }
             // run a JSP
             FileObject files[] = findJsps(context);
@@ -314,7 +318,7 @@ class WebActionProvider extends BaseActionProvider {
                 if (requestParams != null) {
                     p.setProperty("client.urlPart", requestParams); //NOI18N
                     p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                    return commands.get(command);
+                    return targetNames;
                 } else {
                     return null;
                 }
@@ -327,7 +331,7 @@ class WebActionProvider extends BaseActionProvider {
                         url = url.replace(" ", "%20");
                         p.setProperty("client.urlPart", url); //NOI18N
                         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                        return commands.get(command);
+                        return targetNames;
                     } else {
                         return null;
                     }
