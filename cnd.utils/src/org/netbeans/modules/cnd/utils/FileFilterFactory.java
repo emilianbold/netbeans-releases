@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.utils;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllBinaryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllFileFilter;
+import org.netbeans.modules.cnd.utils.filters.AllLibraryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CCSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CSourceFileFilter;
@@ -78,6 +79,30 @@ public final class FileFilterFactory {
     }
 
     private FileFilterFactory() {
+    }
+
+    public static FileFilter[] getLibraryFilters() {
+        FileFilter[] filters = null;
+        if (Utilities.isWindows()) {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllLibraryFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getPeDynamicLibraryFileFilter()
+                    };
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllLibraryFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getMacOSXDynamicLibraryFileFilter()
+                    };
+        } else {
+            filters = new FileFilter[]{
+                        FileFilterFactory.getAllLibraryFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getElfDynamicLibraryFileFilter()
+                    };
+        }
+        return filters;
     }
 
     public static FileFilter[] getBinaryFilters() {
@@ -115,6 +140,9 @@ public final class FileFilterFactory {
     }
     public static FileAndFileObjectFilter getAllBinaryFileFilter(){
         return AllBinaryFileFilter.getInstance();
+    }
+    public static FileAndFileObjectFilter getAllLibraryFileFilter(){
+        return AllLibraryFileFilter.getInstance();
     }
     public static FileAndFileObjectFilter getCCSourceFileFilter(){
         return CCSourceFileFilter.getInstance();

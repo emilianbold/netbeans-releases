@@ -41,16 +41,9 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -76,55 +69,12 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     // Disabled, see IZ 190453
     @RandomlyFails
-    public void testSyncDirStruct() throws Exception {
-        sleep(200); // FIXUP: a workaround for a very instable test failure
-        String dirName = "/usr/include";
-        // set up local test directory
-        File rfsCache = fs.getCache();
-        File localDir = File.createTempFile("usr-include", null, rfsCache);
-        if (localDir.exists()) {
-            boolean result = localDir.isFile() ? localDir.delete() : removeDirectory(localDir);
-            assertTrue("Can't remove file or directory " + localDir, result);
-        } else {
-            boolean result = localDir.mkdirs();
-            assertTrue("Can't create directory " + localDir, result);
-        }
-
-        // set up test file
-        File stdioFile = new File(localDir,"stdio.h");
-        if (stdioFile.exists()) {
-            assertTrue("Can't delete file " + stdioFile, stdioFile.delete());
-        }
-
-        long time;
-        
-        ChildrenSupport childrenSupport = fs.getChildrenSupport();
-        time = System.currentTimeMillis();
-        childrenSupport.ensureDirSync(localDir, dirName);
-        time = System.currentTimeMillis() - time;
-        assertTrue("File " + stdioFile + " should exist", stdioFile.exists());
-        System.err.printf("Synchronizing %s took %d ms\n", dirName, time);
-
-        // check that ensureDirSync does not take too long
-        long maxTime = time / 10;
-        time = System.currentTimeMillis();
-        childrenSupport.ensureDirSync(localDir, dirName);
-        time = System.currentTimeMillis() - time;
-        System.err.printf("Checking sync for %s took %d ms\n", dirName, time);
-        assertTrue("ensureDirSync worked too long", time < maxTime);
-
-        removeDirectory(localDir);
-    }
-
-    @ForAllEnvironments
-    // Disabled, see IZ 190453
-    @RandomlyFails
     public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        String content = readRemoteFile(absPath);
+        String content = readFile(fo);
         String text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
@@ -224,86 +174,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             if (i == 0) {
                 firstTime = time;
             } else if (time > 0) {
-                assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + " took too long (" + time + ") ms",
-                        time < firstTime / 8);
+                assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + "(pass " + (i+1) + ")_ took too long (" +
+                        time + ") ms (vs" + firstTime + " ms on 1-st pass", time < firstTime / 8);
             }
-        }
-    }
-
-    private abstract class ThreadWorker implements Runnable {
-        private final String name;
-        private final CyclicBarrier barrier;
-        final List<Exception> exceptions;
-        ThreadWorker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
-            this.name = name;
-            this.barrier = barrier;
-            this.exceptions = exceptions;
-        }
-        public void run() {
-            Thread.currentThread().setName(name);
-            try {
-                System.err.printf("%s waiting on barrier\n", name);
-                barrier.await();
-                System.err.printf("%s working\n", name);
-                work();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } catch (BrokenBarrierException ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                exceptions.add(ex);
-            } finally {
-                System.err.printf("%s done\n", name);
-            }
-        }
-        protected abstract void work() throws Exception;
-    }
-
-
-    @ForAllEnvironments
-    public void testParallelRead() throws Exception {
-
-        removeDirectory(fs.getCache());
-        final String absPath = "/usr/include/stdio.h";
-
-        int threadCount = 10;
-        final CyclicBarrier barrier = new CyclicBarrier(threadCount);
-        final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
-        final AtomicLong size = new AtomicLong(-1);
-
-        class Worker extends ThreadWorker {
-            public Worker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
-                super(name, barrier, exceptions);
-            }
-            protected void work() throws Exception {
-                String content = readRemoteFile(absPath);
-                int currSize = content.length();
-                size.compareAndSet(-1, currSize);
-                String text2search = "printf";
-                assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                        content.indexOf(text2search) >= 0);
-                assertEquals("File size for " + absPath + " differ", size.get(), currSize);
-            }
-        }
-
-        fs.resetStatistic();
-        Thread[] threads = new Thread[threadCount];
-        for (int i = 0; i < threadCount; i++) {
-            threads[i] = new Thread(new Worker(absPath, barrier, exceptions));
-            threads[i].start();
-        }
-        System.err.printf("Waiting for threads to finish\n");
-        for (int i = 0; i < threadCount; i++) {
-            threads[i].join();
-        }
-        assertEquals("Dir. sync count differs", 3, fs.getDirSyncCount());
-        assertEquals("File transfer count differs", 1, fs.getFileCopyCount());
-        if (!exceptions.isEmpty()) {
-            System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
-            throw exceptions.iterator().next();
         }
     }
 
@@ -326,6 +199,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
             tempFile = mkTemp();
             fo = rootFO.getFileObject(tempFile);
+            assertNotNull("Null file object for " + tempFile, fo);
             assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
             String content = "a quick brown fox...";
             writeFile(fo, content);
