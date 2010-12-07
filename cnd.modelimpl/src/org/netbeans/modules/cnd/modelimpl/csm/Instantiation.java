@@ -66,9 +66,12 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
@@ -810,6 +813,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
+        private CsmFunctionDefinition definition = null;
+        private CsmClass containingClass = null;
 
         public Method(CsmMethod method, CsmInstantiation instantiation) {
             super(method, instantiation.getMapping());
@@ -834,7 +839,28 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmClass getContainingClass() {
-            return declaration.getContainingClass();
+            if(containingClass == null) {
+                containingClass = _getContainingClass();
+            }
+            return containingClass;
+        }
+
+        public CsmClass _getContainingClass() {
+            CsmClass containingClass = declaration.getContainingClass();
+            if(CsmKindUtilities.isTemplate(containingClass)) {
+                CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+                if (p instanceof InstantiationProviderImpl) {
+                    List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+                    for (CsmTemplateParameter ip : instantiation.getMapping().keySet()) {
+                        params.add(instantiation.getMapping().get(ip));
+                    }
+                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, params, getContainingFile(), getStartOffset());
+                    if (inst instanceof CsmClass) {
+                        return (CsmClass) inst;
+                    }
+                }
+            }
+            return containingClass;
         }
 
         public boolean isTemplate() {
@@ -878,6 +904,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmFunctionDefinition getDefinition() {
+            if(definition == null) {
+                definition = _getDefinition();
+            }
+            return definition;
+        }
+
+        public CsmFunctionDefinition _getDefinition() {
+            CsmClass cls = getContainingClass();
+            if (CsmKindUtilities.isSpecialization(cls) && declaration instanceof FunctionImpl) {
+                FunctionImpl decl = (FunctionImpl) declaration;
+                return decl.getDefinition(cls);
+            }
             return declaration.getDefinition();
         }
 
@@ -918,12 +956,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         @Override
         public CsmCompoundStatement getBody() {
-            return ((CsmFunctionDefinition)declaration).getBody();
+            if (CsmKindUtilities.isFunctionDefinition(declaration)) {
+                return ((CsmFunctionDefinition)declaration).getBody();
+            }
+            return null;
         }
 
         @Override
         public CsmFunction getDeclaration() {
-            return ((CsmFunctionDefinition)declaration).getDeclaration();
+            if (CsmKindUtilities.isFunctionDefinition(declaration)) {
+                return ((CsmFunctionDefinition)declaration).getDeclaration();
+            }
+            return this;
         }
 
         @Override
