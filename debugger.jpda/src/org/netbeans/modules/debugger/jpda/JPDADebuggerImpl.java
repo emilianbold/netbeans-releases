@@ -63,9 +63,6 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.InvalidRequestStateException;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -84,7 +81,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -104,7 +100,6 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
@@ -143,8 +138,6 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
@@ -247,6 +240,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @see #STATE_STOPPED
      * @see #STATE_DISCONNECTED
      */
+    @Override
     public int getState () {
         synchronized (stateLock) {
             return state;
@@ -258,6 +252,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return value of suspend property
      */
+    @Override
     public int getSuspend () {
         synchronized (stateLock) {
             return suspend;
@@ -269,6 +264,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @param s a new value of suspend property
      */
+    @Override
     public void setSuspend (int s) {
         int old;
         synchronized (stateLock) {
@@ -284,6 +280,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current thread or null
      */
+    @Override
     public JPDAThread getCurrentThread () {
         return currentThread;
     }
@@ -293,6 +290,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current stack frame or null
      */
+    @Override
     public CallStackFrame getCurrentCallStackFrame () {
         synchronized (currentThreadAndFrameLock) {
             return currentCallStackFrame;
@@ -306,6 +304,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current value of given expression
      */
+    @Override
     public Variable evaluate (String expression) throws InvalidExpressionException {
         return evaluate(expression, null, null);
     }
@@ -350,11 +349,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Waits till the Virtual Machine is started and returns
      * {@link DebuggerStartException} if any.
      *
-     * @throws DebuggerStartException is some problems occurres during debugger
+     * @throws DebuggerStartException if some problems occurs during debugger
      *         start
      *
      * @see AbstractDICookie#getVirtualMachine()
      */
+    @Override
     public void waitRunning () throws DebuggerStartException {
         waitRunning(0);
     }
@@ -364,7 +364,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return <code>true</code> when debugger started or finished in the mean time,
      *         <code>false</code> when the debugger is still starting
-     * @throws DebuggerStartException is some problems occurres during debugger
+     * @throws DebuggerStartException if some problems occurs during debugger
      *         start
      *
      * @see AbstractDICookie#getVirtualMachine()
@@ -403,6 +403,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return <code>true</code> if this debugger supports Pop action
      */
+    @Override
     public boolean canPopFrames () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
@@ -415,6 +416,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return <code>true</code> if this debugger supports fix & continue
      */
+    @Override
     public boolean canFixClasses () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
@@ -427,6 +429,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @param classes a map from class names to be fixed to byte[]
      */
+    @Override
     public void fixClasses (Map<String, byte[]> classes) {
         PropertyChangeEvent evt = null;
         accessLock.writeLock().lock();
@@ -521,6 +524,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Boolean canBeModified;
     private final Object canBeModifiedLock = new Object();
 
+    @Override
     public boolean canBeModified() {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
@@ -539,6 +543,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return instance of SmartSteppingFilter
      */
+    @Override
     public SmartSteppingFilter getSmartSteppingFilter () {
         if (smartSteppingFilter == null) {
             smartSteppingFilter = lookupProvider.lookupFirst(null, SmartSteppingFilter.class);
@@ -568,6 +573,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
+    @Override
     public void fireBreakpointEvent (
         JPDABreakpoint breakpoint,
         JPDABreakpointEvent event
@@ -580,6 +586,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     *
     * @param l new listener.
     */
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         pcs.addPropertyChangeListener (l);
     }
@@ -589,6 +596,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     *
     * @param l removed listener.
     */
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener l) {
         pcs.removePropertyChangeListener (l);
     }
@@ -598,6 +606,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     *
     * @param l new listener.
     */
+    @Override
     public void addPropertyChangeListener (String propertyName, PropertyChangeListener l) {
         pcs.addPropertyChangeListener (propertyName, l);
     }
@@ -607,6 +616,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     *
     * @param l removed listener.
     */
+    @Override
     public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
         pcs.removePropertyChangeListener (propertyName, l);
     }
@@ -832,6 +842,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 int stackDepth = csf.getFrameDepth();
                 final ThreadReference tr = StackFrameWrapper.thread(sf);
                 Runnable methodToBeInvokedNotifier = new Runnable() {
+                        @Override
                         public void run() {
                             if (resumedThread[0] == null) {
                                 JPDAThreadImpl theResumedThread = getThread(tr);
@@ -1066,10 +1077,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return (String) tcGenericSignatureMethod.invoke
                 (component, new Object[0]);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
             return null;    // should not happen
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
             return null;    // should not happen
         }
     }
@@ -1079,10 +1090,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         try {
             return (String) lvGenericSignatureMethod.invoke(component, new Object[0]);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
             return null;    // should not happen
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
             return null;    // should not happen
         }
     }
@@ -1635,6 +1646,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 threadsCache = new ThreadsCache(this);
                 threadsCache.addPropertyChangeListener(new PropertyChangeListener() {
                     //  Re-fire the changes
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         String propertyName = evt.getPropertyName();
                         if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
@@ -2014,6 +2026,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             "netbeans-jpda-JSR45DICookie-" + language,
             new Object[] {
                 new DelegatingSessionProvider () {
+                    @Override
                     public Session getSession (
                         DebuggerInfo debuggerInfo
                     ) {
@@ -2025,6 +2038,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         );
     }
 
+    @Override
     public JPDAStep createJPDAStep(int size, int depth) {
         Session session = lookupProvider.lookupFirst(null, Session.class);
         return new JPDAStepImpl(this, session, size, depth);
@@ -2038,6 +2052,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }*/
 
+    @Override
     public List<JPDAClassType> getAllClasses() {
         //assert !java.awt.EventQueue.isDispatchThread() : "All classes retrieving in AWT Event Queue!";
         List<ReferenceType> classes;
@@ -2051,6 +2066,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return new ClassTypeList(this, classes);
     }
 
+    @Override
     public List<JPDAClassType> getClassesByName(String name) {
         List<ReferenceType> classes;
         synchronized (virtualMachineLock) {
@@ -2092,6 +2108,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
     }
 
+    @Override
     public boolean canGetInstanceInfo() {
         synchronized (virtualMachineLock) {
             return virtualMachine != null && virtualMachine.canGetInstanceInfo();
