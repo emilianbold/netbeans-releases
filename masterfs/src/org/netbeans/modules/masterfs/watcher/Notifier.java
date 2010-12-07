@@ -88,4 +88,10 @@ public abstract class Notifier<KEY> {
      * @throws IOException
      */
     public abstract String nextEvent() throws IOException;
+    
+    /** Get ready for stop. Clean all resources, the system is about to
+     * shutdown the VM. By default this is no-op operation.
+     */
+    protected void stop() throws IOException {
+    }
 }
