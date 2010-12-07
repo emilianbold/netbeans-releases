@@ -82,10 +82,12 @@ public class DirectoryReader {
 
     private static class LsLineParser {
 
-        final int timestampWordCount;
+        private final int timestampWordCount;
+        private final String remoteDir;
 
-        public LsLineParser(int timestampWordCount) {
+        public LsLineParser(int timestampWordCount, String remoteDir) {
             this.timestampWordCount = timestampWordCount;
+            this.remoteDir = remoteDir;
         }
 
         public DirectoryStorage.Entry parseLine(String line) {
@@ -95,7 +97,7 @@ public class DirectoryReader {
 //            }
             String[] words = line.split(" +"); //NOI18N
             if (words.length < 6 + timestampWordCount) {
-                RemoteLogger.getInstance().log(Level.INFO, "Unexpected ls output format: {0}", line);
+                RemoteLogger.getInstance().log(Level.INFO, "Unexpected ls output format for {0}: {0}", new Object[] { remoteDir, line });
                 return null;
             }
             StringBuilder timestamp = new StringBuilder();
@@ -108,9 +110,12 @@ public class DirectoryReader {
             }
             long size;
             try {
+                if (words[4].endsWith(",")) { //NOI18N
+                    words[4] = words[4].substring(0, words[4].length()-1); // in /dev size ends with comma
+                }
                 size = Long.parseLong(words[4]);
             } catch (NumberFormatException e) {
-                RemoteLogger.getInstance().log(Level.INFO, "Unexpected ls output format: {0}", line);
+                RemoteLogger.getInstance().log(Level.INFO, "Unexpected ls output format (size) for {0}: {0}", new Object[] { remoteDir, line });
                 size = 1024;
             }
             StringBuilder name = new StringBuilder();
@@ -214,7 +219,7 @@ public class DirectoryReader {
     public final void readDirectory() throws IOException, InterruptedException, CancellationException {
         RemoteLogger.assertTrue(ConnectionManager.getInstance().isConnectedTo(execEnv), execEnv.getDisplayName() + " shoud"); //NOI18N
         HostInfo.OSFamily oSFamily = HostInfoUtils.getHostInfo(execEnv).getOSFamily();
-        lineParser = createLsLineParser(oSFamily);
+        lineParser = createLsLineParser(oSFamily, remoteDirectory);
         String option = getFullTimeLsOption(oSFamily);
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
         pb.setExecutable("/bin/ls"); //NOI18N
@@ -252,24 +257,24 @@ public class DirectoryReader {
         }
     }
 
-    private static LsLineParser createLsLineParser(HostInfo.OSFamily oSFamily) {
+    private static LsLineParser createLsLineParser(HostInfo.OSFamily oSFamily, String remoteDir) {
         switch (oSFamily) {
             case LINUX:
-                return new LsLineParser(3); // LinuxLsLineParser();
+                return new LsLineParser(3, remoteDir); // LinuxLsLineParser();
             case MACOSX:
-                return new LsLineParser(4); // MacosLsLineParser();
+                return new LsLineParser(4, remoteDir); // MacosLsLineParser();
             case SUNOS:
-                return new LsLineParser(3); // SolarisLsLineParser();
+                return new LsLineParser(3, remoteDir); // SolarisLsLineParser();
             case WINDOWS:
                 throw new IllegalStateException("Windows in unsupported"); //NOI18N
             case UNKNOWN:
             default:
-                return new LsLineParser(4); // OtherLsLineParser();
+                return new LsLineParser(4, remoteDir); // OtherLsLineParser();
         }
     }
 
     /*package*/ static List<DirectoryStorage.Entry> testLsLineParser(HostInfo.OSFamily oSFamily, String[] lines) {
-        LsLineParser lp = createLsLineParser(oSFamily);
+        LsLineParser lp = createLsLineParser(oSFamily, "/dummy"); // NOI18N
         List<DirectoryStorage.Entry> result = new ArrayList<Entry>();
         for (String line : lines) {
             DirectoryStorage.Entry entry = lp.parseLine(line);
