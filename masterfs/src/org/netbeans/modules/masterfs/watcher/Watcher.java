@@ -54,20 +54,22 @@ import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author nenik
  */
-@ServiceProvider(service=AnnotationProvider.class)
-public class Watcher extends AnnotationProvider {
-
+@ServiceProviders({
+    @ServiceProvider(service=AnnotationProvider.class),
+    @ServiceProvider(service=Watcher.class)
+})
+public final class Watcher extends AnnotationProvider {
     private static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
     private final Ext<?> ext;
@@ -98,7 +100,19 @@ public class Watcher extends AnnotationProvider {
     public @Override InterceptionListener getInterceptionListener() {
         return ext;
     }
-
+    
+    public void shutdown() {
+        if (ext != null) {
+            try {
+                ext.shutdown();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Error on shutdown", ex);
+            } catch (InterruptedException ex) {
+                LOG.log(Level.INFO, "Error on shutdown", ex);
+            }
+        }
+    }
+ 
     private <KEY> Ext<KEY> make(Notifier<KEY> impl) {
         return impl == null ? null : new Ext<KEY>(impl);
     }
@@ -106,13 +120,16 @@ public class Watcher extends AnnotationProvider {
     private class Ext<KEY> extends ProvidedExtensions implements Runnable {
         private final Notifier<KEY> impl;
         private final Map<FileObject, KEY> map = new WeakHashMap<FileObject, KEY>();
+        private final Thread watcher;
+        private boolean shutdown;
 
         @SuppressWarnings("CallToThreadStartDuringObjectConstruction")
         public Ext(Notifier<KEY> impl) {
             this.impl = impl;
-            new Thread(this, "File Watcher").start(); // NOI18N
+            (watcher = new Thread(this, "File Watcher")).start(); // NOI18N
         }
 
+        /*
         // will be called from WHM implementation on lost key
         private void fileObjectFreed(KEY key) {
             try {
@@ -123,6 +140,7 @@ public class Watcher extends AnnotationProvider {
               Exceptions.printStackTrace(ioe);  
             }
         }
+         */
 
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
             FileObject fo = FileUtil.toFileObject(dir);
@@ -142,17 +160,18 @@ public class Watcher extends AnnotationProvider {
                 map.put(fo, impl.addWatch(path));
             } catch (IOException ex) {
                 // XXX: handle resource overflow gracefully
-                Exceptions.printStackTrace(ex);
-
+                LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}", path);
+                LOG.log(Level.INFO, "Exception", ex);
             }
 
             return -1;
         }
 
         @Override public void run() {
-            for (;;) {
+            while (!shutdown) {
                 try {
                     String path = impl.nextEvent();
+                    LOG.log(Level.FINEST, "nextEvent: {0}", path); 
 
                     // XXX: handle the all-dirty message
                     if (path == null) { // all dirty
@@ -170,9 +189,16 @@ public class Watcher extends AnnotationProvider {
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
-                    Exceptions.printStackTrace(t);
+                    LOG.log(Level.INFO, "Error dispatching FS changes", t);
                 }
             }
+        }
+
+        final void shutdown() throws IOException, InterruptedException {
+            shutdown = true;
+            watcher.interrupt();
+            impl.stop();
+            watcher.join();
         }
     }
 
@@ -188,10 +214,14 @@ public class Watcher extends AnnotationProvider {
                 toRefresh = pending;
                 pending = null;
             }
+            LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 
             for (FileObject fileObject : toRefresh) {
+                LOG.log(Level.FINEST, "Refreshing {0}", fileObject);
                 fileObject.refresh();
             }
+            
+            LOG.fine("Refresh finished");
         }
     });
 
@@ -240,8 +270,6 @@ public class Watcher extends AnnotationProvider {
                     return notifier;
                 } catch (IOException ioe) {
                     LOG.log(Level.INFO, null, ioe);
-                } catch (InterruptedException ie) {
-                    LOG.log(Level.INFO, null, ie);
                 }
             }
             if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
