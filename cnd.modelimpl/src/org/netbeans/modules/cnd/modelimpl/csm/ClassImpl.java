@@ -897,6 +897,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     classifier.addEnclosingVariable(field);
                 }
                 added = true;
+                if (cont) {
+                    idAST = prev.getNextSibling();
+                }
             }
             return added;
         }
