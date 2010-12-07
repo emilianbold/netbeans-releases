@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 /**
  * Lazy try-catch statements
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class LazyTryCatchStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 

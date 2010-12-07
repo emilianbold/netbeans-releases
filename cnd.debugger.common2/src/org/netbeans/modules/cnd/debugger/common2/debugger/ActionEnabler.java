@@ -59,6 +59,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToFunctionA
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxFrameAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RerunAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.DisassemblerWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RegistersWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.EvaluationWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MemoryWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PioWindowAction;
 import java.util.LinkedList;
 
 import org.openide.util.actions.SystemAction;
@@ -106,6 +110,11 @@ class ActionEnabler {
 	actions.add(SystemAction.get(MaxFrameAction.class));
 	actions.add(SystemAction.get(MaxObjectAction.class));
 	actions.add(SystemAction.get(DisassemblerWindowAction.class));
+        actions.add(SystemAction.get(RegistersWindowAction.class));
+        actions.add(SystemAction.get(MemoryWindowAction.class));
+        actions.add(SystemAction.get(PioWindowAction.class));
+        actions.add(SystemAction.get(EvaluationWindowAction.class));
+        
 	// 6640192
 	actions.add(SystemAction.get(EvaluateAction.class));
 

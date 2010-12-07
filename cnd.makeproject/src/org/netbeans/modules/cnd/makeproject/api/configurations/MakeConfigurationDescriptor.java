@@ -978,7 +978,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Don't add if root inside project
      * Don't add if root is subdir of existing root
      */
-    private void addSourceRoot(String path) {
+    public void addSourceRoot(String path) {
         String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
         String canonicalPath = null;
         try {
@@ -990,7 +990,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (sourceRoots) {
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
@@ -1041,7 +1040,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 setModified();
             }
         }
-        //}
+        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+        if (makeSources != null) {
+            makeSources.sourceRootsChanged();
+        }
     }
 
     /*
@@ -1122,7 +1124,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Add new source root folders
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
-                    addFilesFromRoot(getLogicalFolders(), getBaseDirFileObject(), true, true, null);
+                    FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
+                    addFilesFromRoot(getLogicalFolders(), fo, true, true, null);
                 }
                 setModified();
             }
@@ -1294,10 +1297,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         addSourceRoot(dir.getPath());
-        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
-        if (makeSources != null) {
-            makeSources.sourceRootsChanged();
-        }
 
         return top;
     }

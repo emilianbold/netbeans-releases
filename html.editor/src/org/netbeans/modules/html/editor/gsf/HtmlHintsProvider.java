@@ -93,7 +93,7 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlVersion version = result.getDetectedHtmlVersion();
         FileObject file = result.getSnapshot().getSource().getFileObject();
         Project project = file != null ? FileOwnerQuery.getOwner(file) : null;
-
+        boolean xhtml = result.getSyntaxAnalyzerResult().mayBeXhtml();
         if (version == null) {
             //the version can be determined
             
@@ -109,16 +109,16 @@ public class HtmlHintsProvider implements HintsProvider {
                 });
             } else {
                 //no doctype declaration found, generate the set default project html version hint
-                HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+                HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
                 String msg =  defaulted == null ?
-                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION") :
-                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
+                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION" : "MSG_CANNOT_DETERMINE_HTML_VERSION") :
+                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION_DEFAULTED_ALREADY" : "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
 
                 hints.add(new Hint(getRule(Severity.WARNING),
                         msg,
                         file,
                         new OffsetRange(0, 0),
-                        generateSetDefaultHtmlVersionHints(project, result.getSnapshot().getSource().getDocument(false)),
+                        generateSetDefaultHtmlVersionHints(project, result.getSnapshot().getSource().getDocument(false), xhtml),
                         100) {
                 });
             }
@@ -126,11 +126,13 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
-    private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc) {
+    private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
         List<HintFix> fixes = new LinkedList<HintFix>();
         if(project != null) {
             for(HtmlVersion v : HtmlVersion.values()) {
-                fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc));
+                if(xhtml == v.isXhtml()) {
+                    fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc, xhtml));
+                }
             }
         }
 
@@ -554,11 +556,13 @@ public class HtmlHintsProvider implements HintsProvider {
         private HtmlVersion version;
         private Document doc;
         private Project project;
+        private boolean xhtml;
 
-        public SetDefaultHtmlVersionHintFix(HtmlVersion version, Project project, Document doc) {
+        public SetDefaultHtmlVersionHintFix(HtmlVersion version, Project project, Document doc, boolean xhtml) {
             this.version = version;
             this.project = project;
             this.doc = doc; //to be able to force reparse the hinted document
+            this.xhtml = xhtml;
         }
 
         @Override
@@ -568,7 +572,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            ProjectDefaultHtmlSourceVersionController.setDefaultHtmlVersion(project, version);
+            ProjectDefaultHtmlSourceVersionController.setDefaultHtmlVersion(project, version, xhtml);
             forceReparse(doc);
         }
 

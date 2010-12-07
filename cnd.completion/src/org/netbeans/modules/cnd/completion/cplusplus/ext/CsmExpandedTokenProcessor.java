@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 /**
  * Macro expanded token processor.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<TokenId>>, MacroCallback {
 

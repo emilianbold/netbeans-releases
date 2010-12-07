@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import javax.swing.SwingUtilities;
@@ -116,6 +117,8 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -2968,7 +2971,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		       " " + signalName;			// NOI18N
 
         } else if (reason.equals("function-finished")) { // NOI18N
-            stateMsg = Catalog.get("Dbx_function_returned");	// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else {
@@ -3411,19 +3414,42 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         memoryWindow = w;
     }
 
+    private static final int MEMORY_READ_WIDTH = 16;
+    
     public void requestMems(String start, String length, String format, int index) {
-        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 1 " + length) { // NOI18N
+        int lines;
+        try {
+            lines = (Integer.valueOf(length)-1)/MEMORY_READ_WIDTH+1;
+        } catch (Exception e) {
+            return;
+        }
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
                 if (memoryWindow != null) {
-                    //update memory window here
-                    //memoryWindow.updateData();
+                    LinkedList<String> res = new LinkedList<String>();
+                    for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+                        StringBuilder sb = new StringBuilder();
+                        MITList line = ((MITList)elem);
+                        String addr = line.valueOf("addr").asConst().value(); //NOI18N
+                        sb.append(addr).append(':'); //NOI18N
+                        MIValue dataValue = line.valueOf("data"); //NOI18N
+                        for (MITListItem dataElem : dataValue.asList()) {
+                            sb.append(' ').append(((MIConst)dataElem).value());
+                        }
+                        String ascii = line.valueOf("ascii").asConst().value(); //NOI18N
+                        sb.append(" \"").append(ascii).append("\""); //NOI18N
+                        res.add(sb.toString() + "\n"); //NOI18N
+                    }
+                    memoryWindow.updateData(res);
                 }
-                //update memory window
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        // LATER: sometimes it is sent too early, need to investigate
+        if (gdb != null) {
+            gdb.sendCommand(cmd);
+        }
     }
 
     public void registerEvaluationWindow(EvaluationWindow w) {
