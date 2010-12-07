@@ -270,11 +270,14 @@ public class ImportExecutable implements PropertyChangeListener {
                     try {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                         MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                        if (addSourceRoot) {
-                            configurationDescriptor.addSourceRoot(sourcesPath);
-                        }
                         applicable = extension.isApplicable(map, lastSelectedProject);
                         if (applicable.isApplicable()) {
+                            if (sourcesPath == null) {
+                                sourcesPath = applicable.getSourceRoot();
+                            }
+                            if (addSourceRoot && sourcesPath != null && sourcesPath.length()>1) {
+                                configurationDescriptor.addSourceRoot(sourcesPath);
+                            }
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
