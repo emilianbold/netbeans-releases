@@ -66,8 +66,8 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
-    protected final RemoteFileSystem fs;
-    protected final FileObject rootFO;
+    protected RemoteFileSystem fs;
+    protected FileObject rootFO;
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
@@ -84,11 +84,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         this.execEnv = execEnv;
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
-        fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
-        assertNotNull("Null remote file system", fs);
-        rootFO = fs.getRoot();
-        assertNotNull("Null root file object", rootFO);
     }
 
     @Override
@@ -97,8 +92,13 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         if (execEnv == null) {
             return;
         }
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
+        assertNotNull("Null remote file system", fs);
         File cache = fs.getCache();
         removeDirectoryContent(cache);
+        rootFO = fs.getRoot();
+        assertNotNull("Null root file object", rootFO);
         assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);

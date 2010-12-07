@@ -900,6 +900,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     break;
                                 case TERNARY_OPERATOR:
                                     popExp();
+                                    top = peekExp();
+                                    while (getValidExpID(top) == VARIABLE
+                                            || getValidExpID(top) == OPERATOR
+                                            || getValidExpID(top) == CONSTANT) {
+                                        popExp();
+                                        top = peekExp();
+                                    }                                    
                                     pushExp(createTokenExp(VARIABLE));
                                     break;
 
