@@ -134,6 +134,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
             NewClassTree nct = (NewClassTree) tp.getLeaf();
 
             if (nct.getClassBody() == null) {
+                tp = tp.getParentPath();
                 continue;
             }
 
