@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 /**
  * Lazy statements
  *
- * @author Vladimir Kvashin, Nick Krasilnikov
+ * @author Vladimir Kvashin, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 

@@ -48,8 +48,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
@@ -57,10 +55,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
-public class RegistersWindowAction extends CallableSystemAction {
+public class RegistersWindowAction extends CallableSystemAction implements StateListener {
 
-    String menu_name;
-    String group_name;
+    private final String menu_name;
+    private final String group_name;
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -6814567172958445516L;    
@@ -76,12 +74,24 @@ public class RegistersWindowAction extends CallableSystemAction {
     }
 
     // interface SystemAction
-    public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-        return debugger != null;
+    @Override
+    protected void initialize() {
+        super.initialize();
+        setEnabled(false);
     }
 
+    // interface StateListener
+    public void update(State state) {
+        boolean enable;
+        if (!state.isLoaded) {
+            enable = false;
+        } else {
+            enable = state.isListening();
+        }
 
+        setEnabled(enable);
+    }
+    
     // interface CallableSystemAction
     public void performAction() {
 	NativeDebugger debugger = DebuggerManager.get().currentDebugger();

@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
 /**
  * Utility methods for Macro Expansion view.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class MacroExpansionViewUtils {
 

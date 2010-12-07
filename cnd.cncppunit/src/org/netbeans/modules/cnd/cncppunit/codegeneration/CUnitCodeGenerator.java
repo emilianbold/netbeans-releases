@@ -52,8 +52,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
- *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CUnitCodeGenerator {
 

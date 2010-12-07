@@ -110,6 +110,18 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
+    protected Boolean canReadImpl(CharSequence path) {
+        FileSystemAndString p = getFileSystemAndRemotePath(path);
+        if (p != null) {
+            CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
+            CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
+            FileObject fo = p.getFileObject();
+            return (fo != null && fo.isValid() && fo.canRead());
+        }
+        return null;
+    }
+
+    @Override
     protected Boolean existsImpl(CharSequence path) {
         FileSystemAndString p = getFileSystemAndRemotePath(path);
         if (p != null) {

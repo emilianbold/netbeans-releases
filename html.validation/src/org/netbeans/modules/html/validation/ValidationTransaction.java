@@ -143,6 +143,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private static final Pattern SPACE = Pattern.compile("\\s+");
     protected static final int HTML5_SCHEMA = 3;
     protected static final int XHTML1STRICT_SCHEMA = 2;
+    protected static final int XHTML1FRAMESET_SCHEMA = 4;
     protected static final int XHTML1TRANSITIONAL_SCHEMA = 1;
     protected static final int XHTML5_SCHEMA = 7;
     private static Spec html5spec;
@@ -169,7 +170,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
     protected String document = null;
-    private ParserMode parser = ParserMode.AUTO;
+    ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
     protected MessageEmitterAdapter errorHandler;
     protected final AttributesImpl attrs = new AttributesImpl();
@@ -469,6 +470,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         codeToValidate = code;
         document = sourceURI; //represents an URI where the document can be loaded
         parser = htmlVersion2ParserMode(version);
+
+        LOGGER.fine(String.format("Using %s parser.", parser.name()));
+
 //        charsetOverride = "UTF-8";
         filteredNamespaces = Collections.emptySet();
         int lineOffset = 0;
@@ -492,7 +496,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
         if(version.isXhtml()) {
-            return ParserMode.XML_NO_EXTERNAL_ENTITIES;
+            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
         } else {
             switch(version) {
                 case HTML41_STRICT:
@@ -752,6 +756,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 //                htmlParser.setProperty("http://validator.nu/properties/body-fragment-context-mode", bodyFragmentContextMode);
                 reader = htmlParser;
                 if (validator == null) {
+                    LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
                     validator = validatorByDoctype(schemaId);
                 }
                 if (validator != null) {
@@ -765,6 +770,30 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 setAcceptAllKnownXmlTypes(true);
                 setAllowXhtml(true);
                 loadDocumentInput();
+
+                if(version != null) {
+                    switch(version) {
+                        case XHTML10_TRANSATIONAL:
+                            schemaId = XHTML1TRANSITIONAL_SCHEMA;
+                            break;
+                        case XHTML10_STICT:
+                            schemaId = XHTML1STRICT_SCHEMA;
+                            break;
+                        case XHTML10_FRAMESET:
+                            schemaId = XHTML1FRAMESET_SCHEMA;
+                            break;
+                        default:
+                            schemaId = 0;
+                    }
+
+                    if(schemaId != 0) {
+                        validator = validatorByDoctype(schemaId);
+
+                        LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
+                    }
+                }
+
+
                 setupXmlParser();
                 break;
             default:
@@ -1222,5 +1251,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         documentInput.setType("text/html");
         documentInput.setLength(codeToValidate.length());
         documentInput.setEncoding("UTF-8");
+    }
+
+    private String getSchemasForDoctypeId(int schemaId) {
+        for (int i = 0; i < presetDoctypes.length; i++) {
+            if (presetDoctypes[i] == schemaId) {
+                return presetUrls[i];
+            }
+        }
+        return null;
     }
 }

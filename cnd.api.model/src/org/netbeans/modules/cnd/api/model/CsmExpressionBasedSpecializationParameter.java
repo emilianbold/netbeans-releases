@@ -57,7 +57,7 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Template specialization parameter based on expression.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmExpressionBasedSpecializationParameter extends CsmSpecializationParameter {
 }

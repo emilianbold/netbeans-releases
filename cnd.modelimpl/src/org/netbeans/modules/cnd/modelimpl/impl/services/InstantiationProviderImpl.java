@@ -99,7 +99,7 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
 /**
  * Service that provides template instantiations
  * 
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
 public final class InstantiationProviderImpl extends CsmInstantiationProvider {
@@ -108,7 +108,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset) {
-        return instantiate(template, params, contextFile, contextOffset, null);
+        return instantiate(template, params, contextFile, contextOffset, true, null);
     }
 
     @Override
@@ -246,7 +246,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
     }
 
-    private CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset, Resolver resolver) {
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset, boolean specialize) {
+        return instantiate(template, params, contextFile, contextOffset, specialize, null);
+    }
+
+    private CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset, boolean specialize, Resolver resolver) {
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
             // check that all params are resolved
@@ -261,7 +265,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     hasUnresolvedParams = true;
                 }
             }
-            if (!hasUnresolvedParams) {
+            if (!hasUnresolvedParams && specialize) {
                 if (CsmKindUtilities.isClassifier(template)) {
                     CsmClassifier specialization = specialize((CsmClassifier) template, params, contextFile, contextOffset, resolver);
                     if (CsmKindUtilities.isTemplate(specialization)) {
