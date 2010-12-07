@@ -41,33 +41,55 @@ package org.netbeans.modules.html.validation;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+import java.io.File;
 import java.util.Collection;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import nu.validator.servlet.ParserMode;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
 /**
  *
  * @author marekfukala
  */
-public class ValidationTransactionTest extends NbTestCase {
+public class ValidationTransactionTest extends TestBase {
 
     public ValidationTransactionTest(String name) {
         super(name);
     }
 
-    public static Test xsuite() {
-//        ValidationTransaction.enableDebug();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setInstances(
+                new OpenProject(),
+                new TestProjectFactory(),
+                new SimpleFileOwnerQueryImplementation());
 
-        String testName = "testFragment";
+    }
+
+
+
+    public static Test Xsuite() {
+        ValidationTransaction.enableDebug();
+
+        String testName = "testXhtmlFile3";
         System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidatorImplTest(testName));
+        suite.addTest(new ValidationTransactionTest(testName));
         return suite;
     }
 
@@ -151,13 +173,55 @@ public class ValidationTransactionTest extends NbTestCase {
 //        assertTrue(vt.isSuccess());
 //    }
 
+    //xhtml 1.0 strict, proper xml pi, doctype and root namespace
+    public void testXhtmlFile1() throws SAXException {
+        FileObject fo = getTestFile("testfiles/test1.xhtml");
+        Source source = Source.create(fo);
+        String code = source.createSnapshot().getText().toString();
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(fo)).analyze();
+        assertNotNull(result);
+
+        HtmlVersion version = result.getHtmlVersion();
+        assertSame(HtmlVersion.XHTML10_STICT, version);
+
+        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        validate(code, true, result.getHtmlVersion(), vt);
+
+        assertSame(ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION, vt.parser);
+        assertNotNull(vt.xmlParser);
+        assertNull(vt.htmlParser);
+    }
+
+    //xhtml 5, proper xml pi, namespace, MISSING doctype
+    public void testXhtmlFile2() throws SAXException {
+        FileObject fo = getTestFile("testfiles/test2.xhtml");
+        Source source = Source.create(fo);
+        String code = source.createSnapshot().getText().toString();
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(fo)).analyze();
+        assertNotNull(result);
+
+        assertNull(result.getDetectedHtmlVersion());
+        HtmlVersion version = result.getHtmlVersion();
+        assertSame(HtmlVersion.XHTML5, version);
+
+        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        validate(code, true, result.getHtmlVersion(), vt);
+
+        assertSame(ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION, vt.parser);
+        assertNotNull(vt.xmlParser);
+        assertNull(vt.htmlParser);
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
         validate(code, expectedPass, HtmlVersion.HTML5);
     }
 
     private void validate(String code, boolean expectedPass, HtmlVersion version) throws SAXException {
-        System.out.print("Validating code " + code.length() + " chars long...");
         ValidationTransaction vt = ValidationTransaction.create(version);
+        validate(code, expectedPass, version, vt);
+    }
+    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt) throws SAXException {
+        System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
         vt.validateCode(code, null);
 
         Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
@@ -172,6 +236,18 @@ public class ValidationTransactionTest extends NbTestCase {
         assertEquals(expectedPass, vt.isSuccess());
         assertEquals(expectedPass, problems.isEmpty());
 
-        System.out.println("done in " + vt.getValidationTime() + " ms with " + problems.size() + " problems.");
+        System.out.println("validated in " + vt.getValidationTime() + " ms with " + problems.size() + " problems.");
     }
+
+    private FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
+
+        return fo;
+    }
+
 }
