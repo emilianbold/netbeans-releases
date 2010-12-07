@@ -2971,7 +2971,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		       " " + signalName;			// NOI18N
 
         } else if (reason.equals("function-finished")) { // NOI18N
-            stateMsg = Catalog.get("Dbx_function_returned");	// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else {
