@@ -358,7 +358,7 @@ public final class CndFileUtils {
     }
 
     private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
-        if (file.canRead()) {
+        if (CndFileSystemProvider.canRead(file.getAbsolutePath())) {
             CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
                 CndFileSystemProvider.FileInfo curFile = listFiles[i];

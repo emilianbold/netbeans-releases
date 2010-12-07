@@ -100,6 +100,10 @@ public abstract class CndFileSystemProvider {
         return getDefault().existsImpl(path);
     }
 
+    public static Boolean canRead(CharSequence path) {
+        return getDefault().canReadImpl(path);
+    }
+
     public static FileInfo[] getChildInfo(CharSequence path) {
         return getDefault().getChildInfoImpl(path);
     }
@@ -124,6 +128,7 @@ public abstract class CndFileSystemProvider {
      * or NULL if the file does not belong to this provider file system
      */
     protected abstract Boolean existsImpl(CharSequence path);
+    protected abstract Boolean canReadImpl(CharSequence path);
     protected abstract FileInfo[] getChildInfoImpl(CharSequence path);
 
     /** a bridge from cnd.utils to dlight.remote */
@@ -177,6 +182,17 @@ public abstract class CndFileSystemProvider {
                 fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
             }
             return fo;
+        }
+
+        @Override
+        protected Boolean canReadImpl(CharSequence path) {
+            for (CndFileSystemProvider provider : cache) {
+                Boolean result = provider.canReadImpl(path);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return new File(path.toString()).canRead();
         }
 
         @Override
