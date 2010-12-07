@@ -64,5 +64,15 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="Components">
+            <file name="GitRepositories.settings" url="resources/gitrepositories.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="GitRepositories.wstcref" url="resources/GitRepositoriesWstcref.xml">
+                    <attr name="position" intvalue="3110"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

@@ -201,6 +201,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     private static void newGroup() {
         final NewGroupPanel panel = new NewGroupPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_title"));
+        panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GroupsMenu.class));

@@ -91,9 +91,11 @@ public class RepositoryInfo {
 
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
+    private final String name;
 
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
+        this.name = root.getName();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -184,6 +186,10 @@ public class RepositoryInfo {
 
     public GitRepositoryState getRepositoryState () {
         return repositoryState;
+    }
+
+    public String getName () {
+        return name;
     }
 
     public static void refreshAsync (File repositoryRoot) {
