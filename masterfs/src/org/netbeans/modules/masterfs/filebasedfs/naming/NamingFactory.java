@@ -151,17 +151,11 @@ public final class NamingFactory {
             if (v == null) {
                 continue;
             }
-            List<NameRef> linked = new LinkedList<NameRef>();
-            while (v != null) {
-                linked.add(v);
-                v = v.next();
-            }
-            for (NameRef nr : linked) {
+            for (NameRef nr : names[i].disconnectAll()) {
                 FileNaming fn = nr.get();
                 if (fn == null) {
                     continue;
                 }
-                nr.clearNext();
                 Integer id = createID(fn.getFile());
                 int index = Math.abs(id) % arr.length;
                 NameRef prev = arr[index];
@@ -211,8 +205,7 @@ public final class NamingFactory {
                 NameRef nr = refRetVal;
                 for (;;) {
                     if (nr.next() == ref) {
-                        nr.clearNext();
-                        nr.setNext(ref.next());
+                        nr.skip(ref);
                         break;
                     }
                     nr = nr.next();
