@@ -45,7 +45,6 @@ package org.netbeans.modules.remote.test;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.DirectoryAttributesTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSupportTestCase;
@@ -59,9 +58,9 @@ import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
  */
 public class RemoteApiTest extends NativeExecutionBaseTestSuite {
 
+    @SuppressWarnings("unchecked")
     public RemoteApiTest() {
         this("Remote API",
-           DirectoryAttributesTestCase.class,
            RemoteFileSupportTestCase.class,
            RemoteFileSystemTestCase.class,
            RemotePathTestCase.class,
@@ -72,6 +71,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
     }
 
 
+    @SuppressWarnings("unchecked")
     public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
         return new RemoteApiTest(testClass.getName(), testClass);
     }

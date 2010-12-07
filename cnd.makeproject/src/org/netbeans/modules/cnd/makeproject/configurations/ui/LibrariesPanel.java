@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.List;
@@ -292,6 +293,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
     private final class AddLibraryButtonAction implements java.awt.event.ActionListener {
 
+        private FileFilter lastSelectedFilter = null;
+
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
@@ -301,44 +304,41 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir;
             }
-            FileFilter[] filters;
-            if (Utilities.isWindows()) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getPeStaticLibraryFileFilter(),
-                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-            } else {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            if (lastSelectedFilter == null) {
+                lastSelectedFilter = filters[0];
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            fileChooser.setMultiSelectionEnabled(true);
+            fileChooser.setFileFilter(lastSelectedFilter);
             int ret = fileChooser.showOpenDialog(myListEditorPanel);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
-            String libName = fileChooser.getSelectedFile().getName();
-            if (libName.startsWith("lib")) // NOI18N
-            {
-                libName = libName.substring(3);
+            lastSelectedFilter = fileChooser.getFileFilter();
+            for(File libFile: fileChooser.getSelectedFiles()) {
+                String libName = libFile.getName();
+                if (libName.startsWith("lib")) // NOI18N
+                {
+                    libName = libName.substring(3);
+                }
+                if (libName.endsWith(".so") || // NOI18N
+                        libName.endsWith(".dll") || // NOI18N
+                        libName.endsWith(".dylib") || // NOI18N
+                        libName.endsWith(".lib") || // NOI18N
+                        libName.endsWith(".a")) { // NOI18N
+                    int i = libName.lastIndexOf('.');
+                    libName = libName.substring(0, i);
+                }
+                myListEditorPanel.addObjectAction(new LibraryItem.LibItem(libName));
             }
-            if (libName.endsWith(".so") || // NOI18N
-                    libName.endsWith(".dll") || // NOI18N
-                    libName.endsWith(".dylib") || // NOI18N
-                    libName.endsWith(".lib") || // NOI18N
-                    libName.endsWith(".a")) { // NOI18N
-                int i = libName.lastIndexOf('.');
-                libName = libName.substring(0, i);
-            }
-            myListEditorPanel.addObjectAction(new LibraryItem.LibItem(libName));
         }
     }
 
     private final class AddLibraryFileButtonAction implements java.awt.event.ActionListener {
 
+        private FileFilter lastSelectedFilter = null;
+
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
@@ -348,31 +348,26 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir;
             }
-            FileFilter[] filters;
-            if (Utilities.isWindows()) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getPeStaticLibraryFileFilter(),
-                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-            } else {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            if (lastSelectedFilter == null) {
+                lastSelectedFilter = filters[0];
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            fileChooser.setMultiSelectionEnabled(true);
+            fileChooser.setFileFilter(lastSelectedFilter);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             int ret = fileChooser.showOpenDialog(null);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
-            // FIXUP: why are baseDir UNIX path when remote?
-            String path = ProjectSupport.toProperPath(baseDir, fileChooser.getSelectedFile().getPath(), project);
-            path = CndPathUtilitities.normalizeSlashes(path);
-            myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
+            lastSelectedFilter = fileChooser.getFileFilter();
+            for(File libFile: fileChooser.getSelectedFiles()) {
+                // FIXUP: why are baseDir UNIX path when remote?
+                String path = ProjectSupport.toProperPath(baseDir, libFile.getPath(), project);
+                path = CndPathUtilitities.normalizeSlashes(path);
+                myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
+            }
         }
     }
 
