@@ -71,6 +71,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 
 import com.sun.tools.swdev.glue.dbx.*;
+import java.util.LinkedList;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
@@ -3531,8 +3532,40 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setMems(String mems) {
-	if (memoryWindow != null)
-	    memoryWindow.updateData(mems);
+	if (memoryWindow != null) {
+            LinkedList<String> res = new LinkedList<String>();
+            int i, j, k, l, memaddrlen;
+            String s, memaddr, memvalue;
+            l = 1;
+            for (i = 0; i < mems.length(); i++, l++) {
+                k = mems.indexOf('\n', i);
+                if (k < i) break;
+                s = mems.substring(i, k + 1);
+                i = k;
+                memaddr = null;
+                memvalue = null;
+                memaddrlen = 0;
+                for (j=0, k=0; j < s.length(); j++) {
+                    if (s.charAt(j) != ' ') {
+                        if (k == 0) {
+                            k = s.indexOf(' ', j);
+                            if (k < j) break;
+                            memaddrlen = k - j;
+                            memaddr = s.substring(j, k);
+                            j = k;
+                        } else {
+                            k = s.indexOf('\n', j);
+                            if (k < j) break;
+                            memvalue = s.substring(j, k);
+                            memvalue = memoryWindow.align_memvalue(memvalue);
+                            break;
+                        }
+                    }
+                }
+                res.add("   " + memaddr + "  " + memvalue + "\n"); // NOI18N
+            }
+	    memoryWindow.updateData(res);
+        }
     }
 
     public void requestMems(String start, String length, String format, int index) {
