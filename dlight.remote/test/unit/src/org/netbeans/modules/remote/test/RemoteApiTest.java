@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSupportTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
 import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
@@ -61,7 +60,6 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
     @SuppressWarnings("unchecked")
     public RemoteApiTest() {
         this("Remote API",
-           RemoteFileSupportTestCase.class,
            RemoteFileSystemTestCase.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
