@@ -269,7 +269,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 cache.mkdirs();
             }
             if (!cache.exists()) {
-                throw new IOException("Can not create cache directory " + cache);
+                throw new IOException("Can not create cache directory " + cache); // NOI18N
             }
             DirectoryReader directoryReader = new DirectoryReader(execEnv, remotePath);
             RemoteLogger.getInstance().log(Level.FINEST, "Synchronizing remote path {0}{1}{2}", new Object[]{execEnv, ':', remotePath});

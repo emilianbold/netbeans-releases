@@ -274,7 +274,7 @@ public class DirectoryReader {
     }
 
     /*package*/ static List<DirectoryStorage.Entry> testLsLineParser(HostInfo.OSFamily oSFamily, String[] lines) {
-        LsLineParser lp = createLsLineParser(oSFamily, "/dummy");
+        LsLineParser lp = createLsLineParser(oSFamily, "/dummy"); // NOI18N
         List<DirectoryStorage.Entry> result = new ArrayList<Entry>();
         for (String line : lines) {
             DirectoryStorage.Entry entry = lp.parseLine(line);
