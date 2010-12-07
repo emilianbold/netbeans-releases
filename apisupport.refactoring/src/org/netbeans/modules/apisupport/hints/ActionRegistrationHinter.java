@@ -64,10 +64,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -75,6 +73,14 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Hinter.class)
 public class ActionRegistrationHinter implements Hinter {
+
+    private static final String[] EAGER_INTERFACES = {
+        "org.openide.util.actions.Presenter.Menu",
+        "org.openide.util.actions.Presenter.Toolbar",
+        "org.openide.util.actions.Presenter.Popup",
+        "org.openide.util.ContextAwareAction",
+        "org.openide.awt.DynamicMenuContent"
+    };
 
     public @Override void process(final Context ctx) throws Exception {
         final Object instanceCreate = ctx.instanceFile().getAttribute("literal:instanceCreate");
@@ -121,8 +127,8 @@ public class ActionRegistrationHinter implements Hinter {
                                 type = ((ExecutableElement) declaration).getReturnType();
                             }
                             boolean ok = false;
-                            for (Class<?> xface : new Class<?>[] {Presenter.Menu.class, Presenter.Toolbar.class, Presenter.Popup.class, ContextAwareAction.class}) {
-                                TypeElement xfaceEl = wc.getElements().getTypeElement(xface.getCanonicalName());
+                            for (String xface : EAGER_INTERFACES) {
+                                TypeElement xfaceEl = wc.getElements().getTypeElement(xface);
                                 if (xfaceEl != null && wc.getTypes().isAssignable(type, xfaceEl.asType())) {
                                     ok = true;
                                     break;
