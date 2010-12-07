@@ -156,6 +156,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
     }
 
+    public void testBug185045() throws Exception {
+        // Bug 185045 - [code model] Incorrect hyperlink with template specialization function
+        performTest("bug185045.cpp", 12, 9, "bug185045.cpp", 7, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

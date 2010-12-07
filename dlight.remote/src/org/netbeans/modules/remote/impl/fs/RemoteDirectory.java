@@ -213,7 +213,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 storage = storageRef.get();
             }
         }
-        if (storage != null) {
+        if (storage != null && ! storage.isFileModifiedExternally()) {
             return storage;
         }
 

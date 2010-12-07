@@ -459,7 +459,7 @@ public class DirectoryStorage {
         }
     }
 
-    public boolean isFileMOdifiedExternally() {
+    public boolean isFileModifiedExternally() {
         return file.lastModified() != fileLastModified;
     }
 
