@@ -222,12 +222,12 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
                     filesMap.put(entry.getKey(), entry.getValue());
                 }
             }
-            err.println("analyze " + filesMap.size() + " remembered slow files only");
+            err.println("analyze " + filesMap.size() + " remembered slow files only");// NOI18N
         } else {
             filesMap = fileTimes;
             // collect mode
             if (passedThreshold > 0) {
-                err.println("collect slow files");
+                err.println("collect slow files");// NOI18N
                 filesMap.clear();
             }
         }

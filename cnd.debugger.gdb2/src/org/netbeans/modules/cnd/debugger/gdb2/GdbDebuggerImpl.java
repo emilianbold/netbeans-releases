@@ -758,7 +758,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
 	 *
 	 */
-	notImplemented("-exec-jump");
+	notImplemented("-exec-jump");// NOI18N
     }
 
     public void runToCursor(String src, int line) {
