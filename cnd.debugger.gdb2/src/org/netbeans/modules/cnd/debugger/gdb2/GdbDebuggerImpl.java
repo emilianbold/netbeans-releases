@@ -4006,10 +4006,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
-    public void setEnv(String envVar) {
-        String cmdString = "set environment " + envVar;		// NOI18N
+    void setEnv(String envVar) {
+        String cmdString = "-gdb-set environment " + envVar;		// NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
-
             @Override
             protected void onError(MIRecord record) {
                 finish();
