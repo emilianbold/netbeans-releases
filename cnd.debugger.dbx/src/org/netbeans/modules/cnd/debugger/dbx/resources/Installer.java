@@ -52,6 +52,7 @@ import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.dbx.CommonDbx;
 import com.sun.tools.swdev.glue.Glue;
+import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 
 /**
@@ -63,6 +64,7 @@ public class Installer extends ModuleInstall {
     
     @Override
     public void restored() {
+        ExternalStartManager.startLocal();
 
         Glue.error_handler(new Glue.ErrorHandler() {
 
