@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,11 +49,8 @@ import java.util.MissingResourceException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -64,8 +61,14 @@ public class HelperUtility {
 
     private final HashMap<ExecutionEnvironment, String> cache = new HashMap<ExecutionEnvironment, String>();
     private final String pattern;
+    private final String codeNameBase;
 
     public HelperUtility(String searchPattern) {
+        this("org.netbeans.modules.dlight.nativeexecution", searchPattern); // NOI18N
+    }
+
+    public HelperUtility(String codeNameBase, String searchPattern) {
+        this.codeNameBase = codeNameBase;
         pattern = searchPattern;
     }
 
@@ -126,7 +129,7 @@ public class HelperUtility {
         MacroExpander expander = MacroExpanderFactory.getExpander(env);
         String path = expander.expandPredefinedMacros(pattern);
 
-        File file = fl.locate(path, "org.netbeans.modules.dlight.nativeexecution", false); //NOI18N
+        File file = fl.locate(path, codeNameBase, false);
 
         if (file == null || !file.exists()) {
             throw new MissingResourceException(path, null, null); //NOI18N

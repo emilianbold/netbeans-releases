@@ -45,7 +45,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.HelperUtility;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
 import org.openide.util.Exceptions;
 
