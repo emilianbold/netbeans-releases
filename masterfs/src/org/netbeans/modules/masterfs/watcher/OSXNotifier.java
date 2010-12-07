@@ -45,6 +45,7 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.ExecutorService;
@@ -108,11 +109,7 @@ public class OSXNotifier extends Notifier<Void> {
         return null;
     }
 
-
-
-
-
-    public synchronized void start() throws IOException, InterruptedException {
+    public synchronized void start() throws IOException {
         if (worker != null) {
             throw new IllegalStateException("FileSystemWatcher already started.");  //NOI18N
         }
@@ -137,7 +134,12 @@ public class OSXNotifier extends Notifier<Void> {
                 }
             }
         });
-        final Object _data = exchanger.exchange(null);
+        final Object _data;
+        try {
+            _data = exchanger.exchange(null);
+        } catch (InterruptedException ex) {
+            throw (InterruptedIOException)new InterruptedIOException().initCause(ex);
+        }
         assert _data != null;
         if (_data instanceof Throwable) {
             worker.shutdown();
@@ -148,6 +150,7 @@ public class OSXNotifier extends Notifier<Void> {
         }
     }
 
+    @Override
     public synchronized void stop() throws IOException {
         if (worker == null) {
             throw new IllegalStateException("FileSystemWatcher is not started.");  //NOI18N
