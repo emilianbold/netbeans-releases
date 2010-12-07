@@ -198,7 +198,7 @@ public final class Watcher extends AnnotationProvider {
             shutdown = true;
             watcher.interrupt();
             impl.stop();
-            watcher.join();
+            watcher.join(1000);
         }
     }
 
