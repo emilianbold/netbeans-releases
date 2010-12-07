@@ -1122,7 +1122,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Add new source root folders
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
-                    addFilesFromRoot(getLogicalFolders(), getBaseDirFileObject(), true, true, null);
+                    FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
+                    addFilesFromRoot(getLogicalFolders(), fo, true, true, null);
                 }
                 setModified();
             }
