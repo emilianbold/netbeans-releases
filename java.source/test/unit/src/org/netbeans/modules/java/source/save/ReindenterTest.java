@@ -346,6 +346,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        \n    }\n}\n");
     }
 
+    public void testNewLineIndentationInsideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideEmptyHalfIndentedMethodBody() throws Exception {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());

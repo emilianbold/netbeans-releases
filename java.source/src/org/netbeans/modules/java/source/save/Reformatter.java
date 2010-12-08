@@ -3118,8 +3118,8 @@ public class Reformatter implements ReformatTask {
                     if (stats.hasNext()) {
                         StatementTree stat = stats.next();
                         if (!stats.hasNext() && stat.getKind() != Tree.Kind.VARIABLE) {
-                            int start = tokens.offset();
                             accept(LBRACE);
+                            int start = tokens.offset() - 1;
                             Diff d;
                             while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start)
                                 diffs.removeFirst();
@@ -3128,8 +3128,22 @@ public class Reformatter implements ReformatTask {
                             indent += indentSize;
                             wrapTree(wrapStyle, -1, spacesCnt, stat);
                             indent = old;
-                            start = tokens.offset();
                             accept(RBRACE);
+                            tokens.moveIndex(tokens.index() - 2);
+                            tokens.moveNext();
+                            if (tokens.token().id() == JavaTokenId.WHITESPACE) {
+                                start = tokens.offset();
+                                if (tokens.movePrevious()) {
+                                    if (tokens.token().id() == JavaTokenId.LINE_COMMENT)
+                                        start--;
+                                    tokens.moveNext();
+                                }
+                                tokens.moveNext();
+                            } else {
+                                tokens.moveNext();
+                                start = tokens.offset();
+                            }
+                            tokens.moveNext();
                             while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start)
                                 diffs.removeFirst();
                             addDiff(new Diff(start, tokens.offset(), null));
