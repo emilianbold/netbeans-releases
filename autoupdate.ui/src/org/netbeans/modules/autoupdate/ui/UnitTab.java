@@ -377,6 +377,28 @@ public class UnitTab extends javax.swing.JPanel {
             }, 150);
         }
     }
+
+    final void updateTab(final Map<String, Boolean> state) {
+        final Runnable addUpdates = new Runnable() {
+            @Override
+            public void run() {
+                final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
+                List<UpdateUnit> empty = Collections.emptyList();
+                downloadedTableModel.setUnits(empty);
+                SwingUtilities.invokeLater(new Runnable()  {
+
+                    public void run() {
+                        fireUpdataUnitChange();
+                        UnitCategoryTableModel.restoreState(model.getUnits(), state, model.isMarkedAsDefault());
+                        refreshState();
+                        setWaitingState(false);
+                    }
+                });
+            }
+        };
+        setWaitingState(true);
+        Utilities.startAsWorkerThread(addUpdates, 250);
+    }
     
     private TabAction getDefaultAction () {
         return (TabAction)bTabAction.getAction ();
@@ -1848,28 +1870,10 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             if (getLocalDownloadSupport ().chooseNbmFiles ()) {
-                
-                final Runnable addUpdates = new Runnable (){
-                    public void run () {
-                        final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
-                        List<UpdateUnit> empty = Collections.emptyList();
-                        downloadedTableModel.setUnits(empty);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run () {
-                                fireUpdataUnitChange();
-                                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());                                
-                                refreshState ();
-                                setWaitingState (false);
-                            }
-                        });
-                    }
-                    
-                };
-                setWaitingState (true);
-                Utilities.startAsWorkerThread (addUpdates, 250);
+                updateTab (state);
             }
         }
-        
+
         @Override
         public void setEnabled (boolean enabled) {
             super.setEnabled (enabled);
