@@ -45,13 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
-import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import org.netbeans.junit.internal.MemoryPreferencesFactory;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -92,32 +88,5 @@ public class Utils {
         public Map<K, V> build() {
             return result;
         }
-    }
-
-    @ServiceProvider(service=CodeStylePreferences.Provider.class, position=0)
-    public final static class TestPreferences implements CodeStylePreferences.Provider {
-
-        private final Map<String, Preferences> mimeType2Perfs = new HashMap<String, Preferences>();
-
-        @Override
-        public Preferences forFile(FileObject file, String mimeType) {
-            return prefs(mimeType);
-        }
-
-        @Override
-        public Preferences forDocument(Document doc, String mimeType) {
-            return prefs(mimeType);
-        }
-
-        private Preferences prefs(String mimeType) {
-            Preferences p = mimeType2Perfs.get(mimeType);
-
-            if (p == null) {
-                mimeType2Perfs.put(mimeType, p = new MemoryPreferencesFactory().userRoot());
-            }
-
-            return p;
-        }
-
     }
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import java.io.IOException;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
@@ -64,6 +65,7 @@ import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -320,6 +322,15 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     public Problem getProblem() {
         return problem;
     }
+
+    private boolean containsImport(String imp) {
+        for (ImportTree et:workingCopy.getCompilationUnit().getImports()) {
+            if (et.getQualifiedIdentifier().toString().equals(imp)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
 
     @Override
@@ -331,6 +342,18 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (ex.getKind() == Tree.Kind.IDENTIFIER) {
                 newTree = make.Identifier(refactoring.getClassName());
                 rewrite(memberSelect, newTree);
+                TreePath tp = workingCopy.getTrees().getPath(inner);
+                String innerPackageName = RetoucheUtils.getPackageName(tp.getCompilationUnit());
+                if (!innerPackageName.equals(RetoucheUtils.getPackageName(workingCopy.getCompilationUnit())) &&
+                        !containsImport(innerPackageName + ".*")) { //NOI18N
+                    String import1 = innerPackageName + "." + refactoring.getClassName(); //NOI18N
+                    try {
+                        CompilationUnitTree cut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
+                        workingCopy.rewrite(workingCopy.getCompilationUnit(), cut);
+                    } catch (IOException ex1) {
+                        Exceptions.printStackTrace(ex1);
+                    }
+                }
             } else if (ex.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
@@ -392,7 +415,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         }
 
         TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
-        return workingCopy.getTypes().isSubtype(encl.asType(), inner.asType()) ;
+        return encl!=null && workingCopy.getTypes().isSubtype(encl.asType(), inner.asType()) ;
     }
     
     private boolean isThisReferenceToOuter() {
