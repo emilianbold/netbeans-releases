@@ -72,7 +72,8 @@ import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.api.Bundle.*;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -249,6 +250,7 @@ public final class ConnectionBuilder {
         }
     }
 
+    @Messages({"# {0} - URL", "ConnectionBuilder.log_in=Must log in to access {0}"})
     private URLConnection doConnection() throws IOException {
         URLConnection conn = url.openConnection();
         RETRY: while (true) {
@@ -353,7 +355,7 @@ public final class ConnectionBuilder {
                     }
                 }
                 IOException x = new IOException("403 on " + url); // NOI18N
-                Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(ConnectionBuilder.class, "ConnectionBuilder.log_in", url));
+                Exceptions.attachLocalizedMessage(x, ConnectionBuilder_log_in(url));
                 throw x;
             case HttpURLConnection.HTTP_NOT_FOUND:
                 throw new FileNotFoundException(curr.toString());
