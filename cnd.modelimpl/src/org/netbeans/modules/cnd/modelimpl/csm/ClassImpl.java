@@ -853,13 +853,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
             // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
+            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST.getNextSibling(), type, null);
+            return bitFieldAdded;
+        }
 
+        @Override
+        protected boolean renderBitFieldImpl(AST startOffsetAST, AST idAST, CsmType type, ClassEnumBase<?> classifier) {
             boolean cont = true;
             boolean added = false;
-            AST start = token;
-            AST prev = typeAST;
+            AST start = startOffsetAST;
+            AST prev = idAST;
             while (cont) {
-                AST idAST = prev.getNextSibling();
                 if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
                     break;
                 }
@@ -889,11 +893,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 NameHolder nameHolder = NameHolder.createSimpleName(idAST);
                 FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                 ClassImpl.this.addMember(field,!isRenderingLocalContext());
+                if (classifier != null) {
+                    classifier.addEnclosingVariable(field);
+                }
                 added = true;
+                if (cont) {
+                    idAST = prev.getNextSibling();
+                }
             }
             return added;
         }
-
+        
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);

@@ -1225,12 +1225,17 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         ndi.setPid(dt.getPid());
 
         //ndi.setTarget(dt.getExecutable());
+	/* CR 6997426
 	Host host = new Host();
 	host = CndRemote.hostFromName(host, dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	String execPath = executor.readlink(dt.getPid());
 	ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
+	 *
+	 */
 
+	// CR 6997426
+	ndi.setTarget("-"); // NOI18N
         ndi.setConfiguration(conf);
         ndi.setHostName(dt.getHostName());
         ndi.setAction(ATTACH);

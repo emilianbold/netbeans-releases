@@ -1709,6 +1709,9 @@ abstract public class CsmCompletionQuery {
                                     CsmType typ2 = resolveType(item.getParameter(1));
                                     if (typ1 != null && typ2 != null) {
                                         lastType = sup.getCommonType(typ1, typ2);
+                                        if(lastType == null) {
+                                            lastType = typ1;
+                                        }
                                     }
                                     break;
 

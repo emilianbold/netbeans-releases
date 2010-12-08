@@ -456,7 +456,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         } else {
             uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) +
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                baseClass.getQualifiedName().toString() + "::" + getSignature();
+                baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
         }
         CsmProject prj = getContainingFile().getProject();
         CsmFunctionDefinition def = findDefinition(prj, uname);
@@ -482,7 +482,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             } else {
                 uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) +
                         OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                        baseClass.getQualifiedName().toString() + "::" + getSignature();
+                        baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
             }
             def = findDefinition(prj, uname);
             if (def == null) {
