@@ -41,25 +41,30 @@
  */
 
 /*
- * RevisionPickerDialog.java
+ * RevisionPicker.java
  *
- * Created on Dec 7, 2010, 7:24:51 PM
+ * Created on Oct 18, 2010, 3:57:00 PM
  */
 
 package org.netbeans.modules.git.ui.repository;
+
+import org.netbeans.modules.git.utils.GitUtils;
 
 /**
  *
  * @author ondra
  */
-public class RevisionPickerDialog extends javax.swing.JPanel {
-    private final RevisionInfoPanel infoPanel;
-    private final RepositoryBrowserPanel browserPanel;
+public class RevisionDialog extends javax.swing.JPanel {
+    private final RevisionInfoPanel panel;
 
-    /** Creates new form RevisionPickerDialog */
-    public RevisionPickerDialog (RevisionInfoPanel infoPanel, RepositoryBrowserPanel browserPanel) {
-        this.infoPanel = infoPanel;
-        this.browserPanel = browserPanel;
+    /** Creates new form RevisionPicker */
+    public RevisionDialog (RevisionInfoPanel panel) {
+        this.panel = panel;
+        initComponents();
+    }
+
+    public RevisionDialog () {
+        this.panel = new RevisionInfoPanel();
         initComponents();
     }
 
@@ -72,36 +77,52 @@ public class RevisionPickerDialog extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-        org.netbeans.modules.git.ui.repository.RevisionInfoPanel revisionInfoPanel1 = infoPanel;
-        org.netbeans.modules.git.ui.repository.RepositoryBrowserPanel repositoryBrowserPanel1 = browserPanel;
+        jLabel1 = new javax.swing.JLabel();
+        org.netbeans.modules.git.ui.repository.RevisionInfoPanel revisionInfoPanel = panel;
 
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(0.9);
-        jSplitPane1.setRightComponent(revisionInfoPanel1);
-        jSplitPane1.setLeftComponent(repositoryBrowserPanel1);
+        jLabel1.setLabelFor(revisionField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.jLabel1.text")); // NOI18N
+
+        revisionField.setEditable(false);
+        revisionField.setText(GitUtils.HEAD);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSelectRevision, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.btnSelectRevision.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(revisionInfoPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(revisionField, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnSelectRevision)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(revisionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSelectRevision))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(revisionInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSplitPane jSplitPane1;
+    final javax.swing.JButton btnSelectRevision = new javax.swing.JButton();
+    private javax.swing.JLabel jLabel1;
+    final javax.swing.JTextField revisionField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 
 }

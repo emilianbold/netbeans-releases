@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -93,24 +92,27 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private static final Logger LOG = Logger.getLogger(RepositoryBrowserPanel.class.getName());
     private final ExplorerManager manager;
     private final EnumSet<Option> options;
+    private String currRevision = null;
+    public static final String PROP_REVISION_CHANGED = "RepositoryBrowserPanel.revision"; //NOI18N
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
-        DISPLAY_BRANCHES,
+        DISPLAY_BRANCHES_LOCAL,
+        DISPLAY_BRANCHES_REMOTE,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
         ENABLE_POPUP
     }
 
-    RepositoryBrowserPanel () {
+    public static final EnumSet<Option> OPTIONS_INSIDE_PANEL = EnumSet.of(Option.DISPLAY_BRANCHES_LOCAL,
+            Option.DISPLAY_BRANCHES_REMOTE,
+            Option.DISPLAY_TAGS);
+
+    public RepositoryBrowserPanel () {
         this(EnumSet.allOf(Option.class), null, null);
     }
 
-    public static RepositoryBrowserPanel createInsidePanel (File repository, RepositoryInfo info) {
-        return new RepositoryBrowserPanel(EnumSet.of(Option.DISPLAY_BRANCHES, Option.DISPLAY_TAGS), repository, info);
-    }
-
-    private RepositoryBrowserPanel (EnumSet<Option> options, File repository, RepositoryInfo info) {
+    public RepositoryBrowserPanel (EnumSet<Option> options, File repository, RepositoryInfo info) {
         this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES) ? new AbstractNode(new RepositoriesChildren()) : new RepositoryNode(repository, info);
         this.manager = new ExplorerManager();
         this.options = options;
@@ -132,7 +134,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         super.addNotify();
         getExplorerManager().setRootContext(root);
         getExplorerManager().addPropertyChangeListener(this);
-        if (toolbar != null) {
+        if (toolbar.isVisible()) {
             attachToolbarListeners();
         }
     }
@@ -140,7 +142,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     @Override
     public void removeNotify() {
         getExplorerManager().removePropertyChangeListener(this);
-        if (toolbar != null) {
+        if (toolbar.isVisible()) {
             detachToolbarListeners();
         }
         super.removeNotify();
@@ -152,6 +154,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc != null) {
                 tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+            }
+            
+            String oldRevision = currRevision;
+            currRevision = null;
+            if (getExplorerManager().getSelectedNodes().length == 1) {
+                Node selectedNode = getExplorerManager().getSelectedNodes()[0];
+                Revision rev = selectedNode.getLookup().lookup(Revision.class);
+                if (rev != null) {
+                    currRevision = rev.getRevision();
+                }
+            }
+            if (currRevision != null || oldRevision != null) {
+                firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
         }
     }
@@ -248,13 +263,25 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private class RepositoryNode extends RepositoryBrowserNode implements PropertyChangeListener {
-        private final PropertyChangeListener list;
+        private PropertyChangeListener list;
 
-        public RepositoryNode (File file, RepositoryInfo info) {
+        public RepositoryNode (final File file, RepositoryInfo info) {
             super(new RepositoryChildren(), Lookups.fixed(file));
-            setName(info);
 
-            info.addPropertyChangeListener(list = WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                setDisplayName(file.getName());
+                RP.post(new Runnable () {
+                    @Override
+                    public void run () {
+                        RepositoryInfo info = RepositoryInfo.getInstance(file);
+                        setName(info);
+                        info.addPropertyChangeListener(list = WeakListeners.propertyChange(RepositoryNode.this, info));
+                    }
+                });
+            } else {
+                setName(info);
+                info.addPropertyChangeListener(list = WeakListeners.propertyChange(this, info));
+            }
         }
 
         private void setName (RepositoryInfo info) {
@@ -300,7 +327,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (!initialized) {
                 initialized = true;
                 List<AbstractNode> keys = new LinkedList<AbstractNode>();
-                if (options.contains(Option.DISPLAY_BRANCHES)) {
+                if (options.contains(Option.DISPLAY_BRANCHES_LOCAL) || options.contains(Option.DISPLAY_BRANCHES_REMOTE)) {
                     keys.add(new BranchesTopNode(getNode().getLookup().lookup(File.class)));
                 }
                 if (options.contains(Option.DISPLAY_TAGS)) {
@@ -380,7 +407,14 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected void addNotify () {
             super.addNotify();
-            setKeys(Arrays.asList(BranchNodeType.LOCAL, BranchNodeType.REMOTE));
+            List<BranchNodeType> keys = new LinkedList<BranchNodeType>();
+            if (options.contains(Option.DISPLAY_BRANCHES_LOCAL)) {
+                keys.add(BranchNodeType.LOCAL);
+            }
+            if (options.contains(Option.DISPLAY_BRANCHES_REMOTE)) {
+                keys.add(BranchNodeType.REMOTE);
+            }
+            setKeys(keys);
             refreshBranches();
         }
 
@@ -501,7 +535,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final GitBranch branch;
 
         public BranchNode (GitBranch branch) {
-            super(Children.LEAF);
+            super(Children.LEAF, Lookups.fixed(new Revision(branch.getId())));
             this.branch = branch;
         }
 
@@ -536,6 +570,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
     //</editor-fold>
+
+    private static class Revision {
+        final String revision;
+
+        public Revision (String revision) {
+            this.revision = revision;
+        }
+
+        public String getRevision () {
+            return revision;
+        }
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

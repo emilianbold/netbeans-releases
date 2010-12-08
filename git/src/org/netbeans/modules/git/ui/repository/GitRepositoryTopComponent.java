@@ -60,12 +60,14 @@ import org.netbeans.modules.git.Git;
  * 
  * @author Maros Sandor
  */
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=GitRepositoryTopComponent.PREFERRED_ID)
+@TopComponent.Registration(mode="output", openAtStartup=false, position=3111)
 public class GitRepositoryTopComponent extends TopComponent implements Externalizable {
    
     private static final long serialVersionUID = 1L;    
     
     private RepositoryBrowserPanel         repositoryPanel;
-    private static final String     PREFERRED_ID = "GitRepositories"; // NOI18N
+    public static final String     PREFERRED_ID = "GitRepositories"; // NOI18N
     
     private static GitRepositoryTopComponent instance;
 

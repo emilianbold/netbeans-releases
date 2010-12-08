@@ -40,74 +40,61 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.reset;
+package org.netbeans.modules.git.ui.repository;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import javax.swing.JButton;
-import javax.swing.JRadioButton;
-import org.netbeans.libs.git.GitClient.ResetType;
-import org.netbeans.modules.git.ui.repository.RevisionDialogController;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class Reset implements ActionListener {
-    private ResetPanel panel;
-    private RevisionDialogController revisionPicker;
-    private JButton okButton;
-    private DialogDescriptor dd;
+public class RevisionDialogController implements ActionListener {
+    private final RevisionDialog panel;
+    private final File repository;
+    private final RevisionInfoPanelController infoPanelController;
 
-    Reset (File repository) {
-        revisionPicker = new RevisionDialogController(repository);
-        panel = new ResetPanel(revisionPicker.getPanel());
+    public RevisionDialogController (File repository) {
+        infoPanelController = new RevisionInfoPanelController(repository);
+        panel = new RevisionDialog(infoPanelController.getPanel());
+        this.repository = repository;
+        infoPanelController.loadInfo(panel.revisionField.getText());
+        attachListeners();
     }
 
-    String getRevision () {
-        return revisionPicker.getRevision();
+    public RevisionDialog getPanel () {
+        return panel;
     }
 
-    boolean show () {
-        panel.rbSoft.addActionListener(this);
-        panel.rbMixed.addActionListener(this);
-        panel.rbHard.addActionListener(this);
-        
-        okButton = new JButton(NbBundle.getMessage(Reset.class, "LBL_Reset.OKButton.text")); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
-        dd = new DialogDescriptor(panel, NbBundle.getMessage(Reset.class, "LBL_Reset.title"), true,  //NOI18N
-                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(Reset.class), null);
-        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        valid(false);
-        d.setVisible(true);
-        return okButton == dd.getValue();
+    public void setEnabled (boolean enabled) {
+        panel.btnSelectRevision.setEnabled(enabled);
+        panel.revisionField.setEnabled(enabled);
+    }
+
+    public String getRevision () {
+        return panel.revisionField.getText();
+    }
+
+    private void attachListeners () {
+        panel.btnSelectRevision.addActionListener(this);
     }
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        valid(panel.rbHard.isSelected() || panel.rbMixed.isSelected() || panel.rbSoft.isSelected());
+        if (e.getSource() == panel.btnSelectRevision) {
+            openRevisionPicker();
+        }
     }
 
-    private void valid (boolean b) {
-        okButton.setEnabled(b);
-        dd.setValid(b);
-    }
-
-    ResetType getType () {
-        String cmd = null;
-        for (JRadioButton btn : new JRadioButton[] { panel.rbHard, panel.rbMixed, panel.rbSoft }) {
-            if (btn.isSelected()) {
-                cmd = btn.getActionCommand();
-                break;
+    private void openRevisionPicker () {
+        RevisionPicker picker = new RevisionPicker(repository);
+        if (picker.open()) {
+            String revision = picker.getRevision();
+            if (!revision.equals(panel.revisionField.getText())) {
+                panel.revisionField.setText(picker.getRevision());
+                infoPanelController.loadInfo(revision);
             }
         }
-        return ResetType.valueOf(cmd);
     }
-
 }
