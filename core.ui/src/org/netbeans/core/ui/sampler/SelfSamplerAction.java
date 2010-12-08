@@ -65,6 +65,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,11 +80,13 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik, Tomas Hurka
  */
-class SelfSamplerAction extends AbstractAction implements AWTEventListener {
-    final private static class Singleton {
-
-        static final SelfSamplerAction INSTANCE = new SelfSamplerAction();
-    }
+@ActionID(id = "org.netbeans.modules.profiler.actions.SelfSamplerAction", category = "Profile")
+@ActionRegistration(iconInMenu = true, displayName = "#SelfSamplerAction_ActionNameStart", iconBase = "org/netbeans/core/ui/sampler/selfSampler.png")
+@ActionReferences({
+    @ActionReference(path = "Toolbars/Memory", position = 2000),
+    @ActionReference(path = "Shortcuts", name = "AS-Y")
+})
+public class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     // -----
     // I18N String constants
     private static final String ACTION_NAME_START = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionNameStart");
@@ -104,17 +110,13 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     }
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    private SelfSamplerAction() {
+    public SelfSamplerAction() {
         putValue(Action.NAME, ACTION_NAME_START);
         putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
         putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSampler.png"); // NOI18N
         if (System.getProperty(SelfSamplerAction.class.getName() + ".sniff") != null) { //NOI18N
             Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
         }
-    }
-
-    public static SelfSamplerAction getInstance() {
-        return Singleton.INSTANCE;
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
