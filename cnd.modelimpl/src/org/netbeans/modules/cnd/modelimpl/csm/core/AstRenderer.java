@@ -190,15 +190,19 @@ public class AstRenderer {
                     } else {
                         try {
                             if (isMemberDefinition(token)) {
-                                // this is a template method specialization declaration (without a definition)
-                                ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
-                                container.addDeclaration(spec);
-                                MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
-                                spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
-                                if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
-                                    currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                if(!isFunctionSpecialization(token)) {
+                                    // this is a template method specialization declaration (without a definition)
+                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                    container.addDeclaration(spec);
+                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                    spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
+                                    if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
+                                        currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                    }
+                                    container.addDeclaration(explicitSpecializationDeclaration);
+                                } else {
+                                    FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
                                 }
-                                container.addDeclaration(explicitSpecializationDeclaration);
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
                                     break;
@@ -231,8 +235,10 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
-                            container.addDeclaration(spec);
+                            if(!isFunctionSpecialization(token)) {
+                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                container.addDeclaration(spec);
+                            }
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(funcDef);
                             if (currentNamespace != null && NamespaceImpl.isNamespaceScope(funcDef)) {
@@ -1708,6 +1714,18 @@ public class AstRenderer {
         return isScopedId(id);
     }
 
+    protected boolean isFunctionSpecialization(AST ast) {
+        AST child = ast.getFirstChild();
+        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            child = AstRenderer.skipTemplateSibling(child);
+        }
+        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
+	if( child != null && child.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+	    child = child.getNextSibling();
+	}
+	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
+    }
+    
     private boolean isScopedId(AST id) {
         if (id == null) {
             return false;
