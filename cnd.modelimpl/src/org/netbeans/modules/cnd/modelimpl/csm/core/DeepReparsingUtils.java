@@ -376,7 +376,10 @@ public final class DeepReparsingUtils {
             if (!cuStartFiles.contains(csmFile)) {
                 Collection<CsmCompilationUnit> compilationUnits = CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0);
                 for (CsmCompilationUnit cu : compilationUnits) {
-                    cuStartFiles.add(cu.getStartFile());
+                    CsmFile startFile = cu.getStartFile();
+                    if (startFile != null) {
+                        cuStartFiles.add(startFile);
+                    }
                 }
             }
         }

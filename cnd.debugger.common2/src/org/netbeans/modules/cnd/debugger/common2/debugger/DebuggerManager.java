@@ -160,7 +160,6 @@ import org.openide.windows.WindowManager;
 public final class DebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
 
-    private static DebuggerManager singleton;
     private NativeDebugger currentDebugger;
     private InputOutput io;
 
@@ -175,12 +174,22 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     // for now we're not saving recent debug targets to disk so
     // hard-code various peoples favorite targets
     }
+    
+    private final static class LazyInitializer {
+        private static final DebuggerManager singleton;
+        static {
+            singleton = new DebuggerManager();
+            
+            // Initialize DebuggerManager
+            singleton.init();
+
+            // restore breakpints if any
+            singleton.breakpointBag();
+        }
+    }
 
     public static DebuggerManager get() {
-        if (singleton == null) {
-            singleton = new DebuggerManager();
-        }
-        return singleton;
+        return LazyInitializer.singleton;
     }
 
     /**
@@ -431,7 +440,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         notifyUnsavedFiles(debugger, registry.getModifiedSet());
     }
 
-    public void init() {
+    private void init() {
 
         /*
          * Track file dirtiness

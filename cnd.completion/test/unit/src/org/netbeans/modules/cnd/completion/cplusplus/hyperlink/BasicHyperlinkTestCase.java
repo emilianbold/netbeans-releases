@@ -785,7 +785,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 159328 - Unresolved static cast to template
         performTest("bug159328.cpp", 9, 42, "bug159328.cpp", 5, 5);
     }
-    
+
+    public void testBug192967() throws Exception {
+        // Bug 192967 - dereference of return type of ternary operator is not resolved
+        performTest("bug192967.cpp", 8, 41, "bug192967.cpp", 3, 5);
+        performTest("bug192967.cpp", 21, 41, "bug192967.cpp", 14, 5);
+    }
+        
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

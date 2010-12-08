@@ -111,15 +111,12 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
         handle.switchToDeterminate(pendingFilesQueue.size());
         int cnt = 0;
         try {
+            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
             PendingFile pendingFile;
-            ChildrenSupport childrenSupport = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getChildrenSupport();
             // die after half a minute inactivity period
             while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
-                if (pendingFile.isDirectory) {
-                    childrenSupport.ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
-                } else {
-                    childrenSupport.ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
-                }
+                RemoteFileObjectBase dir = (RemoteFileObjectBase) fs.findResource(pendingFile.remotePath);
+                dir.ensureSync();
                 handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
             }
         } finally {

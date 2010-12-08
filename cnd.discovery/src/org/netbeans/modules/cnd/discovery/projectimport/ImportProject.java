@@ -240,11 +240,6 @@ public class ImportProject implements PropertyChangeListener {
             public boolean isAddSubfoldersSelected() {
                 return true;
             }
-
-//            @Override
-//            public FileFilter getFileFilter() {
-//                return FileFilterFactory.getAllSourceFileFilter();
-//            }
         });
         sources = list.iterator();
         sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;

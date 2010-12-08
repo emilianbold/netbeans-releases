@@ -49,26 +49,32 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.openide.util.CharSequences;
 
 /**
  * Template function specialization container.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
-        super(ast, name, file);
+        super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
     }
 
     public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
@@ -110,6 +116,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
 
     @Override
     public void addMember(CsmMember member, boolean global) {
+        String name = member.getQualifiedName().toString();
+        for (CsmMember m : super.getMembers()) {
+            if(name.equals(m.getQualifiedName().toString())) {
+                return;
+            }
+        }
         super.addMember(member, global);
     }
 
@@ -119,7 +131,13 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         members.addAll(super.getMembers());
         ClassImpl base = findBaseClassImplInProject();
         if(base != null && base != this) {
-            members.addAll(base.getMembers());
+            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+            if(p instanceof InstantiationProviderImpl) {
+                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+                if(CsmKindUtilities.isClass(baseInst)) {
+                    members.addAll(((CsmClass)baseInst).getMembers());
+                }
+            }
         }
         return members;
     }
@@ -129,10 +147,18 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     public Iterator<CsmMember> getMembers(CsmFilter filter) {
         ClassImpl base = findBaseClassImplInProject();
         if(base != null && base != this) {
-            return new MultiIterator<CsmMember>(super.getMembers(filter), base.getMembers(filter));
-        } else {
-            return super.getMembers(filter);
+            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+            if(p instanceof InstantiationProviderImpl) {
+                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+                if(baseInst instanceof ClassImpl) {
+                    return new MultiIterator<CsmMember>(super.getMembers(filter), ((ClassImpl)baseInst).getMembers(filter));
+                } else if(baseInst instanceof Instantiation.Class) {
+                    return new MultiIterator<CsmMember>(super.getMembers(filter), ((Instantiation.Class)baseInst).getMembers(filter));
+                }
+
+            }
         }
+        return super.getMembers(filter);
     }
 
     private static String getClassName(AST ast) {
@@ -147,6 +173,37 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
             className.append(nameParts[i]);
         }
         return className.toString();
+    }
+
+    public static int getStartOffset(AST node) {
+        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+        node = (id != null) ? id : node;
+        if( node != null ) {
+            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+            if( csmAst != null ) {
+                return csmAst.getOffset();
+            }
+        }
+        return 0;
+    }
+
+    public static int getEndOffset(AST node) {
+        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+        node = (id != null) ? id : node;
+        if( node != null ) {
+            AST child = node.getFirstChild();
+            if(child != null) {
+                AST gt = AstUtil.findLastSiblingOfType(child, CPPTokenTypes.GREATERTHAN);
+                if( gt instanceof CsmAST ) {
+                    return ((CsmAST) gt).getEndOffset();
+                }
+            }
+            AST lastChild = AstUtil.getLastChildRecursively(node);
+            if( lastChild instanceof CsmAST ) {
+                return ((CsmAST) lastChild).getEndOffset();
+            }
+        }
+        return 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////

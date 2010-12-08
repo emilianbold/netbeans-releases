@@ -429,7 +429,7 @@ public class Reindenter implements IndentTask {
                                 break;
                         }
                     } else {
-                        currentIndent += cs.getIndentSize();
+                        currentIndent = getCurrentIndent(path.get(1)) + cs.getIndentSize();
                     }
                     if (nextTokenId != null && nextTokenId == JavaTokenId.LBRACE) {
                         switch (cs.getOtherBracePlacement()) {

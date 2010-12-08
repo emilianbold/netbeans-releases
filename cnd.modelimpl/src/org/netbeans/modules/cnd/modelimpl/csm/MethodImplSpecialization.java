@@ -55,7 +55,7 @@ import org.openide.util.CharSequences;
 /**
  * Template function explicit specialization declaration.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MethodImplSpecialization<T> extends MethodImpl<T> {
 

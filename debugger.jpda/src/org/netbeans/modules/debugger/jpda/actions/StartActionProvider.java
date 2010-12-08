@@ -179,7 +179,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     private void doStartDebugger(AbstractDICookie cookie) {
         logger.fine("S StartActionProvider." +
                     "doStartDebugger");
-        Exception exception = null;
+        Throwable throwable = null;
         try {
             debuggerImpl.setAttaching(cookie);
             VirtualMachine virtualMachine = cookie.getVirtualMachine ();
@@ -213,18 +213,23 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             logger.fine("S StartActionProvider." +
                         "doStartDebugger end: success");
         } catch (InterruptedException iex) {
-            exception = iex;
+            throwable = iex;
         } catch (IOException ioex) {
-            exception = ioex;
+            throwable = ioex;
         } catch (Exception ex) {
-            exception = ex;
+            throwable = ex;
             // Notify! Otherwise bugs in the code can not be located!!!
             ErrorManager.getDefault().notify(ex);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Error err) {
+            throwable = err;
+            ErrorManager.getDefault().notify(err);
         }
-        if (exception != null) {
+        if (throwable != null) {
             logger.fine("S StartActionProvider." +
-                        "doAction ().thread end: exception " + exception);
-            debuggerImpl.setException (exception);
+                        "doAction ().thread end: threw " + throwable);
+            debuggerImpl.setException (throwable);
             // kill the session that did not start properly
             final Session session = lookupProvider.lookupFirst(null, Session.class);
             debuggerImpl.getRequestProcessor().post(new Runnable() {

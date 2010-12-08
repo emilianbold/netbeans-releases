@@ -56,7 +56,7 @@ public enum FileType {
     CharacterSpecialFile('c'),
     FIFO('p'),
     EventPort('P'),
-    Socket('s');
+    SocketLink('s');
 
     private final char letter;
 

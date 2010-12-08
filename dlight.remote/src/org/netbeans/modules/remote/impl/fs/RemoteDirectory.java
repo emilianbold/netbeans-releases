@@ -44,15 +44,23 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.ConnectException;
+import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -65,7 +73,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
-    private volatile DirectoryAttributes attrs;
     private Reference<DirectoryStorage> storageRef;
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
@@ -89,28 +96,29 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException {
-        return getDirectoryAttrs().isWritable(childNameExt);
+        try {
+            DirectoryStorage storage = getDirectoryStorage();
+            Entry entry = storage.getEntry(childNameExt);
+            return entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
+        } catch (ConnectException ex) {
+            return false; // don't report
+        } catch (InterruptedException ex) {
+            return false; // don't report
+        } catch (CancellationException ex) {
+            return false; // don't report
+        }
     }
 
-    private DirectoryAttributes getDirectoryAttrs() throws IOException {
-        DirectoryAttributes result;
-        if (attrs != null) {
-            result = attrs;
-        } else {
-            result = fileSystem.getChildrenSupport().createDirectoryAttrs(cache);
-            synchronized (this) {
-                if (attrs == null) {
-                    attrs = result;
-                } else {
-                    result = attrs;
-                }
-            }
+    private String removeDoubleSlashes(String path) {
+        if (path == null) {
+            return null;
         }
-        return result;
+        return path.replace("//", "/"); //TODO:rfs remove triple paths, etc
     }
 
     @Override
     public FileObject getFileObject(String relativePath) {
+        relativePath = removeDoubleSlashes(relativePath);
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -120,7 +128,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         int slashPos = relativePath.lastIndexOf('/');
         if (slashPos > 0) { // can't be 0 - see the check above
             // relative path contains '/' => delegate to direct parent
-            String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
+            String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos); //TODO:rfs: process ../..
             String childNameExt = relativePath.substring(slashPos + 1);
             FileObject parentFileObject = fileSystem.findResource(parentRemotePath);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
@@ -131,28 +139,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
-            DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, (remotePath.length() == 0) ? "/" : remotePath); // NOI18N
-            if (newAttrs != null) {
-                synchronized (this) {
-                    attrs = newAttrs;
-                }
-            }
-            if (!getDirectoryAttrs().exists(relativePath)) {
+            DirectoryStorage storage = getDirectoryStorage();
+            DirectoryStorage.Entry entry = storage.getEntry(relativePath);
+            if (entry == null) {
                 return null;
             }
-            File cacheFile = new File(cache, relativePath);
-            if (!cacheFile.exists()) {
-                return null;
+            File childCache = new File(cache, entry.getCache());
+            String remoteAbsPath = remotePath + '/' + relativePath;
+            if (entry.getFileType() == FileType.Directory) {
+                return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
             } else {
-                String remoteAbsPath = remotePath + '/' + relativePath;
-                if (cacheFile.isDirectory()) {
-                    return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, cacheFile);
-                } else {
-                    return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, cacheFile, FileType.File);
-                }
+                return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
             }
+        } catch (InterruptedException ex) {
+            return null;
         } catch (CancellationException ex) {
-            // TODO: clear CndUtils cache
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
@@ -166,26 +167,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public FileObject[] getChildren() {
         try {
-            DirectoryAttributes newAttrs = getChildrenSupport().ensureDirSync(cache, remotePath);
-            if (newAttrs != null) {
-                attrs = newAttrs;
-            }
-            File[] childrenFiles = cache.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return ! FLAG_FILE_NAME.equals(name);
-                }
-            });
-            FileObject[] childrenFO = new FileObject[childrenFiles.length];
-            for (int i = 0; i < childrenFiles.length; i++) {
-                String childPath = remotePath + '/' + childrenFiles[i].getName(); //NOI18N
-                if (childrenFiles[i].isDirectory()) {
-                    childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childrenFiles[i]);
+            DirectoryStorage storage = getDirectoryStorage();
+            List<DirectoryStorage.Entry> entries = storage.list();
+            FileObject[] childrenFO = new FileObject[entries.size()];
+            for (int i = 0; i < entries.size(); i++) {
+                DirectoryStorage.Entry entry = entries.get(i);
+                String childPath = remotePath + '/' + entry.getName(); //NOI18N
+                File childCache = new File(cache, entry.getCache());
+                if (entry.getFileType() == FileType.Directory) {
+                    childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
                 } else {
-                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childrenFiles[i], FileType.File);
+                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
                 }
             }
             return childrenFO;
+        } catch (InterruptedException ex) {
+            // don't report, this just means that we aren't connected
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
         } catch (IOException ex) {
@@ -196,37 +193,141 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return new FileObject[0];
     }
 
-    private DirectoryStorage getStorage() throws IOException {
-        DirectoryStorage result = null;
+    private File getStorageFile() {
+        return new File(cache, FLAG_FILE_NAME);
+    }
+
+    @Override
+    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException {
+        getDirectoryStorage();
+    }
+
+    private DirectoryStorage getDirectoryStorage() throws
+            ConnectException, IOException, InterruptedException, CancellationException {
+
+        DirectoryStorage storage = null;
+
+        // check whether it is cached in memory
         synchronized (this) {
             if (storageRef != null) {
-                result = storageRef.get();
-            }
-            if (result == null) {
-                File storageFile = new File(cache, FLAG_FILE_NAME);
-                result = new DirectoryStorage(storageFile);
-                // 1. Should we lock by cache file?
-                // 2. locking within synchronized block - potentially dangerous!
-                Lock lock = RemoteFileSystem.getLock(storageFile).readLock();
-                try {
-                    lock.lock();
-                    result.load();
-                } finally {
-                    lock.unlock();
-                }
-                storageRef = new WeakReference<DirectoryStorage>(result);
+                storage = storageRef.get();
             }
         }
-        return result;
+        if (storage != null && ! storage.isFileModifiedExternally()) {
+            return storage;
+        }
+
+        File storageFile = getStorageFile();
+        storage = new DirectoryStorage(storageFile);
+
+        // try loading from disk
+        boolean loaded = false;
+        if (storageFile.exists()) {
+            Lock lock = RemoteFileSystem.getLock(storageFile).readLock();
+            try {
+                lock.lock();
+                try {
+                    storage.load();
+                } catch (DirectoryStorage.FormatException e) {
+                    RemoteLogger.getInstance().log(Level.FINE, e.getMessage(), e);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        if (loaded) {
+            synchronized (this) {
+                if (storageRef != null) {
+                    DirectoryStorage s = storageRef.get();
+                    if (s != null) {
+                        return s;
+                    }
+                }
+                storageRef = new WeakReference<DirectoryStorage>(storage);
+            }
+            return storage;
+        }
+
+        // neither memory nor disk cache helped
+        checkConnection(cache, remotePath, true);
+
+        Lock lock = RemoteFileSystem.getLock(cache).writeLock();
+        lock.lock();
+        try {
+            synchronized (this) {
+                if (storageRef != null) {
+                    DirectoryStorage stor = storageRef.get();
+                    if (stor != null) {
+                        return stor;
+                    }
+                }
+            }
+            if (!cache.exists()) {
+                cache.mkdirs();
+            }
+            if (!cache.exists()) {
+                throw new IOException("Can not create cache directory " + cache); // NOI18N
+            }
+            DirectoryReader directoryReader = new DirectoryReader(execEnv, remotePath);
+            RemoteLogger.getInstance().log(Level.FINEST, "Synchronizing remote path {0}{1}{2}", new Object[]{execEnv, ':', remotePath});
+            directoryReader.readDirectory();
+            fileSystem.incrementDirSyncCount();
+            List<DirectoryStorage.Entry> entries = directoryReader.getEntries();
+            for (DirectoryStorage.Entry entry : entries) {
+                entry.setCache(entry.getName()); //TODO:rfs case sensivity
+            }
+            storage.setEntries(entries);
+            storage.store();
+            synchronized (this) {
+                storageRef = new WeakReference<DirectoryStorage>(storage);
+            }
+
+        } finally {
+            lock.unlock();
+        }
+        return storage;
     }
 
-    private void fillStorage() {
-        
+    void ensureChildSync(RemotePlainFile child) throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        if (child.cache.exists() && child.cache.length() > 0) {
+            return;
+        }
+        checkConnection(child.cache, child.remotePath, false);
+        DirectoryStorage storage = getDirectoryStorage();
+        Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
+        try {
+            int rc = task.get().intValue();
+            if (rc == 0) {
+                fileSystem.incrementFileCopyCount();
+            } else {
+                throw new IOException("Can't copy file " + child.cache.getAbsolutePath() + // NOI18N
+                        " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
+            }
+        } catch (InterruptedException ex) {
+            truncate(child.cache);
+            throw ex;
+        } catch (ExecutionException ex) {
+            truncate(child.cache);
+            throw ex;
+        }
     }
 
-//    @Override
-//    protected void ensureSync() throws IOException, ConnectException {
-//    }
+    private void truncate(File file) throws IOException {
+        OutputStream os = new FileOutputStream(file);
+        os.close();
+    }
+
+    private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            fileSystem.getRemoteFileSupport().addPendingFile(localFile, remotePath, isDirectory);
+            throw new ConnectException();
+        }
+    }
 
     @Override
     public FileType getType() {
