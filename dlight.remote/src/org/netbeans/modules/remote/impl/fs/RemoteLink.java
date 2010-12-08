@@ -68,12 +68,12 @@ public class RemoteLink extends RemoteFileObjectBase {
     }
 
     private static String normalize(String link, String remotePath, FileObject parent) {
-        if (link.startsWith("/")) {
+        if (link.startsWith("/")) { // NOI18N
             return link;
         }
         String parentPath = parent.getPath();
-        if (!parentPath.startsWith("/")) {
-            parentPath = "/" + parentPath;
+        if (!parentPath.startsWith("/")) { // NOI18N
+            parentPath = "/" + parentPath; // NOI18N
         }
         return parentPath + '/' + link; //TODO:rfs cope with ../.. , etc
     }
