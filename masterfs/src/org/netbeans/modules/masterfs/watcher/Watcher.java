@@ -70,7 +70,7 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service=Watcher.class)
 })
 public final class Watcher extends AnnotationProvider {
-    private static final Logger LOG = Logger.getLogger(Watcher.class.getName());
+    static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
     private final Ext<?> ext;
 
@@ -131,13 +131,9 @@ public final class Watcher extends AnnotationProvider {
 
         /*
         // will be called from WHM implementation on lost key
-        private void fileObjectFreed(KEY key) {
-            try {
-                if (key != null) {
-                    impl.removeWatch(key);
-                }
-            } catch (IOException ioe) {
-              Exceptions.printStackTrace(ioe);  
+        private void fileObjectFreed(KEY key) throws IOException {
+            if (key != null) {
+                impl.removeWatch(key);
             }
         }
          */

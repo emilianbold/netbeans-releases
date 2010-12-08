@@ -86,7 +86,7 @@ public final class FolderObj extends BaseFileObj {
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
-    private FileObjectKeeper keeper;
+    private volatile FileObjectKeeper keeper;
 
     /**
      * Creates a new instance of FolderImpl
@@ -561,15 +561,16 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
-    public final synchronized ChildrenCache getChildrenCache() {
-        //assert getFileName().getFile().isDirectory() || !getFileName().getFile().exists();
-        if (folderChildren == null) {
-            folderChildren = new FolderChildrenCache();
+    public final ChildrenCache getChildrenCache() {
+        synchronized (FolderChildrenCache.class) {
+            if (folderChildren == null) {
+                folderChildren = new FolderChildrenCache();
+            }
+            return folderChildren;
         }
-        return folderChildren;
     }
     
-    public synchronized final boolean hasRecursiveListener() {
+    public final boolean hasRecursiveListener() {
         FileObjectKeeper k = keeper;
         return k != null && k.isOn();
     }

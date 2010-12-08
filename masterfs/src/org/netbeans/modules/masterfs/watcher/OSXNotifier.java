@@ -54,7 +54,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -99,14 +98,9 @@ public class OSXNotifier extends Notifier<Void> {
         // ignore
     }
 
-    public @Override String nextEvent() throws IOException {
-        try {
-            final String event = events.take();
-            return event == ALL_CHANGE ? null : event;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+    public @Override String nextEvent() throws IOException, InterruptedException {
+        final String event = events.take();
+        return event == ALL_CHANGE ? null : event;
     }
 
     public synchronized void start() throws IOException {
