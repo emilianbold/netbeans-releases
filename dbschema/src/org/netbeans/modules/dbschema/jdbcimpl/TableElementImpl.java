@@ -192,10 +192,17 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                         if (bridge != null) {
                             rset = bridge.getDriverSpecification().getRow();
                             Object type = rset.get(new Integer(5));
-                            if (type != null)
+                            if (type != null) {
                                 sqlType = (new Integer((String) rset.get(new Integer(5)))).intValue();
-                            else
+                            } else {
                                 sqlType = 0; //java.sql.Types.NULL
+                            }
+                            // #192609: IllegalArgumentException: aType == null
+                            if ("PostgreSQL".equalsIgnoreCase(dmd.getDatabaseProductName())) { // NOI18N
+                                if (Types.DISTINCT == sqlType) {
+                                    sqlType = (new Integer((String) rset.get(new Integer(22)))).intValue();
+                                }
+                            }
                             sqlTypeName = (String) rset.get(new Integer(6));
                             colName = (String) rset.get(new Integer(4));
                             colNull = (String) rset.get(new Integer(11));
@@ -236,12 +243,11 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             if ((sqlType == 1111) && sqlTypeName.equals("NVARCHAR2")) //NOI18N
                                 sqlType = Types.CHAR;
                         }
-                       //MySQL driver hacks
+                        //MySQL driver hacks
                         if (dbProductName.indexOf("MySQL") != -1) { //NOI18N
                             if ((sqlType == 1111) && sqlTypeName.equalsIgnoreCase("BIT")) //NOI18N
                                 sqlType = Types.BIT;
                         }
-
                         //workaround for i-net Oranxo driver
                         //value in int range is expected by JDBC API but 4294967296 is returned
                         try {
