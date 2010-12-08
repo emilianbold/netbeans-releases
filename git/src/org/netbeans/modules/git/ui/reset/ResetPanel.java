@@ -50,17 +50,17 @@ package org.netbeans.modules.git.ui.reset;
 
 import javax.swing.JPanel;
 import org.netbeans.libs.git.GitClient.ResetType;
-import org.netbeans.modules.git.ui.repository.RevisionPickerDialog;
+import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
  * @author ondra
  */
 public class ResetPanel extends JPanel {
-    private final RevisionPickerDialog revisionPanel;
+    private final RevisionDialog revisionPanel;
 
     /** Creates new form CheckoutPathsPanel */
-    public ResetPanel (RevisionPickerDialog revisionPanel) {
+    public ResetPanel (RevisionDialog revisionPanel) {
         this.revisionPanel = revisionPanel;
         initComponents();
     }
@@ -75,7 +75,7 @@ public class ResetPanel extends JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        org.netbeans.modules.git.ui.repository.RevisionPickerDialog revisionPickerDialog1 = this.revisionPanel;
+        org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog1 = this.revisionPanel;
         jLabel1 = new javax.swing.JLabel();
         optionsPanel = new javax.swing.JPanel();
 
@@ -141,10 +141,10 @@ public class ResetPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

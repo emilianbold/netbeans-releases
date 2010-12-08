@@ -487,8 +487,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 NameKind.prefix(prefix);
             Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
             Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
+            
             for (MethodElement constructor : constructors) {
-                completionResult.add(PHPCompletionItem.NewClassItem.getItem(constructor, request));
+                for (final PHPCompletionItem.NewClassItem newClassItem :
+                        PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                    completionResult.add(newClassItem);
+                }
             }
         } else {
             final NameKind query = NameKind.exact(prefix);
@@ -500,7 +504,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
                         Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
                         for (MethodElement constructor : constructors) {
-                            completionResult.add(PHPCompletionItem.NewClassItem.getItem(constructor, request));
+                            for (final PHPCompletionItem.NewClassItem newClassItem :
+                                    PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                                completionResult.add(newClassItem);
+                            }
                         }
                         addedExact = true; 
                     }
