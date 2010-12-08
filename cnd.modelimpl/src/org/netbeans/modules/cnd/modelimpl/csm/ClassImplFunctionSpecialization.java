@@ -47,11 +47,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -161,6 +163,21 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         return super.getMembers(filter);
     }
 
+    @Override
+    public Collection<CsmInheritance> getBaseClasses() {
+        ClassImpl base = findBaseClassImplInProject();
+        if(base != null && base != this) {
+            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+            if(p instanceof InstantiationProviderImpl) {
+                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+                if(CsmKindUtilities.isClass(baseInst)) {
+                    return ((CsmClass)baseInst).getBaseClasses();
+                }
+            }
+        }
+        return Collections.<CsmInheritance>emptyList();
+    }
+    
     private static String getClassName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
         return getClassNameFromFunctionSpecialicationName(funName.toString());
