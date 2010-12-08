@@ -143,7 +143,7 @@ public class LocalDownloadSupport {
         return fileList.getAllFiles ();
     }
 
-    private void addUpdateUnits (File... newFiles) {
+    final void addUpdateUnits (File... newFiles) {
         Collection<UpdateUnit> alreadyInstalled = new HashSet<UpdateUnit> ();
         for (File nbm : newFiles) {
             UpdateUnit u = null;

@@ -60,7 +60,7 @@ import com.sun.jna.win32.W32APITypeMapper;
 import java.io.InterruptedIOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.openide.util.Exceptions;
+import java.util.logging.Level;
 
 /**
  * A {@link Notifier} implementation using Win32 API ReadDirectoryChangesW.
@@ -241,13 +241,8 @@ public class WindowsNotifier extends Notifier<Void> {
     public @Override void removeWatch(Void key) throws IOException {}
 
 
-    public @Override String nextEvent() throws IOException {
-        try {
-            return events.take();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+    public @Override String nextEvent() throws IOException, InterruptedException {
+        return events.take();
     }
 
     public static final int INFINITE = 0xFFFFFFFF;
@@ -347,7 +342,7 @@ public class WindowsNotifier extends Notifier<Void> {
                         try {
                             handleChanges(finfo);
                         } catch(IOException e) {
-                            Exceptions.printStackTrace(e);
+                            Watcher.LOG.log(Level.INFO, "handleChanges", e); 
                         }
                     }
                 }
