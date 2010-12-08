@@ -68,6 +68,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -89,7 +90,7 @@ public final class ConnectionBuilder {
      * Session cookies set by home.
      * {@link java.net.CookieManager} in JDK 6 would be a bit easier.
      */
-    private static final Map<URL,String[]> COOKIES = new HashMap<URL,String[]>();
+    private static final Map</*URL*/String,String[]> COOKIES = new HashMap<String,String[]>();
 
     private URL home;
     private URL url;
@@ -97,6 +98,7 @@ public final class ConnectionBuilder {
     private byte[] postData;
     private int timeout;
     private boolean auth = true;
+    private boolean followRedirects = true;
 
     /**
      * Prepare a connection.
@@ -177,6 +179,7 @@ public final class ConnectionBuilder {
      * @param data bytes to post
      * @return this builder
      */
+    @SuppressWarnings("EI_EXPOSE_REP2")
     public ConnectionBuilder postData(byte[] data) {
         postData = data;
         return this;
@@ -205,6 +208,17 @@ public final class ConnectionBuilder {
     }
 
     /**
+     * Configures whether to follow redirects.
+     * Useful to pass false in case you do not care about the result page.
+     * @param true to follow HTTP 301/302 redirects (the default), false to return the connection without error
+     * @return this builder
+     */
+    public ConnectionBuilder followRedirects(boolean fr) {
+        followRedirects = fr;
+        return this;
+    }
+
+    /**
      * Actually try to open the connection.
      * May need to retry to handle redirects and/or authentication.
      * @return an open and valid connection, ready for {@link URLConnection#getInputStream},
@@ -223,7 +237,7 @@ public final class ConnectionBuilder {
         } else {
             final Thread curr = Thread.currentThread();
             RequestProcessor.Task task = TIMER.post(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     curr.interrupt();
                 }
             }, timeout);
@@ -247,16 +261,16 @@ public final class ConnectionBuilder {
                     SSLContext sc = SSLContext./* XXX JDK 6: getDefault() */getInstance("SSL"); // NOI18N
                     sc.init(null, new TrustManager[] {
                         new X509TrustManager() {
-                            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
-                            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
-                            public X509Certificate[] getAcceptedIssuers() {
+                            public @Override void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                            public @Override void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                            public @Override X509Certificate[] getAcceptedIssuers() {
                                 return new X509Certificate[0];
                             }
                         }
                     }, new SecureRandom());
                     ((HttpsURLConnection) conn).setSSLSocketFactory(sc.getSocketFactory());
                     ((HttpsURLConnection) conn).setHostnameVerifier(new HostnameVerifier() {
-                        public boolean verify(String hostname, SSLSession session) {
+                        public @Override boolean verify(String hostname, SSLSession session) {
                             return true;
                         }
                     });
@@ -270,8 +284,8 @@ public final class ConnectionBuilder {
                 for (ConnectionAuthenticator authenticator : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
                     authenticator.prepareRequest(conn, home);
                 }
-                if (COOKIES.containsKey(home)) {
-                    for (String cookie : COOKIES.get(home)) {
+                if (COOKIES.containsKey(home.toString())) {
+                    for (String cookie : COOKIES.get(home.toString())) {
                         String cookieBare = cookie.replaceFirst(";.*", ""); // NOI18N
                         LOG.log(Level.FINER, "Setting cookie {0} for {1}", new Object[] {cookieBare, conn.getURL()});
                         conn.setRequestProperty("Cookie", cookieBare); // NOI18N
@@ -290,7 +304,7 @@ public final class ConnectionBuilder {
                 throw x;
             } catch (Exception x) {
                 // JRE #6797318, etc.; various bugs in JRE networking code; see e.g. #163555
-                throw (IOException) new IOException("Connecting to " + curr + ": " + x.toString()).initCause(x);
+                throw new IOException("Connecting to " + curr + ": " + x, x);
             }
             if (postData != null) {
                 OutputStream os = conn.getOutputStream();
@@ -307,7 +321,7 @@ public final class ConnectionBuilder {
                 List<String> cookies = conn.getHeaderFields().get("Set-Cookie"); // NOI18N
                 if (cookies != null) {
                     LOG.log(Level.FINE, "Cookies set for domain {0}: {1}", new Object[] {home, cookies});
-                    COOKIES.put(home, cookies.toArray(new String[cookies.size()]));
+                    COOKIES.put(home.toString(), cookies.toArray(new String[cookies.size()]));
                 }
             }
             int responseCode = ((HttpURLConnection) conn).getResponseCode();
@@ -316,6 +330,9 @@ public final class ConnectionBuilder {
             // Workaround for JDK bug #6810084; HttpURLConnection.setInstanceFollowRedirects does not work.
             case HttpURLConnection.HTTP_MOVED_PERM:
             case HttpURLConnection.HTTP_MOVED_TEMP:
+                if (!followRedirects) {
+                    break RETRY;
+                }
                 URL redirect = new URL(conn.getHeaderField("Location")); // NOI18N
                 conn = redirect.openConnection();
                 continue RETRY;
