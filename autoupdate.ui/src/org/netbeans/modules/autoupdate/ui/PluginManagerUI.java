@@ -47,15 +47,29 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -72,6 +86,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -535,9 +550,17 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         Containers.initNotify ();
         updateTable = createTabForModel(new UpdateTableModel(units));
         availableTable = createTabForModel(new AvailableTableModel (units));
-        localTable = createTabForModel(new LocallyDownloadedTableModel (new LocalDownloadSupport()));
+        final LocalDownloadSupport localDownloadSupport = new LocalDownloadSupport();
+        final LocallyDownloadedTableModel localTM = new LocallyDownloadedTableModel(localDownloadSupport);
+        localTable = createTabForModel(localTM);
         installedTable = createTabForModel(new InstalledTableModel(units));
-        
+
+        DropTargetListener l = new LocallDownloadDnD(localDownloadSupport, localTM, this);
+        final DropTarget dt = new DropTarget(null, l);
+        dt.setActive(true);
+        this.setDropTarget(dt);
+
+
         SettingsTab tab = new SettingsTab (this);
         tpTabs.add (tab, INDEX_OF_SETTINGS_TAB);
         tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
@@ -660,6 +683,22 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         if (c instanceof UnitTab) {
             ((UnitTab) c).refreshState ();
         }
+    }
+    
+    final void setSelectedTab(UnitTab tab) {
+        tpTabs.setSelectedComponent(tab);
+    }
+
+    final UnitTab findTabForModel(UnitCategoryTableModel model) {
+        for (Component c : tpTabs.getComponents()) {
+            if (c instanceof UnitTab) {
+                UnitTab ut = (UnitTab) c;
+                if (ut.getModel() == model) {
+                    return ut;
+                }
+            }
+        }
+        return null;
     }
     
 }
