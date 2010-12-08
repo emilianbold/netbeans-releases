@@ -1050,14 +1050,6 @@ made subject to such option by the copyright holder.
 		    <attr name="position" intvalue="214"/>
 		</file>
 
-		<file name="MemoryWindow.wstcref" url="modes/debugger/MemoryWindow.wstcref">
-		    <attr name="position" intvalue="314"/>
-		</file>
-
-		<file name="RegistersWindow.wstcref" url="modes/debugger/RegistersWindow.wstcref">
-		    <attr name="position" intvalue="414"/>
-		</file>
-
 	    </folder>
 
 	    <folder name="debugger">
