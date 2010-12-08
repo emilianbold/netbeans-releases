@@ -429,7 +429,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         final FileObject fo = this.getDataObject().getPrimaryFile();
         if (!warnedEncodingFiles.contains(fo)) {
             if (!checkIfCharsetCanDecodeFile(fo, c)) {
-                throw new UserQuestionException(NbBundle.getMessage(DataEditorSupport.class, "MSG_EncodingProblem", c)) {
+                throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", c)) {
                     @Override
                     public void confirmed() throws IOException {
                         warnedEncodingFiles.add(fo);
