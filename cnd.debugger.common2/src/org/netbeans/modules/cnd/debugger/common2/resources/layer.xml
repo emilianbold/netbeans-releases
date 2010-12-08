@@ -1047,7 +1047,7 @@ made subject to such option by the copyright holder.
 		</file>
 
 		<file name="EvaluationWindow.wstcref" url="modes/debugger/EvaluationWindow.wstcref">
-		    <attr name="position" intvalue="214"/>
+		    <attr name="position" intvalue="514"/>
 		</file>
 
 	    </folder>
