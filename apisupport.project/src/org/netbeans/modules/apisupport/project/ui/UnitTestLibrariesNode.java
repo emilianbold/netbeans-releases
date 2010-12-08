@@ -226,13 +226,12 @@ final class UnitTestLibrariesNode extends AbstractNode {
                         final Collection<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
                         final AtomicBoolean missingJUnit4 = new AtomicBoolean(true);
                         Set<TestModuleDependency> tmds = new ProjectXMLManager(project).getTestDependencies(project.getModuleList()).get(testType);
-                        if (tmds == null) { // #191202 - race condition?
-                            return null;
-                        }
-                        for (TestModuleDependency tmd : tmds) {
-                            deps.add(tmd);
-                            if (tmd.getModule().getCodeNameBase().equals("org.netbeans.libs.junit4")) { // NOI18N
-                                missingJUnit4.set(false);
+                        if (tmds != null) { // will be null if have no <test-dependencies> of this type
+                            for (TestModuleDependency tmd : tmds) {
+                                deps.add(tmd);
+                                if (tmd.getModule().getCodeNameBase().equals("org.netbeans.libs.junit4")) { // NOI18N
+                                    missingJUnit4.set(false);
+                                }
                             }
                         }
                         ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
