@@ -309,9 +309,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (ensureActiveProviders()) {
             try {
                 int modEndOffset = e.getOffset() + e.getLength();
-                if (getActiveComponent().getSelectionStart() != modEndOffset)
-                    return;
-
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
                 for (int i = 0; i < activeProviders.length; i++) {
                     int type = activeProviders[i].getAutoQueryTypes(getActiveComponent(), typedText);
