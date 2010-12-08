@@ -172,7 +172,6 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
 
         org.openide.awt.Mnemonics.setLocalizedText(fieldCheckBox, org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_DeclareField")); // NOI18N
         fieldCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 4, 0));
-        fieldCheckBox.setLabel(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuter_DeclareField")); // NOI18N
         fieldCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 fieldCheckBoxItemStateChanged(evt);
