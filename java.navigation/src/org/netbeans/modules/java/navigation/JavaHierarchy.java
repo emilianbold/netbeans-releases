@@ -124,6 +124,7 @@ public final class JavaHierarchy {
                 }
             }
             String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);            
+            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHierarchy.class, "ACSD_JavaHierarchyDialog", membersOf));
             dialog.setTitle(title); // NOI18N
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements));
             dialog.setVisible(true);
