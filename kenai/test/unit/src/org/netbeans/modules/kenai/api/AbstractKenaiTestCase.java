@@ -37,73 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.api;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.utils.ServicesChecker;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public class KenaiGetMyProjectsTest extends NbTestCase {
-
-    private static Kenai instance;
+public abstract class AbstractKenaiTestCase extends NbTestCase {
+    
+    private Kenai kenai;
+    
+    private static String TEST_PROJECT = "nb-jnet-test";
     private static String uname = null;
     private static String passw = null;
-    private static boolean firstRun = true;
-
-    public KenaiGetMyProjectsTest(String S) {
-        super(S);
+        
+    public AbstractKenaiTestCase(String name) {
+        super(name);
     }
 
-    @Before
     @Override
-    public void setUp() {
-        try {
-            final Logger logger = Logger.getLogger("TIMER.kenai");
-            logger.setLevel(Level.FINE);
-            instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
-            System.out.println("kurl " + instance.getUrl());
-            if (uname == null) {
-                uname = System.getProperty("kenai.user.login");
-                passw = System.getProperty("kenai.user.password");
-            }
-            if (uname == null) { // if it is still null, check the file in ~
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-                uname = br.readLine();
-                passw = br.readLine();
-                br.close();
-            }
-            if (firstRun) {
-                instance.login(uname, passw.toCharArray());
-                firstRun = false;
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    protected void setUp() throws Exception {
+        super.setUp();                
+        
+        BufferedReader br = null;
+        final Logger logger = Logger.getLogger("TIMER.kenai");
+        logger.setLevel(Level.FINE);
+        if (uname == null) {
+            uname = System.getProperty("kenai.user.login");
+            passw = System.getProperty("kenai.user.password");
         }
+        if (uname == null) {
+            br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+            uname = br.readLine();
+            passw = br.readLine();
+            br.close();
+        }                
     }
-
-    @After
-    @Override
-    public void tearDown() {
+    
+    protected String getTestProject() {
+        return TEST_PROJECT;
     }
-
-    static public junit.framework.Test suite() {
-        junit.framework.TestSuite _suite = new junit.framework.TestSuite();
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
-        return _suite;
+    
+    protected String getUsername() {
+        return uname;
     }
+    
+    protected String getPassword() {
+        return passw;
+    }
+    
+    protected Kenai getKenai() {
+        if(kenai == null) {
+            try {
+                kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
+                getKenai().login(uname, passw.toCharArray(), false);                
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);                    
+                fail();
+            } 
+        }
+        return kenai;
+    }
+    
 }
