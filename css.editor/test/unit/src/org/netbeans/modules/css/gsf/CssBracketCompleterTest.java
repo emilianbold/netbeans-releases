@@ -65,6 +65,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * @author marek.fukala@sun.com
@@ -177,6 +179,38 @@ public class CssBracketCompleterTest extends TestBase {
 
     }
 
+
+    // Bug 189711 -  Disabling Autocompletion Quotes and Tags
+    public void testDoNotAutocompleteQuteInHtmlAttribute() throws DataObjectNotFoundException, IOException, BadLocationException {
+        FileObject fo = getTestFile("testfiles/test.html");
+        assertEquals("text/html", fo.getMIMEType());
+
+        DataObject dobj = DataObject.find(fo);
+        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+        Document document = ec.openDocument();
+        ec.open();
+        JEditorPane jep = ec.getOpenedPanes()[0];
+        BaseAction type = (BaseAction) jep.getActionMap().get(NbEditorKit.defaultKeyTypedAction);
+        //find the pipe
+        String text = document.getText(0, document.getLength());
+
+        int pipeIdx = text.indexOf('|');
+        assertTrue(pipeIdx != -1);
+
+        //delete the pipe
+        document.remove(pipeIdx, 1);
+
+        jep.setCaretPosition(pipeIdx);
+        
+        //type "
+        ActionEvent ae = new ActionEvent(doc, 0, "\"");
+        type.actionPerformed(ae, jep);
+
+        //check the document content
+        String beforeCaret = document.getText(pipeIdx, 2);
+        assertEquals("\" ", beforeCaret);
+
+    }
 
     private void assertLogicalRanges(String sourceText, int[][] expectedRangesLeaveToRoot) throws ParseException {
          //find caret position in the source text
