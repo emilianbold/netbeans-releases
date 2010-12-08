@@ -70,6 +70,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
@@ -425,7 +426,12 @@ public class Utilities {
             return findIdentifierSpan(info, doc, tree);
         }
         
-        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), leaf);
+        int start = (int) positions.getStartPosition(cu, leaf);
+        int end = (int) positions.getEndPosition(cu, leaf);
+        
+        if (start == Diagnostic.NOPOS || end == Diagnostic.NOPOS) {
+            return null;
+        }
         
         TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
