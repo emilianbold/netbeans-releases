@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -415,6 +416,21 @@ public class ProjectActionSupport {
             }
         }
 
+        private void stopProgress() {
+            progressHandle.finish();
+            synchronized (lock) {
+                InputOutput tabToClose = ioTab;
+                if (tabToClose != null && !tabToClose.isClosed()&& tabToClose.getOut() != null) {
+                    PrintWriter out = tabToClose.getOut();
+                    // Closing out several times is not harmful 
+                    // any attempt to write to the same tab will re-open it
+                    out.write(0);
+                    out.flush();
+                    out.close();
+                }
+            }
+        }
+        
         private void go() {
             LifecycleManager.getDefault().saveAll();
             currentHandler = null;
@@ -427,7 +443,7 @@ public class ProjectActionSupport {
             final ProjectActionEvent pae = paes[currentAction];
 
             if (!checkProject(pae)) {
-                progressHandle.finish();
+                stopProgress();
                 return;
             }
             Type type = pae.getType();
@@ -439,7 +455,7 @@ public class ProjectActionSupport {
                     || type == PredefinedType.CHECK_EXECUTABLE
                     || type == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {
-                    progressHandle.finish();
+                    stopProgress();
                     return;
                 }
             }
@@ -459,7 +475,7 @@ public class ProjectActionSupport {
                 }
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             }
-            
+
             if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                 consoleType = RunProfile.getDefaultConsoleType();
             }
@@ -492,7 +508,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!foundFactory) {
-                    progressHandle.finish();
+                    stopProgress();
                 }
             }
 
@@ -542,7 +558,7 @@ public class ProjectActionSupport {
                 }
                 sa.setEnabled(false);
                 ra.setEnabled(true);
-                progressHandle.finish();
+                stopProgress();
                 return;
             }
 

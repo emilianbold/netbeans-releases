@@ -156,6 +156,7 @@ public interface NativeDebugger {
     public void pause();
     public void interrupt();
     public void runToCursor(String src, int line);
+    public void contAt(String src, int line);
     public void makeCalleeCurrent();
     public void makeCallerCurrent();
     public void popTopmostCall();

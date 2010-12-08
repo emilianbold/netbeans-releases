@@ -168,7 +168,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    abstract public FileObject getFileObject(String relativePath);
+    abstract public RemoteFileObjectBase getFileObject(String relativePath);
     
     @Override
     public FileObject getParent() {

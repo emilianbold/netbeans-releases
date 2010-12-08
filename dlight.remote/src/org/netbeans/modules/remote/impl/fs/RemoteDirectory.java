@@ -117,7 +117,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject getFileObject(String relativePath) {
+    public RemoteFileObjectBase getFileObject(String relativePath) {
         relativePath = removeDoubleSlashes(relativePath);
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
@@ -130,7 +130,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // relative path contains '/' => delegate to direct parent
             String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos); //TODO:rfs: process ../..
             String childNameExt = relativePath.substring(slashPos + 1);
-            FileObject parentFileObject = fileSystem.findResource(parentRemotePath);
+            RemoteFileObjectBase parentFileObject = fileSystem.findResource(parentRemotePath);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
                 return parentFileObject.getFileObject(childNameExt);
             } else {
@@ -148,6 +148,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String remoteAbsPath = remotePath + '/' + relativePath;
             if (entry.getFileType() == FileType.Directory) {
                 return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
+            }  else if (entry.getFileType() == FileType.Symlink) {
+                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, childCache, entry.getLink());
             } else {
                 return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
             }
@@ -176,6 +178,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 File childCache = new File(cache, entry.getCache());
                 if (entry.getFileType() == FileType.Directory) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
+                } else if(entry.getFileType() == FileType.Symlink) {
+                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, childCache, entry.getLink());
                 } else {
                     childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
                 }

@@ -115,7 +115,7 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             PendingFile pendingFile;
             // die after half a minute inactivity period
             while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
-                RemoteFileObjectBase dir = (RemoteFileObjectBase) fs.findResource(pendingFile.remotePath);
+                RemoteFileObjectBase dir = fs.findResource(pendingFile.remotePath);
                 dir.ensureSync();
                 handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
             }

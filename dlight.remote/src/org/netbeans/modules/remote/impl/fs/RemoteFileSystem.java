@@ -183,7 +183,7 @@ public class RemoteFileSystem extends FileSystem {
     }
 
     @Override
-    public FileObject findResource(String name) {
+    public RemoteFileObjectBase findResource(String name) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot();
         } else {

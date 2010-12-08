@@ -37,44 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.dtrace.util;
 
-package org.netbeans.modules.remote.impl.fs;
-
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.remote.test.RemoteApiTest;
+import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.PostExecutor;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ak119685
  */
-public class RemoteFileSupportTestCase extends NativeExecutionBaseTestCase {
+public final class DTraceSupport {
 
-    public RemoteFileSupportTestCase(String testName) {
-        super(testName);
-    }
+    private static final HelperUtility dtracectrl = new HelperUtility(
+            "org.netbeans.modules.dlight.dtrace", // NOI18N
+            "bin/$osname-${platform}/dtracectrl"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("DTraceSupport", 1); // NOI18N
 
-    public void testCCSmallReplacement() throws Exception {
-//        fail("Not implemented yet");
-//    public void testCCSmallReplacement() throws Exception {
-//        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
-//                                                            { "cc", "cc.cnd.rfs.small"},
-//                                                            { "include/cc", "include/cc.cnd.rfs.small" },
-//                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
-//
-//                                                            {"include/ccd", "include/ccd"},
-//                                                            { "dcc/dir", "dcc/dir" },
-//                                                            { "ccdir", "ccdir"}
-//                                                          };
-//        for (String[] pair : data) {
-//            assertEquals(pair[1], RemoteFileSupport.testFixCaseSensitivePathIfNeeded(pair[0]));
-//            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
-//        }
-    }
-
-    public static Test suite() {
-        return RemoteApiTest.createSuite(RemoteFileSupportTestCase.class);
+    public static void fireDLightControlProbe(
+            final ExecutionEnvironment env, final String probeName, final String arg,
+            final PostExecutor postExecutor) throws IOException {
+        ProcessUtils.execute(env, RP, postExecutor, dtracectrl.getPath(env), probeName, arg);
     }
 }
