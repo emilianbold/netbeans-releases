@@ -204,7 +204,12 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                     }
                 }
 
-                assert tokens.size() >= 2; //at least library name && the filename remained
+                assert tokens.size() >= 2 : String.format("Suspicious relative path %s (tokens.size()=%s) for component %s of composite component's library %s", //NOI18N
+                        relativePath,
+                        tokens.size(),
+                        cname,
+                        getLibraryName()); //at least library name && the filename remained
+                
                 tokens.removeLast(); //remove the filename
 
                 //one or more tokens left
