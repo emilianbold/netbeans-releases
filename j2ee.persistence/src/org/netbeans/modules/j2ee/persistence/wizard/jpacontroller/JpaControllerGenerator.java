@@ -101,11 +101,10 @@ public class JpaControllerGenerator {
      * @param pkg
      * @param controllerFileObject
      * @param embeddedPkSupport
-     * @param managed - controller classe is expectd to be properly managed (for example by specification in faces-congic) so it will support persistence annotations
      * @throws IOException
      */
-    public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, boolean managed) throws IOException {
-        final boolean isInjection = Util.isContainerManaged(project) && managed;
+        public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
+        final boolean isInjection = Util.isContainerManaged(project);
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String persistenceUnit = Util.getPersistenceUnitAsString(project, entityClass);
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
