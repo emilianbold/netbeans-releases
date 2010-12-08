@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,7 +53,7 @@ import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.util.*;
 
 public class TableElementImpl extends DBElementImpl implements TableElement.Impl {
-    private static Logger LOGGER = Logger.getLogger(TableElementImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TableElementImpl.class.getName());
 
     private DBElementsCollection columns;
     private DBElementsCollection indexes;
@@ -117,6 +117,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     /** Get the name of this element.
     * @return the name
     */
+    @Override
     public DBIdentifier getName() {
         if (_name.getFullName() == null)
             _name.setFullName(((TableElement) element).getDeclaringSchema().getName().getFullName() + "." + _name.getName());
@@ -128,6 +129,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param isTable one of {@link #TABLE} or {@link #VIEW}
      * @throws DBException if impossible
      */
+    @Override
     public void setTableOrView(boolean isTable) throws DBException {
         this.isTable = isTable;
     }
@@ -135,6 +137,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     /** Test whether this is really a class, or an interface.
      * @return one of {@link #TABLE} or {@link #VIEW}
      */
+    @Override
     public boolean isTableOrView() {
         return isTable;
     }
@@ -144,6 +147,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param action one of {@link #ADD}, {@link #REMOVE}, or {@link #SET}
      * @exception DBException if the action cannot be handled
      */
+    @Override
     public void changeColumns(ColumnElement[] elems,int action) throws DBException {
         columns.changeElements(elems, action);
     }
@@ -151,6 +155,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     /** Get all columns.
      * @return the columns
      */
+    @Override
     public ColumnElement[] getColumns() {
         DBElement[] dbe = columns.getElements();
         return (ColumnElement[]) Arrays.asList(dbe).toArray(new ColumnElement[dbe.length]);
@@ -160,6 +165,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param name the name for which to look
      * @return the column, or <code>null</code> if it does not exist
     */
+    @Override
     public ColumnElement getColumn(DBIdentifier name) {
 		return (ColumnElement) columns.find(name);
     }
@@ -251,7 +257,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                         //workaround for i-net Oranxo driver
                         //value in int range is expected by JDBC API but 4294967296 is returned
                         try {
-                            new Integer(colSize);
+                            colSize = new Integer(colSize).toString();
                         } catch (NumberFormatException exc) {
                             colSize = Integer.toString(Integer.MAX_VALUE);
                         }
@@ -265,8 +271,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                     rs.close();
                 }
             } catch (Exception exc) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    exc.printStackTrace();
+                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             }
     }
   
@@ -275,6 +280,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param action one of {@link #ADD}, {@link #REMOVE}, or {@link #SET}
      * @exception DBException if the action cannot be handled
      */
+    @Override
     public void changeIndexes(IndexElement[] elems,int action) throws DBException {
         indexes.changeElements(elems, action);
     }
@@ -282,6 +288,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     /** Get all indexes.
      * @return the indexes
      */
+    @Override
     public IndexElement[] getIndexes() {
         DBElement[] dbe = indexes.getElements();        
         return (IndexElement[]) Arrays.asList(dbe).toArray(new IndexElement[dbe.length]);
@@ -291,6 +298,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param name the name for which to look
      * @return the index, or <code>null</code> if it does not exist
      */
+    @Override
     public IndexElement getIndex(DBIdentifier name) {
 		return (IndexElement) indexes.find(name);
     }
@@ -385,8 +393,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                     changeIndexes(ie, DBElement.Impl.ADD);
                 }
             } catch (Exception exc) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    exc.printStackTrace();
+                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             }
     }
       
@@ -395,6 +402,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param action one of {@link #ADD}, {@link #REMOVE}, or {@link #SET}
      * @exception DBException if the action cannot be handled
      */
+    @Override
     public void changeKeys(KeyElement[] elems,int action) throws DBException {
         keys.changeElements(elems, action);
     }
@@ -402,6 +410,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
     /** Get all keys.
      * @return the keys
      */
+    @Override
     public KeyElement[] getKeys() {
         DBElement[] dbe = keys.getElements();
         return (KeyElement[]) Arrays.asList(dbe).toArray(new KeyElement[dbe.length]);
@@ -411,6 +420,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
      * @param name the name for which to look
      * @return the key, or <code>null</code> if it does not exist
      */
+    @Override
     public KeyElement getKey(DBIdentifier name) {
 		return (KeyElement) keys.find(name);
     }
@@ -450,8 +460,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 if (id != 2)
                     initPK(cp, bridge, shortTableName);
             } catch (Exception exc) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    exc.printStackTrace();
+                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             }
     }
     
@@ -641,11 +650,13 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
         }
     }
 
+    @Override
     public ColumnPairElement[] getColumnPairs() {
         DBElement[] dbe = columnPairs.getElements();
         return (ColumnPairElement[]) Arrays.asList(dbe).toArray(new ColumnPairElement[dbe.length]);
     }
     
+    @Override
     public ColumnPairElement getColumnPair(DBIdentifier name) {
         ColumnPairElement cpe = (ColumnPairElement) columnPairs.find(name);
         if (cpe == null)
@@ -675,13 +686,14 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 cpe = new ColumnPairElement(cpei, lce, fce, (TableElement) element);
                 changeColumnPairs(new ColumnPairElement[] {cpe}, DBElement.Impl.ADD);
             } catch (DBException exc) {
-                exc.printStackTrace();
+                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                 return null;
             }
         
 		return cpe;
     }
     
+    @Override
     public void changeColumnPairs(ColumnPairElement[] pairs,int action) throws DBException {
         columnPairs.changeElements(pairs, action);
     }
