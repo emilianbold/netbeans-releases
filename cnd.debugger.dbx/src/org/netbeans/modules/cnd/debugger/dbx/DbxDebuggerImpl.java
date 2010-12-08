@@ -318,6 +318,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("DbxDebuggerImpl.rudeDisconnect()\n"); // NOI18N
         }
+	// clean up Profile pcs stuff
+	// CR 7003638
+        profileBridge().noteProgUnloaded();
 
         if (executor.destroyedByHand()) {
             getIOPack().bringDown();
