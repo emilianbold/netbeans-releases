@@ -435,7 +435,8 @@ public final class CndFileUtils {
         private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
 
         private static Flags get(File file) {
-           FileObject fo =CndFileSystemProvider.toFileObject(file.getAbsolutePath());
+            file = FileUtil.normalizeFile(file);
+            FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
             if (fo != null && fo.isValid()) {
                 if (fo.isFolder()) {
                     return DIRECTORY;
