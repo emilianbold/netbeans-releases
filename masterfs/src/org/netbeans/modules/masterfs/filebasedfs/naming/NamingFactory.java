@@ -46,10 +46,9 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
@@ -152,24 +151,24 @@ public final class NamingFactory {
             if (v == null) {
                 continue;
             }
-            List<NameRef> linked = new LinkedList<NameRef>();
-            while (v != null) {
-                linked.add(v);
-                v = v.next();
-            }
-            for (NameRef nr : linked) {
+            for (NameRef nr : names[i].disconnectAll()) {
                 FileNaming fn = nr.get();
                 if (fn == null) {
                     continue;
                 }
                 Integer id = createID(fn.getFile());
                 int index = Math.abs(id) % arr.length;
-                nr.next = arr[index];
+                NameRef prev = arr[index];
                 arr[index] = nr;
-                if (nr.next == null) {
-                    nr.next = index;
+                if (prev == null) {
+                    nr.setIndex(index);
+                } else {
+                    nr.setNext(prev);
                 }
             }
+        }
+        for (int i = 0; i < arr.length; i++) {
+            assert checkIndex(arr, i);
         }
         names = arr;
     }
@@ -182,7 +181,7 @@ public final class NamingFactory {
         FileNaming retVal;
         Integer key = createID(file);
         int index = Math.abs(key) % names.length;
-        Reference ref = getReference(names[index], file);
+        NameRef ref = getReference(names[index], file);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
         if (ignoreCache && cachedElement != null && (
@@ -197,17 +196,20 @@ public final class NamingFactory {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
             NameRef refRetVal = new NameRef(retVal);
 
-            refRetVal.next = names[index];
+            NameRef prev = names[index];
             names[index] = refRetVal;
-            if (refRetVal.next == null) {
-                refRetVal.next = index;
+            if (prev == null) {
+                refRetVal.setIndex(index);
+            } else {
+                refRetVal.setNext(prev);
             }
+            assert checkIndex(names, index);
             if (ref != null) {
                 ref.clear();
                 NameRef nr = refRetVal;
                 for (;;) {
                     if (nr.next() == ref) {
-                        nr.next = nr.next().next();
+                        nr.skip(ref);
                         break;
                     }
                     nr = nr.next();
@@ -215,6 +217,7 @@ public final class NamingFactory {
             } else {
                 namesCount++;
             }                
+            assert checkIndex(names, index);
             if (namesCount * 4 > names.length * 3) {
                 rehash(names.length * 2);
             }
@@ -223,7 +226,7 @@ public final class NamingFactory {
         return retVal;
     }
     
-    private static Reference getReference(NameRef value, File f) {
+    private static NameRef getReference(NameRef value, File f) {
         while (value != null) {
             FileNaming fn = value.get();
             if (fn != null && Utils.equals(fn.getFile(), f)) {
@@ -300,11 +303,10 @@ public final class NamingFactory {
         }
     }
     
-    private static final ReferenceQueue<FileNaming> QUEUE = new ReferenceQueue<FileNaming>();
     private static void cleanQueue() {
         assert Thread.holdsLock(NamingFactory.class);
         for (;;) {
-            NameRef nr = (NameRef)QUEUE.poll();
+            NameRef nr = (NameRef)NameRef.QUEUE.poll();
             if (nr == null) {
                 return;
             }
@@ -313,53 +315,14 @@ public final class NamingFactory {
                 names[index] = names[index].remove(nr);
                 namesCount--;
             }
+            assert checkIndex(names, index);
         }
     }
-    
-    
-    private static final class NameRef extends WeakReference<FileNaming> {
-        /** either reference to NameRef or to Integer as an index to names array */
-        Object next;
-        
-        public NameRef(FileNaming referent) {
-            super(referent, QUEUE);
+    private static boolean checkIndex(NameRef[] arr, int index) {
+        if (arr[index] == null) {
+            return true;
+        } else {
+            return index == arr[index].getIndex();
         }
-        
-        public Integer getIndex() {
-            NameRef nr = this;
-            for (;;) {
-                if (nr.next instanceof Integer) {
-                    return (Integer)nr.next;
-                }
-                nr = (NameRef) nr.next;
-            }
-        }
-        
-        public NameRef next() {
-            if (next instanceof Integer) {
-                return null;
-            }
-            return (NameRef)next;
-        }
-        public File getFile() {
-            FileNaming r = get();
-            return r == null ? null : r.getFile();
-        }
-        
-        public NameRef remove(NameRef what) {
-            if (what == this) {
-                return next();
-            }
-            NameRef me = this;
-            while (me.next != what) {
-                if (me.next instanceof Integer) {
-                    return this;
-                }
-                me = (NameRef)me.next;
-            }
-            me.next = ((NameRef)me.next).next;
-            return this;
-        }
-
     }
 }
