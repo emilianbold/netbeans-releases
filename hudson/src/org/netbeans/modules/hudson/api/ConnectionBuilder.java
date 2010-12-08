@@ -98,6 +98,7 @@ public final class ConnectionBuilder {
     private byte[] postData;
     private int timeout;
     private boolean auth = true;
+    private boolean followRedirects = true;
 
     /**
      * Prepare a connection.
@@ -203,6 +204,17 @@ public final class ConnectionBuilder {
      */
     public ConnectionBuilder authentication(boolean a) {
         auth = a;
+        return this;
+    }
+
+    /**
+     * Configures whether to follow redirects.
+     * Useful to pass false in case you do not care about the result page.
+     * @param true to follow HTTP 301/302 redirects (the default), false to return the connection without error
+     * @return this builder
+     */
+    public ConnectionBuilder followRedirects(boolean fr) {
+        followRedirects = fr;
         return this;
     }
 
@@ -318,6 +330,9 @@ public final class ConnectionBuilder {
             // Workaround for JDK bug #6810084; HttpURLConnection.setInstanceFollowRedirects does not work.
             case HttpURLConnection.HTTP_MOVED_PERM:
             case HttpURLConnection.HTTP_MOVED_TEMP:
+                if (!followRedirects) {
+                    break RETRY;
+                }
                 URL redirect = new URL(conn.getHeaderField("Location")); // NOI18N
                 conn = redirect.openConnection();
                 continue RETRY;

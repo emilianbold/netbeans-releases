@@ -79,7 +79,7 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
                         new ConnectionBuilder().url(new URL(home, realmURI)).
                                 postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
                                 URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
-                                homeURL(home).authentication(false).connection();
+                                homeURL(home).authentication(false).followRedirects(false).connection();
                         LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
                         return conn.getURL().openConnection();
                     } catch (IOException x) {
