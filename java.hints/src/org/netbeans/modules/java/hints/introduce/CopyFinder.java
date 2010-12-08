@@ -133,18 +133,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     public static Map<TreePath, VariableAssignments> computeDuplicates(final CompilationInfo info, TreePath searchingFor, TreePath scope, boolean fullElementVerify, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
         CopyFinder f =   fullElementVerify
                        ? new CopyFinder(searchingFor, info, cancel)
-                       : new CopyFinder(searchingFor, info, cancel) {
-            @Override
-            protected VerifyResult verifyElements(TreePath node, TreePath p) {
-                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf())) ? VerifyResult.MATCH : VerifyResult.NO_MATCH_CONTINUE;
-            }
-            @Override
-            protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
-                ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
-
-                return Collections.singleton(new TreePath(tp, thisTree));
-            }
-        };
+                       : new UnattributedCopyFinder(searchingFor, info, cancel);
 
         f.designedTypeHack = designedTypeHack;
 
@@ -191,18 +180,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         CopyFinder f =   fullElementVerify
                        ? new CopyFinder(one, info, cancel)
-                       : new CopyFinder(one, info, cancel) {
-            @Override
-            protected VerifyResult verifyElements(TreePath node, TreePath p) {
-                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf())) ? VerifyResult.MATCH : VerifyResult.NO_MATCH_CONTINUE;
-            }
-            @Override
-            protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
-                ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
-
-                return Collections.singleton(new TreePath(tp, thisTree));
-            }
-        };
+                       : new UnattributedCopyFinder(one, info, cancel);
 
         if (inVariables != null) {
             if (fillInVariables) {
@@ -1150,22 +1128,20 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (p == null)
             return super.visitMemberSelect(node, p);
 
-        if (Utilities.isPureMemberSelect(node, true) && Utilities.isPureMemberSelect(p.getLeaf(), true)) {
-            switch (verifyElements(getCurrentPath(), p)) {
-                case MATCH_CHECK_DEEPER:
-                    if (node.getKind() == p.getLeaf().getKind()) {
-                        //to bind any free variables inside:
-                        MemberSelectTree t = (MemberSelectTree) p.getLeaf();
+        switch (verifyElements(getCurrentPath(), p)) {
+            case MATCH_CHECK_DEEPER:
+                if (node.getKind() == p.getLeaf().getKind()) {
+                    //to bind any free variables inside:
+                    MemberSelectTree t = (MemberSelectTree) p.getLeaf();
 
-                        return scan(node.getExpression(), t.getExpression(), p) == Boolean.TRUE;
-                    } else {
-                        return deepVerifyIdentifier2MemberSelect(p, getCurrentPath());
-                    }
-                case MATCH:
-                    return true;
-                case NO_MATCH:
-                    return false;
-            }
+                    return scan(node.getExpression(), t.getExpression(), p) == Boolean.TRUE;
+                } else {
+                    return deepVerifyIdentifier2MemberSelect(p, getCurrentPath());
+                }
+            case MATCH:
+                return true;
+            case NO_MATCH:
+                return false;
         }
 
         if (node.getKind() != p.getLeaf().getKind()) {
@@ -1572,6 +1548,28 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         public static State from(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
             return new State(variables, multiVariables, variables2Names, null, null);
+        }
+    }
+
+    private static final class UnattributedCopyFinder extends CopyFinder {
+        private UnattributedCopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel) {
+            super(searchingFor, info, cancel);
+        }
+        @Override
+        protected VerifyResult verifyElements(TreePath node, TreePath p) {
+            if (getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf()))) {
+                boolean pureSelect = Utilities.isPureMemberSelect(node.getLeaf(), true) && Utilities.isPureMemberSelect(p.getLeaf(), true);
+                
+                return pureSelect ? VerifyResult.MATCH : VerifyResult.MATCH_CHECK_DEEPER;
+            } else {
+                return VerifyResult.NO_MATCH_CONTINUE;
+            }
+        }
+        @Override
+        protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
+            ExpressionTree thisTree = super.info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+
+            return Collections.singleton(new TreePath(tp, thisTree));
         }
     }
 }
