@@ -47,6 +47,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.CharConversionException;
 import java.io.FilterOutputStream;
@@ -61,7 +62,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.Reference;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -102,7 +106,9 @@ import org.openide.nodes.NodeListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
@@ -170,6 +176,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Message to display when an object is being opened.
     * @return the message or null if nothing should be displayed
     */
+    @Override
     protected String messageOpening () {
         return NbBundle.getMessage (DataObject.class , "CTL_ObjectOpen", // NOI18N
             obj.getPrimaryFile().getNameExt(),
@@ -181,6 +188,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Message to display when an object has been opened.
     * @return the message or null if nothing should be displayed
     */
+    @Override
     protected String messageOpened () {
         return null;
     }
@@ -190,6 +198,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     *
     * @return text to show to the user
     */
+    @Override
     protected String messageSave () {
         return NbBundle.getMessage (
             DataObject.class,
@@ -244,6 +253,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     *
     * @return name of the editor
     */
+    @Override
     protected String messageName () {
         if (! obj.isValid()) {
             return ""; // NOI18N
@@ -416,9 +426,49 @@ public class DataEditorSupport extends CloneableEditorSupport {
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
+        final FileObject fo = this.getDataObject().getPrimaryFile();
+        if (!warnedEncodingFiles.contains(fo)) {
+            if (!checkIfCharsetCanDecodeFile(fo, c)) {
+                throw new UserQuestionException(NbBundle.getMessage(DataEditorSupport.class, "MSG_EncodingProblem", c)) {
+                    @Override
+                    public void confirmed() throws IOException {
+                        warnedEncodingFiles.add(fo);
+                    }
+                };
+            }
+        }
         final Reader r = new InputStreamReader (stream, c);
         kit.read(r, doc, 0);
     }
+
+    private static boolean checkIfCharsetCanDecodeFile(FileObject fo, Charset charset) {
+        try {
+            int BUF_SIZE = 1024;
+
+            BufferedInputStream input = new BufferedInputStream(fo.getInputStream(), BUF_SIZE);
+            try {
+                CharsetDecoder decoder = charset.newDecoder();
+                decoder.reset();
+                byte[] buffer = new byte[BUF_SIZE];
+                int len = input.read(buffer);
+                if (len > 0) {
+                    try {
+                        decoder.decode(ByteBuffer.wrap(buffer, 0, len));
+                    } catch (CharacterCodingException e) {
+                        ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                        return false;
+                    }
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException ex) {
+            ERR.log(Level.FINE, "Encoding problem using " + charset, ex); // NOI18N
+        }
+        return true;
+    }
+
+    private static Set<FileObject> warnedEncodingFiles = new WeakSet<FileObject>();
 
     /** can hold the right charset to be used during save, needed for communication
      * between saveFromKitToStream and saveDocument
@@ -620,6 +670,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         class SaveAsWriter implements Runnable {
             private IOException ex;
 
+            @Override
             public void run() {
                 try {
                     OutputStream os = null;
