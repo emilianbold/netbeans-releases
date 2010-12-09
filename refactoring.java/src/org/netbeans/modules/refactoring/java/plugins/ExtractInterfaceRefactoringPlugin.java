@@ -575,13 +575,16 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             interfaces2Remove.addAll(getImplements2Remove(wc, refactoring.getImplements(), clazz));
            
             for (ElementHandle el : refactoring.getMethods()) {
-                Element e = el.resolve(wc);
+                ExecutableElement e = (ExecutableElement) el.resolve(wc);
                 Tree tree = wc.getTrees().getTree(e);
                 MethodTree mt = (MethodTree) tree;
-                TreeMaker make = wc.getTreeMaker();
-                AnnotationTree ann = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
-                ModifiersTree modifiers = wc.getTreeMaker().addModifiersAnnotation(mt.getModifiers(), ann);
-                wc.rewrite(mt.getModifiers(), modifiers);
+                if (e.getAnnotation(Override.class)==null) {
+                    TreeMaker make = wc.getTreeMaker();
+                    AnnotationTree ann = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
+                    ModifiersTree modifiers = wc.getTreeMaker().addModifiersAnnotation(mt.getModifiers(), ann);
+                    wc.rewrite(mt.getModifiers(), modifiers);
+                }
+
             }
 
             // filter out obsolete members
@@ -622,7 +625,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             
             wc.rewrite(classTree, nc);
         }
-        
+
         private List<Tree> getFields2Remove(CompilationInfo javac, List<ElementHandle<VariableElement>> members) {
             if (members.isEmpty()) {
                 return Collections.<Tree>emptyList();

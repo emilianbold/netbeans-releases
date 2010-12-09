@@ -43,10 +43,12 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -99,7 +101,18 @@ public class JoinCatches {
 
             for (int j = i + 1; j < catches.size(); j++) {
                 if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx, false, Collections.singleton(excVar), new AtomicBoolean())) {
-                    duplicates.add(j);
+                    TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
+                    TreePath var = new TreePath(catchPath, ((CatchTree)catches.get(j)).getParameter());
+                    Collection<TreePath> statements = new ArrayList<TreePath>();
+                    TreePath blockPath = new TreePath(catchPath, ((CatchTree)catches.get(j)).getBlock());
+
+                    for (StatementTree t : ((CatchTree)catches.get(j)).getBlock().getStatements()) {
+                        statements.add(new TreePath(blockPath, t));
+                    }
+
+                    if (!UseSpecificCatch.assignsTo(ctx, var, statements)) {
+                        duplicates.add(j);
+                    }
                 }
             }
 

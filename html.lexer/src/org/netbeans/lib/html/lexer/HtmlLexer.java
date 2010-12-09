@@ -239,6 +239,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private static final int ISI_VAL_QUOT_ESC = 42;
     private static final int ISI_VAL_DQUOT_ESC = 43;
+    
+    private static final int ISA_ARG_UNDERSCORE = 44; //after _ in attribute name
 
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
@@ -598,6 +600,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = INIT;
                             input.backup(1);
                             break;
+                        //issue 192803 - the attribute may start with underscore
+                        case '_':
+                            lexerState = ISA_ARG_UNDERSCORE;
+                            break;
                         default:
                             tag = null;
                             lexerState = ISI_ERROR;
@@ -685,6 +691,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     lexerState = ISI_STYLE_CONTENT;
                     break;
+
+                case ISA_ARG_UNDERSCORE:
+                    if( isName(actChar)) {
+                        lexerState = ISI_ARG;
+                        //fallthrough to ISI_ARG
+                    } else {
+                        lexerState = ISI_ERROR;
+                        input.backup(1); //the char will be read again and put to the error token
+                        break;
+                    }
 
                 case ISI_ARG:           // DONE
                     if( isName( actChar ) ) break; // eat next char
@@ -1089,6 +1105,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_ENDTAG:
                 return token(HTMLTokenId.TAG_CLOSE);
 
+            case ISA_ARG_UNDERSCORE:
             case ISI_ARG:
                 return token(HTMLTokenId.ARGUMENT);
 
