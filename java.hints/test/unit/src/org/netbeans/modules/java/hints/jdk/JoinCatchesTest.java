@@ -110,6 +110,24 @@ public class JoinCatchesTest extends TestBase {
                         "}\n").replaceAll("[ \n\t]+", " "));
     }
 
+    public void testNeg() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    {\n" +
+                            "        try {\n" +
+                            "        } catch (java.net.MalformedURLException m) {\n" +
+                            "            m.printStackTrace();\n" +
+                            "            m = new java.io.IOException();\n" +
+                            "        } catch (java.io.IOException i) {\n" +
+                            "            i.printStackTrace();" +
+                            "            i = new java.io.IOException();\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
