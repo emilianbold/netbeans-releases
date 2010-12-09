@@ -281,7 +281,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             fileSystem.incrementDirSyncCount();
             List<DirectoryStorage.Entry> entries = directoryReader.getEntries();
             for (DirectoryStorage.Entry entry : entries) {
-                entry.setCache(entry.getName()); //TODO:rfs case sensivity
+                String cacheName = RemoteFileSystemUtils.escapeFileName(entry.getName());
+                entry.setCache(cacheName); //TODO:rfs case sensivity
             }
             storage.setEntries(entries);
             storage.store();
