@@ -152,12 +152,15 @@ public final class ProjectActionEvent {
     private String[] getRunCommand() {
         if (runCommandCache == null) {
             String command = profile.getRunCommand();
-            // This condition is DefaultProjectActionHandler behavior emulation
-            // see DefaultProjectActionHandler.java, line 173
-            if (!configuration.getPlatformInfo().isWindows() && configuration.getPlatformInfo().isLocalhost()) {
+
+            // not clear what is the difference between getPlatformInfo
+            // and getDevelopmentHost. 
+            // TODO: get rid off one of ifs below
+            assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
+            
+            if (configuration.getPlatformInfo().isLocalhost()) {
                 command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", configuration.getAbsoluteOutputValue()); // NOI18N
-            }
-            if (!configuration.getDevelopmentHost().isLocalhost()) {
+            } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
                 command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(configuration.getAbsoluteOutputValue(), true)); // NOI18N
             }
