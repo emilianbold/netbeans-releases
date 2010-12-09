@@ -112,6 +112,9 @@ public abstract class FileMapper {
     private static class CygwinFileMapper extends FileMapper {
         @Override
         public String engineToWorld(String path) {
+            if (path == null) {
+                return null;
+            }
             String res = WindowsSupport.getInstance().convertFromCygwinPath(path);
             if (res != null) {
                 return res;
@@ -122,6 +125,9 @@ public abstract class FileMapper {
 
         @Override
         public String worldToEngine(String path) {
+            if (path == null) {
+                return null;
+            }
             String res = WindowsSupport.getInstance().convertToCygwinPath(path);
             if (res != null) {
                 return res;

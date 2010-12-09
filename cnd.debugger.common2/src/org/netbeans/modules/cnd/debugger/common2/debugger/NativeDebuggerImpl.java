@@ -785,10 +785,14 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         });
     }
     
+    public Location getVisitedLocation() {
+        return visitedLocation;
+    }
+    
     public void annotateDis() {
         DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        if (disProvider != null) {
-            disProvider.movePC(getVisitedLocation().pc(), currentDisPCMarker);
+        if (disProvider != null && visitedLocation != null) {
+            disProvider.movePC(visitedLocation.pc(), currentDisPCMarker);
         }
     }
    
@@ -811,13 +815,16 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             } else {
                 visitMarker.setLine(null, isCurrent());
                 currentPCMarker.setLine(l, isCurrent());
-                // Also annotate dis
-                annotateDis();
             }
         } else {
             visitMarker.setLine(null, isCurrent());
             currentPCMarker.setLine(null, isCurrent());
             currentDisPCMarker.setLine(null, isCurrent());
+        }
+        
+        if (!visited) {
+            // Annotate dis
+            annotateDis();
         }
 
         // Arrange for DebuggerManager.error_sourceModified()
@@ -873,19 +880,23 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                     if (getVisitedLocation() != null) {
                         disStateModel().updateStateModel(getVisitedLocation(), true);
 
-                        // this will cause registerDisassemblerWindow(...) to get called
-                        try {
-                            viaShowLocation = true;
-                            disassemblerWindow().open();
-        // CR 6986846	    disassemblerWindow().requestActive();
-                            disassemblerWindow().componentShowing();
-                        } finally {
-                            viaShowLocation = false;
-                        }
+                        openDis();
                     }
                 }
             }
         });
+    }
+    
+    protected void openDis() {
+        // this will cause registerDisassemblerWindow(...) to get called
+        try {
+            viaShowLocation = true;
+            disassemblerWindow().open();
+            // CR 6986846	    disassemblerWindow().requestActive();
+            disassemblerWindow().componentShowing();
+        } finally {
+            viaShowLocation = false;
+        }
     }
 
     private void setSrcRequested(boolean srcRequested) {
@@ -988,11 +999,12 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         ioPack.switchTo();
 
-	disassemblerWindow().setDebugger(this);
-	disassemblerWindow().getView().setModelController(disModel(),
-							  disController(),
-							  disStateModel(),
-							  breakpointModel());
+        //moved to dbx, gdb uses new disassembly
+//	disassemblerWindow().setDebugger(this);
+//	disassemblerWindow().getView().setModelController(disModel(),
+//							  disController(),
+//							  disStateModel(),
+//							  breakpointModel());
 	updateLocation(true);
 	// CR 6986846
 	//if (!(isSrcRequested() || haveSource())) {
