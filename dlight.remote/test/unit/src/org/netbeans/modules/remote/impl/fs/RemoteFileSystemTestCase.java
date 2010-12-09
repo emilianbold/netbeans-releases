@@ -45,10 +45,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -211,6 +213,42 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         } finally {
             if (tempFile != null) {
                 CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+            }
+        }
+    }
+
+    private void runScript(String script) throws Exception {
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
+            public void processLine(String line) {
+                System.err.println(line);
+            }
+            public void reset() {}
+            public void close() {}
+        });
+        int rc = scriptRunner.execute();
+        assertEquals("Error running script", 0, rc);
+    }
+
+    @ForAllEnvironments
+    public void testReservedWindowsNames() throws Exception {
+        String tempDir = null;
+        try {
+            tempDir = mkTemp(true);
+            FileObject tempDirFO = rootFO.getFileObject(tempDir);
+            assertNotNull("Null file object for " + tempDir, tempDirFO);
+            //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
+            String lpt = "LPT1";
+            String withColon = "file:with:colon";
+            runScript("cd " + tempDir + "\n" +
+                "echo \"123\" > " + lpt + "\n" +
+                "echo \"123\" > " + withColon + "\n");
+            FileObject lptFO = tempDirFO.getFileObject(lpt);
+            assertNotNull("Null file object for " + lpt, lptFO);
+            FileObject colonFO = tempDirFO.getFileObject(withColon);
+            assertNotNull("Null file object for " + withColon, colonFO);
+        } finally {
+            if (tempDir != null) {
+                CommonTasksSupport.rmFile(execEnv, tempDir, new OutputStreamWriter(System.err));
             }
         }
     }
