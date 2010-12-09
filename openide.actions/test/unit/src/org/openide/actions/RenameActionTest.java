@@ -37,73 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.api;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
+package org.openide.actions;
+
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.utils.ServicesChecker;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class KenaiGetMyProjectsTest extends NbTestCase {
+public class RenameActionTest extends NbTestCase {
 
-    private static Kenai instance;
-    private static String uname = null;
-    private static String passw = null;
-    private static boolean firstRun = true;
-
-    public KenaiGetMyProjectsTest(String S) {
-        super(S);
+    public RenameActionTest(String s) {
+        super(s);
     }
 
-    @Before
-    @Override
-    public void setUp() {
-        try {
-            final Logger logger = Logger.getLogger("TIMER.kenai");
-            logger.setLevel(Level.FINE);
-            instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
-            System.out.println("kurl " + instance.getUrl());
-            if (uname == null) {
-                uname = System.getProperty("kenai.user.login");
-                passw = System.getProperty("kenai.user.password");
-            }
-            if (uname == null) { // if it is still null, check the file in ~
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-                uname = br.readLine();
-                passw = br.readLine();
-                br.close();
-            }
-            if (firstRun) {
-                instance.login(uname, passw.toCharArray());
-                firstRun = false;
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    public void testInvokeWithEmptyArray() {
+        RenameAction ra = RenameAction.get(RenameAction.class);
+        ra.performAction(new Node[0]);
     }
 
-    @After
-    @Override
-    public void tearDown() {
-    }
-
-    static public junit.framework.Test suite() {
-        junit.framework.TestSuite _suite = new junit.framework.TestSuite();
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
-        return _suite;
-    }
 }

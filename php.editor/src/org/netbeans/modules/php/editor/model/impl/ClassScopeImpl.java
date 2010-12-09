@@ -378,7 +378,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     public Collection<? extends VariableName> getDeclaredVariables() {
-        System.out.println("ClassScopeImp.getDeclaredVariables : " + getElements().size());
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 if (element instanceof MethodScopeImpl && ((MethodScopeImpl)element).isConstructor()

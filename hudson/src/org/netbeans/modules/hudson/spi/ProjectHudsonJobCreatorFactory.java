@@ -51,7 +51,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.spi.Bundle.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -204,8 +205,9 @@ public interface ProjectHudsonJobCreatorFactory {
         /**
          * @return error message for {@link ProjectHudsonJobCreator#error} in case {@link #prepareSCM} is null
          */
+        @Messages("ProjectHudsonJobCreatorFactory.no_vcs=The project does not use any supported version control system.")
         public static ConfigurationStatus noSCMError() {
-            return ConfigurationStatus.withError(NbBundle.getMessage(ProjectHudsonJobCreatorFactory.class, "ProjectHudsonJobCreatorFactory.no_vcs"));
+            return ConfigurationStatus.withError(ProjectHudsonJobCreatorFactory_no_vcs());
         }
 
         /**

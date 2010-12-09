@@ -788,6 +788,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             targetNames = new String[] {"debug-applet"}; // NOI18N
                         }
                     } else {
+                        List<String> alternativeTargetNames = new ArrayList<String>();
                         if (isTest) {
                             //Fallback to normal (non-main-method-based) unit test run
                             if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -795,8 +796,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                             } else {
                                 targetNames = setupDebugTestSingle(p, files);
                             }
-                        } else if (handleJavaClass(p, file, command)) {
-                            targetNames = getCommands().get(command);
+                        } else if (handleJavaClass(p, file, command, alternativeTargetNames)) {
+                            if (alternativeTargetNames.size() > 0) {
+                                targetNames = alternativeTargetNames.toArray(new String[alternativeTargetNames.size()]);
+                            } else {
+                                targetNames = getCommands().get(command);
+                            }
                         } else {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MainClassChooser.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                             DialogDisplayer.getDefault().notify(nd);
@@ -865,7 +870,12 @@ public abstract class BaseActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command) {
+    /**
+     * @param targetNames caller of this method must set this parameter to empty 
+     *  modifiable array; implementor of this method can return alternative target
+     *  names to be used to handle this Java class
+     */
+    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command, List<String> targetNames) {
         return false;
     }
 

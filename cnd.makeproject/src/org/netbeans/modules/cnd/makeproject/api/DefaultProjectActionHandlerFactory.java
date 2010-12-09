@@ -74,4 +74,9 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
         return new DefaultProjectActionHandler();
     }
 
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getConfiguration());
+    }
+
 }

@@ -373,4 +373,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz190710.cc");
     }
 
+    public void testExplicitSpecialization() throws Exception {
+        //  improving specialisations - skip explicit template function specialisation
+        performTest("explicit_specialization.cc");
+    }
+    
 }

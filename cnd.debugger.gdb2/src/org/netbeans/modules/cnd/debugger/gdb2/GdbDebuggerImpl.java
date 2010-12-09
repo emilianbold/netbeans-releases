@@ -117,6 +117,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 
@@ -663,7 +664,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public final void stepIntoMain() {
-        MICommand cmd = new MIResumptiveCommand("-break-insert -t main"); // NOI18N
+        MICommand cmd = new MiCommandImpl("-break-insert -t main"); //NOI18N
         gdb.sendCommand(cmd);
         cmd = new MIResumptiveCommand("-exec-run"); // NOI18N
         gdb.sendCommand(cmd);
@@ -813,10 +814,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private class MiCommandImpl extends MICommand {
-	private MICommand successChain;
-	private MICommand failureChain;
+	private MICommand successChain = null;
+	private MICommand failureChain = null;
 
-	private boolean emptyDoneIsError;
+	private boolean emptyDoneIsError = false;
         
         protected MiCommandImpl(String cmd) {
 	    super(0, cmd);
@@ -884,7 +885,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Handle the oputput of "info proc".
      */
-    private int extractPid1(MIRecord record) {
+    private static int extractPid1(MIRecord record) {
 	StringTokenizer st =
 	    new StringTokenizer(record.command().
 				getConsoleStream());
@@ -893,7 +894,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    st.nextToken();
 	    if (st.hasMoreTokens()) {
 		String pidStr = st.nextToken();
-		pid = Integer.parseInt(pidStr);
+                int pidEnd = 0;
+                while (pidEnd < pidStr.length() && Character.isDigit(pidStr.charAt(pidEnd))) {
+                    pidEnd++;
+                }
+		pid = Integer.parseInt(pidStr.substring(0, pidEnd));
 	    }
 	}
 	return pid;
@@ -933,12 +938,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void sendPidCommand(boolean resume) {
-        if (getHost().getPlatform() == Platform.Windows_x86) {
-            MICommand findPidCmd = new InfoThreadsMICmd(resume);
-            gdb.sendCommand(findPidCmd);
-        } else if (getHost().getPlatform() != Platform.MacOSX_x86) {
-            MICommand findPidCmd = new InfoProcMICmd(resume);
-            gdb.sendCommand(findPidCmd);
+        if (session().getPid() <= 0) {
+            if (getHost().getPlatform() == Platform.Windows_x86) {
+                MICommand findPidCmd = new InfoThreadsMICmd(resume);
+                gdb.sendCommand(findPidCmd);
+            } else if (getHost().getPlatform() != Platform.MacOSX_x86) {
+                MICommand findPidCmd = new InfoProcMICmd(resume);
+                gdb.sendCommand(findPidCmd);
+            }
+        } else if (resume) {
+            go();
         }
     }
 
@@ -1011,6 +1020,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    finish();
 	}
     }
+    
+    private String firstBreakpointId = null;
+    
+    private void setFirstBreakpointId(MIRecord record) {
+        MIValue bkptValue = record.results().valueOf("bkpt");
+        if (bkptValue != null) {
+            MIValue numberValue = bkptValue.asTList().valueOf("number");
+            if (numberValue != null) {
+                firstBreakpointId = numberValue.asConst().value();
+            }
+        }
+    }
 
     public void rerun() {
         if (true /* LATER !state.isRunning */) {
@@ -1035,11 +1056,23 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    // will interfere with a normal "break main"!
 
 	    MiCommandImpl breakStartCmd =
-		new MiCommandImpl("-break-insert -t _start");// NOI18N
+		new MiCommandImpl("-break-insert -t _start") { // NOI18N
+                    @Override
+                    protected void onDone(MIRecord record) {
+                        setFirstBreakpointId(record);
+                        super.onDone(record);
+                    }
+                };
 	    breakStartCmd.setEmptyDoneIsError(true);
 
 	    MiCommandImpl breakMainCmd =
-		new MiCommandImpl("-break-insert -t main");// NOI18N
+		new MiCommandImpl("-break-insert -t main") { // NOI18N
+                    @Override
+                    protected void onDone(MIRecord record) {
+                        setFirstBreakpointId(record);
+                        super.onDone(record);
+                    }
+                };
 	    breakMainCmd.setEmptyDoneIsError(true);
 
 	    //
@@ -1053,17 +1086,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         state().isProcess = true;
                         super.onRunning(record);
                     }
-
-                @Override
-                    protected void onStopped(MIRecord record) {
-			// Are we sure we hit '_start' or 'main'?
-			if (session().getPid() <= 0) {
-                            sendPidCommand(true);
-                        } else {
-			    go();	// resume
-                        }
-			finish();
-		    }
                 };
 
 	    breakStartCmd.chain(runCmd, breakMainCmd);
@@ -1115,12 +1137,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
     
-    public void initializeGdb() {
+    public void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 	    System.out.printf("GdbDebuggerImpl.initializeGdb()\n"); // NOI18N
 	}
 
 	assert isConnected() : "initializeGdb() called when gdb wasn't ready";
+        
+        if (fmap != null) {
+            this.fmap = fmap;
+        }
 
 	// OLD overrideOptions();
 	manager().initialUnsavedFiles(this);
@@ -2801,7 +2827,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 	System.out.printf("............................................\n"); // NOI18N
     }
-
+    
     void genericStopped(final MIRecord stopRecord) {
         // Get as much info about the stopped src code location
         /* OLD
@@ -2819,11 +2845,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
          */
+
+        final MITList results = stopRecord.results();
+        final MIValue reasonValue = results.valueOf("reason"); //NOI18N
+        
+        // detect first stop (in _start or main)
+        if (firstBreakpointId != null) {
+            MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
+            if (bkptnoValue == null ||
+               (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())))) {
+                    firstBreakpointId = null;
+                    sendPidCommand(true);
+                    return;
+            }
+        }
+        
         //detect silent stop
         if (gdb.isSignalled()) {
-            MIValue reasonValue = stopRecord.results().valueOf("reason"); //NOI18N
             if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
-                MIValue signalValue = stopRecord.results().valueOf("signal-name"); //NOI18N
+                MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {
                     String signal = signalValue.asConst().value();
                     if ("SIGCONT".equals(signal)) { // NOI18N

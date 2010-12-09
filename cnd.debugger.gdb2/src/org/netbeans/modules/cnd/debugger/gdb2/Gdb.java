@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 import java.io.IOException;
 
 import java.awt.Color;
+import java.nio.charset.Charset;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +83,9 @@ import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
 
 public class Gdb {
@@ -207,8 +210,9 @@ public class Gdb {
 	}
 
 	private Gdb getGdb(Factory factory,
-			   boolean connectExisting) {
-	    return new Gdb(factory, connectExisting);
+			   boolean connectExisting,
+                           boolean remote) {
+	    return new Gdb(factory, connectExisting, remote);
 	}
 
 	public boolean connectExisting() {
@@ -263,8 +267,10 @@ public class Gdb {
 
 	    // Get a gdb but don't associate it with the Listener
 	    // (DebuggerEngine) until we have a solid connection.
+            
+            
 
-	    tentativeGdb = getGdb(this, connectExisting);
+	    tentativeGdb = getGdb(this, connectExisting, Host.isRemote(host));
 
 	    String hostName = null;
 	    if (remote)
@@ -546,14 +552,14 @@ public class Gdb {
 	private void cancelStartup() {
 	}
 
-	private void connectionAvailable(boolean success, String version) {
+	private void connectionAvailable(boolean success, String version, FileMapper fmap) {
 	    tentativeGdb.startProgressManager().updateProgress('<', 1, null, 0, 0);
 	    cancelStartup();
 	    if (success) {
 		// OLD connected = true;
 		// OLD debugger.connectionEstablished();
 		listener.assignGdb(tentativeGdb);
-		tentativeGdb.initializeGdb(version);
+		tentativeGdb.initializeGdb(version, fmap);
 	    }
 	}
     }
@@ -575,20 +581,30 @@ public class Gdb {
     // set to true when silent stop is requested
     private volatile boolean silentStop = false;
 
-    private void initializeGdb(String version) {
+    private void initializeGdb(String version, FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 	    System.out.printf("Gdb.initializeGdb()\n"); // NOI18N
 	debugger.gdbVersionString(version);
-	debugger.initializeGdb();
+	debugger.initializeGdb(fmap);
 	if (!debugger.willBeLoading())
 	    startProgressManager().finishProgress();
     }
 
-    private Gdb(Factory factory, boolean connectExisting) {
+    private Gdb(Factory factory, boolean connectExisting, boolean remote) {
 	this.factory = factory;
         tap = new Tap();
-        myMIProxy = new MyMIProxy(tap);
+        myMIProxy = new MyMIProxy(tap, getCharSetEncoding(remote));
         tap.setMiProxy(myMIProxy);
+    }
+    
+    private static String getCharSetEncoding(boolean remote) {
+        String encoding;
+        if (remote) {
+            encoding = ProcessUtils.getRemoteCharSet();
+        } else {
+            encoding = Charset.defaultCharset().name();
+        }
+        return encoding;
     }
 
     private Factory factory() {
@@ -1047,9 +1063,10 @@ public class Gdb {
 	// remember version between consoleStreamOutput's capture
 	// and connectionEstablished().
 	private String version;
+        private FileMapper fmap = null;
 
-        public MyMIProxy(MICommandInjector injector) {
-            super(injector, "(gdb)"); // NOI18N
+        public MyMIProxy(MICommandInjector injector, String encoding) {
+            super(injector, "(gdb)", encoding); // NOI18N
         }
 
         private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
@@ -1069,6 +1086,13 @@ public class Gdb {
                 }
             } else {
                 super.consoleStreamOutput(record);
+                
+                if (record.isStream()) {
+                    String stream = record.stream();
+                    if (stream.contains("configured") && stream.contains("mingw")) {
+                        fmap = FileMapper.getDefault(FileMapper.Type.MSYS);
+                    }
+                }
 
                 if (version == null &&
                     record.isStream() &&
@@ -1131,7 +1155,7 @@ public class Gdb {
 	    */
 	    if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 		System.out.printf("MyMIProxy.connectionEstablished()\n"); // NOI18N
-	    factory.connectionAvailable(true, version);
+	    factory.connectionAvailable(true, version, fmap);
         }
 
         @Override

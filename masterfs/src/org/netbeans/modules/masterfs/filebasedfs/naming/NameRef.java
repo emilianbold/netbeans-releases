@@ -60,12 +60,13 @@ final class NameRef extends WeakReference<FileNaming> {
     public Integer getIndex() {
         assert Thread.holdsLock(NamingFactory.class);
         NameRef nr = this;
-        for (;;) {
+        while (nr != null) {
             if (nr.next instanceof Integer) {
                 return (Integer) nr.next;
             }
             nr = nr.next();
         }
+        return -1;
     }
 
     public NameRef next() {

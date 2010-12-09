@@ -378,7 +378,7 @@ public abstract class OperationWizardModel {
             @Override
             public void run () {
                 b.requestFocus();
-                if (cnt > 0) {
+                if (cnt++ > 0) {
                     return;
                 }
                 

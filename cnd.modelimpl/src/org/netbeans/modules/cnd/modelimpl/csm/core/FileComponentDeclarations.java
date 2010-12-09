@@ -319,7 +319,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
                         if(higherKey != null) {
                             CsmUID<CsmOffsetableDeclaration> higher = head.get(higherKey);
                             int higherTo = UIDUtilities.getEndOffset(higher);
-                            if(higherTo > to) {
+                            if(higherTo >= to) {
                                 last = higherKey;
                                 continue;
                             }

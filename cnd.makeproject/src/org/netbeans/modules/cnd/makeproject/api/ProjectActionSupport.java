@@ -498,7 +498,7 @@ public class ProjectActionSupport {
                 //}
                 boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(type, pae.getConfiguration())) {
+                    if (factory.canHandle(pae)) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
                         handler.execute(io);

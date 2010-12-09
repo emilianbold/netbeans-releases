@@ -785,6 +785,16 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testCorrectSite183367() throws Exception {
+        performVariablesTest("package test; public class Test { public void test(java.util.List l) { l.subList(0, 0).remove(0); } }",
+                             "$l{java.util.Collection}.remove($o{java.lang.Object})",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             true);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

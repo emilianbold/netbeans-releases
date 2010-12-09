@@ -1391,8 +1391,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
     
     /** Provides basic information about the persistence of a {@link TopComponent}.
-     * Using this annotation is preferred to overriding {@link #preferredID()}
-     * or calling {@link #setIcon(java.awt.Image)}.
+     * Using this annotation is preferred to overriding {@link #preferredID},
+     * {@link #getPersistenceType}, or {@link #getIcon}, or calling {@link #setIcon}.
      * @since 6.37
      */
     @Retention(RetentionPolicy.RUNTIME)

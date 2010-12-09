@@ -54,7 +54,6 @@ import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -82,6 +81,13 @@ public final class Watcher extends AnnotationProvider {
         }
         
         ext = make(getNotifierForPlatform());
+    }
+    
+    public static File wrap(File f, FileObject fo) {
+        if (f instanceof FOFile) {
+            return f;
+        }
+        return new FOFile(f, fo);
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
@@ -139,7 +145,8 @@ public final class Watcher extends AnnotationProvider {
          */
 
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
-            FileObject fo = FileUtil.toFileObject(dir);
+            assert dir instanceof FOFile;
+            FileObject fo = ((FOFile)dir).fo;
             String path = dir.getAbsolutePath();
 
             if (fo == null && !dir.exists()) {

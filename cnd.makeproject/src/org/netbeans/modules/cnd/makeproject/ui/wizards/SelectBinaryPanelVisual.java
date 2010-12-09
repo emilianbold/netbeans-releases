@@ -94,11 +94,13 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -112,7 +114,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -224,11 +225,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         } else {
             String path = ((EditableComboBox)binaryField).getText().trim();
             if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
-                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-                if (fo == null || !fo.isValid()) {
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                if (CndPathUtilitities.isPathAbsolute(path)) {
+                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                    if (fo == null || !fo.isValid()) {
+                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                    } else {
+                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                    }
                 } else {
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
                 }
             }
         }
@@ -667,11 +672,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return false;
         }
-        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-        if (fo == null || !fo.isValid()) {
+        if (CndPathUtilitities.isPathAbsolute(path)) {
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+            if (fo == null || !fo.isValid()) {
+                return false;
+            }
+            return MIMENames.isBinary(fo.getMIMEType());
+        } else {
             return false;
         }
-        return MIMENames.isBinary(fo.getMIMEType());
     }
 
     private boolean validSourceRoot() {
@@ -679,11 +688,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return false;
         }
-        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-        if (fo == null || !fo.isValid()) {
+        if (CndPathUtilitities.isPathAbsolute(path)) {
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+            if (fo == null || !fo.isValid()) {
+                return false;
+            }
+            return fo.isFolder();
+        } else {
             return false;
         }
-        return fo.isFolder();
     }
 
     private boolean validDlls() {

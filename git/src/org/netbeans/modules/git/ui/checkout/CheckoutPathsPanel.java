@@ -49,17 +49,17 @@
 package org.netbeans.modules.git.ui.checkout;
 
 import javax.swing.JPanel;
-import org.netbeans.modules.git.ui.repository.RevisionPickerDialog;
+import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
  * @author ondra
  */
 public class CheckoutPathsPanel extends JPanel {
-    private final RevisionPickerDialog revisionPanel;
+    private final RevisionDialog revisionPanel;
 
     /** Creates new form CheckoutPathsPanel */
-    public CheckoutPathsPanel (RevisionPickerDialog revisionPanel) {
+    public CheckoutPathsPanel (RevisionDialog revisionPanel) {
         this.revisionPanel = revisionPanel;
         initComponents();
     }
@@ -73,7 +73,7 @@ public class CheckoutPathsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        org.netbeans.modules.git.ui.repository.RevisionPickerDialog revisionPickerDialog1 = this.revisionPanel;
+        org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog1 = this.revisionPanel;
 
         setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPathsPanel.class, "CheckoutPathsPanel.cbUpdateIndex.TTtext")); // NOI18N
 
