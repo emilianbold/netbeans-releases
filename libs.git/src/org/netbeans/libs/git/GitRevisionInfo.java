@@ -67,7 +67,7 @@ public interface GitRevisionInfo {
     public String getFullMessage ();
 
     /**
-     * getter for commit time
+     * getter for commit time, time is in milliseconds
      * @return
      */
     public long getCommitTime ();
