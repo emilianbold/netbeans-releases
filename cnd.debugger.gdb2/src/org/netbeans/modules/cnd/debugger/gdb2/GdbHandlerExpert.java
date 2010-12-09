@@ -203,7 +203,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 		fileLine = "" + line;		// NOI18N
 	    }
 
-	    cmd += " " + fileLine; // NOI18N
+	    cmd += " \"" + fileLine + "\""; // NOI18N
 
 	} else if (bClass == InstructionBreakpoint.class) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;
