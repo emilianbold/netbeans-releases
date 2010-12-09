@@ -282,7 +282,7 @@ class StringTableCellEditor extends ResultSetTableCellEditor implements TableCel
         JTextArea textArea = new JTextArea(10, 50);
         Object value = table.getValueAt(row, column);
         if (value != null) {
-            textArea.setText((String) value);
+            textArea.setText(value.toString());
             textArea.setCaretPosition(0);
             textArea.setEditable(editable);
         }
