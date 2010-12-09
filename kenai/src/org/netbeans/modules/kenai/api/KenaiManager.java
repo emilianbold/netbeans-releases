@@ -255,13 +255,24 @@ public final class KenaiManager {
             store();
             return;
         }
+        
         // no project stored - lets see if at least logged into dashboard
         uiprefs = NbPreferences.root().node ("org/netbeans/modules/kenai/ui");                    
-        String url = uiprefs != null ? uiprefs.get("dashboard.last.selected.kenai", null) : null; //NOI18N
-        if(url != null && url.equals("https://kenai.com")) {            
-            instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
-            store();
+        if(uiprefs == null) {
             return;
+        }
+        String[] keys;   
+        try {
+            keys = uiprefs.keys();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        for (String key : keys) {
+            if(key.startsWith("kenai.com")) {
+                instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+                store();
+            }
         }
     }
 }
