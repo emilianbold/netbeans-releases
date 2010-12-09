@@ -244,6 +244,12 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (isConnected()) {
 
             super.activate(redundant);
+            
+            disassemblerWindow().setDebugger(this);
+            disassemblerWindow().getView().setModelController(disModel(),
+							  disController(),
+							  disStateModel(),
+							  breakpointModel());
 
 	    rtcView.switchTo();
 
@@ -3412,11 +3418,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     // implement NativeDebuggerImpl
     protected DisFragModel disModel() {
         return disModel;
-    }
-
-    // implement NativeDebugger
-    public Location getVisitedLocation() {
-	return visitedLocation;
     }
 
     // implement NativeDebuggerImpl
