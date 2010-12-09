@@ -307,7 +307,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     public boolean isValid() {
-        return isValid && getContainingFile().isValid();
+        return isValid && super.isValid();
     }
 
     @Override

@@ -1,3 +1,5 @@
+package org.netbeans.libs.svnclientadapter.svnkit;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -37,46 +39,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api;
-
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Collection;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
+import org.openide.util.Lookup;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author tomas
  */
-@ServiceProvider(service=ProjectActionHandlerFactory.class, position=9999)
-public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerFactory {
+public class SvnKitClientAdapterFactoryTest extends NbTestCase {
 
-    /**
-     * Default handler can handle anything except for debugging.
-     *
-     * @param type  action type
-     * @return <code>false</code> if <code>action</code> is related to debugging,
-     *          <code>true</code> otherwise
-     */
+    public SvnKitClientAdapterFactoryTest(String name) {
+        super(name);
+    }
+
     @Override
-    public boolean canHandle(ProjectActionEvent.Type type, Configuration configuration) {
-        if (type == PredefinedType.DEBUG ||
-            type == PredefinedType.DEBUG_STEPINTO) {
-            return false;
-        } else {
-            return type instanceof PredefinedType;
+    public void setUp() {
+    }
+
+    @Override
+    public void tearDown() {
+    }
+
+    public void testIsAvailable() {
+        SvnKitClientAdapterFactory f = getFactory();
+        assertNotNull(f);
+        assertTrue(f.isAvailable());
+        ISVNClientAdapter c = f.createClient();
+        assertNotNull(c);
+    }
+
+    public void testProvides() {
+        SvnKitClientAdapterFactory f = getFactory();
+        assertNotNull(f);
+        assertEquals(SvnClientAdapterFactory.Client.SVNKIT, f.provides());
+    }
+    
+    public void testGetFactory() {
+        Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
+        for (SvnClientAdapterFactory f : cl) {
+            if(f.getClass() == SvnKitClientAdapterFactory.class) {
+                return;
+            }
+        }
+        fail("couldn't lookup SvnKitClientAdapterFactory");
+    }
+
+    private SvnKitClientAdapterFactory getFactory() {
+        return new TestFactory();
+    }
+
+    private class TestFactory extends SvnKitClientAdapterFactory {
+        @Override
+        public Client provides() {
+            return super.provides();
+        }
+        @Override
+        public boolean isAvailable() {
+            return super.isAvailable();
         }
     }
-
-    @Override
-    public ProjectActionHandler createHandler() {
-        return new DefaultProjectActionHandler();
-    }
-
-    @Override
-    public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
-    }
-
 }

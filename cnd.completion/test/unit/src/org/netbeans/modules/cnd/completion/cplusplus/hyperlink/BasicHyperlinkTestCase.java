@@ -792,6 +792,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug192967.cpp", 21, 41, "bug192967.cpp", 14, 5);
     }
         
+    public void testBug190885() throws Exception {
+        // Bug 190885 - created unittest++ project, unable to resolve identifiers error
+        performTest("bug190885.cpp", 4, 10, "bug190885.cpp", 4, 5);
+        performTest("bug190885.cpp", 7, 10, "bug190885.cpp", 7, 5);
+    }
+
+    public void testBug188305() throws Exception {
+        // Bug 188305 - c++ parser complains about struct instance declaration
+        performTest("bug188305.cpp", 6, 16, "bug188305.cpp", 6, 7);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

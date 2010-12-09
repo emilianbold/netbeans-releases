@@ -91,10 +91,13 @@ public final class NewTestActionFactory {
     public static Action[] getTestCreationActions(Project project) {
         ArrayList<Action> actions = new ArrayList<Action>();
         FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
-        if (testFiles.isFolder()) {
-            for (FileObject test : testFiles.getChildren()) {
-                if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
-                    actions.add(new NewTestAction(test, project, null, false));
+        // if user deleted all test templates => folder is null
+        if (testFiles != null) {
+            if (testFiles.isFolder()) {
+                for (FileObject test : testFiles.getChildren()) {
+                    if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
+                        actions.add(new NewTestAction(test, project, null, false));
+                    }
                 }
             }
         }

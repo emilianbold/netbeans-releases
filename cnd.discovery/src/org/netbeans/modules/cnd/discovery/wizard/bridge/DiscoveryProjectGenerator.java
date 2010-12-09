@@ -79,6 +79,7 @@ import org.openide.util.Utilities;
  */
 public class DiscoveryProjectGenerator {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
+    private static boolean TRUNCATE_BEGINNING_PATH = true;
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -108,6 +109,9 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
+        if (TRUNCATE_BEGINNING_PATH) {
+            packRoot(sourceRoot);
+        }
         if ("file".equals(level)) {// NOI18N
             // move common file configuration to parent
             upConfiguration(sourceRoot, ItemProperties.LanguageKind.CPP);
@@ -117,6 +121,107 @@ public class DiscoveryProjectGenerator {
         }
         projectBridge.save();
         projectBridge.dispose();
+    }
+
+    private void packRoot(Folder root) {
+        for(Object item : root.getElements()) {
+            if (!(item instanceof Folder)) {
+                return;
+            }
+        }
+        Map<Folder,Folder> res = new HashMap<Folder,Folder>();
+        for(Folder folder : root.getFolders()) {
+            if (folder.getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
+                res.put(folder,folder);
+            } else {
+                Folder packFolder = packFolder(folder);
+                res.put(folder,packFolder);
+            }
+        }
+        boolean isFullNames = false;
+        for(int i = 0; i < 3; i++) {
+            isFullNames = false;
+            Map<String, List<Map.Entry<Folder,Folder>>> names = new HashMap<String, List<Map.Entry<Folder,Folder>>>();
+            for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+                String folderName = entry.getValue().getName();
+                List<Map.Entry<Folder,Folder>> list = names.get(folderName);
+                if (list == null) {
+                    list = new ArrayList<Map.Entry<Folder,Folder>>();
+                    names.put(folderName, list);
+                }
+                list.add(entry);
+                if (list.size() > 1) {
+                    isFullNames = true;
+                }
+            }
+            if (!isFullNames) {
+                break;
+            }
+            for (Map.Entry<String, List<Map.Entry<Folder,Folder>>> entry : names.entrySet()) {
+                if (entry.getValue().size() > 1) {
+                    for(Map.Entry<Folder,Folder> e : entry.getValue()) {
+                        Folder beg = e.getKey();
+                        Folder end = e.getValue();
+                        Folder up = end.getParent();
+                        if (up != null && up != beg) {
+                            res.put(beg, up);
+                        } else {
+                            // cannot resolve name conflict
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (isFullNames) {
+            // cannot resolve name conflict
+            return;
+        }
+        root.reset();
+        for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+            if (entry.getKey().getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
+                root.addFolder(entry.getValue(), true);
+                continue;
+            } else if (entry.getValue().isDiskFolder()) {
+                root.addFolder(entry.getValue(), true);
+                entry.getValue().setDisplayName(entry.getValue().getName()+" - "+entry.getValue().getRootPath()); // NOI18N
+            } else {
+                File folderFile = getFolderFile(entry.getValue());
+                root.addFolder(entry.getValue(), true);
+                if (folderFile != null) {
+                    entry.getValue().setDisplayName(entry.getValue().getName()+" - "+folderFile.getAbsolutePath()); // NOI18N
+                }
+            }
+        }
+    }
+
+    private File getFolderFile(Folder folder) {
+        for(Item item : folder.getItemsAsArray()) {
+            File parent = item.getNormalizedFile().getParentFile();
+            if (parent != null) {
+                return parent;
+            }
+        }
+        for(Folder f : folder.getFolders()) {
+            File parent = getFolderFile(f);
+            if (parent != null) {
+                return parent.getParentFile();
+            }
+        }
+        return null;
+    }
+
+    private Folder packFolder(Folder folder) {
+        while(true) {
+            if (folder.getElements().size() > 1) {
+                return folder;
+            }
+            List<Folder> folders = folder.getFolders();
+            if (folders.isEmpty()) {
+                return folder;
+            }
+            folder = folders.get(0);
+        }
     }
 
     private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang) {
