@@ -117,6 +117,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 
@@ -1115,12 +1116,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
     
-    public void initializeGdb() {
+    public void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 	    System.out.printf("GdbDebuggerImpl.initializeGdb()\n"); // NOI18N
 	}
 
 	assert isConnected() : "initializeGdb() called when gdb wasn't ready";
+        
+        if (fmap != null) {
+            this.fmap = fmap;
+        }
 
 	// OLD overrideOptions();
 	manager().initialUnsavedFiles(this);

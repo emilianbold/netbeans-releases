@@ -202,6 +202,10 @@ public class AstRenderer {
                                     container.addDeclaration(explicitSpecializationDeclaration);
                                 } else {
                                     FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                                    if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
+                                        currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                    }
+                                    container.addDeclaration(explicitSpecializationDeclaration);
                                 }
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {

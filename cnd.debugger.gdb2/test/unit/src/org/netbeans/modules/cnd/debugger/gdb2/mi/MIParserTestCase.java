@@ -37,39 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support.hostinfo;
 
-import org.netbeans.modules.nativeexecution.support.*;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
-public final class FetchHostInfoTask implements Computable<ExecutionEnvironment, HostInfo> {
+import junit.framework.TestCase;
+import org.junit.Test;
 
-    private static final java.util.logging.Logger log = Logger.getInstance();
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class MIParserTestCase extends TestCase {
 
-    @Override
-    public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
-        final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
-        HostInfo result = null;
+    public MIParserTestCase() {
+    }
 
-        for (HostInfoProvider provider : providers) {
-            try {
-                result = provider.getHostInfo(execEnv);
-            } catch (IOException ex) {
-                // TODO: should we throw exception instead?
-                log.log(Level.SEVERE, "Exception while receiving hostinfo for " + execEnv.getDisplayName(), ex); //NOI18N
-            }
-            if (result != null) {
-                break;
-            }
-        }
-
-        return result;
+    @Test
+    public void testFullnameOctal() {
+        String testLine = "E:\\\\test\\\\\\314\\356\\350";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup("*stopped,fullname=\"" + testLine + "\"");
+        MIRecord result = parser.parse();
+        assertEquals("E:\\\\test\\\\Мои", result.results().valueOf("fullname").asConst().value());
+    }
+    
+    @Test
+    public void testFullnameOctal2() {
+        String testLine = "E:\\\\test\\\\Not \\314\\356\\350";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup("*stopped,fullname=\"" + testLine + "\"");
+        MIRecord result = parser.parse();
+        assertEquals("E:\\\\test\\\\Not Мои", result.results().valueOf("fullname").asConst().value());
+    }
+    
+    @Test
+    public void testValueQuotes() {
+        String testLine = "\\\"a\\\"";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup("*stopped,value=\"" + testLine + "\"");
+        MIRecord result = parser.parse();
+        assertEquals(testLine, result.results().valueOf("value").asConst().value());
     }
 }

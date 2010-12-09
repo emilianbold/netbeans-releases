@@ -83,6 +83,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_RUNARGS_CHANGED = "runargs-ch"; // NOI18N
     public static final String PROP_RUNDIR_CHANGED = "rundir-ch"; // NOI18N
     public static final String PROP_ENVVARS_CHANGED = "envvars-ch"; // NOI18N
+    public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch";
+    public static final String DEFAULT_RUN_COMMAND = "${OUTPUT_PATH}";
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
@@ -104,6 +106,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     private boolean buildFirst;
     // Environment
     private Env environment;
+    // Run Command
+    private String runCommand = DEFAULT_RUN_COMMAND;
     private String dorun;
     public static final int CONSOLE_TYPE_DEFAULT = 0;
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
@@ -160,6 +164,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         argsFlatValid = true;
         argsArrayValid = false;
         runDir = ""; // NOI18N
+        runCommand = ""; // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
@@ -534,6 +539,31 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
     }
 
+    // Run Command
+
+    public boolean isSimpleRunCommand() {
+        return !runCommand.contains(" ");
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public void setRunCommand(String command) {
+        command = command.trim();
+        if (command == null || command.length() == 0) {
+            command = DEFAULT_RUN_COMMAND;
+        }
+        if (this.runCommand.equals(command)) {
+            return;
+        }
+        this.runCommand = command;
+        if (pcs != null) {
+            pcs.firePropertyChange(PROP_RUNCOMMAND_CHANGED, null, this);
+        }
+        needSave = true;   
+    }
+
     public IntConfiguration getConsoleType() {
         return consoleType;
     }
@@ -665,6 +695,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setArgs(p.getArgsFlat());
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
+        setRunCommand(p.getRunCommand());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -685,6 +716,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setArgs(getArgsFlat());
         p.setRunDir(getRunDir());
+        p.setRunCommand(getRunCommand());
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
@@ -709,6 +741,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.setShortDescription(getString("GeneralTT"));
+        set.put(new RunCommandNodeProp());
         set.put(new ArgumentsNodeProp());
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
@@ -771,6 +804,24 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
 
         return hasTHAModule.booleanValue();
+    }
+
+    private class RunCommandNodeProp extends PropertySupport<String> {
+
+        public RunCommandNodeProp() {
+            super("Run Command", String.class, getString("RunCommandName"), getString("RunCommandHint"), true, true); // NOI18N
+        }
+
+        @Override
+        public String getValue() {
+            return getRunCommand();
+        }
+
+        @Override
+        public void setValue(String v) {
+            setRunCommand(v);
+        }
+
     }
 
     private class ArgumentsNodeProp extends PropertySupport<String> {

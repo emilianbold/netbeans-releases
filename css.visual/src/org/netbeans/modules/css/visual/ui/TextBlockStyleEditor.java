@@ -68,8 +68,8 @@ import org.openide.util.NbBundle;
  */
 public class TextBlockStyleEditor extends StyleEditor {
 
-    TextBlockModel textBlockModel = new TextBlockModel();
-    TextBlockData textBlockData = new TextBlockData();
+    TextBlockModel textBlockModel;
+    TextBlockData textBlockData;
 
     PropertyData directionData = new PropertyData();
     PropertyData textAlignData = new PropertyData();
@@ -86,6 +86,8 @@ public class TextBlockStyleEditor extends StyleEditor {
 
     @Override
     protected void lazyInitializePanel() {
+        textBlockModel = new TextBlockModel();
+        textBlockData = new TextBlockData();
         initComponents();
         initialize();
 
