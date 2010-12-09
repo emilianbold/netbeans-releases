@@ -77,9 +77,8 @@ public class LayerBuilderTest extends NbTestCase {
     private Document doc;
     private LayerBuilder b;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected @Override void setUp() throws Exception {
+        clearWorkDir();
         doc = XMLUtil.createDocument("filesystem", null, null, null);
         b = new LayerBuilder(doc, null, null);
         assertEquals("<filesystem/>", dump());
@@ -216,7 +215,6 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testSourcePath() throws Exception { // #181355
-        clearWorkDir();
         File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#label\") public class C {}");
         File dest = new File(getWorkDir(), "dest");
@@ -227,6 +225,32 @@ public class LayerBuilderTest extends NbTestCase {
                 "<!--p.C--><attr bundlevalue='p.Bundle#label' name='displayName'/>" +
                 "</file></folder></filesystem>",
                 clean(TestFileUtils.readFile(layer)));
+    }
+
+    public void testMissingBundleError() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
+        File dest = new File(getWorkDir(), "dest");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("p/Bundle.properties"));
+    }
+
+    public void testMissingBundleKeyError() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
+        TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "label=hello");
+        File dest = new File(getWorkDir(), "dest");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("nonexistent"));
+    }
+
+    public void testBundleKeyDefinedUsingMessages() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#k\") @org.openide.util.NbBundle.Messages(\"k=v\") public class C {}");
+        File dest = new File(getWorkDir(), "dest");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
     }
 
     public @interface A {String displayName();}

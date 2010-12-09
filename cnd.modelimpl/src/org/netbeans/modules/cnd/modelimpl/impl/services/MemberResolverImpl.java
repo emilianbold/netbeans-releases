@@ -110,7 +110,7 @@ public final class MemberResolverImpl {
                     CsmClass base = null;
                     if(inh instanceof Resolver.SafeClassifierProvider) {
                         CsmClassifier classifier = ((Resolver.SafeClassifierProvider)inh).getClassifier(resolver);
-                        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
+                        classifier = ResolverFactory.createResolver(inh, resolver).getOriginalClassifier(classifier);
                         if (CsmKindUtilities.isClass(classifier)) {
                             base = (CsmClass) classifier;
                         }
