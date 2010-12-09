@@ -491,15 +491,18 @@ public class ConfigurationMakefileWriter {
             bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
 
-//          // Removed tweaks for Windows as when -spec is used everything works....
-//          // See comment above.
-//            
-//            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-//                // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                  // second regular expression is to work-around http://bugreports.qt.nokia.com/browse/QTBUG-10633
-//                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' -e 's/\\/qt\\/bin/\\/qt\\/bin\\//g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
-//                bw.write("\t@mv -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-//            }
+            // Removed paths tweak for Windows as when -spec is used everything works....
+            // See comment above.
+            // Still if project is created out of the QT tree, problem described 
+            // in http://bugreports.qt.nokia.com/browse/QTBUG-10633 exists.
+            // To work-around it us following trick.
+            
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                // qmake uses backslashes on Windows, this code corrects them to forward slashes
+                // bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
+                bw.write("\t@sed -e 's/\\/qt\\/bin/\\/qt\\/bin\\//g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
+                bw.write("\t@mv -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
+            }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
         }

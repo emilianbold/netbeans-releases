@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisProgressPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.StateModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
@@ -91,7 +92,7 @@ import org.openide.util.NbBundle;
  *
  * @author Egor Ushakov
  */
-public class Disassembly implements PropertyChangeListener, DocumentListener {
+public class Disassembly implements StateModel.Listener, DocumentListener {
     private final GdbDebuggerImpl debugger;
     
     private final List<Line> lines = new ArrayList<Line>();
@@ -417,10 +418,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public void removeUpdate(DocumentEvent e) {
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-//        if (GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
-//            reloadDis(true, false);
-//        }
+    public void stateUpdated() {
+        reloadDis(true, false);
     }
     
     private void reloadDis(boolean withSource, boolean force) {

@@ -170,7 +170,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                     exe = CndPathUtilitities.naturalizeSlashes(exe);
-                } else if (conf.getDevelopmentHost().isLocalhost()) {
+                } 
+                if (conf.getDevelopmentHost().isLocalhost()) {
                     exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
                 } 
                 unbuffer = true;
