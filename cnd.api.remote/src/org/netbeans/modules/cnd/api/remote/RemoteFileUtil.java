@@ -65,14 +65,22 @@ import org.openide.filesystems.FileUtil;
  */
 public class RemoteFileUtil {
 
+    /**
+     * Checks whether file exists or not
+     * @param absolutePath - should be ABSOLUTE, but not necessarily normalized
+     */
     public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment) {
-        FileObject fo = getFileObject(absolutePath, executionEnvironment);
+        FileObject fo = getFileObject(normalizeAbsolutePath(absolutePath, executionEnvironment), executionEnvironment);
         return (fo != null && fo.isValid());
     }
 
+    /**
+     * Checks whether file exists or not
+     * @param absolutePath - should be ABSOLUTE, but not necessarily normalized
+     */
     public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment, RemoteProject.Mode remoteMode) {
         executionEnvironment = (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
-        return fileExists(absolutePath, executionEnvironment);
+        return fileExists(normalizeAbsolutePath(absolutePath, executionEnvironment), executionEnvironment);
     }
 
     public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {

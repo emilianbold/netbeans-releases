@@ -124,7 +124,14 @@ public final class Resolver3 implements Resolver {
 
     //private CsmNamespace currentNamespace;
 
-    public Resolver3(CsmFile file, int offset, Resolver parent, CsmFile startFile) {
+    /**
+     * should be created by ResolverFactory only
+     * @param file file where object to be resolved is located
+     * @param offset offset where object to be resolved is located 
+     * @param parent parent resolver (can be null)
+     * @param startFile start file where resolving started, it affects which objects considered as visible or not while resolving name at (file, offset)
+     */
+    /*package*/ Resolver3(CsmFile file, int offset, Resolver parent, CsmFile startFile) {
         this.file = file;
         this.offset = offset;
         this.origOffset = offset;
@@ -133,13 +140,8 @@ public final class Resolver3 implements Resolver {
         this.startFile = startFile;
     }
 
-    public Resolver3(CsmFile file, int offset, Resolver parent) {
+    private Resolver3(CsmFile file, int offset, Resolver parent) {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
-    }
-
-    public Resolver3(CsmOffsetable context, Resolver parent) {
-        this(context.getContainingFile(), context.getStartOffset(), parent,
-                (parent == null) ? context.getContainingFile() : parent.getStartFile());
     }
 
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {

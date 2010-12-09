@@ -211,8 +211,12 @@ public final class WindowsSupport {
     }
 
     public int getWinPID(int shellPID) {
-        ProcessBuilder pb = null;
-        File psFile = new File(getActiveShell().bindir, "ps.exe"); // NOI18N
+        if (activeShell == null) {
+            return shellPID;
+        }
+        
+        ProcessBuilder pb = null;        
+        File psFile = new File(activeShell.bindir, "ps.exe"); // NOI18N
 
         if (!psFile.exists()) {
             return shellPID;
@@ -220,7 +224,7 @@ public final class WindowsSupport {
 
         String psCommand = psFile.getAbsolutePath();
 
-        switch (getActiveShell().type) {
+        switch (activeShell.type) {
             case CYGWIN:
                 pb = new ProcessBuilder(psCommand, "-W", "-p", Integer.toString(shellPID)); // NOI18N
                 break;

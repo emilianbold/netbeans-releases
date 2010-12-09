@@ -78,7 +78,7 @@ public class AllBinaryFileFilter extends SourceFileFilter {
             if (f.isDirectory()) {
                 return true;
             }
-            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+            if (FileUtil.getExtension(f.getName()).length() == 0) {
                 // could be binary without extension
                 FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(f));
                 if (fo != null && fo.isValid()) {
