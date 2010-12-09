@@ -284,7 +284,6 @@ public class SvnClientFactory {
         try {            
             f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.JAVAHL);
             if(f == null) {
-               LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                return false;
             }
         } finally {
