@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
+import org.netbeans.modules.cnd.debugger.gdb2.GdbUtils;
 
 
 /**
@@ -70,11 +71,12 @@ public class MIParser {
     private char[] str;	// Copy of input string for efficient access.
     private int x;      // index into 'str' for next char to be parsed
     private int bx;     // index into 'str' for begin of current token
+    
+    private final String encoding;
 
-
-    public MIParser() {
+    public MIParser(String encoding) {
+        this.encoding = encoding;
     } 
-
 
     /**
      * Prepare for parsing.
@@ -290,36 +292,18 @@ public class MIParser {
 		case '"': {
 		    // x is already past the '"'
 		    StringBuilder string = new StringBuilder();
+                    boolean escape = false;
 		    while (str[x] != 0) {
 			if (str[x] == '\\') {
-			    x++;
-			    switch (str[x]) {
-				case '\\':
-				case '"':
-				case '\'':
-				    string.append(str[x]);
-				    break;
-				case 'n':
-				    string.append('\n');
-				    break;
-				case 'r':
-				    string.append('\r');
-				    break;
-				case 't':
-				    string.append('\t');
-				    break;
-				default:
-				    string.append(str[x]);
-				    break;
-			    }
-			    x++;
-			} else if (str[x] == '"') {
-			    x++;	// skip over trailing '"'
-			    return new Token(TokenType.STR, string.toString());
+			    escape = !escape;
 			} else {
-			    string.append(str[x]);
-			    x++;
-			} 
+                            if (str[x] == '"' && !escape) {
+                                x++;	// skip over trailing '"'
+                                return new Token(TokenType.STR, string.toString());
+                            }
+                            escape = false;
+			}
+                        string.append(str[x++]);
 		    }
 		    }
 		    break;
@@ -342,7 +326,7 @@ public class MIParser {
 
 	MITList list = new MITList(endToken == TokenType.RB, topLevel);
 	while (true) {
-	    MIValue value = parseValue();
+	    MIValue value = parseValue(false);
 	    list.add(value);
 	    Token t = getToken();
 	    if (t.type == endToken)
@@ -375,12 +359,15 @@ public class MIParser {
     }
 
 
-    private MIValue parseValue() throws Exception {
+    private MIValue parseValue(boolean decode) throws Exception {
 	Token t = getToken();
 
 	if (t.type == TokenType.STR) {
-	    return new MIConst(t.value);
-
+            String value = t.value;
+            if (decode) {
+                value = GdbUtils.gdbToUserEncoding(value, encoding);
+            }
+	    return new MIConst(value);
 	} else if (t.type == TokenType.LC) {
 	    return parseTList(TokenType.RC);
 
@@ -402,7 +389,7 @@ public class MIParser {
 	if (teq.type != TokenType.EQ)
 	    error("result", "=", teq); // NOI18N
 
-	MIValue value = parseValue();
+	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value));
 
 	return new MIResult(tsym.value, value);
     }
