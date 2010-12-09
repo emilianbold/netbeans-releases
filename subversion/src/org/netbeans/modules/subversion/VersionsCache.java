@@ -99,8 +99,8 @@ public class VersionsCache {
      */
     public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String pegRevision, String fileName) throws IOException {
         try {
-            SvnClient client = Subversion.getInstance().getClient(repoUrl);
             if ("false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
+                SvnClient client = Subversion.getInstance().getClient(repoUrl);
                 InputStream in = getInputStream(client, url, revision, pegRevision);
                 return createContent(fileName, in);
             } else {
@@ -109,6 +109,7 @@ public class VersionsCache {
                 Storage cachedVersions = StorageManager.getInstance().getStorage(rootUrl);
                 File cachedFile = cachedVersions.getContent(resourceUrl, fileName, revision);
                 if (cachedFile.length() == 0) { // not yet cached
+                    SvnClient client = Subversion.getInstance().getClient(repoUrl);
                     InputStream in = getInputStream(client, url, revision, pegRevision);
                     cachedFile = createContent(fileName, in);
                     if (cachedFile.length() != 0) {
