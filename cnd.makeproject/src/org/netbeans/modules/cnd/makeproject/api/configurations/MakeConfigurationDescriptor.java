@@ -889,8 +889,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Set<String> c = MakeProject.createExtensionSet();
         Set<String> cpp = MakeProject.createExtensionSet();
         for (Item item : getProjectItems()) {
-            String path = item.getPath();
-            String ext = FileUtil.getExtension(path);
+            String itemName = item.getName();
+            String ext = FileUtil.getExtension(itemName);
             if (ext.length() > 0) {
                 if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
                     if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)) {

@@ -176,7 +176,8 @@ public abstract class CndFileSystemProvider {
                     return fo;
                 }
             }
-            File file = new File(path.toString());
+            // not cnd specific file => use default file system conversion
+            File file = new File(FileUtil.normalizePath(path.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
