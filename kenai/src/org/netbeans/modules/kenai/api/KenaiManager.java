@@ -48,12 +48,14 @@ import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -166,11 +168,8 @@ public final class KenaiManager {
         } else {
             try {
                 if (instances.isEmpty()) {                    
-                    preserveKenaiComHack(); // check if kenai.com haven't been used previously                    
                     instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
-                } else if(instances.size() == 1 && instances.containsKey("https://java.net")) {
-                    // could have been set via http://netbeans.org/team-servers                    
-                    preserveKenaiComHack(); // check if kenai.com haven't been used previously                                    
+                    preserveKenaiComHack(); // check if kenai.com haven't been used previously                    
                 }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
@@ -214,27 +213,31 @@ public final class KenaiManager {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
+                URLConnection conn = null;
+                BufferedReader rd = null;
                 try {
                     URL url = new URL(INSTANCES_URL);
-                    URLConnection conn = url.openConnection();
-
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    try {
-                        String line;
-                        while ((line = rd.readLine()) != null) {
-                            line = line.trim();
-                            if (line.length() != 0) {
-                                if (getKenai(line) == null && !prefs.getBoolean(UPDATED + line, false)) {
-                                    addInstance(Kenai.createInstance(null, line));
-                                    prefs.putBoolean(UPDATED + line, true);
-                                }
+                    conn = url.openConnection();
+                    rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String line;
+                    while ((line = rd.readLine()) != null) {
+                        line = line.trim();
+                        if (line.length() != 0) {
+                            if (getKenai(line) == null && !prefs.getBoolean(UPDATED + line, false)) {
+                                addInstance(Kenai.createInstance(null, line));
+                                prefs.putBoolean(UPDATED + line, true);
                             }
                         }
-                    } finally {
-                        rd.close();
                     }
                 } catch (IOException iOException) {
                     //update not available
+                } finally {
+                    if(rd != null) {
+                        try { rd.close(); } catch (IOException e) {}
+                    }
+                    if(conn instanceof HttpURLConnection) {
+                        ((HttpURLConnection)conn).disconnect(); // just in case
+                    }
                 }
             }
        });
@@ -252,13 +255,24 @@ public final class KenaiManager {
             store();
             return;
         }
+        
         // no project stored - lets see if at least logged into dashboard
         uiprefs = NbPreferences.root().node ("org/netbeans/modules/kenai/ui");                    
-        String url = uiprefs != null ? uiprefs.get("dashboard.last.selected.kenai", null) : null; //NOI18N
-        if(url != null && url.equals("https://kenai.com")) {            
-            instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
-            store();
+        if(uiprefs == null) {
             return;
+        }
+        String[] keys;   
+        try {
+            keys = uiprefs.keys();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        for (String key : keys) {
+            if(key.startsWith("kenai.com")) {
+                instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+                store();
+            }
         }
     }
 }
