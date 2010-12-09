@@ -44,8 +44,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  * Creates an instance of appropriate resolver
@@ -59,21 +64,74 @@ public class ResolverFactory {
     }
     
     public static Resolver createResolver(CsmOffsetable context) {
-        return createResolver(context, (Resolver)null);
+        return createResolver(context.getContainingFile(), context.getStartOffset(), null, null);
     }
+    
     public static Resolver createResolver(CsmOffsetable context, Resolver parent) {
-        return new Resolver3(context, parent);
+        return createResolver(context.getContainingFile(), context.getStartOffset(), parent, null);
     }
 
     public static Resolver createResolver(CsmFile file, int offset) {
-        return createResolver(file, offset, null);
+        return createResolver(file, offset, null, null);
     }
     
     public static Resolver createResolver(CsmFile file, int offset, Resolver parent) {
-        return new Resolver3(file, offset, parent);
+        return createResolver(file, offset, parent, null);
     }
     
     public static Resolver createResolver(CsmOffsetable context, CsmFile contextFile) {
-        return new Resolver3(context.getContainingFile(), context.getStartOffset(), null, contextFile);
+        return createResolver(context.getContainingFile(), context.getStartOffset(), null, contextFile);
     }    
+    
+    private static Resolver createResolver(CsmFile file, int offset, Resolver parent, CsmFile contextFile) {
+        if (contextFile == null) {
+            if (parent == null) {
+                contextFile = file;
+            } else {
+                contextFile = parent.getStartFile();
+            }
+        }
+        if (file == null) {
+            System.err.println("FALLBACK INTO EMPTY RESOLVER"); // NOI18N
+            // this can be in situation when old tasks finishes work in resolver, while file become invalid or project was closed or reparsed
+            return EMPTY_RESOLVER;
+        } else {
+            return new Resolver3(file, offset, parent, contextFile);
+        }
+    }
+    
+    private static final Resolver EMPTY_RESOLVER = new EmptyResolver();
+    
+    private static final class EmptyResolver implements Resolver {
+
+        @Override
+        public Collection<CsmProject> getLibraries() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public CsmFile getStartFile() {
+            return null;
+        }
+
+        @Override
+        public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
+            return null;
+        }
+
+        @Override
+        public CsmObject resolve(CharSequence qualifiedName, int interestedKind) {
+            return null;
+        }
+
+        @Override
+        public boolean isRecursionOnResolving(int maxRecursion) {
+            return true;
+        }
+
+        @Override
+        public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+            return null;
+        }        
+    }
 }

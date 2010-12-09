@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver3;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ExpressionEvaluator;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 
@@ -134,7 +135,7 @@ public class VariableProvider {
                     }
                 }
             }
-            Resolver3 r = new Resolver3(decl.getContainingFile(), decl.getStartOffset(), resolver);
+            Resolver r = ResolverFactory.createResolver(decl.getContainingFile(), decl.getStartOffset(), resolver);
             CsmObject o = r.resolve(variableName.replaceAll("(.*)::.*", "$1"), Resolver3.ALL); // NOI18N
             if (CsmKindUtilities.isClassifier(o)) {
                 CsmClassifier cls = (CsmClassifier) o;
