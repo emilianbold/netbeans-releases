@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -154,6 +156,10 @@ public final class ProjectActionEvent {
             // see DefaultProjectActionHandler.java, line 173
             if (!configuration.getPlatformInfo().isWindows() && configuration.getPlatformInfo().isLocalhost()) {
                 command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", configuration.getAbsoluteOutputValue()); // NOI18N
+            }
+            if (!configuration.getDevelopmentHost().isLocalhost()) {
+                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(configuration.getAbsoluteOutputValue(), true)); // NOI18N
             }
             runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
         }
