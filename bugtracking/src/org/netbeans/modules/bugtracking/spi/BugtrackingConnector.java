@@ -53,6 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
+// XXX provide commit hook support instead of addComment() and addAttachent() in Issue
 public abstract class BugtrackingConnector implements Lookup.Provider {
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
@@ -112,6 +113,7 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
      * @return  an instance of {@code IssueFinder} corresponding to this
      *          type of bugtracker, or {@code null}
      */
+    // XXX provide via lookup
     public IssueFinder getIssueFinder() {
         return null;
     }
