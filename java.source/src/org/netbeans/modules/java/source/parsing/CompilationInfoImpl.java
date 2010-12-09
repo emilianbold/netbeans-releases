@@ -445,9 +445,9 @@ public final class CompilationInfoImpl {
                 Map<Integer,Diagnostic<? extends JavaFileObject>> tail = errors.tailMap(to);
                 this.affectedErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>(tail.size());
                 for (Iterator<Map.Entry<Integer,Diagnostic<? extends JavaFileObject>>> it = tail.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<Integer,Diagnostic<? extends JavaFileObject>> e = it.next();
-                    it.remove();
+                    Map.Entry<Integer,Diagnostic<? extends JavaFileObject>> e = it.next();                    
                     final JCDiagnostic diagnostic = (JCDiagnostic)e.getValue();
+                    it.remove();
                     if (diagnostic == null) {
                         throw new IllegalStateException("#184910: diagnostic == null " + mapArraysToLists(Thread.getAllStackTraces())); //NOI18N
                     }
