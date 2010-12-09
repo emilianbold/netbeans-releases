@@ -75,6 +75,9 @@ import org.openide.util.CharSequences;
  */
 public final class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 
+    Collection<CsmInheritance> baseClasses = null;
+    Collection<CsmMember> members = null;
+    
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
         super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
     }
@@ -129,6 +132,13 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
 
     @Override
     public Collection<CsmMember> getMembers() {
+        if(members == null) {
+            members = _getMembers();
+        }
+        return members;        
+    }
+    
+    public Collection<CsmMember> _getMembers() {
         Collection<CsmMember> members = new ArrayList<CsmMember>();
         members.addAll(super.getMembers());
         ClassImpl base = findBaseClassImplInProject();
@@ -165,6 +175,13 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
 
     @Override
     public Collection<CsmInheritance> getBaseClasses() {
+        if(baseClasses == null) {
+            baseClasses = _getBaseClasses();
+        }
+        return baseClasses;
+    }
+    
+    public Collection<CsmInheritance> _getBaseClasses() {
         ClassImpl base = findBaseClassImplInProject();
         if(base != null && base != this) {
             CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
