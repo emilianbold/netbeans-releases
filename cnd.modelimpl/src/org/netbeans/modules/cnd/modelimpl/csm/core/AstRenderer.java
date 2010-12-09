@@ -649,9 +649,21 @@ public class AstRenderer {
                     _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
                     token = getFirstSiblingSkipQualifiers(token);
                 }
-                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || 
+                        token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+                        token.getType() == CPPTokenTypes.LITERAL_struct ||
+                        token.getType() == CPPTokenTypes.LITERAL_class ||
+                        token.getType() == CPPTokenTypes.LITERAL_union)) {
                     AST typeToken = token;
                     AST next = token.getNextSibling();
+                    if (token.getType() == CPPTokenTypes.LITERAL_struct ||
+                            token.getType() == CPPTokenTypes.LITERAL_class ||
+                            token.getType() == CPPTokenTypes.LITERAL_union) {
+                        if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                            typeToken = next;
+                            next = next.getNextSibling();
+                        }
+                    }
                     while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
                         next = next.getNextSibling();
                     }
