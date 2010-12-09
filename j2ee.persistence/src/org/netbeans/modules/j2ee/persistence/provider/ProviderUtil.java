@@ -501,7 +501,7 @@ public class ProviderUtil {
                 candidates.add(each);
             }
         }
-        candidates = filterProvidersByProperties(candidates, persistenceUnit.getProperties().getProperty2());
+        candidates = filterProvidersByProperties(candidates, persistenceUnit.getProperties()!=null ? persistenceUnit.getProperties().getProperty2() : null);
         //
         if (candidates.size() == 1) {
             return candidates.iterator().next();
