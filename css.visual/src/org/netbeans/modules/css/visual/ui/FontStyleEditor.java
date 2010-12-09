@@ -81,8 +81,8 @@ import org.openide.util.RequestProcessor;
  */
 public class FontStyleEditor extends StyleEditor {
     
-    ColorSelectionField colorField =  new ColorSelectionField();
-    TextDecorationData textDecorationData = new TextDecorationData();
+    ColorSelectionField colorField;
+    TextDecorationData textDecorationData;
 
     //allow to GC the request processor and its thread when possible
     private static WeakReference<RequestProcessor> RP_WR;
@@ -132,6 +132,8 @@ public class FontStyleEditor extends StyleEditor {
     
     @Override
     protected void lazyInitializePanel() {
+        colorField = new ColorSelectionField();
+        textDecorationData = new TextDecorationData();
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
         colorField.addPropertyChangeListener("color", new PropertyChangeListener() {
