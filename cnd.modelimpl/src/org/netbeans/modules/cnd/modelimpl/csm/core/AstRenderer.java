@@ -1737,12 +1737,11 @@ public class AstRenderer {
     }
 
     protected boolean isFunctionSpecialization(AST ast) {
-        AST child = ast.getFirstChild();
-        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = AstRenderer.skipTemplateSibling(child);
-        }
-        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
+        AST child = AstUtil.findMethodName(ast);
 	if( child != null && child.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+            if(AstUtil.findChildOfType(child, CPPTokenTypes.LESSTHAN) == null) {
+                return true;
+            }            
 	    child = child.getNextSibling();
 	}
 	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
