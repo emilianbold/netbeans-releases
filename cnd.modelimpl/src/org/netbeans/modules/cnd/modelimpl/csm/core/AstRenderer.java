@@ -723,8 +723,10 @@ public class AstRenderer {
         boolean unnamedStaticUnion = false;
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
+        boolean typedef = false;
         int typeStartOffset = 0;
         if (token != null) {
+            typedef = token.getType() == CPPTokenTypes.LITERAL_typedef;         
             typeStartOffset = AstUtil.getFirstCsmAST(token).getOffset();
             if (token.getType() == CPPTokenTypes.LITERAL_static) {
                 token = token.getNextSibling();
@@ -760,8 +762,12 @@ public class AstRenderer {
                             ptrOperator = token;
                         }
                         break;
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                        if(typedef) {
+                            break;
+                        }
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {                    
                         nothingBeforSemicolon = false;
                         int arrayDepth = 0;
                         NameHolder nameHolder = null;
