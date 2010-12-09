@@ -190,8 +190,19 @@ public class AstRenderer {
                     } else {
                         try {
                             if (isMemberDefinition(token)) {
-                                // this is a template method specialization declaration (without a definition)
-                                container.addDeclaration(FunctionImplEx.create(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                                if(!isFunctionSpecialization(token)) {
+                                    // this is a template method specialization declaration (without a definition)
+                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                    container.addDeclaration(spec);
+                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                    spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
+                                    if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
+                                        currentNamespace.addDeclaration(explicitSpecializationDeclaration);
+                                    }
+                                    container.addDeclaration(explicitSpecializationDeclaration);
+                                } else {
+                                    FunctionImplEx<Object> explicitSpecializationDeclaration = FunctionImplEx.create(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                                }
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
                                     break;
@@ -224,7 +235,15 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            container.addDeclaration(FunctionDefinitionImpl.create(token, file, null, !isRenderingLocalContext()));
+                            if(!isFunctionSpecialization(token)) {
+                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                container.addDeclaration(spec);
+                            }
+                            FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                            container.addDeclaration(funcDef);
+                            if (currentNamespace != null && NamespaceImpl.isNamespaceScope(funcDef)) {
+                                currentNamespace.addDeclaration(funcDef);
+                            }
                         } else {
                             FunctionDDImpl<?> fddit = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(fddit);
@@ -716,6 +735,7 @@ public class AstRenderer {
             token = token.getNextSibling();
             boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
+            Outer:
             for (; token != null; token = token.getNextSibling()) {
                 switch (token.getType()) {
                     case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -755,7 +775,21 @@ public class AstRenderer {
                             classifier.addEnclosingVariable(var);
                             ptrOperator = null;
                         }
+                        break;
                     }
+                    case CPPTokenTypes.ID:
+                        {
+                            nothingBeforSemicolon = false;
+                            if (token.getNextSibling() != null && token.getNextSibling().getType() == CPPTokenTypes.COLON) {
+                                // it could be bit field
+                                // common type for all bit fields
+                                CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
+                                if (renderBitFieldImpl(token, token, type, classifier)) {
+                                    break Outer;
+                                }
+                            }
+                            break;
+                        }
                     case CPPTokenTypes.SEMICOLON: {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
@@ -778,6 +812,10 @@ public class AstRenderer {
             }
         }
     }
+    
+    protected boolean renderBitFieldImpl(AST startOffsetAST, AST afterTypeAST, CsmType type, ClassEnumBase<?> classifier) {
+        return false;
+    }
 
     @SuppressWarnings("fallthrough")
     protected Pair renderTypedef(AST ast, CsmClass cls, CsmObject container) {
@@ -789,8 +827,11 @@ public class AstRenderer {
         if (typedefNode != null && typedefNode.getType() == CPPTokenTypes.LITERAL_typedef) {
 
             AST classNode = typedefNode.getNextSibling();
-            if (isVolatileQualifier(classNode.getType())) {
+            while (classNode != null && isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType())) {
                 classNode = classNode.getNextSibling();
+            }
+            if (classNode == null) {
+                return results;
             }
             switch (classNode.getType()) {
 
@@ -1673,6 +1714,18 @@ public class AstRenderer {
         return isScopedId(id);
     }
 
+    protected boolean isFunctionSpecialization(AST ast) {
+        AST child = ast.getFirstChild();
+        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            child = AstRenderer.skipTemplateSibling(child);
+        }
+        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
+	if( child != null && child.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+	    child = child.getNextSibling();
+	}
+	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
+    }
+    
     private boolean isScopedId(AST id) {
         if (id == null) {
             return false;

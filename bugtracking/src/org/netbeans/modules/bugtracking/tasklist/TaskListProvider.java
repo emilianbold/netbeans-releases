@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -67,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider.LazyIssue;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -419,7 +422,19 @@ public final class TaskListProvider extends PushTaskScanner {
     }
 
     private List<String> getRepositoriesFor (TaskScanningScope scope) {
-        Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);
+        Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);        
+        if(projects == null || projects.isEmpty()) {
+            // one file scope?
+            FileObject fo = scope.getLookup().lookup(FileObject.class);
+            if(fo != null) {
+                Project project = FileOwnerQuery.getOwner(fo);
+                if(project != null) {
+                    List<Project> list = new ArrayList<Project>(1);
+                    list.add(project);
+                    projects = list;
+                }
+            }
+        }
         LinkedList<String> repositoryUrls = new LinkedList<String>();
         if (!projects.isEmpty()) {
             for (Project p : projects) {

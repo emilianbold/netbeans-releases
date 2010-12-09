@@ -167,43 +167,38 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
     }
     
     public void testWebContainerWsCodec(){
-        Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web, "JAX-WS");
+        Category jaxWs = getCategory( "JAX-WS");
         Category codec = findCategory( jaxWs,  "Codec");
         
-        doTestCodec( web, jaxWs, codec);
+        doTestCodec( jaxWs, codec);
     }
 
     public void testWebContainerWsEndpointInvocation(){
-        Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web, "JAX-WS");
+        Category jaxWs = getCategory( "JAX-WS");
         Category endpointInvocation = findCategory( jaxWs, "Endpoint Invocation");
         
-        doTestEndpointInvocation( web, jaxWs, endpointInvocation );
+        doTestEndpointInvocation( jaxWs, endpointInvocation );
     }
     
     public void testWebContainerWsHttpTransport(){
-        Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web, "JAX-WS");
+        Category jaxWs = getCategory( "JAX-WS");
         Category httpTransport = findCategory( jaxWs, "HTTP Transport");
         
-        doTestHttpTransport( web, jaxWs, httpTransport);
+        doTestHttpTransport( jaxWs, httpTransport);
     }
     
     public void testWebContainerWsMessageProcessing(){
-        Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web, "JAX-WS");
+        Category jaxWs = getCategory( "JAX-WS");
         Category messageprocessing = findCategory( jaxWs, "Message Processing");
         
-        doTestMessageProcessing( web , jaxWs, messageprocessing);
+        doTestMessageProcessing( jaxWs, messageprocessing);
     }
     
     public void testWebContainerWsStreaming(){
-        Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web, "JAX-WS");
+        Category jaxWs = getCategory("JAX-WS");
         Category streaming = findCategory( jaxWs, "Streaming");
         
-        doTestStreaming( web , jaxWs, streaming);
+        doTestStreaming( jaxWs, streaming);
     }
     
     public void testMixedCategories(){
@@ -457,7 +452,7 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         Category jsps = getCategory("JSPs");
         
         Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web , "JAX-WS");
+        Category jaxWs = getCategory("JAX-WS");
         Category codec = findCategory( jaxWs, "Codec");
         Category endpointInvocation = findCategory( jaxWs, "Endpoint Invocation");
         Category httpTransport = findCategory( jaxWs, "HTTP Transport");
@@ -534,6 +529,10 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         drillDown.drillup();
         drillDown.drilldown( web.getId());
         
+        List<Integer> jaxIds = new ArrayList<Integer>(codecIds.size() +endpointInvocationIds.size() +
+                httpTransportIds.size()+messageProcessingIds.size()+
+                streamingIds.size());
+        
         List<Integer> webIds = new ArrayList<Integer>( filtersIds.size() +
                 filtersLifecycleIds.size() +jspsIds.size() +jstlIds.size() +
                 listenersIds.size() +servletsIds.size() +servletsLifecycleIds.size()
@@ -548,11 +547,11 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         webIds.addAll( listenersIds);
         webIds.addAll(servletsIds) ;
         webIds.addAll( servletsLifecycleIds);
-        webIds.addAll( codecIds);
-        webIds.addAll( endpointInvocationIds);
-        webIds.addAll( httpTransportIds);
-        webIds.addAll( messageProcessingIds );
-        webIds.addAll( streamingIds );
+        jaxIds.addAll( codecIds);
+        jaxIds.addAll( endpointInvocationIds);
+        jaxIds.addAll( httpTransportIds);
+        jaxIds.addAll( messageProcessingIds );
+        jaxIds.addAll( streamingIds );
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
@@ -633,7 +632,16 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         
         drillDown.drillup();
         drillDown.drillup();
+        drillDown.drillup();
+        
         drillDown.drilldown( jaxWs.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        flatProfile = flatProfileBuilder.createFlatProfile();
+        assertEquals(jaxIds.size()+" methods expected in JAX-WS category",
+                jaxIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "JAX-WS", jaxIds);
+        
         drillDown.drilldown( codec.getId());
         
         flatProfileBuilder.cctEstablished( root , false );
@@ -934,7 +942,7 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         Category jsps = getCategory("JSPs");
         
         Category web = getCategory("Web Container");
-        Category jaxWs = findCategory( web , "JAX-WS");
+        Category jaxWs = getCategory("JAX-WS");
         Category codec = findCategory( jaxWs, "Codec");
         Category endpointInvocation = findCategory( jaxWs, "Endpoint Invocation");
         Category httpTransport = findCategory( jaxWs, "HTTP Transport");
@@ -1025,11 +1033,6 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         webIds.addAll( listenersIds);
         webIds.addAll(servletsIds) ;
         webIds.addAll( servletsLifecycleIds);
-        webIds.addAll( codecIds);
-        webIds.addAll( endpointInvocationIds);
-        webIds.addAll( httpTransportIds);
-        webIds.addAll( messageProcessingIds );
-        webIds.addAll( streamingIds );
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
@@ -1110,13 +1113,31 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         
         drillDown.drillup();
         drillDown.drillup();
-        drillDown.drilldown( jaxWs.getId());
-        drillDown.drilldown( codec.getId());
+        drillDown.drillup();
+        drillDown.drilldown(jaxWs.getId());
+        
+        List<Integer> jaxIds = new ArrayList<Integer>(codecIds.size() +endpointInvocationIds.size() +
+                httpTransportIds.size()+messageProcessingIds.size()+ streamingIds.size());
+        
+        jaxIds.addAll(codecIds);
+        jaxIds.addAll(endpointInvocationIds);
+        jaxIds.addAll(httpTransportIds);
+        jaxIds.addAll(messageProcessingIds);
+        jaxIds.addAll(streamingIds);
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
-        assertEquals(codecIds.size()+" methods expected in Codec category",
-                codecIds.size() ,  flatProfile.getNRows());
+        
+        assertEquals(jaxIds.size()+" methods expected in JAX-WS category",
+                jaxIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "JAX-WS", jaxIds);
+        
+        drillDown.drilldown(codec.getId());
+        flatProfileBuilder.cctEstablished( root , false );
+        flatProfile = flatProfileBuilder.createFlatProfile();
+        
+        assertEquals(codecIds.size()+" methods expected in JAX-WS Codecs category", 
+                     codecIds.size(), flatProfile.getNRows());
         checkCategory(status, flatProfile, "Codec", codecIds);
         
         drillDown.drillup();

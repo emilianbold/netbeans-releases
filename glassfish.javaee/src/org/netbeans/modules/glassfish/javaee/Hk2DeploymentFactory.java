@@ -100,7 +100,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         // FIXME -- these strings should come from some constant place
         if (ee6Instance == null) {
             ServerUtilities tmp = ServerUtilities.getEe6Utilities();
-            ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:"}, "0.2", // NOI18N
+            ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:", "deployer:gfv3"}, "0.2", // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
             ee6Instance.setServerUtilities(tmp);
@@ -116,7 +116,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         // FIXME -- these strings should come from some constant place
         if (ee6WCInstance == null) {
             ServerUtilities tmp = ServerUtilities.getEe6WCUtilities();
-            ee6WCInstance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6wc:"}, "0.3", // NOI18N
+            ee6WCInstance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6wc:","deployer:gfv3ee6:", "deployer:gfv3"}, "0.3", // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_WCDisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6WCInstance);
             ee6WCInstance.setServerUtilities(tmp);

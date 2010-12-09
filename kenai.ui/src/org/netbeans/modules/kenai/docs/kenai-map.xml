@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+    <mapID target="org.netbeans.modules.kenai.docs.about" url="about_team_server.html"/>
+    
+    <!-- Collaborative Development - Kenai topics-->
+<mapID target="team_addserver" url="team_addserver.html" />
+<mapID target="kenai_projects" url="about_team_servers.html" />
+<mapID target="kenai_create" url="kenai_create.html" />
+<mapID target="kenai_share" url="kenai_share.html" />
+<mapID target="kenai_workingwith" url="kenai_dashboard.html" />
+<mapID target="kenai_quickref" url="kenai_quickref.html" />
+<mapID target="kenai_members" url="kenai_members.html" />
+<mapID target="kenai_chatlogin" url="kenai_chat-login.html" />
+
+
+
+<!-- Collaboration csh topics for wizard -->
+<mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="csh/new_kenai_project1.html" />
+<mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="csh/new_kenai_project2.html" />
+<mapID target="org.netbeans.modules.kenai.ui.SummaryWizardPanel" url="csh/new_kenai_project3.html" />
+
+</map>
+
+

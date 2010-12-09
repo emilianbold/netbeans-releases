@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.websvc.rest.support;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -100,7 +101,12 @@ public class WebXmlHelper {
      
         addPersistenceContextRef();
         
-        if (RestUtils.hasJTASupport(project)) {
+        /*
+         * Fix for BZ#190237 -  RESTful WS from entity classes do not deploy on WebLogic
+         */
+        if (RestUtils.hasJTASupport(project)&& !RestUtils.hasProfile(project, 
+                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB)) 
+        {
             addUserTransactionResourceRef();
         }
         helper.save();

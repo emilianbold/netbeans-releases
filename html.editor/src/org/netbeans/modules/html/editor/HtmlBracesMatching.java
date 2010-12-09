@@ -91,7 +91,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
         //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
-        int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
+//        int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
+        int searchOffset = context.getSearchOffset();
         ((AbstractDocument) context.getDocument()).readLock();
         try {
             if (!testMode && MatcherContext.isTaskCanceled()) {
@@ -171,7 +172,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             return null;
         }
         //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
-        final int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
+//        final int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
+        final int searchOffset = context.getSearchOffset();
         final Source source = Source.create(context.getDocument());
         if (source == null) {
             return null;
@@ -203,7 +205,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     }
 
                     int searched = result.getSnapshot().getEmbeddedOffset(searchOffset);
-                    AstNode origin = result.findLeafTag(searched, false, !context.isSearchingBackward());
+                    AstNode origin = result.findLeafTag(searched, !context.isSearchingBackward(), true);
                     if (origin != null) {
                         if (origin.type() == AstNode.NodeType.OPEN_TAG ||
                                 origin.type() == AstNode.NodeType.ENDTAG) {

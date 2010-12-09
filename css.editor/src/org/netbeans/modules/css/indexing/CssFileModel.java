@@ -89,7 +89,6 @@ public class CssFileModel {
     private final Snapshot snapshot;
     private final Snapshot topLevelSnapshot;
     private SimpleNode parseTreeRoot;
-    
 
     public static CssFileModel create(Source source) throws ParseException {
         final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
@@ -104,11 +103,17 @@ public class CssFileModel {
             }
         });
 
-        return result.get() == null ? null : new CssFileModel(result.get(), snapshot.get());
+        assert snapshot.get() != null; //at least the top level snapshot should always be available
+
+        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get(), snapshot.get());
     }
 
     public static CssFileModel create(CssParserResult result) {
         return new CssFileModel(result, null);
+    }
+
+    private CssFileModel(Snapshot topLevelSnapshot) {
+        this.snapshot = this.topLevelSnapshot = topLevelSnapshot;
     }
 
     private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
@@ -217,7 +222,7 @@ public class CssFileModel {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString());
+        StringBuilder buf = new StringBuilder(super.toString());
         buf.append(":");
         for (Entry c : getImports()) {
             buf.append(" imports=");
@@ -373,11 +378,8 @@ public class CssFileModel {
         int lineOffset = -1;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
-                LOGGER.finer("Ast offset range " + range.toString() +
-                        ", text='" + getSnapshot().getText().subSequence(range.getStart(), range.getEnd())+ "', "
-                        + " cannot be properly mapped to source offset range: ["
-                        + documentFrom + "," + documentTo + "] in file "
-                        + getFileObject().getPath()); //NOI18N
+                LOGGER.log(Level.FINER,"Ast offset range {0}, text='{1}', cannot be properly mapped to source offset range: ["
+                        + "{2},{3}] in file {4}", new Object[]{range.toString(), getSnapshot().getText().subSequence(range.getStart(), range.getEnd()), documentFrom, documentTo, getFileObject().getPath()}); //NOI18N
             }
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);

@@ -75,8 +75,8 @@ class ElementResultItem extends XMLResultItem {
     /**
      * Create a start element result item.
      */
-    public ElementResultItem(GrammarResult res){
-        super(res.getNodeName());
+    public ElementResultItem(int position, GrammarResult res){
+        super(position, res.getNodeName());
         this.res = res;
         foreground = Color.blue;
         startElement = true;
@@ -87,8 +87,8 @@ class ElementResultItem extends XMLResultItem {
     /**
      * Create an end element result item.
      */
-    public ElementResultItem(String name) {
-        super(name);
+    public ElementResultItem(int position, String name) {
+        super(position, name);
         foreground = Color.blue;
         startElement = false;
         empty = false;

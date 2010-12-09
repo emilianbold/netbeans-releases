@@ -132,6 +132,7 @@ public interface NativeDebugger {
     public void moreFrame();
     public void makeFrameCurrent(Frame f);
     public Frame[] getStack();
+    Frame getCurrentFrame();
     
     public boolean isMultiThreading();
     public void registerThreadModel(ThreadModel model);
@@ -155,6 +156,7 @@ public interface NativeDebugger {
     public void pause();
     public void interrupt();
     public void runToCursor(String src, int line);
+    public void contAt(String src, int line);
     public void makeCalleeCurrent();
     public void makeCallerCurrent();
     public void popTopmostCall();

@@ -51,6 +51,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="NbBundle.Messages">
+        <api name="util"/>
+        <summary>Added <code>@NbBundle.Messages</code></summary>
+        <version major="8" minor="10"/>
+        <date day="8" month="12" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                A new annotation makes it easier to produce localizable strings.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbBundle"/>
+        <issue number="192750"/>
+    </change>
     <change id="Exceptions.attachSeverity">
         <api name="util"/>
         <summary>Supress logging of not important exceptions</summary>
@@ -60,8 +75,8 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>
-                New method <code>Exceptions.attachSeverity</code> allows 
-                everyone to thrown an exception, which later will not be 
+                New method <code>Exceptions.attachSeverity</code> allows
+                everyone to thrown an exception, which later will not be
                 logged.
             </p>
         </description>

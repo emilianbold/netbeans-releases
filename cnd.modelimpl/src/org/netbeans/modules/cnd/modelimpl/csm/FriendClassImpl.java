@@ -88,8 +88,9 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
-            String fullName = "<" + TemplateUtils.getClassSpecializationSuffix(templateParams, null) + ">"; // NOI18N
-            setTemplateDescriptor(params, fullName, register);
+            final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(templateParams, null);
+            String fullName = "<" + classSpecializationSuffix + ">"; // NOI18N
+            setTemplateDescriptor(params, fullName, !classSpecializationSuffix.isEmpty(), register);
         }
     }
 
@@ -197,8 +198,8 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         this.cleanUID();
     }
 
-    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean global) {
-        templateDescriptor = new TemplateDescriptor(params, name, global);
+    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization, boolean global) {
+        templateDescriptor = new TemplateDescriptor(params, name, specialization, global);
     }
 
     @Override
@@ -206,6 +207,11 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return templateDescriptor != null;
     }
 
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();

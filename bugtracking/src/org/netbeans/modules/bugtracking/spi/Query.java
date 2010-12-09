@@ -173,6 +173,7 @@ public abstract class Query implements Comparable<Query> {
      * Returns all issues given by the last refresh for
      * which applies that their ID or summary contains the
      * given criteria string
+     * XXX used only by issue table filter - move out from spi
      *
      * @param criteria
      * @return

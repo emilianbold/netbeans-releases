@@ -4,7 +4,7 @@ Description: Library for bytecode manipulation
 License: BSD
 OSR: 10906
 Origin: http://download.forge.objectweb.org/asm/asm-3.0-bin.zip
-File: asm-tree-3.0.jar
+Files: asm-tree-3.0.jar
 Comment: See issue 145107, 178037
 
 Use of is ASM 3.0 is governed by the terms of the license below:

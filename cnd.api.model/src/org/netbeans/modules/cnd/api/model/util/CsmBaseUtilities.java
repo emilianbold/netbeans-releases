@@ -93,6 +93,16 @@ public class CsmBaseUtilities {
         return false;
     }
     
+    public static boolean sameSignature(CsmFunction checkDecl, CsmFunction targetDecl) {
+        // we treat const and non-const functions as the same
+        CharSequence sigCheck = checkDecl.getSignature().toString().replace("const", "").trim(); // NOI18N // NOI18N
+        CharSequence sigTarget = targetDecl.getSignature().toString().replace("const", "").trim(); // NOI18N // NOI18N
+        if (sigCheck.equals(sigTarget)) {
+            return true;
+        }
+        return false;
+    }
+    
     public static boolean isInlineFunction(CsmFunction fun) {
         if (fun.isInline()) {
             return true;

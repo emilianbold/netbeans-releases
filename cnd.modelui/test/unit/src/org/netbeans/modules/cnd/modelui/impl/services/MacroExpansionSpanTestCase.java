@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Class for MacroExpansionDocProviderImpl tests for span of macro detection
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 

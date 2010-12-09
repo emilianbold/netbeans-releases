@@ -34,6 +34,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -640,5 +641,89 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
     
     private static String removeWhitespaces(String text) {
         return text.replaceAll(" ", "").replaceAll("\n", "");
+    }
+
+    public void test179766a() throws Exception {
+        performEnabledTest("package hierbas.del.litoral;\n\n" +
+                           "public class TestClass {\n" +
+                           "    public static void method(String str) {\n" +
+                           "        |new TestClass(str) {}|;\n" +
+                           "    }\n" +
+                           "}\n",
+                           false,
+                           true);
+    }
+
+    public void test179766b() throws Exception {
+        performEnabledTest("package hierbas.del.litoral;\n\n" +
+                           "public class TestClass {\n" +
+                           "    public static void method(String str) {\n" +
+                           "        |new TestClass(str) {};\n" +
+                           "    }\n" +
+                           "}\n",
+                           false,
+                           true);
+    }
+
+    public void test179766c() throws Exception {
+        performEnabledTest("package hierbas.del.litoral;\n\n" +
+                           "public class TestClass {\n" +
+                           "    public static void method(String str) {\n" +
+                           "        new TestClass(str) {}|;\n" +
+                           "    }\n" +
+                           "}\n",
+                           false,
+                           true);
+    }
+
+    public void test179766d() throws Exception {
+        performEnabledTest("package hierbas.del.litoral;\n\n" +
+                           "public class TestClass {\n" +
+                           "    public static void method(String str) {\n" +
+                           "        new TestClass(str) {|};\n" +
+                           "    }\n" +
+                           "}\n",
+                           true,
+                           false);
+    }
+
+    private void performEnabledTest(String test, final boolean onlyHeader, final boolean golden) throws Exception {
+        clearWorkDir();
+
+        String[] parts = test.split(Pattern.quote("|"));
+        final int start, end;
+
+        if (parts.length == 2) {
+            start = end = parts[0].length();
+            test = parts[0] + parts[1];
+        } else {
+            start = parts[0].length();
+            end   = start + parts[1].length();
+            test = parts[0] + parts[1] + parts[2];
+        }
+
+        FileUtil.refreshFor(getWorkDir());
+
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject src = FileUtil.createFolder(wd, "src");
+        FileObject build = FileUtil.createFolder(wd, "build");
+        FileObject cache = FileUtil.createFolder(wd, "cache");
+
+        SourceUtilsTestUtil.prepareTest(src, build, cache);
+
+        FileObject testFile = FileUtil.createData(src, "Test.java");
+
+        TestUtilities.copyStringToFile(testFile, test);
+
+        JavaSource testSource = JavaSource.forFileObject(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                assertEquals(golden, ConvertAnonymousToInner.computeFix(workingCopy, start, end, onlyHeader) != null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
     }
 }

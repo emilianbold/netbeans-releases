@@ -45,10 +45,12 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -73,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -196,6 +199,28 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return result;
     }
 
+    @Override
+    public CharSequence getName(CsmUID<CsmFile> fileUID) {
+        return getFileName(fileUID);
+    }
+
+    public static CharSequence getFileName(CsmUID<CsmFile> fileUID) {
+        CharSequence filePath = UIDUtilities.getFileName(fileUID);
+        int indx = CharSequenceUtilities.lastIndexOf(filePath, '/'); // NOI18N
+        if (indx < 0) {
+            indx = CharSequenceUtilities.lastIndexOf(filePath, '\\'); // NOI18N
+        }
+        if (indx > 0 && indx < filePath.length()) {
+            filePath = CharSequenceUtilities.toString(filePath, indx + 1, filePath.length());
+        }    
+        return filePath;
+    }
+    
+    @Override
+    public CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID) {
+        return UIDUtilities.getFileName(fileUID);
+    }
+    
     private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
     private static final class NamedLock {
         private final String name;
@@ -451,4 +476,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return 0;
     }
+
+    @Override
+    public long getOffset(CsmFile file, int line, int column) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getOffset(line, column);
+        }
+        return 0;
+    }
+
 }

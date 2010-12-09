@@ -259,7 +259,7 @@ public final class ProjectImpl extends ProjectBase {
                 //Notificator.instance().endTransaction();
                 Notificator.instance().flush();
                 if (deepReparse) {
-                    DeepReparsingUtils.reparseOnAdded(nativeFile, this);
+                    DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFile), this);
                 }
             }
         }
@@ -418,6 +418,12 @@ public final class ProjectImpl extends ProjectBase {
         nativeFiles.clear();
     }
     private final NativeFileContainer nativeFiles = new NativeFileContainer();
+
+    private final SourceRootContainer projectRoots = new SourceRootContainer(false);
+    @Override
+    protected SourceRootContainer getProjectRoots() {
+        return projectRoots;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

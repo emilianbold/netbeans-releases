@@ -162,7 +162,7 @@ public class InjectCompositeComponent {
 	DataFolder targetFolder = DataFolder.findFolder(projectDir);
 
 	final Logger logger = Logger.getLogger(InjectCompositeComponent.class.getSimpleName());
-	final JsfSupport jsfs = JsfSupport.findFor(file);
+	final JsfSupportImpl jsfs = JsfSupportImpl.findFor(file);
 	if (jsfs == null) {
 	    logger.warning("Cannot find JsfSupport instance for file " + file.getPath()); //NOI18N
 	    return;
@@ -278,7 +278,7 @@ public class InjectCompositeComponent {
 	}
     }
 
-    private static SnippetContext getSnippetContext(Document doc, final int from, final int to, final JsfSupport jsfs) {
+    private static SnippetContext getSnippetContext(Document doc, final int from, final int to, final JsfSupportImpl jsfs) {
 	final SnippetContext context = new SnippetContext();
 	context.setValid(true);
 

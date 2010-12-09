@@ -262,7 +262,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
-        performTest("IZ145071.cc", 3, 21, "IZ145071.cc", 3, 5);
+        performTest("IZ145071.cc", 3, 21, "IZ145071.cc", 3, 13);
     }
 
     public void testIZ155148() throws Exception {

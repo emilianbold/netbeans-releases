@@ -78,7 +78,11 @@ public class CssPreviewGenerator {
     
     private static final String SAMPLE_TEXT =
             NbBundle.getMessage(CssPreviewTopComponent.class, "Sample_Text"); //NOI18N
-    
+
+    static String getEmptyDocumentContent() {
+        return new StringBuilder().append(HTML_PREFIX).append(HTML_MIDDLE).append(HTML_POSTFIX).toString();
+    }
+
     public static CharSequence getPreviewCode(CssRuleContext content) {
         StringBuilder preview = new StringBuilder();
         preview.append(HTML_PREFIX);

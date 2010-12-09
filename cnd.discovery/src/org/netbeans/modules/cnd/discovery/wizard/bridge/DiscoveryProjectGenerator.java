@@ -433,18 +433,13 @@ public class DiscoveryProjectGenerator {
         }
         if (needAdd.size()>0) {
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
-            Folder rootCandidate = null;
-            String root = additional.getFolder();
-            int i = root.lastIndexOf('/');
-            if (i > 0) {
-                Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
-                root = root.substring(0,i);
-                rootCandidate = prefferedFolders.get(root);
+            if (additional.getName().isEmpty()) {
+                for(AbstractRoot aRoot : additional.getChildren()) {
+                    addAdditionalPreferedFolder(folder, aRoot);
+                }
+            } else {
+                addAdditionalPreferedFolder(folder, additional);
             }
-            if (rootCandidate == null) {
-                rootCandidate = folder;
-            }
-            addAdditionalFolder(rootCandidate, additional);
         }
         // remove unused
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -477,6 +472,21 @@ public class DiscoveryProjectGenerator {
         if (needCheck.size()>0) {
             projectBridge.checkForNewExtensions(needCheck);
         }
+    }
+
+    private void addAdditionalPreferedFolder(Folder folder, AbstractRoot additional){
+        Folder rootCandidate = null;
+        String root = additional.getFolder();
+        int i = root.lastIndexOf('/');
+        if (i > 0) {
+            Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
+            root = root.substring(0,i);
+            rootCandidate = prefferedFolders.get(root);
+        }
+        if (rootCandidate == null) {
+            rootCandidate = folder;
+        }
+        addAdditionalFolder(rootCandidate, additional);
     }
 
     private void addAdditionalFolder(Folder folder, AbstractRoot used){
@@ -682,7 +692,13 @@ public class DiscoveryProjectGenerator {
             folders.put(path,pair);
         }
         AbstractRoot additional = UnusedFactory.createRoot(folders.keySet());
-        addFolder(sourceRoot, additional, folders, lang);
+        if (additional.getName().isEmpty()) {
+            for(AbstractRoot aRoot : additional.getChildren()) {
+                addFolder(sourceRoot, aRoot, folders, lang);
+            }
+        } else {
+            addFolder(sourceRoot, additional, folders, lang);
+        }
     }
 
     private void addFolder(Folder folder, AbstractRoot additional, Map<String,Pair> folders, ItemProperties.LanguageKind lang){

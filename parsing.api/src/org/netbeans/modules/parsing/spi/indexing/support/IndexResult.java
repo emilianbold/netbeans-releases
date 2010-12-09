@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.DeletedIndexable;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -64,13 +63,13 @@ public final class IndexResult {
 
     private static final Logger LOG = Logger.getLogger(IndexResult.class.getName());
     
-    private final IndexDocumentImpl spi;
+    private final org.netbeans.modules.parsing.lucene.support.IndexDocument spi;
     private final URL root;
 
     private volatile URL cachedUrl;
     private volatile FileObject cachedFile;
 
-    IndexResult (final IndexDocumentImpl spi, final URL root) {
+    IndexResult (final org.netbeans.modules.parsing.lucene.support.IndexDocument spi, final URL root) {
         assert spi != null;
         assert root != null;
         this.spi = spi;
@@ -91,7 +90,7 @@ public final class IndexResult {
         if (cachedUrl == null) {
             URL url = null;
             try {
-                url = Util.resolveUrl(root, spi.getSourceName());
+                url = Util.resolveUrl(root, spi.getPrimaryKey());
             } catch (MalformedURLException ex) {
                 LOG.log(Level.WARNING, null, ex);
             }
@@ -131,7 +130,7 @@ public final class IndexResult {
      * @since 1.9
      */
     public String getRelativePath() {
-        return spi.getSourceName();
+        return spi.getPrimaryKey();
     }
 
     /**

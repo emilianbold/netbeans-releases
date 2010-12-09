@@ -113,7 +113,7 @@ public final class JavaAntLogger extends AntLogger {
                 if (IOColorPrint.isSupported(io)) {
                     try {
                         OutputWriter out = messageLevel <= AntEvent.LOG_WARN ? io.getErr() : /* #174781 1/2 */io.getOut();
-                        boolean important = prePart.contains(/* #174781 2/2 */"at "); // NOI18N
+                        boolean important = prePart.contains(/* #174781 2/2 */"at ") && /* e.g. InstalledFileLocatorImpl.findCaller */!prePart.contains("WARNING"); // NOI18N
                         out.print(prePart);
                         IOColorPrint.print(io, midPart, hyperlink, important, null);
                         out.println(endPart);

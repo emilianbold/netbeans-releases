@@ -43,8 +43,7 @@
 package org.netbeans.modules.cnd.api.model;
 
 /**
- * 
- * @author Nick Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmProgram extends CsmOffsetableDeclaration {
 }
