@@ -471,8 +471,15 @@ public class ConfigurationMakefileWriter {
 
         if (conf.isQmakeConfiguration()) {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
-            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
+            // Bug 159594 - Can't build Qt project on OpenSolaris (64 bit)
+            // on unix platforms not passing -spec seems to generate correct makefiles
+            // on mac/win32 not passing -spec leads to some problems:
+            //      on mac - qmake generates xcode project
+            //      on windows - problems with slashes vs. backslashes
+            
+            if (qmakeSpec.length() == 0 && (
+                    conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX || 
+                    conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS)) {
                 qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
             }
             if (!qmakeSpec.isEmpty()) {
@@ -483,11 +490,16 @@ public class ConfigurationMakefileWriter {
             // Otherwise qmake will complain that sources are not found.
             bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-"+MakeConfiguration.CND_CONF_MACRO+".mk nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
-                bw.write("\t@mv -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-            }
+
+//          // Removed tweaks for Windows as when -spec is used everything works....
+//          // See comment above.
+//            
+//            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+//                // qmake uses backslashes on Windows, this code corrects them to forward slashes
+                  // second regular expression is to work-around http://bugreports.qt.nokia.com/browse/QTBUG-10633
+//                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' -e 's/\\/qt\\/bin/\\/qt\\/bin\\//g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
+//                bw.write("\t@mv -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
+//            }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
         }

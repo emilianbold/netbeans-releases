@@ -120,13 +120,13 @@ public class RemoteFileSystemUtils {
         // Escape reserved names -
         // CON, PRN, AUX, NUL, COM1-COM9, LPT1-LPT9 with or without extensions
 
-        if (name.startsWith("CON") || name.startsWith("PRN") || name.startsWith("AUX") || name.startsWith("NUL")) { // NOI18N
+        if (name.startsWith("CON") || name.startsWith("PRN") || name.startsWith("AUX") || name.startsWith("NUL")) {
             if (name.length() == 3 || name.charAt(3) == '.') {
                 sb.append('_').append(windowsReservedNameChar).append(name);
                 return sb.toString();
             }
         }
-        if (name.startsWith("COM") || name.startsWith("LPT")) { // NOI18N
+        if (name.startsWith("COM") || name.startsWith("LPT")) {
             if (name.length() > 3) {
                 char c = name.charAt(3);
                 if ('1' <= c && c <= '9') {

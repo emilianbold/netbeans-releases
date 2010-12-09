@@ -48,8 +48,10 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -445,6 +447,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private javax.swing.JTextField runDirectoryTextField;
     // End of variables declaration//GEN-END:variables
     
+    private Project[] getOpenedProjects() {
+        List<Project> res = new ArrayList<Project>();
+        for(Project p :OpenProjects.getDefault().getOpenProjects()) {
+            if (p.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
+                res.add(p);
+            }
+        }
+        return res.toArray(new Project[res.size()]);
+    }
+
     private void initGui() {
         ActionListener projectComboBoxActionListener = projectComboBox.getActionListeners()[0];
         projectComboBox.removeActionListener(projectComboBoxActionListener);
@@ -454,7 +466,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBox.setVisible(isRun);
         projectLabel.setVisible(isRun);
         if (isRun) {
-            projectChoices = OpenProjects.getDefault().getOpenProjects();
+            projectChoices = getOpenedProjects();
             for (int i = 0; i < projectChoices.length; i++) {
                 projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
             }

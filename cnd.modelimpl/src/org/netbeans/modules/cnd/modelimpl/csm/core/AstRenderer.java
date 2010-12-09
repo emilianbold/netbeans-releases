@@ -649,9 +649,21 @@ public class AstRenderer {
                     _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
                     token = getFirstSiblingSkipQualifiers(token);
                 }
-                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || 
+                        token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+                        token.getType() == CPPTokenTypes.LITERAL_struct ||
+                        token.getType() == CPPTokenTypes.LITERAL_class ||
+                        token.getType() == CPPTokenTypes.LITERAL_union)) {
                     AST typeToken = token;
                     AST next = token.getNextSibling();
+                    if (token.getType() == CPPTokenTypes.LITERAL_struct ||
+                            token.getType() == CPPTokenTypes.LITERAL_class ||
+                            token.getType() == CPPTokenTypes.LITERAL_union) {
+                        if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                            typeToken = next;
+                            next = next.getNextSibling();
+                        }
+                    }
                     while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
                         next = next.getNextSibling();
                     }
@@ -711,8 +723,10 @@ public class AstRenderer {
         boolean unnamedStaticUnion = false;
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
+        boolean typedef = false;
         int typeStartOffset = 0;
         if (token != null) {
+            typedef = token.getType() == CPPTokenTypes.LITERAL_typedef;         
             typeStartOffset = AstUtil.getFirstCsmAST(token).getOffset();
             if (token.getType() == CPPTokenTypes.LITERAL_static) {
                 token = token.getNextSibling();
@@ -748,8 +762,12 @@ public class AstRenderer {
                             ptrOperator = token;
                         }
                         break;
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                        if(typedef) {
+                            break;
+                        }
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {                    
                         nothingBeforSemicolon = false;
                         int arrayDepth = 0;
                         NameHolder nameHolder = null;
@@ -1719,12 +1737,11 @@ public class AstRenderer {
     }
 
     protected boolean isFunctionSpecialization(AST ast) {
-        AST child = ast.getFirstChild();
-        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = AstRenderer.skipTemplateSibling(child);
-        }
-        child = AstRenderer.getFirstSiblingSkipQualifiers(child);
+        AST child = AstUtil.findMethodName(ast);
 	if( child != null && child.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+            if(AstUtil.findChildOfType(child, CPPTokenTypes.LESSTHAN) == null) {
+                return true;
+            }            
 	    child = child.getNextSibling();
 	}
 	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
