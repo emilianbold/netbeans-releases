@@ -311,6 +311,9 @@ public final class NamingFactory {
                 return;
             }
             int index = nr.getIndex();
+            if (index == -1) {
+                continue;
+            }
             if (names[index] != null) {
                 names[index] = names[index].remove(nr);
                 namesCount--;

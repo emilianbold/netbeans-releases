@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory.Caller;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -100,7 +101,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
      public List<File> init(long previous, FileObjectFactory factory, boolean expected) {
-          File file = root.getFileName().getFile();
+         File file = Watcher.wrap(root.getFileName().getFile(), root);
          LinkedList<File> arr = new LinkedList<File>();
          long ts = root.getProvidedExtensions().refreshRecursively(file, previous, arr);
          for (File f : arr) {
@@ -115,7 +116,7 @@ final class FileObjectKeeper implements FileChangeListener {
              if (lm > previous && factory != null) {
                  final BaseFileObj prevFO = factory.getCachedOnly(f);
                  if (prevFO == null) {
-                     BaseFileObj who = factory.getValidFileObject(f, Caller.Others);
+                     BaseFileObj who = factory.getValidFileObject(f, Caller.GetChildern);
                      if (who != null) {
                          LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
                          who.fireFileChangedEvent(expected);
