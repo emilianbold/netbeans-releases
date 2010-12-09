@@ -277,6 +277,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 	    
 	};
 
+        ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(proxyLoader);
 
@@ -285,7 +286,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         } finally {
             //reset the original loader
-            Thread.currentThread().setContextClassLoader(originalLoader);
+            Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
     }
 

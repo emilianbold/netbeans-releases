@@ -99,7 +99,8 @@ public abstract class Repository implements Lookup.Provider {
     public abstract String getID();
 
     /**
-     * Returns a Node representing this repository
+     * Returns a {@link Node} representing this repository
+     * 
      * @return
      */
     public final Node getNode() {
@@ -122,6 +123,8 @@ public abstract class Repository implements Lookup.Provider {
      *
      * @param id
      * @return
+     * @deprecated only kenai and nbbugzilla related. will be removed. 
+     * XXX move out to kenaisupport
      */
     public abstract Issue getIssue(String id);
 

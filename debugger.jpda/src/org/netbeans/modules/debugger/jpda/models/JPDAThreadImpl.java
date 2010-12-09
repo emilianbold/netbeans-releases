@@ -765,6 +765,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public void suspend () {
         logger.fine("JPDAThreadImpl.suspend() called.");
         Boolean suspendedToFire = null;
+        CallStackFrame csf = null;
+        boolean isCurrent = debugger.getCurrentThread() == this;
         accessLock.writeLock().lock();
         try {
             logger.fine("  write lock acquired, is suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
@@ -784,6 +786,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             //System.err.println("suspend("+getName()+") suspended = true");
             suspended = true;
             initiallySuspended = false;
+            if (isCurrent) {
+                try {
+                    CallStackFrame[] csfs = getCallStack(0, 1);
+                    if (csfs.length == 1) {
+                        csf = csfs[0];
+                    }
+                } catch (AbsentInformationException ex) {
+                }
+            }
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (InternalExceptionWrapper ex) {
@@ -791,6 +802,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (VMDisconnectedExceptionWrapper ex) {
         } finally {
             accessLock.writeLock().unlock();
+        }
+        if (csf != null) {
+            debugger.setCurrentCallStackFrame(csf);
         }
         if (suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,

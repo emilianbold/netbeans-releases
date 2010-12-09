@@ -1944,8 +1944,12 @@ public class EditorContextImpl extends EditorContext {
 
         private StyledDocument getDocument(CompilationController ci) {
             // Do NOT use ci.getDocument(), since it returns null when the document is not loaded yet!
+            FileObject file = ci.getFileObject();
+            if (file == null || !file.isValid()) {
+                return null;
+            }
             try {
-                DataObject od = DataObject.find(ci.getFileObject());
+                DataObject od = DataObject.find(file);
                 EditorCookie ec = od.getCookie(EditorCookie.class);
                 if (ec != null) {
                     return  ec.openDocument();
