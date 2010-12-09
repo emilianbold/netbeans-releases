@@ -797,6 +797,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug190885.cpp", 4, 10, "bug190885.cpp", 4, 5);
         performTest("bug190885.cpp", 7, 10, "bug190885.cpp", 7, 5);
     }
+
+    public void testBug188305() throws Exception {
+        // Bug 188305 - c++ parser complains about struct instance declaration
+        performTest("bug188305.cpp", 6, 16, "bug188305.cpp", 6, 7);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
