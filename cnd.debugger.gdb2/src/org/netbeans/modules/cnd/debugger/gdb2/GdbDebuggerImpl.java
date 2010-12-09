@@ -1025,9 +1025,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
-        MIValue bkptValue = record.results().valueOf("bkpt");
+        MIValue bkptValue = record.results().valueOf("bkpt"); //NOI18N
         if (bkptValue != null) {
-            MIValue numberValue = bkptValue.asTList().valueOf("number");
+            MIValue numberValue = bkptValue.asTList().valueOf("number"); //NOI18N
             if (numberValue != null) {
                 firstBreakpointId = numberValue.asConst().value();
             }
