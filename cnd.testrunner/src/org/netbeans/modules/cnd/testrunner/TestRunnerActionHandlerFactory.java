@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.testrunner;
 
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
@@ -65,6 +66,11 @@ public class TestRunnerActionHandlerFactory implements ProjectActionHandlerFacto
     @Override
     public ProjectActionHandler createHandler() {
         return new TestRunnerActionHandler();
+    }
+
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getConfiguration());
     }
 
 }

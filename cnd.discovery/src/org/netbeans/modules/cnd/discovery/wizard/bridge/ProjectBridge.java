@@ -55,7 +55,6 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -74,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
@@ -385,10 +383,13 @@ public class ProjectBridge {
         makeConfigurationDescriptor.setModified();
     }
 
-    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
+    public FolderConfiguration getFolderConfiguration(Folder folder) {
         MakeConfiguration makeConfiguration = folder.getConfigurationDescriptor().getActiveConfiguration();
-        //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
-        FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
+        return folder.getFolderConfiguration(makeConfiguration);
+    }
+
+    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
+        FolderConfiguration folderConfiguration = getFolderConfiguration(folder);
         if (folderConfiguration == null) {
             return null;
         }

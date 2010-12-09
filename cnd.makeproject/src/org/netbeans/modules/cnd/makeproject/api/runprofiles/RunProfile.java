@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -83,8 +84,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_RUNARGS_CHANGED = "runargs-ch"; // NOI18N
     public static final String PROP_RUNDIR_CHANGED = "rundir-ch"; // NOI18N
     public static final String PROP_ENVVARS_CHANGED = "envvars-ch"; // NOI18N
-    public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch";
-    public static final String DEFAULT_RUN_COMMAND = "${OUTPUT_PATH}";
+    public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch"; // NOI18N
+    public static final String DEFAULT_RUN_COMMAND = "${OUTPUT_PATH}"; // NOI18N
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
@@ -542,7 +543,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Run Command
 
     public boolean isSimpleRunCommand() {
-        return !runCommand.contains(" ");
+        return !runCommand.contains(" "); // NOI18N
     }
 
     public String getRunCommand() {
@@ -820,7 +821,14 @@ public final class RunProfile implements ConfigurationAuxObject {
         @Override
         public void setValue(String v) {
             setRunCommand(v);
+            if (!isSimpleRunCommand()) {
+                JOptionPane.showMessageDialog(null, getString("ComplexCommandText"), getString("ComplexCommandTitle"), JOptionPane.INFORMATION_MESSAGE); //NOI18N
+                setShortDescription(getString("ComplexRunCommandHint"));
+            } else {
+                setShortDescription(getString("RunCommandHint"));
+            }
         }
+
 
     }
 
