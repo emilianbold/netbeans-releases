@@ -71,7 +71,7 @@ public final class KenaiManager {
     public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
     private static final String INSTANCES_PREF="kenai.instances"; // NOI18N
-    private static final String UDPATED = "updated.";
+    private static final String UPDATED = "updated.";
     public static final String INSTANCES_URL = System.getProperty("kenai.team-servers.url", "http://netbeans.org/team-servers");
 
     /**
@@ -220,9 +220,9 @@ public final class KenaiManager {
                         while ((line = rd.readLine()) != null) {
                             line = line.trim();
                             if (line.length() != 0) {
-                                if (getKenai(line) == null && !prefs.getBoolean(UDPATED + line, false)) {
+                                if (getKenai(line) == null && !prefs.getBoolean(UPDATED + line, false)) {
                                     addInstance(Kenai.createInstance(null, line));
-                                    prefs.putBoolean(UDPATED + line, true);
+                                    prefs.putBoolean(UPDATED + line, true);
                                 }
                             }
                         }
