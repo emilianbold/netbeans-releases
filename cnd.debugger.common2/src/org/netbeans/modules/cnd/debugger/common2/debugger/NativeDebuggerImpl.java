@@ -129,7 +129,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     // turned on when killEngine is issued
     protected boolean postedKillEngine = false;
 
-    protected final FileMapper fmap = FileMapper.getDefault();
+    protected FileMapper fmap = FileMapper.getDefault();
 
     protected Location visitedLocation = null;
 
@@ -926,7 +926,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public FileMapper fmap() {
 	return fmap;
     }
-
+    
     public void setSrcOODMessage(String msg) {
         if (msg != null && !srcOOD) {
             // If srcOOD is not set it's quite likley that this is a

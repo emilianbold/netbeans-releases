@@ -37,39 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support.hostinfo;
 
-import org.netbeans.modules.nativeexecution.support.*;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.debugger.gdb2;
 
-public final class FetchHostInfoTask implements Computable<ExecutionEnvironment, HostInfo> {
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
-    private static final java.util.logging.Logger log = Logger.getInstance();
-
-    @Override
-    public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
-        final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
-        HostInfo result = null;
-
-        for (HostInfoProvider provider : providers) {
-            try {
-                result = provider.getHostInfo(execEnv);
-            } catch (IOException ex) {
-                // TODO: should we throw exception instead?
-                log.log(Level.SEVERE, "Exception while receiving hostinfo for " + execEnv.getDisplayName(), ex); //NOI18N
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class GdbUtils {
+    private GdbUtils() {
+    }
+    
+    public static String gdbToUserEncoding(String string, final String encoding) {
+        // The first part transforms string to byte array
+        char[] chars = string.toCharArray();
+        char next;
+        boolean escape = false;
+        ArrayList<Byte> _bytes = new ArrayList<Byte>();
+        for (int i = 0; i < chars.length; i++) {
+            char ch = chars[i];
+            next = (i + 1) < chars.length ? chars[i + 1] : 0;
+            if (escape) {
+                // skip escaped char
+                escape = false;
+            } else if (ch == '\\') {
+                if (Character.isDigit(next)) {
+                    char[] charVal = {chars[++i], chars[++i], chars[++i]};
+                    ch = (char) Integer.parseInt(String.valueOf(charVal), 8);
+                } else {
+                    escape = true;
+                }
             }
-            if (result != null) {
-                break;
-            }
+            _bytes.add((byte) ch);
+        }
+        byte[] bytes = new byte[_bytes.size()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = _bytes.get(i);
         }
 
-        return result;
+        // The second part performs encoding to current coding system
+        try {
+            string = new String(bytes, encoding);
+        } catch (UnsupportedEncodingException e) {
+        }
+        return string;
     }
 }
