@@ -414,7 +414,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         DataObject dataObject = null;
         FileObject fo = getFileObjectImpl(true);
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
