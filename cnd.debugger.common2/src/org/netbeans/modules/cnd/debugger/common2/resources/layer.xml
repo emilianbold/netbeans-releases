@@ -772,6 +772,14 @@ made subject to such option by the copyright holder.
 		    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-EvalAnnotation.instance"/>
 		</folder>
 	    </folder>
+            <folder name="x-asm">
+                <folder name="GlyphGutterActions">
+		    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+		</folder>
+            </folder>
 	</folder>
     </folder>
 
@@ -926,6 +934,10 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.EvaluationWindowAction"/>
             </file>
 
+            <file name="org-netbeans-modules-cnd-debugger-common2-ContinueAtAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.ContinueAtAction"/>
+            </file>
+
             <file name="org-netbeans-modules-cnd-debugger-common2-DisassemblerWindowAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.DisassemblerWindowAction"/>
             </file>
@@ -1012,15 +1024,6 @@ made subject to such option by the copyright holder.
 		    <attr name="position" intvalue="314"/>
 		</file>
 
-		<!-- versioning_output.wstcref is @ 500 -->
-		<!-- OLD
-		     Moved to dbxfacade.ide and dbxfacade.tool's layer
-		<file name="ConsoleWindow.wstcref" 
-		      url="modes/output/ConsoleWindow.wstcref">
-		    <attr name="position" intvalue="514"/>
-		</file>
-		     -->
-
 		<!-- svnversioning.wstcref is @ 700 -->
 		<file name="locals.wstcref" url="modes/output/locals.wstcref">
 		    <attr name="position" intvalue="714"/>
@@ -1034,44 +1037,44 @@ made subject to such option by the copyright holder.
 		<file name="threads.wstcref" url="modes/output/threads.wstcref">
 		    <attr name="position" intvalue="1114"/>
 		</file>
+                
+		<!-- debuggercore puts watchesView.wstcref @ 300 -->
+		<file name="MemoryWindow.wstcref" url="modes/debugger/MemoryWindow.wstcref">
+		    <attr name="position" intvalue="1314"/>
+		</file>
+		<file name="RegistersWindow.wstcref" url="modes/debugger/RegistersWindow.wstcref">
+		    <attr name="position" intvalue="1414"/>
+		</file>
+
+		<file name="EvaluationWindow.wstcref" url="modes/debugger/EvaluationWindow.wstcref">
+		    <attr name="position" intvalue="514"/>
+		</file>
 
 	    </folder>
 
 	    <folder name="debugger">
 
-		<!-- use 014 to differentiate from positions in debuggercore -->
+		<!-- OLD use 014 to differentiate from positions in debuggercore 
 
-		<file name="EvaluationWindow.wstcref" url="modes/debugger/EvaluationWindow.wstcref">
+                <file name="EvaluationWindow.wstcref" url="modes/debugger/EvaluationWindow.wstcref">
 		    <attr name="position" intvalue="214"/>
 		</file>
-		<!-- debuggercore puts watchesView.wstcref @ 300 -->
-		<file name="MemoryWindow.wstcref" url="modes/debugger/MemoryWindow.wstcref">
-		    <attr name="position" intvalue="314"/>
-		</file>
-		<file name="RegistersWindow.wstcref" url="modes/debugger/RegistersWindow.wstcref">
-		    <attr name="position" intvalue="414"/>
-		</file>
 
-		<!--  moved to output group
 		<file name="ConsoleWindow.wstcref"
 		      url="modes/output/ConsoleWindow.wstcref">
 		    <attr name="position" intvalue="514"/>
 		</file>
+		<file name="RegistersWindow.wstcref" url="modes/debugger/RegistersWindow.wstcref">
+		    <attr name="position" intvalue="414"/>
+		</file>
 		-->
 
-<!--		 hide the stuff we've moved to output mode
-		<file name="watches.wstcref_hidden"/>
-		<file name="locals.wstcref_hidden"/>
-		<file name="sessions.wstcref_hidden"/>
-		<file name="threads.wstcref_hidden"/>-->
 	    </folder>
 
 	    <folder name="editor">
 		<file name="DisassemblerWindow.wstcref" url="modes/editor/DisassemblerWindow.wstcref"/>
 	    </folder>
 	    
-	    <!-- hide some of the unused stuff -->
-<!--	    <folder name="form_hidden"/>-->
 	</folder>
 
 	<folder name="Groups">

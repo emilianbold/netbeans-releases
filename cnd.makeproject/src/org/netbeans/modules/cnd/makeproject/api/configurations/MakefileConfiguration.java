@@ -214,7 +214,7 @@ public class MakefileConfiguration {
         @Override
         public void setValue(String v) {
             String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             super.setValue(path);
         }
         
@@ -232,7 +232,7 @@ public class MakefileConfiguration {
         @Override
         public void setValue(String v) {
             String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             super.setValue(path);
         }
         
@@ -319,7 +319,7 @@ public class MakefileConfiguration {
                 if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
                     File selectedFile= chooser.getSelectedFile();
                     String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilitities.normalize(path);
+                    path = CndPathUtilitities.normalizeSlashes(path);
                     editor.setValue(path);
                 }
             }
@@ -388,6 +388,7 @@ public class MakefileConfiguration {
             public void run() {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                    chooser.addChoosableFileFilter(FileFilterFactory.getAllBinaryFileFilter());
                     if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.WINDOWS) {
                         chooser.addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
                         chooser.addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
@@ -425,7 +426,7 @@ public class MakefileConfiguration {
                 File selectedFile = chooser.getSelectedFile();
                 if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
                     String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilitities.normalize(path);
+                    path = CndPathUtilitities.normalizeSlashes(path);
                     editor.setValue(path);
                 }
             }

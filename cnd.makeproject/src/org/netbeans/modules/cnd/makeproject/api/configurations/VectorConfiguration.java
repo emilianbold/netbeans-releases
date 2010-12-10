@@ -76,7 +76,9 @@ public class VectorConfiguration<E> {
     }
 
     public void setValue(List<E> l) {
-        assert l != null;
+        if (l == null) {
+            return; // See evaluation in IZ 193164
+        }
         this.value = l;
     }
 

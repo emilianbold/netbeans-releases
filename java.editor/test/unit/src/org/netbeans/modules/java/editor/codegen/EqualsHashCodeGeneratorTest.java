@@ -524,7 +524,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "        hash = 1 * hash + Float.floatToIntBits(this.f);\n" +
                         "        hash = 1 * hash + (int) (Double.doubleToLongBits(this.d) ^ (Double.doubleToLongBits(this.d) >>> 32));\n" +
                         "        hash = 1 * hash + (int) (this.l ^ (this.l >>> 32));\n" +
-                        "        hash = 1 * hash + this.b ? 1 : 0;\n" +
+                        "        hash = 1 * hash + (this.b ? 1 : 0);\n" +
                         "        hash = 1 * hash + this.c;\n" +
                         "        hash = 1 * hash + (this.e != null ? this.e.hashCode() : 0);\n" +
                         "        return hash;\n" +

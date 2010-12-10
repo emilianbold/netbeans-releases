@@ -87,12 +87,12 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
         URL engineURL = TestUtils.class.getResource("data/org-yourorghere-engine-1-2.nbm");
         assertNotNull(engineURL);
-        File engineFile = new File(engineURL.getFile());
+        File engineFile = TestUtils.getFile(this, engineURL);
         assertTrue(engineFile.exists());
         
         URL independentURL = TestUtils.class.getResource("data/org-yourorghere-independent-1-1.nbm");
         assertNotNull(independentURL);
-        File independentFile = new File(independentURL.getFile());
+        File independentFile = TestUtils.getFile(this, independentURL);
         assertTrue(independentFile.exists());
         
         String source = "local-downloaded";

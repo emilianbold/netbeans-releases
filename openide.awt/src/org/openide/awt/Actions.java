@@ -1171,18 +1171,21 @@ public class Actions {
 
             if ((changedProperty == null) || changedProperty.equals(Action.NAME)) {
                 Object s = null;
+                boolean useMnemonic = true;
                 if (popup) {
                     s = action.getValue("popupText"); // NOI18N
                 }
                 if (s == null) {
                     s = action.getValue("menuText"); // NOI18N
+                    useMnemonic = !popup;
                 }
                 if (s == null) {
                     s = action.getValue(Action.NAME);
+                    useMnemonic = !popup;
                 }
 
                 if (s instanceof String) {
-                    setMenuText(((JMenuItem) comp), (String) s, true);
+                    setMenuText(((JMenuItem) comp), (String) s, useMnemonic);
 
                     //System.out.println("Menu item: " + s);
                     //System.out.println("Action class: " + action.getClass());

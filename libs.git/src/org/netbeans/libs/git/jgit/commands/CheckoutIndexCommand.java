@@ -43,18 +43,10 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheCheckout;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -80,75 +72,10 @@ public class CheckoutIndexCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             DirCache cache = repository.readDirCache();
-            TreeWalk treeWalk = new TreeWalk(repository);
-            Collection<String> relativePaths = Utils.getRelativePaths(repository.getWorkTree(), roots);
-            if (!relativePaths.isEmpty()) {
-                treeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
-            }
-            treeWalk.setRecursive(true);
-            treeWalk.reset();
-            treeWalk.addTree(new DirCacheIterator(cache));
-            treeWalk.addTree(new FileTreeIterator(repository));
-            String lastAddedPath = null;
-            while (treeWalk.next() && !monitor.isCanceled()) {
-                File path = new File(repository.getWorkTree(), treeWalk.getPathString());
-                if (treeWalk.getPathString().equals(lastAddedPath)) {
-                    // skip conflicts
-                    continue;
-                } else {
-                    lastAddedPath = treeWalk.getPathString();
-                }
-                DirCacheIterator dit = treeWalk.getTree(0, DirCacheIterator.class);
-                FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
-                if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), true, true, FS.DETECTED))) {
-                    // update entry
-                    listener.notifyFile(path, treeWalk.getPathString());
-                    checkoutEntry(repository, path, dit.getDirCacheEntry());
-                }
-            }
+            new CheckoutIndex(repository, cache, roots, listener, monitor, true).checkout();
         } catch (IOException ex) {
             throw new GitException(ex);
         }
-    }
-
-    private void checkoutEntry (Repository repository, File file, DirCacheEntry e) throws IOException {
-        // ... create/overwrite this file ...
-        if (!ensureParentFolderExists(file.getParentFile())) {
-            return;
-        }
-        if (file.isDirectory()) {
-            monitor.notifyWarning("Replacing directory " + file.getAbsolutePath());
-            Utils.deleteRecursively(file);
-        }
-        file.createNewFile();
-        if (file.isFile()) {
-            DirCacheCheckout.checkoutEntry(repository, file, e, getFileMode(repository));
-        } else {
-            monitor.notifyError("Cannot create file " + file.getAbsolutePath());
-        }
-    }
-
-    private Boolean filemode;
-    private boolean getFileMode (Repository repository) {
-        if (filemode == null) {
-            filemode = Utils.checkExecutable(repository);
-        }
-        return filemode.booleanValue();
-    }
-
-    private boolean ensureParentFolderExists (File parentFolder) {
-        File predecessor = parentFolder;
-        while (!predecessor.exists()) {
-            predecessor = predecessor.getParentFile();
-        }
-        if (predecessor.isFile()) {
-            if (!predecessor.delete()) {
-                monitor.notifyError("Cannot replace file " + predecessor.getAbsolutePath());
-                return false;
-            }
-            monitor.notifyWarning("Replacing file " + predecessor.getAbsolutePath());
-        }
-        return parentFolder.mkdirs() || parentFolder.exists();
     }
 
     @Override

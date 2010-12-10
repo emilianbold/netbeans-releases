@@ -145,6 +145,14 @@ public class PullUpTransformer extends RefactoringVisitor {
                             RetoucheUtils.copyJavadoc(methodElm, newMethodTree, workingCopy);
                         njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
                         rewrite(tree, njuClass);
+                        if (methodElm.getModifiers().contains(Modifier.ABSTRACT)  && !classIsAbstract) {
+                            classIsAbstract = true;
+                            Set<Modifier> mod = new HashSet<Modifier>(tree.getModifiers().getFlags());
+                            mod.add(Modifier.ABSTRACT);
+                            mod.remove(Modifier.FINAL);
+                            ModifiersTree modifiers = make.Modifiers(mod);
+                            rewrite(tree.getModifiers(), modifiers);
+                        }
                     }
                 }
             }

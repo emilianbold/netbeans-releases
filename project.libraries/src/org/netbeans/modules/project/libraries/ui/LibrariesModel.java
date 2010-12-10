@@ -152,6 +152,7 @@ public class LibrariesModel implements PropertyChangeListener {
 
     public LibraryImplementation createArealLibrary(String type, String name, LibraryStorageArea area) {
         LibraryImplementation impl = new DummyArealLibrary(type, name);
+        assert area2Storage.get(area) != null : "Creating library in unknown area: " + area +" known areas: " + area2Storage.keySet();
         library2Area.put(impl, area);
         return impl;
     }
@@ -244,7 +245,7 @@ public class LibrariesModel implements PropertyChangeListener {
             LibraryStorageArea area = getAreaOrNull(impl);
             if (area != null) {
                 ArealLibraryProvider alp = area2Storage.get(area);
-                assert alp != null : area;
+                assert alp != null : "Unknown area: " + area + " known areas: " + area2Storage.keySet();
                 LibraryAccessor.createLibrary(alp, impl.getType(), impl.getName(), area, ((DummyArealLibrary) impl).contents);
             } else if (writableProvider != null) {
                 writableProvider.addLibrary(impl);

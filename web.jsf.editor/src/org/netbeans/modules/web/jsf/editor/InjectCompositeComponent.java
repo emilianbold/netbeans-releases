@@ -80,6 +80,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.cookies.EditorCookie;
@@ -162,7 +163,7 @@ public class InjectCompositeComponent {
 	DataFolder targetFolder = DataFolder.findFolder(projectDir);
 
 	final Logger logger = Logger.getLogger(InjectCompositeComponent.class.getSimpleName());
-	final JsfSupport jsfs = JsfSupport.findFor(file);
+	final JsfSupportImpl jsfs = JsfSupportImpl.findFor(file);
 	if (jsfs == null) {
 	    logger.warning("Cannot find JsfSupport instance for file " + file.getPath()); //NOI18N
 	    return;
@@ -234,7 +235,7 @@ public class InjectCompositeComponent {
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
-		    FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(compositeLibURL);
+		    FaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
 		    if (lib != null) {
 			if (!JsfUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
@@ -254,18 +255,20 @@ public class InjectCompositeComponent {
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
-		    final Map<FaceletsLibrary, String> importsMap = new LinkedHashMap<FaceletsLibrary, String>();
+		    final Map<Library, String> importsMap = new LinkedHashMap<Library, String>();
 		    for (String uri : context.getDeclarations().keySet()) {
 			String prefix = context.getDeclarations().get(uri);
-			FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(uri);
+			Library lib = jsfs.getLibraries().get(uri);
 			if (lib != null) {
 			    importsMap.put(lib, prefix);
 			}
 		    }
 		    //do the import under atomic lock in different thread,
 		    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
 			public void run() {
 			    ((BaseDocument)templateInstanceDoc).runAtomic(new Runnable() {
+                                @Override
 				public void run() {
 				    JsfUtils.importLibrary(templateInstanceDoc, importsMap);
 				}
@@ -278,7 +281,7 @@ public class InjectCompositeComponent {
 	}
     }
 
-    private static SnippetContext getSnippetContext(Document doc, final int from, final int to, final JsfSupport jsfs) {
+    private static SnippetContext getSnippetContext(Document doc, final int from, final int to, final JsfSupportImpl jsfs) {
 	final SnippetContext context = new SnippetContext();
 	context.setValid(true);
 
@@ -298,7 +301,7 @@ public class InjectCompositeComponent {
 		    try {
 			for (final String libUri : result.getNamespaces().keySet()) {
 			    //is the declared uri a faceler library?
-			    if (!jsfs.getFaceletsLibraries().containsKey(libUri)) {
+			    if (!jsfs.getLibraries().containsKey(libUri)) {
 				continue; //no facelets stuff, skip it
 			    }
 

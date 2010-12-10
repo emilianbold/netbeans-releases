@@ -137,6 +137,22 @@ public class UseSpecificCatchTest extends TestBase {
                             "}\n");
     }
 
+    public void testNeg2() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    {\n" +
+                            "        try {\n" +
+                            "            if (true) throw new java.io.FileNotFoundException();\n" +
+                            "            else      throw new java.net.MalformedURLException();\n" +
+                            "        } catch (Throwable e) {\n" +
+                            "            e = new FileNotFoundException();\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

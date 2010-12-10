@@ -71,16 +71,18 @@ public final class TemplateDescriptor {
     private final Collection<CsmUID<CsmTemplateParameter>> templateParams;
     private final CharSequence templateSuffix;
     private final int inheritedTemplateParametersNumber;
+    private final boolean specialization;
 
-    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, boolean global) {
-        this(templateParams, templateSuffix, 0, global);
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, boolean specialization, boolean global) {
+        this(templateParams, templateSuffix, 0, specialization, global);
     }
 
-    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber,boolean global) {
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber, boolean specialization, boolean global) {
         register(templateParams, global);
         this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
         this.templateSuffix = NameCache.getManager().getString(templateSuffix);
         this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
+        this.specialization = specialization;
     }
 
     private void register(List<CsmTemplateParameter> templateParams, boolean global){
@@ -119,8 +121,9 @@ public final class TemplateDescriptor {
         AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
-                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', global);
+                String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
+                return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),
+                            '<' + classSpecializationSuffix + '>', !classSpecializationSuffix.isEmpty(), global);
             }
         }
         return null;
@@ -140,11 +143,17 @@ public final class TemplateDescriptor {
         }
         this.templateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.inheritedTemplateParametersNumber = input.readInt();
+        this.specialization = input.readBoolean();
     }
 
     public void write(DataOutput output) throws IOException {
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(templateParams, output, false);
         PersistentUtils.writeUTF(templateSuffix, output);
         output.writeInt(this.inheritedTemplateParametersNumber);
+        output.writeBoolean(specialization);
+    }
+
+    boolean isSpecialization() {
+        return this.specialization;
     }
 }

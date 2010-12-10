@@ -56,7 +56,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.spi.Bundle.*;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -152,8 +153,9 @@ public interface HudsonSCM {
          * Just notify the user that a diff will be shown for a given path.
          * @param path a path, probably somehow repo-relative
          */
+        @Messages({"# {0} - portion of file path", "HudsonSCM.loading_diff=Loading diff for {0}..."})
         public static void noteWillShowDiff(String path) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(HudsonSCM.class, "HudsonSCM.loading_diff", path));
+            StatusDisplayer.getDefault().setStatusText(HudsonSCM_loading_diff(path));
         }
 
         /**
@@ -162,6 +164,7 @@ public interface HudsonSCM {
          * @param after the new contents
          * @param path some representation of the file path
          */
+        @Messages({"# {0} - file basename", "HudsonSCM.diffing=Diffing {0}"})
         public static void showDiff(final StreamSource before, final StreamSource after, final String path) {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
@@ -170,7 +173,7 @@ public interface HudsonSCM {
                         // XXX reuse the same TC
                         DiffTopComponent tc = new DiffTopComponent(view);
                         tc.setName(path);
-                        tc.setDisplayName(NbBundle.getMessage(HudsonSCM.class, "HudsonSCM.diffing", path.replaceFirst(".+/", "")));
+                        tc.setDisplayName(HudsonSCM_diffing(path.replaceFirst(".+/", "")));
                         tc.open();
                         tc.requestActive();
                     } catch (IOException x) {

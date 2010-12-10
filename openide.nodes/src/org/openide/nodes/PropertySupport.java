@@ -45,6 +45,8 @@
 package org.openide.nodes;
 
 import java.beans.Beans;
+import java.beans.FeatureDescriptor;
+import java.beans.Introspector;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -110,7 +112,10 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
         }
     }
 
-    /** Support for properties from Java Reflection. */
+    /**
+     * Support for properties from Java Reflection.
+     * Since 7.19, the {@link FeatureDescriptor#getName} will be set automatically.
+     */
     public static class Reflection<T> extends Node.Property<T> {
         /** Instance of a bean. */
         protected Object instance;
@@ -141,6 +146,12 @@ public abstract class PropertySupport<T> extends Node.Property<T> {
 
             if ((setter != null) && !Modifier.isPublic(setter.getModifiers())) {
                 throw new IllegalArgumentException("Cannot use a non-public setter " + setter); // NOI18N
+            }
+
+            if (getter != null) {
+                setName(Introspector.decapitalize(getter.getName().replaceFirst("^(get|is|has)", "")));
+            } else if (setter != null) {
+                setName(Introspector.decapitalize(setter.getName().replaceFirst("^set", "")));
             }
 
             this.instance = instance;

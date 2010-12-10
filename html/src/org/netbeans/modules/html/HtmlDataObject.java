@@ -64,6 +64,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -298,16 +299,37 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
         private volatile Charset cachedEncoding;
         private final AtomicBoolean listeningOnContentChange = new AtomicBoolean();
+        private final ThreadLocal<Boolean> callingFEQ = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return false;
+            }
+        };
 
         @Override
         public Charset getEncoding(FileObject file) {
             assert file != null;
+            if(callingFEQ.get()) {
+                //we are calling to the FEQ from within this method so
+                //we must not return anything to prevent cycling
+                return null;
+            }
+
             Charset encoding = cachedEncoding;
             if (encoding != null) {
                 LOG.log(Level.FINEST, "HtmlDataObject.getFileEncoding cached {0}", new Object[] {encoding});   //NOI18N
                 return encoding;
-}
-            return new ProxyCharset();
+            } else {
+                //get the encoding from the FEQ excluding this FEQ implementation
+                //so the proxy charset can default to appropriate encoding
+                callingFEQ.set(true);
+                try {
+                    Charset charset = FileEncodingQuery.getEncoding(file);
+                    return new ProxyCharset(charset);
+                } finally {
+                    callingFEQ.set(false);
+                }
+            }
         }
 
         private Charset cache (final Charset encoding) {
@@ -329,10 +351,10 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
         private class ProxyCharset extends Charset {
 
-            public ProxyCharset () {
-                super ("UTF-8", new String[0]);         //NOI18N
+            public ProxyCharset (Charset charset) {
+                super (charset.name(), new String[0]);         //NOI18N
             }
-
+            
             public boolean contains(Charset c) {
                 return false;
             }

@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.testrunner.spi;
 /**
  * Service that provides output handlers for unit tests.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface TestHandlerFactoryProvider {
 

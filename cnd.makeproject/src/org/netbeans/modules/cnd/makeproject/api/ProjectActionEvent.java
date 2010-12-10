@@ -44,12 +44,18 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class ProjectActionEvent {
 
@@ -97,6 +103,7 @@ public final class ProjectActionEvent {
     private final boolean wait;
     private final Lookup context;
     private boolean isFinalExecutable;
+    private String[] runCommandCache = null;
 
     public ProjectActionEvent(Project project, Type type, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
         this(project, type, executable, configuration, profile, wait, Lookup.EMPTY);
@@ -136,7 +143,42 @@ public final class ProjectActionEvent {
     }
 
     public String getExecutable() {
+	if (type == PredefinedType.RUN) {
+            return getRunCommand()[0];
+        }
 	return executable;
+    }
+
+    private String[] getRunCommand() {
+        if (runCommandCache == null) {
+            String command = getProfile().getRunCommand();
+
+            // not clear what is the difference between getPlatformInfo
+            // and getDevelopmentHost. 
+            // TODO: get rid off one of ifs below
+            assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
+            
+            if (configuration.getPlatformInfo().isLocalhost()) {
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", configuration.getAbsoluteOutputValue()); // NOI18N
+            } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
+                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(configuration.getAbsoluteOutputValue(), true)); // NOI18N
+            }
+            runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
+        }
+        return runCommandCache;
+    }
+  
+    public ArrayList<String> getArguments() {
+        ArrayList<String> result = new ArrayList<String>();
+        if (type == PredefinedType.RUN) {
+            String[] params = getRunCommand();
+            if (params.length > 1) {
+                result.addAll(Arrays.asList(Arrays.copyOfRange(params, 1, params.length)));
+            }
+        }
+        result.addAll(Arrays.asList(profile.getArgsArray()));
+        return result;
     }
 
     public MakeConfiguration getConfiguration() {
@@ -164,7 +206,7 @@ public final class ProjectActionEvent {
     }
 
     boolean isFinalExecutable(){
-        return isFinalExecutable;
+        return isFinalExecutable || type == PredefinedType.RUN;
     }
 
     @Override

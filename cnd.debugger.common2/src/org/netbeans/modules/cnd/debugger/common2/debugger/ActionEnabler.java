@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToCursorInstAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ContinueAtAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.StepInstAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxObjectAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.TerminateProcessAction;
@@ -59,6 +60,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToFunctionA
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxFrameAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RerunAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.DisassemblerWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RegistersWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.EvaluationWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MemoryWindowAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PioWindowAction;
 import java.util.LinkedList;
 
 import org.openide.util.actions.SystemAction;
@@ -68,7 +73,7 @@ import java.util.List;
 import org.openide.util.Lookup;
 
 class ActionEnabler {
-    private final List<SystemAction> actions = new LinkedList<SystemAction>();
+    private final List<StateListener> actions = new LinkedList<StateListener>();
 
     ActionEnabler() {
 
@@ -90,7 +95,9 @@ class ActionEnabler {
 	// StepOverActionProvider
 	// RunToCursorActionProvider
 	// RunIntoMethodActionProvider
+
 	actions.add(SystemAction.get(RunToFunctionAction.class));
+	actions.add(SystemAction.get(ContinueAtAction.class));
 
 	actions.add(SystemAction.get(RerunAction.class));
 	actions.add(SystemAction.get(TerminateProcessAction.class));
@@ -106,6 +113,11 @@ class ActionEnabler {
 	actions.add(SystemAction.get(MaxFrameAction.class));
 	actions.add(SystemAction.get(MaxObjectAction.class));
 	actions.add(SystemAction.get(DisassemblerWindowAction.class));
+        actions.add(SystemAction.get(RegistersWindowAction.class));
+        actions.add(SystemAction.get(MemoryWindowAction.class));
+        actions.add(SystemAction.get(PioWindowAction.class));
+        actions.add(SystemAction.get(EvaluationWindowAction.class));
+        
 	// 6640192
 	actions.add(SystemAction.get(EvaluateAction.class));
 
@@ -121,15 +133,15 @@ class ActionEnabler {
 
     void update(State state) {
 	// pass update() on to each explicitly registered action up above
-	for (int ax = 0; ax < actions.size(); ax++) {
-	    StateListener action = (StateListener) actions.get(ax);
+	for (StateListener action : actions) {
 	    action.update(state);
 	}
 
 	// pass update() on to each registered service
 	Collection<? extends StateListener> stateListeners =
 		Lookup.getDefault().lookupAll(StateListener.class);
-	for (StateListener sl : stateListeners)
+	for (StateListener sl : stateListeners) {
 	    sl.update(state);
+        }
     }
 }

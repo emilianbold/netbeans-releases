@@ -42,35 +42,32 @@
 
 package org.netbeans.modules.java.hints.encapsulation;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -111,7 +108,7 @@ public class ReturnEncapsulation {
         return create(ctx,
                NbBundle.getMessage(ReturnEncapsulation.class, "TXT_ReturnCollection"),
                "ReturnOfCollectionOrArrayField",    //NOI18N
-               new CollectionFix());   //NOI18N
+               new FixProvider());   //NOI18N
     }
 
     @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
@@ -208,19 +205,17 @@ public class ReturnEncapsulation {
             return null;
         }
         final Fix swFix = FixFactory.createSuppressWarningsFix(info, tp, suppressWarnings);
-        final Fix[] fixes;
-        if (providers.length == 0) {
-            fixes = new Fix[] {swFix};
-        } else {
-            fixes = new Fix[providers.length+1];
-            for (int i=0; i<providers.length; i++) {
-                fixes[i]=providers[i].fixFor(info,exprPath);
+        List<Fix> fixes = new ArrayList<Fix>(providers.length + 1);
+        for (int i=0; i<providers.length; i++) {
+            Fix f = providers[i].fixFor(ctx,(ExecutableElement) enclMethod,exprPath);
+            if (f != null) {
+                fixes.add(f);
             }
-            fixes[providers.length] = swFix;
         }
+        fixes.add(swFix);
         return ErrorDescriptionFactory.forTree(ctx, tp,
             description,
-            fixes);
+            fixes.toArray(new Fix[0]));
     }
 
     private static final TreePath findEnclosingMethod(TreePath tp) {
@@ -237,87 +232,42 @@ public class ReturnEncapsulation {
         return path == null ? null : info.getTrees().getElement(path);
     }
 
-    private static interface FixProvider {
-        public Fix fixFor(CompilationInfo info, TreePath tp);
-    }
+    private static class FixProvider {
 
-    private static class CollectionFix implements Fix, FixProvider {
+        private static final Map<String, String> TO_UNMODIFIABLE;
 
-        private static final String UNMOD_COL = "unmodifiableCollection";   //NOI18N
-        private static final String UNMOD_LIST = "unmodifiableList";        //NOI18N
-        private static final String UNMOD_SET = "unmodifiableSet";          //NOI18N
-        private static final String UNMOD_MAP = "unmodifiableMap";          //NOI18N
-
-        private static final String LIST = "java.util.List";                //NOI18N
-        private static final String SET = "java.util.Set";                  //NOI18N
-        private static final String COLLECTIONS = "java.util.Collections";  //NOI18N
-
-        private TreePathHandle handle;
-        private String method;
-        private String field;
-
-        private CollectionFix() {
+        static {
+            TO_UNMODIFIABLE = new LinkedHashMap<String, String>();
+            TO_UNMODIFIABLE.put("java.util.SortedMap", "unmodifiableSortedMap");
+            TO_UNMODIFIABLE.put("java.util.SortedSet", "unmodifiableSortedSet");
+            TO_UNMODIFIABLE.put("java.util.Map", "unmodifiableMap");
+            TO_UNMODIFIABLE.put("java.util.Set", "unmodifiableSet");
+            TO_UNMODIFIABLE.put("java.util.List", "unmodifiableList");
+            TO_UNMODIFIABLE.put("java.util.Collection", "unmodifiableCollection");
         }
 
-        @Override
-        public String getText() {
-            assert handle != null;
-            return NbBundle.getMessage(ReturnEncapsulation.class, "FIX_ReplaceWithUC",method,field);
+        private FixProvider() {
         }
 
-        @Override
-        public ChangeInfo implement() throws Exception {
-            assert handle != null;
-            final FileObject file = handle.getFileObject();
-            if (file == null) {
-                return null;
-            }
-            JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    final TreePath tp = handle.resolve(wc);
-                    if (tp == null) {
-                        return;
-                    }
-                    final TreeMaker tm = wc.getTreeMaker();
-                    final String collectionsName = SourceUtils.resolveImport(wc, tp, COLLECTIONS);
-                    wc.rewrite(tp.getLeaf(), tm.MethodInvocation(
-                            Collections.<ExpressionTree>emptyList(),
-                            tm.MemberSelect(tm.Identifier(collectionsName), method),
-                            Collections.singletonList((ExpressionTree)tp.getLeaf())));
+        public Fix fixFor(final HintContext ctx, ExecutableElement enclMethod, final TreePath tp) {
+            CompilationInfo info = ctx.getInfo();
+            
+            assert info != null;
+            assert tp != null;
+            String field = info.getTrees().getElement(tp).getSimpleName().toString();
+            final Types types = info.getTypes();
+            final Elements elements = info.getElements();
+            TypeMirror returnTypeEr = types.erasure(enclMethod.getReturnType());
+
+            for (Entry<String, String> e : TO_UNMODIFIABLE.entrySet()) {
+                TypeElement el = elements.getTypeElement(e.getKey());
+                if (el != null && types.isSameType(returnTypeEr, types.erasure(el.asType()))) {
+                    return JavaFix.rewriteFix(ctx, NbBundle.getMessage(ReturnEncapsulation.class, "FIX_ReplaceWithUC",e.getValue(),field), tp, "java.util.Collections." + e.getValue() + "($expr)");
                 }
-            }).commit();
+            }
             return null;
         }
 
-        @Override
-        public Fix fixFor(final CompilationInfo info, final TreePath tp) {
-            assert info != null;
-            assert tp != null;
-            assert handle == null;
-            handle = TreePathHandle.create(tp, info);
-            field = info.getTrees().getElement(tp).getSimpleName().toString();
-            final Types types = info.getTypes();
-            final Elements elements = info.getElements();
-            TypeMirror fieldTypeEr = types.erasure(info.getTrees().getTypeMirror(tp));
-            final TypeElement list = elements.getTypeElement(LIST);
-            final TypeElement set = elements.getTypeElement(SET);
-            final TypeElement map = elements.getTypeElement(MAP);
-            if (list != null && types.isSubtype(fieldTypeEr, types.erasure(list.asType()))) {
-                method = UNMOD_LIST;
-            }
-            else if (set != null && types.isSubtype(fieldTypeEr, types.erasure(set.asType()))) {
-                method = UNMOD_SET;
-            }
-            else if (map != null && types.isSubtype(fieldTypeEr, types.erasure(map.asType()))) {
-                method = UNMOD_MAP;
-            }
-            else {
-                method = UNMOD_COL;
-            }
-            return this;
-        }
     }
 
 }

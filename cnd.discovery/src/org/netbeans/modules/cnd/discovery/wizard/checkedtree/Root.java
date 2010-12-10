@@ -68,14 +68,17 @@ public class Root implements AbstractRoot {
         this.folder = folder;
     }
     
+    @Override
     public Collection<AbstractRoot> getChildren(){
         return children.values();
     }
     
+    @Override
     public String getName(){
         return name;
     }
 
+    @Override
     public String getFolder(){
         return CndFileUtils.normalizeFile(new File(folder)).getAbsolutePath();
     }
@@ -84,6 +87,7 @@ public class Root implements AbstractRoot {
         return (Root)children.get(child);
     }
     
+    @Override
     public List<String> getFiles(){
         return files;
     }

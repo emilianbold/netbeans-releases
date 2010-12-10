@@ -65,7 +65,10 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.ImageUtilities;
@@ -314,6 +317,12 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 return libraryItem.canEdit();
             } else if (col == 1) {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
+                    Project libProject = ((LibraryItem.ProjectItem) libraryItem).getProject(baseDir);
+                    ConfigurationDescriptorProvider configurationDescriptorProvider = libProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    MakeConfigurationDescriptor makeConfigurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
+                    if (makeConfigurationDescriptor.getState() == ConfigurationDescriptor.State.BROKEN) { // See IZ 193075
+                        return false;
+                    }
                     if (((LibraryItem.ProjectItem) libraryItem).getProject(baseDir) != null) {
                         return true;
                     } else {
@@ -334,6 +343,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         @Override
         public void setValueAt(Object value, int row, int col) {
+            if (value == null) {
+                return; // See IZ 193075
+            }
             LibraryItem libraryItem = listData.elementAt(row);
             if (col == 0) {
                 libraryItem.setValue((String) value);
@@ -351,8 +363,8 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
                     workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
                 }
-                makeArtifact.setProjectLocation(CndPathUtilitities.normalize(projectLocation));
-                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalize(workingDirectory));
+                makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
                 listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);

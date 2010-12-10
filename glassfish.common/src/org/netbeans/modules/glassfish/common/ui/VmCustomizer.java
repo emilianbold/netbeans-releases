@@ -207,6 +207,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addContainerGap())
         );
 
+        addressValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue")); // NOI18N
+
         javaInstallLabel.setLabelFor(javaExecutableField);
         org.openide.awt.Mnemonics.setLocalizedText(javaInstallLabel, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaInstallLabel.text")); // NOI18N
 
@@ -242,6 +244,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
                     .addComponent(openDirectoryBrowser))
                 .addContainerGap())
         );
+
+        javaExecutableField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaExecutableField.accessiblename")); // NOI18N
 
         useIDEProxyInfo.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
 

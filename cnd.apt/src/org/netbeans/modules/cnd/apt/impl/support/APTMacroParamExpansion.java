@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 /**
  * Wrapper for tokens expanded from parameters of macros
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class APTMacroParamExpansion implements APTToken {
 
