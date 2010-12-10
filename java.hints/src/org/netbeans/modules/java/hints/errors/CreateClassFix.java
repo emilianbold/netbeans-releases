@@ -380,7 +380,7 @@ public abstract class CreateClassFix implements Fix {
             super(info, modifiers, argumentTypes, argumentNames, superType, kind, numTypeParameters);
             this.name = name;
             this.target = ElementHandle.create(target);
-            this.inFQN = target.getQualifiedName().toString();
+            this.inFQN = Utilities.target2String(target);
             this.cpInfo = info.getClasspathInfo();
             this.targetFile = targetFile;
         }

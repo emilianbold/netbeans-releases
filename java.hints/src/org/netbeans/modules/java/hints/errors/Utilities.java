@@ -43,6 +43,11 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.logging.Level;
+import java.io.CharConversionException;
+import org.openide.xml.XMLUtil;
+import java.util.logging.Logger;
+import javax.lang.model.element.Name;
 import com.sun.source.tree.ThrowTree;
 import java.util.Stack;
 import com.sun.source.tree.BreakTree;
@@ -1047,4 +1052,25 @@ public class Utilities {
         return targetTypeVars.containsAll(typeVars);
     }
 
+    public static String target2String(TypeElement target) {
+        final Name qualifiedName = target.getQualifiedName(); //#130759
+        if (qualifiedName == null) {
+            Logger.getLogger(Utilities.class.getName()).warning("Target qualified name could not be resolved."); //NOI18N
+            return ""; //NOI18N
+        } else {
+            String qnString = qualifiedName.toString();
+            if (qnString.length() == 0) {
+                //probably an anonymous class
+                qnString = target.asType().toString();
+            }
+
+            try {
+                qnString = XMLUtil.toElementContent(qnString);
+            } catch (CharConversionException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
+            }
+
+            return qnString;
+        }
+    }
 }

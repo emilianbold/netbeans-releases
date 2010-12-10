@@ -481,6 +481,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         ModifiersTree newModifiersTree = make.removeModifiersModifier(modifiersTree, Modifier.PRIVATE);
         newModifiersTree = make.removeModifiersModifier(newModifiersTree, Modifier.STATIC);
         newModifiersTree = make.removeModifiersModifier(newModifiersTree, Modifier.PROTECTED);
+        if (!outer.getModifiers().contains(Modifier.PUBLIC)) {
+            newModifiersTree = make.removeModifiersModifier(newModifiersTree, Modifier.PUBLIC);
+        }
         rewrite(modifiersTree, newModifiersTree);
 
         if (referenceName != null) {

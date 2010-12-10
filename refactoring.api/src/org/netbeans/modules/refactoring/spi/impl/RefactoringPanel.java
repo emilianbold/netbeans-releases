@@ -715,6 +715,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                 tree.setToggleClickCount(0);
                                 tree.setTransferHandler(new TransferHandlerImpl());
                                 scrollPane = new JScrollPane(tree);
+                                scrollPane.setBorder(new EmptyBorder(0,0,0,0));
                                 RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
                                 RefactoringPanel.this.validate();
                             } else {

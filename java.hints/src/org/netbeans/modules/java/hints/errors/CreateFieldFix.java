@@ -73,7 +73,7 @@ public final class CreateFieldFix implements Fix {
     
     public CreateFieldFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror proposedType, FileObject targetFile) {
         this.name = name;
-        this.inFQN = target.getQualifiedName().toString();
+        this.inFQN = Utilities.target2String(target);
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
         this.targetFile = targetFile;
