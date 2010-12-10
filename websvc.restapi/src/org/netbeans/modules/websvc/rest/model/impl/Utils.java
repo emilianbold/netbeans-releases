@@ -174,7 +174,14 @@ public class Utils {
     }
 
     private static String stripQuotes(String value) {
-        return value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
+        int index = value.indexOf('"');
+        if ( index !=-1 ){
+            int lastIndex = value.lastIndexOf('"');
+            if ( lastIndex != -1 && index != lastIndex ) {
+                return value.substring(index + 1, lastIndex);
+            }
+        }
+        return value;
     }
     
     static boolean checkForJsr311Bootstrap(TypeElement element, Project project, AnnotationModelHelper helper) {

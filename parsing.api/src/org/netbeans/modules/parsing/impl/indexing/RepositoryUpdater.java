@@ -594,8 +594,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                     }
 
-
-                    if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
+                    if (VisibilityQuery.getDefault().isVisible(newFile)) {                    
                         final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                         ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         if (entry == null || entry.includes(newFile)) {
@@ -1014,11 +1013,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return t;
     }
 
-    public Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {
-        synchronized (lastOwningSourceRootCacheLock) {
-            FileObject file = null;
-            Document doc = null;
-
+    public Pair<URL, FileObject> getOwningSourceRoot(Object fileOrDoc) {        
+        FileObject file = null;
+        Document doc = null;        
+        List<URL> clone;
+        synchronized (lastOwningSourceRootCacheLock) {            
             if (fileOrDoc instanceof Document) {
                 doc = (Document) fileOrDoc;
                 file = Util.getFileObject(doc);
@@ -1035,19 +1034,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } else {
                 return null;
             }
-            
-            URL owningSourceRootUrl = null;
-            FileObject owningSourceRoot = null;
-            List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
-            for (URL root : clone) {
-                FileObject rootFo = URLCache.getInstance().findFileObject(root);
-                if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
-                    owningSourceRootUrl = root;
-                    owningSourceRoot = rootFo;
-                    break;
-                }
-            }
+            clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
+        }
+        
+        assert file != null;
+        URL owningSourceRootUrl = null;
+        FileObject owningSourceRoot = null;
 
+        for (URL root : clone) {
+            FileObject rootFo = URLCache.getInstance().findFileObject(root);
+            if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
+                owningSourceRootUrl = root;
+                owningSourceRoot = rootFo;
+                break;
+            }
+        }
+
+        synchronized (lastOwningSourceRootCacheLock) {        
             if (owningSourceRootUrl != null) {
                 assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
                 if (doc != null) {
@@ -1058,7 +1061,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } else {
                 return null;
             }
-
         }
     }
 
