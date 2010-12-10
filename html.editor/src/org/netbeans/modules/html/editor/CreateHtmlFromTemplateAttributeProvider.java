@@ -72,7 +72,7 @@ public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTempla
             boolean xhtml = "text/xhtml".equals(mimeType); //NOI18N
             version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
             if(version == null) {
-                version = HtmlVersion.getDefaultVersion();
+                version = xhtml ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion();
             }
         }
 
