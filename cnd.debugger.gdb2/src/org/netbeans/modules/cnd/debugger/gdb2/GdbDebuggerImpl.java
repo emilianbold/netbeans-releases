@@ -660,39 +660,32 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public final void stepInto() {
-        MICommand cmd = new MIResumptiveCommand("-exec-step"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-step"); // NOI18N
     }
 
     public final void stepIntoMain() {
-        MICommand cmd = new MiCommandImpl("-break-insert -t main"); //NOI18N
-        gdb.sendCommand(cmd);
-        cmd = new MIResumptiveCommand("-exec-run"); // NOI18N
-        gdb.sendCommand(cmd);
+        send("-break-insert -t main"); //NOI18N
+        sendResumptive("-exec-run"); // NOI18N
 	
 	// IZ 189550
         sendPidCommand(false);
     }
 
     public final void stepOver() {
-        MICommand cmd = new MIResumptiveCommand("-exec-next"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-next"); // NOI18N
     }
 
     public final void stepOut() {
-        MICommand cmd = new MIResumptiveCommand("-stack-select-frame 0"); // NOI18N
-        gdb.sendCommand(cmd);
+        send("-stack-select-frame 0"); // NOI18N
         execFinish();
     }
 
     private void execFinish() {
-        MICommand cmd = new MIResumptiveCommand("-exec-finish"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-finish"); // NOI18N
     }
 
     public final void pathmap(String pathmap) {
-        MICommand cmd = new MIResumptiveCommand(pathmap);
-        gdb.sendCommand(cmd);
+        send(pathmap);
     }
 
     private void notImplemented(String method) {
@@ -705,8 +698,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public final void go() {
-        MICommand cmd = new MIResumptiveCommand("-exec-continue"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-continue"); // NOI18N
     }
 
     public void doMIAttach(GdbDebuggerInfo gdi) {
@@ -766,8 +758,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
         String cmdString = "-exec-until " + src + ":" + line; // NOI18N
-        MICommand cmd = new MIResumptiveCommand(cmdString);
-        gdb.sendCommand(cmd);
+        sendResumptive(cmdString);
     }
 
     // e.g. "GNU gdb 6.3"
@@ -819,6 +810,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	private MICommand failureChain = null;
 
 	private boolean emptyDoneIsError = false;
+        private boolean reportError = true;
         
         protected MiCommandImpl(String cmd) {
 	    super(0, cmd);
@@ -833,12 +825,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    this.failureChain = failureChain;
 	}
 
-	public void setEmptyDoneIsError(boolean emptyDoneIsError) {
-	    this.emptyDoneIsError = emptyDoneIsError;
+	public void setEmptyDoneIsError() {
+	    this.emptyDoneIsError = true;
 	}
 
-	public boolean isEmptyDoneIsError() {
-	    return emptyDoneIsError;
+	public void dontReportError() {
+	    this.reportError = false;
 	}
 
 	protected void onDone(MIRecord record) {
@@ -847,8 +839,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		onError(record);
 	    } else {
 		finish();
-		if (successChain != null)
+		if (successChain != null) {
 		    gdb.sendCommand(successChain);
+                }
 	    }
 	}
 
@@ -857,11 +850,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
 	protected void onError(MIRecord record) {
-	    if (failureChain == null)
+	    if (failureChain == null && reportError) {
 		genericFailure(record);
+            }
 	    finish();
-	    if (failureChain != null)
+	    if (failureChain != null) {
 		gdb.sendCommand(failureChain);
+            }
 	}
 
 	protected void onExit(MIRecord record) {
@@ -1064,7 +1059,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         super.onDone(record);
                     }
                 };
-	    breakStartCmd.setEmptyDoneIsError(true);
+	    breakStartCmd.setEmptyDoneIsError();
 
 	    MiCommandImpl breakMainCmd =
 		new MiCommandImpl("-break-insert -t main") { // NOI18N
@@ -1074,7 +1069,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         super.onDone(record);
                     }
                 };
-	    breakMainCmd.setEmptyDoneIsError(true);
+	    breakMainCmd.setEmptyDoneIsError();
 
 	    //
 	    // The actual run command
@@ -1160,10 +1155,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
         
         //init global parameters
-        MICommand cmd1 = new MiCommandImpl("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
-        gdb.sendCommand(cmd1);
-        MICommand cmd2 = new MiCommandImpl("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
-        gdb.sendCommand(cmd2);
+        send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
+        send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
 
         // Tell gdb what to debug
         debug(gdi);
@@ -2247,14 +2240,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     public void setDynamicType(boolean b) {
         String cmdString;
-	if (b)
-	    cmdString = "set print object on";			// NOI18N
-	else
-	    cmdString = "set print object off";			// NOI18N
-	MICommand cmd = new MiCommandImpl(cmdString);
-        gdb.sendCommand(cmd);
+	if (b) {
+	    cmdString = "-gdb-set print object on";			// NOI18N
+        } else {
+	    cmdString = "-gdb-set print object off";			// NOI18N
+        }
+	send(cmdString);
 	dynamicType = b;
-
     }
 
     // interface NativeDebugger
@@ -2787,12 +2779,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    newIgnore = GdbHandlerExpert.infinity;
 	else
 	    newIgnore = (int) limit - 1;
-	MICommand cmd = new MiCommandImpl("-break-after " + // NOI18N
-				      b.getId() +
-				      " " + // NOI18N
-				      newIgnore) {
-	};
-	gdb.sendCommand(cmd);
+	send("-break-after " + b.getId() + ' ' + newIgnore); // NOI18N
     }
 
     /**
@@ -2982,14 +2969,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	sd.show();
 
 	if (dsii != null && sd.isIgnore() != wasIgnored) {
-	    MICommand ciCmd;
+	    String cmd;
 	    if (sd.isIgnore()) {
 		// gdb seems to not be able to ignore caught signals???
-		ciCmd = new MiCommandImpl("ignore signal " + sigName); // NOI18N
+		cmd = "ignore signal " + sigName; // NOI18N
 	    } else {
-		ciCmd = new MiCommandImpl("catch signal " + sigName); // NOI18N
+		cmd = "catch signal " + sigName; // NOI18N
 	    }
-	    gdb.sendCommand(ciCmd);
+            send(cmd);
 	}
 
 	boolean signalDiscarded = sd.discardSignal();
@@ -4055,39 +4042,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface GdbDebugger
     public void runArgs(String args) {
-        String cmdString = "-exec-arguments " + args;		// NOI18N
-        MICommand cmd = new MiCommandImpl(cmdString) {
-
-            @Override
-            protected void onError(MIRecord record) {
-                finish();
-            }
-        };
-        gdb.sendCommand(cmd);
+        sendSilent("-exec-arguments " + args); // NOI18N
     }
 
     public void runDir(String dir) {
 	dir = localToRemote("runDir", dir); // NOI18N
-        String cmdString = "cd " + dir;		// NOI18N
-        MICommand cmd = new MiCommandImpl(cmdString) {
-
-            @Override
-            protected void onError(MIRecord record) {
-                finish();
-            }
-        };
-        gdb.sendCommand(cmd);
+        String cmdString = "cd " + dir; // NOI18N
+        sendSilent(cmdString);
     }
 
     void setEnv(String envVar) {
-        String cmdString = "-gdb-set environment " + envVar;		// NOI18N
-        MICommand cmd = new MiCommandImpl(cmdString) {
-            @Override
-            protected void onError(MIRecord record) {
-                finish();
-            }
-        };
-        gdb.sendCommand(cmd);
+        sendSilent("-gdb-set environment " + envVar); // NOI18N
     }
 
     private void assignMIVar(String expr, String value) {
@@ -4183,14 +4148,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     public void stepOverInst() {
-        MICommand cmd = new MIResumptiveCommand("-exec-next-instruction"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-next-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
     public void stepInst() {
-        MICommand cmd = new MIResumptiveCommand("-exec-step-instruction"); // NOI18N
-        gdb.sendCommand(cmd);
+        sendResumptive("-exec-step-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
@@ -4232,5 +4195,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // implement NativeDebuggerImpl
     protected void startUpdates() {
 	// no-op for now
+    }
+    
+    private void send(String commandStr, boolean reportError) {
+        MiCommandImpl cmd = new MiCommandImpl(commandStr);
+        if (!reportError) {
+            cmd.dontReportError();
+        }
+        gdb.sendCommand(cmd);
+    }
+    
+    private void sendSilent(String commandStr) {
+        send(commandStr, false);
+    }
+    
+    private void send(String commandStr) {
+        send(commandStr, true);
+    }
+    
+    private void sendResumptive(String commandStr) {
+        MICommand cmd = new MIResumptiveCommand(commandStr);
+        gdb.sendCommand(cmd);
     }
 }
