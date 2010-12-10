@@ -594,8 +594,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                     }
 
-
-                    if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
+                    if (VisibilityQuery.getDefault().isVisible(newFile)) {                    
                         final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                         ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         if (entry == null || entry.includes(newFile)) {
