@@ -1142,7 +1142,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	assert isConnected() : "initializeGdb() called when gdb wasn't ready";
         
-        if (fmap != null) {
+        // for remote always use NULL mapper
+        if (Host.isRemote(getHost())) {
+            this.fmap = FileMapper.getDefault(FileMapper.Type.NULL);
+        } else if (fmap != null) {
             this.fmap = fmap;
         }
 
