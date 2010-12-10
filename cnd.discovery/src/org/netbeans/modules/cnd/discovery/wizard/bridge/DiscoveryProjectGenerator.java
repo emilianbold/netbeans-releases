@@ -184,13 +184,10 @@ public class DiscoveryProjectGenerator {
                 continue;
             } else if (entry.getValue().isDiskFolder()) {
                 root.addFolder(entry.getValue(), true);
-                entry.getValue().setDisplayName(entry.getValue().getName()+" - "+entry.getValue().getRootPath()); // NOI18N
             } else {
+                // TODO: link logical colder with disk folder
                 File folderFile = getFolderFile(entry.getValue());
                 root.addFolder(entry.getValue(), true);
-                if (folderFile != null) {
-                    entry.getValue().setDisplayName(entry.getValue().getName()+" - "+folderFile.getAbsolutePath()); // NOI18N
-                }
             }
         }
     }
