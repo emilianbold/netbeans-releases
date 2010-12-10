@@ -44,7 +44,11 @@ public interface Library {
 
     public String getNamespace();
 
+    public String getDefaultNamespace();
+
     public LibraryDescriptor getLibraryDescriptor();
+
+    public LibraryType getType();
 
     public String getDefaultPrefix();
 

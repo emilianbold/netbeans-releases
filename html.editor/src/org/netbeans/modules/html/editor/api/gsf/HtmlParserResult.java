@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -74,7 +75,7 @@ import org.openide.util.Exceptions;
  *
  * @author mfukala@netbeans.org
  */
-public class HtmlParserResult extends ParserResult {
+public class HtmlParserResult extends ParserResult implements HtmlParsingResult {
 
     /**
      * Used as a key of a swing document to find a default fallback dtd.
@@ -89,6 +90,7 @@ public class HtmlParserResult extends ParserResult {
         this.result = result;
     }
 
+    @Override
     public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
         return result;
     }
@@ -109,10 +111,12 @@ public class HtmlParserResult extends ParserResult {
      * 3) if not xhtml extension, present of default XHTML namespace declaration
      *
      */
+    @Override
     public HtmlVersion getHtmlVersion() {
         return result.getHtmlVersion();
     }
 
+    @Override
     public HtmlVersion getDetectedHtmlVersion() {
         return result.getDetectedHtmlVersion();
     }
@@ -123,6 +127,7 @@ public class HtmlParserResult extends ParserResult {
      * Use the flat parse tree results if you do not need the tree structure since
      * the postprocessing takes some time and is done lazily.
      */
+    @Override
     public AstNode root() {
         try {
             return result.parseHtml().root();
@@ -132,6 +137,7 @@ public class HtmlParserResult extends ParserResult {
         return null;
     }
 
+    @Override
     public AstNode rootOfUndeclaredTagsParseTree() {
         try {
             return result.parseUndeclaredEmbeddedCode().root();
@@ -142,6 +148,7 @@ public class HtmlParserResult extends ParserResult {
     }
 
     /** returns a parse tree for non-html content */
+    @Override
     public AstNode root(String namespace) {
         try {
             ParseResult pr = result.parseEmbeddedCode(namespace);
@@ -154,6 +161,7 @@ public class HtmlParserResult extends ParserResult {
     }
 
     /** returns a map of all namespaces to astnode roots.*/
+    @Override
     public Map<String, AstNode> roots() {
         Map<String, AstNode> roots = new HashMap<String, AstNode>();
         for (String uri : getNamespaces().keySet()) {
@@ -170,6 +178,7 @@ public class HtmlParserResult extends ParserResult {
     }
 
     /**declared uri to prefix map */
+    @Override
     public Map<String, String> getNamespaces() {
         return result.getDeclaredNamespaces();
     }
@@ -224,14 +233,14 @@ public class HtmlParserResult extends ParserResult {
                 return Collections.emptyList();
             }
             ValidationContext context = new ValidationContext(getSnapshot().getText().toString(), getHtmlVersion(), file, result);
-            ValidationResult result = validator.validate(context);
+            ValidationResult res = validator.validate(context);
 
             Collection<Error> errs = new ArrayList<Error>();
-            for (ProblemDescription pd : result.getProblems()) {
+            for (ProblemDescription pd : res.getProblems()) {
                 DefaultError error = new DefaultError(pd.getKey(),
                         "nu.validator issue", //NOI18N
                         pd.getText(),
-                        result.getContext().getFile(),
+                        res.getContext().getFile(),
                         pd.getFrom(),
                         pd.getTo(),
                         false,
