@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsfapi.spi;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 
@@ -264,5 +266,23 @@ public class LibraryUtils {
         return Collections.emptyMap();
     }
 
+    /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
+    public static Map<String, Library> getDeclaredLibraries(HtmlParsingResult result) {
+        //find all usages of composite components tags for this page
+        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
+        Map<String, Library> declaredLibraries = new HashMap<String, Library>();
+        JsfSupport jsfSupport = JsfSupportProvider.get(result.getSyntaxAnalyzerResult().getSource().getSourceFileObject());
+        if (jsfSupport != null) {
+            Map<String, ? extends Library> libs = jsfSupport.getLibraries();
+
+            for (String namespace : declaredNamespaces) {
+                Library lib = libs.get(namespace);
+                if (lib != null) {
+                    declaredLibraries.put(namespace, lib);
+                }
+            }
+        }
+        return declaredLibraries;
+    }
 
 }

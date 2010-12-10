@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +74,7 @@ public class FixLibDeclaration implements HintFix{
 
     @Override
     public void implement() throws Exception {
-        JsfUtils.importLibrary(doc, lib, nsPrefix);
+        LibraryUtils.importLibrary(doc, lib, nsPrefix);
     }
 
     @Override
