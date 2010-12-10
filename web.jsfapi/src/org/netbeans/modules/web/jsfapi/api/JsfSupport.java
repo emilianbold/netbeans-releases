@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.jsfapi.api;
 
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -59,5 +60,12 @@ public interface JsfSupport {
     public WebModule getWebModule();
 
     public LibraryDescriptor getLibraryDescriptor(String namespace);
+
+    public Library getLibrary(String namespace);
+    
+    /**
+     * @return Library namespace to Library instance map
+     */
+    public Map<String, ? extends Library> getLibraries();
     
 }

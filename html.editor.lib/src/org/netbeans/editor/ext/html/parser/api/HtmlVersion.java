@@ -116,8 +116,9 @@ public enum HtmlVersion {
         "http://www.w3.org/1999/xhtml",
         true); //NOI18N
 
-    private static final String DOCTYPE_PREFIX = "<!doctype html public \""; //NOI18N
-    private static final String HTML5_DOCTYPE = "<!doctype html>"; //NOI18N
+    private static final String DOCTYPE_PREFIX = "<!DOCTYPE html PUBLIC \""; //NOI18N
+    private static final String HTML5_DOCTYPE = "<!DOCTYPE html>"; //NOI18N
+    private static final String XHTML5_DOCTYPE = HTML5_DOCTYPE;
 
     public static HtmlVersion find(String publicId, String namespace) {
         if(publicId == null) {
@@ -183,26 +184,25 @@ public enum HtmlVersion {
     }
 
     public String getDoctypeDeclaration() {
-        //no doctype for xhtml5
-        if(this == HtmlVersion.XHTML5) {
-            return "";
-        }
-        if (getPublicID() == null) {
-            return HTML5_DOCTYPE;
-        } else {
-            StringBuilder b = new StringBuilder();
-            b.append(DOCTYPE_PREFIX);
-            b.append(getPublicID());
-            b.append('"');
-
-            if (getSystemId() != null) {
-                b.append(" \"");
-                b.append(getSystemId());
+        switch (this) {
+            case XHTML5:
+                return XHTML5_DOCTYPE;
+            case HTML5:
+                return HTML5_DOCTYPE;
+            default:
+                StringBuilder b = new StringBuilder();
+                b.append(DOCTYPE_PREFIX);
+                b.append(getPublicID());
                 b.append('"');
-            }
-            b.append('>');
 
-            return b.toString();
+                if (getSystemId() != null) {
+                    b.append(" \"");
+                    b.append(getSystemId());
+                    b.append('"');
+                }
+                b.append('>');
+
+                return b.toString();
         }
     }
 
