@@ -231,7 +231,11 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public String getDisplayName() {
-        return annotateName(folder.getDisplayName());
+        if (folder.getRoot() != null) {
+            return annotateName(folder.getDisplayName() + " - " + folder.getRoot()); //NOI18N
+        } else {
+            return annotateName(folder.getDisplayName());
+        }
     }
 
     @Override
