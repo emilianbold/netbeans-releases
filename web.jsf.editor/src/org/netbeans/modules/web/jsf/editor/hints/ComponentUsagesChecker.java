@@ -59,9 +59,11 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -89,12 +91,12 @@ public class ComponentUsagesChecker extends HintsProvider {
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
-        Map<String, FaceletsLibrary> declaredLibraries = JsfUtils.getDeclaredLibraries(result);
+        Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 
         //now we have all  declared component libraries
         //lets get their parse trees and check the content
         for (final String declaredLibraryNamespace : declaredLibraries.keySet()) {
-            final FaceletsLibrary lib = declaredLibraries.get(declaredLibraryNamespace);
+            final Library lib = declaredLibraries.get(declaredLibraryNamespace);
             AstNode root = result.root(declaredLibraryNamespace);
             if(root == null) {
                 //no parse tree for this namespace
@@ -123,7 +125,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                 public void visit(AstNode node) {
                     if (node.type() == AstNode.NodeType.OPEN_TAG) {
                         String tagName = node.getNameWithoutPrefix();
-                        FaceletsLibrary.NamedComponent component = lib.getComponent(tagName);
+                        LibraryComponent component = lib.getComponent(tagName);
                         if (component == null) {
                             //error, the component doesn't exist in the library
                             Hint hint = new Hint(DEFAULT_ERROR_RULE,

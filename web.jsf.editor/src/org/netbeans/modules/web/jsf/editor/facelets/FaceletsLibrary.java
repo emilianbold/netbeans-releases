@@ -42,12 +42,14 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryDescriptor;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
-public abstract class FaceletsLibrary {
+public abstract class FaceletsLibrary implements Library {
 
     protected FaceletsLibrarySupport support;
     private String namespace;
@@ -83,11 +85,13 @@ public abstract class FaceletsLibrary {
         }
     }
 
+    @Override
     public String getNamespace() {
         return namespace;
     }
 
     //linear search, do we call this often?
+    @Override
     public NamedComponent getComponent(String componentName) {
         for(NamedComponent comp : getComponents()) {
             if(comp.getName().equals(componentName)) {
@@ -97,6 +101,7 @@ public abstract class FaceletsLibrary {
         return null;
     }
 
+    @Override
     public String getDefaultPrefix() {
         //returns either facelets or tld library
         String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
@@ -111,6 +116,7 @@ public abstract class FaceletsLibrary {
 
     }
 
+    @Override
     public String getDisplayName() {
         return getLibraryDescriptor() != null ? getLibraryDescriptor().getDisplayName() : getNamespace();
     }
@@ -149,7 +155,7 @@ public abstract class FaceletsLibrary {
         return hash;
     }
 
-    public class NamedComponent {
+    public class NamedComponent implements LibraryComponent {
 
         protected String name;
 

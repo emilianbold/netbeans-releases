@@ -46,6 +46,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -101,7 +102,7 @@ public class JsfCompletionItem {
         private void autoimportLibrary(JTextComponent component) {
             final BaseDocument doc = (BaseDocument) component.getDocument();
             FaceletsLibrary lib = JsfTag.this.component.getLibrary();
-            JsfUtils.importLibrary(doc, lib, null);
+            LibraryUtils.importLibrary(doc, lib, null);
         }
 
         //use bold font

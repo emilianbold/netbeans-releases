@@ -56,7 +56,9 @@ import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,6 +81,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
+    public LibraryType getType() {
+        return LibraryType.COMPOSITE;
+    }
+
+    @Override
     public String getNamespace() {
         return getDeclaredNamespace() != null ? getDeclaredNamespace() : getDefaultNamespace();
     }
@@ -88,7 +95,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     public String getDefaultNamespace() {
-        return JsfUtils.getCompositeLibraryURL(getLibraryName());
+        return LibraryUtils.getCompositeLibraryURL(getLibraryName());
     }
 
     @Override
