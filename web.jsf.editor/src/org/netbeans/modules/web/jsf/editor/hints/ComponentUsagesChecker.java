@@ -63,6 +63,7 @@ import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -90,7 +91,7 @@ public class ComponentUsagesChecker extends HintsProvider {
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
-        Map<String, Library> declaredLibraries = JsfUtils.getDeclaredLibraries(result);
+        Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 
         //now we have all  declared component libraries
         //lets get their parse trees and check the content
