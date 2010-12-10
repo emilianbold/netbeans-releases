@@ -184,13 +184,16 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     public Collection<CsmInheritance> _getBaseClasses() {
         ClassImpl base = findBaseClassImplInProject();
         if(base != null && base != this) {
-            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
-            if(p instanceof InstantiationProviderImpl) {
-                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
-                if(CsmKindUtilities.isClass(baseInst)) {
-                    return ((CsmClass)baseInst).getBaseClasses();
-                }
-            }
+            return base.getBaseClasses();
+            // we store inheritances in ClassifierContainer:218
+            // and Instantiations are not persistable
+//            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+//            if(p instanceof InstantiationProviderImpl) {
+//                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+//                if(CsmKindUtilities.isClass(baseInst)) {
+//                    return ((CsmClass)baseInst).getBaseClasses();
+//                }
+//            }
         }
         return Collections.<CsmInheritance>emptyList();
     }

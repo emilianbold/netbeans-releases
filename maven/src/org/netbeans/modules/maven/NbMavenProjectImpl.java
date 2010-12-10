@@ -215,7 +215,7 @@ public final class NbMavenProjectImpl implements Project {
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
-        auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
+        auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         cppProvider = new ClassPathProviderImpl(this);

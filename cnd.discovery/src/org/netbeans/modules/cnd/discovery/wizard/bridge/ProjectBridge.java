@@ -119,7 +119,7 @@ public class ProjectBridge {
     }
     
     public Folder createFolder(Folder parent, String name){
-        return new Folder(makeConfigurationDescriptor, parent, name, name, true);
+        return new Folder(makeConfigurationDescriptor, parent, name, name, true, null);
     }
     
     public void addSourceRoot(String path){
