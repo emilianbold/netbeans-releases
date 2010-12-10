@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -82,8 +81,12 @@ import org.openide.util.WeakSet;
 public class Folder implements FileChangeListener, ChangeListener {
 
     public enum Kind {
-
-        SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST
+        ROOT,
+        SOURCE_LOGICAL_FOLDER,
+        SOURCE_DISK_FOLDER,
+        IMPORTANT_FILES_FOLDER,
+        TEST_LOGICAL_FOLDER,
+        TEST
     };
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
@@ -100,14 +103,22 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String root;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static boolean checkedLogging = checkLogging();
-    private Kind kind;
+    private final Kind kind;
 
-    public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
+    public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles, Kind kind) {
         this.configurationDescriptor = configurationDescriptor;
         this.parent = parent;
         this.name = name;
         this.displayName = displayName;
         this.projectFiles = projectFiles;
+        if (kind == null) {
+            if (parent.isDiskFolder()) {
+                kind = Kind.SOURCE_DISK_FOLDER;
+            } else {
+                kind = Kind.SOURCE_LOGICAL_FOLDER;
+            }
+        }
+        this.kind = kind;
         this.items = new ArrayList<Object>();
     }
 
@@ -117,10 +128,6 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public void pack() {
         items.trimToSize();
-    }
-
-    private void setKind(Kind kind) {
-        this.kind = kind;
     }
 
     public Kind getKind() {
@@ -364,17 +371,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean isDiskFolder() {
-        Folder f = this;
-        while (true) {
-            if (f.getRoot() != null) {
-                return true;
-            }
-            f = f.getParent();
-            if (f == null) {
-                break;
-            }
-        }
-        return false;
+        return getKind() == Kind.SOURCE_DISK_FOLDER;
     }
 
     public boolean isTestLogicalFolder() {
@@ -673,8 +670,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
-        Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
-        newFolder.setKind(kind);
+        Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles, kind);
         addFolder(newFolder, true);
         return newFolder;
     }
@@ -1094,7 +1090,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 // It is possible that short-living temporary folder is created while building project
                 return;
             }
-            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false);
+            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
         }
     }
 
