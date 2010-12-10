@@ -81,6 +81,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.cookies.EditorCookie;
@@ -229,7 +230,7 @@ public class InjectCompositeComponent {
 	    //but since the library has just been created by adding an xhtml file
 	    //to the resources/xxx/ folder we need to wait until the files
 	    //get indexed and the library is created
-	    final String compositeLibURL = JsfUtils.getCompositeLibraryURL(compFolder);
+	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder);
 	    Source documentSource = Source.create(document);
 	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
 
@@ -237,7 +238,7 @@ public class InjectCompositeComponent {
 		public void run(ResultIterator resultIterator) throws Exception {
 		    FaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
 		    if (lib != null) {
-			if (!JsfUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
+			if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
 			}
 		    } else {
@@ -270,7 +271,7 @@ public class InjectCompositeComponent {
 			    ((BaseDocument)templateInstanceDoc).runAtomic(new Runnable() {
                                 @Override
 				public void run() {
-				    JsfUtils.importLibrary(templateInstanceDoc, importsMap);
+				    LibraryUtils.importLibrary(templateInstanceDoc, importsMap);
 				}
 			    });
 			}
