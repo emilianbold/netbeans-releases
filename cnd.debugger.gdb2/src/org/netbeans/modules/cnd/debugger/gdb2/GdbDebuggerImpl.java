@@ -941,7 +941,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 MICommand findPidCmd = new InfoThreadsMICmd(resume);
                 gdb.sendCommand(findPidCmd);
             } else if (getHost().getPlatform() != Platform.MacOSX_x86) {
-                MICommand findPidCmd = new InfoProcMICmd(resume);
+                InfoProcMICmd findPidCmd = new InfoProcMICmd(resume);
+                // if it fails - try "info threads"
+                MICommand findPidCmd2 = new InfoThreadsMICmd(resume);
+                findPidCmd.chain(null, findPidCmd2);
                 gdb.sendCommand(findPidCmd);
             }
         } else if (resume) {
