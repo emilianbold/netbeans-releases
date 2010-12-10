@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -480,8 +481,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); 
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); 
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim());
+        String folderPath = projectFolder.getText().trim();
+        if (CndPathUtilitities.isPathAbsolute(folderPath)) {
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(folderPath));
+        }
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
@@ -516,6 +520,10 @@ public class SelectModePanel extends javax.swing.JPanel {
         String path = projectFolder.getText().trim();
         try {
             if (path.length() == 0) {
+                return false;
+            }
+            if (!CndPathUtilitities.isPathAbsolute(path)) {
+                messageKind = notFolder;
                 return false;
             }
             File projectDirFile = FileUtil.normalizeFile(CndFileUtils.createLocalFile(path)); // it's project folder - always local
