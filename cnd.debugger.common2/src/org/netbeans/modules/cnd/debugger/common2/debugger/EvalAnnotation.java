@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
  * in the debuggerjpda module.
  */
 public final class EvalAnnotation extends Annotation {
-    private final RequestProcessor RP = new RequestProcessor("Debugger tooltip evaluation", 2);
+    private final RequestProcessor RP = new RequestProcessor("Debugger tooltip evaluation", 2); //NOI18N
 
     // interface Annotation
     public String getAnnotationType() {
