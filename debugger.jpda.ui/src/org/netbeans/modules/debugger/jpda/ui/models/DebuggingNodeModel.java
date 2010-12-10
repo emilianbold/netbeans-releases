@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Session;
@@ -149,6 +151,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private final Set nodesInDeadlock = new HashSet();
     private static final Map<JPDADebugger, Set> nodesInDeadlockByDebugger = new WeakHashMap<JPDADebugger, Set>();
     private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private final PreferenceChangeListener prefListener;
     private final RequestProcessor rp;
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
@@ -158,6 +161,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
         deadlockDetector.addPropertyChangeListener(new DeadlockListener());
         rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        prefListener = new DebuggingPreferenceChangeListener();
+        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
     
     public static Set getNodesInDeadlock(JPDADebugger debugger) {
@@ -220,17 +225,29 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             // Do not call JDI in AWT
             //CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
             //if (f.equals(currentFrame)) {
+            String frameDescr;
+            synchronized (frameDescriptionsByFrame) {
+                frameDescr = frameDescriptionsByFrame.get(f);
+                if (frameDescr == null) {
+                    loadFrameDescription(f, showPackageNames);
+                    return BoldVariablesTableModelFilter.toHTML(
+                            NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Frame_Loading"),
+                            false,
+                            false,
+                            Color.LIGHT_GRAY);
+                }
+            }
             if (isCurrent) {
                 return BoldVariablesTableModelFilter.toHTML(
-                        CallStackNodeModel.getCSFName(null, f, showPackageNames),
+                        frameDescr,
                         true, false, c);
             } else {
                 if (c != null) {
                     return BoldVariablesTableModelFilter.toHTML(
-                            CallStackNodeModel.getCSFName(null, f, showPackageNames),
+                            frameDescr,
                             false, false, c);
                 } else {
-                    return CallStackNodeModel.getCSFName(null, f, showPackageNames);
+                    return frameDescr;
                 }
             }
         }
@@ -242,6 +259,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
      * These are loaded lazily, since we must not load call stack frames in AWT EQ.
      */
     private static final Map<JPDAThread, String> frameDescriptionsByThread = new WeakHashMap<JPDAThread, String>();
+
+    private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
     
     public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
         return getDisplayName(t, showPackageNames, null);
@@ -369,6 +388,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                                              final boolean showPackageNames,
                                              final DebuggingNodeModel model) {
         RequestProcessor rp;
+        if (model != null && model.rp != null) {
+            rp = model.rp;
+        } else
         try {
             JPDADebugger debugger = (JPDADebugger) t.getClass().getMethod("getDebugger").invoke(t);
             Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
@@ -406,6 +428,19 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         model.fireDisplayNameChanged(t);
                     }
                 }
+            }
+        });
+    }
+
+    private void loadFrameDescription(final CallStackFrame f, final boolean showPackageNames) {
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                String frameDescr = CallStackNodeModel.getCSFName(null, f, showPackageNames);
+                synchronized (frameDescriptionsByFrame) {
+                    frameDescriptionsByFrame.put(f, frameDescr);
+                }
+                fireDisplayNameChanged(f);
             }
         });
     }
@@ -843,4 +878,16 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         
     }
     
+    private final class DebuggingPreferenceChangeListener implements PreferenceChangeListener {
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt.getKey();
+            if (DebuggingNodeModel.SHOW_PACKAGE_NAMES.equals(key)) {
+                synchronized (frameDescriptionsByFrame) {
+                    frameDescriptionsByFrame.clear();
+                }
+            }
+        }
+    }
 }

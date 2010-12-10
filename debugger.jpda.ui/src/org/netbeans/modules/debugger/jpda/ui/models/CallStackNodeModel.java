@@ -45,11 +45,14 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -65,6 +68,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -81,11 +85,14 @@ public class CallStackNodeModel implements NodeModel {
     private JPDADebugger debugger;
     private Session session;
     private Vector listeners = new Vector ();
+    private final RequestProcessor rp;
+    private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
     
     
     public CallStackNodeModel (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         session = lookupProvider.lookupFirst(null, Session.class);
+        rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
         new Listener (this, debugger);
     }
     
@@ -105,15 +112,27 @@ public class CallStackNodeModel implements NodeModel {
             }
             // Do not call JDI in AWT
             //CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
+            String frameDescr;
+            synchronized (frameDescriptionsByFrame) {
+                frameDescr = frameDescriptionsByFrame.get(sf);
+                if (frameDescr == null) {
+                    loadFrameDescription(sf);
+                    return BoldVariablesTableModelFilter.toHTML(
+                            NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Frame_Loading"),
+                            false,
+                            false,
+                            Color.LIGHT_GRAY);
+                }
+            }
             if (isCurrent) {
                 return BoldVariablesTableModelFilter.toHTML (
-                    getCSFName (session, sf, false),
+                    frameDescr,
                     true,
                     false,
                     null
                 );
             } else {
-                return getCSFName (session, sf, false);
+                return frameDescr;
             }
         } else if ("No current thread" == o) {
             return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
@@ -123,6 +142,30 @@ public class CallStackNodeModel implements NodeModel {
         throw new UnknownTypeException (o);
     }
     
+    private void loadFrameDescription(final CallStackFrame sf) {
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                String frameDescr = getCSFName(session, sf, false);
+                synchronized (frameDescriptionsByFrame) {
+                    frameDescriptionsByFrame.put(sf, frameDescr);
+                }
+                fireDisplayNameChanged(sf);
+            }
+        });
+    }
+
+    private void fireDisplayNameChanged (Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int k = v.size ();
+        if (k == 0) return ;
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
+        for (int i = 0; i < k; i++) {
+            ((ModelListener) v.get (i)).modelChanged (event);
+        }
+    }
+
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
             return NbBundle.getBundle (CallStackNodeModel.class).getString
