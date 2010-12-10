@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
@@ -533,11 +534,22 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolders(XMLEncoderStream xes) {
-        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders());
+        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0);
     }
 
-    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
-        if (folder.getKind() != null) {
+    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, int level) {
+        Kind kind = folder.getKind();
+        Kind storedKind = null;
+        if (kind != null) {
+            switch (kind) {
+                case ROOT:
+                case TEST:
+                case IMPORTANT_FILES_FOLDER:
+                case TEST_LOGICAL_FOLDER:
+                    storedKind = kind;
+            }
+        }
+        if (storedKind != null) {
             xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
                     new AttrValuePair[]{
                         new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
@@ -559,7 +571,7 @@ public abstract class CommonConfigurationXMLCodec
             if (subfolders[i].isDiskFolder()) {
                 writeDiskFolder(xes, subfolders[i]);
             } else {
-                writeLogicalFolder(xes, subfolders[i]);
+                writeLogicalFolder(xes, subfolders[i], level++);
             }
         }
         // write out items
@@ -576,23 +588,8 @@ public abstract class CommonConfigurationXMLCodec
         if (folder.getRoot() != null) {
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
-        if (folder.getKind() != null) {
-            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
-        }
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
 
-//        if (folder.getRoot() != null) {
-//            xes.elementOpen(DISK_FOLDER_ELEMENT,
-//                    new AttrValuePair[]{
-//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-//                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
-//                    });
-//        } else {
-//            xes.elementOpen(DISK_FOLDER_ELEMENT,
-//                    new AttrValuePair[]{
-//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-//                    });
-//        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
