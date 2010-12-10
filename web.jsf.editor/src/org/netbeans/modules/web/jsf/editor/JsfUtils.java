@@ -108,23 +108,5 @@ public class JsfUtils {
         return null;
     }
 
-    /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
-    public static Map<String, Library> getDeclaredLibraries(HtmlParserResult result) {
-        //find all usages of composite components tags for this page
-        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Map<String, Library> declaredLibraries = new HashMap<String, Library>();
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(result.getSnapshot().getSource().getFileObject());
-        if (jsfSupport != null) {
-            Map<String, ? extends Library> libs = jsfSupport.getLibraries();
-
-            for (String namespace : declaredNamespaces) {
-                Library lib = libs.get(namespace);
-                if (lib != null) {
-                    declaredLibraries.put(namespace, lib);
-                }
-            }
-        }
-        return declaredLibraries;
-    }
     
 }
