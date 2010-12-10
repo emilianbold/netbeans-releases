@@ -634,7 +634,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // setup the IOPack
 	    //
 
-	    ioPack = IOPack.create(remote, ndi.getInputOutput(), ndi.getProfile(), executor);
+	    ioPack = IOPack.create(remote, ndi, executor);
 	    tentativeDbx.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
