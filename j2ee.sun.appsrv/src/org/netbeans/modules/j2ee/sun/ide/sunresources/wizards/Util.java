@@ -105,10 +105,10 @@ public class Util {
             Lookup lookup = project.getLookup();
             J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
             String id = provider.getServerInstanceID();
-            if (id != null && id.contains("gfv3ee6wc")) // .equals(id))
-                baseName = "glassfish-resources";
+            if (id != null && id.contains("deployer:gfv3ee6wc")) // NOI18N
+                baseName = "glassfish-resources"; // NOI18N
             else
-                baseName = "sun-resources";
+                baseName = "sun-resources"; // NOI18N
             return baseName;
 
     }
