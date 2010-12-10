@@ -389,7 +389,7 @@ public class MIParser {
 	if (teq.type != TokenType.EQ)
 	    error("result", "=", teq); // NOI18N
 
-	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value));
+	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
 
 	return new MIResult(tsym.value, value);
     }

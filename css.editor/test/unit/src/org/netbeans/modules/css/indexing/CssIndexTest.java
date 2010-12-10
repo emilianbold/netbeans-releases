@@ -40,53 +40,27 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.css.indexing;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author Jan Becicka
+ *
+ * @author marekfukala
  */
-public interface GitRevisionInfo {
+public class CssIndexTest extends NbTestCase {
 
-    /**
-     * revision string
-     * @return
-     */
-    public String getRevision ();
-
-    /**
-     * returns short message
-     * @return
-     */
-    public String getShortMessage ();
-
-    /**
-     * returns full message
-     *
-     * @return
-     */
-    public String getFullMessage ();
-
-    /**
-     * getter for commit time, time is in milliseconds
-     * @return
-     */
-    public long getCommitTime ();
-
-    /**
-     * returns author of this change set
-     * @return
-     */
-    public GitUser getAuthor ();
-
-    /**
-     * returns committer of this change set
-     * @return
-     */
-    public GitUser getCommitter ();
+    public CssIndexTest(String name) {
+        super(name);
+    }
     
-    /**
-     * files affected by this change set
-     * @return
-     */
-    public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles ();
+    public void testEncodeValueForRegexp() {
+        assertEquals("", CssIndex.encodeValueForRegexp(""));
+        assertEquals("a", CssIndex.encodeValueForRegexp("a"));
+        assertEquals("\\\\", CssIndex.encodeValueForRegexp("\\"));
+        assertEquals("a\\*b", CssIndex.encodeValueForRegexp("a*b"));
+        assertEquals("a\\\\b", CssIndex.encodeValueForRegexp("a\\b"));
+        assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
+    }
+
 }

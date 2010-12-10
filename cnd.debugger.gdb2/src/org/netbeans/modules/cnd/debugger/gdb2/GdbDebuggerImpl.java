@@ -263,6 +263,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         profileBridge = new GdbDebuggerSettingsBridge(this);
         handlerExpert = new GdbHandlerExpert(this);
         disassembly = new Disassembly(this, breakpointModel());
+        disStateModel().addListener(disassembly);
     }
 
     public String debuggerType() {
@@ -1024,9 +1025,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
-        MIValue bkptValue = record.results().valueOf("bkpt");
+        MIValue bkptValue = record.results().valueOf("bkpt"); //NOI18N
         if (bkptValue != null) {
-            MIValue numberValue = bkptValue.asTList().valueOf("number");
+            MIValue numberValue = bkptValue.asTList().valueOf("number"); //NOI18N
             if (numberValue != null) {
                 firstBreakpointId = numberValue.asConst().value();
             }
@@ -2632,6 +2633,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	gdb.sendCommand(cmd);
     }
 
+    @Override
+    protected void openDis() {
+        Disassembly.open();
+    }
+    
     /**
      * Continuation from genericStopped().
      *
@@ -3417,11 +3423,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	return disModel;
     }
 
-    // implement NativeDebugger
-    public Location getVisitedLocation() {
-	return visitedLocation;
-    }
-
     // implement NativeDebuggerImpl
     protected Controller disController() {
 	return disController;
@@ -3430,11 +3431,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     Disassembly getDisassembly() {
         return disassembly;
     }
-
-//    @Override
-//    public void requestDisassembly() {
-//        disassembly.open();
-//    }
 
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
