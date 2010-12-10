@@ -185,8 +185,12 @@ public class DiscoveryProjectGenerator {
             } else if (entry.getValue().isDiskFolder()) {
                 root.addFolder(entry.getValue(), true);
             } else {
-                // TODO: link logical colder with disk folder
-                File folderFile = getFolderFile(entry.getValue());
+                if (entry.getValue().getRoot() == null) {
+                    File folderFile = getFolderFile(entry.getValue());
+                    if (folderFile != null) {
+                        entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getAbsolutePath()));
+                    }
+                }
                 root.addFolder(entry.getValue(), true);
             }
         }

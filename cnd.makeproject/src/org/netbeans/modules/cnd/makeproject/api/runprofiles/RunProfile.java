@@ -829,6 +829,25 @@ public final class RunProfile implements ConfigurationAuxObject {
             }
         }
 
+        @Override
+        public void restoreDefaultValue() {
+            setValue(""); // Sets the default value // NOI18N
+        }
+
+        @Override
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (!DEFAULT_RUN_COMMAND.equals(getValue())) {
+                return "<b>" + getDisplayName(); // NOI18N
+            }
+            else {
+                return null;
+            }
+        }
 
     }
 

@@ -549,22 +549,17 @@ public abstract class CommonConfigurationXMLCodec
                     storedKind = kind;
             }
         }
+        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
+        attrList.add(new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName())); // NOI18N
+        attrList.add(new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles())); // NOI18N
         if (storedKind != null) {
-            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                        new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
-                    });
-        } else {
-            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                    });
+            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
         }
+        if (folder.getRoot() != null) {
+            attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
+        }
+        xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {

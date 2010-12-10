@@ -341,7 +341,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             reversePath(aParent, builder, fromRoot);
             builder.append('/'); // NOI18N
         }
-        if (fromRoot && folder.getRoot() != null) {
+        if (fromRoot && folder.isDiskFolder() && folder.getRoot() != null) {
             builder.append(folder.getRoot());
         } else {
             builder.append(folder.getName());

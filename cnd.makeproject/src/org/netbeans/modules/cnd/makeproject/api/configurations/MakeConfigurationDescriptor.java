@@ -1135,7 +1135,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 for (String rootToBeRemoved : toBeRemoved) {
                     List<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
                     for (Folder root : rootFolders) {
-                        if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
+                        if (root.isDiskFolder() && root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
                             getLogicalFolders().removeFolderAction(root);
                         }
                     }

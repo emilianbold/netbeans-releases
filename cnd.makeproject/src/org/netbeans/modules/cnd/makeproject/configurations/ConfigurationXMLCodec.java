@@ -230,7 +230,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
                 boolean projectFiles = atts.getValue(PROJECT_FILES_ATTR).equals(TRUE_VALUE);
                 String kindAttr = atts.getValue(KIND_ATTR);
+                String root = getString(atts.getValue(ROOT_ATTR));
                 currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
+                if (root != null) {
+                    currentFolder.setRoot(root);
+                }
                 if (!projectFiles) {
                     projectDescriptor.setExternalFileItems(currentFolder);
                 }
@@ -244,7 +248,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
                 currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
-                currentFolder.setRoot(root);
+                if (root != null) {
+                    currentFolder.setRoot(root);
+                }
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
