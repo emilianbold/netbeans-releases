@@ -39,16 +39,28 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi;
 
+import java.util.WeakHashMap;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-
-
-
+import org.openide.filesystems.FileObject;
 
 public interface SourceSupportProvider {
+
     void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
+
     void showSource(SourceFileInfo lineInfo);
 
+    // TODO: FileObjectsToSourceMap is a hack for source annotations... 
+    // See Bug 193172, org.netbeans.modules.cnd.gizmo.SourceSupportProviderImpl.showSource()
+    // and org.netbeans.modules.dlight.annotationsupport.AnnotatedSourceSupportImpl.fileFromEditorPane()
+    
+    public final static class FileObjectsToSourceMap {
+
+        private static WeakHashMap<FileObject, String> instance = new WeakHashMap<FileObject, String>();
+
+        public static WeakHashMap<FileObject, String> getInstance() {
+            return instance;
+        }
+    }
 }
