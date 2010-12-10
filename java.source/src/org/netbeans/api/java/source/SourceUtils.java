@@ -760,6 +760,20 @@ public class SourceUtils {
      * @return true when the class contains a main method
      */
     public static boolean isMainClass (final String qualifiedName, ClasspathInfo cpInfo) {
+        return isMainClass(qualifiedName, cpInfo, false);
+    }
+    
+    /**
+     * Returns true when the class contains main method.
+     * @param qualifiedName the fully qualified name of class
+     * @param cpInfo the classpath used to resolve the class
+     * @param optimistic when true does only index check without parsing the file.
+     * The optimistic check is faster but it works only for source file not for binaries
+     * for which index does not exist. It also does not handle inheritance of the main method.
+     * @return true when the class contains a main method
+     * @since 0.71
+     */
+    public static boolean isMainClass (final String qualifiedName, ClasspathInfo cpInfo, boolean optimistic) {
         if (qualifiedName == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
@@ -790,30 +804,33 @@ public class SourceUtils {
                 LOG.info("Ignoring fast check for root: " + entry.getURL().toString() + " due to: " + e.getMessage()); //NOI18N
             }
         }
-        //Slow path fallback - for main in libraries
+        
         final boolean[] result = new boolean[]{false};
-        JavaSource js = JavaSource.create(cpInfo);
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
+        if (!optimistic) {
+            //Slow path fallback - for main in libraries
+            JavaSource js = JavaSource.create(cpInfo);
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController control) throws Exception {
-                    final JavacElements elms = (JavacElements)control.getElements();
-                    TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
-                    if (type == null) {
-                        return;
-                    }
-                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
-                    for (ExecutableElement method : methods) {
-                        if (SourceUtils.isMainMethod(method)) {
-                            result[0] = true;
-                            break;
+                    public void run(CompilationController control) throws Exception {
+                        final JavacElements elms = (JavacElements)control.getElements();
+                        TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
+                        if (type == null) {
+                            return;
+                        }
+                        List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
+                        for (ExecutableElement method : methods) {
+                            if (SourceUtils.isMainMethod(method)) {
+                                result[0] = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-            }, true);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
         return result[0];
     }
