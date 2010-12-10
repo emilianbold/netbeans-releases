@@ -1117,6 +1117,38 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue("Non active shource should be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
     }
     
+    public void testFilesScannedAfterRenameOfFolder193243() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final FileObject testFo = FileUtil.createData(this.srcRootWithFiles1, "rename/A.foo");
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());       
+        indexerFactory.indexer.setExpectedFile(new URL[]{new URL(this.srcRootWithFiles1.getURL()+"renamed/A.foo")}, new URL[]{testFo.getURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{testFo.getURL()}, new URL[0]);
+        final FileObject parent = testFo.getParent();
+        final FileLock lock = parent.lock();
+        try {
+            parent.rename(lock, "renamed", null);
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(0, eindexerFactory.indexer.getIndexCount());
+        assertEquals(1, eindexerFactory.indexer.getDeletedCount());
+        assertEquals(0, eindexerFactory.indexer.getDirtyCount());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+        assertEquals(1, indexerFactory.indexer.getDeletedCount());
+        assertEquals(0, indexerFactory.indexer.getDirtyCount());
+    }
+    
 
     public static class TestHandler extends Handler {
 

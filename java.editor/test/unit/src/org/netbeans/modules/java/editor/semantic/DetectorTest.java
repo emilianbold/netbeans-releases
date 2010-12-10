@@ -393,7 +393,8 @@ public class DetectorTest extends TestBase {
         performTest("TwoPackagePrivateConstructors");
     }
 
-    public void testExoticIdentifiers() throws Exception {
+    //Support for exotic identifiers has been removed 6999438
+    public void REMOVEDtestExoticIdentifiers() throws Exception {
         setSourceLevel("1.7");
         performTest("ExoticIdentifier");
     }

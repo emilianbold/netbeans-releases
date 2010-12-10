@@ -251,9 +251,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
+                if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText())) {
+                    String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    return false;
+                }
                 FileObject file = NewProjectWizardUtils.getFileObject(configureNameTextField.getText(), controller.getWizardDescriptor());
-                if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText()) ||
-                    !file.isValid() || file.isFolder()) {
+                if (!file.isValid() || file.isFolder()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;

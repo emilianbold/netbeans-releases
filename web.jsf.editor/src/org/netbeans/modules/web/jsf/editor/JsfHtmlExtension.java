@@ -97,6 +97,7 @@ import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -430,7 +431,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
             //add also xhtml ns to the completion
-            nss.add(JsfUtils.XHTML_NS);
+            nss.add(LibraryUtils.XHTML_NS);
             for(String namespace : nss) {
                 if(namespace.startsWith(context.getPrefix())) {
                     items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
@@ -490,7 +491,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                                     Result result = resultIterator.getParserResult(caretOffset);
                                     if (result instanceof HtmlParserResult) {
                                         HtmlParserResult hresult = (HtmlParserResult) result;
-                                        AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
+                                        AstNode root = hresult.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
                                         AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
                                             public void visit(AstNode node) {

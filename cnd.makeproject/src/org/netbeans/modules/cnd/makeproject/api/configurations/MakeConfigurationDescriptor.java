@@ -142,7 +142,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public MakeConfigurationDescriptor(FileObject baseDirFO) {
         this.baseDirFO = baseDirFO;
-        rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
+        rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
         ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
@@ -304,7 +304,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), false, true, null);
+                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), false, Folder.Kind.SOURCE_DISK_FOLDER, null);
             }
         }
         setModified();
@@ -1125,7 +1125,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
                     FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
-                    addFilesFromRoot(getLogicalFolders(), fo, true, true, null);
+                    addFilesFromRoot(getLogicalFolders(), fo, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                 }
                 setModified();
             }
@@ -1135,7 +1135,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 for (String rootToBeRemoved : toBeRemoved) {
                     List<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
                     for (Folder root : rootFolders) {
-                        if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
+                        if (root.isDiskFolder() && root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
                             getLogicalFolders().removeFolderAction(root);
                         }
                     }
@@ -1275,15 +1275,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, boolean asDiskFolder, @NullAllowed FileObjectFilter fileFilter) {
+    public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
         top = folder.findFolderByName(dir.getNameExt());
         if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
+            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
             folder.addFolder(top, true);
         }
-        if (asDiskFolder) {
+        assert top.getKind() == folderKind;
+        if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
             top.setRoot(rootPath);
@@ -1301,14 +1302,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return top;
     }
 
-    public Folder addFilesFromDir(Folder folder, File dir, boolean attachListeners, boolean setModified) {
-        // XXX:fullRemote
-        return addFilesFromDir(folder, CndFileUtils.toFileObject(dir), attachListeners, setModified, null);
-    }
-
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         folder.addFolder(top, setModified);
         addFiles(top, dir, null, filesAdded, true, setModified, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null

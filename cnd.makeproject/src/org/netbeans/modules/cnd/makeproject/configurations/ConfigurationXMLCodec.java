@@ -215,7 +215,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(EXT_CONF_ELEMENT)) {
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
-            currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
+            currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false, Folder.Kind.IMPORTANT_FILES_FOLDER); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
             projectDescriptor.getLogicalFolders().addFolder(currentFolder, true);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
@@ -230,11 +230,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
                 boolean projectFiles = atts.getValue(PROJECT_FILES_ATTR).equals(TRUE_VALUE);
                 String kindAttr = atts.getValue(KIND_ATTR);
+                String root = getString(atts.getValue(ROOT_ATTR));
                 currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
-                currentFolderStack.push(currentFolder);
+                if (root != null) {
+                    currentFolder.setRoot(root);
+                }
                 if (!projectFiles) {
                     projectDescriptor.setExternalFileItems(currentFolder);
                 }
+                currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(DISK_FOLDER_ELEMENT)) {
             if (currentFolderStack.size() == 0) {
@@ -243,9 +247,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                String kindAttr = atts.getValue(KIND_ATTR);
-                currentFolder = currentFolder.addNewFolder(name, name, true, kindAttr);
-                currentFolder.setRoot(root);
+                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
+                if (root != null) {
+                    currentFolder.setRoot(root);
+                }
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
