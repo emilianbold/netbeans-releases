@@ -107,7 +107,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.doc);
         Map<String, FaceletsLibrary> libs = Collections.emptyMap();
         if (jsfSupport != null) {
-            libs = jsfSupport.getFaceletsLibraries();
+            libs = jsfSupport.getLibraries();
         }
 
         //Find the namespaces declarations itself
