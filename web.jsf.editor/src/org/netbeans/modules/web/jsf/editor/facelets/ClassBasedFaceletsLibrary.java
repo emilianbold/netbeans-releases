@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -97,6 +98,16 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
         this.components.addAll(components);
     }
 
+    @Override
+    public LibraryType getType() {
+        return LibraryType.CLASS;
+    }
+
+    @Override
+    public String getDefaultNamespace() {
+        return null;
+    }
+    
     @Override
     public Collection<NamedComponent> getComponents() {
         return Collections.unmodifiableCollection(components);

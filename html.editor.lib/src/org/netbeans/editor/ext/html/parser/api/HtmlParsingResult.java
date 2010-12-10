@@ -40,32 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsfapi.api;
+package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
+ * Its supposed to be implemented by a parsing.api parser result for html code.
+ * Eliminates the necessity to depend on html.editor if one wants to use the parsing api
+ * to get html parsing result.
  *
  * @author marekfukala
  */
-public interface JsfSupport {
+public interface HtmlParsingResult {
 
-    public Project getProject();
+    public SyntaxAnalyzerResult getSyntaxAnalyzerResult();
 
-    public ClassPath getClassPath();
+    public HtmlVersion getHtmlVersion();
 
-    public WebModule getWebModule();
+    public HtmlVersion getDetectedHtmlVersion();
 
-    public LibraryDescriptor getLibraryDescriptor(String namespace);
+    public AstNode root();
 
-    public Library getLibrary(String namespace);
-    
-    /**
-     * @return Library namespace to Library instance map
-     */
-    public Map<String, ? extends Library> getLibraries();
-    
+    public AstNode rootOfUndeclaredTagsParseTree();
+
+    public AstNode root(String namespace);
+
+    public Map<String, AstNode> roots();
+
+    public Map<String, String> getNamespaces();
+
 }
