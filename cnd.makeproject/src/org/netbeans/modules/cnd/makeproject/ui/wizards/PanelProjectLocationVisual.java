@@ -420,9 +420,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         String path = this.projectLocationTextField.getText();
-        if (path.length() > 0) {
-            CndFileUtils.createLocalFile(path); // project itself is always local
-        }
         FileChooser chooser = new FileChooser(
                 NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
@@ -637,12 +634,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
 
-        d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(folder));
+        if (CndPathUtilitities.isPathAbsolute(folder)) {
+            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(folder));
+        }
         d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
         d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
-        File projectsDir = CndFileUtils.createLocalFile(this.projectLocationTextField.getText());
-        if (projectsDir.isDirectory()) {
-            ProjectChooser.setProjectsFolder(projectsDir);
+        if (CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) {
+            File projectsDir = CndFileUtils.createLocalFile(projectLocationTextField.getText());
+            if (projectsDir.isDirectory()) {
+                ProjectChooser.setProjectsFolder(projectsDir);
+            }
         }
 
         d.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
