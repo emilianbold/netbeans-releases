@@ -70,7 +70,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsfapi.api.Library;
 
 /**
  *
@@ -85,11 +85,11 @@ public class JsfUtils {
         return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
     }
 
-    public static boolean isCompositeComponentLibrary(FaceletsLibrary library) {
+    public static boolean isCompositeComponentLibrary(Library library) {
         return library instanceof CompositeComponentLibrary;
     }
 
-    public static boolean importLibrary(Document document, FaceletsLibrary library, String prefix) {
+    public static boolean importLibrary(Document document, Library library, String prefix) {
         return !importLibrary(document, Collections.singletonMap(library, prefix)).isEmpty();
     }
 
@@ -97,20 +97,20 @@ public class JsfUtils {
      * Imports a facelets libraries
      *
      * @param document
-     * @param libraries2prefixes a map of FaceletsLibrary to prefix to declare. The prefix may be null, in
+     * @param libraries2prefixes a map of Library to prefix to declare. The prefix may be null, in
      * such case the default library prefix is used.
      *
      * @return a map of library2declared prefixes which contains just the imported pairs
      */
-    public static Map<FaceletsLibrary, String> importLibrary(Document document, Map<FaceletsLibrary, String> libraries2prefixes) {
+    public static Map<Library, String> importLibrary(Document document, Map<Library, String> libraries2prefixes) {
         assert document instanceof BaseDocument;
 
-        final Map<FaceletsLibrary, String> imports = new LinkedHashMap<FaceletsLibrary, String>(libraries2prefixes);
+        final Map<Library, String> imports = new LinkedHashMap<Library, String>(libraries2prefixes);
 
         //verify and update the imports map
-        Iterator<FaceletsLibrary> libsIterator = imports.keySet().iterator();
+        Iterator<Library> libsIterator = imports.keySet().iterator();
         while (libsIterator.hasNext()) {
-            FaceletsLibrary l = libsIterator.next();
+            Library l = libsIterator.next();
             String prefix = imports.get(l);
             if (prefix == null) {
                 //not explicitly specified prefix, we may take the library's default one
@@ -193,9 +193,9 @@ public class JsfUtils {
             //result into an invalid page
 
             //eliminate already declared libraries
-            Iterator<FaceletsLibrary> librariesIterator = imports.keySet().iterator();
+            Iterator<Library> librariesIterator = imports.keySet().iterator();
             while (librariesIterator.hasNext()) {
-                FaceletsLibrary library = librariesIterator.next();
+                Library library = librariesIterator.next();
                 Map<String, String> declaredNamespaces = result.getNamespaces();
                 String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
                 if (alreadyDeclaredPrefix == null) {
@@ -226,7 +226,7 @@ public class JsfUtils {
                             //if there are some, add the new one on a new line and reformat the tag
 
                             int offset_shift = 0;
-                            Iterator<FaceletsLibrary> libsItr = imports.keySet().iterator();
+                            Iterator<Library> libsItr = imports.keySet().iterator();
                             int originalInsertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
                             if (originalInsertPosition == -1) {
                                 //error, cannot recover
@@ -235,7 +235,7 @@ public class JsfUtils {
                             }
 
                             while (libsItr.hasNext()) {
-                                FaceletsLibrary library = libsItr.next();
+                                Library library = libsItr.next();
                                 String prefixToDeclare = imports.get(library);
                                 int insertPosition = originalInsertPosition + offset_shift;
 
@@ -317,16 +317,16 @@ public class JsfUtils {
     }
 
     /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
-    public static Map<String, FaceletsLibrary> getDeclaredLibraries(HtmlParserResult result) {
+    public static Map<String, Library> getDeclaredLibraries(HtmlParserResult result) {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
+        Map<String, Library> declaredLibraries = new HashMap<String, Library>();
         JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(result.getSnapshot().getSource().getFileObject());
         if (jsfSupport != null) {
-            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
+            Map<String, ? extends Library> libs = jsfSupport.getLibraries();
 
             for (String namespace : declaredNamespaces) {
-                FaceletsLibrary lib = libs.get(namespace);
+                Library lib = libs.get(namespace);
                 if (lib != null) {
                     declaredLibraries.put(namespace, lib);
                 }

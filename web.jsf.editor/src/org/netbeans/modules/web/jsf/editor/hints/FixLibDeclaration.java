@@ -91,7 +91,7 @@ public class FixLibDeclaration implements HintFix{
         JsfSupportImpl sup = JsfSupportImpl.findFor(doc);
 
         if (sup != null){
-            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
+            for (FaceletsLibrary lib : sup.getLibraries().values()){
                 if (prefix.equals(lib.getDefaultPrefix())){
                     libs.add(lib);
                 }

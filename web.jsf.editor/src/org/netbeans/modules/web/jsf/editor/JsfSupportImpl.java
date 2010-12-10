@@ -64,6 +64,7 @@ import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -163,8 +164,30 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public String toString() {
-        return wm.getDocumentBase().toString();
+        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
     }
+
+    /** Returns a library descriptor for facelets library. If there is a .taglib.xml
+     *  file returns the data from it otherwise tries to find corresponding .tld file.
+     */
+    @Override
+    public AbstractLibraryDescriptor getLibraryDescriptor(String namespace) {
+        FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
+        return fld != null ? fld : getTldLibrary(namespace);
+    }
+
+    @Override
+    public Library getLibrary(String namespace) {
+        return faceletsLibrarySupport.getLibraries().get(namespace);
+    }
+
+    /** Library's uri to library map */
+    @Override
+    public Map<String, FaceletsLibrary> getLibraries() {
+        return faceletsLibrarySupport.getLibraries();
+    }
+
+    //garbage methods below, needs cleanup!
 
     public TldLibrary getTldLibrary(String namespace) {
         try {
@@ -184,19 +207,7 @@ public class JsfSupportImpl implements JsfSupport {
         return null;
     }
 
-    /** Returns a library descriptor for facelets library. If there is a .taglib.xml
-     *  file returns the data from it otherwise tries to find corresponding .tld file.
-     */
-    @Override
-    public AbstractLibraryDescriptor getLibraryDescriptor(String namespace) {
-        FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
-        return fld != null ? fld : getTldLibrary(namespace);
-    }
  
-    /** Library's uri to library map */
-    public Map<String, FaceletsLibrary> getFaceletsLibraries() {
-        return faceletsLibrarySupport.getLibraries();
-    }
 
     public synchronized JsfIndex getIndex() {
         if(index == null) {
