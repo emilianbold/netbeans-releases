@@ -103,6 +103,9 @@ public class VectorConfiguration<E> {
 
     // Clone and Assign
     public void assign(VectorConfiguration<E> conf) {
+        if (conf == null) {
+            return;
+        }
         setDirty(!this.equals(conf));
         reset();
         getValue().addAll(conf.getValue());
