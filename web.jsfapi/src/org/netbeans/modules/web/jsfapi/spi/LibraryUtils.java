@@ -39,12 +39,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.web.jsfapi.spi;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,38 +54,33 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 
 /**
  *
  * @author marekfukala
  */
-public class JsfUtils {
+public class LibraryUtils {
 
     public static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
     public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
 
     public static String getCompositeLibraryURL(String libraryFolderPath) {
-        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
+        return COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
     }
 
     public static boolean isCompositeComponentLibrary(Library library) {
-        return library instanceof CompositeComponentLibrary;
+        return library.getType() == LibraryType.COMPOSITE;
     }
 
     public static boolean importLibrary(Document document, Library library, String prefix) {
@@ -127,14 +121,14 @@ public class JsfUtils {
         final BaseDocument bdoc = (BaseDocument) document;
         try {
             Source source = Source.create(bdoc);
-            final HtmlParserResult[] _result = new HtmlParserResult[1];
+            final HtmlParsingResult[] _result = new HtmlParsingResult[1];
             ParserManager.parse(Collections.singleton(source), new UserTask() {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/html"); //NOI18N
                     if (ri != null) {
-                        _result[0] = (HtmlParserResult) ri.getParserResult();
+                        _result[0] = (HtmlParsingResult) ri.getParserResult();
                     }
                 }
             });
@@ -145,7 +139,7 @@ public class JsfUtils {
             }
 
             //try find the html root node first
-            final HtmlParserResult result = _result[0];
+            final HtmlParsingResult result = _result[0];
             AstNode root = null;
             //no html root node, we need to find a root node of some other ast tree
             //belonging to some namespace
@@ -200,8 +194,8 @@ public class JsfUtils {
                 String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
                 if (alreadyDeclaredPrefix == null) {
                     //try composite component library default prefix
-                    if (library instanceof CompositeComponentLibrary) {
-                        String defaultNS = ((CompositeComponentLibrary) library).getDefaultNamespace();
+                    if (library.getType() == LibraryType.COMPOSITE) {
+                        String defaultNS = library.getDefaultNamespace();
                         alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
                     }
                 }
@@ -227,7 +221,8 @@ public class JsfUtils {
 
                             int offset_shift = 0;
                             Iterator<Library> libsItr = imports.keySet().iterator();
-                            int originalInsertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
+                            Parser.Result parsingApiResult = (Parser.Result)result;
+                            int originalInsertPosition = parsingApiResult.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
                             if (originalInsertPosition == -1) {
                                 //error, cannot recover
                                 imports.clear();
@@ -269,70 +264,5 @@ public class JsfUtils {
         return Collections.emptyMap();
     }
 
-    /**
-     * Creates an OffsetRange of source document offsets for given embedded offsets.
-     */
-    public static OffsetRange createOffsetRange(Snapshot snapshot, String documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
 
-        int originalFrom = 0;
-        int originalTo = documentText.length();
-
-        //try to find nearest original offset if the embedded offsets cannot be directly recomputed
-        //from - try backward
-        for (int i = embeddedOffsetFrom; i >= 0; i--) {
-            int originalOffset = snapshot.getOriginalOffset(i);
-            if (originalOffset != -1) {
-                originalFrom = originalOffset;
-                break;
-            }
-        }
-
-        try {
-            //some heuristic - use end of line where the originalFrom lies
-            //in case if we cannot match the end offset at all
-            originalTo = GsfUtilities.getRowEnd(documentText, originalFrom);
-        } catch (BadLocationException ex) {
-            //ignore, end of the document will be used as end offset
-        }
-
-        //to - try forward
-        for (int i = embeddedOffsetTo; i <= snapshot.getText().length(); i++) {
-            int originalOffset = snapshot.getOriginalOffset(i);
-            if (originalOffset != -1) {
-                originalTo = originalOffset;
-                break;
-            }
-        }
-
-        return new OffsetRange(originalFrom, originalTo);
-    }
-
-    public static Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
-        for (Embedding e : resultIterator.getEmbeddings()) {
-            if (e.getMimeType().equals(mimeType)) {
-                return resultIterator.getResultIterator(e).getParserResult();
-            }
-        }
-        return null;
-    }
-
-    /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
-    public static Map<String, Library> getDeclaredLibraries(HtmlParserResult result) {
-        //find all usages of composite components tags for this page
-        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Map<String, Library> declaredLibraries = new HashMap<String, Library>();
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(result.getSnapshot().getSource().getFileObject());
-        if (jsfSupport != null) {
-            Map<String, ? extends Library> libs = jsfSupport.getLibraries();
-
-            for (String namespace : declaredNamespaces) {
-                Library lib = libs.get(namespace);
-                if (lib != null) {
-                    declaredLibraries.put(namespace, lib);
-                }
-            }
-        }
-        return declaredLibraries;
-    }
-    
 }

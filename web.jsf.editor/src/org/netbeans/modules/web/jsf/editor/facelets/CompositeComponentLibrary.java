@@ -56,6 +56,7 @@ import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.util.NbBundle;
 
@@ -76,6 +77,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace) {
         super(support, namespace);
         this.libraryName = libraryName;
+    }
+
+    @Override
+    public LibraryType getType() {
+        return LibraryType.COMPOSITE;
     }
 
     @Override

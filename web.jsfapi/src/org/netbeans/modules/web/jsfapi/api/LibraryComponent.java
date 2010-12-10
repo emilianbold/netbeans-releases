@@ -40,43 +40,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor;
-
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.web.jsfapi.api;
 
 /**
  *
  * @author marekfukala
  */
-@ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
-public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTemplateAttributesProvider {
+public interface LibraryComponent {
 
-    private static final String DOCTYPE_TEMPLATE_PROPERTY_NAME = "doctype"; //NOI18N
+    public String getName();
 
-    @Override
-    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        Project project = FileOwnerQuery.getOwner(target.getPrimaryFile());
-        HtmlVersion version;
-        if(project == null) {
-            version = HtmlVersion.getDefaultVersion();
-        } else {
-            String mimeType = template.getPrimaryFile().getMIMEType();
-            boolean xhtml = "text/xhtml".equals(mimeType); //NOI18N
-            version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
-            if(version == null) {
-                version = xhtml ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion();
-            }
-        }
+    public Tag getTag();
 
-        return Collections.singletonMap(DOCTYPE_TEMPLATE_PROPERTY_NAME, version.getDoctypeDeclaration());
-    }
-
+    public String[][] getDescription();
+    
 }

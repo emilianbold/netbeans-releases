@@ -104,7 +104,7 @@ public class JsfVariablesModel {
         // The access is slower however
 
         JsfSupportImpl sup = JsfSupportImpl.findFor(result.getSnapshot().getSource());
-        Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getFaceletsLibraries().keySet();
+        Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getLibraries().keySet();
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
 
         contextsList = new TreeSet<JsfVariableContext>();

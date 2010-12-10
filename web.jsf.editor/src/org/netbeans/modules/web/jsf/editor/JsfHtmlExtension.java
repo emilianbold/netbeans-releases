@@ -176,7 +176,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return;
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
 
@@ -242,7 +242,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -328,7 +328,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -428,7 +428,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 return Collections.emptyList();
             }
 
-            Collection<String> nss = new ArrayList<String>(jsfs.getFaceletsLibraries().keySet());
+            Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
             //add also xhtml ns to the completion
             nss.add(JsfUtils.XHTML_NS);
             for(String namespace : nss) {
@@ -454,7 +454,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (jsfs == null) {
                 return DeclarationLocation.NONE;
             }
-            FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(namespace);
+            FaceletsLibrary lib = jsfs.getLibraries().get(namespace);
             if (lib == null) {
                 return DeclarationLocation.NONE;
             }
