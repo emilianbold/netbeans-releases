@@ -116,10 +116,12 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -1157,6 +1159,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
+        
+        // set terminal mode on windows, see IZ 193220
+        if (getHost().getPlatform() == Platform.Windows_x86 &&
+                gdi.getConsoleType(Host.isRemote(getHost())) == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            send("set new-console"); //NOI18N
+        }
 
         // Tell gdb what to debug
         debug(gdi);
