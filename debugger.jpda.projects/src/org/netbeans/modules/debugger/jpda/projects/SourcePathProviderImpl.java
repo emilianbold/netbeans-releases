@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +111,7 @@ import org.openide.util.WeakListeners;
 @SourcePathProvider.Registration(path="netbeans-JPDASession")
 public class SourcePathProviderImpl extends SourcePathProvider {
     
-    private static boolean          verbose = 
+    private static final boolean    verbose =
         System.getProperty ("netbeans.debugger.sourcepathproviderimpl") != null;
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.projects");
@@ -135,6 +136,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private PropertyChangeSupport   pcs;
     private PathRegistryListener    pathRegistryListener;
     private File                    baseDir;
+
+    private final Map<String, String> urlCache = new URLCacheMap();
+    private final Map<String, String> urlCacheGlobal = new URLCacheMap();
     
     public SourcePathProviderImpl () {
         pcs = new PropertyChangeSupport (this);
@@ -589,8 +593,23 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @return url or <code>null</code>
      */
     public String getURL (String relativePath, boolean global) {    if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
-        FileObject fo;
         relativePath = normalize(relativePath);
+        if (global) {
+            synchronized (urlCacheGlobal) {
+                if (urlCacheGlobal.containsKey(relativePath)) {
+                    if (verbose) System.out.println("Have cached global path for '"+relativePath+"' url = "+urlCacheGlobal.get(relativePath));
+                    return urlCacheGlobal.get(relativePath);    // URL or null
+                }
+            }
+        } else {
+            synchronized (urlCache) {
+                if (urlCache.containsKey(relativePath)) {
+                    if (verbose) System.out.println("Have cached path for '"+relativePath+"' url = "+urlCache.get(relativePath));
+                    return urlCache.get(relativePath);  // URL or null
+                }
+            }
+        }
+        FileObject fo;
         ClassPath ss = null;
         ClassPath os = null;
         synchronized (this) {
@@ -613,12 +632,30 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         
         if (verbose) System.out.println ("SPPI:   fo " + fo);
 
-        if (fo == null) return null;
-        try {
-            return fo.getURL ().toString ();
-        } catch (FileStateInvalidException e) {                     if (verbose) System.out.println ("SPPI:   FileStateInvalidException");
-            return null;
+        String url;
+        if (fo == null) {
+            url = null;
+        } else {
+            try {
+                url = fo.getURL ().toString ();
+            } catch (FileStateInvalidException e) {         if (verbose) System.out.println ("SPPI:   FileStateInvalidException");
+                url = null;
+            }
         }
+        if (global) {
+            synchronized (urlCacheGlobal) {
+                if (verbose) System.out.println("Storing path into global cache for '"+relativePath+"' url = "+url);
+                urlCacheGlobal.put(relativePath, url);
+                if (verbose) System.out.println("  Global cache ("+urlCacheGlobal.size()+") = "+urlCacheGlobal);
+            }
+        } else {
+            synchronized (urlCache) {
+                if (verbose) System.out.println("Storing path into cache for '"+relativePath+"' url = "+url);
+                urlCache.put(relativePath, url);
+                if (verbose) System.out.println("  Cache = ("+urlCache.size()+") "+urlCache);
+            }
+        }
+        return url;
     }
     
     /**
@@ -806,7 +843,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return (additionalSourceRoots == null) ? new String[] {} : additionalSourceRoots.toArray(new String[]{});
     }
 
-    public synchronized void reorderOriginalSourceRoots(int[] permutation) {
+    public void reorderOriginalSourceRoots(int[] permutation) {
+        synchronized (this) {
         String[] srcRoots = getOriginalSourceRoots();
         if (permutation == null) {
             // Restting the order to the original
@@ -844,6 +882,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
         smartSteppingSourcePath = createClassPath(orderedSmartSteppingRoots);
         storeSourceRootsOrder(baseDir, srcRoots, sourcePathPermutation);
+        }
+        // Clear caches so that the new order is taken into account
+        synchronized (urlCache) {
+            urlCache.clear();
+        }
+        synchronized (urlCacheGlobal) {
+            urlCacheGlobal.clear();
+        }
     }
     
     /**
@@ -876,6 +922,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         
+        // Clear caches so that the new source roots are taken into account
+        synchronized (urlCache) {
+            urlCache.clear();
+        }
+        synchronized (urlCacheGlobal) {
+            urlCacheGlobal.clear();
+        }
+
         if (oldCP_ptr[0] != null) {
             pcs.firePropertyChange (PROP_SOURCE_ROOTS, oldCP_ptr[0], newCP_ptr[0]);
         }
@@ -904,6 +958,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         
+        // Clear caches so that the new source roots are taken into account
+        synchronized (urlCache) {
+            urlCache.clear();
+        }
+        synchronized (urlCacheGlobal) {
+            urlCacheGlobal.clear();
+        }
+
         if (oldCP_ptr[0] != null) {
             pcs.firePropertyChange (PROP_SOURCE_ROOTS, oldCP_ptr[0], newCP_ptr[0]);
         }
@@ -1396,6 +1458,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                             SourcePathProviderImpl.createClassPath(
                                 sourcePaths.toArray(new FileObject[0]));
                 }
+                // Clear caches so that the new source roots are taken into account
+                synchronized (urlCache) {
+                    urlCache.clear();
+                }
+                synchronized (urlCacheGlobal) {
+                    urlCacheGlobal.clear();
+                }
                 pcs.firePropertyChange (PROP_SOURCE_ROOTS, null, null);
             }
         }
@@ -1432,6 +1501,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     smartSteppingSourcePath =
                             SourcePathProviderImpl.createClassPath(
                                 sourcePaths.toArray(new FileObject[0]));
+                }
+                // Clear caches so that the new source roots are taken into account
+                synchronized (urlCache) {
+                    urlCache.clear();
+                }
+                synchronized (urlCacheGlobal) {
+                    urlCacheGlobal.clear();
                 }
                 pcs.firePropertyChange (PROP_SOURCE_ROOTS, null, null);
             }
@@ -1473,6 +1549,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             }
             if (changed) {
+                // Clear caches so that the new source roots are taken into account
+                synchronized (urlCache) {
+                    urlCache.clear();
+                }
+                synchronized (urlCacheGlobal) {
+                    urlCacheGlobal.clear();
+                }
                 pcs.firePropertyChange (PROP_SOURCE_ROOTS, null, null);
             }
         }
@@ -1492,5 +1575,20 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             return r1.compareTo(r2);
         }
         
+    }
+
+    private static final class URLCacheMap extends LinkedHashMap<String, String> {
+
+        private static final int URL_CACHE_SIZE = 500;
+
+        public URLCacheMap() {
+            super(URL_CACHE_SIZE, .1f, true);
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+            return size() >= URL_CACHE_SIZE;
+        }
+
     }
 }
