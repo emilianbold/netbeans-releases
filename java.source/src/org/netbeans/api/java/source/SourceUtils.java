@@ -69,6 +69,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Scope.ImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
@@ -364,7 +365,11 @@ public class SourceUtils {
         TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {
             JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-            unit.namedImportScope = unit.namedImportScope.dupUnshared();
+            ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+            for (Symbol symbol : unit.namedImportScope.getElements()) {
+                importScope.enter(symbol);
+            }
+            unit.namedImportScope = importScope;
             unit.namedImportScope.enterIfAbsent((Symbol) te);
         }        
         return sName;

@@ -123,6 +123,10 @@ public class PullUpTransformer extends RefactoringVisitor {
                             mod.remove(Modifier.PRIVATE);
                             mod.remove(Modifier.ABSTRACT);
                         }
+                        if (mod.contains(Modifier.PRIVATE)) {
+                            mod.remove(Modifier.PRIVATE);
+                            mod.add(Modifier.PROTECTED);
+                        }
                         MethodTree nju = make.Method(
                                 make.Modifiers(mod),
                                 method.getName(),
@@ -182,6 +186,11 @@ public class PullUpTransformer extends RefactoringVisitor {
                             // in case of interface always remove pulled method
                             njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
                             rewrite(tree, njuClass);
+                        } else if (members[i].isMakeAbstract() && currentMember.getModifiers().contains(Modifier.PRIVATE)) {
+                            MethodTree method = (MethodTree) workingCopy.getTrees().getTree(currentMember);
+                            ModifiersTree mods = make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE);
+                            mods = make.addModifiersModifier(mods, targetType.getKind().isInterface() ? Modifier.PUBLIC:Modifier.PROTECTED);
+                            rewrite(method.getModifiers(), mods);
                         }
                     }
                 }
