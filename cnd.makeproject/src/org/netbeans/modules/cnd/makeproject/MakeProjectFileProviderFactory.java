@@ -205,18 +205,22 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             if (!MakeOptions.getInstance().isFullFileIndexer()) {
                 cancel.set(false);
                 Project project = context.getProject();
-                ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                if (provider != null && provider.gotDescriptor()) {
-                    MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                    Sources srcs = project.getLookup().lookup(Sources.class);
-                    final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
-                    if (genericSG != null && genericSG.length > 0) {
-                        if (genericSG[0].getRootFolder().equals(context.getRoot())) {
-                            NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                            computeFiles(project, descriptor, matcher, result);
+                if (project != null) {
+                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (provider != null && provider.gotDescriptor()) {
+                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                        Sources srcs = project.getLookup().lookup(Sources.class);
+                        final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
+                        if (genericSG != null && genericSG.length > 0) {
+                            if (genericSG[0].getRootFolder().equals(context.getRoot())) {
+                                NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                computeFiles(project, descriptor, matcher, result);
+                            }
                         }
+                        return false;
                     }
-                    return false;
+                } else {
+                    System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no project for source root " + context.getRoot());// NOI18N
                 }
             }
             return false;
