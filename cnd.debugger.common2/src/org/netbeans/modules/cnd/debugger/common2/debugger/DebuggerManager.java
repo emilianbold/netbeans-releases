@@ -107,6 +107,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.PioTopComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo.Factory;
 import org.netbeans.modules.cnd.debugger.common2.DbgGuiModule;
 
@@ -1225,17 +1227,19 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         ndi.setPid(dt.getPid());
 
         //ndi.setTarget(dt.getExecutable());
-	/* CR 6997426
 	Host host = new Host();
 	host = CndRemote.hostFromName(host, dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	String execPath = executor.readlink(dt.getPid());
-	ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
-	 *
-	 */
+	EngineDescriptor engine = ndi.getEngineDescriptor();
+	// CR 6997426, cause gdb problem IZ 193248
+	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE))
+	    ndi.setTarget("-");
+	else
+	    ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
 
-	// CR 6997426
-	ndi.setTarget("-"); // NOI18N
+	// CR 6997426, cause gdb problem IZ 193248
+	// ndi.setTarget("-"); // NOI18N
         ndi.setConfiguration(conf);
         ndi.setHostName(dt.getHostName());
         ndi.setAction(ATTACH);
