@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="index-based-is-main">
+             <api name="general"/>
+             <summary>Added a method for checking the existence of the main method using index only</summary>
+             <version major="0" minor="71"/>
+             <date day="10" month="12" year="2010"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a new version of the <code>isMain</code> method into <code>org.netbeans.api.java.source.SourceUtils</code> which allows
+                 check based only on index information.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="191648"/>
+        </change>
         <change id="jdk7-update-2">
              <api name="general"/>
              <summary>DisjointTypeTree renamed to DisjunctiveTypeTree, AnnotationTypeTree has been removed</summary>

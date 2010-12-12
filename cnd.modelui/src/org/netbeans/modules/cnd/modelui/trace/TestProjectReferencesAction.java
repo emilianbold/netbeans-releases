@@ -227,7 +227,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             filesMap = fileTimes;
             // collect mode
             if (passedThreshold > 0) {
-                err.println("collect slow files");// NOI18N
+                err.println("collect files slower than " + passedThreshold + "ms");// NOI18N
                 filesMap.clear();
             }
         }
