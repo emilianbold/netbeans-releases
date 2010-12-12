@@ -54,6 +54,7 @@ import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -224,6 +225,11 @@ public final class Utils {
         retVal = FileUtil.getConfigFile(resource);
         
         return retVal;
+    }
+    
+    public static String getInstanceReleaseID(J2eeModuleProvider jmp) {
+        return jmp.getServerInstanceID().
+                replaceFirst(".*\\]deployer:","").replaceFirst("\\:.*$", ""); // NOI18N
     }
 
 }

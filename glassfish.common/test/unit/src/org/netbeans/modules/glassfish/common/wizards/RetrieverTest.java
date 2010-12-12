@@ -150,7 +150,7 @@ public class RetrieverTest implements Retriever.Updater {
                 System.out.println("message="+message);
                 System.out.println("status="+status);
                 assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
-                assert status.equals("I/O Exception: java.tent") : status;
+                assert status.startsWith("I/O Exception: ") : status;
             } finally {
                 deleteJunk(file);
             }
