@@ -234,7 +234,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
-                    Object exported = b.getHeaders().get("Export-Package");
+                    Object exported = b.getHeaders("").get("Export-Package");
                     if (exported instanceof String) {
                         for (String p : exported.toString().split(",")) { // NOI18N
                             int semic = p.indexOf(';');
@@ -266,7 +266,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private static boolean isRealBundle(Bundle b) {
-        return b.getHeaders().get("Fragment-Host") == null; // NOI18N
+        return b.getHeaders("").get("Fragment-Host") == null; // NOI18N
     }
 
     @Override
