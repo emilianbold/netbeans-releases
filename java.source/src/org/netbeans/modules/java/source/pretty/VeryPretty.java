@@ -86,6 +86,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -122,7 +123,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private int lastReadCommentIdx = -1;
     private JCCompilationUnit origUnit;
     private CompilationInfo cInfo;
-    private CommentHandler comments;
+    private CommentHandlerService comments;
 
     private int fromOffset = -1;
     private int toOffset = -1;
@@ -317,8 +318,10 @@ public final class VeryPretty extends JCTree.Visitor {
             @Override
             public Void scan(Tree node, Void p) {
                 if (node != null) {
-                    CommentSet old = comments.getComments(node);
+                    CommentSetImpl old = comments.getComments(node);
                     realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
+                    old.clearComments(CommentSet.RelativePosition.INLINE);
+                    old.clearComments(CommentSet.RelativePosition.TRAILING);
                 }
                 return super.scan(node, p);
             }
