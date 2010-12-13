@@ -1270,6 +1270,16 @@ public class AstRenderer {
     }
 
     /**
+     * Returns first sibling (or just passed ast), skips inline
+     */
+    public static AST getFirstSiblingSkipInline(AST ast) {
+        while (ast != null && isInline(ast.getType())) {
+            ast = ast.getNextSibling();
+        }
+        return ast;
+    }    
+    
+    /**
      * Returns first child, skips cv-qualifiers and storage class specifiers
      */
     public static AST getFirstChildSkipQualifiers(AST ast) {
@@ -1329,6 +1339,18 @@ public class AstRenderer {
         }
     }
 
+    public static boolean isInline(int tokenType) {
+        switch (tokenType) {
+            case CPPTokenTypes.LITERAL_inline:
+            case CPPTokenTypes.LITERAL__inline:
+            case CPPTokenTypes.LITERAL___inline:
+            case CPPTokenTypes.LITERAL___inline__:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
     /**
      * Checks whether the given AST is a variable declaration(s), 
      * if yes, creates variable(s), adds to container(s), returns true,
