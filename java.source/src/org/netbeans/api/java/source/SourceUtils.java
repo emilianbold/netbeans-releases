@@ -522,7 +522,7 @@ public class SourceUtils {
 
                 public FileObject run() throws IOException, InterruptedException {
                     for (FileObject fo : fos) {
-                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL());
+                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
                         if (ci != null) {
                             String sourceName = ci.getSourceName(binaryName);
                             if (sourceName != null) {

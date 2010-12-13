@@ -449,7 +449,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void markDirtyFiles(final Context context, final Iterable<? extends Indexable> files) {
-        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI());
+        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
         if (indexImpl != null) {
             for (Indexable i : files) {
                 indexImpl.setDirty(i.getURL());
@@ -779,11 +779,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     //Already checked
                                     return true;
                                 }
-                                try {
-                                    return uq.isValid();
-                                } finally {
-                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                                }
+                                return uq.isValid();
                             }
                         });
                     }
@@ -824,11 +820,21 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return false;
             }
 
-        }
+        }        
 
         @Override
         public void scanFinished(final Context context) {
-            //Not needed now
+            try {
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
+                if (uq == null) {
+                    //Closing
+                    return;
+                }
+                uq.setState(ClassIndexImpl.State.INITIALIZED);            
+                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         @Override
