@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
-import java.io.IOException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -363,6 +365,33 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "         }\n" +
                        "     }" +
                        "}").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testNoEquals() throws Exception {
+        setSourceLevel("1.7");
+
+        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", HintsSettings.getCurrentProfileId());
+        boolean oldSetting = p.getBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, ConvertToStringSwitch.DEF_ALSO_EQ);
+
+        try {
+            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, false);
+            performAnalysisTest("test/Test.java",
+                                "package test;" +
+                                "public class Test {" +
+                                "     public void test() throws Exception {" +
+                                "         String g = null;\n" +
+                                "         if (\"j\" == g) {" +
+                                "             System.err.println(1);" +
+                                "         } else if (\"l\" == g) {" +
+                                "             System.err.println(2);" +
+                                "         } else {\n" +
+                                "             System.err.println(3);" +
+                                "         }\n" +
+                                "     }" +
+                                "}");
+        } finally {
+            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, oldSetting);
+        }
     }
 
     @Override
