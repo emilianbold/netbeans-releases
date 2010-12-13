@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
@@ -160,7 +161,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
 
     //memory view
-    protected MemoryWindow memoryWindow;
+    protected MemoryWindow memoryWindow = null;
+    
+    //registers view
+    protected RegistersWindow registersWindow = null;
 
     protected Executor executor;
 
@@ -1618,5 +1622,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
         }
         return null;
+    }
+
+    public void registerMemoryWindow(MemoryWindow w) {
+        memoryWindow = w;
+    }
+
+    public void registerRegistersWindow(RegistersWindow w) {
+        registersWindow = w;
     }
 }
