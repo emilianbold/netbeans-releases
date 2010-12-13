@@ -2118,6 +2118,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             evalMIVar(v);
         }
     }
+    
+    public static final String STRUCT_VALUE = "{...}"; // NOI18N
 
     private void updateValue(Variable v, MIRecord varvalue) {
         MITList value_results = varvalue.results();
@@ -2127,7 +2129,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             value = miValue.asConst().value();
         }
 	if (value == null) {
-	    value = "{...}"; // NOI18N
+	    value = STRUCT_VALUE;
+        } else if (value.startsWith("[") && value.endsWith("]")) { //NOI18N
+            // detect arrays, see IZ 192927
+            value = STRUCT_VALUE;
         }
         v.setAsText(value);
         GdbVariable gv = (GdbVariable) v;
