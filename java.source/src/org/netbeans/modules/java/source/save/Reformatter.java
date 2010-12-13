@@ -1315,6 +1315,8 @@ public class Reformatter implements ReformatTask {
                     if (node instanceof FakeBlock) {
                         appendToDiff(getNewlines(1) + getIndent());
                         col = indent;
+                    } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT) {
+                        spaces(0, true);
                     } else if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE) {
                         blankLines();
                     }
