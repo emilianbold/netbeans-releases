@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
@@ -128,6 +129,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
     public static String ERR_JAVAHL_NOT_SUPPORTED = "unsupported javahl version";
+    private static boolean supportedMetadataFormat;
 
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
@@ -146,6 +148,8 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                     Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5");
                 }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());
+            } else {
+                supportedMetadataFormat = cmd.isMetadataFormatSupported();
             }
         } catch (IOException ex) {
             Subversion.LOG.log(Level.FINE, null, ex);
@@ -756,26 +760,56 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     // parser start
     public ISVNStatus getSingleStatus(File file) throws SVNClientException {
-        try {
-            return wcParser.getSingleStatus(file);
-        } catch (LocalSubversionException ex) {
-            throw new SVNClientException(ex);
+        if (supportedMetadataFormat) {
+            try {
+                return wcParser.getSingleStatus(file);
+            } catch (LocalSubversionException ex) {
+                throw new SVNClientException(ex);
+            }
+        } else {
+            try {
+                ISVNStatus[] statuses = getStatus(new File[]{file});
+                return statuses.length > 0 ? statuses[0] : null;
+            } catch (SVNClientException ex) {
+                if (!supportedMetadataFormat && SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                    return new SVNStatusUnversioned(file);
+                } else {
+                    throw ex;
+                }
+            }
         }
     }
 
     public ISVNStatus[] getStatus(File file, boolean descend, boolean getAll) throws SVNClientException {
-        try {
-            return wcParser.getStatus(file, descend, getAll);
-        } catch (LocalSubversionException ex) {
-            throw new SVNClientException(ex);
+        if (supportedMetadataFormat) {
+            try {
+                return wcParser.getStatus(file, descend, getAll);
+            } catch (LocalSubversionException ex) {
+                throw new SVNClientException(ex);
+            }
+        } else {
+            return getStatus(file, descend, getAll, false, true);
         }
     }
 
     public ISVNInfo getInfoFromWorkingCopy(File file) throws SVNClientException {
-        try {
-            return wcParser.getInfoFromWorkingCopy(file);
-        } catch (LocalSubversionException ex) {
-            throw new SVNClientException(ex);
+        if (supportedMetadataFormat) {
+            try {
+                return wcParser.getInfoFromWorkingCopy(file);
+            } catch (LocalSubversionException ex) {
+                throw new SVNClientException(ex);
+            }
+        } else {
+            try {
+                ISVNInfo[] infos = getInfo(new File[] { file }, null, null);
+                return infos.length > 0 ? infos[0] : null;
+            } catch (SVNClientException ex) {
+                if (!supportedMetadataFormat && SvnClientExceptionHandler.isNodeNotFound(ex.getMessage())) {
+                    return wcParser.getUnknownInfo(file);
+                } else {
+                    throw ex;
+                }
+            }
         }
     }
 
@@ -840,11 +874,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     private boolean hasMetadata(File file) {
-        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
+        return SvnUtils.hasMetadata(file);
     }
 
     private boolean isManaged(File file) {
-        return hasMetadata(file.getParentFile()) || hasMetadata(file);
+        boolean managed = true;
+        if (supportedMetadataFormat) {
+            managed = hasMetadata(file.getParentFile()) || hasMetadata(file);
+        }
+        return managed;
     }
 
     // unsupported start
@@ -1019,8 +1057,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
-    public ISVNProperty[] getProperties(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNProperty[] getProperties(SVNUrl url, SVNRevision revision, SVNRevision pegRevision) throws SVNClientException {
+        ListPropertiesCommand cmd = new ListPropertiesCommand(url, revision.toString(), false);
+        exec(cmd);
+        List<String> names = cmd.getPropertyNames();
+        List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
+        for (String name : names) {
+            props.add(propertyGet(url, name));
+        }
+        return props.toArray(new ISVNProperty[props.size()]);
     }
 
     @Override

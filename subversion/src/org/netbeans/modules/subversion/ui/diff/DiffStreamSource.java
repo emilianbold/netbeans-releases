@@ -244,7 +244,7 @@ public class DiffStreamSource extends StreamSource {
     private void initProperty() throws IOException {
         PropertiesClient client = new PropertiesClient(baseFile);
         if (Setup.REVISION_BASE.equals(revision)) {
-            byte [] value = client.getBaseProperties().get(propertyName);
+            byte [] value = client.getBaseProperties(true).get(propertyName);
             propertyValue = value != null ? new MultiDiffPanel.Property(value) : null;
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             byte [] value = client.getProperties().get(propertyName);

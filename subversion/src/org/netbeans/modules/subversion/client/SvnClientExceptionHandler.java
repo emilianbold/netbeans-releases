@@ -808,6 +808,11 @@ public class SvnClientExceptionHandler {
         message = message.toLowerCase();
         return message.contains("is not under version control"); //NOI18N
     }
+
+    public static boolean isNodeNotFound (String message) {
+        message = message.toLowerCase();
+        return message.contains("svn: the node") && message.contains("not found"); //NOI18N
+    }
     
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoCliSvnClient(ex.getMessage())) {
