@@ -297,15 +297,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            List<String> vector = getListData();
-            Object[] arr = vector.toArray();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == o) {
-                    vector.remove(i);
-                    vector.add(i, newS);
-                    break;
-                }
-            }
+            replaceElement(o, newS);
         }
 
         @Override
@@ -400,15 +392,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            List<String> vector = getListData();
-            Object[] arr = vector.toArray();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == o) {
-                    vector.remove(i);
-                    vector.add(i, newS);
-                    break;
-                }
-            }
+            replaceElement(o, newS);
         }
 
         @Override

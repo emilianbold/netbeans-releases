@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -100,7 +99,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     @Override
     public int getSelectedIndex() {
         int index = getTargetList().getSelectedRow();
-        if (index >= 0 && index < listData.size()) {
+        if (index >= 0 && index < getListDataSize()) {
             return index;
         } else {
             return 0;
@@ -113,7 +112,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     }
 
     @Override
-    protected void setData(Vector data) {
+    protected void setData(List<LibraryItem> data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
         getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -191,7 +190,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             if (col == 0) {
                 return super.getCellEditor(row, col);
             } else if (col == 1) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) listData.elementAt(row);
+                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) getElementAt(row);
                 Project project = projectItem.getProject(baseDir);
                 if (project == null) {
                     return super.getCellEditor(row, col);
@@ -205,9 +204,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
             } else {
                 // col 2
-                LibraryItem libraryItem = listData.elementAt(row);
+                LibraryItem libraryItem = getElementAt(row);
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) listData.elementAt(row);
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) getElementAt(row);
                     JCheckBox checkBox = new JCheckBox();
                     checkBox.setSelected(((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().getBuild());
                     return new DefaultCellEditor(checkBox);
@@ -241,7 +240,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            Object element = listData.elementAt(row);
+            Object element = getElementAt(row);
             if (!(element instanceof LibraryItem)) {
                 // FIXUP ERROR!
                 label.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/resources/blank.gif", false)); // NOI18N
@@ -301,17 +300,17 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         @Override
         public int getRowCount() {
-            return listData.size();
+            return getListDataSize();
         }
 
         @Override
         public Object getValueAt(int row, int col) {
-            return listData.elementAt(row);
+            return getElementAt(row);
         }
 
         @Override
         public boolean isCellEditable(int row, int col) {
-            Object element = listData.elementAt(row);
+            Object element = getElementAt(row);
             LibraryItem libraryItem = (LibraryItem) element;
             if (col == 0) {
                 return libraryItem.canEdit();
@@ -346,7 +345,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             if (value == null) {
                 return; // See IZ 193075
             }
-            LibraryItem libraryItem = listData.elementAt(row);
+            LibraryItem libraryItem = getElementAt(row);
             if (col == 0) {
                 libraryItem.setValue((String) value);
                 fireTableCellUpdated(row, col);
@@ -354,7 +353,6 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 // FIXUP: should do a deep clone of the list
                 MakeArtifact oldMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact();
                 boolean abs = CndPathUtilitities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
-                listData.removeElementAt(row);
                 MakeArtifact makeArtifact = ((MakeArtifactWrapper) value).getMakeArtifact();
                 String projectLocation = makeArtifact.getProjectLocation();
                 String workingDirectory = makeArtifact.getWorkingDirectory();
@@ -365,7 +363,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
                 makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
                 makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
-                listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
+                replaceElement(libraryItem, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
@@ -376,8 +374,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
                     MakeArtifact newMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().clone();
                     newMakeArtifact.setBuild(!newMakeArtifact.getBuild());
-                    listData.removeElementAt(row);
-                    listData.add(row, new LibraryItem.ProjectItem(newMakeArtifact));
+                    replaceElement(libraryItem, new LibraryItem.ProjectItem(newMakeArtifact));
                 }
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
