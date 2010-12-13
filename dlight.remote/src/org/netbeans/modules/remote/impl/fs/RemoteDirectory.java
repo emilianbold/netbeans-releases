@@ -51,7 +51,11 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -279,10 +283,45 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.getInstance().log(Level.FINEST, "Synchronizing remote path {0}{1}{2}", new Object[]{execEnv, ':', remotePath});
             directoryReader.readDirectory();
             fileSystem.incrementDirSyncCount();
+            Map<String, List<DirectoryStorage.Entry>> dupLowerNames = new HashMap<String, List<DirectoryStorage.Entry>>();
+            boolean hasDups = false;
             List<DirectoryStorage.Entry> entries = directoryReader.getEntries();
             for (DirectoryStorage.Entry entry : entries) {
                 String cacheName = RemoteFileSystemUtils.escapeFileName(entry.getName());
                 entry.setCache(cacheName); //TODO:rfs case sensivity
+                if (!RemoteFileSystemUtils.isSystemCaseSensitive()) {
+                    String lowerCacheName = entry.getCache().toLowerCase();
+                    List<DirectoryStorage.Entry> dupEntries = dupLowerNames.get(lowerCacheName);
+                    if (dupEntries == null) {
+                        dupEntries = new ArrayList<Entry>();
+                        dupLowerNames.put(lowerCacheName, dupEntries);
+                    } else {
+                        hasDups = true;
+                    }
+                    dupEntries.add(entry);
+                }
+            }
+            if (hasDups) {
+                for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry : dupLowerNames.entrySet()) {
+                    List<DirectoryStorage.Entry> dupEntries = mapEntry.getValue();
+                    if (dupEntries.size() > 1) {
+                        for (int i = 1; i < dupEntries.size(); i++) {
+                            DirectoryStorage.Entry entry = dupEntries.get(i);
+                            for (int j = 0; j < Integer.MAX_VALUE; j++) {
+                                String cacheName = mapEntry.getKey() + '_' + j;
+                                String lowerCacheName = cacheName.toLowerCase();
+                                if (!dupLowerNames.containsKey(lowerCacheName)) {
+                                    RemoteLogger.getInstance().log(Level.FINEST,
+                                            "RemoteDirectory: resolving cache names conflict in {0}: {1} -> {2}",
+                                            new Object[] { cache.getAbsolutePath(), entry.getCache(), cacheName });
+                                    entry.setCache(cacheName);
+                                    dupLowerNames.put(lowerCacheName, Collections.singletonList(entry));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             storage.setEntries(entries);
             storage.store();

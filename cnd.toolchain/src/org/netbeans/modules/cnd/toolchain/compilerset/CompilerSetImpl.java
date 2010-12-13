@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerProvider;
@@ -325,12 +324,10 @@ public final class CompilerSetImpl extends CompilerSet {
     @Override
     public Charset getEncoding() {
         if (charset == null) {
-            Properties properties = System.getProperties();
-            System.err.println(properties);
-            //charset = Charset.forName("UTF-8"); //NOI18N
-            //if (charset == null) {
+            charset = Charset.forName("UTF-8"); //NOI18N
+            if (charset == null) {
                 charset = Charset.defaultCharset();
-            //}
+            }
         }
         return charset;
     }

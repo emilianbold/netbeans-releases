@@ -40,50 +40,60 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
+import java.io.OutputStreamWriter;
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
-import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
-import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
-
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileObject;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiTest extends NativeExecutionBaseTestSuite {
+public class RefreshTestCase extends RemoteFileTestBase {
 
-    @SuppressWarnings("unchecked")
-    public RemoteApiTest() {
-        this("Remote API",
-           RemoteFileSystemTestCase.class,
-           RemoteLinksTestCase.class,
-           RemotePathTestCase.class,
-           RemoteURLTestCase.class,
-           EscapeWindowsNameTestCase.class,
-           CaseSensivityTestCase.class,
-           DirectoryStorageTestCase.class,
-           DirectoryReaderTestCase.class);
+    public RefreshTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
 
-    @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new RemoteApiTest(testClass.getName(), testClass);
-    }
+    @ForAllEnvironments
+    public void testDirectoryExplicitRefresh() throws Exception {
+        String dir = mkTemp(true);
+        try {
+            String file1 = "file1.dat";
+            runScript("echo xxx > " + dir + '/' + file1);
+            FileObject dirFO = getFileObject(dir);
+            getFileObject(dirFO, file1);
 
-    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
+            String file2 = "file2.dat";
+            runScript("echo xxx > " + dir + '/' + file2);
+            FileObject fo2 = dirFO.getFileObject(file2);
+            assertNull("should be null now?!", fo2);
+            dirFO.refresh();
+            fo2 = dirFO.getFileObject(file2);
+            assertNotNull("Should not be null after refresh", fo2);
+
+            String file3 = "file3.dat";
+            runScript("echo xxx > " + dir + '/' + file3);
+            FileObject fo3 = dirFO.getFileObject(file3);
+            assertNull("should be null now?!", fo3);
+            rootFO.refresh();
+            fo3 = dirFO.getFileObject(file3);
+            assertNotNull("Should not be null after root refresh", fo3);
+        } finally {
+            if (dir != null) {
+                CommonTasksSupport.rmDir(execEnv, dir, true, new OutputStreamWriter(System.err));
+            }
+        }
     }
 
     public static Test suite() {
-        return new RemoteApiTest();
+        return RemoteApiTest.createSuite(RefreshTestCase.class);
     }
+
 }

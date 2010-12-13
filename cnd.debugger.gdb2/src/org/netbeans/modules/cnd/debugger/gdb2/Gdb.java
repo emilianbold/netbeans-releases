@@ -692,7 +692,7 @@ public class Gdb {
      * action, we're NOT asking dbx to do it - this we're actually doing
      * ourselves!!
      */
-    void pause(int pid, boolean silentStop) {
+    boolean pause(int pid, boolean silentStop) {
         // The following predicate is _not_ the same as isReceptive()
         if (debugger.state().isRunning && debugger.state().isProcess) {
 	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
@@ -704,8 +704,10 @@ public class Gdb {
 		ErrorManager.getDefault().annotate(e,
 		    "Sending kill signal to process failed"); // NOI18N
 		ErrorManager.getDefault().notify(e);
+                return false;
 	    }
         }
+        return true;
     }
 
     public static void dyingWords(String msg, IOPack ioPack) {

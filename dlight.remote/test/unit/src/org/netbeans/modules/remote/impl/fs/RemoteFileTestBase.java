@@ -51,12 +51,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 
@@ -129,6 +132,12 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return fo;
     }
 
+    protected FileObject getFileObject(FileObject base, String path) throws Exception {
+        FileObject fo = base.getFileObject(path);
+        assertNotNull("Null file object for " + path + " in " + base.getPath(), fo);
+        return fo;
+    }
+
     protected void upload(File file, String remotePath) throws Exception {
         StringWriter errWriter = new StringWriter();
         Future<Integer> task = CommonTasksSupport.uploadFile(file, execEnv, remotePath, -1, errWriter);
@@ -190,6 +199,39 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 //        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
 //    }
 
+    protected String runCommand(String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
+        assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
+        return res.output;
+    }
 
+    protected String runCommandInDir(String dir, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, execEnv, command, args);
+        assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
+                "\" in dir " + dir + " failed", res.isOK());
+        return res.output;
+    }
 
+    private String stringArrayToString(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
+            sb.append(' ').append(arg);
+        }
+        return sb.toString();
+    }
+
+    protected String runScript(String script) throws Exception {
+        final StringBuilder output = new StringBuilder();
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
+            public void processLine(String line) {
+                output.append(line).append('\n');
+                System.err.println(line);
+            }
+            public void reset() {}
+            public void close() {}
+        });
+        int rc = scriptRunner.execute();
+        assertEquals("Error running script", 0, rc);
+        return output.toString();
+    }
 }
