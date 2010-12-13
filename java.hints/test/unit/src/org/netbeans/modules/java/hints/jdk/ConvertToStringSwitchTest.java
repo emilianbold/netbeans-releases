@@ -321,6 +321,50 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "}");
     }
 
+    public void testComments1() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         //comment\n" +
+                       "         if (g == \"j\") {//foo1\n" +
+                       "             System.err.println(1);\n" +
+                       "             //foo2\n" +
+                       "         } else if (g == \"k\") {" +
+                       "             System.err.println(2);" +
+                       "         } else if (g == \"l\") {" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}",
+                       "2:9-2:11:verifier:Convert to switch",
+                       "FixImpl",
+                       ("package test;" +
+                       "public class Test {" +
+                       "     private int a, b;"+
+                       "     public void test() throws Exception {" +
+                       "         String g = null;" +
+                       "         //comment\n" +
+                       "         switch (g) {\n" +
+                       "             case \"j\":\n" +
+                       "                 //foo1\n" +
+                       "                 System.err.println(1);" +
+                       "                 //foo2\n" +
+                       "                 break;" +
+                       "             case \"k\":\n" +
+                       "                 System.err.println(2);" +
+                       "                 break;" +
+                       "             case \"l\":\n" +
+                       "                 System.err.println(3);" +
+                       "                 break;" +
+                       "         }\n" +
+                       "     }" +
+                       "}").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

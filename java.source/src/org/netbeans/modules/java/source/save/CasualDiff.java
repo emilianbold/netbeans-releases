@@ -81,7 +81,7 @@ public class CasualDiff {
 
     public static boolean OLD_TREES_VERBATIM = Boolean.parseBoolean(System.getProperty(WorkingCopy.class.getName() + ".keep-old-trees", "true"));
 
-    protected ListBuffer<Diff> diffs;
+    protected final Collection<Diff> diffs;
     protected CommentHandler comments;
     protected JCCompilationUnit oldTopLevel;
     protected WorkingCopy workingCopy;
@@ -103,7 +103,7 @@ public class CasualDiff {
     private boolean enumConstantPrint = false;
 
     protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
-        diffs = new ListBuffer<Diff>();
+        diffs = new LinkedHashSet<Diff>();
         comments = CommentHandlerService.instance(context);
         this.workingCopy = workingCopy;
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -116,11 +116,11 @@ public class CasualDiff {
         this.oldTrees = oldTrees;
     }
 
-    public com.sun.tools.javac.util.List<Diff> getDiffs() {
-        return diffs.toList();
+    private Collection<Diff> getDiffs() {
+        return diffs;
     }
 
-    public static com.sun.tools.javac.util.List<Diff> diff(Context context,
+    public static Collection<Diff> diff(Context context,
             WorkingCopy copy,
             TreePath oldTreePath,
             JCTree newTree,
@@ -198,13 +198,13 @@ public class CasualDiff {
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         String originalText = isCUT ? origText : origText.substring(start, end);
-        new DiffFacility(td).makeListMatch(originalText, resultSrc, start);
+        new DiffFacility(td.diffs).makeListMatch(originalText, resultSrc, start);
         userInfo.putAll(td.diffInfo);
 
         return td.getDiffs();
     }
 
-    public static com.sun.tools.javac.util.List<Diff> diff(Context context,
+    public static Collection<Diff> diff(Context context,
             WorkingCopy copy,
             List<? extends ImportTree> original,
             List<? extends ImportTree> nue,
@@ -233,19 +233,10 @@ public class CasualDiff {
 
         String resultSrc = td.printer.toString();
         String originalText = td.workingCopy.getText().substring(start, end);
-        new DiffFacility(td).makeListMatch(originalText, resultSrc, start);
+        new DiffFacility(td.diffs).makeListMatch(originalText, resultSrc, start);
         userInfo.putAll(td.diffInfo);
 
         return td.getDiffs();
-    }
-
-    protected void append(Diff diff) {
-        // check if diff already found -- true for variables that share 
-        // fields, such as the mods for "public int foo, bar;"
-        for (Diff d : diffs)
-            if (d.equals(diff))
-                return;
-        diffs.append(diff);
     }
 
     public int endPos(JCTree t) {
