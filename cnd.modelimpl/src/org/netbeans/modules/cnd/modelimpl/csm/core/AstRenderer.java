@@ -1478,6 +1478,10 @@ public class AstRenderer {
                     nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                 processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true);
             }
+            if (functionParameter && nextToken != null &&                    
+                    nextToken.getType() == CPPTokenTypes.RPAREN) {
+                processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true);
+            }
 
 
         }
