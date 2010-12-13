@@ -53,6 +53,7 @@ import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -152,6 +153,7 @@ public class VersionsCache {
         if (Setup.REVISION_BASE.equals(revision)) {
             return getBaseRevisionFile(base);
         } else if (Setup.REVISION_PRISTINE.equals(revision)) {
+            // should not be used, will not work with 1.7
             String name = base.getName();
             File svnDir = getMetadataDir(base.getParentFile());
             if (svnDir != null) {
@@ -213,27 +215,51 @@ public class VersionsCache {
      */
     File getBaseRevisionFile(File referenceFile) throws IOException {
         try {
+            boolean newMetadataFormat = false;
             File svnDir = getMetadataDir(referenceFile.getParentFile());
+            if (svnDir == null) {
+                // try to check 1.7 metadata
+                SubversionVCS vcs = Lookup.getDefault().lookup(SubversionVCS.class);
+                if (vcs != null) {
+                    File topmost = vcs.getTopmostManagedAncestor(referenceFile);
+                    File newMetadataFolder;
+                    if (topmost != null && (newMetadataFolder = new File(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
+                        svnDir = newMetadataFolder;
+                        newMetadataFormat = new File(svnDir, "pristine").exists(); //NOI18N
+                    }
+                }
+            }
             if (svnDir == null) {
                 return null;
             }
-            File svnBase = new File(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
-            if (!svnBase.exists()) {
-                return null;
-            }
-            File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
-            if (expanded.canRead() && svnBase.isFile() && (expanded.lastModified() >= svnBase.lastModified())) {
+            if (newMetadataFormat) {
+                return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
+            } else {
+                File svnBase = new File(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
+                if (!svnBase.exists()) {
+                    return null;
+                }
+                File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
+                if (expanded.canRead() && svnBase.isFile() && (expanded.lastModified() >= svnBase.lastModified())) {
+                    return expanded;
+                }
+                SvnClient client = Subversion.getInstance().getClient(referenceFile);
+                InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
+                expanded = getContentBase(referenceFile, expanded);
+                expanded.setLastModified(svnBase.lastModified());
                 return expanded;
             }
-            SvnClient client = Subversion.getInstance().getClient(referenceFile);
-            InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
-            expanded = FileUtil.normalizeFile(expanded);
-            FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
-            expanded.setLastModified(svnBase.lastModified());
-            return expanded;
         } catch (SVNClientException e) {
             throw new IOException(e);
         }
+    }
+
+    private File getContentBase (File referenceFile, File output) throws SVNClientException, IOException {
+        SvnClient client = Subversion.getInstance().getClient(false); // local call, does not need to be instantiated with the file instance
+        InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
+        output = FileUtil.normalizeFile(output);
+        FileUtils.copyStreamToFile(new BufferedInputStream(in), output);
+        return output;
     }
 
     /**

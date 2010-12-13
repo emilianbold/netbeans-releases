@@ -102,6 +102,7 @@ public class SvnUtils {
 
     public static final String SVN_ADMIN_DIR;
     public static final String SVN_ENTRIES_DIR;
+    public static final String SVN_WC_DB;
     private static final Pattern metadataPattern;
 
     public static final HashSet<Character> autoEscapedCharacters = new HashSet<Character>(6);
@@ -126,6 +127,7 @@ public class SvnUtils {
             SVN_ADMIN_DIR = ".svn";
         }
         SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
+        SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
         metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
     }
 
@@ -849,6 +851,10 @@ public class SvnUtils {
      */
     public static String fixLineEndings(String text) {
         return text.replaceAll("\r\n", "\n").replace('\r', '\n');
+    }
+
+    public static boolean hasMetadata (File file) {
+        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead() || new File(file, SvnUtils.SVN_WC_DB).canRead();
     }
 
     private static ISVNInfo getInfoFromWorkingCopy (SvnClient client, File file) throws SVNClientException {
