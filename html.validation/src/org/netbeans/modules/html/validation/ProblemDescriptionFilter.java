@@ -40,59 +40,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.html.api.validation;
+package org.netbeans.modules.html.validation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.openide.filesystems.FileObject;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 
 /**
  *
- * Possible features: filter.foreign.namespaces
- *
  * @author marekfukala
  */
-public final class ValidationContext {
+public interface ProblemDescriptionFilter {
 
-    private String source;
-    private FileObject file;
-    private HtmlVersion version;
-    private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<String, Boolean>();
+    public boolean accepts(ProblemDescription pd);
 
-    public ValidationContext(String source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
-        this.source = source;
-        this.file = file;
-        this.version = version;
-        this.result = result;
+    public static class SeverityFilter implements ProblemDescriptionFilter {
+        private int severity;
+
+        public SeverityFilter(int severity) {
+            this.severity = severity;
+        }
+
+        public boolean accepts(ProblemDescription pd) {
+            return pd.getType() >= severity;
+        }
+
     }
 
-    public FileObject getFile() {
-        return file;
-    }
+    public static class CombinedFilter implements ProblemDescriptionFilter {
+        private ProblemDescriptionFilter f1, f2;
 
-    public String getSource() {
-        return source;
-    }
+        public CombinedFilter(ProblemDescriptionFilter f1, ProblemDescriptionFilter f2) {
+            this.f1 = f1;
+            this.f2 = f2;
+        }
 
-    public HtmlVersion getVersion() {
-        return version;
-    }
+        public boolean accepts(ProblemDescription pd) {
+            return f1.accepts(pd) && f2.accepts(pd);
+        }
 
-    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
-        return result;
-    }
 
-    public boolean isFeaturesEnabled(String featureName) {
-        Boolean val = features != null ? features.get(featureName) : null;
-        return val != null ? val : false;
     }
-
-    public void enableFeature(String featureName, boolean enabled) {
-        features.put(featureName, enabled);
-    }
-
 }

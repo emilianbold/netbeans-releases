@@ -40,59 +40,32 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.html.api.validation;
+package org.netbeans.modules.css.visual;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.css.gsf.CssLanguage;
 
 /**
  *
- * Possible features: filter.foreign.namespaces
- *
  * @author marekfukala
  */
-public final class ValidationContext {
+public class TestBase extends CslTestBase {
 
-    private String source;
-    private FileObject file;
-    private HtmlVersion version;
-    private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<String, Boolean>();
-
-    public ValidationContext(String source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
-        this.source = source;
-        this.file = file;
-        this.version = version;
-        this.result = result;
+    public TestBase(String testName) {
+        super(testName);
     }
 
-    public FileObject getFile() {
-        return file;
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new CssLanguage();
     }
 
-    public String getSource() {
-        return source;
+    @Override
+    protected String getPreferredMimeType() {
+        return CssLanguage.CSS_MIME_TYPE;
     }
 
-    public HtmlVersion getVersion() {
-        return version;
-    }
 
-    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
-        return result;
-    }
-
-    public boolean isFeaturesEnabled(String featureName) {
-        Boolean val = features != null ? features.get(featureName) : null;
-        return val != null ? val : false;
-    }
-
-    public void enableFeature(String featureName, boolean enabled) {
-        features.put(featureName, enabled);
-    }
 
 }

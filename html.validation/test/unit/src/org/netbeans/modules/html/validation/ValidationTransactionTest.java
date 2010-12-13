@@ -44,6 +44,9 @@ package org.netbeans.modules.html.validation;
 import java.io.File;
 import java.util.Collection;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import nu.validator.servlet.ParserMode;
@@ -81,12 +84,10 @@ public class ValidationTransactionTest extends TestBase {
 
     }
 
-
-
     public static Test Xsuite() {
         ValidationTransaction.enableDebug();
 
-        String testName = "testXhtmlFile3";
+        String testName = "testNamespacesFiltering";
         System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidationTransactionTest(testName));
@@ -172,7 +173,6 @@ public class ValidationTransactionTest extends TestBase {
 //            }
 //        assertTrue(vt.isSuccess());
 //    }
-
     //xhtml 1.0 strict, proper xml pi, doctype and root namespace
     public void testXhtmlFile1() throws SAXException {
         FileObject fo = getTestFile("testfiles/test1.xhtml");
@@ -212,6 +212,18 @@ public class ValidationTransactionTest extends TestBase {
         assertNull(vt.htmlParser);
     }
 
+    public void testNamespacesFiltering() throws SAXException {
+        FileObject fo = getTestFile("testfiles/wicket.xhtml");
+        Source source = Source.create(fo);
+        String code = source.createSnapshot().getText().toString();
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(fo)).analyze();
+        assertNotNull(result);
+
+        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        validate(code, true, result.getHtmlVersion(), vt, Collections.singleton("http://wicket.apache.org"));
+
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
         validate(code, expectedPass, HtmlVersion.HTML5);
     }
@@ -220,20 +232,32 @@ public class ValidationTransactionTest extends TestBase {
         ValidationTransaction vt = ValidationTransaction.create(version);
         validate(code, expectedPass, version, vt);
     }
-    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt) throws SAXException {
-        System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
-        vt.validateCode(code, null);
 
-        Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
+    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt) throws SAXException {
+        validate(code, expectedPass, version, vt, Collections.<String>emptySet());
+    }
+
+    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt, Set<String> filteredNamespaces) throws SAXException {
+        System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
+        vt.validateCode(code, null, filteredNamespaces);
+
+        Collection<ProblemDescription> problems = vt.getFoundProblems(
+                new ProblemDescriptionFilter.CombinedFilter(new ProblemDescriptionFilter.SeverityFilter(ProblemDescription.WARNING),
+                new ProblemDescriptionFilter() {
+
+                    public boolean accepts(ProblemDescription pd) {
+                        return !isFilteredNamespacesProblem(pd);
+                    }
+                }));
 
         if (expectedPass && !problems.isEmpty()) {
             System.err.println("There are some unexpected problems:");
             for (ProblemDescription pd : problems) {
-                System.err.println(pd);
+                System.err.println(pd.toString());
             }
         }
 
-        assertEquals(expectedPass, vt.isSuccess());
+//        assertEquals(expectedPass, vt.isSuccess());
         assertEquals(expectedPass, problems.isEmpty());
 
         System.out.println("validated in " + vt.getValidationTime() + " ms with " + problems.size() + " problems.");
@@ -250,4 +274,20 @@ public class ValidationTransactionTest extends TestBase {
         return fo;
     }
 
+    private boolean isFilteredNamespacesProblem(ProblemDescription pd) {
+        //ugly, but the validation doesn't provide any message keys or anything at all :-(
+        for(int i=0; i < FILTERED_NS_PROBLEM_NAMES.length; i++) {
+            if(pd.getText().contains(FILTERED_NS_PROBLEM_NAMES[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final String[] FILTERED_NS_PROBLEM_NAMES = new String[]{
+        "Content is being hidden from the validator based on namespace filtering.",
+        "Cannot filter out the root element.",
+        "Filtering out selected namespaces causes descendants in other namespaces to be dropped as well."
+    };
+    
 }

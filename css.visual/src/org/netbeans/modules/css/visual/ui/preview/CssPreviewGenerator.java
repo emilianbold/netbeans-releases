@@ -167,7 +167,7 @@ public class CssPreviewGenerator {
 
             //pseudo classes ( A:link { color: red; }
             int firstColonIndex = selectorItem.indexOf(':');
-            if (firstColonIndex > 0) {
+            if (firstColonIndex >= 0) {
                 //the colon in the styles has been replaced by 'X' character
                 //so to properly render the style we need to inherit the style form the selector
                 //to do this - put the element generated from the pseudo class element by
@@ -180,6 +180,10 @@ public class CssPreviewGenerator {
                 //which will show the same result as if the link is visited in the browser
 
                 String selector = selectorItem.substring(0, firstColonIndex);
+                String enclosingSelector = firstColonIndex == 0
+                        ? "div"
+                        : selector;
+
                 List<String> pseudoclass = new ArrayList<String>(2);
                 int colonIndex = selectorItem.indexOf(':', firstColonIndex + 1);
                 String realName;
@@ -192,7 +196,7 @@ public class CssPreviewGenerator {
                 pseudoclass.add(realName.replaceAll(":", "X"));
 
                 opening.append("<");
-                opening.append(selector);
+                opening.append(enclosingSelector);
                 opening.append(">");
                 for (String pseudoclassName : pseudoclass) {
                     opening.append("<");
@@ -211,7 +215,7 @@ public class CssPreviewGenerator {
                     closing.append(">");
                 }
                 closing.append("</");
-                closing.append(selector);
+                closing.append(enclosingSelector);
                 closing.append(">");
             } else if (isPureSelector(selectorItem)) {
                 opening.append("<");

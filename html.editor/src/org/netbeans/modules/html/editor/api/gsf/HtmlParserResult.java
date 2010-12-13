@@ -233,6 +233,10 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
                 return Collections.emptyList();
             }
             ValidationContext context = new ValidationContext(getSnapshot().getText().toString(), getHtmlVersion(), file, result);
+
+            //XXX possibly make it configurable via hints
+            context.enableFeature("filter.foreign.namespaces", true); //NOI18N
+            
             ValidationResult res = validator.validate(context);
 
             Collection<Error> errs = new ArrayList<Error>();
