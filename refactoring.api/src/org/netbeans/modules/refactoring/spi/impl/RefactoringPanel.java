@@ -86,6 +86,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -232,9 +233,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         refreshButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_refresh") // NOI18N
         );
-        refreshButton.setMnemonic(
-            NbBundle.getMessage(RefactoringPanel.class, "MNEM_refresh").charAt(0)
-        );
         refreshButton.addActionListener(getButtonListener());
         // expand button settings
         expandButton = new JToggleButton(
@@ -247,9 +245,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         expandButton.setSelected(true);
         expandButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_expandAll") // NOI18N
-        );
-        expandButton.setMnemonic(
-            NbBundle.getMessage(RefactoringPanel.class, "MNEM_expandAll").charAt(0) // NOI18N
         );
         expandButton.addActionListener(getButtonListener());
         // create toolbar
@@ -266,9 +261,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         logicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_logicalView") // NOI18N
         );
-        logicalViewButton.setMnemonic(
-            NbBundle.getMessage(RefactoringPanel.class, "MNEM_logicalView").charAt(0) // NOI18N
-        );
         logicalViewButton.addActionListener(getButtonListener());
 
         physicalViewButton = new JToggleButton(
@@ -281,12 +273,24 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         physicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_physicalView") // NOI18N
         );
-        physicalViewButton.setMnemonic(
-            NbBundle.getMessage(RefactoringPanel.class, "MNEM_physicalView").charAt(0) // NOI18N
-        );
         physicalViewButton.addActionListener(getButtonListener());
 
-        
+        if (!Utilities.isMac()) {
+            refreshButton.setMnemonic(
+                    NbBundle.getMessage(RefactoringPanel.class, "MNEM_refresh").charAt(0));
+
+            expandButton.setMnemonic(
+                    NbBundle.getMessage(RefactoringPanel.class, "MNEM_expandAll").charAt(0) // NOI18N
+                    );
+
+            logicalViewButton.setMnemonic(
+                    NbBundle.getMessage(RefactoringPanel.class, "MNEM_logicalView").charAt(0) // NOI18N
+                    );
+            physicalViewButton.setMnemonic(
+                    NbBundle.getMessage(RefactoringPanel.class, "MNEM_physicalView").charAt(0) // NOI18N
+                    );
+        }
+
         if (ui instanceof RefactoringCustomUI) {
             customViewButton = new JToggleButton(((RefactoringCustomUI)ui).getCustomIcon());
             customViewButton.setMaximumSize(dim);
