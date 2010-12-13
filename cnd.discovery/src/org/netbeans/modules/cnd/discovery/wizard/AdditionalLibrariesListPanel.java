@@ -60,7 +60,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -176,15 +175,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        List<String> vector = getListData();
-        Object[] arr = vector.toArray();
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == o) {
-                vector.remove(i);
-                vector.add(i, newS);
-                break;
-            }
-        }
+        replaceElement(o, newS);
     }
     
     private String getString(String key) {
