@@ -312,7 +312,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 String lowerCacheName = cacheName.toLowerCase();
                                 if (!dupLowerNames.containsKey(lowerCacheName)) {
                                     RemoteLogger.getInstance().log(Level.FINEST,
-                                            "RemoteDirectory: resolving cache names conflict in {0}: {1} -> {2}",
+                                            "RemoteDirectory: resolving cache names conflict in {0}: {1} -> {2}", // NOI18N
                                             new Object[] { cache.getAbsolutePath(), entry.getCache(), cacheName });
                                     entry.setCache(cacheName);
                                     dupLowerNames.put(lowerCacheName, Collections.singletonList(entry));
