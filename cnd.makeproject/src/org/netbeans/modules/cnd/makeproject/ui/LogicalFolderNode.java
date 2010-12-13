@@ -96,11 +96,22 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
+    private final String pathPostfix;
 
     public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
         super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), MakeLogicalViewProvider.ANNOTATION_RP);
         this.folder = folder;
         this.provider = provider;
+        String postfix = "";
+        if (folder != null && folder.getRoot() != null) {
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
+            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
+            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
+            if (folderFile != null) {
+                postfix = " - " + folderFile.getPath(); // NOI18N
+            }
+        }
+        pathPostfix = postfix;
         setForceAnnotation(true);
         updateAnnotationFiles();
     }
@@ -231,11 +242,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public String getDisplayName() {
-        if (folder.getRoot() != null) {
-            return annotateName(folder.getDisplayName() + " - " + folder.getRoot()); //NOI18N
-        } else {
-            return annotateName(folder.getDisplayName());
-        }
+        return annotateName(folder.getDisplayName() + pathPostfix);
     }
 
     @Override

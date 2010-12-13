@@ -1234,7 +1234,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	EngineDescriptor engine = ndi.getEngineDescriptor();
 	// CR 6997426, cause gdb problem IZ 193248
 	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE))
-	    ndi.setTarget("-");
+	    ndi.setTarget("-"); //NOI18N
 	else
 	    ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
 
