@@ -46,7 +46,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
@@ -61,12 +60,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -84,38 +83,48 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
+import org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.CustomizerImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Jan Lahoda
  */
-@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch")
+@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch", customizerProvider=CustomizerImpl.class)
 public class ConvertToStringSwitch {
 
+    static final String KEY_ALSO_EQ = "also-equals";
+    static final boolean DEF_ALSO_EQ = true;
+    
     private static final String[] INIT_PATTERNS = {
-        "$c1 == $c2",
         "$c1.equals($c2)",
         "$c1.contentEquals($c2)"
     };
 
+    private static final String[] INIT_PATTERNS_EQ = {
+        "$c1 == $c2"
+    };
+
     private static final String[] PATTERNS = {
-        "$var == $constant",
-        "$constant == $var",
         "$var.equals($constant)",
         "$constant.equals($var)",
         "$var.contentEquals($constant)",
         "$constant.contentEquals($var)"
+    };
+    
+    private static final String[] PATTERNS_EQ = {
+        "$var == $constant",
+        "$constant == $var",
     };
 
     @TriggerPattern(value="if ($cond) $body; else $else;")
@@ -139,7 +148,15 @@ public class ConvertToStringSwitch {
         TreePath first = iter.next();
         TreePath variable = null;
 
-        for (String initPattern : INIT_PATTERNS) {
+        Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length + INIT_PATTERNS_EQ.length);
+
+        initPatterns.addAll(Arrays.asList(INIT_PATTERNS));
+
+        if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
+            initPatterns.addAll(Arrays.asList(INIT_PATTERNS_EQ));
+        }
+        
+        for (String initPattern : initPatterns) {
             if (MatcherUtilities.matches(ctx, first, initPattern, true)) {
                 TreePath c1 = ctx.getVariables().get("$c1");
                 TreePath c2 = ctx.getVariables().get("$c2");
@@ -238,7 +255,15 @@ public class ConvertToStringSwitch {
             leaf = tp.getLeaf();
         }
 
-        for (String patt : PATTERNS) {
+        Collection<String> patterns = new ArrayList<String>(PATTERNS.length + PATTERNS_EQ.length);
+
+        patterns.addAll(Arrays.asList(PATTERNS));
+
+        if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
+            patterns.addAll(Arrays.asList(PATTERNS_EQ));
+        }
+
+        for (String patt : patterns) {
             ctx.getVariables().remove("$constant");
 
             if (!MatcherUtilities.matches(ctx, tp, patt, true))
@@ -527,4 +552,15 @@ public class ConvertToStringSwitch {
         }
     }
 
+    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
+
+        @Messages({
+            "LBL_ConvertToSwitch_AlsoEq=Also consider String comparison by the == operator",
+            "TP_ConvertToSwitch_AlsoEq=Whether String comparison by the == operator should be considered to be a string comparison."
+        })
+        public CustomizerImpl() {
+            super(Bundle.LBL_ConvertToSwitch_AlsoEq(), Bundle.TP_ConvertToSwitch_AlsoEq(), KEY_ALSO_EQ, DEF_ALSO_EQ);
+        }
+
+    }
 }
