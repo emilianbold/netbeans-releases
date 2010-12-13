@@ -48,7 +48,9 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.swing.SwingUtilities;
@@ -104,7 +106,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
@@ -2754,6 +2755,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (get_watches) {
                 updateWatches();
             }
+            
+            if (get_registers) {
+                requestRegisters();
+            }
+            
             state().isProcess = true;
         }
 
@@ -3467,14 +3473,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         Disassembly.open();
     }
 
-    public void registerRegistersWindow(RegistersWindow w) {
-        notImplemented("registerRegistersWindow()");	// NOI18N
-    }
-
-    public void registerMemoryWindow(MemoryWindow w) {
-        memoryWindow = w;
-    }
-
     private static final int MEMORY_READ_WIDTH = 16;
     
     public void requestMems(String start, String length, String format, int index) {
@@ -3503,6 +3501,60 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         res.add(sb.toString() + "\n"); //NOI18N
                     }
                     memoryWindow.updateData(res);
+                }
+                finish();
+            }
+        };
+        // LATER: sometimes it is sent too early, need to investigate
+        if (gdb != null) {
+            gdb.sendCommand(cmd);
+        }
+    }
+    
+    private Map<Integer, String> regNames = null;
+
+    public void requestRegisters() {
+        //check that we have regNames
+        if (regNames == null) {
+            MICommand cmd = new MiCommandImpl("-data-list-register-names") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    Map<Integer, String> res = new HashMap<Integer, String>();
+                    int idx = 0;
+                    for (MITListItem elem : record.results().valueOf("register-names").asList()) { //NOI18N
+                        res.put(idx++, ((MIConst)elem).value());
+                    }
+                    regNames = res;
+                    finish();
+                }
+            };
+            // LATER: sometimes it is sent too early, need to investigate
+            if (gdb != null) {
+                gdb.sendCommand(cmd);
+            }
+        }
+        
+        MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                if (registersWindow != null) {
+                    LinkedList<String> res = new LinkedList<String>();
+                    for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
+                        StringBuilder sb = new StringBuilder();
+                        MITList line = ((MITList)elem);
+                        String number = line.valueOf("number").asConst().value(); //NOI18N
+                        // try to get real name
+                        try {
+                            number = regNames.get(Integer.valueOf(number));
+                        } catch (Exception e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                        sb.append(number).append(' ');
+                        String value = line.valueOf("value").asConst().value(); //NOI18N
+                        sb.append(value);
+                        res.add(sb.toString());
+                    }
+                    registersWindow.updateData(res);
                 }
                 finish();
             }
@@ -4243,5 +4295,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void sendResumptive(String commandStr) {
         MICommand cmd = new MIResumptiveCommand(commandStr);
         gdb.sendCommand(cmd);
+    }
+
+    private boolean get_registers = false;
+    
+    @Override
+    public void registerRegistersWindow(RegistersWindow w) {
+        super.registerRegistersWindow(w);
+        if (get_registers == false && w != null) {
+            requestRegisters();
+        }
+        get_registers = (w != null);
     }
 }
