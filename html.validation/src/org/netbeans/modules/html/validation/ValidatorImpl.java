@@ -44,9 +44,11 @@ package org.netbeans.modules.html.validation;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -84,7 +86,14 @@ public class ValidatorImpl implements Validator {
 
             String source = maskTemplatingMarks(context.getSource());
             URL sourceFileURL = context.getFile() != null ? URLMapper.findURL(context.getFile(), URLMapper.EXTERNAL) : null;
-            validatorTransaction.validateCode(source, sourceFileURL != null ? sourceFileURL.toExternalForm() : null);
+
+            Set<String> filteredNamespaces = Collections.emptySet();
+            if(context.isFeaturesEnabled("filter.foreign.namespaces")) { //NOI18N
+                filteredNamespaces = context.getSyntaxAnalyzerResult().getAllDeclaredNamespaces().keySet();
+                filteredNamespaces.remove("http://www.w3.org/1999/xhtml"); //NOI18N
+            }
+
+            validatorTransaction.validateCode(source, sourceFileURL != null ? sourceFileURL.toExternalForm() : null, filteredNamespaces);
 
             Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
             
