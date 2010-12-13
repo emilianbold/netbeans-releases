@@ -165,8 +165,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private DisController disController = new DisController();
     private boolean update_dis = true;
 
-    private RegistersWindow currentRegistersWindow = null;
-
     /**
      * The last run/step/next/step out command sent to dbx.
      * This is so that we can do something reasonable during fork.
@@ -270,7 +268,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData("main", "80", 0); // NOI18N
             }
 
-            if (currentRegistersWindow != null) {
+            if (registersWindow != null) {
                 dbx.register_notify(0, true);
             } else if (RegistersWindow.getDefault().isShowing()) {
                 registerRegistersWindow((RegistersWindow) RegistersWindow.getDefault());
@@ -2508,7 +2506,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
-        if (currentRegistersWindow != null) {
+        if (registersWindow != null) {
             dbx.register_notify(0, true);
         }
 
@@ -3445,8 +3443,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void registerRegistersWindow(RegistersWindow rw) {
-        currentRegistersWindow = rw;
+        super.registerRegistersWindow(rw);
         if (postedKillEngine) {
             return;
         }
@@ -3461,8 +3460,71 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setRegs(String regs) {
-	if (currentRegistersWindow != null)
-	    currentRegistersWindow.updateData(regs);
+	if (registersWindow != null) {
+            LinkedList<String> res = new LinkedList<String>();
+            int i, j, k, l, regnamelen;
+            String s, regname, regvalue;
+            l = 1;
+            for (i = 0; i < regs.length(); i++, l++) {
+                k = regs.indexOf('\n', i);
+                if (k < i) break;
+                s = regs.substring(i, k + 1);
+                i = k;
+                regname = null;
+                regvalue = null;
+                regnamelen = 0;
+                for (j=0, k=0; j < s.length(); j++) {
+                    if (s.charAt(j) != ' ') {
+                        if (k == 0) {
+                            k = s.indexOf(' ', j);
+                            if (k < j) break;
+                            regnamelen = k - j;
+                            regname = s.substring(j, k);
+                            j = k;
+                        } else {
+                            k = s.indexOf('\n', j);
+                            if (k < j) break;
+                            regvalue = s.substring(j, k);
+                            break;
+                        }
+                    }
+                }
+                if (l != 1) {
+                    // skip the first line (current frame || current thread)
+                    // second line could be "current frame" 
+                    // if first line is current thread
+                    if ((regname != null) && (regvalue != null)) {
+                        if (!regname.equals("current")) { // NOI18N
+//                            if (regname.indexOf("g0") > 0) 		// NOI18N
+//                                seen_sparc_regs = true;
+//                            if (regname.indexOf("ax") > 0) 	// NOI18N
+//                                seen_sparc_regs = false;
+                            if (regnamelen < 6)  {
+                                res.add("   " + // NOI18N
+                                                 regname +
+                                                 "  \t\t" + // NOI18N
+                                                 regvalue +
+                                                 "\n"); // NOI18N
+                            } else if (regnamelen < 14) {
+                                res.add("   " + // NOI18N
+                                                 regname +
+                                                 "  \t" + // NOI18N
+                                                 regvalue +
+                                                 "\n"); // NOI18N
+                            } else {
+                                res.add("   " + // NOI18N
+                                                 regname +
+                                                 regvalue +
+                                                 "\n"); // NOI18N
+                            }
+                        }
+                    } else {
+                        res.add("   " + s); // NOI18N
+                    }
+                }
+            }
+	    registersWindow.updateData(res);
+        }
     }
     private EvaluationWindow currentEvaluationWindow = null;
 
@@ -3520,8 +3582,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private String memory_format;
     private int memory_format_index;
 
+    @Override
     public void registerMemoryWindow(MemoryWindow mw) {
-        memoryWindow = mw;
+        super.registerMemoryWindow(mw);
         if (postedKillEngine) {
             return;
         }
