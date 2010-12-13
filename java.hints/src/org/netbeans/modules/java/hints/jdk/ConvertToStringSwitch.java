@@ -332,6 +332,7 @@ public class ConvertToStringSwitch {
 
             SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
 
+            Utilities.copyComments(copy, it.getLeaf(), s, true);
             copy.rewrite(it.getLeaf(), s); //XXX
 
             TreePath topLevelMethod = it;
