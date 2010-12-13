@@ -451,9 +451,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     /** return a list of problems with the given severity and higher (more severe issues) */
     public List<ProblemDescription> getFoundProblems(int ofThisTypeAndMoreSevere) {
+        return getFoundProblems(new ProblemDescriptionFilter.SeverityFilter(ofThisTypeAndMoreSevere));
+    }
+
+    public List<ProblemDescription> getFoundProblems(ProblemDescriptionFilter filter) {
         List<ProblemDescription> filtered = new ArrayList<ProblemDescription>();
         for(ProblemDescription pd : getFoundProblems()) {
-            if(pd.getType() >= ofThisTypeAndMoreSevere) {
+            if(filter.accepts(pd)) {
                 filtered.add(pd);
             }
         }
@@ -464,7 +468,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return validationTime;
     }
 
+
     public void validateCode(String code, String sourceURI) throws SAXException {
+        validateCode(code, sourceURI, Collections.<String>emptySet());
+    }
+
+    public void validateCode(String code, String sourceURI, Set<String> filteredNamespaces) throws SAXException {
         long from = System.currentTimeMillis();
         
         codeToValidate = code;
@@ -474,7 +483,15 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         LOGGER.fine(String.format("Using %s parser.", parser.name()));
 
 //        charsetOverride = "UTF-8";
-        filteredNamespaces = Collections.emptySet();
+        this.filteredNamespaces = filteredNamespaces;
+        if(!filteredNamespaces.isEmpty()) {
+            StringBuilder fns = new StringBuilder();
+            for(String ns : filteredNamespaces) {
+                fns.append(ns).append(", ");
+            }
+            LOGGER.fine(String.format("Filtering following namespaces: %s", fns));
+        }
+
         int lineOffset = 0;
 
         errorHandler = new MessageEmitterAdapter(sourceCode,

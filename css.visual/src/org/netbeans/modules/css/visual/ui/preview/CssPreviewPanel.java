@@ -60,7 +60,6 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.simple.XHTMLPanel;
@@ -84,7 +83,6 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     /** Creates new form CssPreviewPanel2 */
     public CssPreviewPanel() {
         initComponents();
-
         //run the xhtml panel creation in a non-AWT thread
         RequestProcessor.getDefault().execute(new FutureTask<XHTMLPanel>(new Runnable() {
 
@@ -110,7 +108,6 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             }
         }, null));
 
-        configureFlyingSaucerLoggers();
     }
 
     private synchronized void setXhtmlPanel(XHTMLPanel panel) {
@@ -140,7 +137,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
                         @Override
                         public void run() {
                             try {
-                                xhtmlPanel.setDocument(is, url);
+                                doSetDocument(is, url);
                                 //repaing the panel in AWT then
                                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -161,8 +158,13 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             };
         } else {
             //and set the document to he renderer
-            xhtmlPanel.setDocument(is, url);
+            doSetDocument(is, url);
         }
+    }
+
+    private void doSetDocument(InputStream is, String url) throws Exception {
+        configureFlyingSaucerLoggers();
+        xhtmlPanel.setDocument(is, url);
     }
 
     @Override
@@ -175,16 +177,25 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
         // nothing to dispose here
     }
 
-    private void configureFlyingSaucerLoggers() {
+    void configureFlyingSaucerLoggers() {
         //remove potential flying saucer handlers
-        Logger logger = Logger.getLogger("plumbing.exception");
+        Logger logger = Logger.getLogger("plumbing.exception"); //NOI18N
+        boolean hasFsHanlder = false;
         for (Handler h : logger.getHandlers()) {
-            logger.removeHandler(h);
+            if(h != FS_HANDLER) {
+                logger.removeHandler(h);
+            } else {
+                hasFsHanlder = true;
+            }
         }
         //do not report event to the parent handler ...
-        logger.setUseParentHandlers(false);
+        if(logger.getUseParentHandlers()) {
+            logger.setUseParentHandlers(false);
+        }
         //...just to me
-        logger.addHandler(FS_HANDLER);
+        if(!hasFsHanlder) {
+            logger.addHandler(FS_HANDLER);
+        }
     }
 
     /** This method is called from within the constructor to
