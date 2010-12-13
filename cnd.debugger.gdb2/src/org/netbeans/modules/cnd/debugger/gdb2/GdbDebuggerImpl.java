@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
@@ -122,6 +123,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -633,7 +635,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         //termset.finish();
         if (gdb != null && gdb.connected()) {
             // see IZ 191508, need to pause before exit
-            pause(true);
+            // or kill gdb if process pid is unavailable
+            if (!pause(true)) {
+                try {
+                    executor.terminate();
+                    kill();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return;
+            }
             
             // Ask gdb to quit (shutdown)
             MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
@@ -772,7 +783,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         pause(false);
     }
 
-    public void pause(boolean silentStop) {
+    public boolean pause(boolean silentStop) {
         /* LATER
 
         On unix, and probably in all non-embedded gdb scenarios,
@@ -789,8 +800,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // ... so we interrupt
 	int pid = (int) session().getPid();
-	if (pid > 0)
-	    gdb.pause(pid, silentStop);
+	if (pid > 0) {
+	    return gdb.pause(pid, silentStop);
+        }
+        return false;
     }
 
     public void interrupt() {
