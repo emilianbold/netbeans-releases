@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.libs.bugtracking;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -48,18 +48,21 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
- *
+ * 
  * @author Tomas Stupka
  */
 public class MylynUtils {
+    
+    private static Logger LOG = Logger.getLogger("org.netbeans.libs.bugtracking.mylyn");
+    
     public static TaskRepository createTaskRepository(String connectorKind, String name, String url, String user, String password, String httpUser, String httpPassword) {
         TaskRepository repository = new TaskRepository(connectorKind, url);
         setCredentials(repository, user, password, httpUser, httpPassword);
@@ -87,13 +90,13 @@ public class MylynUtils {
         try {
             host = new URL(repository.getUrl()).getHost();
         } catch (MalformedURLException ex) {
-            BugtrackingManager.LOG.log(Level.WARNING, repository.getUrl(), ex);
+            LOG.log(Level.WARNING, repository.getUrl(), ex);
             host = repository.getUrl();
         }
 
         ProxySettings ps = new ProxySettings();
 
-        BugtrackingManager.LOG.log(Level.FINEST, "Proxy: {0}", ps.toString());  // NOI18N
+        LOG.log(Level.FINEST, "Proxy: {0}", ps.toString());  // NOI18N
 
         if(!ps.isDirect() && !isNonProxyHost(ps.getNotProxyHosts(), host)) {
             repository.setDefaultProxyEnabled(false);
@@ -106,7 +109,7 @@ public class MylynUtils {
             }
 
             if(proxyHost != null && !proxyHost.equals("")) {
-                BugtrackingManager.LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
+                LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
 
                 repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
                 repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
@@ -129,13 +132,13 @@ public class MylynUtils {
     }
 
     public static void logCredentials(TaskRepository repository, String user, String psswd, String msg) {
-        BugtrackingManager.LOG.log(
+        LOG.log(
             Level.FINEST,
             msg + "[{0}, user={1}, password={2}]",                               // NOI18N
             new Object[]{
                 repository.getUrl(),
                 user,
-                BugtrackingUtil.getPasswordLog(psswd)
+                getPasswordLog(psswd)
             }
         );
     }
@@ -159,7 +162,7 @@ public class MylynUtils {
             if (star == -1) {
                 dontUseProxy = token.equals (host);
                 if (dontUseProxy) {
-                    BugtrackingManager.LOG.log(Level.FINEST, "Host {0} found in nonProxyHosts: {1}", new Object[]{ host, nonProxyHosts}); // NOI18N
+                    LOG.log(Level.FINEST, "Host {0} found in nonProxyHosts: {1}", new Object[]{ host, nonProxyHosts}); // NOI18N
                 }
             } else {
                 String start = token.substring (0, star - 1 < 0 ? 0 : star - 1);
@@ -175,7 +178,7 @@ public class MylynUtils {
                     dontUseProxy = host.startsWith(start) && host.endsWith(end);
                 }
                 if (dontUseProxy) {
-                    BugtrackingManager.LOG.log(Level.FINEST, "Host {0} found in nonProxyHosts: {1}", new Object[]{host, nonProxyHosts}); // NOI18N
+                    LOG.log(Level.FINEST, "Host {0} found in nonProxyHosts: {1}", new Object[]{host, nonProxyHosts}); // NOI18N
                 }
             }
         }
@@ -189,7 +192,7 @@ public class MylynUtils {
         try {
             ip = InetAddress.getByName (host).getHostAddress ();
         } catch (UnknownHostException ex) {
-            BugtrackingManager.LOG.log (Level.FINE, ex.getLocalizedMessage (), ex);
+            LOG.log (Level.FINE, ex.getLocalizedMessage (), ex);
         }
 
         if (ip == null) {
@@ -204,14 +207,14 @@ public class MylynUtils {
             if (star == -1) {
                 dontUseProxy = nonProxyHost.equals (ip);
                 if (dontUseProxy) {
-                    BugtrackingManager.LOG.log(Level.FINEST, "Host''s {0} IP {1} found in nonProxyHosts: {2}", new Object[]{host, ip, nonProxyHosts}); // NOI18N
+                    LOG.log(Level.FINEST, "Host''s {0} IP {1} found in nonProxyHosts: {2}", new Object[]{host, ip, nonProxyHosts}); // NOI18N
                 }
             } else {
                 // match with given dotted-quad IP
                 try {
                     dontUseProxy = Pattern.matches (nonProxyHost, ip);
                     if (dontUseProxy) {
-                        BugtrackingManager.LOG.log (Level.FINEST, "Host''s {0} IP{1} found in nonProxyHosts: {2}", new Object[]{host, ip, nonProxyHosts}); // NOI18N
+                        LOG.log (Level.FINEST, "Host''s {0} IP{1} found in nonProxyHosts: {2}", new Object[]{host, ip, nonProxyHosts}); // NOI18N
                     }
                 } catch (PatternSyntaxException pse) {
                     // may ignore it here
@@ -219,5 +222,15 @@ public class MylynUtils {
             }
         }
         return dontUseProxy;
+    }
+    
+    private static String getPasswordLog(String psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return psswd; 
+        }
+        return "******"; // NOI18N
     }
 }
