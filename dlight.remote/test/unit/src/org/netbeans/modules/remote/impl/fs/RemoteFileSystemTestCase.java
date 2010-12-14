@@ -45,12 +45,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -215,18 +213,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
             }
         }
-    }
-
-    private void runScript(String script) throws Exception {
-        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
-            public void processLine(String line) {
-                System.err.println(line);
-            }
-            public void reset() {}
-            public void close() {}
-        });
-        int rc = scriptRunner.execute();
-        assertEquals("Error running script", 0, rc);
     }
 
     @ForAllEnvironments

@@ -424,7 +424,10 @@ public class ProjectActionSupport {
                     PrintWriter out = tabToClose.getOut();
                     // Closing out several times is not harmful 
                     // any attempt to write to the same tab will re-open it
-                    out.write(0);
+                    // If nothing was written to the tab at all, closing
+                    // it's out still will leave it bold ...
+                    // So write a space... Should not make any harm..
+                    out.write(' ');
                     out.flush();
                     out.close();
                 }

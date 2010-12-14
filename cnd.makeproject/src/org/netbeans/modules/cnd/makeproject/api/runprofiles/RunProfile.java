@@ -165,7 +165,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         argsFlatValid = true;
         argsArrayValid = false;
         runDir = ""; // NOI18N
-        runCommand = ""; // NOI18N
+        runCommand = DEFAULT_RUN_COMMAND; // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();

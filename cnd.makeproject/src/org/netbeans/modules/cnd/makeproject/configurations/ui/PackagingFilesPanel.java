@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -433,7 +432,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
     @Override
     public int getSelectedIndex() {
         int index = getTargetList().getSelectedRow();
-        if (index >= 0 && index < listData.size()) {
+        if (index >= 0 && index < getListDataSize()) {
             return index;
         } else {
             return 0;
@@ -446,7 +445,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
     }
 
     @Override
-    protected void setData(Vector data) {
+    protected void setData(List<PackagerFileElement> data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
         if (getTargetList().getColumnModel().getColumnCount() >= 4) {
@@ -533,7 +532,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         @Override
         public TableCellEditor getCellEditor(int row, int col) {
             if (col == 0) {
-                PackagerFileElement elem = listData.elementAt(row);
+                PackagerFileElement elem = getElementAt(row);
 
                 JComboBox comboBox = new JComboBox();
                 comboBox.addItem(FileType.FILE);
@@ -558,7 +557,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            PackagerFileElement elem = listData.elementAt(row);
+            PackagerFileElement elem = getElementAt(row);
             if (col == 0) {
                 label.setText(elem.getType().toString());
             } else if (col == 1) {
@@ -618,13 +617,13 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public int getRowCount() {
-            return listData.size();
+            return getListDataSize();
         }
 
         @Override
         public Object getValueAt(int row, int col) {
 //            return listData.elementAt(row);
-            PackagerFileElement elem = listData.elementAt(row);
+            PackagerFileElement elem = getElementAt(row);
             if (col == 0) {
                 return elem.getType();
             }
@@ -662,7 +661,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public void setValueAt(Object val, int row, int col) {
-            PackagerFileElement elem = listData.elementAt(row);
+            PackagerFileElement elem = getElementAt(row);
             if (col == 0) {
                 FileType fileType = (FileType) val;
                 if (fileType == FileType.FILE) {
