@@ -97,7 +97,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
     // second is in canCancel
-    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
+    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = false;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -142,13 +142,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
         boolean runInInternalTerminal = false;
+        boolean runInExternalTerminal = false;
         CompilerSet cs = null;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
-
+            runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;
             if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
                 String errmsg;
                 if (Utilities.isMac()) {
@@ -161,9 +162,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             if (!conf.getDevelopmentHost().isLocalhost()) {
-                if (RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) {
-                    //TODO: only output window for remote for now
-                    consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                if ((RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) || (runInExternalTerminal)) {
+                    //use default consoly type for remote run
+                    //the default is Internal Terminal
+                    consoleType = RunProfile.getDefaultConsoleType();
+                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;                            
                 }
             }
 

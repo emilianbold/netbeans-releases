@@ -461,7 +461,13 @@ public class ProjectActionSupport {
             }
 
             InputOutput io = ioTab;
+            boolean runInExternalTerminal = false;
             int consoleType = pae.getProfile().getConsoleType().getValue();
+            runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
+            if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
+                //set to internal terminal
+                consoleType = RunProfile.getDefaultConsoleType();
+            }            
             // Always show build log in regular output (IZ 191555)
             // and the same for test run
             // 191589 -  Regression in "C/C++ Unit Tests" framework
