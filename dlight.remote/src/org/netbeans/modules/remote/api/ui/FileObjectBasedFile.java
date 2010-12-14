@@ -245,7 +245,7 @@ public class FileObjectBasedFile extends File {
         FileObject[] children = fo.getChildren();
 
         if (children.length == 0) {
-            fo.refresh();
+            //fo.refresh();
             children = fo.getChildren();
         }
 
