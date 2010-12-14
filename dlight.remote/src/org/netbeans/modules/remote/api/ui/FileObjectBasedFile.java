@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -75,6 +76,7 @@ public class FileObjectBasedFile extends File {
 
     public FileObjectBasedFile(ExecutionEnvironment env, String path) {
         super(path);
+        RemoteLogger.assertTrue(path != null, "Path should not be null"); //NOI18N
         this.fo = null;
         this.path = toUnix(super.getPath());
         this.env = env;

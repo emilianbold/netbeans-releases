@@ -910,7 +910,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 while (pidEnd < pidStr.length() && Character.isDigit(pidStr.charAt(pidEnd))) {
                     pidEnd++;
                 }
-		pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                try {
+                    pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(new Exception("Pid parsing error: " + record.command().getConsoleStream(), e)); //NOI18N
+                }
 	    }
 	}
 	return pid;

@@ -65,6 +65,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -246,7 +247,15 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         if (res != null && res.size() > 0) {
                             return res;
                         }
-                        if (packageSearch != null) {
+                        boolean isLocalHost = true;
+                        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(p);
+                        if (conf != null){
+                            isLocalHost = conf.getDevelopmentHost().isLocalhost();
+                        }
+                        boolean runPackagesSearchInRemote  =
+                                Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
+
+                        if (packageSearch != null && (isLocalHost || runPackagesSearchInRemote)) {
                             res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
                         }
                         if (res != null && res.size() > 0) {

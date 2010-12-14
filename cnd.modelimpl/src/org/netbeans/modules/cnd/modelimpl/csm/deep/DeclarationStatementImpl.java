@@ -79,11 +79,11 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
 
     @Override
     public final List<CsmDeclaration> getDeclarators() {
-        if (declarators == null || this.declarators == EMPTY) {
+        if (declarators == null) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
-        return declarators;
+        return Collections.unmodifiableList(declarators);
     }
 
     @Override
