@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
@@ -90,6 +91,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -1106,9 +1108,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private int flags;
         private CPPParserEx parser;
 
-        public CppParsing(File file, int flags) {
+        public CppParsing(File file) {
             this.file = file;
-            this.flags = flags;
+            int aFlags = CPPParserEx.CPP_CPLUSPLUS;
+            if (!reportErrors) {
+                aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+            }
+            this.flags = aFlags;
         }
 
         @Override
@@ -1207,11 +1213,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         ParseStatistics.getInstance().fileParsed(this, preprocHandler);
 
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
-        if (!reportErrors) {
-            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-        }
-
 //        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
 //            if (getAbsolutePath().toString().endsWith(".h")) { // NOI18N
 //                try {
@@ -1248,13 +1249,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             TokenStream filteredTokenStream = walker.getFilteredTokenStream(getLanguageFilter(ppState));
 
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
+            CsmParser parser = CsmParserProvider.createParser(this);
+            assert parser != null : "no parser for " + this;
 
             if(fileType == FileType.SOURCE_FORTRAN_FILE) {
                 //System.out.println("Prasing fortran file " + getName());
                 parsing = new FortranParsing(fileBuffer.getFile());
             } else {
                 //System.out.println("Prasing cpp file " + getName());
-                parsing = new CppParsing(fileBuffer.getFile(), flags);
+                parsing = new CppParsing(fileBuffer.getFile());
             }
 
             parsing.stageOne(filteredTokenStream);
