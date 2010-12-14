@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.Set;
 import org.openide.text.Line;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
@@ -107,7 +108,7 @@ public interface NativeDebugger {
     public int getLocalsCount();
     public Variable[] getLocals();
 
-    public void requestAutos();
+    public Set<String> requestAutos();
     public void setShowAutos(boolean showAutos);
     public int getAutosCount();
     public Variable[] getAutos();
