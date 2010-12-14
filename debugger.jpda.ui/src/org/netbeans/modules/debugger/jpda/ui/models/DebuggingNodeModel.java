@@ -153,6 +153,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private final PreferenceChangeListener prefListener;
     private final RequestProcessor rp;
+    private final Session session;
+    private final PropertyChangeListener sessionLanguageListener;
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -161,6 +163,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
         deadlockDetector.addPropertyChangeListener(new DeadlockListener());
         rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        sessionLanguageListener = new SessionLanguageListener();
+        session.addPropertyChangeListener(Session.PROP_CURRENT_LANGUAGE,
+                WeakListeners.propertyChange(sessionLanguageListener,
+                                             new ListenerDetaching(Session.PROP_CURRENT_LANGUAGE, session)));
         prefListener = new DebuggingPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
@@ -261,6 +268,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private static final Map<JPDAThread, String> frameDescriptionsByThread = new WeakHashMap<JPDAThread, String>();
 
     private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
+
+    private static final Map<CallStackFrame, String[]> framePathAndClass = new WeakHashMap<CallStackFrame, String[]>();
     
     public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
         return getDisplayName(t, showPackageNames, null);
@@ -436,13 +445,42 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                String frameDescr = CallStackNodeModel.getCSFName(null, f, showPackageNames);
+                String frameDescr = CallStackNodeModel.getCSFName(session, f, showPackageNames);
                 synchronized (frameDescriptionsByFrame) {
                     frameDescriptionsByFrame.put(f, frameDescr);
+                }
+                String[] pathAndClass = new String[2];
+                try {
+                    pathAndClass[0] = f.getSourcePath(session.getCurrentLanguage());
+                } catch (AbsentInformationException ex) {
+                }
+                pathAndClass[1] = f.getClassName();
+                synchronized (framePathAndClass) {
+                    framePathAndClass.put(f, pathAndClass);
                 }
                 fireDisplayNameChanged(f);
             }
         });
+    }
+
+    static String getCachedFramePath(CallStackFrame f) {
+        synchronized (framePathAndClass) {
+            String[] pathAndClass = framePathAndClass.get(f);
+            if (pathAndClass != null) {
+                return pathAndClass[0];
+            }
+        }
+        return null;
+    }
+
+    static String getCachedFrameClass(CallStackFrame f) {
+        synchronized (framePathAndClass) {
+            String[] pathAndClass = framePathAndClass.get(f);
+            if (pathAndClass != null) {
+                return pathAndClass[1];
+            }
+        }
+        return null;
     }
 
     public static String getIconBase(JPDAThread thread) {
@@ -591,7 +629,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (DebuggingTreeModel.isMethodInvoking(sf.getThread())) {
                 return "";
             }
-            return CallStackNodeModel.getCSFToolTipText(sf);
+            return CallStackNodeModel.getCSFToolTipText(session, sf);
         }
         if (node instanceof JPDAThreadGroup) {
             return ((JPDAThreadGroup) node).getName ();
@@ -673,6 +711,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
+        for (ModelListener ml : ls) {
+            ml.modelChanged (event);
+        }
+    }
+
+    private void fireTreeChanged() {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        ModelEvent event = new ModelEvent.TreeChanged(this);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
@@ -888,6 +937,36 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                     frameDescriptionsByFrame.clear();
                 }
             }
+        }
+    }
+
+    private final class SessionLanguageListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (frameDescriptionsByFrame) {
+                frameDescriptionsByFrame.clear();
+            }
+            synchronized (framePathAndClass) {
+                framePathAndClass.clear();
+            }
+            fireTreeChanged();
+        }
+        
+    }
+
+    private final static class ListenerDetaching {
+
+        private String propertyName;
+        private Session session;
+
+        ListenerDetaching(String propertyName, Session session) {
+            this.propertyName = propertyName;
+            this.session = session;
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            session.removePropertyChangeListener(propertyName, l);
         }
     }
 }

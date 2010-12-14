@@ -99,6 +99,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     private Action INTERRUPT_ACTION;
     private Action COPY_TO_CLBD_ACTION;
     private Action LANGUAGE_SELECTION;
+    private Action GO_TO_SOURCE_ACTION;
 
 
     public DebuggingActionsProvider (ContextProvider lookupProvider) {
@@ -112,6 +113,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         COPY_TO_CLBD_ACTION = createCOPY_TO_CLBD_ACTION(requestProcessor);
         POP_TO_HERE_ACTION = createPOP_TO_HERE_ACTION(requestProcessor);
         LANGUAGE_SELECTION = new LanguageSelection(session);
+        GO_TO_SOURCE_ACTION = createGO_TO_SOURCE_ACTION(requestProcessor);
     }
     
 
@@ -188,25 +190,33 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     );
     }
 
-    static Action GO_TO_SOURCE_ACTION = Models.createAction (
-        NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                if (!(node instanceof CallStackFrame)) {
-                    return false;
-                } else if (DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread())) {
-                    return false;
+    static final Action createGO_TO_SOURCE_ACTION(final RequestProcessor requestProcessor) {
+        return Models.createAction (
+            NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
+            new Models.ActionPerformer () {
+                public boolean isEnabled (Object node) {
+                    if (!(node instanceof CallStackFrame)) {
+                        return false;
+                    } else if (DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread())) {
+                        return false;
+                    }
+                    return isGoToSourceSupported ((CallStackFrame) node);
                 }
-                return isGoToSourceSupported ((CallStackFrame) node);
-            }
-            
-            public void perform (Object[] nodes) {
-                goToSource((CallStackFrame) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    
-    );
+
+                public void perform (final Object[] nodes) {
+                    // Do not do expensive actions in AWT,
+                    // It can also block if it can not procceed for some reason
+                    requestProcessor.post(new Runnable() {
+                        public void run() {
+                            goToSource((CallStackFrame) nodes [0]);
+                        }
+                    });
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
+
+        );
+    }
 
     static final Action createPOP_TO_HERE_ACTION(final RequestProcessor requestProcessor) {
         return Models.createAction (
@@ -553,10 +563,19 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     }
 
     private static boolean isGoToSourceSupported (CallStackFrame f) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
+        String path = DebuggingNodeModel.getCachedFramePath(f);
+        String clazz = null;
+        if (path == null) {
+            clazz = DebuggingNodeModel.getCachedFrameClass(f);
+            if (clazz == null) {
+                return true; // Nothing cached, but go-to-source can be tried...
+            }
+        }
         SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        return sp.sourceAvailable (f, language);
+        if (path != null) {
+            return sp.sourceAvailable(path.replace(java.io.File.separatorChar, '/'), true);
+        }
+        return sp.sourceAvailable(sp.convertClassNameToRelativePath(clazz), true);
     }
     
     private static void goToSource(final CallStackFrame frame) {
