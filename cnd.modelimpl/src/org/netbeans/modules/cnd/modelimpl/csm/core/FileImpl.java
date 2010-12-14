@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
@@ -58,7 +59,6 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
-import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -88,9 +88,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
@@ -705,11 +703,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        Parsing parsing = doParse(preprocHandler, aptFull);
+        CsmParserResult parsing = doParse(preprocHandler, aptFull);
         if (parsing != null) {
             if (isValid()) {
                 disposeAll(false);
-                parsing.stageTwo(this);
+                parsing.render();
             }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
@@ -791,35 +789,36 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         final APTFile fullAPT = getFileAPT(true);
         synchronized (stateLock) {
-            return _parse(handlers.iterator().next(), fullAPT);
+            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT);
+            Object ast = parsing.getAST();
+            if (ast instanceof AST) {
+                return (AST) ast;
+            }
         }
+        return null;
     }
 
 
-    private AST _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
 
         Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("Parsing", preprocHandler); //NOI18N
         }
-        Parsing parsing = doParse(preprocHandler, aptFull);
+        CsmParserResult parsing = doParse(preprocHandler, aptFull);
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
             sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
         }
         if (parsing != null) {
             Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (isValid()) {   // FIXUP: use a special lock here
-                parsing.stageTwo(this);
+                parsing.render();
                 if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                     sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
                 }
             }
-            Object ast = parsing.getAST();
-            if(ast instanceof AST) {
-                return (AST)ast;
-            }
         }
-        return null;
+        return parsing;
     }
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
@@ -1094,110 +1093,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    private interface Parsing {
-        void stageOne(TokenStream ts);
-        void stageTwo(FileImpl file);
-
-        Object getAST();
-        int getErrorCount();
-    }
-
-    private static class CppParsing implements Parsing {
-
-        private File file;
-        private int flags;
-        private CPPParserEx parser;
-
-        public CppParsing(File file) {
-            this.file = file;
-            int aFlags = CPPParserEx.CPP_CPLUSPLUS;
-            if (!reportErrors) {
-                aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-            }
-            this.flags = aFlags;
-        }
-
-        @Override
-        public void stageOne(TokenStream ts) {
-            parser = CPPParserEx.getInstance(file.getName(), ts, flags);
-            try {
-                parser.translation_unit();
-            } catch (Error ex) {
-                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                throw ex;
-            }
-        }
-
-        @Override
-        public void stageTwo(FileImpl file) {
-            AST ast = parser.getAST();
-            if(ast != null) {
-                new AstRenderer(file).render(ast);
-                incParseCount();
-            }
-        }
-
-        @Override
-        public Object getAST() {
-            return parser.getAST();
-        }
-
-        @Override
-        public int getErrorCount() {
-            return parser.getErrorCount();
-        }
-    }
-
-    private static class FortranParsing implements Parsing {
-
-        private File file;
-        private FortranParserEx parser;
-        private FortranParserEx.program_return ret;
-
-        public FortranParsing(File file) {
-            this.file = file;
-        }
-
-        @Override
-        public void stageOne(TokenStream ts) {
-//                FortranParserEx.MyTokenStream ts2 = new FortranParserEx.MyTokenStream(new org.netbeans.modules.cnd.antlr.TokenBuffer(filteredTokenStream));
-//                while(ts2.LA(1) != -1) {
-//                    System.out.println(ts2.LT(1).getText() + " " + ts2.LT(1).getType());
-//                    ts2.consume();
-//                }
-//                System.out.println(ts2.LT(1).getText());
-            parser = new FortranParserEx(ts);
-            try {
-                ret = parser.program();
-//                CommonTree tree = (CommonTree) ret.getTree();
-//                System.out.println(tree);
-//                System.out.println(tree.getChildren());
-            } catch (org.antlr.runtime.RecognitionException ex) {
-                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-            } catch (Exception ex) {
-                System.err.println("Fortran parser error at parsing file " + file.getAbsolutePath()); // NOI18N
-            }
-        }
-
-        @Override
-        public void stageTwo(FileImpl file) {
-            new DataRenderer(file).render(parser.parsedObjects);
-            incParseCount();
-        }
-
-        @Override
-        public Object getAST() {
-            return ret.getTree();
-        }
-
-        @Override
-        public int getErrorCount() {
-            return parser.getNumberOfSyntaxErrors();
-        }
-    }
-
-
-    private Parsing doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1222,7 +1118,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //                }
 //            }
 //        }
-        Parsing parsing = null;
+        CsmParserResult parseResult = null;
         if (aptFull != null) {
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
@@ -1252,16 +1148,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             CsmParser parser = CsmParserProvider.createParser(this);
             assert parser != null : "no parser for " + this;
 
-            if(fileType == FileType.SOURCE_FORTRAN_FILE) {
-                //System.out.println("Prasing fortran file " + getName());
-                parsing = new FortranParsing(fileBuffer.getFile());
-            } else {
-                //System.out.println("Prasing cpp file " + getName());
-                parsing = new CppParsing(fileBuffer.getFile());
-            }
-
-            parsing.stageOne(filteredTokenStream);
-
+            parser.init(this, filteredTokenStream);
+            parseResult = parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
@@ -1270,30 +1158,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             if (emptyAstStatictics) {
                 time = System.currentTimeMillis() - time;
-                final Object ast = parsing.getAST();
-                if(ast instanceof AST) {
-                    System.err.println("PARSED FILE " + getAbsolutePath() + (AstUtil.isEmpty((AST)ast, true) ? " EMPTY" : "") + ' ' + time + " ms");
-                } else {
-                    System.err.print("ast is not instance of AST");
+                boolean empty = parseResult.isEmptyAST();
+                if(empty) {
+                    System.err.println("PARSED FILE " + getAbsolutePath() + " HAS EMPTY AST" + ' ' + time + " ms");
                 }
             }
             if (TraceFlags.DUMP_AST) {
-                System.err.println("\n");
-                System.err.print("AST: ");
-                System.err.print(getAbsolutePath());
-                System.err.print(' ');
-                final Object ast = parsing.getAST();
-                if(ast instanceof AST) {
-                    AstUtil.toStream((AST)ast, System.err);
-                } else {
-                    System.err.print("ast is not instance of AST");
-                }
-                System.err.println("\n");
-
+                parseResult.dumpAST();
             }
-            errorCount = parsing.getErrorCount();
+            errorCount = parseResult.getErrorCount();
             if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                parsing = null;
+                parseResult = null;
                 if (TraceFlags.TRACE_CACHE) {
                     System.err.println("CACHE: not save cache for file modified during parsing" + getAbsolutePath());
                 }
@@ -1311,7 +1186,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             aHook.parsingFinished(this, preprocHandler);
         }
 //        parseCount++;
-        return parsing;
+        return parseResult;
     }
 
     public List<CsmReference> getLastMacroUsages() {
@@ -1751,20 +1626,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         CsmOffsetableDeclaration container = UIDCsmConverter.UIDtoDeclaration(fakeIncludePair.containerUid);
                         if (container != null && container.isValid()) {
                             FileImpl file = (FileImpl) include.getIncludeFile();
-                            if (file != null && file.isValid()) {
-                                TokenStream ts = this.getTokenStreamOfIncludedFile(include);
+                            if (file != null && file.isValid()) {                                
+                                TokenStream ts = this.getTokenStreamOfIncludedFile(include);                               
                                 if (ts != null) {
-                                    int flags = CPPParserEx.CPP_CPLUSPLUS;
-                                    if (!TraceFlags.TRACE_ERROR_PROVIDER) {
-                                        flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-                                    }
-                                    CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, flags);
+                                    CsmParser parser = CsmParserProvider.createParser(file);
+                                    assert parser != null : "no parser for " + this;
+                                    parser.init(this, ts);                                    
                                     if (container instanceof ClassImpl) {
                                         ClassImpl cls = (ClassImpl) container;
-                                        parser.fix_fake_class_members();
-                                        AST ast = parser.getAST();
-
-
+                                        CsmParserResult result = parser.parse(CsmParser.ConstructionKind.CLASS_BODY);
                                         CsmDeclaration.Kind kind = cls.getKind();
                                         CsmVisibility visibility = CsmVisibility.PRIVATE;
                                         if(kind == CsmDeclaration.Kind.CLASS) {
@@ -1773,14 +1643,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                                 kind == CsmDeclaration.Kind.UNION) {
                                             visibility = CsmVisibility.PUBLIC;
                                         }
-                                        cls.fixFakeRender(file, visibility, ast, false);
+                                        result.render(file, cls, visibility, Boolean.FALSE);
                                         fakeIncludePair.markFixed();
                                         wereFakes = true;
                                     } else if (container instanceof NamespaceDefinitionImpl) {
-                                        NamespaceDefinitionImpl ns = (NamespaceDefinitionImpl) container;
-                                        parser.translation_unit();
-                                        AST ast = parser.getAST();
-                                        ns.fixFakeRender(file, ast, false);
+                                        CsmParserResult result = parser.parse(CsmParser.ConstructionKind.NAMESPACE_DEFINITION_BODY);
+                                        result.render(file, (NamespaceDefinitionImpl) container);
                                         fakeIncludePair.markFixed();
                                         wereFakes = true;
                                     }

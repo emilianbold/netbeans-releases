@@ -75,7 +75,10 @@ public abstract class CsmParserProvider {
     
     public interface CsmParserResult {
         void render(Object... context);
+        boolean isEmptyAST();
         Object getAST();
+        void dumpAST();
+        int getErrorCount();
     }
     
     private static final class Default extends CsmParserProvider {

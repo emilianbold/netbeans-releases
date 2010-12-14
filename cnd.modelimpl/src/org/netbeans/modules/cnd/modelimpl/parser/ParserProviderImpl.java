@@ -43,16 +43,25 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.List;
+import org.antlr.runtime.tree.CommonTree;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -66,6 +75,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
     @Override
     protected CsmParser create(CsmFile file) {
         if (file instanceof FileImpl) {
+            if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
+                return new Antrl3FortranParser((FileImpl)file);
+            }
             return new Antlr2CppParser((FileImpl)file);
         } else {
             return null;
@@ -102,7 +114,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
             this.kind = kind;
             switch (kind) {
                 case TRANSLATION_UNIT:
-                case NAMESPACE_DEFINITION_BODY:
+                    parser.translation_unit();
+                    break;
                 case TRY_BLOCK:
                     parser.setLazyCompound(false);
                     parser.function_try_block(CsmKindUtilities.isConstructor((((CsmScopeElement)parserContainer).getScope())));
@@ -111,7 +124,12 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     parser.setLazyCompound(false);
                     parser.compound_statement();
                     break;
+                case NAMESPACE_DEFINITION_BODY:
+                    parser.translation_unit();
+                    break;
                 case CLASS_BODY:
+                    parser.fix_fake_class_members();
+                    break;
                 default:
                     assert false: "unexpected parse kind " + kind;
             }
@@ -128,37 +146,124 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     List<CsmStatement> list = (List<CsmStatement>) context[0];
                     ((LazyStatementImpl)parserContainer).renderStatements(ast, list);
                     break;
+                case TRANSLATION_UNIT:
+                    if (ast != null) {
+                        new AstRenderer(file).render(ast);
+                        file.incParseCount();
+                    }            
+                    break;
+                case NAMESPACE_DEFINITION_BODY:
+                    FileImpl nsBodyFile = (FileImpl) context[0];
+                    NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
+                    CsmNamespace ns = nsDef.getNamespace();
+                    if (ast != null && ns instanceof NamespaceImpl) {
+                        new AstRenderer(nsBodyFile).render(ast, (NamespaceImpl) ns, nsDef);
+                    }                    
+                    break;
+                case CLASS_BODY:
+                    FileImpl clsBodyFile = (FileImpl) context[0];
+                    ClassImpl cls = (ClassImpl) context[1];
+                    CsmVisibility visibility = (CsmVisibility) context[2];
+                    boolean localClass = (Boolean) context[3];
+                    cls.fixFakeRender(clsBodyFile, visibility, ast, localClass);
+                    break;
                 default:
                     assert false : "unexpected parse kind " + kind;
             }
         }
+        
+        @Override
+        public boolean isEmptyAST() {
+            return AstUtil.isEmpty(ast, true);
+        }
 
+        @Override
+        public void dumpAST() {
+            System.err.println("\n");
+            System.err.print("AST: ");
+            System.err.print(file.getAbsolutePath());
+            System.err.print(' ');
+            AstUtil.toStream(ast, System.err);
+            System.err.println("\n");        }
+        
         @Override
         public Object getAST() {
             return ast;
         }
+
+        @Override
+        public int getErrorCount() {
+            return parser.getErrorCount();
+        }
     }
     
     private final static class Antrl3FortranParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+        private final FileImpl file;
+        private FortranParserEx parser;
+        private CsmObject parserContainer;
+        private FortranParserEx.program_return ret;
+        private ConstructionKind kind;
 
+        Antrl3FortranParser(FileImpl file) {
+            this.file = file;
+        }
+        
         @Override
         public void init(CsmObject object, TokenStream ts) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            parser = new FortranParserEx(ts);
         }
 
         @Override
         public CsmParserResult parse(ConstructionKind kind) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            this.kind = kind;
+            switch (kind) {
+                case TRANSLATION_UNIT:
+                    try {
+                        ret = parser.program();
+                    } catch (org.antlr.runtime.RecognitionException ex) {
+                        System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                    } catch (Exception ex) {
+                        System.err.println("Fortran parser error at parsing file " + file.getAbsolutePath()); // NOI18N
+                    }
+                    break;
+                default:
+                    assert false : "unexpected parse kind " + kind;    
+            }
+            return this;
         }
 
         @Override
         public void render(Object... context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            switch (kind) {
+                case TRANSLATION_UNIT:
+                    new DataRenderer(file).render(parser.parsedObjects);
+                    file.incParseCount();
+                    break;
+                default:
+                    assert false : "unexpected render kind " + kind;
+            }
         }
 
         @Override
+        public boolean isEmptyAST() {
+            return ret == null || ret.getTree() == null;
+        }
+        
+        @Override
         public Object getAST() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return ret == null ? null : ret.getTree();
+        }
+
+        @Override
+        public int getErrorCount() {
+            return parser.getNumberOfSyntaxErrors();
+        }
+
+        @Override
+        public void dumpAST() {
+            CommonTree tree = (CommonTree) ret.getTree();
+            System.err.println(tree);
+            System.err.println(tree.getChildren());
         }
     }
 }
