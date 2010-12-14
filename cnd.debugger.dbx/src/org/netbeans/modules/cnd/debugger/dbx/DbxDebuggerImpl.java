@@ -2183,8 +2183,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return locals;
     }
 
-    private ArrayList<DbxVariable> autos = new ArrayList<DbxVariable>();
-
     @Override
     public void setShowAutos(boolean showAutos) {
 	super.setShowAutos(showAutos);
@@ -2205,29 +2203,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
      *   When it detects the reply with the sentinel routing token it will
      *   call batchOffForce() to cause a pull of LocalModel.
      */
-    public void requestAutos() {
-	autos.clear();
-
-	if (!isShowAutos())
-	    return;
-
-	Location location = getVisitedLocation();
-	if (location == null ||  ! location.hasSource()) {
+    @Override
+    public Set<String> requestAutos() {
+        Set<String> autoNames = super.requestAutos();
+        
+        if (autoNames.isEmpty()) {
 	    localUpdater.batchOffForce();	// cause a pull to clear view
-	    return;
-	}
-
-	Set<String> autoNames = Autos.get(EditorBridge.documentFor(location.src()), location.line()-1);
-
-	/* DEBUG
-	System.out.printf("AutoNames for %s:%d\n", location.src(), location.line());
-	for (String autoName : autoNames)
-	    System.out.printf("\t'%s'\n", autoName);
-	 */
-
-	if (autoNames.isEmpty()) {
-	    localUpdater.batchOffForce();	// cause a pull to clear view
-	    return;
+	    return autoNames;
 	}
 
 	// Corresponding batchOff() will happen in setChasedPointer() when
@@ -2244,15 +2226,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	    // expr_heval's will "continue" in setChasedPointer()
 	    dbx.expr_heval(rt, "-r " + autoName);	// NOI18N
 	}
-    }
-
-    public int getAutosCount() {
-	return autos.size();
-    }
-
-    public Variable[] getAutos() {
-	Variable array[] = autos.toArray(new DbxVariable[autos.size()]);
-	return array;
+        
+        return autoNames;
     }
 
     private class LocalEnableLatch extends EnableLatch {
