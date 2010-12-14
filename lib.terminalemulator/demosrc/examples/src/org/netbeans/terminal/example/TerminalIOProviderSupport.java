@@ -28,11 +28,11 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.terminal.api.IOConnect;
 
 import org.netbeans.modules.terminal.api.IOEmulation;
@@ -348,10 +348,12 @@ public final class TerminalIOProviderSupport {
 	    // comment out to verify fix for bug #181064
 	    io.select();
 
-	    if (IOTerm.isSupported(io)) {
-		// Term term = IOTerm.term(io);
-		// term.setDebugFlags(Term.DEBUG_INPUT);
-	    }
+            if (config.isDebug()) {
+                if (IOTerm.isSupported(io)) {
+                    Term term = IOTerm.term(io);
+                    term.setDebugFlags(Term.DEBUG_INPUT|Term.DEBUG_OUTPUT |Term.DEBUG_OPS);
+                }
+            }
 	    tprintln("GREETINGS");
 	    try {
 		if (IOColorPrint.isSupported(io)) {
