@@ -78,10 +78,10 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores all moved files for a later cache refresh in afterMove
      */
-    private Set<File> movedFiles = new HashSet<File>();
-    private Set<File> copiedFiles = new HashSet<File>();
+    private final Set<File> movedFiles = new HashSet<File>();
+    private final Set<File> copiedFiles = new HashSet<File>();
 
-    private Set<File> internalyDeletedFiles = new HashSet<File>();
+    private final Set<File> internalyDeletedFiles = new HashSet<File>();
 
     /**
      * Stores .svn folders that should be deleted ASAP.

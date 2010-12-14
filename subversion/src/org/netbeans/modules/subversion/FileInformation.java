@@ -405,6 +405,7 @@ public class FileInformation implements Serializable {
         return (status & mask) != 0;
     }
 
+    @Override
     public String toString() {
         return "Text: " + status + " " + getStatusText(status) + "\nProp: " + propStatus + " " + getStatusText(propStatus); // NOI18N
     }

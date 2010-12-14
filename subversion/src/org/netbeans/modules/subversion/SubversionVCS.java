@@ -171,6 +171,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        @Override
         public boolean areCollocated(File a, File b) {
             File fra = getTopmostManagedAncestor(a);
             File frb = getTopmostManagedAncestor(b);
@@ -197,12 +198,14 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             }
         }
 
+        @Override
         public File findRoot(File file) {
             // TODO: we should probably return the closest common ancestor
             return getTopmostManagedAncestor(file);
         }
     };
     
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
@@ -210,12 +213,14 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) evt.getNewValue());
