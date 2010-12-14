@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.j2ee.deployment.plugins.spi.config;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 
 /**
- *
- * @author vbk
+ * Extension of {@link ModuleConfigurationFactory} providing also access to
+ * server instance URL.
+ * 
+ * @author Petr Hejl
+ * @since 1.74
  */
-public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
-    
-    /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Hk2ModuleConfigFactory() {
-    }
-    
-    @Override
-    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
-        }
-        return retVal;
-    }
+public interface ModuleConfigurationFactory2 extends ModuleConfigurationFactory {
 
-    @Override
-    public ModuleConfiguration create(J2eeModule module, String instanceUrl) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            if (instanceUrl.contains("gfv3ee6wc")) { // NOI18N
-                retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module));
-            } else {
-                retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
-            }
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
-        }
-        return retVal;
-    }
-    
+    /**
+     * Creates a {@link ModuleConfiguration} instance associated with the specified 
+     * J2EE module. This method is strictly preferred over
+     * {@link #create(org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule)}
+     * whenever the server instance is known.
+     * 
+     * @param j2eeModule J2EE module the created ModuleConfigucation should be 
+     *        associated with
+     * @param deployment URL of the target server instance
+     * 
+     * @return ModuleConfigucation associated with the specified J2EE module
+     */    
+    ModuleConfiguration create(@NonNull J2eeModule j2eeModule, @NonNull String instanceUrl) throws ConfigurationException;
 }
