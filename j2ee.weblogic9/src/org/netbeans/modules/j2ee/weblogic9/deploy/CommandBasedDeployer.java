@@ -637,7 +637,7 @@ public final class CommandBasedDeployer {
         // NB supports only JDK6+ while WL 9, only JDK 5
         if (deploymentManager.getDomainVersion() == null
                 || !deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
-            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true");
+            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
         builder = builder.addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
