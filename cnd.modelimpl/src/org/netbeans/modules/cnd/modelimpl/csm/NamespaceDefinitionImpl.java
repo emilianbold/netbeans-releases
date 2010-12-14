@@ -300,11 +300,4 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             readUID(input);
         }
     }
-
-    public void fixFakeRender(FileImpl file, AST ast, boolean b) {
-        final CsmNamespace ns = getNamespace();
-        if (ast != null && ns instanceof NamespaceImpl) {
-            new AstRenderer(file).render(ast, (NamespaceImpl)ns, this);
-        }
-    }
 }
