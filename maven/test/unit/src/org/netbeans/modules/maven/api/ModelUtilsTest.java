@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import junit.framework.TestCase;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 
 /**
  *
@@ -60,9 +61,13 @@ public class ModelUtilsTest extends TestCase {
 
     public void testCheckLibrary() throws MalformedURLException {
         System.out.println("checkLibrary");
+        // #193368 the hardcoded list of repositories is incorrect, instead the following should be used:
+        // Set<String> repos = RepositoryPreferences.getInstance().getKnownRepositoryUrls();
+        // uncomment this line and delete the following 4 lines after bug 193368 is fixed
         Set<String> repos = new HashSet<String>();
         repos.add("http://repo1.maven.org/maven2/");
         repos.add("http://download.java.net/maven/1/");
+        repos.add("http://download.java.net/maven/glassfish/");
 
         URL pom = new URL("http://repo1.maven.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom");
         ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
@@ -130,6 +135,16 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("org.eclipse.persistence", result.getGroupId());
         assertEquals("javax.persistence", result.getArtifactId());
         assertEquals("2.0.0-M12", result.getVersion());
+
+        pom = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.pom");
+        result = ModelUtils.checkLibrary(pom, repos);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://download.java.net/maven/glassfish/", result.getRepoRoot());
+        assertEquals("org.glassfish.extras", result.getGroupId());
+        assertEquals("glassfish-embedded-all", result.getArtifactId());
+        assertEquals("3.0", result.getVersion());
+        
     }
     
 }

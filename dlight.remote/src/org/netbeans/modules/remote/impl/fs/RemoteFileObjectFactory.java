@@ -173,6 +173,29 @@ public class RemoteFileObjectFactory {
         }
     }
 
+    public void invalidate(String remotePath) {
+        synchronized (lock) {
+            RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
+            if (fo != null) {
+                fo.invalidate();
+            }
+        }
+    }
+
+    public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {
+        synchronized (lock) {
+            RemoteFileObjectBase fo = fileObjectsCache.get(linkRemotePath);
+            if (fo != null) {
+                if (fo instanceof RemoteLink) {
+                    ((RemoteLink) fo).setLink(linkTarget, parent);
+                } else {
+                    RemoteLogger.getInstance().log(Level.FINE, "Called setLink on {0} - invalidating", fo.getClass().getSimpleName());
+                    fo.invalidate();
+                }
+            }
+        }
+    }
+
 //    /*package*/ int testGetCacheSize() {
 //        return fileObjectsCache.size();
 //    }

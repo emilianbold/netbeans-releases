@@ -209,7 +209,7 @@ public class MIParser {
 
         @Override
 	public String toString() {
-	    return type.toString();
+	    return type.toString() + " (" + value + ')'; //NOI18N
 	} 
     } 
 

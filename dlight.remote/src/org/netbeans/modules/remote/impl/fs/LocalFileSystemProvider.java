@@ -101,8 +101,6 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
                 tmpFile = FileUtil.normalizeFile(tmpFile);
                 FileObject fo = FileUtil.toFileObject(tmpFile);
                 rootFileSystem = fo.getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {

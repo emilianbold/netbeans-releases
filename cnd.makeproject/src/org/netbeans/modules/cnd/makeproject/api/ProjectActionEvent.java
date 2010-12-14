@@ -177,7 +177,7 @@ public final class ProjectActionEvent {
                 result.addAll(Arrays.asList(Arrays.copyOfRange(params, 1, params.length)));
             }
         }
-        result.addAll(Arrays.asList(profile.getArgsArray()));
+        result.addAll(Arrays.asList(getProfile().getArgsArray()));
         return result;
     }
 
