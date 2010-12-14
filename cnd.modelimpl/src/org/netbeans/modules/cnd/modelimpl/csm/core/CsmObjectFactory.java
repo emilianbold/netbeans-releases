@@ -50,6 +50,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImplFunctionSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -153,7 +155,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof EnumImpl) {
             aHandler = ENUM_IMPL;
         } else if (object instanceof ClassImpl) {
-            if (object instanceof ClassImplSpecialization) {
+            if (object instanceof ClassImplFunctionSpecialization) {
+                aHandler = CLASS_IMPL_FUNCTION_SPECIALIZATION;
+            } else if (object instanceof ClassImplSpecialization) {
                 aHandler = CLASS_IMPL_SPECIALIZATION;
             } else if (object instanceof ForwardClass) {
                 aHandler = FORWARD_CLASS;
@@ -220,6 +224,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     aHandler = CONSTRUCTOR_IMPL;
                 } else if (object instanceof DestructorImpl) {
                     aHandler = DESTRUCTOR_IMPL;
+                } else if (object instanceof MethodImplSpecialization<?>) {
+                    aHandler = METHOD_IMPL_SPECIALIZATION;
                 } else {
                     aHandler = METHOD_IMPL;
                 }
@@ -348,6 +354,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ClassImplSpecialization(stream);
                 break;
 
+            case CLASS_IMPL_FUNCTION_SPECIALIZATION:
+                obj = new ClassImplFunctionSpecialization(stream);
+                break;
+
             case FORWARD_CLASS:
                 obj = new ForwardClass(stream);
                 break;
@@ -430,6 +440,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case METHOD_IMPL:
                 obj = new MethodImpl(stream);
+                break;
+
+            case METHOD_IMPL_SPECIALIZATION:
+                obj = new MethodImplSpecialization(stream);
                 break;
 
             case FUNCTION_DEF_DECL_IMPL:
@@ -569,7 +583,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FILE_REFERENCES                = FILE_INCLUDES + 1;
     private static final int ENUM_IMPL                      = FILE_REFERENCES + 1;
     private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
-    private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int CLASS_IMPL_FUNCTION_SPECIALIZATION = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int FORWARD_CLASS                  = CLASS_IMPL_FUNCTION_SPECIALIZATION + 1;
     private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
 //    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
 //    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
@@ -607,8 +622,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
     private static final int DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;
     private static final int METHOD_IMPL                    = DESTRUCTOR_IMPL + 1;
+    private static final int METHOD_IMPL_SPECIALIZATION     = METHOD_IMPL + 1;
     
-    private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL + 1;
+    private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL_SPECIALIZATION + 1;
     // end of functions
     
     // variables

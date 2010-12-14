@@ -124,13 +124,6 @@ class CheckNodeListener implements MouseListener, KeyListener {
                 if (e.getClickCount() == 1 && chRect.contains(p) && !node.isDisabled()) {
                     boolean isSelected = !(node.isSelected());
                     node.setSelected(isSelected);
-                    if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION) {
-                        if (isSelected) {
-                            tree.expandPath(path);
-                        } else {
-                            tree.collapsePath(path);
-                        }
-                    }
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
@@ -141,8 +134,8 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
                         tree.revalidate();
-                        tree.repaint();
                     }
+                    tree.repaint();
                 } // double click, open the document
                 else if (e.getClickCount() == 2 && chRect.contains(p) == false) {
                     Object o = node.getUserObject();

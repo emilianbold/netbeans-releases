@@ -76,6 +76,8 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Maros Sandor
  */
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=GitVersioningTopComponent.PREFERRED_ID)
+@TopComponent.Registration(mode="output", openAtStartup=false, position=3110)
 public class GitVersioningTopComponent extends TopComponent implements Externalizable, PropertyChangeListener {
    
     private static final long serialVersionUID = 1L;    
@@ -84,7 +86,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     private VCSContext              context;
     private String                  contentTitle;
     private String                  branchTitle;
-    private static final String     PREFERRED_ID = "GitVersioning"; // NOI18N
+    public static final String     PREFERRED_ID = "GitVersioning"; // NOI18N
     private RepositoryInfo          repositoryInfo;
     
     private static GitVersioningTopComponent instance;

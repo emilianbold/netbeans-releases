@@ -89,7 +89,7 @@ public final class SQLRequestsProcessorImpl implements SQLRequestsProcessor {
     @Override
     public boolean queueRequest(SQLRequest request) {
         if (!queue.offer(request)) {
-            log.warning("Request dropped - no space in queue"); // NOI18N
+            log.fine("Request dropped - no space in queue"); // NOI18N
             return false;
         }
 
@@ -97,7 +97,7 @@ public final class SQLRequestsProcessorImpl implements SQLRequestsProcessor {
             taskLock.lock();
             try {
                 if (isActive.compareAndSet(false, true)) {
-                    log.info("Starting SQLRequestsProcessor worker ..."); // NOI18N
+                    log.fine("Starting SQLRequestsProcessor worker ..."); // NOI18N
                     task = RP.scheduleAtFixedRate(new Worker(), 0, pollTimeout, pollTimeoutUnit);
                 }
             } finally {
@@ -117,7 +117,7 @@ public final class SQLRequestsProcessorImpl implements SQLRequestsProcessor {
         taskLock.lock();
         try {
             if (isActive.compareAndSet(true, false)) {
-                log.info("Stopping SQLRequestsProcessor worker ..."); // NOI18N
+                log.fine("Stopping SQLRequestsProcessor worker ..."); // NOI18N
                 task.cancel(true);
                 task = null;
             }
@@ -162,7 +162,7 @@ public final class SQLRequestsProcessorImpl implements SQLRequestsProcessor {
                 int count = queue.drainTo(requests, pollRequests);
 
                 if (count == 0) {
-                    log.log(Level.INFO, "SQLQueueProcessor is empty {0}", idleLoops); // NOI18N
+                    log.log(Level.FINE, "SQLQueueProcessor is empty {0}", idleLoops); // NOI18N
                     if (++idleLoops > maxIdleLoops) {
                         stopWorker();
                     }
@@ -172,9 +172,9 @@ public final class SQLRequestsProcessorImpl implements SQLRequestsProcessor {
                 idleLoops = 0;
 
                 if (count == pollRequests) {
-                    log.warning("SQLQueueProcessor is overload... "); // NOI18N
+                    log.fine("SQLQueueProcessor is overload... "); // NOI18N
                 } else {
-                    log.log(Level.INFO, "SQLQueueProcessor load is {0}... ", count); // NOI18N
+                    log.log(Level.FINE, "SQLQueueProcessor load is {0}... ", count); // NOI18N
                 }
 
                 for (SQLRequest request : requests) {

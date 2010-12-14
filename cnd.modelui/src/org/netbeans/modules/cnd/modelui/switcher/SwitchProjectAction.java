@@ -77,28 +77,33 @@ public final class SwitchProjectAction extends NodeAction {
     public SwitchProjectAction() {
         presenter = new JCheckBoxMenuItem(getName());
         presenter.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onActionPerformed();
             }
         });
-        CsmModel model = CsmModelAccessor.getModel();
-        if( model instanceof ModelImpl ) {
-            this.model = (ModelImpl) model;
+        CsmModel aModel = CsmModelAccessor.getModel();
+        if( aModel instanceof ModelImpl ) {
+            this.model = (ModelImpl) aModel;
         }
     }
     
+    @Override
     public String getName() {
 	return NbBundle.getMessage(getClass(), ("CTL_SwitchProjectAction")); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPresenter();
     }    
     
+    @Override
     public JMenuItem getPopupPresenter() {
         return getPresenter();
     }
@@ -124,7 +129,7 @@ public final class SwitchProjectAction extends NodeAction {
 	    catch( Throwable thr ) { 
 		// we are in awt thread;
 		// if exception occurs here, it doesn't allow even to close the project!
-		thr.printStackTrace();
+		thr.printStackTrace(System.err);
 		presenter.setEnabled(false);
 		presenter.setSelected(true);
 	    }
@@ -176,6 +181,7 @@ public final class SwitchProjectAction extends NodeAction {
         return model.isProjectEnabled(p) ? State.Enabled : State.Disabled;
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes)  {
         if( model == null ) {
             return false;
@@ -195,11 +201,13 @@ public final class SwitchProjectAction extends NodeAction {
     }
     
     /** Actually nobody but us call this since we have a presenter. */
+    @Override
     public void performAction(final Node[] activatedNodes) {
 	if (!running.compareAndSet(false, true)) {
             return;
         }
 	model.enqueue(new Runnable() {
+            @Override
 	    public void run() {
                 try {
                     performAction(getNativeProjects(getActivatedNodes()));
@@ -228,6 +236,7 @@ public final class SwitchProjectAction extends NodeAction {
         }
     }
     
+    @Override
     protected boolean asynchronous () {
         return false;
     }

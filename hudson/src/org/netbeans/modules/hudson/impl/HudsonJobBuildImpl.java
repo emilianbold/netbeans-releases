@@ -61,7 +61,8 @@ import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.w3c.dom.Document;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
@@ -145,8 +146,9 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         return modules;
     }
 
+    @Messages({"# {0} - job/module display name", "# {1} - build number", "HudsonJobBuildImpl.display_name={0} #{1,number,#}"})
     public String getDisplayName() {
-        return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", job.getDisplayName(), getNumber());
+        return HudsonJobBuildImpl_display_name(job.getDisplayName(), getNumber());
     }
 
     private final class HudsonMavenModuleBuildImpl implements HudsonMavenModuleBuild, OpenableInBrowser {
@@ -186,7 +188,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         }
 
         public String getBuildDisplayName() {
-            return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", getDisplayName(), getNumber());
+            return HudsonJobBuildImpl_display_name(getDisplayName(), getNumber());
         }
 
     }

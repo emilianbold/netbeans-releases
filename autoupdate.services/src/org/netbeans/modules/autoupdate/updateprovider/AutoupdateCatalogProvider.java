@@ -64,7 +64,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private final String codeName;
     private String displayName;
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
-    private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
+    private static final Logger LOG = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
     private String description = null;
     private boolean descriptionInitialized = false;
     private CATEGORY category = null;
@@ -84,14 +84,17 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         this.category = (category != null) ? category : CATEGORY.COMMUNITY;
     }
     
+    @Override
     public String getName () {
         return codeName;
     }
     
+    @Override
     public String getDisplayName () {
         return displayName == null ? codeName : displayName;
     }
     
+    @Override
     public String getDescription () {
         if (description == null && !descriptionInitialized) {
             try {
@@ -107,10 +110,11 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         this.descriptionInitialized = true;
     }
 
+    @Override
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
             URL toParse = cache.getCatalogURL(codeName);
             if (toParse == null) {
-                log.log (Level.FINE, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
+                LOG.log (Level.FINE, "No content in cache for {0} provider. Returns EMPTY_MAP", codeName);
                 return Collections.emptyMap ();
             }
 
@@ -122,9 +126,10 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
             return map;        
     }
     
+    @Override
     public boolean refresh (boolean force) throws IOException {
         boolean res = false;
-        log.log (Level.FINER, "Try write(force? " + force + ") to cache Update Provider " + codeName + " from "  + getUpdateCenterURL ());
+        LOG.log (Level.FINER, "Try write(force? {0}) to cache Update Provider {1} from {2}", new Object[]{force, codeName, getUpdateCenterURL ()});
         if (force) {
             res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
             description = null;
@@ -150,6 +155,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         return displayName + "[" + codeName + "] to " + updateCenter;
     }
 
+    @Override
     public CATEGORY getCategory() {
         return category;
     }    

@@ -86,6 +86,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
@@ -109,6 +110,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private static boolean ALWAYS_USE_ACCESSORS = true;
     private static int FIELD_ACCESS_INDEX = 3;
     private static int METHOD_ACCESS_INDEX = 0;
+
+    private static final String ENCAPSULATE_FIELDS_JAVADOC_PREF = "ENCAPSULATE_FIELDS_JAVADOC";
+    private static final String ENCAPSULATE_FIELDS_SORT_PREF = "ENCAPSULATE_FIELDS_SORT";
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -168,8 +172,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             jTableFields.setGridColor(UIManager.getColor("control")); // NOI18N
         }
 
-        initEnumCombo(jComboSort, SortBy.PAIRS);
-        initEnumCombo(jComboJavadoc, Javadoc.DEFAULT);
+        initEnumCombo(jComboSort, SortBy.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_SORT_PREF, SortBy.PAIRS.ordinal())]);
+        initEnumCombo(jComboJavadoc, Javadoc.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_JAVADOC_PREF, Javadoc.DEFAULT.ordinal())]);
     }
 
     public Component getComponent() {
@@ -688,11 +692,15 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public SortBy getSortBy() {
-        return (SortBy) jComboSort.getSelectedItem();
+        SortBy sortby = (SortBy) jComboSort.getSelectedItem();
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_SORT_PREF, sortby.ordinal());
+        return sortby;
     }
     
     public Javadoc getJavadoc() {
-        return (Javadoc) jComboJavadoc.getSelectedItem();
+        Javadoc javadoc = (Javadoc) jComboJavadoc.getSelectedItem();
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_JAVADOC_PREF, javadoc.ordinal());
+        return javadoc;
     }
 
     String getClassname() {

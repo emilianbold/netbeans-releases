@@ -14,6 +14,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.44</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -32,9 +40,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.analytics.indicators</friend>
-                <friend>org.netbeans.modules.dlight.discover</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>                
-                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -42,9 +47,13 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.core.stack</friend>
+                <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.spi</package>
                 <package>org.netbeans.modules.dlight.spi.util</package>

@@ -107,6 +107,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.PioTopComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo.Factory;
 import org.netbeans.modules.cnd.debugger.common2.DbgGuiModule;
 
@@ -160,7 +162,6 @@ import org.openide.windows.WindowManager;
 public final class DebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
 
-    private static DebuggerManager singleton;
     private NativeDebugger currentDebugger;
     private InputOutput io;
 
@@ -175,12 +176,22 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     // for now we're not saving recent debug targets to disk so
     // hard-code various peoples favorite targets
     }
+    
+    private final static class LazyInitializer {
+        private static final DebuggerManager singleton;
+        static {
+            singleton = new DebuggerManager();
+            
+            // Initialize DebuggerManager
+            singleton.init();
+
+            // restore breakpints if any
+            singleton.breakpointBag();
+        }
+    }
 
     public static DebuggerManager get() {
-        if (singleton == null) {
-            singleton = new DebuggerManager();
-        }
-        return singleton;
+        return LazyInitializer.singleton;
     }
 
     /**
@@ -431,7 +442,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         notifyUnsavedFiles(debugger, registry.getModifiedSet());
     }
 
-    public void init() {
+    private void init() {
 
         /*
          * Track file dirtiness
@@ -1220,8 +1231,15 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	host = CndRemote.hostFromName(host, dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	String execPath = executor.readlink(dt.getPid());
-	ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
+	EngineDescriptor engine = ndi.getEngineDescriptor();
+	// CR 6997426, cause gdb problem IZ 193248
+	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE))
+	    ndi.setTarget("-"); //NOI18N
+	else
+	    ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
 
+	// CR 6997426, cause gdb problem IZ 193248
+	// ndi.setTarget("-"); // NOI18N
         ndi.setConfiguration(conf);
         ndi.setHostName(dt.getHostName());
         ndi.setAction(ATTACH);
@@ -1538,7 +1556,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
      * Put up a dialog to display an error message originating from the engine.
      * There is a fair bit of smarts and heuristics in here.
      */
-    public void error(int rt, Error error, NativeDebugger originatingDebugger) {
+    public void error(int rt, final Error error, NativeDebugger originatingDebugger) {
 
         // XXX WORKAROUND for dbx problem - see bugid (bugid here)
         if (error.isRedundantPathmap()) {
@@ -1633,7 +1651,11 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 
 
         if (!handled && (error.maxSeverity() == Error.Severity.ERROR)) {
-	    IpeUtils.postError(error.text());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    IpeUtils.postError(error.text());
+                }
+            });
         }
 
         refocusDialog();

@@ -129,10 +129,17 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
             if (pos == null) {
-                //#121084 hotfix
-                //happens for anonymous innerclasses
-                anonClassNameBug128074 = true;
-                start = end = (int) sp.getStartPosition(unit, t);
+                Tree tr = tree.getParentPath().getLeaf();
+                if (tr instanceof NewClassTree) {
+                    NewClassTree newClass = (NewClassTree) tr;
+                    start = (int) sp.getStartPosition(unit, newClass.getIdentifier());
+                    end = (int) sp.getEndPosition(unit, newClass.getIdentifier());
+                } else {
+                    //#121084 hotfix
+                    //happens for anonymous innerclasses
+                    anonClassNameBug128074 = true;
+                    start = end = (int) sp.getStartPosition(unit, t);
+                }
             } else {
                 start = pos[0];
                 end = pos[1];

@@ -55,7 +55,6 @@ import java.text.DateFormat;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.datatransfer.Transferable;
 
 import java.util.concurrent.Executor;
 import javax.swing.Action;
@@ -71,17 +70,13 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.BooleanStateAction;
-import org.openide.util.datatransfer.PasteType;
 
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -116,7 +111,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.NewBreakpointA
  *	org.netbeans.spi.viewmodel.CheckNodeModelFilter
  */
 public final class BreakpointFilter extends ModelListenerSupport
-		implements TreeModelFilter, ExtendedNodeModelFilter, TableModelFilter,
+		implements TreeModelFilter, TableModelFilter,
 		NodeActionsProviderFilter, CheckNodeModelFilter,
 		AsynchronousModelFilter,
 		Constants {
@@ -426,97 +421,6 @@ public final class BreakpointFilter extends ModelListenerSupport
 			return summary;
 		} else {
 			return original.getShortDescription(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public boolean canCopy(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			return false;
-		} else {
-			return original.canCopy(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public Transferable clipboardCopy(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException, java.io.IOException {
-
-		if (node instanceof NativeBreakpoint) {
-			throw new java.io.IOException();
-		} else {
-			return original.clipboardCopy(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public boolean canCut(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			return false;
-		} else {
-			return original.canCut(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public Transferable clipboardCut(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException, java.io.IOException {
-
-		if (node instanceof NativeBreakpoint) {
-			throw new java.io.IOException();
-		} else {
-			return original.clipboardCut(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public boolean canRename(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			return false;
-		} else {
-			return original.canRename(node);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public void setName(ExtendedNodeModel original, Object node, String name)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			return;
-		} else {
-			original.setName(node, name);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public PasteType[] getPasteTypes(ExtendedNodeModel original,
-			Object node,
-			Transferable t)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			return new PasteType[0];
-		} else {
-			return original.getPasteTypes(node, t);
-		}
-	}
-
-	// interface ExtendedNodeModelFilter
-	public String getIconBaseWithExtension(ExtendedNodeModel original, Object node)
-			throws UnknownTypeException {
-
-		if (node instanceof NativeBreakpoint) {
-			NativeBreakpoint b = (NativeBreakpoint) node;
-			return b.getIconBase() + ".png";	// NOI18N
-		} else {
-			return original.getIconBaseWithExtension(node);
 		}
 	}
 

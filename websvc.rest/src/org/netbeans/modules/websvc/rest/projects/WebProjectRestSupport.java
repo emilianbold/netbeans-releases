@@ -211,7 +211,7 @@ public class WebProjectRestSupport extends WebRestSupport {
             if (restConfig.isServerJerseyLibSelected()) {
                 added = addDeployableServerJerseyLibrary();
             }
-            if ( !added || restConfig.isJerseyLibSelected()) {
+            if ( !added && restConfig.isJerseyLibSelected()) {
                 if (hasServerJerseeyLibrary) {
                     if (!serverLibraryAdded) {
                         addServerJerseyLibrary();
@@ -285,7 +285,12 @@ public class WebProjectRestSupport extends WebRestSupport {
             return null;
         }
         try {
-            return Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID()).getJ2eePlatform();
+            // Fix for BZ#192058 -  NullPointerException: The serverInstanceId parameter cannot be null
+            String id = j2eeModuleProvider.getServerInstanceID();
+            if ( id == null ){
+                return null;
+            }
+            return Deployment.getDefault().getServerInstance(id).getJ2eePlatform();
         } catch (InstanceRemovedException ex) {
             return null;
         }

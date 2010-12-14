@@ -206,15 +206,24 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (isCanceled())
             return null;
 
+        Set<Severity> disabled = Utilities.disableErrors(info.getFileObject());
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>(descs.size());
+
+        for (ErrorDescription ed : descs) {
+            if (!disabled.contains(ed.getSeverity())) {
+                result.add(ed);
+            }
+        }
+
         if (isJava) {
             LazyHintComputationFactory.getAndClearToCompute(info.getFileObject());
         } else {
-            for (ErrorDescription d : descs) {
+            for (ErrorDescription d : result) {
                 d.getFixes().getFixes();
             }
         }
         
-        return descs;
+        return result;
     }
     
     public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
@@ -285,6 +294,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     private static final Set<String> INVALID_METHOD_INVOCATION = new HashSet<String>(Arrays.asList(
         "compiler.err.prob.found.req",
         "compiler.err.cant.apply.symbol",
+        "compiler.err.cant.apply.symbol.1",
 //        "compiler.err.cant.resolve.location",
         "compiler.err.cant.resolve.location.args"
     ));

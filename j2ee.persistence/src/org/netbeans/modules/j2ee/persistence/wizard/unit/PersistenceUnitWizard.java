@@ -236,7 +236,6 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
             if (descriptor.isNonDefaultProviderEnabled()) {
                 String providerClass = descriptor.getNonDefaultProvider();
                 punit.setProvider(providerClass);
-                
             }
         } else {
             LOG.fine("Creating an application managed PU");

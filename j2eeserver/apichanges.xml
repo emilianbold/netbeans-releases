@@ -117,6 +117,26 @@ is the proper place.
 
     <changes>
 
+       <change id="disableDeployOnSave">
+    	    <api name="plugins"/>
+            <summary>
+                Method to disable Deploy part of Deploy on Save and performing only
+                Compile on Save.
+            </summary>
+            <version major="1" minor="73"/>
+            <date day="19" month="11" year="2010"/>
+            <author login="dkonecny"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    In order to support JRebel and similar technologies it is 
+                    desirable to be able to turn on Compile on Save but disable
+                    Deploy on Save. That is achieved by newly introduced method.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <issue number="188361"/>
+        </change>
        <change id="platformRoots">
     	    <api name="plugins"/>
             <summary>

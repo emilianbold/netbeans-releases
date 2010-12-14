@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.javadoc.Doc;
+import com.sun.javadoc.ParamTag;
+import com.sun.javadoc.Tag;
 import com.sun.source.util.Trees;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
@@ -58,6 +61,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
@@ -262,7 +267,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             }
 
             // apply new access modifiers if necessary
-            Set<Modifier> modifiers = new HashSet<Modifier>(el.getModifiers());
+            Set<Modifier> modifiers = new HashSet<Modifier>(current.getModifiers().getFlags());
             if (!el.getEnclosingElement().getKind().isInterface()) {
                 modifiers.removeAll(ALL_ACCESS_MODIFIERS);
                 modifiers.addAll(refactoring.getModifiers());
@@ -315,6 +320,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 }
             }
 
+
             MethodTree nju = make.Method(
                     make.Modifiers(modifiers, current.getModifiers().getAnnotations()),
                     current.getName(),
@@ -326,9 +332,43 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     (ExpressionTree) current.getDefaultValue());
             rewrite(tree, nju);
 
+            ArrayList l = new ArrayList(currentParameters);
+            l.removeAll(newParameters);
+            removeFromJavadoc((ExecutableElement) el,l);
             return;
         }
     }
+
+    private void removeFromJavadoc(ExecutableElement method, List<? extends VariableTree> parameters) {
+        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
+        params:
+        for (Tag t:javadoc.tags("param")) { //NOI18N
+            for (VariableTree param:parameters) {
+                String text = t.text();
+                int a = text.indexOf(' ');
+                if (a>0) {
+                    text = text.substring(0, a);
+                }
+                if (text.equals(param.getName().toString())) {
+                    removeFromDoc((ParamTag)t);
+                    continue params;
+                }
+            }
+        }
+    }
+
+    private void removeFromDoc(ParamTag t) {
+        try {
+            Position[] tagBounds = JavadocUtilities.findTagBounds(workingCopy, workingCopy.getDocument(), t);
+            int length = tagBounds[1].getOffset() - tagBounds[0].getOffset();
+            workingCopy.rewriteInComment(tagBounds[0].getOffset(), length, "");
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
 
     private boolean isMethodMatch(Element method) {
         if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {

@@ -68,7 +68,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.openide.util.Exceptions;
@@ -104,10 +104,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.doc);
         Map<String, FaceletsLibrary> libs = Collections.emptyMap();
         if (jsfSupport != null) {
-            libs = jsfSupport.getFaceletsLibraries();
+            libs = jsfSupport.getLibraries();
         }
 
         //Find the namespaces declarations itself

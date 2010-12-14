@@ -59,6 +59,7 @@ import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitUser;
 
 /**
  * ChangeSet represents one revision.
@@ -120,6 +121,11 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
     @Override
     public final JGitUserInfo getAuthor () {
         return new JGitUserInfo(revCommit.getAuthorIdent());
+    }
+
+    @Override
+    public GitUser getCommitter() {
+        return new JGitUserInfo(revCommit.getCommitterIdent());
     }
     
     /**

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -138,7 +137,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
         // we don't need quoting - it's execution responsibility
-        ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
+        ArrayList<String> args = pae.getArguments();
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
@@ -170,10 +169,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = CndPathUtilitities.naturalize(exe);
-                } else if (conf.getDevelopmentHost().isLocalhost()) {
+                    exe = CndPathUtilitities.naturalizeSlashes(exe);
+                } 
+                if (conf.getDevelopmentHost().isLocalhost()) {
                     exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
-                }
+                } 
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
                 showInput = false;
@@ -417,7 +417,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     outputListener.flush();
                     outputListener.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 }
                 outputListener = null;
             }

@@ -234,6 +234,7 @@ public class HighlightsViewUtils {
             if (view instanceof HighlightsView) {
                 AttributeSet attrs = view.getAttributes();
                 Font font = ViewUtils.getFont(attrs, defaultFont);
+                docView.notifyFontUse(font); // Notify that this font is being used (possibly update line height)
                 Color foreColor = validForeColor(attrs, textComponent);
                 Color backColor = validBackColor(attrs, textComponent);
                 
@@ -421,7 +422,7 @@ public class HighlightsViewUtils {
         } else { // index == maxIndex
             Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
             mutableBounds.setRect(
-                    mutableBounds.getX() + textLayout.getAdvance(),
+                    mutableBounds.getX() + TextLayoutUtils.getWidth(textLayout),
                     mutableBounds.getY(),
                     1,
                     mutableBounds.getHeight());
@@ -659,8 +660,9 @@ public class HighlightsViewUtils {
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
                 float ascent = docView.getDefaultAscent();
-                float underlineOffset = docView.getDefaultUnderlineOffset() + ascent;
-                int y = (int)(allocBounds.getY() + underlineOffset + 0.5);
+                Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                int y = (int)(allocBounds.getY() + underlineAndStrike[0] + ascent + 0.5);
                 int wavePixelCount = (int) allocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
                     int[] waveForm = {0, 0, -1, -1};
@@ -689,13 +691,13 @@ public class HighlightsViewUtils {
                 }
                 if (underlineColor != null) {
                     g.setColor(underlineColor);
-                    float underlineOffset = docView.getDefaultUnderlineOffset();
-                    float underlineThickness = docView.getDefaultUnderlineThickness();
+                    Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
                     g.fillRect(
                             (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineOffset),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[0]),
                             (int) allocBounds.getWidth(),
-                            (int) Math.max(1, Math.round(underlineThickness))
+                            (int) Math.max(1, Math.round(underlineAndStrike[1]))
                     );
                 }
             }
@@ -722,13 +724,13 @@ public class HighlightsViewUtils {
                 }
                 if (strikeThroughColor != null) {
                     g.setColor(strikeThroughColor);
-                    float strikeOffset = docView.getDefaultStrikethroughOffset();
-                    float strikeThickness = docView.getDefaultStrikethroughThickness();
+                    Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
                     g.fillRect(
                             (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
-                            (int) textLayout.getAdvance(), // Full width of text layout
-                            (int) Math.max(1, Math.round(strikeThickness))
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
+                            (int) TextLayoutUtils.getWidth(textLayout), // Full width of text layout
+                            (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
                     );
                 }
             }
@@ -794,13 +796,13 @@ public class HighlightsViewUtils {
                     }
                     Rectangle2D allocBounds = ViewUtils.shapeAsRect(alloc);
                     g.setColor(strikeThroughColor);
-                    float strikeOffset = docView.getDefaultStrikethroughOffset();
-                    float strikeThickness = docView.getDefaultStrikethroughThickness();
+                    Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
                     g.fillRect(
                             (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]),
                             (int) allocBounds.getWidth(), // Full width of text layout
-                            (int) Math.max(1, Math.round(strikeThickness))
+                            (int) Math.max(1, Math.round(underlineAndStrike[3]))
                     );
                 }
             }

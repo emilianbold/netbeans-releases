@@ -55,6 +55,7 @@ import javax.swing.Action;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -250,7 +251,11 @@ public class DoxygenDocumentation {
 
     private static void getDocText(CsmObject csmObject, List<DocCandidate> list){
         CsmOffsetable csmOffsetable = (CsmOffsetable) csmObject;
-        TokenHierarchy<?> h = TokenHierarchy.create(csmOffsetable.getContainingFile().getText(), CppTokenId.languageHeader());
+        final CsmFile containingFile = csmOffsetable.getContainingFile();
+        if (containingFile == null) {
+            return;
+        }
+        TokenHierarchy<?> h = TokenHierarchy.create(containingFile.getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
         ts.move(csmOffsetable.getStartOffset());

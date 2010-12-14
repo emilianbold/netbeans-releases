@@ -341,15 +341,31 @@ public class Tiny {
             if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
                 Element current = ctx.getInfo().getTrees().getElement(new TreePath(inspect, ((SynchronizedTree) inspect.getLeaf()).getExpression()));
 
-                if (syncedOn.equals(current)) {
+                if (current == null || !VARIABLES.contains(current.getKind()) || equals(syncedOn, (VariableElement) current)) {
                     return null;
                 }
             }
 
             if (inspect.getLeaf().getKind() == Kind.METHOD) {
-                if (((MethodTree) inspect.getLeaf()).getModifiers().getFlags().contains(Modifier.SYNCHRONIZED)) {
-                    if (syncedOn.equals(attributeThis(ctx.getInfo(), inspect))) {
-                        return null;
+                Set<Modifier> mods = ((MethodTree) inspect.getLeaf()).getModifiers().getFlags();
+
+                if (mods.contains(Modifier.SYNCHRONIZED)) {
+                    if (mods.contains(Modifier.STATIC)) {
+                        if (syncedOn.getSimpleName().contentEquals("class")) {
+                            Element meth = ctx.getInfo().getTrees().getElement(inspect);
+
+                            if (meth == null || meth.getKind() != ElementKind.METHOD) {
+                                return null;
+                            }
+
+                            if (syncedOn.getEnclosingElement().equals(meth.getEnclosingElement())) {
+                                return null;
+                            }
+                        }
+                    } else {
+                        if (equals(syncedOn, attributeThis(ctx.getInfo(), inspect))) {
+                            return null;
+                        }
                     }
                 }
 
@@ -362,6 +378,15 @@ public class Tiny {
         String displayName = NbBundle.getMessage(Tiny.class, key);
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+
+    private static boolean equals(VariableElement var1, VariableElement var2) {
+        if (   var1.getSimpleName() == var2.getSimpleName()
+            && var1.getSimpleName().contentEquals("class")) {
+            return var1.getEnclosingElement().equals(var2.getEnclosingElement());
+        } else {
+            return var1.equals(var2);
+        }
     }
     
     @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock")

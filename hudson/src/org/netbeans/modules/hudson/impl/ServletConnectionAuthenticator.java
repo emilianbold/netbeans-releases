@@ -42,15 +42,22 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -66,9 +73,16 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
 
     private static final Logger LOGGER = Logger.getLogger(ServletConnectionAuthenticator.class.getName());
 
-    public void prepareRequest(URLConnection conn, URL home) {}
+    private final Map</*URL*/String,/*[field,crumb]*/String[]> crumbs = Collections.synchronizedMap(new HashMap<String,String[]>()); // #193008
 
-    public URLConnection forbidden(URLConnection conn, URL home) {
+    public @Override void prepareRequest(URLConnection conn, URL home) {
+        String[] fieldCrumb = crumbs.get(home.toString());
+        if (fieldCrumb != null) {
+           conn.setRequestProperty(fieldCrumb[0], fieldCrumb[1]);
+        }
+    }
+
+    public @Override URLConnection forbidden(URLConnection conn, URL home) {
         for (PasswordAuthorizer aa : Lookup.getDefault().lookupAll(PasswordAuthorizer.class)) {
             String[] auth = aa.authorize(home);
             if (auth != null) {
@@ -79,8 +93,21 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
                         new ConnectionBuilder().url(new URL(home, realmURI)).
                                 postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
                                 URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
-                                homeURL(home).authentication(false).connection();
+                                homeURL(home).authentication(false).followRedirects(false).connection();
                         LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
+                        try {
+                            InputStream is = new ConnectionBuilder().url(new URL(home, "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)")).homeURL(home).connection().getInputStream();
+                            try {
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                FileUtil.copy(is, baos);
+                                LOGGER.log(Level.FINER, "Received crumb: {0}", baos);
+                                crumbs.put(home.toString(), baos.toString().split("=", 2));
+                            } finally {
+                                is.close();
+                            }
+                        } catch (FileNotFoundException x) {
+                            LOGGER.finer("not using crumbs");
+                        }
                         return conn.getURL().openConnection();
                     } catch (IOException x) {
                         LOGGER.log(Level.FINE, null, x);

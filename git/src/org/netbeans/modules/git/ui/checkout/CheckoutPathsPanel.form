@@ -54,7 +54,7 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="org.netbeans.modules.git.ui.repository.RevisionPickerDialog" name="revisionPickerDialog1">
+    <Component class="org.netbeans.modules.git.ui.repository.RevisionDialog" name="revisionPickerDialog1">
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="this.revisionPanel"/>
         <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>

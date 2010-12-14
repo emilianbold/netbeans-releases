@@ -246,6 +246,7 @@ public class HtmlCompletionQuery extends UserTask {
                 }
             }
         } else {
+            backward = true;
             if (!ts.movePrevious()) {
                 //can't get previous token
                 return null;
@@ -288,8 +289,8 @@ public class HtmlCompletionQuery extends UserTask {
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
         //finds a leaf node for all the declared namespaces content including the default html content
-        AstNode node;
-        AstNode root;
+        AstNode node = null;
+        AstNode root = null;
         //html5 parse tree broken workaround:
         //In most cases when user edits the file the resulting parse tree
         //from the html5 parser is broken to such extent, that it is not possible
@@ -315,36 +316,37 @@ public class HtmlCompletionQuery extends UserTask {
         }
         if(useHtmlParseResult) {
             //use the standart mechanism
-            node = parserResult.findLeaf(searchAstOffset, backward);
-            if(node == null) {
-                return null;
+            node = parserResult.findLeafTag(searchAstOffset, !backward, false);
+            if(node == null || node.equals(parserResult.root())) {
+                //fallback to the default simple xml parse tree (mlSyntaxTreeBuilder.makeUncheckedTree() )
+                //if no leaf node found or just the root seems to be the leaf. This situation is likely
+                //caused by an erroneous parse tree
+                useHtmlParseResult = false; 
+            } else {
+                root = node.getRootNode();
             }
-            root = node.getRootNode();
-        } else {
+        } 
+        
+        if(!useHtmlParseResult) {
             //html5 && errors in the source => likely broken parse tree
             //force use the legacy tree builder, even if the tree is quite inaccurate,
             //it is not broken to such extent as the html5 parser one.
 //            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             root = XmlSyntaxTreeBuilder.makeUncheckedTree(htmlResult.source(), parserResult.getSyntaxAnalyzerResult().getElements().items());
-            node = AstNodeUtils.findDescendant(root, searchAstOffset, backward);
+            node = AstNodeUtils.findNode(root, searchAstOffset, !backward, false);
             if(node == null) {
-                return null;
-            }
-            //an element being typed is parsed as normal element end then
-            //returned as a leaf node for the position, which is clearly wrong
-            //since we need its parent to be able to complete the typed element
-            if(node.getNameWithoutPrefix().equals(preText)) {
-                node = node.parent();
-            }
-            
+                node = root;
+            }            
         }
-
+        
+        assert node != null;
+        assert root != null;
 
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
         assert undeclaredTagsParseTreeRoot != null;
-        AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
+        AstNode undeclaredTagsLeafNode = AstNodeUtils.findNode(undeclaredTagsParseTreeRoot, searchAstOffset, !backward, false);
 
 
         //namespace is null for html content
@@ -366,6 +368,14 @@ public class HtmlCompletionQuery extends UserTask {
                 result = translateCharRefs(documentItemOffset, model.getNamedCharacterReferences(), preText.length() > 0 ? preText.substring(1) : "");
             }
         } else if (id == HTMLTokenId.TAG_OPEN) { // NOI18N
+
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+
             //complete open tags with prefix
             anchor = documentItemOffset;
             //we are inside a tagname, the real content is the position before the tag
@@ -389,6 +399,14 @@ public class HtmlCompletionQuery extends UserTask {
 
         } else if ((id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) || 
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && "<".equals(item.text().toString()))) { // NOI18N
+
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+
             //complete open tags with no prefix
             anchor = offset;
             result = new ArrayList<CompletionItem>();
@@ -525,7 +543,7 @@ public class HtmlCompletionQuery extends UserTask {
                         result.addAll(translateValues(anchor, attribute.getPossibleValues()));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getItems(file, offset, ""));
+                            result.addAll(valuesCompletion.getItems(file, anchor, ""));
                         }
                     }
 
@@ -552,7 +570,7 @@ public class HtmlCompletionQuery extends UserTask {
                         result.addAll(translateValues(documentItemOffset, filter(attribute.getPossibleValues(), prefix), quotationChar));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getItems(file, offset, prefix));
+                            result.addAll(valuesCompletion.getItems(file, anchor, prefix));
                         }
                     }
 

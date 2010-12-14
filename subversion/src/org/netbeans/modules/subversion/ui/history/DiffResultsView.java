@@ -386,7 +386,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             String pegRevision2 = revision2;
             if(header.isFakeRoot()) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(file);
+                    SvnClient client = Subversion.getInstance().getClient(false);
                     ISVNInfo info = client.getInfoFromWorkingCopy(file);
                     if(info != null) {
                         pegRevision1 = info.getRevision().toString();

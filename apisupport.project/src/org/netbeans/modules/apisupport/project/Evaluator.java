@@ -104,6 +104,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     
     public static final String CP = "cp";
     public static final String NBJDK_BOOTCLASSPATH = "nbjdk.bootclasspath";
+    static final String NBJDK_HOME = "nbjdk.home"; // NOI18N
     public static final String RUN_CP = "run.cp";
     
     private final NbModuleProject project;
@@ -485,13 +486,13 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         
         public @Override final Map<String,String> getProperties() {
             Map<String,String> props = new HashMap<String,String>();
-            String home = eval.getProperty("nbjdk.home"); // NOI18N
+            String home = eval.getProperty(NBJDK_HOME);
             if (home == null) {
                 String active = eval.getProperty("nbjdk.active"); // NOI18N
                 if (active != null && !active.equals("default")) { // NOI18N
                     home = eval.getProperty("platforms." + active + ".home"); // NOI18N
                     if (home != null) {
-                        props.put("nbjdk.home", home); // NOI18N
+                        props.put(NBJDK_HOME, home);
                     }
                 }
             }
@@ -521,7 +522,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 }
                 if (bootcp == null) {
                     if (Utilities.isMac()) {
-                        bootcp = "${nbjdk.home}/../Classes/classes.jar";    //NOI18N
+                        bootcp = "${" + NBJDK_HOME + "}/../Classes/classes.jar";    //NOI18N
                     }
                     else {
                         File jHome;
@@ -537,11 +538,11 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                                 if (sb.length() > 0) {
                                     sb.append(File.pathSeparator);
                                 }
-                                sb.append("${nbjdk.home}/jre/lib/").append(jar);
+                                sb.append("${" + NBJDK_HOME + "}/jre/lib/").append(jar);
                             }
                             bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
                         } else {
-                            bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                            bootcp = "${" + NBJDK_HOME + "}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
                         }
                     }
                 }
@@ -800,32 +801,6 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             }
         }
 
-        /* debug print
-         if (ttName.equals("unit")) {
-            StringBuilder debugCPs = new StringBuilder();
-            String[] labels = {"compile", "run", "TEST compile", "TEST run"};
-            Set<?>[] cps = new Set<?>[]{compileCnbs, runtimeCnbs, testCompileCnbs, testRuntimeCnbs};
-
-            Map<String, String> processed = new HashMap<String, String>();
-            for (int i = 0; i < cps.length; i++) {
-                Set<?> cpSet = cps[i];
-                for (Object entry : cpSet) {
-                    String se = (String) entry;
-                    if (processed.containsKey(se))
-                        processed.put(se, processed.get(se) + ", " + labels[i]);
-                    else
-                        processed.put(se, labels[i]);
-                }
-            }
-            for (Map.Entry<String, String> entry : processed.entrySet()) {
-                debugCPs.append(entry.getKey());
-                debugCPs.append(": ");
-                debugCPs.append(entry.getValue());
-                debugCPs.append("\n  ");
-            }
-            Logger.getLogger(Evaluator.class.getName()).info("'" + ttName + "' CPs for '" + project.getCodeNameBase() + "':\n" + debugCPs);
-        }*/
-        
         StringBuilder extra = new StringBuilder();
         TestClasspath testClasspath = new TestClasspath(
                 mergePaths(compileCnbs,false,ttName,testDistDir, ml) + extra,
