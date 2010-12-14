@@ -49,6 +49,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -267,7 +268,6 @@ public class DirectoryStorage {
 
     private final Map<String, Entry> entries = new HashMap<String, Entry>();
     private final File file;
-    private long fileLastModified = 0;
     private static final int VERSION = 2;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = 1;
@@ -318,7 +318,6 @@ public class DirectoryStorage {
                     Entry entry = parseLine(line);
                     entries.put(entry.name, entry);
                 }
-                fileLastModified = file.lastModified();
              } finally {
                 if (br != null) {
                     br.close();
@@ -392,8 +391,14 @@ public class DirectoryStorage {
                     break;
                 case '"':
                     if (currIndex == timestamp ) {
-                        params[link] = line.substring(i+1);
-                        break cycle;
+                        if (currText.length() == 0) {
+                            // first quote - just skip it
+                        } else {
+                            params[timestamp] = currText.toString();
+                            String t = line.substring(i+1).trim();
+                            params[link] = (t.length() == 0) ? null : t;
+                            break cycle;
+                        }
                     } else if (currIndex + 1 == timestamp ) {
                         currIndex = timestamp;
                     } else {
@@ -450,7 +455,6 @@ public class DirectoryStorage {
                 }
                 wr.close();
                 wr = null;
-                fileLastModified = file.lastModified();
             } finally {
                 if (wr != null) {
                     wr.close();
@@ -459,17 +463,13 @@ public class DirectoryStorage {
         }
     }
 
-    public boolean isFileModifiedExternally() {
-        return file.lastModified() != fileLastModified;
-    }
-
     public Entry getEntry(String fileName) {
         synchronized (this) {
             return entries.get(fileName);
         }
     }
 
-    void setEntries(List<Entry> newEntries) {
+    void setEntries(Collection<Entry> newEntries) {
         synchronized (this) {
             this.entries.clear();
             for (Entry entry : newEntries) {
@@ -481,6 +481,12 @@ public class DirectoryStorage {
     public List<Entry> list() {
         synchronized (this) {
             return new ArrayList<Entry>(entries.values());
+        }
+    }
+
+    public int size() {
+        synchronized (this) {
+            return entries.size();
         }
     }
 
