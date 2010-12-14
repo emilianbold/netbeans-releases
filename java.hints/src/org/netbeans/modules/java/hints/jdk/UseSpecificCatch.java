@@ -81,7 +81,9 @@ public class UseSpecificCatch {
 
     @TriggerPatterns({
         @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
     })
     public static ErrorDescription hint1(HintContext ctx) {
         return impl(ctx, "java.lang.Throwable");
@@ -89,7 +91,9 @@ public class UseSpecificCatch {
 
     @TriggerPatterns({
         @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}")
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;} finally {$fin$;}")
     })
     public static ErrorDescription hint2(HintContext ctx) {
         return impl(ctx, "java.lang.Exception");
@@ -170,10 +174,6 @@ public class UseSpecificCatch {
             VariableTree excVar = ((CatchTree) tp.getLeaf()).getParameter();
 
             wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjunctiveType(exceptions));
-
-            if (!excVar.getModifiers().getFlags().contains(Modifier.FINAL)) {
-                wc.rewrite(excVar.getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));
-            }
         }
 
     }
