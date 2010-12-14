@@ -65,6 +65,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -225,8 +226,14 @@ public class SyncFileNode extends AbstractNode {
                         }
                         try {
                             shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(node.getFile()).toString() : SvnUtils.getRelativePath(node.getFile());
-                        } catch (SVNClientException ex) { 
-                            SvnClientExceptionHandler.notifyException(ex, false, false);
+                        } catch (SVNClientException ex) {
+                            if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
+                                try {
+                                    WorkingCopyAttributesCache.getInstance().logSuppressed(ex, node.getFile());
+                                } catch (SVNClientException e) { }
+                            } else {
+                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                            }
                         }
                         if (shortPath == null) {
                             shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
