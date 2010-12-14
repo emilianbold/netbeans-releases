@@ -76,7 +76,7 @@ public class JoinCatchesTest extends TestBase {
                         "public class Test {\n" +
                         "    {\n" +
                         "        try {\n" +
-                        "        } catch (final java.net.MalformedURLException | java.io.IOException m) {\n" +
+                        "        } catch (java.net.MalformedURLException | java.io.IOException m) {\n" +
                         "            m.printStackTrace();\n" +
                         "        }\n" +
                         "    }\n" +
@@ -90,14 +90,14 @@ public class JoinCatchesTest extends TestBase {
                        "public class Test {\n" +
                        "    {\n" +
                        "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
-                       "        } catch (java.net.MalformedURLException m) {\n" +
+                       "        } catch (final java.net.MalformedURLException m) {\n" +
                        "            m.printStackTrace();\n" +
-                       "        } catch (java.io.IOException i) {\n" +
+                       "        } catch (final java.io.IOException i) {\n" + //XXX: final-ness should not ideally matter while searching for duplicates
                        "            i.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "4:26-4:47:verifier:ERR_JoinCatches",
+                       "4:32-4:53:verifier:ERR_JoinCatches",
                        "FIX_JoinCatches",
                        ("package test;\n" +
                         "public class Test {\n" +
