@@ -633,8 +633,13 @@ public final class CommandBasedDeployer {
         String port = parts.length > 1 ? parts[1] : "";
 
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .redirectErrorStream(true)
-                .addArgument("-cp") // NOI18N
+                .redirectErrorStream(true);
+        // NB supports only JDK6+ while WL 9, only JDK 5
+        if (deploymentManager.getDomainVersion() == null
+                || !deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true");
+        }
+        builder = builder.addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
                 .addArgument("weblogic.Deployer") // NOI18N
                 .addArgument("-adminurl") // NOI18N
