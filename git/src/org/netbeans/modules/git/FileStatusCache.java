@@ -528,8 +528,8 @@ public class FileStatusCache {
         if(file == null || fi == null) return;
         FileInformation current;
         synchronized (this) {
-            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && (GitUtils.isIgnored(file, true)
-                    || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi) || fi.getStatus().contains(Status.UPTODATE))
+                    && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
                 // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
