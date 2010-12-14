@@ -60,14 +60,14 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteLink extends RemoteFileObjectBase {
 
-    private final String link;
+    private String link;
 
     public RemoteLink(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, FileObject parent, String remotePath, String link) {
         super(fileSystem, execEnv, parent, remotePath, null);
-        this.link = normalize(link, remotePath, parent);
+        setLink(link, parent);
     }
 
-    private static String normalize(String link, String remotePath, FileObject parent) {
+    private static String normalize(String link, FileObject parent) {
         if (link.startsWith("/")) { // NOI18N
             return link;
         }
@@ -251,5 +251,9 @@ public class RemoteLink extends RemoteFileObjectBase {
         if (delegate != null) {
             delegate.addFileChangeListener(fcl);
         }
+    }
+
+    /*package*/ final void setLink(String link, FileObject parent) {
+        this.link = normalize(link, parent);
     }
 }

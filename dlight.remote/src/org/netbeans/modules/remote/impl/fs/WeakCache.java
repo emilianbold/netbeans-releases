@@ -86,8 +86,9 @@ public class WeakCache<K, V> {
         return result;
     }
 
-    public void remove(K key) {
-        map.remove(key);
+    public V remove(K key) {
+        Ref<K, V> removed = map.remove(key);
+        return (removed == null) ? null : removed.get();
     }
 
     public int size() {

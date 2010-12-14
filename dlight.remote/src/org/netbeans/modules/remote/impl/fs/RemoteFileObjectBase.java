@@ -141,7 +141,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    public RemoteFileSystem getFileSystem() throws FileStateInvalidException {
+    public RemoteFileSystem getFileSystem() {
         return fileSystem;
     }
 

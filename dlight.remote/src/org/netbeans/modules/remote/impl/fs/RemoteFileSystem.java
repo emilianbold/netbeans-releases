@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -53,6 +57,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -61,6 +67,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 /**
  * Remote file system:
@@ -80,6 +87,7 @@ public class RemoteFileSystem extends FileSystem {
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
     private final RemoteFileObjectFactory factory;
+    private long dirtyTimestamp;
 
     /** File transfer statistics */
     private static int fileCopyCount;
@@ -104,6 +112,33 @@ public class RemoteFileSystem extends FileSystem {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
         }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
+
+        final WindowFocusListener windowFocusListener = new WindowFocusListener() {
+            public void windowGainedFocus(WindowEvent e) {
+                resetDirtyTimestamp();
+            }
+
+            public void windowLostFocus(WindowEvent e) {
+            }
+        };
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
+                WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
+            }
+        });
+        resetDirtyTimestamp();
+    }
+
+    private void resetDirtyTimestamp() {
+        cache.setLastModified(System.currentTimeMillis());
+        dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
+        RemoteLogger.getInstance().log(Level.FINEST, "Sync: resetting dirty timestamp for {0} to {1}", new Object[] {execEnv, dirtyTimestamp});
+    }
+    
+    /*package*/
+    public long getDirtyTimestamp() {
+        return dirtyTimestamp;
     }
 
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
@@ -224,6 +259,11 @@ public class RemoteFileSystem extends FileSystem {
         @Override
         public FileObject getParent() {
             return null;
+        }
+
+        @Override
+        protected void refreshImpl(boolean recursive) {
+            getFileSystem().resetDirtyTimestamp();
         }
     }
 }
