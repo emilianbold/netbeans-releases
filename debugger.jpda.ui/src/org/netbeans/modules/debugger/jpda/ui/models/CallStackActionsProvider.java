@@ -86,6 +86,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     private Action          POP_TO_HERE_ACTION;
     private Action          MAKE_CURRENT_ACTION;
     private Action          COPY_TO_CLBD_ACTION;
+    private Action          GO_TO_SOURCE_ACTION;
 
 
     public CallStackActionsProvider (ContextProvider lookupProvider) {
@@ -95,6 +96,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         POP_TO_HERE_ACTION = DebuggingActionsProvider.createPOP_TO_HERE_ACTION(requestProcessor);
         MAKE_CURRENT_ACTION = createMAKE_CURRENT_ACTION(requestProcessor);
         COPY_TO_CLBD_ACTION = createCOPY_TO_CLBD_ACTION(requestProcessor);
+        GO_TO_SOURCE_ACTION = DebuggingActionsProvider.createGO_TO_SOURCE_ACTION(requestProcessor);
     }
     
 
@@ -156,13 +158,13 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             return new Action [] {
                 MAKE_CURRENT_ACTION,
                 POP_TO_HERE_ACTION,
-                DebuggingActionsProvider.GO_TO_SOURCE_ACTION,
+                GO_TO_SOURCE_ACTION,
                 COPY_TO_CLBD_ACTION
             };
         } else {
             return new Action [] {
                 MAKE_CURRENT_ACTION,
-                DebuggingActionsProvider.GO_TO_SOURCE_ACTION,
+                GO_TO_SOURCE_ACTION,
                 COPY_TO_CLBD_ACTION
             };
         }

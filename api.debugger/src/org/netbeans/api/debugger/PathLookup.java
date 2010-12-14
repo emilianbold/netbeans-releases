@@ -213,7 +213,9 @@ class PathLookup extends org.openide.util.Lookup {
 
             @Override
             public void resultChanged(LookupEvent ev) {
-                items = null;
+                synchronized (PathLookupResult.this) {
+                    items = null;
+                }
                 List<LookupListener> lls;
                 synchronized (listeners) {
                     if (listeners.isEmpty()) {

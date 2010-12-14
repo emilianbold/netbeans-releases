@@ -225,12 +225,12 @@ public class CallStackNodeModel implements NodeModel {
         CallStackFrame sf,
         boolean l
     ) {
-        String language = sf.getDefaultStratum ();
+        String language = s.getCurrentLanguage();//sf.getDefaultStratum ();
         int ln = sf.getLineNumber (language);
         String fileName = l ? 
             sf.getClassName () :
             BreakpointsNodeModel.getShort (sf.getClassName ());
-        if ("Java".equals (language))
+        if ("Java".equals (language) || !sf.getAvailableStrata().contains(language))
             fileName += "." + sf.getMethodName ();
         else
             try {
@@ -243,10 +243,10 @@ public class CallStackNodeModel implements NodeModel {
         return fileName + ":" + ln;
     }
 
-    public static String getCSFToolTipText(CallStackFrame stackFrame) {
+    public static String getCSFToolTipText(Session session, CallStackFrame stackFrame) {
         StringBuffer buf = new StringBuffer();
         buf.append("<html>"); // NOI18N
-        String csfName = getCSFName(null, stackFrame, true);
+        String csfName = getCSFName(session, stackFrame, true);
         buf.append(NbBundle.getMessage(CallStackNodeModel.class, "CTL_CallStackFrame", csfName)); // NOI18N
         This thisVariable = stackFrame.getThisVariable();
         if (thisVariable != null && thisVariable.getClassType() != null) {
