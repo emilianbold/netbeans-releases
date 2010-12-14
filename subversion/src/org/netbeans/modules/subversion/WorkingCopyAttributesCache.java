@@ -59,6 +59,7 @@ public final class WorkingCopyAttributesCache {
     
     private final HashSet<String> unsupportedWorkingCopies;
     private final HashSet<String> tooOldClientForWorkingCopies;
+    private final HashSet<String> tooOldWorkingCopies;
 
     /**
      * Returns (and creates if needed) an instance.
@@ -75,6 +76,7 @@ public final class WorkingCopyAttributesCache {
     private WorkingCopyAttributesCache () {
         unsupportedWorkingCopies = new HashSet<String>(5);
         tooOldClientForWorkingCopies = new HashSet<String>(5);
+        tooOldWorkingCopies = new HashSet<String>(5);
     }
 
     private void init () {
@@ -86,6 +88,8 @@ public final class WorkingCopyAttributesCache {
             logUnsupportedWC(ex, file);
         } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
             logTooOldClient(ex, file);
+        } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
+            logTooOldWC(ex, file);
         } else {
             throw new IllegalArgumentException();
         }
@@ -96,6 +100,8 @@ public final class WorkingCopyAttributesCache {
         if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
             retval = true;
         } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
+            retval = true;
+        } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
             retval = true;
         }
         return retval;
@@ -123,6 +129,10 @@ public final class WorkingCopyAttributesCache {
      */
     private void logTooOldClient (final SVNClientException ex, File file) throws SVNClientException {
         logWC(ex, file, tooOldClientForWorkingCopies);
+    }
+
+    private void logTooOldWC (final SVNClientException ex, File file) throws SVNClientException {
+        logWC(ex, file, tooOldWorkingCopies);
     }
 
     private boolean isLogged (String fileName, HashSet<String> loggedWCs) {
