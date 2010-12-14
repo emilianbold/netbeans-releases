@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,13 +69,25 @@ public class RefreshTestCase extends RemoteFileTestBase {
             FileObject dirFO = getFileObject(dir);
             getFileObject(dirFO, file1);
 
+            int prevSyncCount = fs.getDirSyncCount();
+
             String file2 = "file2.dat";
             runScript("echo xxx > " + dir + '/' + file2);
             FileObject fo2 = dirFO.getFileObject(file2);
             assertNull("should be null now?!", fo2);
+
             dirFO.refresh();
+
             fo2 = dirFO.getFileObject(file2);
             assertNotNull("Should not be null after refresh", fo2);
+            assertEquals("Dir. sync count differs", prevSyncCount+1, fs.getDirSyncCount());
+
+            // the same, just check that the directory is not synchronized once more
+            fo2 = dirFO.getFileObject(file2);
+            assertNotNull("Should not be null after refresh", fo2);
+            assertEquals("Dir. sync count differs", prevSyncCount+1, fs.getDirSyncCount());
+
+            sleep(1000);
 
             String file3 = "file3.dat";
             runScript("echo xxx > " + dir + '/' + file3);
@@ -85,6 +96,7 @@ public class RefreshTestCase extends RemoteFileTestBase {
             rootFO.refresh();
             fo3 = dirFO.getFileObject(file3);
             assertNotNull("Should not be null after root refresh", fo3);
+            assertEquals("Dir. sync count differs", prevSyncCount+2, fs.getDirSyncCount());
         } finally {
             if (dir != null) {
                 CommonTasksSupport.rmDir(execEnv, dir, true, new OutputStreamWriter(System.err));
