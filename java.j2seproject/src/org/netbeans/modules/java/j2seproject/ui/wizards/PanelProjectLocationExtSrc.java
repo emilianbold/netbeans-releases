@@ -246,10 +246,7 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
     static String checkValidity (final String projectName, final String projectLocation,
         final String buildScriptName, final boolean calculatedFolder) {
         if ( projectName.length() == 0 || 
-            (calculatedFolder && 
-                (projectName.indexOf('/')  > 0 ||          //NOI18N
-                 projectName.indexOf('\\') > 0 ||          //NOI18N
-                 projectName.indexOf(':')  > 0))) {        //NOI18N
+            (calculatedFolder && PanelProjectLocationVisual.isIllegalName(projectName))) {
             // Display name not specified
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
         }
