@@ -490,9 +490,9 @@ public class SvnUtils {
                 info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                         // log this exception if needed and break the execution
-                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                        WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -544,7 +544,11 @@ public class SvnUtils {
             // get the URL from the server, it's just that it could be quite a performance killer.
             // XXX and now i'm just currious how we will handle this if there will be some javahl or
             // pure java client suport -> without dispatching to our metadata parser
-            throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
+            } else {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            }
         } else if(!fileIsManaged) {
             Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
         }
@@ -579,9 +583,9 @@ public class SvnUtils {
                 info = getInfoFromWorkingCopy(client, file);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                         // log this exception if needed and break the execution
-                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                        WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -610,7 +614,11 @@ public class SvnUtils {
             // The file is managed but we haven't found the repository URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
-            throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
+            } else {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            }
         } else if(!fileIsManaged) {
             Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
             // XXX #168094 logging
@@ -661,9 +669,9 @@ public class SvnUtils {
                 }
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                         // log this exception if needed and break the execution
-                        WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                        WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -705,7 +713,11 @@ public class SvnUtils {
             // The file is managed but we haven't found the URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
-            throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
+            } else {
+                throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
+            }
         } else if(!fileIsManaged) {
             Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
         }
@@ -743,9 +755,9 @@ public class SvnUtils {
             }
         } catch (SVNClientException ex) {
             if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                     // log this exception if needed and break the execution
-                    WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, root);
+                    WorkingCopyAttributesCache.getInstance().logSuppressed(ex, root);
                 } else {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
@@ -1018,7 +1030,7 @@ public class SvnUtils {
         try {
             url = getRepositoryUrl(file);
         } catch (SVNClientException ex) {
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }
             return null;

@@ -410,7 +410,7 @@ public class Subversion {
                 } catch (SVNClientException ex)  {
                     if(!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) && 
                        !SvnClientExceptionHandler.isCancelledAction(ex.getMessage()) &&
-                       !SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage()))
+                       !WorkingCopyAttributesCache.getInstance().isSuppressed(ex))
                     {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -432,7 +432,7 @@ public class Subversion {
                     }
                 }
             } catch (SVNClientException ex) {
-                if(!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                if(!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
