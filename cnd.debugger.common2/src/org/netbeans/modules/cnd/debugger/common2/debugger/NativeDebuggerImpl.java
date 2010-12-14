@@ -53,6 +53,8 @@ import java.util.List;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.openide.text.Line;
@@ -145,6 +147,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     // local stuff
     protected ModelChangeDelegator localUpdater = new ModelChangeDelegator();
     private boolean showAutos = false;
+    protected final ArrayList<Variable> autos = new ArrayList<Variable>();
 
     // stack stuff
     protected Frame[] guiStackFrames = null;
@@ -1630,5 +1633,30 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     public void registerRegistersWindow(RegistersWindow w) {
         registersWindow = w;
+    }
+    
+    public Set<String> requestAutos() {
+	autos.clear();
+
+	if (!isShowAutos()) {
+	    return Collections.emptySet();
+        }
+
+	Location location = getVisitedLocation();
+	if (location == null ||  ! location.hasSource()) {
+	    localUpdater.batchOffForce();	// cause a pull to clear view
+	    return Collections.emptySet();
+	}
+
+	return Autos.get(EditorBridge.documentFor(location.src()), location.line()-1);
+    }
+    
+    public int getAutosCount() {
+	return autos.size();
+    }
+    
+    public Variable[] getAutos() {
+	Variable array[] = autos.toArray(new Variable[autos.size()]);
+	return array;
     }
 }
