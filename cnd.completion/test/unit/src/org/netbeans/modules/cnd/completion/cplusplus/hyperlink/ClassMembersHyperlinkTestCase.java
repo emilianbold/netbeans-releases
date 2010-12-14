@@ -984,6 +984,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
     }
 
+    public void testBug187272() throws Exception {
+        // Bug 187272 - [code model] Parsing bug inside operator() function
+        performTest("bug187272.cc", 16, 53, "bug187272.cc", 10, 3);
+        performTest("bug187272.cc", 22, 53, "bug187272.cc", 7, 3);
+        performTest("bug187272.cc", 18, 17, "bug187272.cc", 12, 3);
+        performTest("bug187272.cc", 24, 17, "bug187272.cc", 12, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
