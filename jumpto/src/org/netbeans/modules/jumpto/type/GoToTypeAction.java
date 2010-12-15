@@ -123,6 +123,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private Dialog dialog;
     private JButton okButton;
     private Collection<? extends TypeProvider> typeProviders;
+    private final Collection<? extends TypeProvider> implicitTypeProviders;
     private final TypeBrowser.Filter typeFilter;
     private final String title;
     private final boolean multiSelection;
@@ -141,7 +142,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
         this.title = title;
         this.typeFilter = typeFilter;
-        this.typeProviders = typeProviders.length == 0 ? null : Arrays.asList(typeProviders);
+        this.implicitTypeProviders = typeProviders.length == 0 ? null : Collections.unmodifiableCollection(Arrays.asList(typeProviders));
         this.multiSelection = multiSelection;
     }
     
@@ -209,9 +210,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     
     public void setListModel( GoToPanel panel, String text ) {
+        assert SwingUtilities.isEventDispatchThread();
         if (okButton != null) {
             okButton.setEnabled (false);
-        }
+        }        
         if ( running != null ) {
             running.cancel();
             task.cancel();
@@ -248,14 +250,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
         }
         
-        // Compute in other thread
-        
-        synchronized( this ) {
-            running = new Worker( text );
-            task = rp.post( running, 220);
-            if ( panel.time != -1 ) {
-                LOGGER.fine( "Worker posted after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
-            }
+        // Compute in other thread        
+        running = new Worker( text );
+        task = rp.post( running, 220);
+        if ( panel.time != -1 ) {
+            LOGGER.fine( "Worker posted after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
         }
     }
     
@@ -357,10 +356,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
    
     private Dimension initialDimension;
     
-    private void cleanup() {
-        //System.out.println("CLEANUP");                
-        //Thread.dumpStack();
-
+    private void cleanup() {    
+        assert SwingUtilities.isEventDispatchThread();
         if ( GoToTypeAction.this.dialog != null ) { // Closing event for some reson sent twice
         
             // Save dialog size only when changed
@@ -373,13 +370,26 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             initialDimension = null;
             // Clean caches
             GoToTypeAction.this.dialog.dispose();
-            GoToTypeAction.this.dialog = null;
-            //GoToTypeAction.this.cache = null;
-            if (typeProviders != null) {
-                for (TypeProvider provider : typeProviders) {
-                    provider.cleanup();
-                }
+            GoToTypeAction.this.dialog = null;                                    
+            //1st) Cancel current task
+            if ( running != null ) {
+                running.cancel();
+                task.cancel();
+                running = null;
             }
+            //2nd do clean up in the same thread as init to prevent races
+            rp.submit(new Runnable(){
+                @Override
+                public void run() {
+                    assert rp.isRequestProcessorThread();
+                    if (typeProviders != null) {
+                        for (TypeProvider provider : typeProviders) {
+                            provider.cleanup();
+                        }
+                        typeProviders = null;
+                    }
+                }
+            });            
         }
     }
     
@@ -480,8 +490,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             String[] message = new String[1];
             TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
             TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+            assert rp.isRequestProcessorThread();
             if (typeProviders == null) {
-                typeProviders = Lookup.getDefault().lookupAll(TypeProvider.class);
+                typeProviders = implicitTypeProviders != null ? implicitTypeProviders : Lookup.getDefault().lookupAll(TypeProvider.class);
             }
             for (TypeProvider provider : typeProviders) {
                 if (isCanceled) {
@@ -509,7 +520,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }
             else {
                 return null;
-            }
+            }            
         }
     }
 
@@ -543,6 +554,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
 
     final void waitSearchFinished() {
+        assert SwingUtilities.isEventDispatchThread();
         task.waitFinished();
     }
 
