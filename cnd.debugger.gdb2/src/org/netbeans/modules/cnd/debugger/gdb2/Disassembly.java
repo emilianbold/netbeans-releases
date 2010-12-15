@@ -96,9 +96,9 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
     private final GdbDebuggerImpl debugger;
     
     private final List<Line> lines = new ArrayList<Line>();
-    private static String functionName = "";
-    private static String intFileName = "";
-    private static String resolvedFileName = "";
+    private String functionName = "";
+    private String intFileName = "";
+    private String resolvedFileName = "";
     private String address = "";
     private boolean withSource = true;
     private boolean opened = false;
@@ -184,7 +184,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                 dobj = DataObject.find(getFileObject());
             } catch (DataObjectNotFoundException doe) {
                 // we failed, no need to do anything else
-                doe.printStackTrace();
+                Exceptions.printStackTrace(doe);
                 return;
             }
             Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
@@ -227,7 +227,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                         });
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Exceptions.printStackTrace(e);
                 }
 
                 if (addressPos == -1) {
@@ -472,7 +472,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
             try {
                 fo = FileUtil.createMemoryFileSystem().getRoot().createData("disasm", "s"); // NOI18N
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                Exceptions.printStackTrace(ioe);
             }
         }
         return fo;
@@ -495,11 +495,6 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         if (currentDebugger instanceof GdbDebuggerImpl) {
             return ((GdbDebuggerImpl)currentDebugger).getDisassembly();
         }
-//        GdbDebuggerImpl debugger = GdbDebuggerImpl.getGdbDebugger();
-//        if (debugger == null) {
-//            return null;
-//        }
-//        return debugger.getDisassembly();
         return null;
     }
     
@@ -603,16 +598,18 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
     }
     
     public static boolean isInDisasm() {
-        //TODO: optimize
-        FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
-        if (fobj == null) {
-            fobj = EditorContextDispatcher.getDefault().getMostRecentFile();
-        }
-        if (fobj != null) {
-            try {
-                return DataObject.find(fobj).equals(DataObject.find(getFileObject()));
-            } catch(DataObjectNotFoundException doe) {
-                doe.printStackTrace();
+        if (getCurrent().opened) {
+            //TODO: optimize
+            FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
+            if (fobj == null) {
+                fobj = EditorContextDispatcher.getDefault().getMostRecentFile();
+            }
+            if (fobj != null) {
+                try {
+                    return DataObject.find(fobj).equals(DataObject.find(getFileObject()));
+                } catch(DataObjectNotFoundException doe) {
+                    Exceptions.printStackTrace(doe);
+                }
             }
         }
         return false;
@@ -623,7 +620,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         try {
             return getFileObject().getURL().toString().equals(url);
         } catch (FileStateInvalidException fsi) {
-            fsi.printStackTrace();
+            Exceptions.printStackTrace(fsi);
         }
         return false;
     }
@@ -660,11 +657,11 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                 dis.reloadDis(true, false);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
         }
     }
     
-    private static String getHeader() {
+    private String getHeader() {
         String res = NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window"); // NOI18N
         if (functionName.length() > 0) {
             res += "(" + functionName + ")"; // NOI18N
@@ -682,7 +679,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                 dis.opened = false;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
         }
     }
     
