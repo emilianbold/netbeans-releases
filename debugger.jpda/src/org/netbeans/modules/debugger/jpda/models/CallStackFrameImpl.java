@@ -58,6 +58,8 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.StepRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -489,10 +491,22 @@ public class CallStackFrameImpl implements CallStackFrame {
         if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         thread.accessLock.writeLock().lock();
+        if (thread.isInStep()) {
+            // A next step is submitted, give this up
+            return null;
+        }
         try {
             try {
                 ThreadReference tr = thread.getThreadReference();
                 com.sun.jdi.VirtualMachine vm = MirrorWrapper.virtualMachine(tr);
+                EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+                List<StepRequest> stepRequests = EventRequestManagerWrapper.stepRequests(erm);
+                for (StepRequest sr : stepRequests) {
+                    if (tr == sr.thread()) {
+                        // There's a step request for this thread, we can not submit another...
+                        return null;
+                    }
+                }
                 com.sun.jdi.request.StepRequest step = EventRequestManagerWrapper.createStepRequest(
                         VirtualMachineWrapper.eventRequestManager(vm),
                         tr,
