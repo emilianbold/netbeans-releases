@@ -62,6 +62,7 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXException;
 
 /**
@@ -74,8 +75,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test Xsuite() {
-        String testName = "testNodePopWithoutPush";
+    public static Test suite() {
+        String testName = "testScriptTagInBody";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -707,6 +708,43 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(root);
 //        AstNodeUtils.dumpTree(root);
+
+    }
+
+    //Bug 193268 - AssertionError: Unexpected node type ENDTAG
+    public void testScriptTagInBody() throws ParseException {
+        String scriptOpenTag = "<script type=\"text/javascript\" src=\"test.js\">";
+           //                   0123456789012 3456789012345678 901234 56789012 345678901234567890123456789
+           //                   0         1          2          3          4          5
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head>"
+                + "<title></title>"
+                + "</head>"
+                + "<body>"
+                + "<canvas>"
+                + "<a/>"
+                + "</canvas>"
+                + scriptOpenTag + "</script>"
+                + "</body>"
+                + "</html>";
+        
+        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
+
+        AstNode scriptOpen = AstNodeUtils.query(root, "html/body/script");
+        assertNotNull(scriptOpen);
+
+        assertEquals(76, scriptOpen.startOffset());
+        assertEquals(76 + 45, scriptOpen.endOffset());
+
+        AstNode scriptEnd = scriptOpen.getMatchingTag();
+        assertEquals(121, scriptEnd.startOffset());
+        assertEquals(130, scriptEnd.endOffset());
 
     }
 

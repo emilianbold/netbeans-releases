@@ -397,7 +397,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 //        assertItems("<td><a h|</td>  ", arr("href"), Match.CONTAINS);
     }
 
-
+    
     //helper methods ------------
 
     @Override
