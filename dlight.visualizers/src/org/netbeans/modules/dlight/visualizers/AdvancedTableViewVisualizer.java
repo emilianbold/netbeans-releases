@@ -69,7 +69,8 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
     private final String nodeColumnName;
     private final String emptyAnalyzeMessage;
     private final String emptyRunningMessage;
-
+    private final String nodeColumnUName;
+ 
     public AdvancedTableViewVisualizer(final TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         super(provider, configuration);
         
@@ -77,7 +78,8 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
 
         final AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 
-        this.nodeColumnName = accessor.getNodeColumnName(configuration);
+        this.nodeColumnName = accessor.getRowNodeColumnName(configuration);
+        this.nodeColumnUName = accessor.getNodeColumnName(configuration);
         emptyAnalyzeMessage = accessor.getEmptyAnalyzeMessage(configuration);
         emptyRunningMessage = accessor.getEmptyRunningMessage(configuration);
         boolean dualPaneMode = accessor.isDualPaneMode(configuration);
@@ -96,7 +98,7 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
 
     @Override
     protected Component initTableView() {
-        return new AdvancedDataRowTableOutline(nodeColumnName, getVisualizerConfiguration());
+        return new AdvancedDataRowTableOutline(nodeColumnUName, getVisualizerConfiguration());
     }
 
     @Override
