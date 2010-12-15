@@ -390,4 +390,9 @@ public interface GlassfishModule {
      * get the password for this server
      */
     public String getPassword();
+
+    public boolean supportsRestartInDebug();
+
+    public boolean isRestfulLogAccessSupported();
+
 }
