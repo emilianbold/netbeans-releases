@@ -309,19 +309,21 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        String name = ff[i].getName();
-                        if (name.endsWith(".o") ||  // NOI18N
-                            name.endsWith(".so") ||  // NOI18N
-                            name.endsWith(".dylib") ||  // NOI18N
-                            name.endsWith(".a") ||  // NOI18N
-                            isExecutable(ff[i])){
-                            String path = ff[i].getAbsolutePath();
-                            if (Utilities.isWindows()) {
-                                path = path.replace('\\', '/');
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            String name = ff[i].getName();
+                            if (name.endsWith(".o") ||  // NOI18N
+                                name.endsWith(".so") ||  // NOI18N
+                                name.endsWith(".dylib") ||  // NOI18N
+                                name.endsWith(".a") ||  // NOI18N
+                                isExecutable(ff[i])){
+                                String path = ff[i].getAbsolutePath();
+                                if (Utilities.isWindows()) {
+                                    path = path.replace('\\', '/');
+                                }
+                                map.add(path);
                             }
-                            map.add(path);
                         }
                     }
                 }
@@ -361,18 +363,20 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             if (!set.contains(path)){
                 set.add(path);
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isDirectory()) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isDirectory()) {
+                            try {
+                                String canPath = ff[i].getCanonicalPath();
+                                String absPath = ff[i].getAbsolutePath();
+                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                    continue;
+                                }
+                            } catch (IOException ex) {
+                                //Exceptions.printStackTrace(ex);
                             }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
+                            gatherSubFolders(ff[i], set);
                         }
-                        gatherSubFolders(ff[i], set);
                     }
                 }
             }

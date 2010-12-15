@@ -355,14 +355,17 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private boolean findObjectFiles(File file){
         if (file.isDirectory()) {
-            for(File f : file.listFiles()){
-                if (f.isDirectory()) {
-                    boolean b = findObjectFiles(f);
-                    if (b) {
+            File[] ff = file.listFiles();
+            if (ff != null) {
+                for(File f : ff){
+                    if (f.isDirectory()) {
+                        boolean b = findObjectFiles(f);
+                        if (b) {
+                            return true;
+                        }
+                    } else if (f.isFile() && f.getName().endsWith(".o")) {
                         return true;
                     }
-                } else if (f.isFile() && f.getName().endsWith(".o")) {
-                    return true;
                 }
             }
         }

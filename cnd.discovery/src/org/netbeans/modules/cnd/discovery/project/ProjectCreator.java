@@ -485,13 +485,19 @@ public class ProjectCreator {
 
     private void removeProjectDir(File dir) {
         if (dir.exists() && dir.canRead() && dir.isDirectory()) {
-            for(File file : dir.listFiles()){
-                if (file.isDirectory()){
-                    removeProjectDir(file);
+            File[] ff = dir.listFiles();
+            if (ff != null) {
+                for(File file : ff){
+                    if (file.isDirectory()){
+                        removeProjectDir(file);
+                    }
                 }
             }
-            for(File file : dir.listFiles()){
-                file.delete();
+            ff = dir.listFiles();
+            if (ff != null) {
+                for(File file : ff){
+                    file.delete();
+                }
             }
             dir.delete();
         }
