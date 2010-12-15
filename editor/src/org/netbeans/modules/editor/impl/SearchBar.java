@@ -119,6 +119,7 @@ import org.openide.filesystems.FileUtil;
 public final class SearchBar extends JPanel {
     
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
+    private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
 
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
@@ -374,7 +375,9 @@ public final class SearchBar extends JPanel {
             @Override
                 public void actionPerformed(ActionEvent e) {
                     findNext();
-                    looseFocus();
+                    if (CLOSE_ON_ENTER) {
+                        looseFocus();
+                    }
                 }});
         // Shift+ENTER to find previous
         incrementalSearchTextField.getInputMap()
@@ -386,7 +389,9 @@ public final class SearchBar extends JPanel {
             @Override
                 public void actionPerformed(ActionEvent e) {
                     findPrevious();
-                    looseFocus();
+                    if (CLOSE_ON_ENTER) {
+                        looseFocus();
+                    }
                 }});
         incrementalSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
 
