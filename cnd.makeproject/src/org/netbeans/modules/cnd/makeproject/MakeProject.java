@@ -695,7 +695,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         StringBuilder sb = new StringBuilder(name);
         for (int i=0; i<sb.length(); i++) {
             if (!isUsablePropertyName(sb.substring(i,i+1))) {
-                sb.replace(i,i+1,"_");
+                sb.replace(i,i+1,"_"); //NOI18N
             }
         }
         return sb.toString();
