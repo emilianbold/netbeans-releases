@@ -1113,8 +1113,16 @@ public class Gdb {
             if (record.token() == 0) {
                 if (record.cls().equals("stopped")) { // NOI18N
                     debugger.genericStopped(record);
+                    // LATER: should be inside manager somehow
+                    // this is neccessary, otherwise we may have wrong console output in the next command
+                    // IZ 193352
+                    clearMessages();
                 } else if (record.cls().equals("running")) { // NOI18N
                     debugger.genericRunning();
+                    // LATER: should be inside manager somehow
+                    // this is neccessary, otherwise we may have wrong console output in the next command
+                    // IZ 193352
+                    clearMessages();
                 }
             } else {
                 dispatch(record);

@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.visualizers.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,6 +67,7 @@ import org.openide.util.Lookup;
  */
 public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFactory {
 
+    private final static Image NULL_ICON = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
     private final DataTableMetadata metadata;
     private final NodeActionsProvider nodeActionsProvider;
     private final String nodeColumnName;
@@ -78,7 +80,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
         metadata = configuration.getMetadata();
         AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
         nodeActionsProvider = accessor.getNodeActionProvider(configuration);
-        nodeColumnName = accessor.getNodeColumnName(configuration);
+        nodeColumnName = accessor.getRowNodeColumnName(configuration);
         iconColumnID = accessor.getIconColumnID(configuration);
         resourceID = iconColumnID == null ? null : accessor.getIconPath(configuration);
     }
@@ -104,7 +106,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
 
             for (String columnName : getDataRow().getColumnNames()) {
                 final Column c = metadata.getColumnByName(columnName);
-                
+
                 @SuppressWarnings("unchecked")
                 PropertySupport.ReadOnly property = new PropertySupport.ReadOnly(
                         columnName, c.getColumnClass(),
@@ -166,7 +168,7 @@ public final class AdvancedTableDataRowNodeFactory extends AbstractDataRowNodeFa
         @Override
         public Image getIcon(int type) {
             if (iconColumnID == null) {
-                return super.getIcon(type);
+                return NULL_ICON;
             }
 
             return ImageUtilities.loadImage(resourceID + "/" + getDataRow().getStringValue(iconColumnID) + ".png"); // NOI18N

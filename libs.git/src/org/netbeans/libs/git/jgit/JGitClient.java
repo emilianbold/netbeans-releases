@@ -72,10 +72,12 @@ import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
+import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 import org.netbeans.libs.git.progress.StatusListener;
 
 /**
@@ -83,7 +85,7 @@ import org.netbeans.libs.git.progress.StatusListener;
  * @author ondra
  * @author Tomas Stupka
  */
-public class JGitClient implements GitClient, StatusListener, FileListener {
+public class JGitClient implements GitClient, StatusListener, FileListener, RevisionInfoListener {
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
 
@@ -255,6 +257,16 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         return cmd.getFiles();
     }
 
+    @Override
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, monitor, this);
+        cmd.setRevision(revision);
+        cmd.execute();
+        GitRevisionInfo[] revisions = cmd.getRevisions();
+        return revisions.length == 0 ? null : revisions[0];
+    }
+
     /**
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove
@@ -331,6 +343,19 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         for (NotificationListener list : lists) {
             if (list instanceof StatusListener) {
                 ((StatusListener) list).notifyStatus(status);
+            }
+        }
+    }
+
+    @Override
+    public void notifyRevisionInfo (GitRevisionInfo info) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof RevisionInfoListener) {
+                ((RevisionInfoListener) list).notifyRevisionInfo(info);
             }
         }
     }// </editor-fold>

@@ -90,7 +90,7 @@ public class FaceletsLibraryDescriptorCache {
     private void dumpLibs() {
         System.out.println("Available Facelets Library Descriptors:"); //NOI18N
         for (FaceletsLibraryDescriptor l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
+            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
         }
 
     }

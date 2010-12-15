@@ -186,6 +186,23 @@ public interface GitClient {
     public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Digs through the repository's history and returns the revision information belonging to the given revision string.
+     * @param revision
+     * @param monitor
+     * @return revision
+     */
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Digs through the repository's history and returns revisions between the given boundaries.
+     * @param fromRevision
+     * @param toRevision
+     * @param monitor 
+     * @return revisions that fall between the given boundaries
+     */
+    //public GitRevisionInfo[] log (String fromRevision, String toRevision, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove, can not be empty
      * @param cached if <code>true</code> the working tree will not be affected

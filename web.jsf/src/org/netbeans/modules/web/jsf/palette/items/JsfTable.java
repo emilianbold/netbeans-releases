@@ -76,18 +76,22 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
     public JsfTable() {
     }
     
+    @Override
     protected String getName() {
         return "Table"; // NOI18N
     }
 
+    @Override
     public void insert(JTextComponent component) {
         handleTransfer(component);
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfTable");
     }
     
+    @Override
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {

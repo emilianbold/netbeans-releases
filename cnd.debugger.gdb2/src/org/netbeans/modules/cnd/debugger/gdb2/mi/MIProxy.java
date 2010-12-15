@@ -214,4 +214,8 @@ public abstract class MIProxy {
     protected void errorBadLine(String data) {
 	cmdManager.echo(String.format("unrecognized line: %s\r", data)); // NOI18N
     }
+    
+    protected void clearMessages() {
+        cmdManager.clearMessages();
+    }
 }
