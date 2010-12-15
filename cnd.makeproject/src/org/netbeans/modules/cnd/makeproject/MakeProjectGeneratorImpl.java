@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.makeproject.api.support.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -68,15 +69,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -89,11 +87,11 @@ import org.openide.loaders.CreateFromTemplateHandler;
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
  */
-public class MakeProjectGenerator {
+public class MakeProjectGeneratorImpl {
 
     private static final String PROP_DBCONN = "dbconn"; // NOI18N
 
-    private MakeProjectGenerator() {
+    private MakeProjectGeneratorImpl() {
     }
 
     public static String getDefaultProjectFolder() {
@@ -158,7 +156,7 @@ public class MakeProjectGenerator {
      */
     public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
         FileObject dirFO = createProjectDir(prjParams);
-        AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
+        MakeProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         p.setRemoteMode(prjParams.getRemoteMode());
@@ -173,49 +171,7 @@ public class MakeProjectGenerator {
         return p;
     }
 
-    /*
-    public static AntProjectHelper createProject(final File dir, final String name, final File sourceFolder, final File testFolder) throws IOException {
-    System.out.println("createProject2 ");
-    assert sourceFolder != null : "Source folder must be given";   //NOI18N
-    final FileObject dirFO = createProjectDir (dir);
-    // this constructor creates only java application type
-    final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false, 0, null, null);
-    final MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
-    final ReferenceHelper refHelper = p.getReferenceHelper();
-    try {
-    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
-    public Object run() throws Exception {
-    String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    props.put("src.dir",srcReference);          //NOI18N
-    String testLoc;
-    if (testFolder == null) {
-    testLoc = NbBundle.getMessage (MakeProjectGenerator.class,"TXT_DefaultTestFolderName");
-    File f = new File (dir,testLoc);    //NOI18N
-    f.mkdirs();
-    }
-    else {
-    if (!testFolder.exists()) {
-    testFolder.mkdirs();
-    }
-    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-    }
-    props.put("test.src.dir",testLoc);    //NOI18N
-    h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-    ProjectManager.getDefault().saveProject (p);
-    return null;
-    }
-    });
-    } catch (MutexException me ) {
-    ErrorManager.getDefault().notify (me);
-    }
-    return h;
-    return null;
-    }
-     */
-    private static AntProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
+    private static MakeProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
@@ -233,38 +189,31 @@ public class MakeProjectGenerator {
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
         final Iterator<String> importantItems = prjParams.getImportantFiles();
         String mainFile = prjParams.getMainFile();
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
+        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         //Element minant = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         //minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         //data.appendChild(minant);
-        Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
+        Element nativeProjectType = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
         nativeProjectType.appendChild(doc.createTextNode("" + 0)); // NOI18N
         data.appendChild(nativeProjectType);
 
         if (prjParams.getFullRemote()) {
             // mode
-            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE); // NOI18N
+            Element fullRemoteNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE); // NOI18N
             fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name())); // NOI18N
             data.appendChild(fullRemoteNode);
             // host
-            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST); // NOI18N
+            Element rfsHostNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST); // NOI18N
             rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID())); // NOI18N
             data.appendChild(rfsHostNode);
         }
 
         h.putPrimaryConfigurationData(data, true);
-
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        //ep.setProperty("make.configurations", "");
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        //ep.setProperty("application.args", ""); // NOI18N
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk.
         final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
@@ -392,11 +341,7 @@ public class MakeProjectGenerator {
 
         return mainName;
     }
-//    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-//        File rootF = dir;
-//        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
-//            rootF = rootF.getParentFile();
-//    }
+
 }
 
 

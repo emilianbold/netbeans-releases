@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -74,7 +74,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
     @Override
     protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectType.class);
+        list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
     }

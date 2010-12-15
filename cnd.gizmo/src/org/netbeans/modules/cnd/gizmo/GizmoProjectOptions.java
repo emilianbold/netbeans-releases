@@ -49,8 +49,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.util.Mutex;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -79,7 +79,7 @@ public class GizmoProjectOptions {
         this.shared = shared;
         aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
-        AntBasedProjectType antPrj = (project.getLookup().lookup(AntBasedProjectType.class));
+        NativeProjectType antPrj = (project.getLookup().lookup(NativeProjectType.class));
         namespace = antPrj.getPrimaryConfigurationDataElementNamespace(shared);
     }
 
@@ -157,6 +157,7 @@ public class GizmoProjectOptions {
     private String doLoad(final String name) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
 
+            @Override
             public String run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment == null) {
@@ -170,6 +171,7 @@ public class GizmoProjectOptions {
     private String[] doLoadChildrenContent(final String name) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
 
+            @Override
             public String[] run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment == null) {
@@ -195,6 +197,7 @@ public class GizmoProjectOptions {
     private void doSave(final String name, final String childName, final String[] values) {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
+            @Override
             public void run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment != null) {
@@ -217,6 +220,7 @@ public class GizmoProjectOptions {
     private void doSave(final String name, final String value) {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
+            @Override
             public void run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment != null) {

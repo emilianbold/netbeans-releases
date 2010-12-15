@@ -120,7 +120,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyDeleted() throws IOException {
         LOGGER.log(Level.FINE, "notify Deleted MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.getAntProjectHelper().notifyDeleted();
+        project.getMakeProjectHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
             ((NativeProjectProvider) nativeProject).fireProjectDeleted();
@@ -181,7 +181,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
-            project.getAntProjectHelper().notifyDeleted();
+            project.getMakeProjectHelper().notifyDeleted();
             return;
         }
         // Update all external relative paths

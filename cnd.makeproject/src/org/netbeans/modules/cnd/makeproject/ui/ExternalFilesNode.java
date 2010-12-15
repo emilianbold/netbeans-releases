@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.Image;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
@@ -106,7 +106,7 @@ final class ExternalFilesNode extends AbstractNode {
             null,
             SystemAction.get(org.openide.actions.FindAction.class),};
         // makeproject sensitive actions
-        final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
         final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.extFolderActionsPath());
         result = NodeActionFactory.insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), AddExternalItemAction.class);
         result = NodeActionFactory.insertSyncActions(result, AddExternalItemAction.class);

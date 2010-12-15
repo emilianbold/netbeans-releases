@@ -43,13 +43,15 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -63,10 +65,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -78,17 +76,17 @@ import org.w3c.dom.Node;
  * Handles source dir list for a freeform project.
  * XXX will not correctly unregister released external source roots
  */
-public class MakeSources implements Sources, AntProjectListener {
+public class MakeSources implements Sources, MakeProjectListener {
     
-    private static final String GENERIC = "generic"; // NOI18N
+    public static final String GENERIC = "generic"; // NOI18N
 
     private MakeProject project;
-    private AntProjectHelper helper;
+    private MakeProjectHelper helper;
 
-    public MakeSources(MakeProject project, AntProjectHelper helper) {
+    public MakeSources(MakeProject project, MakeProjectHelper helper) {
         this.project = project;
         this.helper = helper;
-        helper.addAntProjectListener(this);
+        helper.addMakeProjectListener(this);
         changeSupport = new ChangeSupport(this);
     }
     private Sources delegate;
@@ -122,9 +120,9 @@ public class MakeSources implements Sources, AntProjectListener {
 
     public List<String> getSourceRootsFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
-        if (data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT).getLength() > 0) {
+        if (data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT).getLength() > 0) {
             List<String> list = new ArrayList<String>();
-            NodeList nl4 = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_ELEMENT);
+            NodeList nl4 = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_ELEMENT);
             if (nl4.getLength() > 0) {
                 for (int i = 0; i < nl4.getLength(); i++) {
                     Node node = nl4.item(i);
@@ -219,10 +217,11 @@ public class MakeSources implements Sources, AntProjectListener {
 
             }
         }
+        FileObjectBasedSources sources = new FileObjectBasedSources();
+        sources.addGroup(project, GENERIC, project.getProjectDirectory(), "Project metadata"); // NOI18N
         if (project.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
             // SourcesHelper does not work with pure FileObjects, it demands that FileUtil.toFile() is not null
             ExecutionEnvironment fsEnv = project.getRemoteFileSystemHost();
-            FileObjectBasedSources sources = new FileObjectBasedSources();
             for (String name : sourceRootList) {
                 String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
                 String displayName = fsEnv.getDisplayName() + ":" + path; //NOI18N
@@ -233,19 +232,20 @@ public class MakeSources implements Sources, AntProjectListener {
                     sources.addGroup(project, GENERIC, fo, displayName);
                 }
             }
-            sources.addGroup(project, GENERIC, project.getProjectDirectory(), "Project metadata"); // NOI18N
-            return sources;
         } else {
-            SourcesHelper h = new SourcesHelper(project, helper, project.evaluator());
             for (String name : sourceRootList) {
                 String displayName = CndPathUtilitities.toRelativePath(baseDir, name);
                 displayName = CndPathUtilitities.naturalizeSlashes(displayName);
-                h.sourceRoot(name).displayName(displayName).add();
-                h.sourceRoot(name).type(GENERIC).displayName(displayName).add(); // NOI18N
+                String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
+                FileObject fo = FileUtil.toFileObject(new File(path));
+                if (fo == null) {
+                    new NullPointerException().printStackTrace();
+                } else {
+                    sources.addGroup(project, GENERIC, fo, displayName);
+                }
             }
-            h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            return h.createSources();
         }
+        return sources;
     }
 
     @Override
@@ -264,7 +264,7 @@ public class MakeSources implements Sources, AntProjectListener {
     }
 
     @Override
-    public void configurationXmlChanged(AntProjectEvent ev) {
+    public void configurationXmlChanged(MakeProjectEvent ev) {
         // fireChange(); // ignore - cnd projects don't keep source file info in project.xml
     }
 
@@ -273,7 +273,7 @@ public class MakeSources implements Sources, AntProjectListener {
     }
 
     @Override
-    public void propertiesChanged(AntProjectEvent ev) {
+    public void propertiesChanged(MakeProjectEvent ev) {
         // ignore
     }
 
