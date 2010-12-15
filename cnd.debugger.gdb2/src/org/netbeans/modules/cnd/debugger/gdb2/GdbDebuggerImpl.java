@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.io.IOException;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
@@ -910,7 +911,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 while (pidEnd < pidStr.length() && Character.isDigit(pidStr.charAt(pidEnd))) {
                     pidEnd++;
                 }
-		pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                try {
+                    pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(new Exception("Pid parsing error: " + record.command().getConsoleStream(), e)); //NOI18N
+                }
 	    }
 	}
 	return pid;
@@ -2250,7 +2255,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     evalMIVar(wv);
                 }
             }
-            GdbVariable wv = (GdbVariable) variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
+            GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
 		if (wv instanceof GdbWatch && in_scope != null) {
 		    GdbWatch w = (GdbWatch) wv;
@@ -2541,15 +2546,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return local_count;
     }
 
-    public void requestAutos() {
+    @Override
+    public Set<String> requestAutos() {
+        Set<String> autoNames = super.requestAutos();
+        LinkedList<Variable> res = new LinkedList<Variable>();
+        for (String auto : autoNames) {
+            GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
+            if (var == null) {
+                var = new GdbWatch(this, watchUpdater(), auto);
+                createMIVar(var);
+            }
+            res.add(var);
+        }
+        synchronized (autos) {
+            autos.clear();
+            autos.addAll(res);
+        }
+        return autoNames;
     }
 
-    public int getAutosCount() {
-	return 0;
-    }
-
-    public Variable[] getAutos() {
-	return new Variable[0];
+    @Override
+    public void setShowAutos(boolean showAutos) {
+	super.setShowAutos(showAutos);
+	if (gdb != null && gdb.connected()) {
+	    if (showAutos) {
+		requestAutos();
+            }
+	}
     }
 
     /*
@@ -2588,8 +2611,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIValue localvar = (MIValue) locals_list.get(vx);
             GdbLocal loc = new GdbLocal(localvar);
 	    String var_name = loc.getName();
-            GdbVariable gv = (GdbVariable) variableBag.get(var_name, 
-				false, VariableBag.FROM_LOCALS);
+            GdbVariable gv = variableBag.get(var_name, 
+                  false, VariableBag.FROM_LOCALS);
             if (gv == null) {
                 local_vars[vx] = new GdbVariable(this, localUpdater, null, 
                         var_name, loc.getType(), loc.getValue(), false);
@@ -2611,12 +2634,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		int index = var_value.indexOf("0x"); // NOI18N
 		if (var_value != null) {
 		    String value_only = var_value.substring(index);
-		    gv = (GdbVariable) variableBag.byAddr(var_name, value_only,
-				VariableBag.FROM_LOCALS);
+		    gv = variableBag.byAddr(var_name, value_only, VariableBag.FROM_LOCALS);
 		}
 	    }  else {
-                gv = (GdbVariable) variableBag.get(var_name, false, 
-				VariableBag.FROM_LOCALS);
+                gv = variableBag.get(var_name, false, 
+                  VariableBag.FROM_LOCALS);
                 if (gv != null)
                     gv.setValue(var_value); // update value
             }

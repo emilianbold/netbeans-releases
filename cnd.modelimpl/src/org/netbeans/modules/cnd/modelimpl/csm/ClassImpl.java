@@ -150,7 +150,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
         new ClassAstRenderer(file, visibility, localClass).render(ast);
-        leftBracketPos = initLeftBracketPos(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {

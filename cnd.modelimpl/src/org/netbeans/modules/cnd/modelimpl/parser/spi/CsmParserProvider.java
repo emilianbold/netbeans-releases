@@ -40,52 +40,65 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.cnd.modelimpl.parser.spi;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
-import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
-import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
-import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
+import java.util.Collection;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public class RemoteApiTest extends NativeExecutionBaseTestSuite {
-
-    @SuppressWarnings("unchecked")
-    public RemoteApiTest() {
-        this("Remote API",
-           RemoteFileSystemTestCase.class,
-           RemoteLinksTestCase.class,
-           RemotePathTestCase.class,
-           RemoteURLTestCase.class,
-           EscapeWindowsNameTestCase.class,
-           CaseSensivityTestCase.class,
-           DirectoryStorageTestCase.class,
-           DirectoryReaderTestCase.class,
-           RefreshTestCase.class);
+public abstract class CsmParserProvider {
+    public static final CsmParserProvider DEFAULT = new Default();
+    
+    public static CsmParser createParser(CsmFile file) {
+        return DEFAULT.create(file);
     }
+    
+    protected abstract CsmParser create(CsmFile file);
 
-
-    @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new RemoteApiTest(testClass.getName(), testClass);
+    public interface CsmParser {
+        enum ConstructionKind {
+            TRANSLATION_UNIT,
+            CLASS_BODY,
+            TRY_BLOCK,
+            COMPOUND_STATEMENT,
+            NAMESPACE_DEFINITION_BODY
+        }
+        void init(CsmObject object, TokenStream ts);
+        CsmParserResult parse(ConstructionKind kind);
     }
-
-    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    
+    public interface CsmParserResult {
+        void render(Object... context);
+        boolean isEmptyAST();
+        Object getAST();
+        void dumpAST();
+        int getErrorCount();
     }
+    
+    private static final class Default extends CsmParserProvider {
+        private final Collection<? extends CsmParserProvider> parserProviders;
 
-    public static Test suite() {
-        return new RemoteApiTest();
+        public Default() {
+            parserProviders = Lookup.getDefault().lookupAll(CsmParserProvider.class);
+        }
+                
+
+        @Override
+        protected CsmParser create(CsmFile file) {
+            for (CsmParserProvider provider : parserProviders) {
+                CsmParser out = provider.create(file);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return null;
+        }
+        
     }
 }

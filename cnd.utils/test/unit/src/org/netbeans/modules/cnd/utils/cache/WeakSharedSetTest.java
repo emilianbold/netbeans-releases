@@ -40,52 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.cnd.utils.cache;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
-import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
-import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
-import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
+import java.util.Set;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public class RemoteApiTest extends NativeExecutionBaseTestSuite {
-
-    @SuppressWarnings("unchecked")
-    public RemoteApiTest() {
-        this("Remote API",
-           RemoteFileSystemTestCase.class,
-           RemoteLinksTestCase.class,
-           RemotePathTestCase.class,
-           RemoteURLTestCase.class,
-           EscapeWindowsNameTestCase.class,
-           CaseSensivityTestCase.class,
-           DirectoryStorageTestCase.class,
-           DirectoryReaderTestCase.class,
-           RefreshTestCase.class);
+public class WeakSharedSetTest {
+    
+    @Test
+    public void testAddRemove() {
+        Set<Object> set = new WeakSharedSet<Object>();
+        Object obj = new Integer(1);
+        assertTrue("have to be new object", set.add(obj));
+        Object obj2 = new Integer(1);
+        assertFalse("object have to be already in set", set.add(obj2));
+        assertTrue("object have to be removed correctly", set.remove(obj2));
+        assertFalse("set have to be empty", set.remove(obj));
+        assertTrue("set have to be empty", set.isEmpty());
+        
     }
 
-
-    @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new RemoteApiTest(testClass.getName(), testClass);
-    }
-
-    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
-    }
-
-    public static Test suite() {
-        return new RemoteApiTest();
-    }
 }

@@ -127,7 +127,7 @@ public final class Watcher extends AnnotationProvider {
         private final Notifier<KEY> impl;
         private final Map<FileObject, KEY> map = new WeakHashMap<FileObject, KEY>();
         private final Thread watcher;
-        private boolean shutdown;
+        private volatile boolean shutdown;
 
         @SuppressWarnings("CallToThreadStartDuringObjectConstruction")
         public Ext(Notifier<KEY> impl) {
@@ -191,6 +191,10 @@ public final class Watcher extends AnnotationProvider {
                     }
                 } catch (ThreadDeath td) {
                     throw td;
+                } catch (InterruptedException ie) {
+                    if (!shutdown) {
+                        LOG.log(Level.INFO, "Interrupted", ie);
+                    }
                 } catch (Throwable t) {
                     LOG.log(Level.INFO, "Error dispatching FS changes", t);
                 }

@@ -81,7 +81,13 @@ public class JoinCatches {
                 "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$"
         ),
         @TriggerPattern(
+                "try ($resources$) { $trystmts$; } catch (final $var1) { $catchstmts1$; } catch $inter$ catch (final $var2) { $catchstmts2$; } catch $more$"
+        ),
+        @TriggerPattern(
                 "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
+        ),
+        @TriggerPattern(
+                "try ($resources$) { $trystmts$; } catch (final $var1) { $catchstmts1$; } catch $inter$ catch (final $var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
         )
     })
     public static ErrorDescription hint(HintContext ctx) {
@@ -159,7 +165,6 @@ public class JoinCatches {
             for (CatchTree ct : tt.getCatches()) {
                 if (c == first) {
                     wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjunctiveType(disjointTypes));
-                    wc.rewrite(ct.getParameter().getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));
                 }
                 
                 if (duplicates.contains(c++)) continue;

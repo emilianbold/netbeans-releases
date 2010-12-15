@@ -60,13 +60,29 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
         try {
             DirectoryStorage ds1 = new DirectoryStorage(file);
             DirectoryStorage.Entry entry1;
-            entry1 = new DirectoryStorage.Entry("name", "name.cache", "-rwxrwxrwx", "vk", "staff", 1024, "t i m e s t a m p", null);
+            final String name = "name";
+            final String cacheName = "name.cache";
+            final String access = "-rwxrwxrwx";
+            final String user = "vk";
+            final String group = "staff";
+            final int size = 1024;
+            final String timestamp = "t i m e s t a m p";
+            final String link = null;
+            entry1 = new DirectoryStorage.Entry(name, cacheName, access, user, group, size, timestamp, link);
             ds1.testAddEntry(entry1);
             ds1.store();
             DirectoryStorage ds2 = new DirectoryStorage(file);
             ds2.load();
             DirectoryStorage.Entry entry2 = ds2.getEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
+            assertEquals("Name", name, entry2.getName());
+            assertEquals("Cache", cacheName, entry2.getCache());
+            assertEquals("Access", access.substring(1), entry2.getAccessAsString());
+            assertEquals("User", user, entry2.getUser());
+            assertEquals("Group", group, entry2.getGroup());
+            assertEquals("Size", size, entry2.getSize());
+            assertEquals("Timestamp", timestamp, entry2.getTimestamp());
+            assertEquals("Link", link, entry2.getLink());
         } finally {
             file.delete();
         }
