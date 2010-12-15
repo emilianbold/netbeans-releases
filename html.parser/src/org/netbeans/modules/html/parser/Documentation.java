@@ -82,6 +82,7 @@ public class Documentation implements HelpResolver {
     static long url_read_time, pattern_search_time;
 
     private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<String, String>();
+    private static Map<URL, OffsetRange> HELP_LINKS_CACHE = new WeakHashMap<URL, OffsetRange>();
 
     public static void setupDocumentationForUnitTests() {
         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
@@ -194,6 +195,12 @@ public class Documentation implements HelpResolver {
             return content;
         }
 
+        //tro to use cache
+        OffsetRange range = HELP_LINKS_CACHE.get(url);
+        if(range != null) {
+            return buildHelpText(content, range);
+        }
+
         //anchor
         String sectionName = surl.substring(hashIndex + 1);
         Matcher matcher = SECTIONS_PATTERN.matcher(content);
@@ -220,10 +227,7 @@ public class Documentation implements HelpResolver {
         pattern_search_time = (c - b);
 
         if (from != -1) {
-            String stripped = content.substring(from, to);
-            //"fix" the stripped content a bit by adding html content prefix
-            return new StringBuilder().append(HELP_PREFIX).//NOI18N
-                    append(stripped).toString(); //NOI18N
+            return buildAndCacheHelpText(content, new OffsetRange(from, to), url);
         } else {
             //no heading found for the link, lets look into the heading groups and possibly
             //find a link in the <dfn id="..."/> form
@@ -235,13 +239,11 @@ public class Documentation implements HelpResolver {
                     CharSequence sub = content.subSequence(lastgi, gi);
                     int index = CharSequences.indexOf(
                             sub,
-                            String.format("<dfn id=\"%s\"", sectionName));
+                            String.format("<dfn id=\"%s\"", sectionName)); //NOI18N
 
                     if (index != -1) {
                         //use this section
-                        return new StringBuilder().append(HELP_PREFIX).//NOI18N
-                                append(sub).toString(); //NOI18N
-
+                        return buildAndCacheHelpText(content, new OffsetRange(lastgi, gi), url);
                     }
                 }
                 lastgi = gi;
@@ -249,6 +251,23 @@ public class Documentation implements HelpResolver {
         }
 
         return null;
+    }
+
+    private String buildAndCacheHelpText(String helpFileContent, OffsetRange strippedArea, URL url) {
+        HELP_LINKS_CACHE.put(url, strippedArea);
+        return buildHelpText(helpFileContent, strippedArea);
+    }
+
+    private String buildHelpText(String helpFileContent, OffsetRange strippedArea) {
+        return new StringBuilder().append(HELP_PREFIX).append(helpFileContent.subSequence(strippedArea.from, strippedArea.to)).toString();
+    }
+
+    private static class OffsetRange {
+        public int from, to;
+        public OffsetRange(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
     }
     
 }
