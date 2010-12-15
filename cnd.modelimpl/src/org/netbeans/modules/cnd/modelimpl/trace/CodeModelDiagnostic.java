@@ -259,4 +259,36 @@ public final class CodeModelDiagnostic {
             }
         }
     }    
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
+    public final static class ProjectReferencesTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Project References";// NOI18N
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    CsmProject project = file.getProject();
+                    if (project != null) {
+                        projects.add(project);
+                    }
+                }
+            }
+            printOut.println("References:");
+            for (CsmProject prj : projects) {
+                printOut.print(prj.getName() + " : ");
+                int refsNumber = 0;
+                for (CsmFile file : prj.getAllFiles()) {
+                    refsNumber += ((FileImpl)file).getReferences().size();
+                }
+                printOut.println(refsNumber);
+            }
+        }
+    }    
 }
