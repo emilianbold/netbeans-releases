@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.ui.repository;
 
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.io.File;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -83,7 +84,7 @@ class RevisionInfoPanelController {
         loadInfoTask.cancel();
         loadInfoWorker.monitor.cancel();
         currentCommit = revision;
-        if (revision == null) {
+        if (revision != null) {
             resetInfoFields();
             loadInfoTask.schedule(100);
         } else {
@@ -100,8 +101,17 @@ class RevisionInfoPanelController {
     public void updateInfoFields (GitRevisionInfo info) {
         assert EventQueue.isDispatchThread();
         panel.tbAuthor.setText(info.getAuthor().toString());
+        if (!panel.tbAuthor.getText().isEmpty()) {
+            panel.tbAuthor.setCaretPosition(0);
+        }
         panel.tbRevisionId.setText(info.getRevision());
+        if (!panel.tbRevisionId.getText().isEmpty()) {
+            panel.tbRevisionId.setCaretPosition(0);
+        }
         panel.taMessage.setText(info.getFullMessage());
+        if (!panel.taMessage.getText().isEmpty()) {
+            panel.taMessage.setCaretPosition(0);
+        }
     }
 
     private void setUnknownRevision () {
@@ -123,8 +133,7 @@ class RevisionInfoPanelController {
                     return;
                 }
                 GitClient client = Git.getInstance().getClient(repository);
-                //TODO need a log command
-                final GitRevisionInfo info = null;
+                final GitRevisionInfo info = client.log(revision, monitor);
                 final ProgressMonitor.DefaultProgressMonitor m = monitor;
                 if (!monitor.isCanceled()) {
                     Mutex.EVENT.readAccess(new Runnable () {
@@ -134,7 +143,7 @@ class RevisionInfoPanelController {
                                 if (info == null) {
                                     setUnknownRevision();
                                 } else {
-    //                        infoPanelController.updateInfoFields(info);
+                                    updateInfoFields(info);
                                 }
                             }
                         }

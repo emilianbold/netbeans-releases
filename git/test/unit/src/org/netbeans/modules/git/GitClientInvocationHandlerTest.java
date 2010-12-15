@@ -115,6 +115,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getUser",
                 "init",
                 "listModifiedIndexEntries",
+                "log",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -170,6 +171,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getUser",
                 "init",
                 "listModifiedIndexEntries",
+                "log",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -185,6 +187,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getStatus",
                 "getUser",
                 "listModifiedIndexEntries",
+                "log",
                 "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
@@ -230,6 +233,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getUser",
                 "init",
                 "listModifiedIndexEntries",
+                "log",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -329,6 +333,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getUser",
                 "init",
                 "listModifiedIndexEntries",
+                "log",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -344,6 +349,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getStatus",
                 "getUser",
                 "listModifiedIndexEntries",
+                "log",
                 "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
