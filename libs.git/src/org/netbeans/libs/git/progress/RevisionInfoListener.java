@@ -40,53 +40,14 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git.progress;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CleanTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.InitTest;
-import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
-import org.netbeans.libs.git.jgit.commands.LogTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import org.netbeans.libs.git.GitRevisionInfo;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
-
-    public CommandsTestSuite (String testName) {
-        super(testName);
-    }
-
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CleanTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(InitTest.class);
-        suite.addTestSuite(ListModifiedIndexEntriesTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
-    }
-
+public interface RevisionInfoListener {
+    public void notifyRevisionInfo (GitRevisionInfo revisionInfo);
 }

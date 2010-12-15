@@ -40,53 +40,65 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git.jgit.commands;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CleanTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.InitTest;
-import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
-import org.netbeans.libs.git.jgit.commands.LogTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import java.util.LinkedList;
+import java.util.List;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public class LogCommand extends GitCommand {
+    private final ProgressMonitor monitor;
+    private final RevisionInfoListener listener;
+    private final List<GitRevisionInfo> revisions;
+    private String revision;
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
+    public LogCommand (Repository repository, ProgressMonitor monitor, RevisionInfoListener listener) {
+        super(repository, monitor);
+        this.monitor = monitor;
+        this.listener = listener;
+        this.revisions = new LinkedList<GitRevisionInfo>();
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CleanTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(InitTest.class);
-        suite.addTestSuite(ListModifiedIndexEntriesTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
+    public void setRevision (String revision) {
+        this.revision = revision;
+    }
+
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        if (revision != null) {
+            RevCommit commit = Utils.findCommit(repository, revision);
+            addRevision(new JGitRevisionInfo(commit, repository));
+        }
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
+        if (revision != null) {
+            sb.append("--no-walk ").append(revision);
+        }
+        return sb.toString();
+    }
+
+    public GitRevisionInfo[] getRevisions () {
+        return revisions.toArray(new GitRevisionInfo[revisions.size()]);
+    }
+
+    private void addRevision (JGitRevisionInfo info) {
+        revisions.add(info);
+        listener.notifyRevisionInfo(info);
     }
 
 }
