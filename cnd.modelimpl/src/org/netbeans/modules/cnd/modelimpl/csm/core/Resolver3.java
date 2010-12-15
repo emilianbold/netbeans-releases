@@ -59,6 +59,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
@@ -330,7 +332,7 @@ public final class Resolver3 implements Resolver {
                     }
                     CsmFunction fun = getFunctionDeclaration(fd);
                     if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
-                        containingClass = ((CsmMethod) fun).getContainingClass();
+                        containingClass = getMethodContainingClass((CsmMethod) fun);
                     }
                 }
             }
@@ -346,6 +348,14 @@ public final class Resolver3 implements Resolver {
         }
         return fd.getDeclaration();
     }
+    
+    private CsmClass getMethodContainingClass(CsmMethod m){
+        if (m instanceof SafeContainingClassProvider) {
+            return ((SafeContainingClassProvider)m).getContainingClass(this);
+        }
+        return m.getContainingClass();
+    }
+    
 
     @Override
     public boolean isRecursionOnResolving(int maxRecursion) {
