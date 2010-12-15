@@ -173,6 +173,11 @@ class MICommandManager {
     void logConsole(String data) {
         consoleMessages.add(data);
     }
+    
+    void clearMessages() {
+        streamMessages.clear();
+        consoleMessages.clear();
+    }
 
     /**
      * Echo something on the debugger console.
