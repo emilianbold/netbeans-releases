@@ -46,16 +46,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -63,16 +59,11 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsfapi.api.JsfSupport;
-import org.netbeans.modules.web.jsfapi.api.Library;
-import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
-import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.openide.filesystems.FileObject;
@@ -84,26 +75,21 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Alexey Butenko
+ * @author mfukala@netbeans.org
  */
 public class MetaData implements ActiveEditorDrop, PaletteItem {
 
     private HashMap<String, String> properties = new HashMap<String, String>();
 
     private static final String TAG_NAME = ":inputText";   //NOI18N
-    private static final String NAME_SPACE = "http://java.sun.com/jsf/html";   //NOI18N
     private static final String VALUE_NAME = "value";   //NOI18N
 
-    private static final String JSF_CORE_NS = "http://java.sun.com/jsf/core"; //NOI18N
-    
-    private String htmlLibraryPrefix = "h";//default value //NOI18N
-    private String coreLibraryPrefix = "f";//default value //NOI18N
-
-    private Library coreLibToImport = null;
+    private JsfLibrariesSupport jsfLibrariesSupport;
 
     @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         properties.clear();
-        initLibraries(targetComponent);
+        jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
         findProperties(targetComponent);
 
         MetaDataCustomizer customizer = new MetaDataCustomizer(this, targetComponent);
@@ -112,7 +98,7 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
             try {
                 String body = createBody(targetComponent);
                 JSFPaletteUtilities.insert(body, targetComponent);
-                importLibraries(targetComponent);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
                 accept = false;
@@ -124,7 +110,7 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(MetaData.class, "NAME_jsp-JsfMetadata");
+        return NbBundle.getMessage(MetaData.class, "NAME_jsp-JsfMetadata"); //NOI18N
     }
 
     @Override
@@ -132,87 +118,15 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
         handleTransfer(component);
     }
 
-    private void initLibraries(JTextComponent tc) {
-        try {
-            Document doc = tc.getDocument();
-            JsfSupport jsfs = JsfSupportProvider.get(doc);
-            if (jsfs == null) {
-                return;
-            }
-            Library coreLib = jsfs.getLibrary(JSF_CORE_NS);
-            if (coreLib == null) {
-                return;
-            }
-
-            //1. check if the http://java.sun.com/jsf/html library is declared and if so under what prefix
-            Source source = Source.create(doc);
-            final AtomicReference<HtmlParsingResult> result = new AtomicReference<HtmlParsingResult>();
-            ParserManager.parse(Collections.singletonList(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator htmlRi = WebUtils.getResultIterator(resultIterator, "text/html"); //NOI18N
-                    if(htmlRi != null) {
-                        Parser.Result pr = htmlRi.getParserResult();
-                        if(pr instanceof HtmlParsingResult) {
-                            result.set((HtmlParsingResult)pr);
-                        }
-                    }
-                }
-            });
-            
-            HtmlParsingResult htmlresult = result.get();
-            if(htmlresult == null) {
-                return ;
-            }
-            
-            Map<String, Library> declared = LibraryUtils.getDeclaredLibraries(htmlresult);
-            Map<String, List<String>> ns2prefixes = htmlresult.getSyntaxAnalyzerResult().getAllDeclaredNamespaces();
-
-            //resolve jsf core library
-            Library lib = declared.get(JSF_CORE_NS);
-            if(lib == null) {
-                //html lib needs to be imported
-                coreLibraryPrefix = coreLib.getDefaultPrefix();
-                coreLibToImport = coreLib;
-            } else {
-                //already declared - just find the prefix
-                List<String> prefixes = ns2prefixes.get(JSF_CORE_NS);
-                String prefix = prefixes != null && !prefixes.isEmpty() ? prefixes.get(0) : null; //just use the first one
-                if(prefix != null) {
-                    coreLibraryPrefix = prefix;
-                }
-            }
-
-            //find html library prefix
-            lib = declared.get(NAME_SPACE);
-            if (lib != null) {
-                List<String> prefixes = ns2prefixes.get(NAME_SPACE);
-                String prefix = prefixes != null && !prefixes.isEmpty() ? prefixes.get(0) : null; //just use the first one
-                if (prefix != null) {
-                    htmlLibraryPrefix = prefix;
-                }
-            }
-            
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-     
-    }
-
-    private void importLibraries(JTextComponent target) {
-        if(coreLibToImport != null) {
-            LibraryUtils.importLibrary(target.getDocument(), coreLibToImport, coreLibraryPrefix);
-        }
-    }
 
     private String createBody(JTextComponent targetComponent) {
         final StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append('<').append(coreLibraryPrefix).append(":metadata>\n");    //NOI18N
+        stringBuffer.append('<').append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":metadata>\n");    //NOI18N
         Set<Entry<String,String>> set = properties.entrySet();
         for (Entry<String, String> entry : set) {
-            stringBuffer.append("   <").append(coreLibraryPrefix).append(":viewParam name=\"").append(entry.getKey()).append("\" value=\"").append(entry.getValue()).append("\"/>\n");    //NOI18N
+            stringBuffer.append("   <").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":viewParam name=\"").append(entry.getKey()).append("\" value=\"").append(entry.getValue()).append("\"/>\n");    //NOI18N
         }
-        stringBuffer.append("</").append(coreLibraryPrefix).append(":metadata>\n");    //NOI18N
+        stringBuffer.append("</").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":metadata>\n");    //NOI18N
         return stringBuffer.toString();
     }
 
@@ -244,9 +158,9 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
                             if(_result instanceof HtmlParserResult) {
                                 HtmlParserResult result = (HtmlParserResult)_result;
 //                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-                                if (result.getNamespaces().containsKey(NAME_SPACE)) {
+                                if (result.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
 
-                                    List<AstNode> foundNodes = findValue(result.root(NAME_SPACE).children(), getTagName(), new ArrayList<AstNode>());
+                                    List<AstNode> foundNodes = findValue(result.root(DefaultLibraryInfo.HTML.getNamespace()).children(), getTagName(), new ArrayList<AstNode>());
 
                                     for (AstNode node : foundNodes) {
                                         String value = node.getAttribute(VALUE_NAME).unquotedValue();
@@ -327,7 +241,7 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
     }
 
     private String getTagName() {
-        return new StringBuilder().append(htmlLibraryPrefix).append(TAG_NAME).toString();
+        return new StringBuilder().append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)).append(TAG_NAME).toString();
     }
 
 }

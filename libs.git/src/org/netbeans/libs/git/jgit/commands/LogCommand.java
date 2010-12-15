@@ -37,55 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.openide.filesystems.FileObject;
+package org.netbeans.libs.git.jgit.commands;
+
+import java.util.LinkedList;
+import java.util.List;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 
 /**
- * Per web-module instance
  *
- * @author marekfukala
+ * @author ondra
  */
-public class TldLibrariesCache {
+public class LogCommand extends GitCommand {
+    private final ProgressMonitor monitor;
+    private final RevisionInfoListener listener;
+    private final List<GitRevisionInfo> revisions;
+    private String revision;
 
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private JsfSupportImpl support;
-
-    public TldLibrariesCache(JsfSupportImpl support) {
-        this.support = support;
+    public LogCommand (Repository repository, ProgressMonitor monitor, RevisionInfoListener listener) {
+        super(repository, monitor);
+        this.monitor = monitor;
+        this.listener = listener;
+        this.revisions = new LinkedList<GitRevisionInfo>();
     }
 
-   public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
+    public void setRevision (String revision) {
+        this.revision = revision;
+    }
+
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        if (revision != null) {
+            RevCommit commit = Utils.findCommit(repository, revision);
+            addRevision(new JGitRevisionInfo(commit, repository));
         }
     }
 
-    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-            TldLibrary lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getTldFile(namespace);
-                if (file != null) {
-                    lib = TldLibrary.create(file);
-                    LIBRARIES.put(namespace, lib);
-                }
-            }
-            return lib;
+    @Override
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
+        if (revision != null) {
+            sb.append("--no-walk ").append(revision);
         }
+        return sb.toString();
     }
 
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
-
+    public GitRevisionInfo[] getRevisions () {
+        return revisions.toArray(new GitRevisionInfo[revisions.size()]);
     }
+
+    private void addRevision (JGitRevisionInfo info) {
+        revisions.add(info);
+        listener.notifyRevisionInfo(info);
+    }
+
 }

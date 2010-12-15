@@ -37,55 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsfapi.api;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.openide.filesystems.FileObject;
+public enum DefaultLibraryInfo implements LibraryInfo {
 
-/**
- * Per web-module instance
- *
- * @author marekfukala
- */
-public class TldLibrariesCache {
+    HTML("http://java.sun.com/jsf/html", "Html Basic", "h"), //NOI18N
+    JSF_CORE("http://java.sun.com/jsf/core", "Jsf Core", "f"), //NOI18N
+    JSTL_CORE("http://java.sun.com/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
+    COMPOSITE("http://java.sun.com/jsf/composite", "Composite Components", "cc"), //NOI18N
+    FACELETS("http://java.sun.com/jsf/facelets", "Facelets", "ui"); //NOI18N
+    
+    private String namespace;
+    private String displayName;
+    private String defaultPrefix;
 
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private JsfSupportImpl support;
-
-    public TldLibrariesCache(JsfSupportImpl support) {
-        this.support = support;
+    private DefaultLibraryInfo(String namespace, String displayName, String defaultPrefix) {
+        this.namespace = namespace;
+        this.displayName = displayName;
+        this.defaultPrefix = defaultPrefix;
     }
 
-   public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
-        }
+    @Override
+    public String getNamespace() {
+        return namespace;
     }
 
-    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-            TldLibrary lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getTldFile(namespace);
-                if (file != null) {
-                    lib = TldLibrary.create(file);
-                    LIBRARIES.put(namespace, lib);
-                }
+    @Override
+    public String getDefaultPrefix() {
+        return defaultPrefix;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public static LibraryInfo forNamespace(String namespace) {
+        for(int i = 0; i < values().length; i++) {
+            if(values()[i].getNamespace().equals(namespace)) {
+                return values()[i];
             }
-            return lib;
         }
+        return null;
     }
 
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
 
-    }
 }

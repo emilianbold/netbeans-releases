@@ -88,12 +88,12 @@ public final class FaceletsLibraryDescriptor extends AbstractLibraryDescriptor {
     //we need to define them manually
     @Override
     public String getDefaultPrefix() {
-        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getURI());
+        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getNamespace());
     }
 
     @Override
     public String getDisplayName() {
-        return DefaultFaceletLibraries.getLibraryDisplayName(getURI());
+        return DefaultFaceletLibraries.getLibraryDisplayName(getNamespace());
     }
 
     public static String parseNamespace(InputStream content) {
