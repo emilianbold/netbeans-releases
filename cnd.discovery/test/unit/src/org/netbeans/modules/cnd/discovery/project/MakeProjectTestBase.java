@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -110,19 +109,10 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        //MockServices.setServices(MakeProjectType.class);
         MakeOptions.getInstance().setFixUnresolvedInclude(false);
         startupModel();
     }
 
-    @Override
-    protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectTypeImpl.class);
-        list.addAll(super.getServices());
-        return list;
-    }
- 
     @Override
     protected void setUpMime() {
         // setting up MIME breaks other services
