@@ -85,7 +85,7 @@ public class LogCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git log --stat "); //NOI18N
+        StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
         if (revision != null) {
             sb.append("--no-walk ").append(revision);
         }
