@@ -102,6 +102,10 @@ public interface Resolver {
         CsmClassifier getClassifier(Resolver resolver);
     }    
 
+    public interface SafeContainingClassProvider {
+        CsmClass getContainingClass(Resolver resolver);
+    }    
+    
     public interface SafeTemplateBasedProvider {
         boolean isTemplateBased(Set<CsmType> visited);
     }    
