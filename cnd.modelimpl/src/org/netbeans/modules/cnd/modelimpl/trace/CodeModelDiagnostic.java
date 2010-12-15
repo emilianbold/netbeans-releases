@@ -280,9 +280,9 @@ public final class CodeModelDiagnostic {
                     }
                 }
             }
-            printOut.println("References:");
+            printOut.println("References:"); // NOI18N
             for (CsmProject prj : projects) {
-                printOut.print(prj.getName() + " : ");
+                printOut.print(prj.getName() + " : "); // NOI18N
                 int refsNumber = 0;
                 for (CsmFile file : prj.getAllFiles()) {
                     refsNumber += ((FileImpl)file).getReferences().size();
