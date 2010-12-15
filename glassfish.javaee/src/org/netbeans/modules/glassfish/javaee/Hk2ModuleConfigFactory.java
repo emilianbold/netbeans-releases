@@ -87,22 +87,5 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
         }
         return retVal;
     }
-
-    @Override
-    public ModuleConfiguration create(J2eeModule module, String instanceUrl) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            if (instanceUrl.contains("gfv3ee6wc")) { // NOI18N
-                retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module));
-            } else {
-                retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
-            }
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            throw new ConfigurationException(module.toString(), ex);
-        }
-        return retVal;
-    }
     
 }
