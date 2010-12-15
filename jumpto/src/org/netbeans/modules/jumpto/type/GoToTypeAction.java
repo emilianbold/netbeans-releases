@@ -115,8 +115,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     private SearchType nameKind;
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
-    private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);
-    private static final RequestProcessor PROFILE_RP = new RequestProcessor("GoToTypeAction-Profile",1);
+    private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);      //NOI18N
+    private static final RequestProcessor PROFILE_RP = new RequestProcessor("GoToTypeAction-Profile",1);        //NOI18N
     private Worker running;
     private RequestProcessor.Task task;
     GoToPanel panel;
@@ -146,6 +146,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         this.multiSelection = multiSelection;
     }
     
+    @Override
     public void actionPerformed( ActionEvent e ) {
         for (TypeDescriptor td : getSelectedTypes()) {
             td.open();
@@ -193,10 +194,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return OpenProjects.getDefault().getOpenProjects().length>0;
     }
     
+    @Override
     public boolean accept(Object obj) {
         return typeFilter == null ? true : typeFilter.accept((TypeDescriptor) obj);
     }
     
+    @Override
     public void scheduleUpdate(Runnable run) {
         SwingUtilities.invokeLater(run);
     }
@@ -204,11 +207,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     // Implementation of content provider --------------------------------------
     
     
+    @Override
     public ListCellRenderer getListCellRenderer( JList list ) {
         return new Renderer( list );        
     }
     
     
+    @Override
     public void setListModel( GoToPanel panel, String text ) {
         assert SwingUtilities.isEventDispatchThread();
         if (okButton != null) {
@@ -254,10 +259,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         running = new Worker( text );
         task = rp.post( running, 220);
         if ( panel.time != -1 ) {
-            LOGGER.fine( "Worker posted after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
+            LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
         }
     }
     
+    @Override
     public void closeDialog() {
         // Closing event can be sent several times.
         if (dialog == null ) { // #172568
@@ -267,6 +273,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         cleanup();
     }
     
+    @Override
     public boolean hasValidContent () {
         return this.okButton != null && this.okButton.isEnabled();
     }
@@ -408,35 +415,57 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         public Worker( String text ) {
             this.text = text;
             this.createTime = System.currentTimeMillis();
-            LOGGER.fine( "Worker for " + text + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
+            LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
+                    new Object[]{
+                        text,
+                        System.currentTimeMillis() - panel.time
+                    });
         }
 
+        @Override
         public void run() {
             for (;;) {
                 final int[] retry = new int[1];
 
                 Profile profile = initializeProfiling();
                 try {
-                    LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                    LOGGER.log( Level.FINE, "Worker for {0} - started {1} ms.",     //NOI18N
+                            new Object[]{
+                                text,
+                                System.currentTimeMillis() - createTime
+                            });
 
                     final List<? extends TypeDescriptor> types = getTypeNames(text, retry);
                     if ( isCanceled ) {
-                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
+                                new Object[]{
+                                    text,
+                                    System.currentTimeMillis() - createTime
+                                });
                         return;
                     }
                     ListModel model = Models.fromList(types);
                     if (typeFilter != null) {
-                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");  
                     }
                     final ListModel fmodel = model;
                     if ( isCanceled ) {
-                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
+                                new Object[]{
+                                    text,
+                                    System.currentTimeMillis() - createTime
+                                });
                         return;
                     }
 
                     if ( !isCanceled && fmodel != null ) {
-                        LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
+                                new Object[]{
+                                    text,
+                                    System.currentTimeMillis() - createTime
+                                });
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 panel.setModel(fmodel);
                                 if (okButton != null && !types.isEmpty()) {
@@ -450,7 +479,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         try {
                             profile.stop();
                         } catch (Exception ex) {
-                            LOGGER.log(Level.INFO, "Cannot stop profiling", ex);
+                            LOGGER.log(Level.INFO, "Cannot stop profiling", ex);    //NOI18N
                         }
                     }
                 }
@@ -469,7 +498,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         public void cancel() {
             if ( panel.time != -1 ) {
-                LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
+                LOGGER.log( Level.FINE, "Worker for text {0} canceled after {1} ms.",   //NOI18N
+                        new Object[]{
+                            text,
+                            System.currentTimeMillis() - createTime
+                        });
             }
             TypeProvider _provider;
             synchronized (this) {
@@ -501,13 +534,17 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 current = provider;
                 long start = System.currentTimeMillis();
                 try {
-                    LOGGER.fine("Calling TypeProvider: " + provider);
+                    LOGGER.log(Level.FINE, "Calling TypeProvider: {0}", provider);  //NOI18N
                     provider.computeTypeNames(context, result);
                 } finally {
                     current = null;
                 }
                 long delta = System.currentTimeMillis() - start;
-                LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
+                LOGGER.log(Level.FINE, "Provider ''{0}'' took {1} ms.",     //NOI18N
+                        new Object[]{
+                            provider.getDisplayName(),
+                            delta
+                        });
             }
             retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
@@ -558,7 +595,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static class Renderer extends EntitiesListCellRenderer {
+    private static final class Renderer extends EntitiesListCellRenderer {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -575,6 +612,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         private JList jList;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public Renderer( JList list ) {
             
             jList = list;
@@ -663,11 +701,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
 		rendererComponent.setDescriptor(td);
-//                FileObject fo = td.getFileObject();
-//                if (fo != null) {
-//                    rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fo));
-//                }
-                LOGGER.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
+                LOGGER.log(Level.FINE, "  Time in paint {0} ms.", System.currentTimeMillis() - time);   //NOI18N
             }
             else {
                 jlName.setText( value.toString() );
@@ -676,13 +710,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return rendererComponent;
         }
         
+        @Override
         public void stateChanged(ChangeEvent event) {
             
             JViewport jv = (JViewport)event.getSource();
             
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false));
+            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false)); //NOI18N
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
@@ -698,6 +733,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             this.panel = panel;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {            
             if ( e.getSource() == okButton) {
                 panel.setSelectedTypes();
@@ -714,7 +750,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return null;
         }
 
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");     //NOI18N
         if (fo == null) {
             return null;
         }
@@ -767,8 +803,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
                 dos.close();
                 if (dos.size() > 0) {
-                    Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };
-                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };      //NOI18N
+                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params); //NOI18N
                 } else {
                     LOGGER.log(Level.WARNING, "no snapshot taken"); // NOI18N
                 }
