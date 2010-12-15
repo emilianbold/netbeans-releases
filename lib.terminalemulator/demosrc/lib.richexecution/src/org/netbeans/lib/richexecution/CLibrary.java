@@ -48,7 +48,8 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
 
-class CLibrary {
+// public because it's needed by "Term Driver".
+public class CLibrary {
     private final GenericCLibrary delegate;
     private final GenericConstants constants;
 
