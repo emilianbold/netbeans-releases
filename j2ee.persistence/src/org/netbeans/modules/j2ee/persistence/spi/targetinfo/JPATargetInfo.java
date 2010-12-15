@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,54 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.common.wizards;
+package org.netbeans.modules.j2ee.persistence.spi.targetinfo;
 
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.filesystems.FileObject;
+
 
 /**
  *
- * @author Peter Williams
- * @author vince kraemer
+ * @author sp153251
  */
-public class GlassfishWizardProvider implements ServerWizardProvider {
+public interface JPATargetInfo {
 
-    public static GlassfishWizardProvider createEe6() {
-        return new GlassfishWizardProvider(
-                org.openide.util.NbBundle.getMessage(GlassfishWizardProvider.class,
-                "STR_V3_FAMILY_NAME", new Object[]{}) // NOI18N
-                );
-    }
-    
-    private final String displayName;
-
-    private GlassfishWizardProvider(
-            String displayName
-            ) {
-        this.displayName = displayName;
+    enum TargetType {
+        EJB,
+        ANY
     }
 
-    // ------------------------------------------------------------------------
-    // ServerWizardProvider interface implementation
-    // ------------------------------------------------------------------------
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator(new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1,
-            ServerDetails.GLASSFISH_SERVER_3, 
-        });
-    }
-
+    /**
+     *
+     * @param target - fqn
+     * @return
+     */
+    TargetType getType(FileObject target, String targetFQN);
 }

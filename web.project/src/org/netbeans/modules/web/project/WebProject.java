@@ -578,6 +578,7 @@ public final class WebProject implements Project {
             new WebJPADataSourceSupport(this), 
             Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
+            new WebJPATargetInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
