@@ -47,12 +47,15 @@ import java.util.Map;
  *
  * @author marekfukala
  */
-public interface LibraryDescriptor {
+public interface LibraryDescriptor extends LibraryInfo {
 
-    public String getURI();
+    @Override
+    public String getNamespace();
 
+    @Override
     public String getDefaultPrefix();
 
+    @Override
     public String getDisplayName();
 
     public Map<String, Tag> getTags();

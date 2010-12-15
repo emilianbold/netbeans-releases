@@ -259,7 +259,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case NON_DATA_END_TAG_NAME:
-                if(from == RAWTEXT_RCDATA_LESS_THAN_SIGN) {
+                if(from == RAWTEXT_RCDATA_LESS_THAN_SIGN
+                        || from == SCRIPT_DATA_LESS_THAN_SIGN) {
                     //end tag in RAW text (like <title> content)
                     tag_lt_offset = offset - 1; //-1 is here because we are already at the tag name just after the &lt; char
                 }
@@ -274,6 +275,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case RCDATA:
+            case SCRIPT_DATA:
             case DATA:
                 switch (from) {
                     case SELF_CLOSING_START_TAG:

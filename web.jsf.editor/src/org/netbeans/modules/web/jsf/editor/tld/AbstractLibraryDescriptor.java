@@ -93,7 +93,7 @@ public abstract class AbstractLibraryDescriptor implements LibraryDescriptor {
     }
 
     @Override
-    public String getURI() {
+    public String getNamespace() {
         return uri;
     }
 
@@ -186,7 +186,7 @@ public abstract class AbstractLibraryDescriptor implements LibraryDescriptor {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
-            sb.append("; defaultPrefix = ").append(getDefaultPrefix()).append("; uri = ").append(getURI()).append("; tags={"); //NOI18N
+            sb.append("; defaultPrefix = ").append(getDefaultPrefix()).append("; uri = ").append(getNamespace()).append("; tags={"); //NOI18N
             for (Tag t : getTags().values()) {
                 sb.append(t.toString());
             }
