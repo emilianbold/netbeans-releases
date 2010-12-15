@@ -1652,9 +1652,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         stackUpdater.setListener(model);
         if (model != null) {
             get_frames = true;
-            if (state().isProcess && !state().isRunning) {
-                showStackFrames();
-            }
+//            if (state().isProcess && !state().isRunning) {
+//                showStackFrames();
+//            }
         } else {
             get_frames = false;
         }
@@ -1876,39 +1876,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /*
      * get frame info : level, addr, func, file
      */
-    private void showStackFrames() {
-        MICommand cmd =
-            new MiCommandImpl("-stack-list-frames") { // NOI18N
-
-            @Override
-                    protected void onDone(MIRecord record) {
-                        try_one_more = true; // success
-                        setStack(record);
-                        finish();
-                    }
-
-            @Override
-                    protected void onError(MIRecord record) {
-                        String errMsg = getErrMsg(record);
-                        // to work around gdb thread frame problem
-                        // get the real and correct output of "-stack-list-frames"
-                        // just try_one_more is not enough, so I try it for as long
-                        // as it fail, but watch out for infinite loop
-                        //if (try_one_more && errMsg.equals(corrupt_stack)) {
-                        if (errMsg.equals(corrupt_stack)) {
-                            // sometime we have timing issue that we need
-                            // to try several time, one more time is not
-                            // enough.
-                            // try_one_more = false;
-                            showStackFrames(); // try again, watch out for infinite loop
-                        } else {
-                            genericFailure(record);
-                        }
-			finish();
-                    }
-                };
-        gdb.sendCommand(cmd);
-    }
+//    private void showStackFrames() {
+//        MICommand cmd =
+//            new MiCommandImpl("-stack-list-frames") { // NOI18N
+//
+//            @Override
+//                    protected void onDone(MIRecord record) {
+//                        try_one_more = true; // success
+//                        setStack(record);
+//                        finish();
+//                    }
+//
+//            @Override
+//                    protected void onError(MIRecord record) {
+//                        String errMsg = getErrMsg(record);
+//                        // to work around gdb thread frame problem
+//                        // get the real and correct output of "-stack-list-frames"
+//                        // just try_one_more is not enough, so I try it for as long
+//                        // as it fail, but watch out for infinite loop
+//                        //if (try_one_more && errMsg.equals(corrupt_stack)) {
+//                        if (errMsg.equals(corrupt_stack)) {
+//                            // sometime we have timing issue that we need
+//                            // to try several time, one more time is not
+//                            // enough.
+//                            // try_one_more = false;
+//                            showStackFrames(); // try again, watch out for infinite loop
+//                        } else {
+//                            genericFailure(record);
+//                        }
+//			finish();
+//                    }
+//                };
+//        gdb.sendCommand(cmd);
+//    }
 
     /* 
      * balloonEval stuff 
@@ -2524,14 +2524,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (model != null) {
             get_locals = true;
             if ((state().isProcess || state().isCore) && !state().isRunning) {
-                if (!get_frames) {
-                    // need frame args too
-                    // would call getMILocals.
-                    showStackFrames();
-                } else {
-                    // have frame args already
-                    getMILocals(false); // from current frame
-                }
+                // have frame args already
+                getMILocals(false); // from current frame
             }
         } else {
             get_locals = false;
