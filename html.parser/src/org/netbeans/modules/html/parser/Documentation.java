@@ -54,6 +54,8 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -78,6 +80,8 @@ public class Documentation implements HelpResolver {
     private static final Documentation SINGLETON = new Documentation();
     //performance unit testing
     static long url_read_time, pattern_search_time;
+
+    private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<String, String>();
 
     public static void setupDocumentationForUnitTests() {
         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
@@ -149,6 +153,12 @@ public class Documentation implements HelpResolver {
     }
 
     static String getContentAsString(URL url, Charset charset) {
+        String filePath = url.getPath();
+        String cachedContent = HELP_FILES_CACHE.get(filePath);
+        if(cachedContent != null) {
+            return cachedContent;
+        }
+
         if (charset == null) {
             charset = Charset.defaultCharset();
         }
@@ -163,7 +173,9 @@ public class Documentation implements HelpResolver {
                 content.append(buf, 0, read);
             }
             r.close();
-            return content.toString();
+            String strContent = content.toString();
+            HELP_FILES_CACHE.put(filePath, strContent);
+            return strContent;
         } catch (IOException ex) {
             Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
         }
