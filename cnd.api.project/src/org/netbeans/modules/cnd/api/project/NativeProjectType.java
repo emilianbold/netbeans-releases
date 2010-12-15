@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,72 +42,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
+package org.netbeans.modules.cnd.api.project;
 
 /**
- * @author Vladimir Kvasihn
+ * Native project type.
+ * Register one instance to default lookup in order to define an Native project type.
+ * @author Jesse Glick
+ * @author Alexander Simon
+ *
  */
-public interface Resolver {
-    public static final boolean TRACE_RECURSION = false;
-    public static final int INFINITE_RECURSION = 200;
-    public static final int LIMITED_RECURSION = 5;
-
-    public static final int NAMESPACE = 1 << 0;
-    public static final int CLASSIFIER = 1 << 1;
-    public static final int CLASS = 1 << 2;
-    public static final int ALL = NAMESPACE | CLASSIFIER | CLASS;
-
-    public Collection<CsmProject> getLibraries();
-
-    public CsmFile getStartFile();
+public interface NativeProjectType {
 
     /**
-     * Resolves classifier (class/enum/typedef) or namespace name.
-     * Why classifier or namespace? Because in the case org::vk::test
-     * you don't know which is class and which is namespace name
-     *
-     * @param nameTokens tokenized name to resolve
-     * (for example, for std::vector it is new CharSequence[] { "std", "vector" })
-     *
-     * @return object of the following class:
-     *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
-     *  CsmNamespace
+     * Get a unique type identifier for this kind of project.
+     * No two registered {@link NativeProjectType} instances may share the same type.
+     * The type is stored in <code>nbproject/project.xml</code> in the <code>type</code> element.
+     * It is forbidden for the result of this method to change from call to call.
+     * @return the project type
      */
-    public CsmObject resolve(CharSequence[] nameTokens, int interestedKind);
+    String getType();
     
     /**
-     * Resolves classifier (class/enum/typedef) or namespace name.
-     * Why classifier or namespace? Because in the case org::vk::test
-     * you don't know which is class and which is namespace name 
-     *
-     * @param qualifiedName name to resolve 
-     *
-     * @return object of the following class:
-     *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
-     *  CsmNamespace
+     * Get the simple name of the XML element that should be used to store
+     * the project's specific configuration data in <code>nbproject/project.xml</code>
+     * (inside <code>&lt;configuration&gt;</code>) or <code>nbproject/private/private.xml</code>
+     * (inside <code>&lt;project-private&gt;</code>).
+     * It is forbidden for the result of this method to change from call to call.
+     * @param shared if true, refers to <code>project.xml</code>, else refers to
+     *               <code>private.xml</code>
+     * @return a simple name; <samp>data</samp> is recommended but not required
      */
-    public CsmObject resolve(CharSequence qualifiedName, int interestedKind);
-
+    String getPrimaryConfigurationDataElementName(boolean shared);
+    
     /**
-     * Check infinite recursion in resolving
+     * Get the namespace of the XML element that should be used to store
+     * the project's specific configuration data in <code>nbproject/project.xml</code>
+     * (inside <code>&lt;configuration&gt;</code>) or <code>nbproject/private/private.xml</code>
+     * (inside <code>&lt;project-private&gt;</code>).
+     * It is forbidden for the result of this method to change from call to call.
+     * @param shared if true, refers to <code>project.xml</code>, else refers to
+     *               <code>private.xml</code>
+     * @return an XML namespace, e.g. <samp>http://www.netbeans.org/ns/j2se-project</samp>
+     *         or <samp>http://www.netbeans.org/ns/j2se-project-private</samp>
      */
-    public boolean isRecursionOnResolving(int maxRecursion);
+    String getPrimaryConfigurationDataElementNamespace(boolean shared);
 
-    public CsmClassifier getOriginalClassifier(CsmClassifier orig);
-
-    public interface SafeClassifierProvider {
-        CsmClassifier getClassifier(Resolver resolver);
-    }    
-
-    public interface SafeContainingClassProvider {
-        CsmClass getContainingClass(Resolver resolver);
-    }    
-    
-    public interface SafeTemplateBasedProvider {
-        boolean isTemplateBased(Set<CsmType> visited);
-    }    
-    
 }

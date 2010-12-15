@@ -136,15 +136,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.31</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -386,6 +377,7 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
+                <package>org.netbeans.modules.cnd.makeproject.api.support</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>

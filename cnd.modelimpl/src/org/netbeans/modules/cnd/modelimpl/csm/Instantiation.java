@@ -810,7 +810,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
     }
 
-    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
+    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition, Resolver.SafeContainingClassProvider {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
         private CsmFunctionDefinition definition = null;
@@ -840,12 +840,20 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         @Override
         public CsmClass getContainingClass() {
             if(containingClass == null) {
-                containingClass = _getContainingClass();
+                containingClass = _getContainingClass(null);
             }
             return containingClass;
         }
+        
+        @Override
+        public CsmClass getContainingClass(Resolver resolver) {
+            if(containingClass == null) {
+                containingClass = _getContainingClass(resolver);
+            }
+            return containingClass;            
+        }        
 
-        public CsmClass _getContainingClass() {
+        public CsmClass _getContainingClass(Resolver resolver) {
             CsmClass containingClass = declaration.getContainingClass();
             if(CsmKindUtilities.isTemplate(containingClass)) {
                 CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
