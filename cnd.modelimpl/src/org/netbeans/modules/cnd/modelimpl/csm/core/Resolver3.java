@@ -59,12 +59,16 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UsingResolverImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -136,8 +140,24 @@ public final class Resolver3 implements Resolver {
         this.offset = offset;
         this.origOffset = offset;
         parentResolver = parent;
+        if (parent == null && CndUtils.isDebugMode() && TraceFlags.CHECK_STACK_OVERFLOW_IN_RESOLVER3) {
+            assertEmptyParent();
+        }
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
+    }
+
+    private void assertEmptyParent() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        int i = 0;
+        for(StackTraceElement element : stackTrace) {
+            if (element.getClassName().equals(Resolver3.class.getName())) {
+                i++;
+            }
+        }
+        if (i > 2) {
+            assert false;
+        }
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
@@ -330,7 +350,7 @@ public final class Resolver3 implements Resolver {
                     }
                     CsmFunction fun = getFunctionDeclaration(fd);
                     if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
-                        containingClass = ((CsmMethod) fun).getContainingClass();
+                        containingClass = getMethodContainingClass((CsmMethod) fun);
                     }
                 }
             }
@@ -346,6 +366,14 @@ public final class Resolver3 implements Resolver {
         }
         return fd.getDeclaration();
     }
+    
+    private CsmClass getMethodContainingClass(CsmMethod m){
+        if (m instanceof SafeContainingClassProvider) {
+            return ((SafeContainingClassProvider)m).getContainingClass(this);
+        }
+        return m.getContainingClass();
+    }
+    
 
     @Override
     public boolean isRecursionOnResolving(int maxRecursion) {

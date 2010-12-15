@@ -522,7 +522,9 @@ public final class AttachPanel extends TopComponent {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                procTableClicked(evt);
+                if (procTable.isEnabled()) {
+                    procTableClicked(evt);
+                }
             }
         });
 
@@ -752,6 +754,15 @@ public final class AttachPanel extends TopComponent {
         }
         return items;
     }
+    
+    private void tableInfo(final String infoKey) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                procTable.setEnabled(false);
+                processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
+            }
+        });
+    }
 
     /**
      * Run ps, filter the output and update the table model.
@@ -815,13 +826,8 @@ public final class AttachPanel extends TopComponent {
             //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
             final boolean getAllProcesses = false;
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    procTable.setEnabled(false);
-                    processModel.setDataVector(new Object[][]{{Catalog.get("MSG_Gathering_Data")}}, new Object[]{" "}); //NOI18N
-                }
-            });
-
+            tableInfo("MSG_Gathering_Data"); //NOI18N
+            
             CndRemote.validate(hostName, new Runnable() {
                 public void run() {
                     requestProcesses(fre, hostname, getAllProcesses);
@@ -906,6 +912,7 @@ public final class AttachPanel extends TopComponent {
         final PsProvider.PsData psData = getPsData();
 
         if (psData == null) {
+            tableInfo("MSG_PS_Failed"); //NOI18N
             return;
         }
 

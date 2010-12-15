@@ -180,7 +180,7 @@ public class GenerateElementsIndex extends NbTestCase {
 
 //        suite.addTest(new GenerateElementsIndex("test_GenerateSVGAndMATHMLElementsIndex"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
-//        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
+        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateAttributesIndex"));
         return suite;
     }

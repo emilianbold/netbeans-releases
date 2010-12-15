@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
@@ -65,15 +66,13 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
+            throw new ConfigurationException(module.toString(), ex);
         }
         return retVal;
     }
 
     @Override
-    public ModuleConfiguration create(J2eeModule module, String instanceUrl) throws ConfigurationException {
+    public ModuleConfiguration create(@NonNull J2eeModule module, @NonNull String instanceUrl) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
             if (instanceUrl.contains("gfv3ee6wc")) { // NOI18N
@@ -84,9 +83,7 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
+            throw new ConfigurationException(module.toString(), ex);
         }
         return retVal;
     }

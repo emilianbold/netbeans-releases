@@ -750,21 +750,23 @@ public class ImportExecutable implements PropertyChangeListener {
             if (!set.contains(path)){
                 set.add(path);
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        String name = ff[i].getName();
+                        if (result.containsKey(name)) {
+                           result.put(name, ff[i].getAbsolutePath());
+                        }
+                        gatherSubFolders(ff[i], set, result);
                     }
-                    String name = ff[i].getName();
-                    if (result.containsKey(name)) {
-                       result.put(name, ff[i].getAbsolutePath());
-                    }
-                    gatherSubFolders(ff[i], set, result);
                 }
             }
         }

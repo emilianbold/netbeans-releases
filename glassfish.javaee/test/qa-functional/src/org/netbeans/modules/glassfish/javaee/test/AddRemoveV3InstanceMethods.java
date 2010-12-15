@@ -50,6 +50,7 @@ import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
+import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -70,7 +71,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
     public AddRemoveV3InstanceMethods(String testName) {
         super(testName);
     }
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishWizardProvider gip = GlassfishWizardProvider.createEe6();
     
     public void addV3Instance() throws IOException {
             File f = new File(Util._V3_LOCATION);

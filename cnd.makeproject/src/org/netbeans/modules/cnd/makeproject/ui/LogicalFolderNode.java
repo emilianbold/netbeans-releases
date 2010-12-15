@@ -55,7 +55,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
@@ -419,7 +419,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                         SystemAction.get(PropertiesFolderAction.class),};
         }
         // makeproject sensitive actions
-        final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
         final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.folderActionsPath());
         result = NodeActionFactory.insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), RenameNodeAction.class);
         result = NodeActionFactory.insertSyncActions(result, RenameNodeAction.class);

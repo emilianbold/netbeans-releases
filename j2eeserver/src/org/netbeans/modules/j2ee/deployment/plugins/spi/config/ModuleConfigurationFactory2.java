@@ -65,7 +65,7 @@ public interface ModuleConfigurationFactory2 extends ModuleConfigurationFactory 
      *        associated with
      * @param deployment URL of the target server instance
      * 
-     * @return ModuleConfigucation associated with the specified J2EE module
+     * @return ModuleConfiguration associated with the specified J2EE module
      */    
     ModuleConfiguration create(@NonNull J2eeModule j2eeModule, @NonNull String instanceUrl) throws ConfigurationException;
 }

@@ -159,6 +159,8 @@ public class TraceFlags {
     // experimental expression evaluator for template instantiations
     public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
 
+    public static final boolean CHECK_STACK_OVERFLOW_IN_RESOLVER3 = DebugUtils.getBoolean("cnd.modelimpl.check.resolver3", true); // NOI18N
+
     public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N
