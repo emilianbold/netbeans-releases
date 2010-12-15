@@ -56,7 +56,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 class MICommandManager {
     private final MICommandInjector injector;
-    private int commandToken = 1;
+    
+    private static final int MIN_TOKEN = 2;
+    private static final int MAX_TOKEN = Integer.MAX_VALUE-1000;
+
+    private int commandToken = MIN_TOKEN;
+    
     private final ConcurrentLinkedQueue<MICommand> pendingCommands = new ConcurrentLinkedQueue<MICommand>();
 
     public MICommandManager(MICommandInjector injector) {
@@ -72,6 +77,10 @@ class MICommandManager {
 
     public synchronized void send(MICommand cmd) {
 	cmd.setManagerData(this, commandToken++);
+        // limit max token to avoid prsing errors
+        if (commandToken > MAX_TOKEN) {
+            commandToken = MIN_TOKEN;
+        }
 	pendingCommands.add(cmd);
 	injector.inject(String.valueOf(cmd.getToken()) + cmd.command() + "\n"); // NOI18N
     }
