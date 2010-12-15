@@ -49,8 +49,14 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInWeb;
@@ -77,7 +83,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
     public WebEMGenStrategyResolver() {
     }
     
-    public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(FileObject target) {
+    public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(final FileObject target) {
         
         PersistenceUnit persistenceUnit = getPersistenceUnit(target);
         String jtaDataSource = persistenceUnit.getJtaDataSource();
@@ -85,7 +91,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         boolean isInjectionTarget = isInjectionTarget(target);
         boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
         boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
-        
+ 
         if (isContainerManaged) { // Container-managed persistence context
             if (isInjectionTarget) { // servlet, JSF managed bean ...
                 return ContainerManagedJTAInjectableInEJB.class;
