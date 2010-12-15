@@ -160,12 +160,12 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 return;
             }            
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
-            String tmpDir = System.getProperty("java.io.tmp"); // NOI18N
+            String tmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
             if (tmpDir == null) {
                 tmpDir = "/var/tmp";// NOI18N
             }
             try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");// NOI18N
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss");// NOI18N
                 String date = df.format(new Date());
                 File tmpFile;
                 try {
