@@ -39,15 +39,14 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.impl.fs;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -55,9 +54,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
@@ -79,8 +81,7 @@ import org.openide.windows.WindowManager;
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public class RemoteFileSystem extends FileSystem {
 
-    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};    
-
+    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
     private final RootFileObject root;
@@ -88,32 +89,42 @@ public class RemoteFileSystem extends FileSystem {
     private final File cache;
     private final RemoteFileObjectFactory factory;
     private long dirtyTimestamp;
-
     /** File transfer statistics */
     private static int fileCopyCount;
-
     /** Directory synchronization statistics */
     private static int dirSyncCount;
-
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
 
+    private static Map<String, String> getNormalizedFilesMap() {
+        Map<String, String> map = normalizedRef.get();
+        synchronized (RemoteFileSystem.class) {
+            map = normalizedRef.get();
+            if (map == null) {
+                map = new ConcurrentHashMap<String, String>();
+                normalizedRef = new SoftReference<Map<String, String>>(map);
+            }
+        }
+        return map;
+    }
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
-        factory  = new RemoteFileObjectFactory(this);
+        factory = new RemoteFileObjectFactory(this);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
         cache = new File(filePrefix);
-        if (! cache.exists() && ! cache.mkdirs()) {
-            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
+        if (!cache.exists() && !cache.mkdirs()) {
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
         }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
+
             public void windowGainedFocus(WindowEvent e) {
                 resetDirtyTimestamp();
             }
@@ -122,6 +133,7 @@ public class RemoteFileSystem extends FileSystem {
             }
         };
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
                 WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
@@ -133,9 +145,9 @@ public class RemoteFileSystem extends FileSystem {
     private void resetDirtyTimestamp() {
         cache.setLastModified(System.currentTimeMillis());
         dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
-        RemoteLogger.getInstance().log(Level.FINEST, "Sync: resetting dirty timestamp for {0} to {1}", new Object[] {execEnv, dirtyTimestamp});
+        RemoteLogger.getInstance().log(Level.FINEST, "Sync: resetting dirty timestamp for {0} to {1}", new Object[]{execEnv, dirtyTimestamp});
     }
-    
+
     /*package*/
     public long getDirtyTimestamp() {
         return dirtyTimestamp;
@@ -148,20 +160,47 @@ public class RemoteFileSystem extends FileSystem {
     public RemoteFileObjectFactory getFactory() {
         return factory;
     }
-    
+
     public String normalizeAbsolutePath(String absPath) {
-        try {
-            URL url = RemoteFileUrlMapper.getURL(execEnv, absPath);
-            URI uri = url.toURI();
-            uri = uri.normalize();
-            return uri.getPath();
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return absPath;
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return absPath;
+        //BZ#192265 as vkvashin stated the URI i sused to normilize the path
+        //but URI is really very restrictive so let's use another way
+        //will use the face that path is absolute and we have Unix like system
+        //no special code for Windows
+        return normalize(absPath);
+
+    }
+
+    private static String normalize(String absPath){
+        //BZ#192265 as vkvashin stated the URI i sused to normilize the path
+        //but URI is really very restrictive so let's use another way
+        //will use the face that path is absolute and we have Unix like system
+        //no special code for Windows
+        //also as absolute path is passed to the method we will use it as an absolute
+        String result = absPath;
+// # Remove all /./ sequences.
+//    local   path=${1//\/.\//\/}
+        result = result.replaceAll("\\/.\\/", "\\/");
+
+//
+//    # Remove first dir/.. sequence.
+//    local   npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
+        if (result.startsWith("..")){
+            result = result.replaceFirst("..", "");
         }
+//    # Remove remaining dir/.. sequence.
+//    while [[ $npath != $path ]]
+//    do
+//        path=$npath
+//        npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
+//    done
+//    echo $path
+        Pattern p = Pattern.compile(".*[/]([^/]+)[/][.][.].*");
+        Matcher m = p.matcher(result);
+        if (m.matches()){
+            result = result.replaceAll("[/][^/]+[/][.][.]", "");
+        }
+        return result;
+
     }
 
     /*package-local, for testing*/
@@ -170,7 +209,7 @@ public class RemoteFileSystem extends FileSystem {
     }
 
     public static ReadWriteLock getLock(File file) {
-        synchronized(mainLock) {
+        synchronized (mainLock) {
             WeakReference<ReadWriteLock> ref = locks.get(file);
             ReadWriteLock result = (ref == null) ? null : ref.get();
             if (result == null) {
@@ -211,7 +250,7 @@ public class RemoteFileSystem extends FileSystem {
     public boolean isReadOnly() {
         return true;
     }
-    
+
     @Override
     public RemoteFileObjectBase getRoot() {
         return root;
