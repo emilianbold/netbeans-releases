@@ -65,7 +65,7 @@ import java.util.Set;
 /**
  * This class provides storage functionality with Weak-referenced entries and
  * one new method <tt>putIfAbsent<tt> (backed by a hash table)
- * Access to set should be syncronized if used from different threads
+ * Access to set is not thread safe
  *
  * @see #putIfAbsent(Object)
  * @author Vladimir Voskresensky
@@ -787,8 +787,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         }
 
         /**
-         * Have to copy AbstractMap.SimpleEntry,
-         * since it appears only in jdk 1.6
+         * Have to copy AbstractMap.SimpleEntry to eliminate unused fields (i.e. value)
          */
         private static final class SimpleEntry<K,V>
                 implements Map.Entry<K,V>, java.io.Serializable {
