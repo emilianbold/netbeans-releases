@@ -75,8 +75,8 @@ public enum ServerDetails {
     
     String displayName;
     String uriFragment;
-    String indirectUrl;
-    String directUrl;
+    public String indirectUrl;
+    public String directUrl;
     String[] requiredFiles;
     String[] excludedFiles;
     
