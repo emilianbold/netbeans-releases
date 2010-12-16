@@ -33,6 +33,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.terminal.api.IOConnect;
 
 import org.netbeans.modules.terminal.api.IOEmulation;
@@ -574,17 +575,10 @@ public final class TerminalIOProviderSupport {
 	    //
 	    // Connect the IO
 	    //
-	    org.netbeans.modules.nativeexecution.api.pty.Pty
-	    // TMP pty = PtySupport.getPty(nativeProcess);
-	    // PtySupport.getPty() is gone.
-	    pty = null;
 	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
-		IOTerm.connect(io,
-			       pty.getOutputStream(),
-			       pty.getInputStream(),
-			       null);
+                PtySupport.connect(io, nativeProcess);
 	    } else {
-		startShuttle(pty.getOutputStream(), pty.getInputStream());
+		startShuttle(nativeProcess.getOutputStream(), nativeProcess.getInputStream());
 	    }
 
 	    if (IOResizable.isSupported(io)) {
