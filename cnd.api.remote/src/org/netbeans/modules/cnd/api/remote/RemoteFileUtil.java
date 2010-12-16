@@ -123,7 +123,7 @@ public class RemoteFileUtil {
             if (CndUtils.isDebugMode()) {
                 String normalizedPath = normalizeAbsolutePath(absolutePath, execEnv);
                 if (! normalizedPath.equals(absolutePath)) {
-                    CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
+                    CndUtils.assertTrueInConsole(false, "Warning: path is not normalized:  absolute path is _" + absolutePath + "_ normailzed path is _"  + normalizedPath + "_");
                 }
                 //absolutePath = normalizedPath;
             }
