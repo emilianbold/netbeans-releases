@@ -304,7 +304,7 @@ public final class MakeActionProvider implements ActionProvider {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
                 // Execute actions
-                if (actionEvents.size() > 0 && !cancelled.get()) {
+                if (actionEvents.size() > 0 && !cancelled.isCanceled()) {
                     RP.post(new NamedRunnable("Make Project Action Worker") { //NOI18N
 
                         @Override
@@ -402,9 +402,9 @@ public final class MakeActionProvider implements ActionProvider {
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
-            AtomicBoolean cancelled) throws IllegalArgumentException {
+            CanceledState cancelled) throws IllegalArgumentException {
 
-        if (cancelled.get()) {
+        if (cancelled.isCanceled()) {
             return;
         }
 
@@ -438,8 +438,8 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents,
-            MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated) throws IllegalArgumentException {
-        if (cancelled.get()) {
+            MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, CanceledState cancelled, AtomicBoolean validated) throws IllegalArgumentException {
+        if (cancelled.isCanceled()) {
             return false; // getPlatformInfo() might be costly for remote host
         }
 
@@ -486,7 +486,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Lookup context, Type actionEvent) {
+    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated, Lookup context, Type actionEvent) {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
 
@@ -509,7 +509,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             RunProfile runProfile = createRunProfile(conf, cancelled);
             if (runProfile == null) {
-                if (cancelled.get()) {
+                if (cancelled.isCanceled()) {
                     return false; // getEnv() might be costly for remote host
                 }
             }
@@ -558,7 +558,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
             RunProfile runProfile = createRunProfile(conf, cancelled);
             if (runProfile == null) {
-                if (cancelled.get()) {
+                if (cancelled.isCanceled()) {
                     return false; // getEnv() might be costly for remote host
                 }
             }
@@ -588,7 +588,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private static RunProfile createRunProfile(MakeConfiguration conf, AtomicBoolean cancelled) {
+    private static RunProfile createRunProfile(MakeConfiguration conf, CanceledState cancelled) {
         RunProfile runProfile = null;
         PlatformInfo pi = conf.getPlatformInfo();
         int platform = conf.getDevelopmentHost().getBuildPlatform();
@@ -612,7 +612,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
             if (userPath == null) {
-                if (cancelled.get()) {
+                if (cancelled.isCanceled()) {
                     return null; // getEnv() might be costly for remote host
                 }
                 userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
@@ -646,7 +646,7 @@ public final class MakeActionProvider implements ActionProvider {
                 runProfile = conf.getProfile().clone(conf);
                 String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                 if (extPath == null) {
-                    if (cancelled.get()) {
+                    if (cancelled.isCanceled()) {
                         return null; // getEnv() might be costly for remote host
                     }
                     extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
@@ -672,7 +672,7 @@ public final class MakeActionProvider implements ActionProvider {
                 runProfile = conf.getProfile().clone(conf);
                 String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                 if (extPath == null) {
-                    if (cancelled.get()) {
+                    if (cancelled.isCanceled()) {
                         return null; // NOI18N
                     }
                     extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
@@ -697,7 +697,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         if (platform == PlatformTypes.PLATFORM_MACOSX || platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
             // Make sure DISPLAY variable has been set
-            if (cancelled.get()) {
+            if (cancelled.isCanceled()) {
                 return null; // getEnv() might be costly for remote host
             }
             if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal()
@@ -947,7 +947,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated) {
+    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated) {
         if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
             return false; // Stop here
         }
@@ -1132,7 +1132,7 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
-            boolean validated, AtomicBoolean cancelled) {
+            boolean validated, CanceledState cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1153,7 +1153,7 @@ public final class MakeActionProvider implements ActionProvider {
             ServerRecord record = ServerList.get(env);
             assert record != null;
             record.validate(false);
-            if (cancelled.get()) {
+            if (cancelled.isCanceled()) {
                 return false;
             }
             if (!record.isOnline()) {
@@ -1207,7 +1207,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
         }
 
-        if (cancelled.get()) {
+        if (cancelled.isCanceled()) {
             return false;
         }
 
@@ -1251,7 +1251,7 @@ public final class MakeActionProvider implements ActionProvider {
                 tools2check.add(qmakeTool);
             }
             for (Tool tool : tools2check) {
-                if (cancelled.get()) {
+                if (cancelled.isCanceled()) {
                     return false;
                 }
                 if (!exists(tool.getPath(), pi)) {
@@ -1260,7 +1260,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
         }
 
-        if (cancelled.get()) {
+        if (cancelled.isCanceled()) {
             return false;
         }
 
@@ -1470,25 +1470,50 @@ public final class MakeActionProvider implements ActionProvider {
     private abstract static class CancellableTask implements Runnable, Cancellable {
 
         protected abstract void runImpl();
-
+        
         @Override
         public final void run() {
             thread = Thread.currentThread();
-            if (!cancelled.get()) {
+            if (!cancelled.isCanceled()) {
                 runImpl();
             }
         }
 
         @Override
         public boolean cancel() {
-            cancelled.set(true);
-            if (thread != null) { // we never set it back to null => no sync
+            cancelled.cancel();
+            if (thread != null && cancelled.isInterruptable()) { // we never set it back to null => no sync
                 thread.interrupt();
             }
             return true;
         }
+
         private volatile Thread thread;
-        protected final AtomicBoolean cancelled = new AtomicBoolean(false);
+        protected final CanceledState cancelled = new CanceledState();
+    }
+
+    private static final class CanceledState {
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private final AtomicBoolean interruptable = new AtomicBoolean(true);
+        
+        private CanceledState() {
+        }
+        
+        public synchronized void cancel() {
+            cancelled.set(true);
+        }
+        
+        public synchronized boolean isCanceled() {
+            return cancelled.get();
+        }
+
+        public synchronized void setInterruptable(boolean interruptable){
+            this.interruptable.set(interruptable);
+        }
+
+        public synchronized boolean isInterruptable(){
+            return interruptable.get();
+        }
     }
 
     private static class BatchConfigurationSelector implements ActionListener {

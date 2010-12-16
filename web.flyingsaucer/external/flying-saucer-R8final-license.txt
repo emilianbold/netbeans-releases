@@ -1,8 +1,8 @@
 Name: Flying Saucer XHTML Renderer
-Version: R7final
+Version: R8final
 License: LGPL-2.1
 OSR: 7225
-Files: core-renderer-R7final.jar
+Files: core-rendererR8final.jar
 Description: Java XHTML+CSS renderer
 Origin: https://xhtmlrenderer.dev.java.net/
 Source: https://xhtmlrenderer.dev.java.net/
