@@ -95,7 +95,7 @@ public class ResolverFactory {
         if (aStack.isEmpty()) {
             return null;
         }
-        return aStack.peekFirst();
+        return aStack.peekLast();
     }
     
     private static Resolver createResolver(CsmFile file, int offset, CsmFile contextFile) {
