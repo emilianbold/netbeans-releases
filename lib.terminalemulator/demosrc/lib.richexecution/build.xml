@@ -343,7 +343,7 @@
              destfile="process_start-${platform}.zip"/>
     </target>
 
-    <target name="clean" depends="setup,projectized-common.clean">
+    <target name="clean" depends="init,setup,projectized-common.clean">
         <delete dir="${lib.dir}"/>
     </target>
 

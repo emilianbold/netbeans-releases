@@ -51,15 +51,37 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.css.visual</friend>
-                <package>org.xhtmlrenderer.extend</package>
-                <package>org.xhtmlrenderer.simple</package>
-                <package>org.xhtmlrenderer.swing</package>
+                <package>org.xhtmlrenderer</package>
+                <package>org.xhtmlrenderer.context</package>
+                <package>org.xhtmlrenderer.css.constants</package>
+                <package>org.xhtmlrenderer.css.extend</package>
+                <package>org.xhtmlrenderer.css.extend.lib</package>
+                <package>org.xhtmlrenderer.css.newmatch</package>
+                <package>org.xhtmlrenderer.css.parser</package>
+                <package>org.xhtmlrenderer.css.parser.property</package>
+                <package>org.xhtmlrenderer.css.sheet</package>
+                <package>org.xhtmlrenderer.css.style</package>
+                <package>org.xhtmlrenderer.css.style.derived</package>
+                <package>org.xhtmlrenderer.css.util</package>
+                <package>org.xhtmlrenderer.css.value</package>
                 <package>org.xhtmlrenderer.event</package>
+                <package>org.xhtmlrenderer.extend</package>
+                <package>org.xhtmlrenderer.layout</package>
+                <package>org.xhtmlrenderer.newtable</package>
+                <package>org.xhtmlrenderer.pdf</package>
+                <package>org.xhtmlrenderer.protocols.data</package>
+                <package>org.xhtmlrenderer.render</package>
+                <package>org.xhtmlrenderer.resource</package>
+                <package>org.xhtmlrenderer.simple</package>
+                <package>org.xhtmlrenderer.simple.extend</package>
+                <package>org.xhtmlrenderer.simple.extend.form</package>
+                <package>org.xhtmlrenderer.swing</package>
+                <package>org.xhtmlrenderer.tool</package>
                 <package>org.xhtmlrenderer.util</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/core-renderer.jar</runtime-relative-path>
-                <binary-origin>external/core-renderer-R7final.jar</binary-origin>
+                <binary-origin>external/core-rendererR8final.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
