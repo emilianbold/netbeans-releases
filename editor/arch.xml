@@ -507,6 +507,10 @@ No.
     <api type="import" group="systemproperty" name="netbeans.debug.exceptions" category="private">
         Obsolete now, we will remove those when time allows.
     </api>
+    <br/>
+    <api type="import" group="systemproperty" name="org.netbeans.modules.editor.search.closeOnEnter" category="private">
+        Boolean system property to set whether the search bar will close on hitting Enter key.
+    </api>
 
 </answer>
 
