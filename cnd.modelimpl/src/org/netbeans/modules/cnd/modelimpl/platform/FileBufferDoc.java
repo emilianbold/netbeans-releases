@@ -163,6 +163,9 @@ public class FileBufferDoc extends AbstractFileBuffer {
         
         @SuppressWarnings("unchecked")
         TokenChange<CppTokenId> tokenChange = (TokenChange<CppTokenId>) evt.tokenChange();
+        if (tokenChange == null) {
+            return false;
+        }
         TokenSequence<?> removedTokenSequence = tokenChange.removedTokenSequence();
         if (removedTokenSequence != null && !removedTokenSequence.isEmpty()) {
             while (removedTokenSequence.moveNext()) {
