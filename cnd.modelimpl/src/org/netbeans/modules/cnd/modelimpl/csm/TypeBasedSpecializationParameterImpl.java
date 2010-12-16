@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -74,7 +73,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public final class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent, Resolver.SafeClassifierProvider {
+public final class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent {
 
     private final CsmType type;
 
@@ -95,16 +94,7 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
 
     @Override
     public CsmClassifier getClassifier() {
-        return getClassifier(null);
-    }
-
-    @Override
-    public CsmClassifier getClassifier(Resolver resolver) {
-        if (type instanceof Resolver.SafeClassifierProvider) {
-            return ((Resolver.SafeClassifierProvider) type).getClassifier(resolver);
-        } else {
-            return type.getClassifier();
-        }
+        return type.getClassifier();
     }
 
     @Override

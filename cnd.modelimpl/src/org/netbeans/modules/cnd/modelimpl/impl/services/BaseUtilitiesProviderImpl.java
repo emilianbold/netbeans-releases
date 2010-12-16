@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -67,34 +67,30 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     
     @Override
     public CsmFunction getFunctionDeclaration(CsmFunction fun) {
-        return IMPL.getFunctionDeclaration(fun, null);
+        return IMPL._getFunctionDeclaration(fun);
     }
 
     @Override
     public CsmNamespace getFunctionNamespace(CsmFunction fun) {
-        return IMPL.getFunctionNamespace(fun, null);
+        return IMPL._getFunctionNamespace(fun);
     }
     
     @Override
     public CsmNamespace getClassNamespace(CsmClassifier cls) {
-        return IMPL.getClassNamespace(cls, null);
+        return IMPL._getClassNamespace(cls);
     }
     
-    public CsmFunction getFunctionDeclaration(CsmFunction fun, Resolver parent) {
+    private CsmFunction _getFunctionDeclaration(CsmFunction fun) {
         assert (fun != null) : "must be not null";
         CsmFunction funDecl = fun;
         if (CsmKindUtilities.isFunctionDefinition(funDecl)) {
-            if (funDecl instanceof Resolver.SafeFunctionDeclarationProvider) {
-                funDecl = ((Resolver.SafeFunctionDeclarationProvider) funDecl).getFunctionDeclaration(parent);
-            } else {
-                funDecl = ((CsmFunctionDefinition) funDecl).getDeclaration();
-            }
+            funDecl = ((CsmFunctionDefinition) funDecl).getDeclaration();
         }
         return funDecl;
     }
     
-    public CsmNamespace getFunctionNamespace(CsmFunction fun, Resolver parent) {
-        CsmFunction decl = getFunctionDeclaration(fun, parent);
+    public CsmNamespace _getFunctionNamespace(CsmFunction fun) {
+        CsmFunction decl = _getFunctionDeclaration(fun);
         fun = decl != null ? decl : fun;
         if (fun != null) {
             CsmScope scope = fun.getScope();
@@ -105,13 +101,13 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
                 CsmNamespace ns = (CsmNamespace) scope;
                 return ns;
             } else if (CsmKindUtilities.isClass(scope)) {
-                return getClassNamespace((CsmClass) scope, parent);
+                return _getClassNamespace((CsmClass) scope);
             }
         }
         return null;
     }
     
-    public CsmNamespace getClassNamespace(CsmClassifier cls, Resolver parent) {
+    public CsmNamespace _getClassNamespace(CsmClassifier cls) {
         CsmScope scope = cls.getScope();
         while (scope != null) {
             if (CsmKindUtilities.isNamespace(scope)) {
@@ -129,6 +125,4 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     public static BaseUtilitiesProviderImpl getImpl() {
         return IMPL;
     }
-    
-    
 }

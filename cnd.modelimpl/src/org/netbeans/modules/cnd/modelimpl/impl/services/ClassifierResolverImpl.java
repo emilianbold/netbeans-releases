@@ -63,9 +63,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -87,14 +86,14 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             }
         }
         Resolver resolver = ResolverFactory.createResolver(contextFile, contextOffset);
-        CsmClassifier cls;
-        if (type instanceof SafeClassifierProvider) {
-            cls = ((SafeClassifierProvider)type).getClassifier(resolver);
-        } else {
+        CsmClassifier cls = null;
+        try {
             cls = type.getClassifier();
-        }
-        if (resolveTypeChain) {
-            cls = resolver.getOriginalClassifier(cls);
+            if (resolveTypeChain) {
+                cls = resolver.getOriginalClassifier(cls);
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
         }
         return cls;
     }
@@ -112,7 +111,12 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                     }
                 }
             }
-            return ResolverFactory.createResolver((CsmOffsetable) orig, contextFile).getOriginalClassifier(orig);
+            Resolver aResolver = ResolverFactory.createResolver((CsmOffsetable) orig, contextFile);
+            try {
+                return aResolver.getOriginalClassifier(orig);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
+            }
         }
         return orig;
     }
@@ -137,9 +141,9 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         }
         Collection<CsmProject> libraries = getLibraries(file, 0);
         // continue in libs
-        for (Iterator iter = libraries.iterator(); iter.hasNext();) {
+        for (Iterator<CsmProject> iter = libraries.iterator(); iter.hasNext();) {
             visible.set(false);
-            CsmProject lib = (CsmProject) iter.next();
+            CsmProject lib = iter.next();
             CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);
             // we prefer to skip even visible class forward based classes
             if (!ForwardClass.isForwardClass(visibleDecl) && visible.get()) {

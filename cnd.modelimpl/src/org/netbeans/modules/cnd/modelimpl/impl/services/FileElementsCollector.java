@@ -151,8 +151,8 @@ public class FileElementsCollector {
     private synchronized Collection<CsmDeclaration> _getUsedDeclarations() {
         Collection<CsmDeclaration> res = visibleUsedDeclarations;
         if (res == null) {
-            res = UsingResolverImpl.extractDeclarations(globalUsingDeclarations, null);
-            res.addAll(UsingResolverImpl.extractDeclarations(localUsingDeclarations, null));
+            res = UsingResolverImpl.extractDeclarations(globalUsingDeclarations);
+            res.addAll(UsingResolverImpl.extractDeclarations(localUsingDeclarations));
             visibleUsedDeclarations = res;
         }
         return Collections.unmodifiableCollection(res);

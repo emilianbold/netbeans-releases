@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
@@ -104,13 +103,7 @@ public final class FriendResolverImpl extends CsmFriendResolver {
         for (CsmFriend friend : target.getFriends()){
             if (CsmKindUtilities.isFriendClass(friend)){
                 CsmFriendClass cls = (CsmFriendClass) friend;
-                CsmClass reference;
-                if (cls instanceof FriendClassImpl) {
-                    Resolver resolver = ResolverFactory.createResolver(friendDecl);
-                    reference = ((FriendClassImpl)cls).getReferencedClass(resolver);
-                } else {
-                    reference = cls.getReferencedClass();
-                }
+                CsmClass reference = cls.getReferencedClass();
                 if (friendDecl.equals(reference)){
                     return true;
                 }
