@@ -75,7 +75,7 @@ enum Platform {
     public static Platform get() {
         String osName = System.getProperty("os.name").toLowerCase();
         String osArch = System.getProperty("os.arch").toLowerCase();
-        System.out.printf("Platform.get: os.name: \'%s\' os.arch: '%s'\n", osName, osArch);
+        // System.out.printf("Platform.get: os.name: \'%s\' os.arch: '%s'\n", osName, osArch);
         if (osName.equals("sunos")) {
             if (osArch.equals("sparc"))
                 return SolarisSparc32;
