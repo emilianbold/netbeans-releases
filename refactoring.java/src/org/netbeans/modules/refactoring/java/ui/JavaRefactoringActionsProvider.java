@@ -468,7 +468,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int endOffset,
                         CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    if (selected.getKind() == ElementKind.PACKAGE) {
+                    if (selected!=null && selected.getKind() == ElementKind.PACKAGE) {
                         //TODO: can happen (see test190101 for an example) - is this correct or
                         //should the TreePathHandle handle elements of kind PACKAGE?
                         return null;
