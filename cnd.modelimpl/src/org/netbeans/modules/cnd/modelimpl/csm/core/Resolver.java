@@ -110,4 +110,7 @@ public interface Resolver {
         boolean isTemplateBased(Set<CsmType> visited);
     }    
     
+    public interface SafeFunctionDeclarationProvider {
+        CsmFunction getFunctionDeclaration(Resolver parent);
+    }
 }

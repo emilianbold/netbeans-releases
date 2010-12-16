@@ -57,15 +57,13 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
-import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UsingResolverImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -294,11 +292,11 @@ public final class Resolver3 implements Resolver {
 
     }
 
-    public static CsmClassifier findOtherClassifier(CsmClassifier out) {
-        CsmNamespace ns = CsmBaseUtilities.getClassNamespace(out);
+    private CsmClassifier findOtherClassifier(CsmClassifier out) {
+        CsmNamespace ns = BaseUtilitiesProviderImpl.getImpl().getClassNamespace(out, this);
         CsmClassifier cls = null;
         if (ns != null) {
-            CsmUID uid = UIDs.get(out);
+            CsmUID<?> uid = UIDs.get(out);
             CharSequence fqn = out.getQualifiedName();
             Collection<CsmOffsetableDeclaration> col = null;
             if (ns instanceof NamespaceImpl) {
@@ -344,7 +342,7 @@ public final class Resolver3 implements Resolver {
                     decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
                 if( fd.getStartOffset() < this.offset && this.offset < fd.getEndOffset()  ) {
-                    CsmNamespace ns = CsmBaseUtilities.getFunctionNamespace(fd);
+                    CsmNamespace ns = BaseUtilitiesProviderImpl.getImpl().getFunctionNamespace(fd, this);
                     if( ns != null && ! ns.isGlobal() ) {
                         containingNamespace = ns;
                     }
@@ -358,17 +356,17 @@ public final class Resolver3 implements Resolver {
     }
 
     private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
-        if (fd instanceof FunctionDefinitionImpl) {
+        if (fd instanceof SafeFunctionDeclarationProvider) {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
                 return null;
             }
-            return ((FunctionDefinitionImpl)fd).getDeclaration(this);
+            return ((SafeFunctionDeclarationProvider)fd).getFunctionDeclaration(this);
         }
         return fd.getDeclaration();
     }
     
     private CsmClass getMethodContainingClass(CsmMethod m){
-        if (m instanceof SafeContainingClassProvider) {
+        if (m instanceof SafeContainingClassProvider) {              
             return ((SafeContainingClassProvider)m).getContainingClass(this);
         }
         return m.getContainingClass();

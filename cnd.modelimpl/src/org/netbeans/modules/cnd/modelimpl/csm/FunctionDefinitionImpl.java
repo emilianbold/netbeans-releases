@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 /**
  * @author Vladimir Kvasihn
  */
-public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition {
+public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition, Resolver.SafeFunctionDeclarationProvider {
 
     private CsmUID<CsmFunction> declarationUID;
     private final CsmCompoundStatement body;
@@ -99,10 +99,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     @Override
     public CsmFunction getDeclaration() {
-        return getDeclaration(null);
+        return getFunctionDeclaration(null);
     }
 
-    public CsmFunction getDeclaration(Resolver parent) {
+    @Override
+    public CsmFunction getFunctionDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
         if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
