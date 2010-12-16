@@ -2133,12 +2133,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (miValue != null) {
             value = miValue.asConst().value();
         }
-	if (value == null) {
-	    value = STRUCT_VALUE;
-        } else if (value.startsWith("[") && value.endsWith("]")) { //NOI18N
-            // detect arrays, see IZ 192927
-            value = STRUCT_VALUE;
-        }
+        value = processValue(value);
         v.setAsText(value);
         GdbVariable gv = (GdbVariable) v;
         if (gv.isWatch()) {
@@ -2146,6 +2141,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else {
             localUpdater.treeNodeChanged((Object) v); // just update this node
         }
+    }
+    
+    private static String processValue(String value) {
+        if (value == null) {
+	    return STRUCT_VALUE;
+        } else if (value.startsWith("[") && value.endsWith("]")) { //NOI18N
+            // detect arrays, see IZ 192927
+            return STRUCT_VALUE;
+        }
+        return value;
     }
 
     private void interpMIChildren(Variable parent,
@@ -2190,8 +2195,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, ((GdbVariable)parent).isWatch());
-		if (value == null)
-		    value = "{...}"; // NOI18N
+                value = processValue(value);
                 childvar.setAsText(value);
                 childvar.setType(type);
                 childvar.setMIName(qname);
