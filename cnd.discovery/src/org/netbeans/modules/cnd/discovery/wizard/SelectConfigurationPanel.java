@@ -59,6 +59,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -534,8 +535,13 @@ public final class SelectConfigurationPanel extends JPanel {
         public void run() {
             try {
                 buildModel(wizardDescriptor);
-                creteTreeModel(wizardDescriptor);
-                wizard.stateChanged(null);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        creteTreeModel(wizardDescriptor);
+                        wizard.stateChanged(null);
+                    }
+                });
                 //System.out.println("End analyzing");
                 if (!isStoped){
                     wasTerminated = false;
