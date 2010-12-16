@@ -86,6 +86,13 @@ public abstract class Notifier<KEY> {
      * @return absolute path of the changed folder or null in case
      * of overflow or any other reason to cause a full rescan
      * @throws IOException
+     * @throws InterruptedException
      */
-    public abstract String nextEvent() throws IOException;
+    public abstract String nextEvent() throws IOException, InterruptedException;
+    
+    /** Get ready for stop. Clean all resources, the system is about to
+     * shutdown the VM. By default this is no-op operation.
+     */
+    protected void stop() throws IOException {
+    }
 }

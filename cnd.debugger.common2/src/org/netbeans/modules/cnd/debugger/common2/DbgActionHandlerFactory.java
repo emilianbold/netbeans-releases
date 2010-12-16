@@ -72,7 +72,13 @@ public class DbgActionHandlerFactory implements ProjectActionHandlerFactory {
         return false;
     }
 
+    @Override
     public ProjectActionHandler createHandler() {
 	return new DbgActionHandler();
+    }
+
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getConfiguration());
     }
 }

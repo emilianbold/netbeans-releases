@@ -59,7 +59,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -139,7 +139,7 @@ public class JsfIndexer extends EmbeddingIndexer {
 	    super.scanFinished(context);
 	    
 	    if(context.getRoot() != null) {
-		JsfSupport jsfsupport = JsfSupport.findFor(context.getRoot());
+		JsfSupportImpl jsfsupport = JsfSupportImpl.findFor(context.getRoot());
 		if(jsfsupport != null) {
 		    jsfsupport.getFaceletsLibrarySupport().librariesChanged(modifications);
 		}

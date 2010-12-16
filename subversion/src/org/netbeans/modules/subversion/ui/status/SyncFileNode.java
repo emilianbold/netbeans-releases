@@ -45,7 +45,6 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import java.io.IOException;
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -65,6 +64,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -89,7 +89,7 @@ public class SyncFileNode extends AbstractNode {
 
     private final VersioningPanel panel;
 
-    public SyncFileNode(SvnFileNode node, VersioningPanel _panel) {
+    SyncFileNode(SvnFileNode node, VersioningPanel _panel) {
         this(Children.LEAF, node, _panel);
         
     }
@@ -110,10 +110,12 @@ public class SyncFileNode extends AbstractNode {
         return node.getInformation();
     }
     
+    @Override
     public String getName() {
         return node.getName();
     }
 
+    @Override
     public Action getPreferredAction() {
         if ((node.getInformation().getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
             return SystemAction.get(ResolveConflictsAction.class);
@@ -126,6 +128,7 @@ public class SyncFileNode extends AbstractNode {
      * If a node represents primary file of a DataObject
      * it has respective DataObject cookies.
      */
+    @Override
     public <T extends Cookie> T getCookie(Class<T> klass) {
         FileObject fo = FileUtil.toFileObject(getFile());
         if (fo != null) {
@@ -169,6 +172,7 @@ public class SyncFileNode extends AbstractNode {
         fireDisplayNameChange(node.getName(), node.getName());
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
@@ -183,6 +187,7 @@ public class SyncFileNode extends AbstractNode {
             super(name, String.class, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();
@@ -199,6 +204,7 @@ public class SyncFileNode extends AbstractNode {
             super(COLUMN_NAME_BRANCH, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
         }
 
+        @Override
         public String getValue() {
             String copyName = SvnUtils.getCopy(node.getFile());
             return copyName == null ? "" : copyName;
@@ -215,18 +221,26 @@ public class SyncFileNode extends AbstractNode {
             setValue("sortkey", "\u65000\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (shortPath == null && !reading) {
                 reading = true;
                 Runnable run = new Runnable() {
+                    @Override
                     public void run() {
                         if (shortPath != null) {
                             return;
                         }
                         try {
                             shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(node.getFile()).toString() : SvnUtils.getRelativePath(node.getFile());
-                        } catch (SVNClientException ex) { 
-                            SvnClientExceptionHandler.notifyException(ex, false, false);
+                        } catch (SVNClientException ex) {
+                            if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
+                                try {
+                                    WorkingCopyAttributesCache.getInstance().logSuppressed(ex, node.getFile());
+                                } catch (SVNClientException e) { }
+                            } else {
+                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                            }
                         }
                         if (shortPath == null) {
                             shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
@@ -234,6 +248,7 @@ public class SyncFileNode extends AbstractNode {
                         setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
                         // Table sorter is not thread safe, use this as workaround
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 firePropertyChange(COLUMN_NAME_PATH, null, null);
                             }
@@ -247,6 +262,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     // XXX it's not probably called, are there another Node lifecycle events
+    @Override
     public void destroy() throws IOException {
         super.destroy();
         if (repoload != null) {
@@ -261,6 +277,7 @@ public class SyncFileNode extends AbstractNode {
             setValue("sortkey", SyncFileNode.this.getName()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return SyncFileNode.this.getDisplayName();
         }
@@ -277,6 +294,7 @@ public class SyncFileNode extends AbstractNode {
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  node.getInformation();
             finfo.getEntry(node.getFile());  // XXX not interested in return value, side effect loads ISVNStatus structure

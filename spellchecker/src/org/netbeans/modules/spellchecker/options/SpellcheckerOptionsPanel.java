@@ -86,6 +86,7 @@ import org.netbeans.modules.spellchecker.ComponentPeer;
 import org.netbeans.modules.spellchecker.DefaultLocaleQueryImplementation;
 import org.netbeans.modules.spellchecker.DictionaryProviderImpl;
 import org.netbeans.modules.spellchecker.options.DictionaryInstallerPanel.DictionaryDescription;
+import org.netbeans.modules.spellchecker.spi.dictionary.DictionaryProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -93,6 +94,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -248,6 +250,12 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         
         if (selectedLocale != null) {
             DefaultLocaleQueryImplementation.setDefaultLocale(selectedLocale);
+        }
+
+        for (DictionaryProvider p : Lookup.getDefault().lookupAll(DictionaryProvider.class)) {
+            if (p instanceof DictionaryProviderImpl) {
+                ((DictionaryProviderImpl) p).clearDictionaries();
+            }
         }
 
         // save categories:

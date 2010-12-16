@@ -564,8 +564,8 @@ public class FileStatusCache {
                 // unversioned resource is expected getSingleStatus()
                 // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
                 // instead of throwing exception
-                if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false
-                        && !SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                if (!SvnClientExceptionHandler.isUnversionedResource(e.getMessage())
+                        && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                     // missing or damaged entries
                     // or ignored file
                     SvnClientExceptionHandler.notifyException(e, false, false);
@@ -1379,9 +1379,9 @@ public class FileStatusCache {
                             }
                             labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString));
                         } catch (SVNClientException ex) {
-                            if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                            if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                                 try {
-                                    WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                                    WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                                 } catch (SVNClientException ex1) {
                                     // do not log again
                                 }

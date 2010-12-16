@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
  * @author vv159170
  */
 public class CsmDeclarationResolver {
-    
+
     /** Creates a new instance of CsmDeclarationResolver */
     private CsmDeclarationResolver() {
     }
@@ -112,6 +112,11 @@ public class CsmDeclarationResolver {
         for (Iterator it = CsmSelect.getDeclarations(file, filter); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             assert (decl != null) : "can't be null declaration";
+            if (isFromIncludedFile(decl, file)) {
+                // we support #include directives inside classes and namespace definitions, so
+                // checked on can be from other file sometimes
+                continue;
+            }
             if (CsmOffsetUtilities.isInObject(decl, offset)) {
                 // we are inside declaration
                 return decl;
@@ -132,7 +137,7 @@ public class CsmDeclarationResolver {
                 return fileContext.findInnerFileObject(offset);
             } else {
                 if (CsmOffsetUtilities.isInObject(lastObject, offset)) {
-                    return findInnerDeclaration((CsmDeclaration)lastObject, context, offset);
+                    return findInnerDeclaration(file, (CsmDeclaration)lastObject, context, offset);
                 }
                 // found old invalid object, so clear cache and use not cached algorithm.
                 fileContext.advance(offset-1);
@@ -141,7 +146,7 @@ public class CsmDeclarationResolver {
         // check file declarations
         CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(file, filter);
-        lastObject = findInnerDeclaration(it, context, offset);
+        lastObject = findInnerDeclaration(file, it, context, offset);
         // check includes if needed
         if (lastObject == null) {
             Iterator<CsmInclude> it1 = CsmSelect.getIncludes(file, filter);
@@ -155,19 +160,24 @@ public class CsmDeclarationResolver {
         return lastObject;
     }
     
-    private static CsmDeclaration findInnerDeclaration(final Iterator<? extends CsmDeclaration> it, final CsmContext context, final int offset) {
+    private static CsmDeclaration findInnerDeclaration(CsmFile contextFile, final Iterator<? extends CsmDeclaration> it, final CsmContext context, final int offset) {
         CsmDeclaration innerDecl = null;
         if (it != null) {
             // continue till has next and not yet found
             while (it.hasNext()) {
                 CsmDeclaration decl = (CsmDeclaration) it.next();
                 assert (decl != null) : "can't be null declaration";
+                if (isFromIncludedFile(decl, contextFile)) {
+                    // we support #include directives inside classes and namespace definitions, so
+                    // checked on can be from other file sometimes
+                    continue;
+                }
                 if (CsmOffsetUtilities.isInObject(decl, offset)) {
                     if (!CsmKindUtilities.isFunction(decl) || CsmOffsetUtilities.isInFunctionScope((CsmFunction)decl, offset)) {
                         // add declaration scope to context
                         CsmContextUtilities.updateContext(decl, offset, context);
                         // we are inside declaration, but try to search deeper
-                        innerDecl = findInnerDeclaration(decl, offset, context);
+                        innerDecl = findInnerDeclaration(contextFile, decl, offset, context);
                     } else {
                         context.setLastObject(decl);
                     }
@@ -183,14 +193,14 @@ public class CsmDeclarationResolver {
         return innerDecl;
     }
 
-    private static CsmDeclaration findInnerDeclaration(CsmDeclaration decl, final CsmContext context, final int offset) {
+    private static CsmDeclaration findInnerDeclaration(CsmFile contextFile, CsmDeclaration decl, final CsmContext context, final int offset) {
         CsmDeclaration innerDecl = null;
         assert (decl != null) : "can't be null declaration";
         if (!CsmKindUtilities.isFunction(decl) || CsmOffsetUtilities.isInFunctionScope((CsmFunction)decl, offset)) {
             // add declaration scope to context
             CsmContextUtilities.updateContext(decl, offset, context);
             // we are inside declaration, but try to search deeper
-            innerDecl = findInnerDeclaration(decl, offset, context);
+            innerDecl = findInnerDeclaration(contextFile, decl, offset, context);
         } else {
             context.setLastObject(decl);
         }
@@ -202,6 +212,7 @@ public class CsmDeclarationResolver {
 
     private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
 
+        @Override
         public int compare(CsmOffsetable o1, CsmOffsetable o2) {
             int diff = o1.getStartOffset() - o2.getStartOffset();
             if (diff == 0) {
@@ -215,7 +226,7 @@ public class CsmDeclarationResolver {
     private static final Comparator<CsmOffsetable> OFFSETABLE_COMPARATOR = new OffsetableComparator<CsmOffsetable>();
     
     // must check before call, that offset is inside outDecl
-    private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset, CsmContext context) {
+    private static CsmDeclaration findInnerDeclaration(CsmFile contextFile, CsmDeclaration outDecl, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(outDecl, offset)) : "must be in outDecl object!";
         Iterator<? extends CsmDeclaration> it = null;
         if (CsmKindUtilities.isNamespace(outDecl)) { 
@@ -243,10 +254,20 @@ public class CsmDeclarationResolver {
                 if (CsmOffsetUtilities.isInObject(outDecl, offset)) {
                     // add declaration scope to context
                     CsmContextUtilities.updateContext(outDecl, offset, context);
-                    return findInnerDeclaration(outDecl, offset, context);
+                    return findInnerDeclaration(contextFile, outDecl, offset, context);
                 }
             }
         }
-        return findInnerDeclaration(it, context, offset);
+        return findInnerDeclaration(contextFile, it, context, offset);
     }     
+    
+    private static boolean isFromIncludedFile(CsmDeclaration decl, CsmFile file) {
+        if (CsmKindUtilities.isOffsetable(decl)) {
+            if (!file.equals(((CsmOffsetable) decl).getContainingFile())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

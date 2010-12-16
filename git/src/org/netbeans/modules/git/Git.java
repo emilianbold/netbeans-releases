@@ -110,10 +110,15 @@ public final class Git {
         } catch (NumberFormatException ex) {
             statisticsFrequency = 0;
         }
-        rootsToFile = new RootsToFile(gitVCS, new RootsToFile.Callback() {
+        rootsToFile = new RootsToFile(new RootsToFile.Callback() {
             @Override
             public boolean repositoryExistsFor (File file) {
                 return GitUtils.repositoryExistsFor(file);
+            }
+
+            @Override
+            public File getTopmostManagedAncestor (File file) {
+                return gitVCS.getTopmostManagedAncestor(file, false);
             }
         }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
     }
@@ -236,4 +241,26 @@ public final class Git {
         getVCSInterceptor().refreshMetadataTimestamp(repository);
     }
 
+    public void connectRepository (File repository) {
+        gitVCS.connectRepository(repository);
+        versionedFilesChanged();
+    }
+
+    public void disconnectRepository (File repository) {
+        gitVCS.disconnectRepository(repository);
+        versionedFilesChanged();
+    }
+
+    public boolean isDisconnected (File repository) {
+        return gitVCS.isDisconnected(repository);
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getVCSInterceptor().getSeenRoots(repositoryRoot);
+    }
 }

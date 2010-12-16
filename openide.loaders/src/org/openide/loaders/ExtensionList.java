@@ -48,6 +48,7 @@ import java.io.*;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
 
@@ -167,8 +168,11 @@ public class ExtensionList extends Object
             return true;
         }
 
-        if (mimeTypes != null && mimeTypes.contains(fo.getMIMEType())) {
-            return true;
+        if (mimeTypes != null) {
+            String mime = FileUtil.getMIMEType(fo, mimeTypes.toArray(new String[0]));
+            if (mimeTypes.contains(mime)) {
+                return true;
+            }
         }
         
         return false;

@@ -71,7 +71,7 @@ public class ElfReader extends ByteStreamReader {
     private ElfSection[] sections = null;
     private HashMap<String, Integer> sectionsMap = new HashMap<String, Integer>();
     private StringTableSection stringTableSection = null;
-    private List<String> pubNames = null;
+    private SharedLibraries sharedLibraries = null;
     private long shiftIvArchive = 0;
     private long lengthIvArchive = 0;
     
@@ -222,12 +222,12 @@ public class ElfReader extends ByteStreamReader {
         byte[] strings = new byte[stringTableLength];
         read(strings);
         stringTableSection = new StringTableSection(this, strings);
-        pubNames = new ArrayList<String>();
+        sharedLibraries = new SharedLibraries();
         for(String string : stringTableSection.getStrings()){
             //_libhello4lib_dll_iname
             if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
                 String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
-                pubNames.add(lib);
+                sharedLibraries.addDll(lib);
             }
         }
         seek(pointer);
@@ -254,7 +254,7 @@ public class ElfReader extends ByteStreamReader {
             skipBytes(4);
         }
         List<SectionHeader> headers = new ArrayList<SectionHeader>();
-        pubNames = new ArrayList<String>();
+        sharedLibraries = new SharedLibraries();
         for (int j = 0; j < ncmds; j++){
             int cmd = readInt();
             int cmdSize = readInt();
@@ -301,7 +301,7 @@ public class ElfReader extends ByteStreamReader {
                 long pointer = getFilePointer();
                 seek(pointer+offset-12);
                 String readString = readString();
-                pubNames.add(readString);
+                sharedLibraries.addDll(readString);
                 seek(pointer);
                 skipBytes(cmdSize - 12);
             } else {
@@ -413,11 +413,11 @@ public class ElfReader extends ByteStreamReader {
         return str.toString();
     }
 
-    public List<String> readPubNames() throws IOException{
-        if (pubNames != null) {
-            return pubNames;
+    public SharedLibraries readPubNames() throws IOException{
+        if (sharedLibraries != null) {
+            return sharedLibraries;
         }
-        pubNames = new ArrayList<String>();
+        sharedLibraries = new SharedLibraries();
         long save = getFilePointer();
         if (true) {
             // another way to find shared libraries
@@ -427,6 +427,7 @@ public class ElfReader extends ByteStreamReader {
                 long size = sectionHeadersTable[dynamic].sh_size;
                 seek(start);
                 List<Integer> libs = new ArrayList<Integer>();
+                List<Integer> paths = new ArrayList<Integer>();
                 while( getFilePointer() < start+size) {
                     int tag = readInt();
                     if (elfHeader.is64Bit()) {
@@ -440,8 +441,16 @@ public class ElfReader extends ByteStreamReader {
                         readInt();
                     }
                     //System.err.println("tag "+tag+" "+ptr);
-                    if (tag == 1) { //DT_NEEDED
+                    if (tag == 1) { //DT_NEEDED /* a needed object */
                         libs.add(ptr);
+                    } else if (tag == 29) { //DT_RUNPATH /* run-time search path */
+                        if (!paths.contains(ptr)) {
+                            paths.add(ptr);
+                        }
+                    } else if (tag == 15) { //DT_RPATH /* run-time search path */
+                        if (!paths.contains(ptr)) {
+                            paths.add(ptr);
+                        }
                     }
                 }
                 Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
@@ -449,13 +458,17 @@ public class ElfReader extends ByteStreamReader {
                     long s = sectionHeadersTable[idx].sh_offset;
                     for(int l : libs){
                         seek(s+l);
-                        pubNames.add(readString());
+                        sharedLibraries.addDll(readString());
+                    }
+                    for(int l : paths){
+                        seek(s+l);
+                        sharedLibraries.addPath(readString());
                     }
                 }
             }
         }
         seek(save);
-        return pubNames;
+        return sharedLibraries;
     }
 
     private void readProgramHeaderTable() throws IOException {
@@ -553,22 +566,40 @@ public class ElfReader extends ByteStreamReader {
     public SectionHeader getSectionHeader(int sectionIdx) {
         return sectionHeadersTable[sectionIdx];
     }
-    
-}
 
-enum LoadCommand {
-    UNKNOWN, LC_SEGMENT, LC_SYMTAB, LC_SYMSEG, LC_THREAD, LC_UNIXTHREAD, LC_LOADFVMLIB, LC_IDFVMLIB, LC_IDENT, LC_FVMFILE, LC_PREPAGE, LC_DYSYMTAB, LC_LOAD_DYLIB, LC_ID_DYLIB, LC_LOAD_DYLINKER, LC_ID_DYLINKER, LC_PREBOUND_DYLIB, LC_ROUTINES, LC_SUB_FRAMEWORK, LC_SUB_UMBRELLA, LC_SUB_CLIENT, LC_SUB_LIBRARY, LC_TWOLEVEL_HINTS, LC_PREBIND_CKSUM, LC_LOAD_WEAK_DYLIB, LC_SEGMENT_64, LC_ROUTINES_64, LC_UUID, UNDEFINED, LC_CODE_SIGNATURE;
-
-    public boolean is(int value) {
-        return ordinal() == value;
-    }
-    
-    public static LoadCommand valueOf(int k) {
-        for (LoadCommand command : values()) {
-            if (command.is(k)) {
-                return command;
-            }
+    public static final class SharedLibraries {
+        private List<String> dlls = new ArrayList<String>();
+        private List<String> searchPaths = new ArrayList<String>();
+        private void addDll(String dll) {
+            dlls.add(dll);
         }
-        return UNKNOWN;
+        private void addPath(String path) {
+            searchPaths.add(path);
+        }
+        public List<String> getDlls() {
+            return new ArrayList<String>(dlls);
+        }
+        public List<String> getPaths() {
+            return new ArrayList<String>(searchPaths);
+        }
+    }
+    
+    enum LoadCommand {
+        UNKNOWN, LC_SEGMENT, LC_SYMTAB, LC_SYMSEG, LC_THREAD, LC_UNIXTHREAD, LC_LOADFVMLIB, LC_IDFVMLIB, LC_IDENT, LC_FVMFILE, LC_PREPAGE, LC_DYSYMTAB, LC_LOAD_DYLIB, LC_ID_DYLIB, LC_LOAD_DYLINKER, LC_ID_DYLINKER, LC_PREBOUND_DYLIB, LC_ROUTINES, LC_SUB_FRAMEWORK, LC_SUB_UMBRELLA, LC_SUB_CLIENT, LC_SUB_LIBRARY, LC_TWOLEVEL_HINTS, LC_PREBIND_CKSUM, LC_LOAD_WEAK_DYLIB, LC_SEGMENT_64, LC_ROUTINES_64, LC_UUID, UNDEFINED, LC_CODE_SIGNATURE;
+
+        public boolean is(int value) {
+            return ordinal() == value;
+        }
+
+        public static LoadCommand valueOf(int k) {
+            for (LoadCommand command : values()) {
+                if (command.is(k)) {
+                    return command;
+                }
+            }
+            return UNKNOWN;
+        }
+
     }
 }
+

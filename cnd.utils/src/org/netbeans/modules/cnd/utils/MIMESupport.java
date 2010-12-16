@@ -99,12 +99,13 @@ public final class MIMESupport {
      * more precise (but possibly slower) method is @see getSourceMIMEType(File file).
      * This method can not detect header files without extensions, while
      * @see getSourceMIMEType(File file) can
-     * @param path file's path to check
+     * @param filePathOrName path or name to check
      * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
      */
-    public static String getKnownMIMETypeByExtension(String path) {
+    public static String getKnownMIMETypeByExtension(String filePathOrName) {
+        String fileName = CndPathUtilitities.getBaseName(filePathOrName);
         // check by known file extension
-        String ext = FileUtil.getExtension(path);
+        String ext = FileUtil.getExtension(fileName);
         for (String mimeType : SOURCE_MIME_TYPES) {
             if (MIMEExtensions.isRegistered(mimeType, ext)) {
                 return mimeType;

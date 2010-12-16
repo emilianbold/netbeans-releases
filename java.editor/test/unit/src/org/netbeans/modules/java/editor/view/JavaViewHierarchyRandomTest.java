@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.editor.view;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -51,8 +52,11 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
+import javax.swing.text.View;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
@@ -129,6 +133,46 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         container.setLogOp(logOpAndDoc);
         DocumentTesting.setLogDoc(container, logOpAndDoc);
         return container;
+    }
+
+    public void testModelToViewAtBoundaries() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        final JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context context = container.context();
+        ViewHierarchyRandomTesting.disableHighlighting(container);
+        DocumentTesting.insert(context, 0, "ab\ncde");
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int startOffset = 0;
+                    int endOffset = doc.getLength() + 1;
+                    modelToView(startOffset);
+                    modelToView(endOffset);
+                    getNextVisualPositionFrom(startOffset);
+                    getNextVisualPositionFrom(endOffset);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            
+            private Rectangle modelToView(int offset) throws BadLocationException {
+                    return pane.modelToView(offset);
+            }
+            
+            private int getNextVisualPositionFrom(int offset) throws BadLocationException {
+                Bias[] biasRet = new Bias[1];
+                int retOffset = pane.getUI().getNextVisualPositionFrom(pane, offset, Bias.Forward, View.NORTH, biasRet);
+                retOffset = pane.getUI().getNextVisualPositionFrom(pane, offset, Bias.Forward, View.SOUTH, biasRet);
+                retOffset = pane.getUI().getNextVisualPositionFrom(pane, offset, Bias.Forward, View.WEST, biasRet);
+                retOffset = pane.getUI().getNextVisualPositionFrom(pane, offset, Bias.Forward, View.EAST, biasRet);
+                return retOffset;
+            }
+        });
+        
     }
 
     public void testInsertRemoveSingleChar() throws Exception {
@@ -534,6 +578,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
         container.run(1271946202898L);
+        container.run(1290550667174L);
         container.run(0L); // Test random ops
     }
 

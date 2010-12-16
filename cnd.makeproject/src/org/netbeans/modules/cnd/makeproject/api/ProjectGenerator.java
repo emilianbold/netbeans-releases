@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -78,6 +78,7 @@ public class ProjectGenerator {
         private String hostUID;
         private boolean fullRemote;
         private CompilerSet cs;
+        private boolean defaultToolchain;
         private String postCreationClassName;
         private String mainProject;
         private String subProjects;
@@ -161,9 +162,10 @@ public class ProjectGenerator {
             return this;
         }
         
-        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs) {
+        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs, boolean defaultCS) {
             this.hostUID = hostUID;
             this.cs = cs;
+            this.defaultToolchain = defaultCS;
             return this;
         }
 
@@ -241,6 +243,10 @@ public class ProjectGenerator {
             return cs;
         }
 
+        public boolean isDefaultToolchain() {
+            return defaultToolchain;
+        }
+
         /**
          * @return the postCreationClassName
          */
@@ -294,23 +300,23 @@ public class ProjectGenerator {
     }
     
     public static String getDefaultProjectFolder() {
-        return MakeProjectGenerator.getDefaultProjectFolder();
+        return MakeProjectGeneratorImpl.getDefaultProjectFolder();
     }
 
     public static String getValidProjectName(String projectFolder) {
-        return MakeProjectGenerator.getValidProjectName(projectFolder);
+        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder);
     }
 
     public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
-        return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
+        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder, suggestedProjectName);
     }
 
     public static Project createBlankProject(ProjectParameters prjParams) throws IOException {
-        return MakeProjectGenerator.createBlankProject(prjParams);
+        return MakeProjectGeneratorImpl.createBlankProject(prjParams);
     }
 
     public static Project createProject(ProjectParameters prjParams) throws IOException {
-        MakeProject createdProject = MakeProjectGenerator.createProject(prjParams);
+        MakeProject createdProject = MakeProjectGeneratorImpl.createProject(prjParams);
         ConfigurationDescriptorProvider.recordCreatedProjectMetrics(prjParams.getConfigurations());
         return createdProject;
     }

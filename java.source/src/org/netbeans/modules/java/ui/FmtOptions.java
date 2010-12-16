@@ -132,6 +132,7 @@ public class FmtOptions {
     public static final String alignMultilineTernaryOp = "alignMultilineTernaryOp"; //NOI18N
     public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
     public static final String alignMultilineTryResources = "alignMultilineTryResources"; //NOI18N
+    public static final String alignMultilineDisjunctiveCatchTypes = "alignMultilineDisjunctiveCatchTypes"; //NOI18N
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
@@ -150,6 +151,7 @@ public class FmtOptions {
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapTryResources = "wrapTryResources"; //NOI18N
+    public static final String wrapDisjunctiveCatchTypes = "wrapDisjunctiveCatchTypes"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
@@ -369,6 +371,7 @@ public class FmtOptions {
             { alignMultilineTernaryOp, FALSE}, //NOI18N
             { alignMultilineAssignment, FALSE}, //NOI18N
             { alignMultilineTryResources, FALSE}, //NOI18N
+            { alignMultilineDisjunctiveCatchTypes, FALSE}, //NOI18N
             { alignMultilineFor, FALSE}, //NOI18N
             { alignMultilineArrayInit, FALSE}, //NOI18N
             { placeElseOnNewLine, FALSE}, //NOI18N 
@@ -387,6 +390,7 @@ public class FmtOptions {
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapTryResources, WRAP_NEVER}, //NOI18N
+            { wrapDisjunctiveCatchTypes, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N

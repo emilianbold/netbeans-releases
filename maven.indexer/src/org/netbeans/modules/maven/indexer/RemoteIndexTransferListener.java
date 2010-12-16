@@ -73,11 +73,6 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
-
-//        if (debug) {
-//            io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
-//            writer = io.getOut();
-//        }
     }
 
     public void transferInitiated(TransferEvent arg0) {
@@ -86,17 +81,11 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
 
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
-        if (handle != null) {
-            // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
-            handle.finish();
-        }
+        // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
+        close();
         handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
         this.units = (int) contentLength / 1024;
         handle.start(units);
-//        if (debug) {
-//            writer.println("File Size :" + (int) contentLength / 1024);//NII18N
-//
-//        }
     }
 
     public @Override boolean cancel() {
@@ -111,34 +100,19 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         if (handle != null) {
             handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
         }
-//        if (debug) {
-//            writer.println("Units completed :" + lastunit);//NII18N
-//
-//        }
     }
 
     public void transferCompleted(TransferEvent arg0) {
-//        if (debug) {
-//            writer.println("Completed");//NII18N
-//
-//        }
+        close();
     }
 
     public void transferError(TransferEvent arg0) {
-
-//        if (debug) {
-//            writer.println("Finish with Errors");//NII18N
-//
-//        }
     }
 
     public void debug(String arg0) {
         if (canceled.get()) {
             throw new Cancellation();
         }
-//        if (debug) {
-//            writer.println(arg0);
-//        }
     }
 
     static void addToActive (Thread t) {

@@ -141,133 +141,69 @@ public class AstNodeUtils {
         }
     }
 
-    /**
-     * searches the logical node ranges!
+    /** sarches for a descendant of the given node
+     * @param node the base node
+     * @param offset the offset for which we try to find a descendant node
+     * @param forward the direction bias
+     * @param physicalNodeOnly if true the found descendant will be returned only if the offset falls to its physical boundaries.
      */
-    public static AstNode findDescendant(AstNode node, int astOffset) {
-        return findDescendant(node, astOffset, false);
+    public static AstNode findNode(AstNode node, int offset, boolean forward, boolean physicalNodeOnly) {
+        if(physicalNodeOnly) {
+            return findNodeByPhysicalRange(node, offset, forward);
+        } else {
+            return findNodeByLogicalRange(node, offset, forward);
+        }
     }
 
-    /**
-     * searches the logical node ranges!
-     */
-    public static AstNode findDescendant(AstNode node, int astOffset, boolean exclusiveStartOffset) {
-        int[] nodeRange = node.getLogicalRange();
-
-        int so = nodeRange[0];
-        int eo = nodeRange[1];
-
-        if(!node.isVirtual()) {
-
-            if (astOffset < so || astOffset > eo) {
-                //we are out of the scope - may happen just with the first client call
-                return node;
-            }
-
-            if (exclusiveStartOffset) {
-                so++;
-            }
-
-            if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
-                //if the node matches and has no children we found it
-                return node;
-            }
-
-        }
-
+    private static AstNode findNodeByPhysicalRange(AstNode node, int offset, boolean forward) {
         for (AstNode child : node.children()) {
-            if(child.isVirtual()) {
-//                return findDescendant(child, astOffset, exclusiveStartOffset);
-                AstNode candidate = findDescendant(child, astOffset, exclusiveStartOffset);
+            if(matchesNodeRange(child, offset, forward, true)) {
+                return child;
+            } else if(node.startOffset() > offset) {
+                //already behind the possible candidates
+                return null;
+            } else {
+                //lets try this branch
+                AstNode candidate = findNodeByPhysicalRange(child, offset, forward);
                 if(candidate != null) {
                     return candidate;
                 }
-            } else {
-
-                int[] childNodeRange = child.getLogicalRange();
-                int ch_so = childNodeRange[0];
-
-                if (exclusiveStartOffset) {
-                    ch_so++;
-                }
-
-                int ch_eo = childNodeRange[1];
-                if (astOffset >= ch_so && astOffset < ch_eo) {
-                    //the child is or contains the searched node
-                    return findDescendant(child, astOffset, exclusiveStartOffset);
-                }
             }
-
         }
-
-//        return node;
-         return node.isVirtual() ? null : node;
+        return null;
     }
 
-    /**
-     *
-     * <div>|</div> ... forward == true will return <div> false </div>
-     * 
-     * @param node
-     * @param astOffset
-     * @param forward
-     * @return
-     */
-    public static AstNode findDescendantTag(AstNode node, int astOffset, boolean useLogicalRanges, boolean forward) {
-        int so = useLogicalRanges ? node.logicalStartOffset() : node.startOffset();
-        int eo = useLogicalRanges ? node.logicalEndOffset() : node.endOffset();
-
-
-        //if the node matches and has no children we found it
-        if (forward) {
-            if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
-                return node;
-            }
-        } else {
-            if (astOffset > so && astOffset <= eo && node.children().isEmpty()) {
-                return node;
-            }
-        }
-
+    private static AstNode findNodeByLogicalRange(AstNode node, int offset, boolean forward) {
         for (AstNode child : node.children()) {
             if(child.isVirtual()) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                AstNode n =  findDescendantTag(child, astOffset, useLogicalRanges, forward);
+                AstNode n =  findNodeByLogicalRange(child, offset, forward);
                 if(n != null) {
                     return n;
                 }
             }
-            
-            int ch_so = child.logicalStartOffset();
-            int ch_eo = child.logicalEndOffset();
-            if (forward) {
-                if (astOffset >= ch_so && astOffset < ch_eo) {
-                    if(astOffset < child.endOffset()) {
-                        return child;
-                    }
-                    //the child is or contains the searched node
-                    AstNode n =  findDescendantTag(child, astOffset, useLogicalRanges, forward);
-                    if(n != null) {
-                        return n;
-                    }
-                }
-            } else {
-                if (astOffset > ch_so && astOffset <= ch_eo) {
-                    if(astOffset <= child.endOffset()) {
-                        return child;
-                    }
-                    //the child is or contains the searched node
-                    AstNode n = findDescendantTag(child, astOffset, useLogicalRanges, forward);
-                    if(n != null) {
-                        return n;
-                    }
-                }
+            if(matchesNodeRange(child, offset, forward, false)) {
+                return findNodeByLogicalRange(child, offset, forward);
             }
-
         }
+        return node.isVirtual() ? null : node;
+    }
 
-        return null;
+    private static boolean matchesNodeRange(AstNode node, int offset, boolean forward, boolean physicalNodeRangeOnly) {
+        int from = physicalNodeRangeOnly || node.logicalStartOffset() == -1 ? node.startOffset() : node.logicalStartOffset();
+        int to = physicalNodeRangeOnly || node.logicalEndOffset() == -1 ? node.endOffset() : node.logicalEndOffset();
+
+        if(forward) {
+            if(offset >= from&& offset < to) {
+                return true;
+            }
+        } else {
+            if (offset > from && offset <= to) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static AstNode getTagNode(AstNode node, int astOffset) {
@@ -380,7 +316,19 @@ public class AstNodeUtils {
         assert root.type() == AstNode.NodeType.ROOT;
 
         //exlusive to start offset so |<div> won't return the div tag but <|div> will
-        AstNode leafNodeForPosition = AstNodeUtils.findDescendant(root, astPosition, true);
+        AstNode leafNodeForPosition = AstNodeUtils.findNode(root, astPosition, false, false);
+        if(leafNodeForPosition == null) {
+            //may happen if one sarches at the 0 position with backward bias
+            //or at the end of the root node range with forward bias
+            leafNodeForPosition = root;
+        }
+
+
+        if(leafNodeForPosition.logicalEndOffset == astPosition) {
+            if(leafNodeForPosition.parent() != null) {
+                leafNodeForPosition = leafNodeForPosition.parent();
+            }
+        }
 
         //search first dtd element node in the tree path
         while (leafNodeForPosition.getDTDElement() == null &&

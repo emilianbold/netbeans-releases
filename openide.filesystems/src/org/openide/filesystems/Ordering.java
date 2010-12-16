@@ -175,6 +175,12 @@ class Ordering {
             for (ChildAndPosition cap : childrenByPosition) {
                 missingPositions.remove(cap.child);
             }
+            for (Iterator<FileObject> mis = missingPositions.iterator(); mis.hasNext();) {
+                FileObject fileObject = mis.next();
+                if (fileObject.getExt().endsWith("_hidden")) { // NOI18N
+                    mis.remove();
+                }
+            }
             if (!missingPositions.isEmpty()) {
                 List<String> missingNames = new ArrayList<String>(missingPositions.size());
                 for (FileObject f : missingPositions) {

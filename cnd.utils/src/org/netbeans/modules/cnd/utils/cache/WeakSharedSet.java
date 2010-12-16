@@ -74,6 +74,8 @@ import java.util.Set;
 public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     private final SharedKeyWeakHashMap<E, Boolean> m;  // The backing map
     private transient Set<E> s;       // Its keySet
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Boolean(true);
 
     /**
      * Constructs a new, empty <tt>WeakSharedSet</tt> with the given initial
@@ -132,7 +134,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     @Override
     public boolean contains(Object o) { return m.containsKey(o); }
     @Override
-    public boolean remove(Object o)   { return m.remove(o) != null; }
+    public boolean remove(Object o)   { return m.remove(o) == PRESENT; }
     public void resize(int newCapacity){
         if (size()==0) {
             m.resize(newCapacity);
@@ -140,10 +142,10 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     }
 
     /**
-     * it is expected that method putIfAbsent is used instead of add
+     * @see #putIfAbsent
      */
     @Override
-    public boolean add(E e) { return m.put(e, null) == null; }
+    public boolean add(E e) { return m.putIfAbsent(e) == e; }
     public Iterator<E> iterator()     { return s.iterator(); }
     @Override
     public Object[] toArray()         { return s.toArray(); }
@@ -423,7 +425,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          */
         @Override
         public V get(Object key) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         /**
@@ -468,23 +470,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          */
         @Override
         public V put(K key, V value) {
-            K k = (K) maskNull(key);
-            int h = hash(k.hashCode());
-            Entry[] tab = getTable();
-            int i = indexFor(h, tab.length);
-
-            for (Entry<K,V> e = tab[i]; e != null; e = e.next) {
-                if (h == e.hash && eq(k, e.get())) {
-                    return null;
-                }
-            }
-
-            modCount++;
-            Entry<K,V> e = tab[i];
-            tab[i] = new Entry<K,V>(k, queue, h, e);
-            if (++size >= threshold)
-                resize(tab.length * 2);
-            return null;
+            throw new UnsupportedOperationException("use putIfAbsent instead"); // NOI18N
         }
 
         /**
@@ -583,7 +569,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             }
 
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
-                put(e.getKey(), null);
+                putIfAbsent(e.getKey());
         }
 
         /**
@@ -624,7 +610,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                         tab[i] = next;
                     else
                         prev.next = next;
-                    return null;
+                    return (V)PRESENT;
                 }
                 prev = e;
                 e = next;

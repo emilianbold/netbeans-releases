@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.ui;
@@ -46,7 +46,6 @@ import java.awt.Dialog;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
 import org.openide.DialogDescriptor;
@@ -61,7 +60,7 @@ import org.openide.util.NbBundle;
 public class PropertiesDialog  {
     private static final Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
     private static final String HELP_CTX = PropertiesDialog.class.getName();
-    
+
     public enum Tab { BASIC, ADMIN };
     
     private final JTabbedPane tabbedPane;
@@ -81,7 +80,7 @@ public class PropertiesDialog  {
     /**
      * Display the properties dialog
      * 
-     * @return true if the user confirmed changes, false if they cancelled
+     * @return true if the user confirmed changes, false if they canceled
      */
     public boolean displayDialog() {
         return displayDialog(Tab.BASIC);
@@ -91,8 +90,8 @@ public class PropertiesDialog  {
      * Display the properties dialog, choosing which tab you want to have
      * initial focus
      * 
-     * @param tab
-     * @return true if the user confirmed changes, false if they cancelled
+     * @param focusTab
+     * @return true if the user confirmed changes, false if they canceled
      */
     public boolean displayDialog(Tab focusTab) {
         DialogDescriptor descriptor = createDialogDescriptor();
@@ -144,21 +143,10 @@ public class PropertiesDialog  {
     }
 
     private boolean displayDialog(DialogDescriptor descriptor) {
-        assert SwingUtilities.isEventDispatchThread();
-        
-
-        for (;;) {                    
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.setVisible(true);
-            dialog.dispose();
-
-            if (!DialogDescriptor.OK_OPTION.equals(descriptor.getValue())) {
-                return false;
-            }
-
-            return true;
-        }
-        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+        dialog.dispose();
+        return DialogDescriptor.OK_OPTION.equals(descriptor.getValue());
     }
 
     private void updateServer() {
@@ -208,4 +196,9 @@ public class PropertiesDialog  {
     private static String getMessage(String id) {
         return NbBundle.getMessage(PropertiesDialog.class, id);
     }
+
+    public void setErrorMessage(String msg) {
+        basePanel.setErrorMessage(msg);
+    }
+
 }

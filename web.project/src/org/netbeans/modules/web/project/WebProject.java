@@ -74,6 +74,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -577,6 +578,7 @@ public final class WebProject implements Project {
             new WebJPADataSourceSupport(this), 
             Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
+            new WebJPATargetInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
@@ -590,7 +592,8 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-            new ProjectWebRootProviderImpl()
+            new ProjectWebRootProviderImpl(),
+            new JsfSupportHandle()
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -983,9 +986,8 @@ public final class WebProject implements Project {
             }
             
             if (Boolean.parseBoolean(evaluator().getProperty(
-                    WebProjectProperties.J2EE_DEPLOY_ON_SAVE))) {
+                    WebProjectProperties.J2EE_COMPILE_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
-                // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
 
@@ -1014,6 +1016,16 @@ public final class WebProject implements Project {
             filterBrokenLibraryRefs();
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+            if (props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                String server = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                props.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                    server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
+            }
+            
+            if (props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
+                props.setProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                        props.getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            }
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
@@ -1989,7 +2001,7 @@ public final class WebProject implements Project {
         boolean setCoSEnabledAndXor()
         {
             boolean nue = Boolean.parseBoolean(project.evaluator().getProperty(
-                                     WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+                                     WebProjectProperties.J2EE_COMPILE_ON_SAVE));
             boolean old = cosEnabled.getAndSet(nue);
 
             return old != nue;

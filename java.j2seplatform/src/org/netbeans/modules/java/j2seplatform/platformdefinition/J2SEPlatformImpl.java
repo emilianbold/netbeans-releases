@@ -69,6 +69,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -86,6 +88,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
     protected static final String SYSPROP_USER_DIR = "user.dir";                      //NOI18N
 
+    private static final String PROP_NO_DEFAULT_JAVADOC = "no.default.javadoc";       //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
 
     /**
@@ -168,6 +171,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * @return  a descriptive, human-readable name of the platform
      */
+    @Override
     public String getDisplayName() {
         return displayName;
     }
@@ -212,6 +216,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     }
 
 
+    @Override
     public ClassPath getBootstrapLibraries() {
         synchronized (this) {
             ClassPath cp = (bootstrap == null ? null : bootstrap.get());
@@ -237,6 +242,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * out of it.
      * @return  ClassPath that represents contents of system property java.class.path.
      */
+    @Override
     public ClassPath getStandardLibraries() {
         synchronized (this) {
             ClassPath cp = (standardLibs == null ? null : standardLibs.get());
@@ -259,6 +265,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * where the Platform is installed. Typically it returns one folder, but
      * in some cases there can be more of them.
      */
+    @Override
     public final Collection<FileObject> getInstallFolders() {
         Collection<FileObject> result = new ArrayList<FileObject> ();
         for (Iterator<URL> it = this.installFolders.iterator(); it.hasNext();) {
@@ -272,6 +279,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     }
 
 
+    @Override
     public final FileObject findTool(final String toolName) {
         String archFolder = getProperties().get(PLAT_PROP_ARCH_FOLDER);        
         FileObject tool = null;
@@ -289,6 +297,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Returns the location of the source of platform
      * @return List&lt;URL&gt;
      */
+    @Override
     public final ClassPath getSourceFolders () {
         return this.sources;
     }
@@ -303,9 +312,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Returns the location of the Javadoc for this platform
      * @return FileObject
      */
+    @Override
     public final List<URL> getJavadocFolders () {
         if (javadoc == null) {
-            javadoc = defaultJavadoc(this);
+            javadoc = shouldAddDefaultJavadoc() ? defaultJavadoc(this) : Collections.<URL>emptyList();
         }
         return this.javadoc;
     }
@@ -319,15 +329,27 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
             }
         }
+        final List<URL> oldJavaDoc = this.javadoc;
+        if (c.isEmpty()) {
+            if (oldJavaDoc.equals(defaultJavadoc(this))) {
+                //Set the PROP_NO_DEFAULT_JAVADOC
+                this.properties.put(PROP_NO_DEFAULT_JAVADOC, Boolean.TRUE.toString());
+            }
+        } else {
+            //Reset the PROP_NO_DEFAULT_JAVADOC to allow auto javadoc again
+            this.properties.remove(PROP_NO_DEFAULT_JAVADOC);
+        }
         this.javadoc = safeCopy;
         this.firePropertyChange(PROP_JAVADOC_FOLDER, null, null);
     }
 
+    @Override
     public String getVendor() {
         String s = getSystemProperties().get("java.vm.vendor"); // NOI18N
         return s == null ? "" : s; // NOI18N
     }
 
+    @Override
     public Specification getSpecification() {
         if (spec == null) {
             spec = new Specification (PLATFORM_J2SE, Util.getSpecificationVersion(this)); //NOI18N
@@ -335,6 +357,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return spec;
     }
 
+    @Override
     public Map<String,String> getProperties() {
         return Collections.unmodifiableMap (this.properties);
     }
@@ -386,22 +409,58 @@ public class J2SEPlatformImpl extends JavaPlatform {
     }
     
     /**
+     * Tests if the default javadoc was already added and removed.
+     * If so do not add it again.
+     * @return 
+     */
+    private boolean shouldAddDefaultJavadoc() {
+        return !Boolean.parseBoolean(getProperties().get(PROP_NO_DEFAULT_JAVADOC));
+    }
+    
+    /**
      * Try to find the standard Javadoc for a platform.
      * The {@code docs/} folder is used if it exists, else network Javadoc is looked up.
      * @param platform a JDK
      * @return a (possibly empty) list of URLs
      */
     public static List<URL> defaultJavadoc(JavaPlatform platform) {
+        final List<URL> result = new ArrayList<URL>();
         for (FileObject folder : platform.getInstallFolders()) {
             // XXX should this rather be docs/api?
             FileObject docs = folder.getFileObject("docs"); // NOI18N
             if (docs != null && docs.isFolder() && docs.canRead()) {
                 try {
-                    return Collections.singletonList(docs.getURL());
+                    result.add(docs.getURL());
                 } catch (FileStateInvalidException x) {
                     LOG.log(Level.INFO, null, x);
                 }
+            }            
+            if (Utilities.isMac()) {
+                try {
+                    final FileObject docsJar = folder.getFileObject("docs.jar"); //NOI18N
+                    //XXX: Verify zip integrity? But it's slow
+                    //Better not to do it, only test FileUtil.isArchoveFile
+                    if (docsJar != null && docsJar.canRead() && FileUtil.isArchiveFile(docsJar)) {                
+                        final URL rootURL = FileUtil.getArchiveRoot(docsJar.getURL());
+                        result.add(new URL(rootURL.toExternalForm() + "docs/api/"));    //NOI18N
+                        result.add(new URL(rootURL.toExternalForm() + "docs/jdk/api/"));    //NOI18N
+                        result.add(new URL(rootURL.toExternalForm() + "docs/jre/api/"));    //NOI18N
+                    }
+                    final FileObject appleDocsJar = folder.getFileObject("appledocs.jar");    //NOI18N
+                    //XXX: Verify zip integrity? But will slowdown the DefaultPlatform constructor.
+                    //Better not to do it, only test FileUtil.isArchoveFile
+                    if (appleDocsJar != null && appleDocsJar.canRead() && FileUtil.isArchiveFile(appleDocsJar)) {                
+                        result.add(new URL (FileUtil.getArchiveRoot(appleDocsJar.getURL()).toExternalForm() + "appledoc/api/"));    //NOI18N
+                    }
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
+                } catch (FileStateInvalidException fsi) {
+                    Exceptions.printStackTrace(fsi);
+                }
             }
+        }
+        if (!result.isEmpty()) {
+            return Collections.unmodifiableList(result);
         }
         String version = platform.getSpecification().getVersion().toString();
         if (!OFFICIAL_JAVADOC.containsKey(version)) {

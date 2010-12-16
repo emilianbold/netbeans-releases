@@ -210,6 +210,10 @@ public class AbstractGitTestCase extends NbTestCase {
             }
         }
     }
+    
+    protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
+        JGitClientFactory.getInstance().clearRepositoryPool();
+    }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
@@ -258,5 +262,9 @@ public class AbstractGitTestCase extends NbTestCase {
             }
             assertTrue(barrierAccessed);
         }
+    }
+    
+    public static JGitClientFactory getJGitClientFactory() {
+        return JGitClientFactory.getInstance();
     }
 }

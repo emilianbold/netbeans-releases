@@ -60,7 +60,7 @@ import javax.swing.text.Document;
 /**
  * Service that provides UI for macro expansion.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmMacroExpansionViewProvider {
 

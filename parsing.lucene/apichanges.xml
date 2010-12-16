@@ -110,6 +110,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="adding-document-based-indexing-api">
+      <api name="LuceneSupport"/>
+      <summary>Adding a document based indexing friend API</summary>
+      <version major="1" minor="1"/>
+      <date day="30" month="11" year="2010"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added a document based indexing API, this API is used as a base for the parsing api. Removes some code duplication and
+              allows other friends which are not parsing API based to use it.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.lucene.support" name="IndexDocument}"/>
+      <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+      <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndex"/>
+      <issue number="168822"/>
+  </change>
   <change id="adding-friend-low-level-indexing-api">
       <api name="LuceneSupport"/>
       <summary>Adding a low level indexing friend API</summary>

@@ -59,6 +59,7 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -352,7 +353,7 @@ public class FileObj extends BaseFileObj {
 
     final boolean checkLock(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
-        return ((lock instanceof LockForFile) && (((LockForFile) lock).getFile().equals(f)));
+        return ((lock instanceof LockForFile) && Utils.equals(((LockForFile) lock).getFile(), f));
     }
 
     @Override

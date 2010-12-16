@@ -48,11 +48,9 @@ import java.io.CharConversionException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -66,6 +64,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
@@ -78,7 +77,7 @@ public class UnitDetails extends DetailsPanel {
 
     private final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.ui.UnitDetails");
     private RequestProcessor.Task unitDetailsTask = null;
-    private static final RequestProcessor UNIT_DETAILS_PROCESSOR = new RequestProcessor("unit-details-processor", 1, true);
+    static final RequestProcessor UNIT_DETAILS_PROCESSOR = new RequestProcessor("unit-details-processor", 1, true);
 
     /** Creates a new instance of UnitDetails */
     public UnitDetails() {
@@ -212,7 +211,14 @@ public class UnitDetails extends DetailsPanel {
         if (!(u instanceof Unit.InternalUpdate)) {
             OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
 
-            container.add(u.updateUnit, uu.getRelevantElement());
+            try {
+                container.add(u.updateUnit, uu.getRelevantElement());
+            } catch (IllegalArgumentException ex) {
+                Exceptions.attachMessage(ex, "Unit: " + u);
+                Exceptions.attachMessage(ex, "Unit.updateUnit: " + u.updateUnit);
+                Exceptions.attachMessage(ex, "Unit.getRelevantElement(): " + uu.getRelevantElement());
+                throw ex;
+            }
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
             List <OperationInfo<InstallSupport>> infos = container.listAll();
 

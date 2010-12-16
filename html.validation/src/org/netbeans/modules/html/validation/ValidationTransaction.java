@@ -143,6 +143,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private static final Pattern SPACE = Pattern.compile("\\s+");
     protected static final int HTML5_SCHEMA = 3;
     protected static final int XHTML1STRICT_SCHEMA = 2;
+    protected static final int XHTML1FRAMESET_SCHEMA = 4;
     protected static final int XHTML1TRANSITIONAL_SCHEMA = 1;
     protected static final int XHTML5_SCHEMA = 7;
     private static Spec html5spec;
@@ -169,7 +170,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
     protected String document = null;
-    private ParserMode parser = ParserMode.AUTO;
+    ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
     protected MessageEmitterAdapter errorHandler;
     protected final AttributesImpl attrs = new AttributesImpl();
@@ -450,9 +451,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     /** return a list of problems with the given severity and higher (more severe issues) */
     public List<ProblemDescription> getFoundProblems(int ofThisTypeAndMoreSevere) {
+        return getFoundProblems(new ProblemDescriptionFilter.SeverityFilter(ofThisTypeAndMoreSevere));
+    }
+
+    public List<ProblemDescription> getFoundProblems(ProblemDescriptionFilter filter) {
         List<ProblemDescription> filtered = new ArrayList<ProblemDescription>();
         for(ProblemDescription pd : getFoundProblems()) {
-            if(pd.getType() >= ofThisTypeAndMoreSevere) {
+            if(filter.accepts(pd)) {
                 filtered.add(pd);
             }
         }
@@ -463,14 +468,30 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return validationTime;
     }
 
-    public void validateCode(String code) throws SAXException {
+
+    public void validateCode(String code, String sourceURI) throws SAXException {
+        validateCode(code, sourceURI, Collections.<String>emptySet());
+    }
+
+    public void validateCode(String code, String sourceURI, Set<String> filteredNamespaces) throws SAXException {
         long from = System.currentTimeMillis();
         
         codeToValidate = code;
-        document = null; //represents an URI where the document can be loaded
+        document = sourceURI; //represents an URI where the document can be loaded
         parser = htmlVersion2ParserMode(version);
+
+        LOGGER.fine(String.format("Using %s parser.", parser.name()));
+
 //        charsetOverride = "UTF-8";
-        filteredNamespaces = Collections.emptySet();
+        this.filteredNamespaces = filteredNamespaces;
+        if(!filteredNamespaces.isEmpty()) {
+            StringBuilder fns = new StringBuilder();
+            for(String ns : filteredNamespaces) {
+                fns.append(ns).append(", ");
+            }
+            LOGGER.fine(String.format("Filtering following namespaces: %s", fns));
+        }
+
         int lineOffset = 0;
 
         errorHandler = new MessageEmitterAdapter(sourceCode,
@@ -492,7 +513,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
         if(version.isXhtml()) {
-            return ParserMode.XML_NO_EXTERNAL_ENTITIES;
+            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
         } else {
             switch(version) {
                 case HTML41_STRICT:
@@ -628,31 +649,37 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
             reader.parse(documentInput);
         } catch (TooManyErrorsException e) {
-            LOGGER.log(Level.INFO, "TooManyErrorsException", e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
         } catch (SAXException e) {
-            LOGGER.log(Level.INFO, "SAXException", e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "IOException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.ioError(e);
         } catch (IncorrectSchemaException e) {
-            LOGGER.log(Level.INFO, "IncorrectSchemaException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "RuntimeException, doc: " + document + " schema: "
-                    + schemaUrls + " lax: " + laxType, e);
+            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Error, doc: " + document + " schema: " + schemaUrls
-                    + " lax: " + laxType, e);
+            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
+    }
+    
+    private String getDocumentErrorMsg() {
+        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+    }
+    
+    private String getDocumentInternalErrorMsg() {
+        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
     }
 
     /**
@@ -746,6 +773,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 //                htmlParser.setProperty("http://validator.nu/properties/body-fragment-context-mode", bodyFragmentContextMode);
                 reader = htmlParser;
                 if (validator == null) {
+                    LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
                     validator = validatorByDoctype(schemaId);
                 }
                 if (validator != null) {
@@ -759,6 +787,30 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 setAcceptAllKnownXmlTypes(true);
                 setAllowXhtml(true);
                 loadDocumentInput();
+
+                if(version != null) {
+                    switch(version) {
+                        case XHTML10_TRANSATIONAL:
+                            schemaId = XHTML1TRANSITIONAL_SCHEMA;
+                            break;
+                        case XHTML10_STICT:
+                            schemaId = XHTML1STRICT_SCHEMA;
+                            break;
+                        case XHTML10_FRAMESET:
+                            schemaId = XHTML1FRAMESET_SCHEMA;
+                            break;
+                        default:
+                            schemaId = 0;
+                    }
+
+                    if(schemaId != 0) {
+                        validator = validatorByDoctype(schemaId);
+
+                        LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
+                    }
+                }
+
+
                 setupXmlParser();
                 break;
             default:
@@ -1216,5 +1268,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         documentInput.setType("text/html");
         documentInput.setLength(codeToValidate.length());
         documentInput.setEncoding("UTF-8");
+    }
+
+    private String getSchemasForDoctypeId(int schemaId) {
+        for (int i = 0; i < presetDoctypes.length; i++) {
+            if (presetDoctypes[i] == schemaId) {
+                return presetUrls[i];
+            }
+        }
+        return null;
     }
 }

@@ -102,6 +102,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -246,10 +247,12 @@ public final class CreatedModifiedFiles {
         }
         
         protected boolean addCreatedFileObject(FileObject fo) {
+            Parameters.notNull("fo", fo);
             return getCreatedPathsSet().add(getProjectPath(fo));
         }
         
         protected boolean addModifiedFileObject(FileObject fo) {
+            Parameters.notNull("fo", fo);
             return getModifiedPathsSet().add(getProjectPath(fo));
         }
         
@@ -704,13 +707,16 @@ public final class CreatedModifiedFiles {
         };
     }
     private static class ModifyManifest extends AbstractOperation {
-        private FileObject manifestFile;
+        private final FileObject manifestFile;
         private Map<String,Map<String,String>> attributesToAdd;
         
         public ModifyManifest(final Project project) {
             super(project);
+            manifestFile = getModuleInfo().getManifestFile();
             this.attributesToAdd = new HashMap<String,Map<String,String>>();
-            addModifiedFileObject(getManifestFile());
+            if (manifestFile != null) {
+                addModifiedFileObject(manifestFile);
+            }
         }
         
         /**
@@ -745,10 +751,14 @@ public final class CreatedModifiedFiles {
             em.setAttribute(name, value, section);
         }
         
-        public final void run() throws IOException {
+        public @Override final void run() throws IOException {
+            if (manifestFile == null) {
+                throw new IOException("No manifest.mf to edit"); // #189389
+            }
+
             ensureSavingFirst();
             
-            EditableManifest em = Util.loadManifest(getManifestFile());
+            EditableManifest em = Util.loadManifest(manifestFile);
             for (Map.Entry<String,Map<String,String>> entry : attributesToAdd.entrySet()) {
                 String section = entry.getKey();
                 for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
@@ -757,22 +767,15 @@ public final class CreatedModifiedFiles {
                 }
             }
             
-            Util.storeManifest(getManifestFile(), em);
+            Util.storeManifest(manifestFile, em);
         }
         
-        
-        private FileObject getManifestFile() {
-            if (manifestFile == null) {
-                manifestFile = getModuleInfo().getManifestFile();
-            }
-            return manifestFile;
-        }
         
         private void ensureSavingFirst() throws IOException {
             //#65420 it can happen the manifest is currently being edited. save it
             // and cross fingers because it can be in inconsistent state
             try {
-                DataObject dobj = DataObject.find(getManifestFile());
+                DataObject dobj = DataObject.find(manifestFile);
                 SaveCookie safe = dobj.getCookie(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
@@ -1172,7 +1175,7 @@ public final class CreatedModifiedFiles {
                                 for (Map.Entry<String,Map<String,Object>> ann : annotations.entrySet()) {
                                     TypeElement annType = wc.getElements().getTypeElement(ann.getKey());
                                     if (annType == null) {
-                                        throw new IllegalArgumentException("No such annotation could be found: " + ann.getKey());
+                                        throw new IOException("No annotation " + ann.getKey() + " in " + wc.getClasspathInfo());
                                     }
                                     ExpressionTree annotationTypeTree = make.QualIdent(annType);
                                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();

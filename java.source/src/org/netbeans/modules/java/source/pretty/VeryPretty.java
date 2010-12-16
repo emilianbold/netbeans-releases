@@ -86,6 +86,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -122,7 +123,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private int lastReadCommentIdx = -1;
     private JCCompilationUnit origUnit;
     private CompilationInfo cInfo;
-    private CommentHandler comments;
+    private CommentHandlerService comments;
 
     private int fromOffset = -1;
     private int toOffset = -1;
@@ -317,8 +318,10 @@ public final class VeryPretty extends JCTree.Visitor {
             @Override
             public Void scan(Tree node, Void p) {
                 if (node != null) {
-                    CommentSet old = comments.getComments(node);
+                    CommentSetImpl old = comments.getComments(node);
                     realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
+                    old.clearComments(CommentSet.RelativePosition.INLINE);
+                    old.clearComments(CommentSet.RelativePosition.TRAILING);
                 }
                 return super.scan(node, p);
             }
@@ -352,15 +355,18 @@ public final class VeryPretty extends JCTree.Visitor {
             int i = from - 1;
             int originalColumn = 0;
             int originalIndent = 0;
+            int originalLeadingWhitespaceChars = 0;
             boolean originalIndented = true;
 
             while (i >= 0) {
                 if (origText.charAt(i) == ' ') {
                     originalColumn++;
                     originalIndent++;
+                    originalLeadingWhitespaceChars++;
                 } else if (origText.charAt(i) == '\t') {
                     originalColumn += cs.getTabSize();
                     originalIndent += cs.getTabSize();
+                    originalLeadingWhitespaceChars++;
                 } else if (origText.charAt(i) == '\n') {
                     break;
                 } else {
@@ -380,7 +386,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 text = text.substring(text.indexOf("\n") + 1);
             } else if (originalIndented) {
                 if (out.isWhitespaceLine()) {
-                    text = origText.substring(from - originalColumn, from) + text;
+                    text = origText.substring(from - originalLeadingWhitespaceChars, from) + text;
                     relativeIndent = getIndent() - originalColumn;
 
                     out.toLineStart();
@@ -413,17 +419,19 @@ public final class VeryPretty extends JCTree.Visitor {
                 first = false;
                 if (l.isEmpty()) continue;//don't uselesly indent empty lines
                 int currentIndent = 0;
-                while (currentIndent < l.length()) {
-                    if (l.charAt(currentIndent) == ' ') {
+                int leadingWhitespaceChars = 0;
+                while (leadingWhitespaceChars < l.length()) {
+                    if (l.charAt(leadingWhitespaceChars) == ' ') {
                         currentIndent++;
-                    } else if (l.charAt(currentIndent) == '\t') {
+                    } else if (l.charAt(leadingWhitespaceChars) == '\t') {
                         currentIndent += cs.getTabSize();
                     } else {
                         break;
                     }
+                    leadingWhitespaceChars++;
                 }
                 print(getIndent(currentIndent + relativeIndent));
-                print(l.substring(currentIndent));
+                print(l.substring(leadingWhitespaceChars));
             }
 
             setIndent(oldIndent);
@@ -1471,10 +1479,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitTypeDisjoint(JCTypeDisjoint that) {
+    public void visitTypeDisjunction(JCTypeDisjunction that) {
         boolean first = true;
 
-        for (JCExpression c : that.getTypeComponents()) {
+        for (JCExpression c : that.getTypeAlternatives()) {
             if (!first) print(" | ");
             print(c);
             first = false;

@@ -251,6 +251,10 @@ public class MetadataModelReadHelper<T, R> {
         }
         return result;
     }
+    
+    public MetadataModel<T> getModel(){
+        return model;
+    }
 
     /**
      * Fires change events asynchronously to avoid calling listeners under any

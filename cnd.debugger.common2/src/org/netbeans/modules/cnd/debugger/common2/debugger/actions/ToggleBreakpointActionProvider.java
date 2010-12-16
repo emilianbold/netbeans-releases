@@ -50,6 +50,7 @@ import java.util.Collections;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
 
@@ -135,24 +137,45 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 
 	if (!checkTarget())
 	    return;
-
-	BreakpointBag bb = DebuggerManager.get().breakpointBag();
-
+        
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+        String currentURL = EditorContextBridge.getCurrentURL();
+        String address = null;
+        NativeBreakpoint bpt = null;
+        BreakpointBag bb = DebuggerManager.get().breakpointBag();
         NativeDebugger debugger = getDebugger();
-	NativeBreakpoint bpt =
-	    bb.locateBreakpointAt(fileName, lineNo, debugger);
+        if (disProvider != null && disProvider.isDis(currentURL)) {
+            address = disProvider.getLineAddress(lineNo);
+            for (NativeBreakpoint breakpoint : bb.getBreakpoints()) {
+                if (breakpoint instanceof InstructionBreakpoint) {
+                    if (address.equals(((InstructionBreakpoint)breakpoint).getAddress())) {
+                        bpt = breakpoint;
+                        break;
+                    }
+                }
+            }
+        } else {
+            bpt = bb.locateBreakpointAt(fileName, lineNo, debugger);
+        }
 
 	if (bpt != null) {
 	    // toggle off
 	    bpt.dispose();
-	} else {
-	    // toggle on
-	    bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo);
-	    if (bpt != null) {
-                int routingToken = RoutingToken.BREAKPOINTS.getUniqueRoutingTokenInt();
-		Handler.postNewHandler(debugger, bpt, routingToken);
-            }
-	}
+            return;
+	} 
+                
+        // create a new breakpoint
+        else if (address != null) {
+            bpt = NativeBreakpoint.newInstructionBreakpoint(address);
+        } else {
+            bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo);
+        }
+            
+        // toggle on
+        if (bpt != null) {
+            int routingToken = RoutingToken.BREAKPOINTS.getUniqueRoutingTokenInt();
+            Handler.postNewHandler(debugger, bpt, routingToken);
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
