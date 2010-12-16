@@ -100,7 +100,7 @@ public final class CachingArchiveClassLoader extends ClassLoader {
             } catch (FileNotFoundException fnf) {
                 LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(Level.INFO, "Resource: {0} cannot be read.", file.toUri()); //NOI18N
             }
         }
         return super.findClass(name);
