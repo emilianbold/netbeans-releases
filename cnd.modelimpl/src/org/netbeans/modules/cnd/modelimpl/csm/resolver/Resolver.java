@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
@@ -79,38 +79,13 @@ public interface Resolver {
     public CsmObject resolve(CharSequence[] nameTokens, int interestedKind);
     
     /**
-     * Resolves classifier (class/enum/typedef) or namespace name.
-     * Why classifier or namespace? Because in the case org::vk::test
-     * you don't know which is class and which is namespace name 
-     *
-     * @param qualifiedName name to resolve 
-     *
-     * @return object of the following class:
-     *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
-     *  CsmNamespace
-     */
-    public CsmObject resolve(CharSequence qualifiedName, int interestedKind);
-
-    /**
      * Check infinite recursion in resolving
      */
     public boolean isRecursionOnResolving(int maxRecursion);
 
     public CsmClassifier getOriginalClassifier(CsmClassifier orig);
 
-    public interface SafeClassifierProvider {
-        CsmClassifier getClassifier(Resolver resolver);
-    }    
-
-    public interface SafeContainingClassProvider {
-        CsmClass getContainingClass(Resolver resolver);
-    }    
-    
     public interface SafeTemplateBasedProvider {
         boolean isTemplateBased(Set<CsmType> visited);
     }    
-    
-    public interface SafeFunctionDeclarationProvider {
-        CsmFunction getFunctionDeclaration(Resolver parent);
-    }
 }

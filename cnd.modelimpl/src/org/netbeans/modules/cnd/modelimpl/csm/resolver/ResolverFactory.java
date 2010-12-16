@@ -42,10 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -58,45 +59,69 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  * @author vk155633
  */
 public class ResolverFactory {
+    private static final ThreadLocal<LinkedList<Resolver>> stack = new ThreadLocal<LinkedList<Resolver>>() {
+
+        @Override
+        protected LinkedList<Resolver> initialValue() {
+            return new LinkedList<Resolver>();
+        }
+    };
 
     /** prevents creation */
     private ResolverFactory() {
     }
     
     public static Resolver createResolver(CsmOffsetable context) {
-        return createResolver(context.getContainingFile(), context.getStartOffset(), null, null);
-    }
-    
-    public static Resolver createResolver(CsmOffsetable context, Resolver parent) {
-        return createResolver(context.getContainingFile(), context.getStartOffset(), parent, null);
+        return createResolver(context.getContainingFile(), context.getStartOffset());
     }
 
     public static Resolver createResolver(CsmFile file, int offset) {
-        return createResolver(file, offset, null, null);
-    }
-    
-    public static Resolver createResolver(CsmFile file, int offset, Resolver parent) {
-        return createResolver(file, offset, parent, null);
+        return createResolver(file, offset, null);
     }
     
     public static Resolver createResolver(CsmOffsetable context, CsmFile contextFile) {
-        return createResolver(context.getContainingFile(), context.getStartOffset(), null, contextFile);
-    }    
+        return createResolver(context.getContainingFile(), context.getStartOffset(), contextFile);
+    }
+
+    public static void releaseResolver(Resolver resolver) {
+        LinkedList<Resolver> aStack = stack.get();
+        assert !aStack.isEmpty();
+        Resolver removeLast = aStack.removeLast();
+        assert resolver == removeLast;
+    }
+
+    public static Resolver getCurrentResolver() {
+        LinkedList<Resolver> aStack = stack.get();
+        if (aStack.isEmpty()) {
+            return null;
+        }
+        return aStack.peekFirst();
+    }
     
-    private static Resolver createResolver(CsmFile file, int offset, Resolver parent, CsmFile contextFile) {
-        if (contextFile == null) {
-            if (parent == null) {
-                contextFile = file;
-            } else {
-                contextFile = parent.getStartFile();
-            }
+    private static Resolver createResolver(CsmFile file, int offset, CsmFile contextFile) {
+        Resolver parent = null;
+        LinkedList<Resolver> aStack = stack.get();
+        if (!aStack.isEmpty()) {
+            parent = aStack.getLast();
+        } else {
+            parent = null;
         }
         if (file == null) {
             System.err.println("FALLBACK INTO EMPTY RESOLVER"); // NOI18N
             // this can be in situation when old tasks finishes work in resolver, while file become invalid or project was closed or reparsed
+            aStack.addLast(EMPTY_RESOLVER);
             return EMPTY_RESOLVER;
         } else {
-            return new Resolver3(file, offset, parent, contextFile);
+            if (contextFile == null) {
+                if (parent == null) {
+                    contextFile = file;
+                } else {
+                    contextFile = parent.getStartFile();
+                }
+            }
+            Resolver3 aResolver = new Resolver3(file, offset, parent, contextFile);
+            aStack.addLast(aResolver);
+            return aResolver;
         }
     }
     
@@ -116,11 +141,6 @@ public class ResolverFactory {
 
         @Override
         public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
-            return null;
-        }
-
-        @Override
-        public CsmObject resolve(CharSequence qualifiedName, int interestedKind) {
             return null;
         }
 

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -96,22 +98,26 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
 
     /** @return either class or namespace */
-    protected CsmObject findOwner(Resolver parent) {
+    protected CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null ) {
-            final Resolver resolver = ResolverFactory.createResolver(this, parent);
-	    CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
-            if (CsmKindUtilities.isClassifier(obj)) {
-                CsmClassifier cls = resolver.getOriginalClassifier((CsmClassifier)obj);
-                if (cls != null) {
-                    obj = cls;
-                }
-                if (CsmKindUtilities.isClass(obj)) {
+            Resolver resolver = ResolverFactory.createResolver(this);
+            try {
+                CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
+                if (CsmKindUtilities.isClassifier(obj)) {
+                    CsmClassifier cls = resolver.getOriginalClassifier((CsmClassifier)obj);
+                    if (cls != null) {
+                        obj = cls;
+                    }
+                    if (CsmKindUtilities.isClass(obj)) {
+                        return obj;
+                    }
+                } else if(CsmKindUtilities.isNamespace(obj)) {
                     return obj;
                 }
-            } else if(CsmKindUtilities.isNamespace(obj)) {
-		return obj;
-	    }
+            } finally {
+                ResolverFactory.releaseResolver(resolver);
+            }
 	}
 	return null;
     }    
@@ -199,7 +205,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
 
     protected String findQualifiedName() {
-        CsmObject owner = findOwner(null);
+        CsmObject owner = findOwner();
         // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
             setFlags(FAKE_QUALIFIED_NAME, false);
@@ -242,7 +248,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
         boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
-            CsmObject owner = findOwner(null);
+            CsmObject owner = findOwner();
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
                 boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);

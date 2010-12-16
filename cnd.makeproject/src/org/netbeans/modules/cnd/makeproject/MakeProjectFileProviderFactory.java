@@ -239,7 +239,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         ConcurrentMap<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
                         if (projectSearchBase == null) {
                             projectSearchBase = computeProjectFiles(p);
-                            fileNameSearchBase.putIfAbsent(p, projectSearchBase);
+                            fileNameSearchBase.put(p, projectSearchBase);
                         }
                         int i = fileName.lastIndexOf('/');
                         String name = fileName;

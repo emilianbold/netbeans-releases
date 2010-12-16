@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.utils.cache;
 
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -65,4 +67,25 @@ public class WeakSharedSetTest {
         
     }
 
+    @Test
+    public void testConcurrentExceptions() {
+        Object[] arr = new Object[] { new Integer(1), new Long(2), new Double(3)};
+        Set<Object> set = new WeakSharedSet<Object>();
+        set.addAll(Arrays.asList(arr));
+        
+        for (Object object : set) {
+            set.remove(new Boolean(true));
+        }
+
+        boolean gotException = false;
+        try {
+            for (Object object : set) {
+                set.remove(new Long(2));
+            }
+            fail("concurrent exception is expected");
+        } catch (ConcurrentModificationException ex) {
+            gotException = true;
+        }
+        assertTrue("ConcurrentModificationException is expected", gotException);
+    }
 }

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
@@ -141,25 +143,17 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
 
     @Override
     public CsmClass getReferencedClass() {
-        return getReferencedClass(null);
-    }
-
-    public CsmClass getReferencedClass(Resolver resolver) {
         CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
         if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
             cls = null;
             CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
             if(CsmBaseUtilities.isValid(cfd)) {
-                if (cfd instanceof ClassForwardDeclarationImpl) {
-                    cls = ((ClassForwardDeclarationImpl)cfd).getCsmClass(resolver);
-                } else {
-                    cls = cfd.getCsmClass();
-                }
+                cls = cfd.getCsmClass();
             }
             friendUID = UIDCsmConverter.declarationToUID(cls);
         }
         if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
-            CsmObject o = resolve(resolver);
+            CsmObject o = resolve();
             if (CsmKindUtilities.isClass(o)) {
                 cls = (CsmClass) o;
                 friendUID = UIDCsmConverter.objectToUID(cls);
@@ -175,8 +169,14 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return new CharSequence[0];
     }
     
-    private CsmObject resolve(Resolver resolver) {
-        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASS);
+    private CsmObject resolve() {
+        CsmObject result = null;
+        Resolver aResolver = ResolverFactory.createResolver(this);
+        try {
+            result = aResolver.resolve(nameParts, Resolver.CLASS);
+        } finally {
+            ResolverFactory.releaseResolver(aResolver);
+        }
         if (result == null) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
         }
