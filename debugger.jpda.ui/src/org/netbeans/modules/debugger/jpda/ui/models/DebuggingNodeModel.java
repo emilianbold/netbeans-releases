@@ -396,17 +396,19 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                                              final JPDAThread t,
                                              final boolean showPackageNames,
                                              final DebuggingNodeModel model) {
-        RequestProcessor rp;
-        if (model != null && model.rp != null) {
-            rp = model.rp;
-        } else
+        final Session s;
         try {
             JPDADebugger debugger = (JPDADebugger) t.getClass().getMethod("getDebugger").invoke(t);
-            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
-            rp = s.lookupFirst(null, RequestProcessor.class);
+            s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
             return ;
+        }
+        RequestProcessor rp;
+        if (model != null && model.rp != null) {
+            rp = model.rp;
+        } else {
+            rp = s.lookupFirst(null, RequestProcessor.class);
         }
         if (rp == null) {
             // Debugger is finishing
@@ -421,7 +423,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         try {
                             CallStackFrame[] sf = t.getCallStack (0, 1);
                             if (sf.length > 0) {
-                                frame = CallStackNodeModel.getCSFName (null, sf[0], showPackageNames);
+                                frame = CallStackNodeModel.getCSFName (s, sf[0], showPackageNames);
                             }
                         } catch (AbsentInformationException e) {
                         }
