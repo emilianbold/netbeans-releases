@@ -55,6 +55,7 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,13 +109,14 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
         return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }
     private String getMethodBody(FieldInfo em, boolean isEJB){
+        boolean simple = GenerationOptions.Operation.GET_EM.equals(getGenerationOptions().getOperation());//if simple (or with return etc) - no transactions
         String text =
-                (isEJB ?
+                (isEJB || simple ?
                     "" :
                 ("try '{'\n" +
                 "    utx.begin();\n")) +
                 generateCallLines(em.getName()) +
-                (isEJB ?
+                (isEJB || simple ?
                     "" :
                 "    utx.commit();\n" +
                 "} catch(Exception e) '{'\n" +
