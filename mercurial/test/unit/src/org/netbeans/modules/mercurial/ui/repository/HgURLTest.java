@@ -80,6 +80,15 @@ public class HgURLTest {
 
         verifyAddAuthenticationMethod("http://server/path", "username", "password",
                                       "http://username:password@server/path");
+
+        verifyAddAuthenticationMethod("svn+http://svn.somewhere.com/svn/project_name/trunk", "username", "password",
+                                      "svn+http://username:password@svn.somewhere.com/svn/project_name/trunk");
+
+        verifyAddAuthenticationMethod("svn+https://svn.somewhere.com/svn/project_name/trunk", "username", "password",
+                                      "svn+https://username:password@svn.somewhere.com/svn/project_name/trunk");
+
+        verifyAddAuthenticationMethod("svn+ssh://svn.somewhere.com/svn/project_name/trunk", "username", "password",
+                                      "svn+ssh://username:password@svn.somewhere.com/svn/project_name/trunk");
     }
 
     @Test
