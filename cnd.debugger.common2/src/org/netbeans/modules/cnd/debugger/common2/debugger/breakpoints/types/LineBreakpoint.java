@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 public final class LineBreakpoint extends NativeBreakpoint {
 
@@ -71,7 +72,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	if (fileName.get() == null)
 	    return "";
 	else
-	    return IpeUtils.getBaseName(fileName.get());
+	    return CndPathUtilitities.getBaseName(fileName.get());
     } 
 
     public String getFileName() {
@@ -187,7 +188,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
     } 
 
     protected String getDisplayNameHelp() {
-	return IpeUtils.getBaseName(getFileName()) +
+	return CndPathUtilitities.getBaseName(getFileName()) +
 	    ":" + getLineNumber(); // NOI18N
     }
 
