@@ -91,6 +91,7 @@ import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -121,8 +122,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private int prec; // visitor argument: the current precedence level.
     private LinkedList<Comment> pendingComments = null;
     private int lastReadCommentIdx = -1;
-    private JCCompilationUnit origUnit;
-    private CompilationInfo cInfo;
+    private DiffContext diffContext;
     private CommentHandlerService comments;
 
     private int fromOffset = -1;
@@ -134,42 +134,21 @@ public final class VeryPretty extends JCTree.Visitor {
     private final String origText;
     private int initialOffset = 0;
 
-    public static CodeStyle getCodeStyle(CompilationInfo info) {
-        if (info != null) {
-            try {
-                Document doc = info.getDocument();
-                if (doc != null) {
-                    return CodeStyle.getDefault(doc);
-                }
-            } catch (IOException ioe) {
-                // ignore
-            }
-
-            FileObject file = info.getFileObject();
-            if (file != null) {
-                return CodeStyle.getDefault(file);
-            }
-        }
-        
-        return CodeStyle.getDefault((Document)null);
-    }
-    
-    public VeryPretty(CompilationInfo cInfo) {
-        this(cInfo, getCodeStyle(cInfo), null, null, null);
+    public VeryPretty(DiffContext diffContext) {
+        this(diffContext, diffContext.style, null, null, null);
     }
 
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs) {
-        this(cInfo, cs, null, null, null);
+    public VeryPretty(DiffContext diffContext, CodeStyle cs) {
+        this(diffContext, cs, null, null, null);
     }
 
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
-        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs, tree2Tag, tag2Span, origText);
-        this.cInfo = cInfo;
-        this.origUnit = (JCCompilationUnit) cInfo.getCompilationUnit();
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
+        this(diffContext.context, cs, tree2Tag, tag2Span, origText);
+        this.diffContext = diffContext;
     }
 
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText, int initialOffset) {
-        this(cInfo, cs, tree2Tag, tag2Span, origText);
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText, int initialOffset) {
+        this(diffContext, cs, tree2Tag, tag2Span, origText);
         this.initialOffset = initialOffset; //provide intial offset of this priter
     }
 
@@ -274,7 +253,7 @@ public final class VeryPretty extends JCTree.Visitor {
         return TreeInfo.getStartPos(oldT);
     }
     public int endPos(JCTree t) {
-        return TreeInfo.getEndPos(t, origUnit.endPositions);
+        return TreeInfo.getEndPos(t, diffContext.origUnit.endPositions);
     }
     public Set<Tree> oldTrees = Collections.emptySet();
     private void doAccept(JCTree t) {
@@ -1469,10 +1448,10 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinTypeCastParens() ? " )" : ")");
         if (cs.spaceAfterTypeCast())
             needSpace();
-        if (origUnit != null && TreePath.getPath(origUnit, tree.expr) != null) {
+        if (diffContext.origUnit != null && TreePath.getPath(diffContext.origUnit, tree.expr) != null) {
             int a = TreeInfo.getStartPos(tree.expr);
-            int b = TreeInfo.getEndPos(tree.expr, origUnit.endPositions);
-            print(cInfo.getText().substring(a, b));
+            int b = TreeInfo.getEndPos(tree.expr, diffContext.origUnit.endPositions);
+            print(diffContext.origText.substring(a, b));
             return;
         }
 	printExpr(tree.expr, TreeInfo.prefixPrec);
@@ -1519,10 +1498,10 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitLiteral(JCLiteral tree) {
         long start, end;
-        if (   origUnit != null
-            && cInfo != null
-            && (start = cInfo.getTrees().getSourcePositions().getStartPosition(origUnit, tree)) >= 0 //#137564
-            && (end = cInfo.getTrees().getSourcePositions().getEndPosition(origUnit, tree)) >= 0
+        if (   diffContext != null
+            && diffContext.origUnit != null
+            && (start = diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, tree)) >= 0 //#137564
+            && (end = diffContext.trees.getSourcePositions().getEndPosition(diffContext.origUnit, tree)) >= 0
             && origText != null) {
             print(origText.substring((int) start, (int) end));
             return ;
@@ -1814,7 +1793,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private boolean printAnnotationsFormatted(List<JCAnnotation> annotations) {
         if (reallyPrintAnnotations) return false;
         
-        VeryPretty del = new VeryPretty(cInfo, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
+        VeryPretty del = new VeryPretty(diffContext, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
         del.reallyPrintAnnotations = true;
 
         del.printAnnotations(annotations);
@@ -1988,7 +1967,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printIndentedStat(JCTree tree, BracesGenerationStyle redundantBraces, boolean spaceBeforeLeftBrace, WrapStyle wrapStat) {
-        if (fromOffset >= 0 && toOffset >= 0 && (TreeInfo.getStartPos(tree) < fromOffset || TreeInfo.getEndPos(tree, origUnit.endPositions) > toOffset))
+        if (fromOffset >= 0 && toOffset >= 0 && (TreeInfo.getStartPos(tree) < fromOffset || TreeInfo.getEndPos(tree, diffContext.origUnit.endPositions) > toOffset))
             redundantBraces = BracesGenerationStyle.LEAVE_ALONE;
 	switch(redundantBraces) {
         case GENERATE:
@@ -2171,7 +2150,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {
 //        LinkedList<Comment> comments = new LinkedList<Comment>();
 //        if (cInfo != null) {
-//            int pos = TreeInfo.getEndPos(tree, origUnit.endPositions) - 1;
+//            int pos = TreeInfo.getEndPos(tree, diffContext.origUnit.endPositions) - 1;
 //            if (pos >= 0) {
 //                TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 //                tokens.move(pos);
@@ -2387,14 +2366,14 @@ public final class VeryPretty extends JCTree.Visitor {
             return (((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0L;
         }
         //filter synthetic superconstructor calls
-        if (tree.getKind() == Kind.EXPRESSION_STATEMENT && origUnit != null) {
+        if (tree.getKind() == Kind.EXPRESSION_STATEMENT && diffContext.origUnit != null) {
             JCExpressionStatement est = (JCExpressionStatement) tree;
             if (est.expr.getKind() == Kind.METHOD_INVOCATION) {
                 JCMethodInvocation mit = (JCMethodInvocation) est.getExpression();
                 if (mit.meth.getKind() == Kind.IDENTIFIER) {
                     JCIdent it = (JCIdent) mit.getMethodSelect();
                     if (it.name == names._super) {
-                        return TreeInfo.getEndPos(tree, origUnit.endPositions) < 0 && tree.pos != 0 && tree.pos != NOPOS;
+                        return TreeInfo.getEndPos(tree, diffContext.origUnit.endPositions) < 0 && tree.pos != 0 && tree.pos != NOPOS;
                     }
                 }
             }
