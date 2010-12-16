@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.css.visual.ui.preview;
 
-import java.io.InputStream;
 import javax.swing.JComponent;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -51,6 +51,6 @@ import javax.swing.JComponent;
  */
 interface CssPreviewComponent {
     JComponent getComponent();
-    void setDocument(InputStream is, String url) throws Exception;
+    void setDocument(InputSource is, String url) throws Exception;
     void dispose();
 }
