@@ -62,6 +62,7 @@ import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.ui.Icons;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -154,18 +155,18 @@ public final class  UiUtils {
     
     private static String getMethodHeader(MethodTree tree, CompilationInfo info, String s) {
         Context context = info.impl.getJavacTask().getContext();
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         return veryPretty.getMethodHeader(tree, s);
     }
 
     private static String getClassHeader(ClassTree tree, CompilationInfo info, String s) {
         Context context = info.impl.getJavacTask().getContext();
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         return veryPretty.getClassHeader(tree, s);
     }
     private static String getVariableHeader(VariableTree tree, CompilationInfo info, String s) {
         Context context = info.impl.getJavacTask().getContext();
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         return veryPretty.getVariableHeader(tree, s);
     }
 

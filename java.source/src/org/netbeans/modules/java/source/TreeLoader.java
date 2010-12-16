@@ -264,6 +264,10 @@ public class TreeLoader extends LazyTreeLoader {
                 }
             }
         }.scan(env.toplevel);
+        Log log = Log.instance(jti.getContext());
+        JavaFileObject prevLogTo = log.useSource(null);
+        boolean oldSuppress = log.suppressErrorsAndWarnings;
+        log.suppressErrorsAndWarnings = true;
         try {
             String binaryName = null;
             String surl = null;
@@ -289,6 +293,8 @@ public class TreeLoader extends LazyTreeLoader {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
+            log.suppressErrorsAndWarnings = oldSuppress;
+            log.useSource(prevLogTo);
         }
     }
 
