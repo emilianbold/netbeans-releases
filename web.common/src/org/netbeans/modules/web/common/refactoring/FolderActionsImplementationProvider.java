@@ -103,7 +103,7 @@ public class FolderActionsImplementationProvider extends ActionsImplementationPr
         Node node = nodes.iterator().next();
         FileObject file = getFileObjectFromNode(node);
         String newName = getName(selectedNodes);
-        UI.openRefactoringUI(new RenameRefactoringUI(file, newName));
+        UI.openRefactoringUI(new RenameRefactoringUI(file, newName != null ? newName : file.getName()));
     }
 
     private static FileObject getFileObjectFromNode(Node node) {
