@@ -125,7 +125,7 @@ public final class UIDProviderIml implements UIDProvider {
                 final Class<? extends Object> aClass = obj.getClass();
                 if (!aClass.equals(org.netbeans.modules.cnd.modelimpl.csm.deep.LabelImpl.class)) {
                     System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
-                    new Exception().printStackTrace();
+                    new Exception().printStackTrace(System.err);
                 }
             }
             out = createSelfUID(obj);
@@ -159,7 +159,7 @@ public final class UIDProviderIml implements UIDProvider {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final SelfUID other = (SelfUID) obj;
+            final SelfUID<?> other = (SelfUID) obj;
             if (this.element != other.element && !this.element.equals(other.element)) {
                 return false;
             }
