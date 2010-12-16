@@ -602,6 +602,9 @@ class SQLExecutionHelper {
         } else {
             try {
                 isResultSet = stmt.execute(appendLimitIfRequired(sql));
+            } catch (NullPointerException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + ex);
+                    throw new SQLException(ex);
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
