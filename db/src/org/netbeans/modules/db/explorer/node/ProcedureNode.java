@@ -213,17 +213,34 @@ public class ProcedureNode extends BaseNode {
         Specification spec = connector.getDatabaseSpecification();
 
         try {
-            AbstractCommand command = spec.createCommandDropProcedure(getName());
+            AbstractCommand command = null;
+            switch (getType()) {
+                case Function:
+                    command = spec.createCommandDropFunction(getName());
+                    break;
+                case Procedure:
+                    command = spec.createCommandDropProcedure(getName());
+                    break;
+                case Trigger:
+                    command = spec.createCommandDropTrigger(getName());
+                    break;
+                default:
+                    assert false : "Unknown type " + getType();
+            }
+            if (command == null) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, "No command found for droping " + getName());
+                return ;
+            }
             if (getOwner() != null) {
                 command.setObjectOwner(getOwner());
             }
             command.execute();
             remove();
         } catch (DDLException e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
         }
     }
     
@@ -358,11 +375,17 @@ public class ProcedureNode extends BaseNode {
                     case Function:
                     case Procedure:
                         Statement stat = connection.getConnection().createStatement();
-                        ResultSet rs = stat.executeQuery("SELECT param_list, body FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                        ResultSet rs = stat.executeQuery("SELECT param_list, body, db FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
                         while(rs.next()) {
+                            String parent = rs.getString("db"); // NOI18N
+                            if (parent != null && parent.trim().length() > 0) {
+                                parent = parent + '.'; //  NOI18N
+                            } else {
+                                parent = "";
+                            }
                             String params = rs.getString("param_list"); // NOI18N
                             String body = rs.getString("body"); // NOI18N
-                            source = getTypeName(getType()) + " " + getName() + '\n' + // NOI18N
+                            source = getTypeName(getType()) + " " + parent + getName() + '\n' + // NOI18N
                                     '(' + params + ")" + '\n' + // NOI18N
                                     body;
                         }
@@ -376,26 +399,32 @@ public class ProcedureNode extends BaseNode {
                          */
                         Statement stat2 = connection.getConnection().createStatement();
                         ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
-                                + " ACTION_TIMING, EVENT_MANIPULATION"
+                                + " ACTION_TIMING, EVENT_MANIPULATION, TRIGGER_SCHEMA"
                                 + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
                         while(rs2.next()) {
+                            String parent = rs2.getString("TRIGGER_SCHEMA"); // NOI18N
+                            if (parent != null && parent.trim().length() > 0) {
+                                parent = parent + '.'; //  NOI18N
+                            } else {
+                                parent = "";
+                            }
                             String trigger_body = rs2.getString("ACTION_STATEMENT"); // NOI18N
                             String trigger_time = rs2.getString("ACTION_TIMING"); // NOI18N
                             String trigger_event = rs2.getString("EVENT_MANIPULATION"); // NOI18N
                             String tbl_schema = rs2.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
                             String tbl_table_name = rs2.getString("EVENT_OBJECT_TABLE"); // NOI18N
                             String tbl_name = tbl_schema == null || tbl_schema.length() == 0 ? tbl_table_name : tbl_schema + '.' + tbl_table_name; // NOI18N
-                            source = TRIGGER + " " + getName() + '\n' + // NOI18N
+                            source = TRIGGER + " " + parent + getName() + '\n' + // NOI18N
                                     trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
                                     "FOR EACH ROW" + '\n' + // NOI18N
                                     trigger_body;
                         }
                         break;
                     default:
-                        assert false : "Unknown type";
+                        assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
             }
             return source;
         }
@@ -429,10 +458,10 @@ public class ProcedureNode extends BaseNode {
                         }
                         break;
                     default:
-                        assert false : "Unknown type";
+                        assert false : "Unknown type " + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of " + getTypeName(getType()) + " " + getName());
             }
             return params;
         }
@@ -458,10 +487,10 @@ public class ProcedureNode extends BaseNode {
                         }
                         break;
                     default:
-                        assert false : "Unknown type";
+                        assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get body of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get body of " + getTypeName(getType()) + " " + getName());
             }
             return body;
         }
@@ -608,13 +637,9 @@ public class ProcedureNode extends BaseNode {
                     owner = rs.getString("owner"); // NOI18N
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
             }
-            if (schema.equalsIgnoreCase(owner)) {
-                return sb.toString();
-            } else {
-                return fqn(sb.toString(), owner);
-            }
+            return fqn(sb.toString(), owner);
         }
 
         @Override
@@ -636,16 +661,21 @@ public class ProcedureNode extends BaseNode {
         }
 
         private String fqn(String source, String owner) {
-            String fqSource = source;
+            String upperSource = source.toUpperCase();
             String toFind = getTypeName(getType()) + " "; // NOI18N
-            int nameIdx = source.indexOf(toFind);
+            String res = source;
+            int nameIdx = upperSource.indexOf(toFind);
             if (nameIdx != -1) {
-                fqSource = source.substring(0, nameIdx + toFind.length()) +
+                // don't duplicate owner
+                if (upperSource.substring(nameIdx + toFind.length()).trim().startsWith(owner.toUpperCase() + '.')) { // NOI18N
+                    return source;
+                }
+                res = source.substring(0, nameIdx + toFind.length()) +
                         owner +
                         '.' + // NOI18N
                         source.substring(nameIdx + toFind.length()).trim();
             }
-            return fqSource;
+            return res;
         }
 
     }
