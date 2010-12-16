@@ -134,8 +134,10 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     @Override
     public boolean isEmpty()          { return m.isEmpty(); }
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean contains(Object o) { return m.containsKey(o); }
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean remove(Object o)   { return m.remove(o) == PRESENT; }
     public void resize(int newCapacity){
         if (size()==0) {
@@ -386,7 +388,8 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         /**
          * Returns the table after first expunging stale entries.
          */
-        private Entry[] getTable() {
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        private Entry<K,V>[] getTable() {
             expungeStaleEntries();
             return table;
         }
@@ -459,7 +462,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         Entry<K,V> getEntry(Object key) {
             Object k = maskNull(key);
             int h = hash(k.hashCode());
-            Entry[] tab = getTable();
+            Entry<K,V>[] tab = getTable();
             int index = indexFor(h, tab.length);
             Entry<K,V> e = tab[index];
             while (e != null && !(e.hash == h && eq(k, e.get()))) {
@@ -500,14 +503,14 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          *        is irrelevant).
          */
         void resize(int newCapacity) {
-            Entry[] oldTable = getTable();
+            Entry<K,V>[] oldTable = getTable();
             int oldCapacity = oldTable.length;
             if (oldCapacity == MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 return;
             }
 
-            Entry[] newTable = new Entry[newCapacity];
+            Entry<K,V>[] newTable = new Entry[newCapacity];
             transfer(oldTable, newTable);
             table = newTable;
 
@@ -613,7 +616,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         public V remove(Object key) {
             Object k = maskNull(key);
             int h = hash(k.hashCode());
-            Entry[] tab = getTable();
+            Entry<K,V>[] tab = getTable();
             int i = indexFor(h, tab.length);
             Entry<K,V> prev = tab[i];
             Entry<K,V> e = prev;
@@ -644,7 +647,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             if (!(o instanceof Map.Entry)) {
                 return null;
             }
-            Entry[] tab = getTable();
+            Entry<K,V>[] tab = getTable();
             Map.Entry<K,V> entry = (Map.Entry)o;
             Object k = maskNull(entry.getKey());
             int h = hash(k.hashCode());
@@ -714,9 +717,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          * Special-case code for containsValue with null argument
          */
         private boolean containsNullValue() {
-            Entry[] tab = getTable();
+            Entry<K,V>[] tab = getTable();
             for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry e = tab[i] ; e != null ; e = e.next) {
+                for (Entry<K,V> e = tab[i] ; e != null ; e = e.next) {
                     return true;
                 }
             }
@@ -966,6 +969,8 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 return lastReturned;
             }
 
+            @Override
+            @SuppressWarnings("element-type-mismatch")
             public void remove() {
                 if (lastReturned == null) {
                     throw new IllegalStateException();
@@ -1039,11 +1044,13 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             }
 
             @Override
+            @SuppressWarnings("element-type-mismatch")
             public boolean contains(Object o) {
                 return containsKey(o);
             }
 
             @Override
+            @SuppressWarnings("element-type-mismatch")
             public boolean remove(Object o) {
                 if (containsKey(o)) {
                     SharedKeyWeakHashMap.this.remove(o);
@@ -1084,6 +1091,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 return new ValueIterator();
             }
 
+            @Override
             public int size() {
                 return SharedKeyWeakHashMap.this.size();
             }
