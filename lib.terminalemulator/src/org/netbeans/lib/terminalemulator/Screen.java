@@ -220,6 +220,7 @@ class Screen extends JComponent implements Accessible {
         AccessibleScreenText() {
         }
 
+        @Override
         public int getCaretPosition() {
             return term.CoordToPosition(term.getCursorCoord());
         }
@@ -228,6 +229,7 @@ class Screen extends JComponent implements Accessible {
         private int last_attr;
         private MutableAttributeSet last_as;
 
+        @Override
         public AttributeSet getCharacterAttribute(int index) {
             Coord c = term.PositionToCoord(index);
             if (c == null) {
@@ -273,14 +275,17 @@ class Screen extends JComponent implements Accessible {
             return as;
         }
 
+        @Override
         public Rectangle getCharacterBounds(int index) {
             return term.getCharacterBounds(term.PositionToCoord(index));
         }
 
+        @Override
         public int getCharCount() {
             return term.getCharCount();
         }
 
+        @Override
         public int getSelectionStart() {
             Extent x = term.getSelectionExtent();
             if (x == null) {
@@ -289,6 +294,7 @@ class Screen extends JComponent implements Accessible {
             return term.CoordToPosition(x.begin);
         }
 
+        @Override
         public int getSelectionEnd() {
             Extent x = term.getSelectionExtent();
             if (x == null) {
@@ -297,6 +303,7 @@ class Screen extends JComponent implements Accessible {
             return term.CoordToPosition(x.end);
         }
 
+        @Override
         public String getSelectedText() {
             return term.getSelectedText();
         }
@@ -323,6 +330,7 @@ class Screen extends JComponent implements Accessible {
             return null;
         }
 
+        @Override
         public String getAfterIndex(int part, int index) {
             Coord c = term.PositionToCoord(index);
             if (c == null) {
@@ -333,6 +341,7 @@ class Screen extends JComponent implements Accessible {
             return getHelper(part, b);
         }
 
+        @Override
         public String getAtIndex(int part, int index) {
             Coord c = term.PositionToCoord(index);
             if (c == null) {
@@ -342,6 +351,7 @@ class Screen extends JComponent implements Accessible {
             return getHelper(part, b);
         }
 
+        @Override
         public String getBeforeIndex(int part, int index) {
             Coord c = term.PositionToCoord(index);
             if (c == null) {
@@ -352,6 +362,7 @@ class Screen extends JComponent implements Accessible {
             return getHelper(part, b);
         }
 
+        @Override
         public int getIndexAtPoint(Point p) {
             BCoord v = term.toViewCoord(p);
             BCoord b = term.toBufCoords(v);
