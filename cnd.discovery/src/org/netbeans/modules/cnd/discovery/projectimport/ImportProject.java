@@ -611,7 +611,7 @@ public class ImportProject implements PropertyChangeListener {
     private FileObject mkDir(FileObject parent, String relative) {
          if (relative != null) {
             try {
-                relative.replace('\\', '/'); // NOI18N
+                relative = relative.replace('\\', '/'); // NOI18N
                 for(String segment : relative.split("/")) { // NOI18N
                     if (parent == null) {
                         return null;

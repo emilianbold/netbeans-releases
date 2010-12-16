@@ -1738,13 +1738,15 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.MEMBER_POINTER_OPEN:
                     if (item.getParameterCount() > 0) {
+                        boolean hasAmp = false;
                         if (item.getTokenCount() == 1) {
                             switch (item.getTokenID(0)) {
                                 case AMP:
-                                    memberPointer = true;
+                                    hasAmp = true;
                                     break;
                             }
                         }
+                        memberPointer = hasAmp;
                         cont = resolveExp(item.getParameter(0), first);
                         memberPointer = false;
                     }
