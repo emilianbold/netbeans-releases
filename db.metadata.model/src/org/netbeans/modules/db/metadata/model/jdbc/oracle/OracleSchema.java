@@ -45,9 +45,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -119,13 +121,34 @@ public class OracleSchema extends JDBCSchema {
                 return Collections.emptySet();
             }
             Set<String> result = new HashSet<String>();
-            for (String type : types) {
-                Statement stmt = dmd.getConnection().createStatement();
+            Statement stmt = dmd.getConnection().createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM SYS.DBA_RECYCLEBIN"); // NOI18N
+                List<String> typesL = types == null ? Collections.EMPTY_LIST : Arrays.asList(types);
                 try {
-                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = '" + type + "'"); // NOI18N
+                    while (rs.next()) {
+                        String type = rs.getString("TYPE"); // NOI18N
+                        if (typesL.isEmpty() || typesL.contains(type)) {
+                            result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                        }
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+            // try both
+            if (result.isEmpty()) {
+                try {
+                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM RECYCLEBIN"); // NOI18N
+                    List<String> typesL = types == null ? Collections.EMPTY_LIST : Arrays.asList(types);
                     try {
                         while (rs.next()) {
-                            result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                            String type = rs.getString("TYPE"); // NOI18N
+                            if (typesL.isEmpty() || typesL.contains(type)) {
+                                result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                            }
                         }
                     } finally {
                         rs.close();
