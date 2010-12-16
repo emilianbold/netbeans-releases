@@ -179,7 +179,7 @@ public class RemoteFileSystem extends FileSystem {
         String result = absPath;
 // # Remove all /./ sequences.
 //    local   path=${1//\/.\//\/}
-        result = result.replaceAll("\\/.\\/", "\\/");
+        result = result.replaceAll("[/][.][/]", "[/]");
 
 //
 //    # Remove first dir/.. sequence.
