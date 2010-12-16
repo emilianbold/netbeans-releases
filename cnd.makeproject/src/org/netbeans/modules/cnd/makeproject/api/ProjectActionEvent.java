@@ -144,25 +144,33 @@ public final class ProjectActionEvent {
 
     public String getExecutable() {
 	if (type == PredefinedType.RUN) {
-            return getRunCommand()[0];
+            String[] runCommand = getRunCommand();
+            if (runCommand.length == 0) {
+                return "";
+            }
+            return runCommand[0];
         }
 	return executable;
     }
 
     private String[] getRunCommand() {
-        if (runCommandCache == null) {
+        if (runCommandCache == null || runCommandCache.length == 0) {
             String command = getProfile().getRunCommand();
 
             // not clear what is the difference between getPlatformInfo
             // and getDevelopmentHost. 
             // TODO: get rid off one of ifs below
             assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
-            
+
+            String outputValue = configuration.getOutputValue();
+            if (outputValue.length() > 0) {
+                outputValue = configuration.getAbsoluteOutputValue();
+            }
             if (configuration.getPlatformInfo().isLocalhost()) {
-                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", configuration.getAbsoluteOutputValue()); // NOI18N
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
             } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(configuration.getAbsoluteOutputValue(), true)); // NOI18N
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(outputValue, true)); // NOI18N
             }
             runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
         }

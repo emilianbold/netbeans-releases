@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -152,7 +153,10 @@ public class MakefileConfiguration {
         if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
         } else {
-            return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+            String wd = getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+            // Normalize
+            wd = CndFileUtils.normalizeAbsolutePath(wd);
+            return wd;
         }
     }
     
