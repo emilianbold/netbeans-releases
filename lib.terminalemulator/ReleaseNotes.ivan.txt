@@ -1,3 +1,21 @@
+nobugid - fix op_ce (clear to end of line) so there are no "boxes" when
+          running nethack.
+	This in response to Jesse's comment that nethack doesn't work
+	under term.
+	See bug #192779 Comment #1.
+	After fixing this, and maybe thebelow bugs, I haven't had problems
+	running nethack on linux.
+
+nobugid - ensure ${cluster} is initialized before clean
+
+nobugid - Term debugging switch from UI
+	The "Start Terminal" dialog which pops up on Terminals->
+	TestTerminalwithRich/NativeExecution now has a debug checkbox.
+	Entries in the ControlWindow now have a "debug: on off" control.
+	These allow enabling and disabling of Term debug flags.
+	
+nobugid - don't NPE when creating a Terminal and ControlWindow is closed.
+
 187345 - wrong characters in Terminals
 	Partial fix ...
 	A program renders alternative characters as follows. It first needs to
