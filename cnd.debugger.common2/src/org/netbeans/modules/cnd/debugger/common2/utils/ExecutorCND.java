@@ -56,15 +56,12 @@ import javax.swing.SwingUtilities;
 
 import org.openide.util.Exceptions;
 
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -82,7 +79,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     public ExecutorCND(String name, Host host) {
 	super(name, host);
-        exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        exEnv = host.executionEnvironment();
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -161,18 +158,6 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
     }
 
-    public String getCmdOutput() {
-	throw new UnsupportedOperationException();
-    }
-
-    public List<String> getCmdOutputLines() {
-	throw new UnsupportedOperationException();
-    }
-
-    public void runShellCmd(String cmd_argv[]) {
-	throw new UnsupportedOperationException();
-    }
-
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], Map<String, String> additionalEnv,
 			                TermComponent console,
@@ -238,9 +223,6 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 	engineProc.destroy();
     }
 
-    public void cleanup() {
-    }
-
     @Override
     public void reap() {
 	Thread reaper = new Thread() {
@@ -303,10 +285,6 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N
         return status.output.contains(" 64"); //NOI18N
-    }
-
-    public Platform platform() {
-        return Platform.byCNDId(PlatformInfo.getDefault(exEnv).getPlatform());
     }
 	      
     public InputStream getInputStream() {

@@ -606,12 +606,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	state().isLoaded = false;
 	stateChanged();
 
-	if (executor != null) {
-	    // executor may sometimes be null if a session fail to start
-	    // properly.
-	    executor.cleanup();
-	}
-
         postedKillEngine = true;
 
         // tell debuggercore that we're going away
