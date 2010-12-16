@@ -63,7 +63,7 @@ public enum OS {
     public static OS get() {
         String osName = System.getProperty("os.name");
         osName = osName.toLowerCase();
-        System.out.printf("os.name: \'%s\'\n", osName);
+        // System.out.printf("os.name: \'%s\'\n", osName);
 
         if (osName.startsWith("windows")) {
             return OS.WINDOWS;
