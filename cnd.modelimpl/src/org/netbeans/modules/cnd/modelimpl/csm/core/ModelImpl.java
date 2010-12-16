@@ -749,7 +749,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 if (prj == null) {
                     printOut.printf("Project was NOT restored from repository\n");// NOI18N
                 } else if (prj instanceof ProjectBase) {
-                    printOut.printf("[%d] disposing=\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
+                    printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
                     ((ProjectBase) prj).traceFileContainer(printOut);
                 } else {
                     printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
