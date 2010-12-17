@@ -202,6 +202,9 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
     @Override
     public void performClickAction(final Document doc, final int offset) {
         final FileObject fObject = NbEditorUtilities.getFileObject(doc);
+        if(fObject == null) {
+            return; //fileobjectless document, not much to do here since JsfElExpression requires webmodule
+        }
         final WebModule wm = WebModule.getWebModule(fObject);
         if (wm == null) {
             return;
