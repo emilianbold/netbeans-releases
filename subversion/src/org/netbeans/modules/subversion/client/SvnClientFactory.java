@@ -118,10 +118,14 @@ public class SvnClientFactory {
     }
 
     /**
-     * Resets the SvnClientFactory instance
+     * Resets the SvnClientFactory instance in case it is the cli client.
+     * This should be called either when javahl was currently installed or
+     * if the svn executable path was changed. 
      */
-    public synchronized static void reset() {
-        instance = null;
+    public synchronized static void resetCLI() {
+        if(isCLI()) { 
+            instance = null;
+        }
     }
 
     public static boolean isCLI() {
