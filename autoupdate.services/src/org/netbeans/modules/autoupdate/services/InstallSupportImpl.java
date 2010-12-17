@@ -1116,7 +1116,11 @@ public class InstallSupportImpl {
                 FileUtil.getConfigRoot().refresh();
                 FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
+                    LOG.fine("Refreshing Modules directory"); // NOI18N
                     modulesRoot.refresh();
+                    LOG.fine("Done refreshing Modules directory"); // NOI18N
+                } else {
+                    LOG.warning("No Modules directory to refresh!"); // NOI18N
                 }
             } else {
                 assert false : "Unknown property " + ev.getPropertyName ();
