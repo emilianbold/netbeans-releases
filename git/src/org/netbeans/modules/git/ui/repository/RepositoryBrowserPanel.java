@@ -100,6 +100,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_ALL_REPOSITORIES,
         DISPLAY_BRANCHES_LOCAL,
         DISPLAY_BRANCHES_REMOTE,
+        DISPLAY_COMMIT_IDS,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
         ENABLE_POPUP
@@ -547,7 +548,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public String getName () {
-            return branch.getName() + " - " + branch.getId();
+            StringBuilder sb = new StringBuilder(branch.getName());
+            if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
+                sb.append(" - ").append(branch.getId()); //NOI18N
+            }
+            return sb.toString();
         }
     }
     //</editor-fold>
