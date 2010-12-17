@@ -150,7 +150,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         super (testName);
     }
     
-    public abstract void testSelf () throws Exception;
+    public abstract void testSelf () throws Throwable;
     
     //    static List<UpdateUnit> getUpdateUnits() {
     //        UpdateManager mgr = UpdateManager.getDefault();
