@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -70,11 +72,11 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
     private RevCommit revCommit;
     private Repository repository;
     private GitFileInfo[] modifiedFiles;
+    private static final Logger LOG = Logger.getLogger(JGitRevisionInfo.class.getName());
 
-    public JGitRevisionInfo(RevCommit next, Repository repository) throws GitException {
+    public JGitRevisionInfo(RevCommit next, Repository repository) {
         this.revCommit = next;
         this.repository = repository;
-        listFiles();
     }
 
     /**
@@ -134,7 +136,12 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
      * @throws GitException
      */
     @Override
-    public final Map<File, GitFileInfo> getModifiedFiles() {
+    public final Map<File, GitFileInfo> getModifiedFiles () throws GitException {
+        if (modifiedFiles == null) {
+            synchronized (this) {
+                listFiles();
+            }
+        }
         Map<File, GitFileInfo> files = new HashMap<File, GitFileInfo>(modifiedFiles.length);
         for (GitFileInfo info : modifiedFiles) {
             files.put(info.getFile(), info);

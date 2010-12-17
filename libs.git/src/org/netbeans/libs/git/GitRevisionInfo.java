@@ -87,6 +87,7 @@ public interface GitRevisionInfo {
     /**
      * files affected by this change set
      * @return
+     * @throws GitException when an error occurs
      */
-    public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles ();
+    public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles () throws GitException;
 }
