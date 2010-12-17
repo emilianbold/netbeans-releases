@@ -106,9 +106,15 @@ public class ResolverFactory {
         } else {
             parent = null;
         }
-        if (file == null) {
-            System.err.println("FALLBACK INTO EMPTY RESOLVER"); // NOI18N
-            // this can be in situation when old tasks finishes work in resolver, while file become invalid or project was closed or reparsed
+        if (file == null || aStack.size() > Resolver.INFINITE_RECURSION) {
+            if (file == null) {
+                // this can be in situation when old tasks finishes work in resolver, while file become invalid or project was closed or reparsed
+                System.err.println("FALLBACK INTO EMPTY RESOLVER"); // NOI18N
+            } else if (parent instanceof Resolver3) {
+                if (Resolver.TRACE_RECURSION) { 
+                    ((Resolver3)parent).traceRecursion();
+                }
+            }
             aStack.addLast(EMPTY_RESOLVER);
             return EMPTY_RESOLVER;
         } else {
