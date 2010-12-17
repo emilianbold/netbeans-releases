@@ -63,6 +63,7 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -588,6 +589,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         setLayout(new java.awt.BorderLayout());
         add(toolbar, java.awt.BorderLayout.PAGE_START);
+
+        tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         add(tree, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
