@@ -143,7 +143,7 @@ Microsystems, Inc. All Rights Reserved.
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),                                                                              
 					 groovy(groovy),
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), groovy(javaee),
+                                         enterprise(javaee), identity(javaee), 
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
@@ -292,7 +292,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init-bundles">
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>

@@ -816,7 +816,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java cpp php javafx full javafx-full" separator=" " property="bundle.type">
+        <for-each list="javase javaee cpp php javafx full javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1331,6 +1331,27 @@ jarsigner.storepass=${jarsigner.storepass}
 	</if>
 	<antcall target="convert-netbeans-bundle"/>
     </target>
+    
+    <target name="generate-netbeans-javaee-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-${bundle.platform}"/>
+     	
+        <create-bundle root="${output.dir}/registry-temp" 
+                   platform="${bundle.platform}" 
+                   target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>            
+            <!--<component uid="nb-webcommon"  version="${nb.full.version}"/>-->
+            <component uid="nb-javaee"     version="${nb.full.version}"/>            
+            <!--component uid="nb-ergonomics" version="${nb.full.version}"/-->
+            <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+            <bundleProperty name="${welcome.type}" value="javaee"/>
+        </create-bundle>	
+	<antcall target="convert-netbeans-bundle"/>
+    </target>    
 
     <target name="generate-netbeans-javame-bundle">
 	<property name="bundle.prefix" 

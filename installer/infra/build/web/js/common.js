@@ -65,7 +65,7 @@ PLATFORM_IDS         [5] = "macosx-ppc";
 
 BUNDLE_IDS [0] = "javase";
 //BUNDLE_IDS [1] = "javafx";
-BUNDLE_IDS [1] = "java";
+BUNDLE_IDS [1] = "javaee";
 //BUNDLE_IDS [2] = "ruby";
 BUNDLE_IDS [2] = "cpp";
 BUNDLE_IDS [3] = "php";
