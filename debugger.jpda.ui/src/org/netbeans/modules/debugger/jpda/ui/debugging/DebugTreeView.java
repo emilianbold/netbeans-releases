@@ -43,6 +43,7 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.lang.reflect.Field;
@@ -50,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionListener;
@@ -57,6 +60,7 @@ import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.FixedHeightLayoutCache;
 import javax.swing.tree.RowMapper;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -66,8 +70,10 @@ import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.NodeRenderer;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,20 +81,31 @@ import org.openide.nodes.Node;
  */
 public class DebugTreeView extends BeanTreeView {
 
+    private static final Logger logger = Logger.getLogger(DebugTreeView.class.getName());
+
     private int thickness = 0;
     private Color highlightColor = new Color(233, 239, 248);
     private Color currentThreadColor = new Color(233, 255, 230);
-    private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
     
     private JPDAThread focusedThread;
     
     DebugTreeView() {
         super();
-        setBackground(whiteColor);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Debugging view panel background color = "+javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+            logger.fine("Debugging view tree text background color = "+javax.swing.UIManager.getDefaults().getColor("Tree.textBackground"));
+            logger.fine("Tree color = "+tree.getBackground()+", tree is opaque = "+tree.isOpaque());
+            logger.fine("Tree parent color = "+((JComponent)tree.getParent()).getBackground()+", tree parent is opaque = "+((JComponent)tree.getParent()).isOpaque());
+            logger.fine("Tree parent = "+tree.getParent());
+        }
+
+        NodeRenderer rend = new DebugTreeNodeRenderer();
+        tree.setCellRenderer(rend);
+
+        setBackground(tree.getBackground());
         tree.setOpaque(false);
-        tree.setBackground(whiteColor);
         ((JComponent)tree.getParent()).setOpaque(false);
-        ((JComponent)tree.getParent()).setBackground(whiteColor);
+        ((JComponent)tree.getParent()).setBackground(tree.getBackground());
         setWheelScrollingEnabled(false);
         }
 
@@ -294,6 +311,56 @@ public class DebugTreeView extends BeanTreeView {
             return true;
         }
         return false;
+    }
+
+    private class DebugTreeNodeRenderer extends NodeRenderer {
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Color background = null;
+            if (value instanceof TreeNode) {
+                try {
+                    java.lang.reflect.Field fnode = value.getClass().getDeclaredField("node");
+                    fnode.setAccessible(true);
+                    value = fnode.get(value);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (value instanceof Node) {
+                Node node = (Node) value;
+                JPDAThread thread;
+                do {
+                    thread = node.getLookup().lookup(JPDAThread.class);
+                    if (thread == null) {
+                        node = node.getParentNode();
+                    }
+                } while (thread == null && node != null);
+                if (thread != null) {
+                    ThreadsListener threadsListener = ThreadsListener.getDefault();
+                    JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
+                    JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+                    if (currentThread != null && !currentThread.isSuspended() &&
+                            !DebuggingTreeModel.isMethodInvoking(currentThread)) {
+                        currentThread = null;
+                    }
+                    boolean isHighlighted = focusedThread != null && thread == focusedThread && node == value;
+                    boolean isCurrent = currentThread == thread;
+                    if (isHighlighted || isCurrent) {
+                        background = isHighlighted ? highlightColor : currentThreadColor;
+                    }
+                }
+            }
+            Component component = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            if (background != null) {
+                component.setBackground(background);
+                if (component instanceof JComponent) {
+                    ((JComponent) component).setOpaque(true);
+                }
+            }
+            return component;
+        }
+        
     }
 
 }
