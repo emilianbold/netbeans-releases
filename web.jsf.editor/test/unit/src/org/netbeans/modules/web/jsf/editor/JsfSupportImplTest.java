@@ -41,29 +41,17 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Sources;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author marekfukala
  */
-public class JsfSupportImplTest extends TestBase {
+public class JsfSupportImplTest extends TestBaseForTestProject {
 
     public JsfSupportImplTest(String testName) {
         super(testName);
@@ -73,37 +61,6 @@ public class JsfSupportImplTest extends TestBase {
         TestSuite suite = new TestSuite();
         suite.addTest(new JsfSupportImplTest("testELErrorReporting"));
         return suite;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        //disable info exceptions from j2eeserver
-        Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
-
-        FileObject srcFo = getTestFile("testWebProject/src");
-
-        //create classpath
-        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
-        cps.put(ClassPath.COMPILE, createServletAPIClassPath());
-        cps.put(ClassPath.EXECUTE, createServletAPIClassPath());
-        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo}));
-        cps.put(ClassPath.BOOT, createBootClassPath());
-
-        ClassPathProvider classpathProvider = new TestClassPathProvider(cps);
-        Sources sources = new TestSources(srcFo, getTestFile("testWebProject/web"));
-
-        MockLookup.setInstances(
-                new OpenProject(),
-                new TestUserCatalog(),
-                new TestProjectFactory(classpathProvider, sources),
-                new SimpleFileOwnerQueryImplementation(),
-                classpathProvider,
-                new TestLanguageProvider(),
-                new FakeWebModuleProvider(getTestFile("testWebProject")));
-
-        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
     }
 
     public void testJsfSupportProviderInGlobalLookup() {
