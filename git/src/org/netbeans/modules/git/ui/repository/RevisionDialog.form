@@ -19,7 +19,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="revisionInfoPanel" alignment="0" pref="430" max="32767" attributes="0"/>
+                  <Component id="revisionInfoPanel" alignment="0" pref="440" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -61,7 +61,6 @@
     </Component>
     <Component class="javax.swing.JTextField" name="revisionField">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="GitUtils.HEAD" type="code"/>
         </Property>
