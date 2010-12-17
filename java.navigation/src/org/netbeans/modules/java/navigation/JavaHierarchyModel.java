@@ -541,6 +541,9 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             return false;
         }
 
+        //XXX: Very Very Evil and deserves rewrite
+        // 1st) holds unlimited number (as much as the depth od class hierarchy) of javac on stack
+        // 2nd) Every time in recursion computes all source groups of all projects
         @Override
         protected void loadChildren (Element element,
             CompilationInfo compilationInfo) {
@@ -607,14 +610,23 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                         }
                                         processedImplementorElementHandles.add (implementorElementHandle);
                                         final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
-                                        final FileObject implementorfileObject =
+                                        FileObject implementorfileObject =
                                             SourceUtils.getFile (implementorElementHandle, classpathInfo);
+                                        if (implementorfileObject == null) {
+                                            implementorfileObject = bootClassPath.findResource(
+                                                    handleAsResourceName(implementorElementHandle));
+                                        }
+                                        if (implementorfileObject == null) {                                            
+                                            implementorfileObject = compileClassPath.findResource(
+                                                    handleAsResourceName(implementorElementHandle));
+                                        }
                                         if (implementorfileObject == null) {
                                             continue;
                                         }
                                         JavaSource javaSource = JavaSource.forFileObject (implementorfileObject);
                                         if (javaSource != null) {
                                             try {
+                                                final FileObject implementorfileObjectFin = implementorfileObject;
                                                 javaSource.runUserActionTask (new Task<CompilationController> () {
 
                                                     @Override
@@ -623,7 +635,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                                         compilationController.toPhase (Phase.ELEMENTS_RESOLVED);
                                                         Element implementor = finalImplementorElementHandle.resolve (compilationController);
                                                         if (implementor instanceof TypeElement && ((TypeElement) implementor).getNestingKind () != NestingKind.ANONYMOUS) {
-                                                            insert (new SimpleTypeTreeNode (implementorfileObject, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
+                                                            insert (new SimpleTypeTreeNode (implementorfileObjectFin, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
                                                         }
                                                     }
                                                 }, true);
@@ -640,4 +652,9 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             }
         }
     }
+    
+    private static String handleAsResourceName(final ElementHandle<TypeElement> handle) {
+        return handle.getBinaryName().replace('.','/')+".class";    //NOI18N
+    }
+    
 }
