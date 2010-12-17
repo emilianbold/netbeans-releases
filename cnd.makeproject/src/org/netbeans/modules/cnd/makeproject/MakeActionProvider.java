@@ -552,9 +552,23 @@ public final class MakeActionProvider implements ActionProvider {
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isLibraryConfiguration()) {
-            // Should never get here...
-            assert false;
-            return false;
+            String path;
+            if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
+                path = conf.getProfile().getRunCommand();
+                if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
+                    // make path relative to run working directory
+                    // path here should always be in unix style, see issue 149404
+                    path = conf.getMakefileConfiguration().getAbsOutput();
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                }
+            } else {
+                // Always absolute
+                path = conf.getMakefileConfiguration().getAbsOutput();
+                path = CndPathUtilitities.normalizeSlashes(path);
+            }
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
+            actionEvents.add(projectActionEvent);
+            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
             RunProfile runProfile = createRunProfile(conf, cancelled);
             if (runProfile == null) {
@@ -1041,7 +1055,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_REBUILD)) {
             return true;
         } else if (command.equals(COMMAND_RUN)) {
-            return !conf.isLibraryConfiguration();
+            return true;//!conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG)) {
             return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
