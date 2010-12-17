@@ -83,7 +83,6 @@ public class RevisionDialog extends javax.swing.JPanel {
         jLabel1.setLabelFor(revisionField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.jLabel1.text")); // NOI18N
 
-        revisionField.setEditable(false);
         revisionField.setText(GitUtils.HEAD);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnSelectRevision, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.btnSelectRevision.text")); // NOI18N
@@ -95,7 +94,7 @@ public class RevisionDialog extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(revisionInfoPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                    .addComponent(revisionInfoPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
