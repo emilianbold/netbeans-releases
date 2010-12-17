@@ -59,10 +59,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
+import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
+import org.xhtmlrenderer.render.AbstractOutputDevice;
+import org.xhtmlrenderer.resource.ImageResource;
 import org.xhtmlrenderer.resource.XMLResource;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
+import org.xhtmlrenderer.swing.AWTFSImage;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
 import org.xhtmlrenderer.util.XRLog;
 import org.xhtmlrenderer.util.XRLogger;
@@ -268,6 +272,23 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
     //workaround for specifying Base URL
     private static class PreviewUserAgent extends NaiveUserAgent {
+
+        //issue #191644 - 'endless image drawing' workround
+        @Override
+        public ImageResource getImageResource(String uri) {
+            ImageResource is = super.getImageResource(uri);
+            if(is != null) {
+                //if the image to be returned by the ImageResource has width or height == 0
+                //we cannot pass it to the AbstractOutputDevice since it would cause the
+                //AbstractOutputDevice.paintTiles(...) to run endlessly
+                FSImage fsimg = is.getImage();
+                if(fsimg.getHeight() == 0 || fsimg.getWidth() == 0) {
+                    return new ImageResource(null);
+                }
+            }
+
+            return is;
+        }
 
         @Override
         public String resolveURI(String uri) {
