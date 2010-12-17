@@ -185,7 +185,7 @@ made subject to such option by the copyright holder.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.hints.processor</code-name-base>
-                    <build-prerequisite/> <!--this line is required!-->
+                    <build-prerequisite/>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
@@ -388,7 +388,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -483,7 +483,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.javadoc</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
-		<friend>org.netbeans.modules.web.beans</friend>
+                <friend>org.netbeans.modules.web.beans</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
             </friend-packages>
         </data>

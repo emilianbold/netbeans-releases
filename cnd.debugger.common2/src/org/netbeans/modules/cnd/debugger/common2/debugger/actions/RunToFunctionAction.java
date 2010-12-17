@@ -112,6 +112,10 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
     public void update(State state) {
         boolean enable = false;
         NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        if (debugger == null) {
+            setEnabled(false);
+            return;
+        }
         EngineDescriptor descriptor = debugger.getNDI().getEngineDescriptor();
         if (descriptor.hasCapability(EngineCapability.RUN_AUTOSTART)) {
             enable = state.isListening() && !state.isCore && state.isLoaded;

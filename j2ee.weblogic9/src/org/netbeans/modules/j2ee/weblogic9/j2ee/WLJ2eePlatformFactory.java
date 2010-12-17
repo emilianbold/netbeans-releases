@@ -166,7 +166,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             profiles.add(Profile.J2EE_14);
             
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
-            Version version = WLPluginProperties.getDomainVersion(dm.getInstanceProperties());
+            Version version = dm.getDomainVersion();
             
             if (version != null) {
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {

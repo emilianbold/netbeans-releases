@@ -44,14 +44,12 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -59,16 +57,21 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.Document;
 import org.xhtmlrenderer.extend.UserAgentCallback;
+import org.xhtmlrenderer.resource.XMLResource;
 import org.xhtmlrenderer.simple.XHTMLPanel;
+import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 import org.xhtmlrenderer.swing.NaiveUserAgent;
+import org.xhtmlrenderer.util.XRLog;
+import org.xhtmlrenderer.util.XRLogger;
+import org.xml.sax.InputSource;
 
 /**
  * JPanel wrapping XHTMLPanel, the Flying Saucer's rendering area.
  * The class also suppresses exceptions falling from the renderer
- * so they are just logged, not displayed to user as execeptions.
+ * so they are just logged, not displayed to user as exceptions.
  *
  * @author  Marek Fukala
  */
@@ -76,21 +79,30 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
     private static final Logger LOGGER = Logger.getLogger(CssPreviewPanel.class.getName());
     private static final boolean LOG_FINE = LOGGER.isLoggable(Level.FINE);
-    private Handler FS_HANDLER = new FlyingSaucerLoggersHandler();
-    private XHTMLPanel xhtmlPanel;
+    private XRLogger FS_HANDLER = new FlyingSaucerLoggersHandler();
+    private PatchedXHTMLPanel xhtmlPanel;
     private Runnable panelCreatedTask;
 
     /** Creates new form CssPreviewPanel2 */
     public CssPreviewPanel() {
         initComponents();
-
         //run the xhtml panel creation in a non-AWT thread
         RequestProcessor.getDefault().execute(new FutureTask<XHTMLPanel>(new Runnable() {
 
             @Override
             public void run() {
                 //create outside of AWT
-                final XHTMLPanel panel = new PatchedXHTMLPanel(new PreviewUserAgent());
+                final PatchedXHTMLPanel panel = new PatchedXHTMLPanel(new PreviewUserAgent());
+                //set own XRLogger, all FS logged events will go to our impl.
+                XRLog.setLoggerImpl(FS_HANDLER);
+                try {
+                    //call the setDocument(...) on the freshly created panel so all the resources
+                    //loading is done now and not later in EDT
+                    InputSource inputSource = new InputSource(new StringReader(CssPreviewGenerator.getEmptyDocumentContent()));
+                    panel.setDocument(inputSource, null);
+                } catch (Exception ex) {
+                    //no-op
+                }
                 //and set the panel to this component in AWT
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -102,10 +114,9 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             }
         }, null));
 
-        configureFlyingSaucerLoggers();
     }
 
-    private synchronized void setXhtmlPanel(XHTMLPanel panel) {
+    private synchronized void setXhtmlPanel(PatchedXHTMLPanel panel) {
         assert SwingUtilities.isEventDispatchThread();
         this.xhtmlPanel = panel;
         jScrollPane1.setViewportView(panel);
@@ -118,7 +129,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     }
 
     @Override
-    public synchronized void setDocument(final InputStream is, final String url) throws Exception {
+    public synchronized void setDocument(final InputSource is, final String url) throws Exception {
         if (xhtmlPanel == null) {
             //early attempt to set a document content, the xhtml panel initialization
             //is still running
@@ -132,7 +143,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
                         @Override
                         public void run() {
                             try {
-                                xhtmlPanel.setDocument(is, url);
+                                doSetDocument(is, url);
                                 //repaing the panel in AWT then
                                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -153,8 +164,12 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             };
         } else {
             //and set the document to he renderer
-            xhtmlPanel.setDocument(is, url);
+            doSetDocument(is, url);
         }
+    }
+
+    private void doSetDocument(InputSource inputSource, String url) throws Exception {
+        xhtmlPanel.setDocument(inputSource, url);
     }
 
     @Override
@@ -165,18 +180,6 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     @Override
     public void dispose() {
         // nothing to dispose here
-    }
-
-    private void configureFlyingSaucerLoggers() {
-        //remove potential flying saucer handlers
-        Logger logger = Logger.getLogger("plumbing.exception");
-        for (Handler h : logger.getHandlers()) {
-            logger.removeHandler(h);
-        }
-        //do not report event to the parent handler ...
-        logger.setUseParentHandlers(false);
-        //...just to me
-        logger.addHandler(FS_HANDLER);
     }
 
     /** This method is called from within the constructor to
@@ -197,36 +200,39 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     // End of variables declaration//GEN-END:variables
 
     //delegating flying saucer handler
-    private class FlyingSaucerLoggersHandler extends Handler {
+    //modifies the log record priorities!
+    private class FlyingSaucerLoggersHandler implements XRLogger {
 
-        @Override
-        public void publish(LogRecord record) {
-            Level level = record.getLevel();
-            if (LOG_FINE) {
-                //set log level to FILE to prevent the exceptions
-                //popping up in a netbeans exceptions dialog
-                record.setLevel(Level.FINE);
-                LOGGER.log(record);
-            } else {
-                //just swallow the log record if FINE logging disabled
-            }
-
+        private void publish(Level level, String msg, Throwable exc) {
             //log the important messages with INFO level and show them in the status bar
             if(level.intValue() >= Level.WARNING.intValue()) {
                 //log the exception message to output
-                LOGGER.log(Level.INFO, record.getMessage());
+                LOGGER.log(Level.INFO, msg, exc);
                 //...and to the status bar
-                StatusDisplayer.getDefault().setStatusText(record.getMessage());
+                StatusDisplayer.getDefault().setStatusText(msg);
+            } else {
+                //lower priority
+                if(LOG_FINE) {
+                    LOGGER.log(Level.FINE, msg, exc);
+                }
             }
         }
 
         @Override
-        public void flush() {
+        public void log(String logger, Level level, String msg) {
+            log(logger, level, msg, null);
         }
 
         @Override
-        public void close() throws SecurityException {
+        public void log(String logger, Level level, String msg, Throwable thrwbl) {
+            publish(level, logger+msg, thrwbl);
         }
+
+        @Override
+        public void setLevel(String string, Level level) {
+            //no-op
+        }
+        
     }
 
     //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
@@ -242,13 +248,18 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             super(uac);
         }
 
+        public void setDocument(InputSource inputSource, String url) {
+            Document dom = XMLResource.load(inputSource).getDocument();
+            setDocument(dom, url, new XhtmlNamespaceHandler());
+        }
+
         @Override
         public void paintComponent(Graphics g) {
             try {
                 super.paintComponent(g);
             } catch (Throwable e) {
                 if (LOG_FINE) {
-                    LOGGER.log(Level.FINE, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                    LOGGER.log(Level.FINE, "It seems there is a bug in FlyinSaucer XHTML renderer.", e); //NOI18N
                 }
                 CssPreviewTopComponent.getDefault().setError();
             }

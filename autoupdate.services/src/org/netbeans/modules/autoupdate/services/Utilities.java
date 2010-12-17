@@ -141,8 +141,8 @@ public class Utilities {
     private static final String USER_KS_FILE_NAME = "user.ks";
     private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
-    private static Logger err = null;
-    private static ModuleManager mgr = null;
+    private static final Logger err = Logger.getLogger(Utilities.class.getName ());
+    private static ModuleManager mgr;
     
     
     public static Collection<KeyStore> getKeyStore () {
@@ -491,15 +491,20 @@ public class Utilities {
             ModuleUpdateElementImpl el = (ModuleUpdateElementImpl) Trampoline.API.impl(element);
             Set<Dependency> deps = new HashSet<Dependency> (el.getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
-            Set<Dependency> newones;
             
             int max_counter = el.getType().equals(UpdateManager.TYPE.KIT_MODULE) ? 2 : 1;
             int counter = max_counter;
             boolean aggressive = topAggressive && counter > 0;
 
-            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element, aggressive)).isEmpty ()) {
-                deps = newones;                
-                aggressive = aggressive && (--counter) > 0;
+            Set<Dependency> all = new HashSet<Dependency>();
+            for (;;) {
+                Set<Dependency> newones = processDependencies(deps, retval, availableInfos, brokenDependencies, element, aggressive);
+                newones.removeAll(all);
+                if (newones.isEmpty()) {
+                    break;
+                }
+                all.addAll(newones);
+                deps = newones;
             }
 
             Set<Dependency> moreBroken = new HashSet<Dependency> ();
@@ -852,18 +857,23 @@ public class Utilities {
             mgr = Main.getModuleSystem().getManager();
             assert mgr != null;
             if (mgr == null) {
+                err.config("No module manager");
                 return null;
             }
         }
         Module m = mgr.get(codeNameBase);
         if (specificationVersion == null || m == null) {
+            err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
             return m;
         } else {
             SpecificationVersion version = m.getSpecificationVersion();
             if (version == null) {
+                err.log(Level.FINER, "No version for {0}", m);
                 return null;
             }
-            return version.compareTo(specificationVersion) >= 0 ? m : null;
+            final int res = version.compareTo(specificationVersion);
+            err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+            return res >= 0 ? m : null;
         }
     }
     
@@ -1030,9 +1040,6 @@ public class Utilities {
     }
     
     private static Logger getLogger () {
-        if (err == null) {
-            err = Logger.getLogger (Utilities.class.getName ());
-        }
         return err;
     }
     

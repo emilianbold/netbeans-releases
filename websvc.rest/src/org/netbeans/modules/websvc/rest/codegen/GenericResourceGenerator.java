@@ -64,6 +64,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -209,13 +210,31 @@ public class GenericResourceGenerator extends AbstractGenerator {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws IOException {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
-                    JavaSourceHelper.addImports(copy, getJsr311AnnotationImports(bean));
-                    if (bean.isGenerateUriTemplate()) {
-                        JavaSourceHelper.addClassAnnotation(copy,
-                                new String[] { RestConstants.PATH_ANNOTATION  },
-                                new Object[] { bean.getUriTemplate() });
+                    String jsr311Imports[] = getJsr311AnnotationImports(bean);
+                    String imports[] = jsr311Imports; 
+                    boolean cdiEnabled = Util.isCDIEnabled(getDestDir());
+                    if ( cdiEnabled ){
+                        imports  = new String[jsr311Imports.length+1];
+                        System.arraycopy(jsr311Imports, 0, imports, 0, jsr311Imports.length);
+                        imports[jsr311Imports.length] = Constants.FQN_REQUESTED_SCOPE;
                     }
-                    
+                    JavaSourceHelper.addImports(copy, imports);
+                    List<String> annotations= new ArrayList<String>(2);
+                    List<Object> annotationAttributes = new ArrayList<Object>(2); 
+                    if (bean.isGenerateUriTemplate()) {
+                        annotations.add(RestConstants.PATH_ANNOTATION);
+                        annotationAttributes.add(bean.getUriTemplate());
+                    }
+                    if ( cdiEnabled){
+                        annotations.add( Constants.REQUESTED_SCOPE);
+                        annotationAttributes.add(null);
+                    }
+                    if ( annotations.size() >0 ){
+                        JavaSourceHelper.addClassAnnotation(copy,
+                                annotations.toArray( new String[annotations.size()]) ,
+                                annotationAttributes.toArray( 
+                                        new Object[annotationAttributes.size()]));
+                    }
                     ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree tree = addMethods(copy, initial);
                     

@@ -43,8 +43,11 @@
 package org.netbeans.updater;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.updater.UpdateTracking.Module;
 import org.netbeans.updater.UpdateTracking.Version;
@@ -89,7 +92,8 @@ public class UpdateTrackingTest extends NbTestCase {
 
 
     public void testUpdateTrackingWithFilesInRootOfCluster() throws IOException {
-        UpdateTracking ut = UpdateTracking.getTracking(getWorkDir(), true);
+        MockContext context = new MockContext();
+        UpdateTracking ut = UpdateTracking.getTracking(getWorkDir(), true, context);
         assertNotNull("tracking created", ut);
         assertTrue("Installed", ut.isModuleInstalled("my.test"));
         Module m = ut.readModuleTracking("my.test", true);
@@ -102,4 +106,48 @@ public class UpdateTrackingTest extends NbTestCase {
         m.writeConfigModuleXMLIfMissing();
     }
 
+    private static final class MockContext implements UpdatingContext {
+        @Override
+        public Collection<File> forInstall() {
+            return null;
+        }
+
+        @Override
+        public boolean isFromIDE() {
+            return false;
+        }
+
+        @Override
+        public void unpackingFinished() {
+        }
+
+        @Override
+        public void setProgressValue(long bytesRead) {
+        }
+
+        @Override
+        public void setLabel(String string) {
+        }
+
+        @Override
+        public void unpackingIsRunning() {
+        }
+
+        @Override
+        public void setProgressRange(long i, long totalLength) {
+        }
+
+        @Override
+        public void runningFinished() {
+        }
+
+        @Override
+        public void disposeSplash() {
+        }
+
+        @Override
+        public OutputStream createOS(File bckFile) throws FileNotFoundException {
+            return new FileOutputStream(bckFile);
+        }
+    }
 }

@@ -113,7 +113,7 @@ public final class MultiViewPeer  {
     private boolean activated = false;
     private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListener() {
         public @Override void preferenceChange(PreferenceChangeEvent evt) {
-            if (evt.getKey().equals(TOOLBAR_VISIBLE_PROP)) {
+            if (TOOLBAR_VISIBLE_PROP.equals(evt.getKey())) {
                 EventQueue.invokeLater(new Runnable() {
                     public @Override void run() {
                         tabs.setToolbarBarVisible(isToolbarVisible());

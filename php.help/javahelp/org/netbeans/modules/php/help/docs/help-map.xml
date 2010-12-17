@@ -26,6 +26,7 @@ made subject to such option by the copyright holder.
 -->
 <map version="1.0">
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
+    <mapID target="org.netbeans.modules.php.help.project" url="phpprojectnode.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="new-project-configure_no_sources.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="new-project-configure_existing_sources.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" url="new-project-run-configuration.html"/>

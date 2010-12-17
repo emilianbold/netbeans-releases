@@ -64,8 +64,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -210,18 +210,20 @@ public class AnalyzeModel implements DiscoveryProvider {
             File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        List<String> l = map.get(ff[i].getName());
-                        if (l==null){
-                            l = new ArrayList<String>();
-                            map.put(ff[i].getName(),l);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            List<String> l = map.get(ff[i].getName());
+                            if (l==null){
+                                l = new ArrayList<String>();
+                                map.put(ff[i].getName(),l);
+                            }
+                            String path = ff[i].getAbsolutePath();
+                            if (Utilities.isWindows()) {
+                                path = path.replace('\\', '/');
+                            }
+                            l.add(path);
                         }
-                        String path = ff[i].getAbsolutePath();
-                        if (Utilities.isWindows()) {
-                            path = path.replace('\\', '/');
-                        }
-                        l.add(path);
                     }
                 }
             }
@@ -244,18 +246,20 @@ public class AnalyzeModel implements DiscoveryProvider {
             if (!set.contains(path)){
                 set.add(path);
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isDirectory()) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isDirectory()) {
+                            try {
+                                String canPath = ff[i].getCanonicalPath();
+                                String absPath = ff[i].getAbsolutePath();
+                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                    continue;
+                                }
+                            } catch (IOException ex) {
+                                //Exceptions.printStackTrace(ex);
                             }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
+                            gatherSubFolders(ff[i], set);
                         }
-                        gatherSubFolders(ff[i], set);
                     }
                 }
             }
@@ -283,7 +287,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-        return new ApplicableImpl(true, null, null, 40, false, null, null, null);
+        return new ApplicableImpl(true, null, null, 40, false, null, null, null, null);
     }
     
     private class MyConfiguration implements Configuration{

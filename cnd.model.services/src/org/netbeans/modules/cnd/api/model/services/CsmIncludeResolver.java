@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
 /**
  * Service that checks visibility of CSM object and finds include that makes CSM object visible
  * 
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public abstract class CsmIncludeResolver {
 

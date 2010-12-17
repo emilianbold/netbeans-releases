@@ -212,7 +212,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             else
                             {
 //                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
-                                JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, true, false);
+                                JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
                             if (jsf2Generator || "Facelets".equals(preferredLanguage)) {

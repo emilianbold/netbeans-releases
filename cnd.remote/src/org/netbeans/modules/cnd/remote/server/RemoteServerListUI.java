@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -134,15 +133,6 @@ public class RemoteServerListUI extends ServerListUIEx {
         } catch (InvocationTargetException ex) {
         }
         return res.get();
-    }
-
-    public static void revalidate(ExecutionEnvironment env) {
-        ServerRecord record = ServerList.get(env);
-        if (record.isDeleted()) {
-            ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-        } else if (!record.isOnline()) {
-            record.validate(true);
-        }
     }
 
     @Override

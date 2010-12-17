@@ -320,7 +320,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return commonSupport.getInstanceProvider().getDisplayName();
+        return commonSupport.getInstanceProvider().getDisplayName(commonSupport.getDeployerUri());
     }
 
     @Override

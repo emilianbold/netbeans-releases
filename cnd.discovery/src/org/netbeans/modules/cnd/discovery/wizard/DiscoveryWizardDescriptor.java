@@ -73,6 +73,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
+    public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
     public static final String ERRORS = "DW:errors"; // NOI18N
     
     private boolean stateChanged = true;
@@ -267,6 +268,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setDependencies(List<String> dependencies) {
         putProperty(DEPENDENCIES, dependencies);
     }
+
+    @Override
+    public List<String> getSearchPaths() {
+        return (List<String>) getProperty(SEARCH_PATHS);
+    }
+
+    @Override
+    public void setSearchPaths(List<String> searchPaths) {
+        putProperty(SEARCH_PATHS, searchPaths);
+    }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
@@ -460,6 +471,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setDependencies(List<String> dependencies) {
             wizard.putProperty(DEPENDENCIES, dependencies);
+        }
+
+        @Override
+        public List<String> getSearchPaths() {
+            return (List<String>) wizard.getProperty(SEARCH_PATHS);
+        }
+
+        @Override
+        public void setSearchPaths(List<String> searchPaths) {
+            wizard.putProperty(SEARCH_PATHS, searchPaths);
         }
     }
 
@@ -656,6 +677,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setDependencies(List<String> dependencies) {
             map.put(DEPENDENCIES, dependencies);
+        }
+
+        @Override
+        public List<String> getSearchPaths() {
+            return (List<String>) map.get(SEARCH_PATHS);
+        }
+
+        @Override
+        public void setSearchPaths(List<String> searchPaths) {
+            map.put(SEARCH_PATHS, searchPaths);
         }
     }
 }

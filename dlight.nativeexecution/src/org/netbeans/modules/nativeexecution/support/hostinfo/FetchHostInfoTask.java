@@ -63,7 +63,7 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
                 result = provider.getHostInfo(execEnv);
             } catch (IOException ex) {
                 // TODO: should we throw exception instead?
-                log.log(Level.INFO, "Exception while receiving hostinfo for " + execEnv.toString(), ex); //NOI18N
+                log.log(Level.SEVERE, "Exception while receiving hostinfo for " + execEnv.getDisplayName(), ex); //NOI18N
             }
             if (result != null) {
                 break;

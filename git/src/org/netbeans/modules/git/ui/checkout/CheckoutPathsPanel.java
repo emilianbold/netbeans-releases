@@ -49,17 +49,17 @@
 package org.netbeans.modules.git.ui.checkout;
 
 import javax.swing.JPanel;
-import org.netbeans.modules.git.ui.repository.RevisionPickerDialog;
+import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
  * @author ondra
  */
 public class CheckoutPathsPanel extends JPanel {
-    private final RevisionPickerDialog revisionPanel;
+    private final RevisionDialog revisionPanel;
 
     /** Creates new form CheckoutPathsPanel */
-    public CheckoutPathsPanel (RevisionPickerDialog revisionPanel) {
+    public CheckoutPathsPanel (RevisionDialog revisionPanel) {
         this.revisionPanel = revisionPanel;
         initComponents();
     }
@@ -73,7 +73,7 @@ public class CheckoutPathsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        org.netbeans.modules.git.ui.repository.RevisionPickerDialog revisionPickerDialog1 = this.revisionPanel;
+        org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog1 = this.revisionPanel;
 
         setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPathsPanel.class, "CheckoutPathsPanel.cbUpdateIndex.TTtext")); // NOI18N
 
@@ -87,8 +87,8 @@ public class CheckoutPathsPanel extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbUpdateIndex)
-                    .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -96,8 +96,8 @@ public class CheckoutPathsPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(cbUpdateIndex)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

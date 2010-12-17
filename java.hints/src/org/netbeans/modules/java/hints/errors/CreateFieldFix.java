@@ -73,7 +73,7 @@ public final class CreateFieldFix implements Fix {
     
     public CreateFieldFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror proposedType, FileObject targetFile) {
         this.name = name;
-        this.inFQN = target.getQualifiedName().toString();
+        this.inFQN = Utilities.target2String(target);
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
         this.targetFile = targetFile;
@@ -118,17 +118,7 @@ public final class CreateFieldFix implements Fix {
 
                 TreeMaker make = working.getTreeMaker();
                 TypeMirror tm = proposedType;
-                VariableTree var = null;
-
-                if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
-                    var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
-                }
-
-                if (tm.getKind().isPrimitive()) {
-                    var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
-                }
-
-                assert var != null : tm.getKind();
+                VariableTree var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
                 ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, decl);
             }

@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -84,15 +84,16 @@ import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXM
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -141,7 +142,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public MakeConfigurationDescriptor(FileObject baseDirFO) {
         this.baseDirFO = baseDirFO;
-        rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
+        rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
         ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
@@ -303,7 +304,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), false, true, null);
+                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), false, Folder.Kind.SOURCE_DISK_FOLDER, null);
             }
         }
         setModified();
@@ -397,7 +398,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public Configuration defaultConf(String name, int type) {
-        MakeConfiguration c = new MakeConfiguration(this.getBaseDir(), name, type, CppUtils.getDefaultDevelopmentHost(), null);
+        MakeConfiguration c = new MakeConfiguration(getBaseDir(), name, type, CppUtils.getDefaultDevelopmentHost());
         Item[] items = getProjectItems();
         for (int i = 0; i < items.length; i++) {
             c.addAuxObject(new ItemConfiguration(c, items[i]));
@@ -472,17 +473,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Item findProjectItemByPath(String path) {
         // Try first as-is
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalize(path));
+                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
                 newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
             }
-            newPath = CndPathUtilitities.normalize(newPath);
+            newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = projectItems.get(newPath);
         }
         return item;
@@ -493,17 +494,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (externalFileItems == null) {
             return null;
         }
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalize(path));
+                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
                 newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
             }
-            newPath = CndPathUtilitities.normalize(newPath);
+            newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = externalFileItems.findItemByPath(newPath);
         }
         return item;
@@ -548,6 +549,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             getNativeProject().checkForChangedItems(folder, item);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
+    }
+
+    public void checkForChangedItems(Delta delta) {
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().checkForChangedItems(delta);
+        }
+        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
     }
 
     @Override
@@ -726,13 +734,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         // Check metadata files are writable
         List<String> metadataFiles = new ArrayList<String>();
         List<String> notOkFiles = new ArrayList<String>();
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
-        Configuration[] confs = getConfs().toArray();
-        for (int i = 0; i < confs.length; i++) {
-            metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
-        } // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER); // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
             File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
@@ -786,12 +789,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         try {
-            AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
+            MakeProjectHelper helper = ((MakeProject) getProject()).getMakeProjectHelper();
             Element data = helper.getPrimaryConfigurationData(true);
             Document doc = data.getOwnerDocument();
 
             // Remove old project dependency node
-            NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
+            NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.MAKE_DEP_PROJECTS);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
@@ -799,11 +802,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             // Create new project dependency node
-            Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
+            Element element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.MAKE_DEP_PROJECTS);
             Set<String> subprojectLocations = getSubprojectLocations();
             for (String loc : subprojectLocations) {
                 Node n1;
-                n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
+                n1 = doc.createElement(MakeProjectTypeImpl.MAKE_DEP_PROJECT);
                 n1.appendChild(doc.createTextNode(loc));
                 element.appendChild(n1);
             }
@@ -811,7 +814,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             helper.putPrimaryConfigurationData(data, true);
 
             // Remove old source root node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+            nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
@@ -819,11 +822,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             // Create new source root node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+            element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
             List<String> sourceRootist = getSourceRoots();
             for (String loc : sourceRootist) {
                 Node n1;
-                n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
+                n1 = doc.createElement(MakeProjectTypeImpl.SOURCE_ROOT_ELEMENT);
                 n1.appendChild(doc.createTextNode(loc));
                 element.appendChild(n1);
             }
@@ -831,7 +834,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             helper.putPrimaryConfigurationData(data, true);
 
             // Remove old configuration node
-            nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+            nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CONFIGURATION_LIST_ELEMENT);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
@@ -839,11 +842,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             // Create new configuration node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+            element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.CONFIGURATION_LIST_ELEMENT);
             String[] confsNames = getConfs().getConfsAsNames();
             for (String name : confsNames) {
                 Node n1;
-                n1 = doc.createElement(MakeProjectType.CONFIGURATION_ELEMENT);
+                n1 = doc.createElement(MakeProjectTypeImpl.CONFIGURATION_ELEMENT);
                 n1.appendChild(doc.createTextNode(name));
                 element.appendChild(n1);
             }
@@ -851,14 +854,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             helper.putPrimaryConfigurationData(data, true);
 
             // Create source encoding node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+            nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ENCODING_TAG);
             if (nodeList != null && nodeList.getLength() > 0) {
                 // Node already there
                 Node node = nodeList.item(0);
                 node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
             } else {
                 // Create node
-                Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
+                Element nativeProjectType = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.SOURCE_ENCODING_TAG); // NOI18N
                 nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
                 data.appendChild(nativeProjectType);
             }
@@ -886,8 +889,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Set<String> c = MakeProject.createExtensionSet();
         Set<String> cpp = MakeProject.createExtensionSet();
         for (Item item : getProjectItems()) {
-            String path = item.getPath();
-            String ext = FileUtil.getExtension(path);
+            String itemName = item.getName();
+            String ext = FileUtil.getExtension(itemName);
             if (ext.length() > 0) {
                 if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
                     if (MIMEExtensions.isRegistered(MIMENames.HEADER_MIME_TYPE, ext)) {
@@ -949,7 +952,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void addTestRoot(String path) {
         String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
-        String relPath = CndPathUtilitities.normalize(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 
         //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
@@ -957,7 +960,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -975,7 +978,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Don't add if root inside project
      * Don't add if root is subdir of existing root
      */
-    private void addSourceRoot(String path) {
+    public void addSourceRoot(String path) {
         String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
         String canonicalPath = null;
         try {
@@ -983,11 +986,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         } catch (IOException ioe) {
             canonicalPath = null;
         }
-        String relPath = CndPathUtilitities.normalize(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (sourceRoots) {
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
@@ -1027,7 +1029,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -1038,7 +1040,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 setModified();
             }
         }
-        //}
+        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
+        if (makeSources != null) {
+            makeSources.sourceRootsChanged();
+        }
     }
 
     /*
@@ -1119,7 +1124,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Add new source root folders
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
-                    addFilesFromRoot(getLogicalFolders(), getBaseDirFileObject(), true, true, null);
+                    FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
+                    addFilesFromRoot(getLogicalFolders(), fo, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                 }
                 setModified();
             }
@@ -1129,7 +1135,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 for (String rootToBeRemoved : toBeRemoved) {
                     List<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
                     for (Folder root : rootFolders) {
-                        if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
+                        if (root.isDiskFolder() && root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
                             getLogicalFolders().removeFolderAction(root);
                         }
                     }
@@ -1269,17 +1275,18 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, boolean asDiskFolder, @NullAllowed FileObjectFilter fileFilter) {
+    public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
         top = folder.findFolderByName(dir.getNameExt());
         if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
+            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
             folder.addFolder(top, true);
         }
-        if (asDiskFolder) {
+        assert top.getKind() == folderKind;
+        if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
-            rootPath = CndPathUtilitities.normalize(rootPath);
+            rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
             top.setRoot(rootPath);
         }
         addFiles(top, dir, null, filesAdded, true, true, fileFilter);
@@ -1291,22 +1298,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         addSourceRoot(dir.getPath());
-        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
-        if (makeSources != null) {
-            makeSources.sourceRootsChanged();
-        }
 
         return top;
     }
 
-    public Folder addFilesFromDir(Folder folder, File dir, boolean attachListeners, boolean setModified) {
-        // XXX:fullRemote
-        return addFilesFromDir(folder, CndFileUtils.toFileObject(dir), attachListeners, setModified, null);
-    }
-
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         folder.addFolder(top, setModified);
         addFiles(top, dir, null, filesAdded, true, setModified, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null

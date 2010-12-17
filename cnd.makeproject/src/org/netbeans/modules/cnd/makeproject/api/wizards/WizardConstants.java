@@ -60,6 +60,7 @@ public class WizardConstants {
     public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
     public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
     public static final String PROPERTY_TOOLCHAIN = "toolchain"; // CompilerSet // NOI18N
+    public static final String PROPERTY_TOOLCHAIN_DEFAULT = "toolchainDefault"; // Boolean // NOI18N
     public static final String PROPERTY_READ_ONLY_TOOLCHAIN = "readOnlyToolchain"; // Boolean // NOI18N
     public static final String PROPERTY_SOURCE_FOLDERS = "sourceFolders"; // Iterator<FolderEntry> // NOI18N
     public static final String PROPERTY_SOURCE_FOLDERS_LIST = "sourceFoldersList"; // ArrayList<FolderEntry> // NOI18N
@@ -79,6 +80,7 @@ public class WizardConstants {
     public static final String PROPERTY_MACROS = "macroTextField"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_PATH = "configureName"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_ARGS = "configureArguments"; // String // NOI18N
+    public static final String PROPERTY_CONFIGURE_RUN_FOLDER = "configureRunFolder"; // String // NOI18N
     public static final String PROPERTY_RUN_CONFIGURE = "runConfigure"; // String // NOI18N
     public static final String PROPERTY_CONSOLIDATION_LEVEL = "consolidationLevel"; // String // NOI18N
     public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N

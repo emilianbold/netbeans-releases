@@ -47,7 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
-import org.netbeans.modules.git.ui.repository.RevisionPicker;
+import org.netbeans.modules.git.ui.repository.RevisionDialogController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -59,10 +59,10 @@ import org.openide.util.NbBundle;
  */
 public class CheckoutPaths implements ActionListener {
     private CheckoutPathsPanel panel;
-    private RevisionPicker revisionPicker;
+    private RevisionDialogController revisionPicker;
 
     CheckoutPaths (File repository, File[] roots) {
-        revisionPicker = new RevisionPicker(repository);
+        revisionPicker = new RevisionDialogController(repository);
         panel = new CheckoutPathsPanel(revisionPicker.getPanel());
     }
 

@@ -346,7 +346,7 @@ public class GeneratorUtils {
         }
     }
     
-    public static boolean hasGetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+    public static boolean hasGetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods) {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
@@ -356,14 +356,16 @@ public class GeneratorUtils {
         List<ExecutableElement> candidates = methods.get(sb.toString());
         if (candidates != null) {
             for (ExecutableElement candidate : candidates) {
-                if (candidate.getParameters().isEmpty() && types.isSameType(candidate.getReturnType(), type))
+                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
+                        && candidate.getParameters().isEmpty()
+                        && types.isSameType(candidate.getReturnType(), type))
                     return true;
             }
         }
         return false;
     }
     
-    public static boolean hasSetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+    public static boolean hasSetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods) {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
@@ -373,7 +375,10 @@ public class GeneratorUtils {
         List<ExecutableElement> candidates = methods.get(sb.toString());
         if (candidates != null) {
             for (ExecutableElement candidate : candidates) {
-                if (candidate.getReturnType().getKind() == TypeKind.VOID && candidate.getParameters().size() == 1 && types.isSameType(candidate.getParameters().get(0).asType(), type))
+                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
+                        && candidate.getReturnType().getKind() == TypeKind.VOID
+                        && candidate.getParameters().size() == 1
+                        && types.isSameType(candidate.getParameters().get(0).asType(), type))
                     return true;
             }
         }

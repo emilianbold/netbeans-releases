@@ -67,7 +67,7 @@ public interface GitRevisionInfo {
     public String getFullMessage ();
 
     /**
-     * getter for commit time
+     * getter for commit time, time is in milliseconds
      * @return
      */
     public long getCommitTime ();
@@ -77,6 +77,12 @@ public interface GitRevisionInfo {
      * @return
      */
     public GitUser getAuthor ();
+
+    /**
+     * returns committer of this change set
+     * @return
+     */
+    public GitUser getCommitter ();
     
     /**
      * files affected by this change set

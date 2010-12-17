@@ -193,6 +193,11 @@ public class SQLTableDataProvider implements TableDataProvider {
         }
     }
 
+    // TODO: need to discuss... 
+    public SQLDataStorage getStorage() {
+        return storage;
+    }
+
     private final static class Lock {
     }
 }

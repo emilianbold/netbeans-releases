@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="commit-groups">
+        <api name="text"/>
+        <summary>Better support for vi mode</summary>
+        <version major="6" minor="34"/>
+        <date day="24" month="11" year="2010"/>
+        <author login="err"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Support for chunking edits via <code>BEGIN_COMMIT_GROUP</code>
+                and <code>END_COMMIT_GROUP</code>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="103467"/>
+    </change>
     <change id="Editors-TabActions">
         <api name="text"/>
         <summary>Ability to inject actions into editor tab context menus</summary>

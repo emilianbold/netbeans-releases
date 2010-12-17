@@ -62,6 +62,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -87,6 +88,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
 import org.apache.lucene.analysis.Analyzer;
@@ -217,6 +219,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testNested2"));
         suite.addTest(new JavaSourceTest("testIndexCancel"));
         suite.addTest(new JavaSourceTest("testIndexCancel2"));
+        suite.addTest(new JavaSourceTest("testIndexCancel3"));
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         suite.addTest(new JavaSourceTest("testIncrementalReparse"));
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
@@ -1303,6 +1306,7 @@ public class JavaSourceTest extends NbTestCase {
                     Lookups.metaInfServices(l),
                     Lookups.singleton(l),
                     Lookups.singleton(new ClassPathProvider() {
+                    @Override
                     public ClassPath findClassPath(FileObject file, String type) {
                         if (ClassPath.BOOT == type) {
                             return bootPath;
@@ -1330,28 +1334,33 @@ public class JavaSourceTest extends NbTestCase {
                 TokenSequence ts = h.tokenSequence(JavaTokenId.language());
                 Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail
 
-                final CountDownLatch[] ready = new CountDownLatch[]{new CountDownLatch(1)};
-                final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
-                final Object[] result = new Object[1];
+                final CountDownLatch ready = new CountDownLatch(1);
+                final CountDownLatch change = new CountDownLatch(1);
+                final CountDownLatch end = new CountDownLatch (1);
+                final AtomicReference<Set<String>> result = new AtomicReference<Set<String>>(Collections.<String>emptySet());
 
                 CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
 
+                    @Override
                     public void cancel() {
                     }
 
+                    @Override
                     public void run(CompilationInfo p) throws Exception {
-                        ready[0].countDown();
+                        ready.countDown();
+                        change.await();
                         ClassIndex index = p.getClasspathInfo().getClassIndex();
-                        result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));
-                        end[0].countDown();
+                        result.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                        end.countDown();
                     }
 
                 };
                 factory.instance.active=true;
                 JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
-                assertTrue(ready[0].await(5, TimeUnit.SECONDS));
+                assertTrue(ready.await(5, TimeUnit.SECONDS));
                 NbDocument.runAtomic (doc,
                     new Runnable () {
+                    @Override
                         public void run () {
                             try {
                                 String text = doc.getText(0,doc.getLength());
@@ -1364,8 +1373,9 @@ public class JavaSourceTest extends NbTestCase {
                             }
                         }
                 });
-                assertTrue(end[0].await(5, TimeUnit.SECONDS));
-                assertNull(result[0]);
+                change.countDown();
+                assertTrue(end.await(5, TimeUnit.SECONDS));
+                assertNull(result.get());
                 JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
             } finally {
                 regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
@@ -1392,6 +1402,7 @@ public class JavaSourceTest extends NbTestCase {
                     Lookups.metaInfServices(l),
                     Lookups.singleton(l),
                     Lookups.singleton(new ClassPathProvider() {
+                    @Override
                     public ClassPath findClassPath(FileObject file, String type) {
                         if (ClassPath.BOOT == type) {
                             return bootPath;
@@ -1419,9 +1430,108 @@ public class JavaSourceTest extends NbTestCase {
                 TokenSequence ts = h.tokenSequence(JavaTokenId.language());
                 Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail
 
-                final CountDownLatch[] ready = new CountDownLatch[]{new CountDownLatch(1)};
-                final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
-                final Object[] result = new Object[1];
+                final CountDownLatch ready = new CountDownLatch(1);
+                final CountDownLatch change = new CountDownLatch(1);
+                final CountDownLatch end = new CountDownLatch (1);
+                final AtomicReference<Set<String>> result = new AtomicReference<Set<String>>(Collections.<String>emptySet());
+                final ThreadLocal<Boolean> me = new ThreadLocal<Boolean>();
+
+                CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
+
+                    @Override
+                    public void cancel() {
+                        if (me.get() == Boolean.TRUE) {
+                            change.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void run(CompilationInfo p) throws Exception {
+                        ready.countDown();
+                        change.await();
+                        ClassIndex index = p.getClasspathInfo().getClassIndex();
+                        result.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                        end.countDown();
+                    }
+
+                };
+                factory.instance.active=true;
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
+                assertTrue(ready.await(5, TimeUnit.SECONDS));
+                me.set(Boolean.TRUE);
+                try {
+                    js.runUserActionTask( new Task<CompilationController>() {
+                            @Override
+                            public void run (final CompilationController info) {                            
+                            }
+                    }, true);
+                } finally {
+                    me.remove();
+                }
+                assertTrue(end.await(5, TimeUnit.SECONDS));
+                assertNull(result.get());
+                JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
+            } finally {
+                regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            }
+        } finally {
+            IndexManagerTestUtilities.setIndexFactory(oldFactory);
+        }
+    }
+    
+    public void testIndexCancel3() throws Exception {
+        final IndexFactory oldFactory = IndexManagerTestUtilities.getIndexFactory();
+        final TestIndexFactory factory = new TestIndexFactory();
+        IndexManagerTestUtilities.setIndexFactory(factory);
+        try {
+            FileObject test = createTestFile ("Test1");
+            final ClassPath bootPath = createBootPath ();
+            final ClassPath compilePath = createCompilePath ();
+            final ClassPath sourcePath = createSourcePath ();
+            final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+            regs.register(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            try {
+                ClassLoader l = JavaSourceTest.class.getClassLoader();
+                Lkp.DEFAULT.setLookupsWrapper(
+                    Lookups.metaInfServices(l),
+                    Lookups.singleton(l),
+                    Lookups.singleton(new ClassPathProvider() {
+                    @Override
+                    public ClassPath findClassPath(FileObject file, String type) {
+                        if (ClassPath.BOOT == type) {
+                            return bootPath;
+                        }
+
+                        if (ClassPath.SOURCE == type) {
+                            return sourcePath;
+                        }
+
+                        if (ClassPath.COMPILE == type) {
+                            return compilePath;
+                        }
+                        return null;
+                    }
+                }));
+
+
+                final JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
+                IndexingManager.getDefault().refreshIndexAndWait(sourcePath.getRoots()[0].getURL(), null);
+                DataObject dobj = DataObject.find(test);
+                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+                final StyledDocument doc = ec.openDocument();
+                doc.putProperty(Language.class, JavaTokenId.language());
+                TokenHierarchy h = TokenHierarchy.get(doc);
+                TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+                Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail                
+                final CountDownLatch readyTask1 = new CountDownLatch(1);
+                final CountDownLatch changeTask1 = new CountDownLatch(1);
+                final CountDownLatch endTask1 = new CountDownLatch (1);
+                final CountDownLatch endTask3 = new CountDownLatch (1);
+                final AtomicReference<Set<String>> resultTask1Before = new AtomicReference<Set<String>>(Collections.<String>emptySet());
+                final AtomicReference<Set<String>> resultTask1Nested = new AtomicReference<Set<String>>(Collections.<String>emptySet());
+                final AtomicReference<Set<String>> resultTask1After = new AtomicReference<Set<String>>(Collections.<String>emptySet());
+                final AtomicReference<Set<String>> resultTask3 = new AtomicReference<Set<String>>();
+                
 
                 CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
 
@@ -1431,24 +1541,64 @@ public class JavaSourceTest extends NbTestCase {
 
                     @Override
                     public void run(CompilationInfo p) throws Exception {
-                        ready[0].countDown();
+                        readyTask1.countDown();
+                        changeTask1.await();
                         ClassIndex index = p.getClasspathInfo().getClassIndex();
-                        result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));
-                        end[0].countDown();
+                        resultTask1Before.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                        js.runUserActionTask(new Task<CompilationController>() {
+                            @Override
+                            public void run(CompilationController cc) throws Exception {
+                                ClassIndex index = cc.getClasspathInfo().getClassIndex();
+                                resultTask1Nested.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                            }
+                        }, true);
+                        index = p.getClasspathInfo().getClassIndex();
+                        resultTask1After.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                        endTask1.countDown();
                     }
 
                 };
+                
+                CancellableTask<CompilationInfo> task2 = new CancellableTask<CompilationInfo>() {
+                    @Override
+                    public void cancel() {                        
+                    }
+
+                    @Override
+                    public void run(CompilationInfo parameter) throws Exception {
+                    }                    
+                };
+                
+                CancellableTask<CompilationInfo> task3 = new CancellableTask<CompilationInfo>() {
+                    @Override
+                    public void cancel() {
+                    }
+
+                    @Override
+                    public void run(CompilationInfo p) throws Exception {
+                        ClassIndex index = p.getClasspathInfo().getClassIndex();
+                        resultTask3.set(index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class)));
+                        endTask3.countDown();
+                    }
+                };
+                
                 factory.instance.active=true;
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
-                assertTrue(ready[0].await(5, TimeUnit.SECONDS));
-                js.runUserActionTask( new Task<CompilationController>() {
-                        @Override
-                        public void run (final CompilationController info) {                            
-                        }
-                }, true);
-                assertTrue(end[0].await(5, TimeUnit.SECONDS));
-                assertNull(result[0]);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.NORMAL);
+                assertTrue(readyTask1.await(5, TimeUnit.SECONDS));                
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task2, Phase.PARSED, Priority.HIGH);
+                changeTask1.countDown();                
+                assertTrue(endTask1.await(5, TimeUnit.SECONDS));
+                assertNull(resultTask1Before.get());
+                assertNull(resultTask1Nested.get());
+                assertNull(resultTask1After.get());
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task3, Phase.PARSED, Priority.LOW);
+                assertTrue(endTask3.await(5, TimeUnit.SECONDS));
+                assertNotNull(resultTask3.get());  //Should not be null!!!
+                
+                
                 JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
+                JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js, task2);
+                JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js, task3);
             } finally {
                 regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
             }
@@ -2090,12 +2240,9 @@ public class JavaSourceTest extends NbTestCase {
             if (!active) {
                 return;
             }
-            while (true) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
-                }
-                Thread.sleep(100);
-            }
+            if (cancel != null && cancel.get()) {
+                throw new InterruptedException ();
+            }            
         }
     }
 

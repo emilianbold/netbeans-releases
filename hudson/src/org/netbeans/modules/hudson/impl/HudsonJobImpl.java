@@ -57,7 +57,8 @@ import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.util.Utilities;
 
 /**
@@ -168,7 +169,15 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     public void start() {
         instance.getConnector().startJob(this);
     }
-    
+
+    @Messages({
+        "TXT_Job_Prop_Name=Name",
+        "DESC_Job_Prop_Name=Hudson's job name",
+        "TXT_Job_Prop_Url=URL",
+        "DESC_Job_Prop_Url=Hudson's job URL",
+        "HudsonJobImpl.watched=Watched",
+        "HudsonJobImpl.watched_desc=Whether you wish to be notified of failures in this job."
+    })
     public Sheet.Set getSheetSet() {
         if (null == set) {
             set = Sheet.createPropertiesSet();
@@ -179,14 +188,14 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
             // Put properties in
             set.put(new PropertySupport[] {
                 new HudsonJobProperty(JOB_NAME,
-                        NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Name"),
-                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Name")),
+                        TXT_Job_Prop_Name(),
+                        DESC_Job_Prop_Name()),
                 new HudsonJobProperty(JOB_URL,
-                        NbBundle.getMessage(HudsonJobImpl.class, "TXT_Job_Prop_Url"),
-                        NbBundle.getMessage(HudsonJobImpl.class, "DESC_Job_Prop_Url")),
+                        TXT_Job_Prop_Url(),
+                        DESC_Job_Prop_Url()),
                 new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE, // NOI18N
-                        NbBundle.getMessage(HudsonJobImpl.class, "HudsonJobImpl.watched"),
-                        NbBundle.getMessage(HudsonJobImpl.class, "HudsonJobImpl.watched_desc")) {
+                        HudsonJobImpl_watched(),
+                        HudsonJobImpl_watched_desc()) {
                     public Boolean getValue() {
                         return isSalient();
                     }
