@@ -391,7 +391,7 @@ public final class Resolver3 implements Resolver {
         return result;
     }
 
-    private void traceRecursion(){
+    void traceRecursion(){
         System.out.println("Detected recursion in resolver:"); // NOI18N
         System.out.println("\t"+this); // NOI18Nv
         Resolver3 parent = (Resolver3)parentResolver;
