@@ -44,21 +44,34 @@ package org.netbeans.modules.git.ui.repository;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
+import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author ondra
  */
-public class RevisionDialogController implements ActionListener {
+public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener {
     private final RevisionDialog panel;
     private final File repository;
     private final RevisionInfoPanelController infoPanelController;
+    private final PropertyChangeSupport support;
+    public static final String PROP_VALID = "RevisionDialogController.valid"; //NOI18N
+    private boolean valid = true;
+    private final Timer t;
 
     public RevisionDialogController (File repository) {
         infoPanelController = new RevisionInfoPanelController(repository);
         panel = new RevisionDialog(infoPanelController.getPanel());
         this.repository = repository;
+        this.support = new PropertyChangeSupport(this);
+        this.t = new Timer(500, this);
+        t.stop();
         infoPanelController.loadInfo(panel.revisionField.getText());
         attachListeners();
     }
@@ -75,15 +88,28 @@ public class RevisionDialogController implements ActionListener {
     public String getRevision () {
         return panel.revisionField.getText();
     }
+    
+    public void addPropertyChangeListener (PropertyChangeListener list) {
+        support.addPropertyChangeListener(list);
+    }
+    
+    public void removePropertyChangeListener (PropertyChangeListener list) {
+        support.removePropertyChangeListener(list);
+    }
 
     private void attachListeners () {
         panel.btnSelectRevision.addActionListener(this);
+        panel.revisionField.getDocument().addDocumentListener(this);
+        infoPanelController.addPropertyChangeListener(this);
     }
 
     @Override
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == panel.btnSelectRevision) {
             openRevisionPicker();
+        } else if (e.getSource() == t) {
+            t.stop();
+            infoPanelController.loadInfo(panel.revisionField.getText());
         }
     }
 
@@ -93,8 +119,41 @@ public class RevisionDialogController implements ActionListener {
             String revision = picker.getRevision();
             if (!revision.equals(panel.revisionField.getText())) {
                 panel.revisionField.setText(picker.getRevision());
-                infoPanelController.loadInfo(revision);
             }
+        }
+    }
+
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        updateRevision();
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        updateRevision();
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) {
+    }
+
+    private void setValid (boolean flag) {
+        boolean oldValue = valid;
+        valid = flag;
+        if (valid != oldValue) {
+            support.firePropertyChange(PROP_VALID, oldValue, valid);
+        }
+    }
+
+    private void updateRevision () {
+        setValid(false);
+        t.restart();
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == RevisionInfoPanelController.PROP_VALID) {
+            setValid(Boolean.TRUE.equals(evt.getNewValue()));
         }
     }
 }

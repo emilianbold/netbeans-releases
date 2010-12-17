@@ -45,6 +45,8 @@ package org.netbeans.modules.git.ui.reset;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
@@ -64,6 +66,7 @@ public class Reset implements ActionListener {
     private RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
+    private boolean valid = true;
 
     Reset (File repository) {
         revisionPicker = new RevisionDialogController(repository);
@@ -83,20 +86,28 @@ public class Reset implements ActionListener {
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
         dd = new DialogDescriptor(panel, NbBundle.getMessage(Reset.class, "LBL_Reset.title"), true,  //NOI18N
                 new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(Reset.class), null);
+        revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent evt) {
+                if (evt.getPropertyName() == RevisionDialogController.PROP_VALID) {
+                    setRevisionValid(Boolean.TRUE.equals(evt.getNewValue()));
+                }
+            }
+        });
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        valid(false);
+        validate();
         d.setVisible(true);
         return okButton == dd.getValue();
     }
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        valid(panel.rbHard.isSelected() || panel.rbMixed.isSelected() || panel.rbSoft.isSelected());
+        validate();
     }
 
-    private void valid (boolean b) {
-        okButton.setEnabled(b);
-        dd.setValid(b);
+    private void setRevisionValid (boolean flag) {
+        this.valid = flag;
+        validate();
     }
 
     ResetType getType () {
@@ -110,4 +121,9 @@ public class Reset implements ActionListener {
         return ResetType.valueOf(cmd);
     }
 
+    private void validate () {
+        boolean flag = valid && (panel.rbHard.isSelected() || panel.rbMixed.isSelected() || panel.rbSoft.isSelected());
+        okButton.setEnabled(flag);
+        dd.setValid(flag);
+    }
 }

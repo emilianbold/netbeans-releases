@@ -43,7 +43,8 @@
 package org.netbeans.modules.git.ui.repository;
 
 import java.awt.EventQueue;
-import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -69,10 +70,14 @@ class RevisionInfoPanelController {
     private final Task loadInfoTask = RP.create(loadInfoWorker);
     private String currentCommit;
     private final File repository;
+    private boolean valid;
+    private final PropertyChangeSupport support;
+    public static final String PROP_VALID = "RevisionInfoPanelController.valid"; //NOI18N
 
     public RevisionInfoPanelController (File repository) {
         this.repository = repository;
         this.panel = new RevisionInfoPanel();
+        this.support = new PropertyChangeSupport(this);
         resetInfoFields();
     }
 
@@ -84,6 +89,7 @@ class RevisionInfoPanelController {
         loadInfoTask.cancel();
         loadInfoWorker.monitor.cancel();
         currentCommit = revision;
+        setValid(false);
         if (revision != null) {
             resetInfoFields();
             loadInfoTask.schedule(100);
@@ -120,6 +126,22 @@ class RevisionInfoPanelController {
         panel.taMessage.setText(MSG_UNKNOWN);
     }
 
+    private void setValid (boolean flag) {
+        boolean oldValue = valid;
+        valid = flag;
+        if (oldValue != valid) {
+            support.firePropertyChange(PROP_VALID, oldValue, valid);
+        }
+    }
+    
+    public void addPropertyChangeListener (PropertyChangeListener list) {
+        support.addPropertyChangeListener(list);
+    }
+    
+    public void removePropertyChangeListener (PropertyChangeListener list) {
+        support.removePropertyChangeListener(list);
+    }
+
     private class LoadInfoWorker implements Runnable {
 
         ProgressMonitor.DefaultProgressMonitor monitor = new ProgressMonitor.DefaultProgressMonitor();
@@ -127,30 +149,36 @@ class RevisionInfoPanelController {
         @Override
         public void run () {
             String revision = currentCommit;
+            GitRevisionInfo revisionInfo;
             try {
                 monitor = new ProgressMonitor.DefaultProgressMonitor();
                 if (Thread.interrupted()) {
                     return;
                 }
                 GitClient client = Git.getInstance().getClient(repository);
-                final GitRevisionInfo info = client.log(revision, monitor);
-                final ProgressMonitor.DefaultProgressMonitor m = monitor;
-                if (!monitor.isCanceled()) {
-                    Mutex.EVENT.readAccess(new Runnable () {
-                        @Override
-                        public void run () {
-                            if (!m.isCanceled()) {
-                                if (info == null) {
-                                    setUnknownRevision();
-                                } else {
-                                    updateInfoFields(info);
-                                }
+                revisionInfo = client.log(revision, monitor);
+            } catch (GitException ex) {
+                if (!(ex instanceof GitException.MissingObjectException)) {
+                    GitClientExceptionHandler.notifyException(ex, true);
+                }
+                revisionInfo = null;
+            }
+            final GitRevisionInfo info = revisionInfo;
+            final ProgressMonitor.DefaultProgressMonitor m = monitor;
+            if (!monitor.isCanceled()) {
+                Mutex.EVENT.readAccess(new Runnable () {
+                    @Override
+                    public void run () {
+                        if (!m.isCanceled()) {
+                            if (info == null) {
+                                setUnknownRevision();
+                            } else {
+                                updateInfoFields(info);
+                                setValid(true);
                             }
                         }
-                    });
-                }
-            } catch (GitException ex) {
-                GitClientExceptionHandler.notifyException(ex, true);
+                    }
+                });
             }
         }
     }
