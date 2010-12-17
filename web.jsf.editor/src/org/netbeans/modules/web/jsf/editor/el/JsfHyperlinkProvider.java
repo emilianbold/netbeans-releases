@@ -47,11 +47,8 @@ package org.netbeans.modules.web.jsf.editor.el;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
@@ -202,8 +199,12 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      * @param offset &gt;=0 offset to test (it generally should be offset &lt; doc.getLength(), but
      *               the implementations should not depend on it)
      */
+    @Override
     public void performClickAction(final Document doc, final int offset) {
         final FileObject fObject = NbEditorUtilities.getFileObject(doc);
+        if(fObject == null) {
+            return; //fileobjectless document, not much to do here since JsfElExpression requires webmodule
+        }
         final WebModule wm = WebModule.getWebModule(fObject);
         if (wm == null) {
             return;
@@ -288,6 +289,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             mySource = orig;
         }
 
+        @Override
         public void run(){
             if (wm == null) return;
 
@@ -371,6 +373,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 javaSource.runUserActionTask(
                         new Task<CompilationController>() {
 
+                    @Override
                             public void run(
                                     CompilationController controller )
                                     throws Exception
