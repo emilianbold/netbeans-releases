@@ -381,7 +381,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     public void keyPressed(KeyEvent e) {
         HyperlinkType type = getHyperlinkType(e);
 
-        if (type != null) {
+        if (type != null && component.getMousePosition() != null) {
             int position = component.viewToModel(component.getMousePosition());
 
             if (position < 0) {
