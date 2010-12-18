@@ -52,6 +52,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.debugger.ui.actions.AddWatchAction;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.ImageUtilities;
@@ -119,18 +120,24 @@ public class VariablesViewButtons {
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         toggleButton.setPreferredSize(size);
         toggleButton.setMargin(new Insets(1, 1, 1, 1));
+        toggleButton.setBorder(new EmptyBorder(toggleButton.getBorder().getBorderInsets(toggleButton)));
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
         return toggleButton;
     }
 
-    private static JButton createButton (String iconName, String tooltip) {
+    public static JButton createButton (String iconName, String tooltip) {
         Icon icon = loadIcon(iconName);
+        return createButton(icon, tooltip);
+    }
+
+    public static JButton createButton (Icon icon, String tooltip) {
         final JButton button = new JButton(icon);
         // ensure small size, just for the icon
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         button.setPreferredSize(size);
         button.setMargin(new Insets(1, 1, 1, 1));
+        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         return button;
