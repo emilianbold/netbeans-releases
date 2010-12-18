@@ -1057,9 +1057,9 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)) {
             return true;//!conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG)) {
-            return conf.hasDebugger() && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() /*&& !conf.isLibraryConfiguration()*/;
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            return conf.hasDebugger() && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() /*&& !conf.isLibraryConfiguration()*/;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             boolean enabled = true;
             Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
