@@ -95,8 +95,7 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
 
     }
 
-    //Bug 190170 - Netbeans says that there is no 'target' attribute of the <h:outputStyllesheet> tag in JSF2
-    public void testIssue190170() {
+    public void testHtmlOutputStylesheet() {
         FaceletsLibraryDescriptor htmlLibDescriptor = DefaultFaceletLibraries.getInstance().getLibrariesDescriptors().get(DefaultLibraryInfo.HTML.getNamespace());
         assertNotNull(htmlLibDescriptor);
 
@@ -107,8 +106,25 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
         assertNotNull(t);
 
         Attribute attr = t.getAttribute("target");
+        assertNull(attr);
+
+        attr = t.getAttribute("converter");
+        assertNotNull(attr);
+        attr = t.getAttribute("id");
+        assertNotNull(attr);
+        attr = t.getAttribute("rendered");
+        assertNotNull(attr);
+        attr = t.getAttribute("value");
+        assertNotNull(attr);
+        attr = t.getAttribute("library");
+        assertNotNull(attr);
+        attr = t.getAttribute("name");
+        assertNotNull(attr);
+        attr = t.getAttribute("binding");
         assertNotNull(attr);
 
+        assertFalse(attr.isRequired());
+        assertNotNull(attr.getDescription());
     }
 
 
