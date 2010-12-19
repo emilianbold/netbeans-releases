@@ -45,6 +45,7 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -174,6 +175,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         this.viewType = viewType;
         this.view = view;
         this.buttonsPane = buttonsPane;
+        buttonsPane.setLayout(new GridBagLayout());
         this.propertiesHelpID = propertiesHelpID;
         this.viewIcon = viewIcon;
         setUp();
@@ -551,36 +553,38 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         int i = 0;
                         if (sessionProviders.size() > 0) {
                             javax.swing.AbstractButton b = createSessionsSwitchButton();
-                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 3, 0, 3), 0, 0);
                             buttonsPane.add(b, c);
                             i++;
                             javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
-                            c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 0, 5, 0), 0, 0);
+                            c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 0, 3, 0), 0, 0);
                             buttonsPane.add(s, c);
                             i++;
                         }
                         if (tabbedPane != null) {
                             buttonsSubPane = new javax.swing.JPanel();
                             buttonsSubPane.setLayout(new java.awt.GridBagLayout());
-                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 0, 5, 0), 0, 0);
+                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(3, 0, 3, 0), 0, 0);
                             buttonsPane.add(buttonsSubPane, c);
                             i++;
                         } else {
                             buttonsSubPane = null;
                             for (javax.swing.AbstractButton b : buttons) {
-                                GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                                GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 3, 0, 3), 0, 0);
                                 buttonsPane.add(b, c);
                                 i++;
                             }
                         }
-                        //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
-                        //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
+                        GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(3, 3, 3, 3), 0, 0);
+                        buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
 
                         // [TODO]
                         //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
                         //buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
+                        buttonsPane.revalidate();
                         buttonsPane.setVisible(true);
                         buttonsPane.repaint();
+                        view.revalidate();
                     }
                 }
                 
@@ -643,9 +647,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     }
 
     private javax.swing.JButton createSessionsSwitchButton() {
-        final javax.swing.JButton b = new javax.swing.JButton(new ImageIcon(viewIcon));
-        b.setToolTipText(NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
-        b.setMargin(new Insets(2, 2, 2, 2));
+        final javax.swing.JButton b = VariablesViewButtons.createButton(
+                new ImageIcon(viewIcon),
+                NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == b) {

@@ -131,7 +131,6 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
                     javax.swing.UIManager.getDefaults().getColor("Separator.background")),
                     javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
                     javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
-            toolBar.setPreferredSize(new Dimension(26, 10));
             add(toolBar, BorderLayout.WEST);
             buttonsPane = toolBar;
         } else {
