@@ -107,7 +107,7 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
         for (int conftype : QT_CONF_TYPES) {
             QmakeConfiguration qconf = newQmakeConfiguration(conftype);
             assertEquals("", qconf.getDestdir().getValue());
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}", qconf.getDestdirValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO, qconf.getDestdirValue());
             qconf.getDestdir().setValue(".");
             assertEquals(".", qconf.getDestdirValue());
         }
@@ -127,48 +127,48 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     @Test
     public void testGetOutputValueApp() {
         QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_APPLICATION);
-        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest", qconf.getOutputValue());
+        assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/QmakeConfigurationTest", qconf.getOutputValue());
         qconf.getDestdir().setValue(".");
         assertEquals("./QmakeConfigurationTest", qconf.getOutputValue());
         qconf.getTarget().setValue("Dummy");
         assertEquals("./Dummy", qconf.getOutputValue());
         qconf.getDestdir().reset();
-        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Dummy", qconf.getOutputValue());
+        assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/Dummy", qconf.getOutputValue());
     }
 
     @Test
     public void testGetOutputValueDynamicLib() {
         QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_DYNAMIC_LIB);
         if (Utilities.isWindows()) {
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest1.dll", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/QmakeConfigurationTest1.dll", qconf.getOutputValue());
             qconf.getVersion().setValue("2.0.0");
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest2.dll", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/QmakeConfigurationTest2.dll", qconf.getOutputValue());
             qconf.getDestdir().setValue(".");
             assertEquals("./QmakeConfigurationTest2.dll", qconf.getOutputValue());
             qconf.getTarget().setValue("Dummy");
             assertEquals("./Dummy2.dll", qconf.getOutputValue());
             qconf.getDestdir().reset();
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Dummy2.dll", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/Dummy2.dll", qconf.getOutputValue());
         } else if (Utilities.isMac()) {
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.1.0.0.dylib", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libQmakeConfigurationTest.1.0.0.dylib", qconf.getOutputValue());
             qconf.getVersion().setValue("2.3.4");
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.2.3.4.dylib", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libQmakeConfigurationTest.2.3.4.dylib", qconf.getOutputValue());
             qconf.getDestdir().setValue(".");
             assertEquals("./libQmakeConfigurationTest.2.3.4.dylib", qconf.getOutputValue());
             qconf.getTarget().setValue("Dummy");
             assertEquals("./libDummy.2.3.4.dylib", qconf.getOutputValue());
             qconf.getDestdir().reset();
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.2.3.4.dylib", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libDummy.2.3.4.dylib", qconf.getOutputValue());
         } else if (Utilities.isUnix()) {
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.so.1.0.0", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libQmakeConfigurationTest.so.1.0.0", qconf.getOutputValue());
             qconf.getVersion().setValue("2.3.4");
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.so.2.3.4", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libQmakeConfigurationTest.so.2.3.4", qconf.getOutputValue());
             qconf.getDestdir().setValue(".");
             assertEquals("./libQmakeConfigurationTest.so.2.3.4", qconf.getOutputValue());
             qconf.getTarget().setValue("Dummy");
             assertEquals("./libDummy.so.2.3.4", qconf.getOutputValue());
             qconf.getDestdir().reset();
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.so.2.3.4", qconf.getOutputValue());
+            assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libDummy.so.2.3.4", qconf.getOutputValue());
         } else {
             System.err.println("OS not recognized. Skipping test");
         }
@@ -177,13 +177,13 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     @Test
     public void testGetOutputValueStaticLib() {
         QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_STATIC_LIB);
-        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.a", qconf.getOutputValue());
+        assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libQmakeConfigurationTest.a", qconf.getOutputValue());
         qconf.getDestdir().setValue(".");
         assertEquals("./libQmakeConfigurationTest.a", qconf.getOutputValue());
         qconf.getTarget().setValue("Dummy");
         assertEquals("./libDummy.a", qconf.getOutputValue());
         qconf.getDestdir().reset();
-        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.a", qconf.getOutputValue());
+        assertEquals(MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libDummy.a", qconf.getOutputValue());
     }
 
     @Test

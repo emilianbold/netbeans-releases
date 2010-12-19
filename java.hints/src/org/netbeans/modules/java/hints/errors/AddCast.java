@@ -153,7 +153,10 @@ public final class AddCast implements ErrorRule<Void> {
                     resolved = info.getTrees().getOriginalType((ErrorType) resolved);
                 }
 
-                if (foundTM.getKind() == TypeKind.EXECUTABLE || foundTM.getKind() == TypeKind.NONE) {
+                if (   foundTM.getKind() == TypeKind.EXECUTABLE
+                    || foundTM.getKind() == TypeKind.PACKAGE
+                    || foundTM.getKind() == TypeKind.NONE
+                    || foundTM.getKind() == TypeKind.OTHER) {
                     //XXX: ignoring executable, see AddCast9 for more information when this happens.
                     //XXX: ignoring NONE, see test161450
                 } else {

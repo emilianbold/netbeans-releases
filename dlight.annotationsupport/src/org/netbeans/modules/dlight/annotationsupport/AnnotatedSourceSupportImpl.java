@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricFormatte
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.SourceSupportProvider.FileObjectsToSourceMap;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -192,8 +193,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             Object source = jEditorPane.getDocument().getProperty(Document.StreamDescriptionProperty);
             if (source instanceof DataObject) {
                 FileObject fo = ((DataObject) source).getPrimaryFile();
-                ret = (String)fo.getAttribute("URI"); // NOI18N
+                ret = FileObjectsToSourceMap.getInstance().get(fo);
                 if (ret == null) {
+                    ret = (String)fo.getAttribute("URI"); // NOI18N
+                }
+                if (ret == null && FileUtil.toFile(fo) != null) {
                     ret = FileUtil.toFile(fo).getPath();
                 }
             }

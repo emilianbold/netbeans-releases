@@ -675,7 +675,7 @@ public abstract class JavaFix {
                 @Override
                 public Void visitTry(TryTree node, Void p) {
                     List<? extends CatchTree> catches = (List<? extends CatchTree>) resolveMultiParameters(node.getCatches());
-                    TryTree nue = wc.getTreeMaker().Try(node.getBlock(), catches, node.getFinallyBlock());
+                    TryTree nue = wc.getTreeMaker().Try(node.getResources(), node.getBlock(), catches, node.getFinallyBlock());
 
                     wc.rewrite(node, nue);
                     return super.visitTry(node, p);

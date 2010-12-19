@@ -125,6 +125,11 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.apache</friend>
+                <friend>com.sun.tools.dlight.mysql</friend>
+                <friend>com.sun.tools.dlight.php</friend>
+                <friend>com.sun.tools.dlight.tools.customizer</friend>
+                <friend>com.sun.tools.dlight.txtrace</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
@@ -133,13 +138,9 @@
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>com.sun.tools.dlight.apache</friend>
-                <friend>com.sun.tools.dlight.php</friend>
-                <friend>com.sun.tools.dlight.mysql</friend>
-                <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>org.netbeans.modules.dlight.xml</friend>
-                 <friend>com.sun.tools.dlight.txtrace</friend>
                 <package>org.netbeans.modules.dlight.dtrace.collector</package>
+                <package>org.netbeans.modules.dlight.dtrace.util</package>
             </friend-packages>
         </data>
     </configuration>

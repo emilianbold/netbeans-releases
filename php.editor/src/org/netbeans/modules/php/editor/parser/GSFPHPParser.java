@@ -93,9 +93,15 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     @Override
     public void cancel() {
-        // TODO
+        LOGGER.finest("ParserTask canceled without a reason");
     }
 
+    @Override
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
+        super.cancel(reason, event);
+        LOGGER.fine("ParserTask cancel: " + reason.name());
+    }
+   
     @Override
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
@@ -108,8 +114,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        long startTime = System.currentTimeMillis();
         FileObject file = snapshot.getSource().getFileObject();
-        LOGGER.fine("parseFiles " + file);
 //        ParseListener listener = request.listener;
         
 //        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
@@ -129,18 +135,19 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             String source = snapshot.getText().toString();
             end = source.length();
             int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
-            LOGGER.fine("caretOffset: " + caretOffset); //NOI18N
+            LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
             Context context = new Context(snapshot, source, caretOffset);
             result = parseBuffer(context, Sanitize.NONE, null);
         } catch (Exception exception) {
-            LOGGER.fine ("Exception during parsing: " + exception);
+            LOGGER.log (Level.FINE, "Exception during parsing: {0}", exception);
             ASTError error = new ASTError(0, end);
             List<Statement> statements = new ArrayList<Statement>();
             statements.add(error);
             Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
             result = new PHPParseResult(snapshot, emptyProgram);
         }
-        
+        long endTime = System.currentTimeMillis();        
+        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, System.identityHashCode(snapshot.getSource())}); //NOI18N
     }
 
     protected PHPParseResult parseBuffer(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception  {

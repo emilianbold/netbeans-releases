@@ -56,6 +56,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -406,7 +407,7 @@ public abstract class PsProvider {
 	}
 
 	protected String uidCommand() {
-	    return "id -u";	// NOI18N
+	    return getUtilityPath("id") + " -u";	// NOI18N
 	}
 
 	protected String psCommand(String uid) {
@@ -419,11 +420,22 @@ public abstract class PsProvider {
 
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return "ps";	// NOI18N
+		return getUtilityPath("ps");	// NOI18N
 	    } else {
-		return "ps -u " + uid;	// NOI18N
+		return getUtilityPath("ps") + " -u " + uid;	// NOI18N
 	    }
 	}
+        
+        private String getUtilityPath(String util) {
+            File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", util + ".exe"); // NOI18N
+            if (!file.exists()) {
+                file = new File(CompilerSetUtils.getCommandFolder(null), util + ".exe"); // NOI18N
+            }
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+            return util;
+        }
     }
 
     public static synchronized PsProvider getDefault(Host host) {
@@ -658,14 +670,14 @@ public abstract class PsProvider {
 		process = npb.call();
 	    } catch (Exception e) {
 		logger.log(Level.WARNING, "Failed to exec ps command", e);
-		return psData;
+		return null;
 	    } 
 
 	    int exitCode = process.waitFor();
 	    if (exitCode != 0) {
 		String msg = "ps command failed with " + exitCode; // NOI18N
 		logger.log(Level.WARNING, msg);
-		return psData;
+		return null;
 	    }
 
 	    int lineNo = 0;

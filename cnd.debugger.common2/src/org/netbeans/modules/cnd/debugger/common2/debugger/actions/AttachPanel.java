@@ -334,17 +334,11 @@ public final class AttachPanel extends TopComponent {
         filterCombo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                String ac = evt.getActionCommand();
-                if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
-                    JComboBox cb = (JComboBox) evt.getSource();
-                    if (cb != null) {
-                        String filter = (String) cb.getSelectedItem();
-                        if (filter != null) {
-                            lastFilter = filter;
-                        }
-                    }
+                String filter = (String) filterCombo.getSelectedItem();
+                if (filter != null && !filter.equals(lastFilter)) {
+                    lastFilter = filter;
+                    refreshProcesses(null, false);
                 }
-                refreshProcesses(null, false);
 
             // An attempt to fix 6642223 ...
 		/* LATER
@@ -364,9 +358,10 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+        final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
+                lastFilter = cbEditor.getText();
                 refreshProcesses(null, false);
             }
         });
@@ -527,7 +522,9 @@ public final class AttachPanel extends TopComponent {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                procTableClicked(evt);
+                if (procTable.isEnabled()) {
+                    procTableClicked(evt);
+                }
             }
         });
 
@@ -757,6 +754,15 @@ public final class AttachPanel extends TopComponent {
         }
         return items;
     }
+    
+    private void tableInfo(final String infoKey) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                procTable.setEnabled(false);
+                processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
+            }
+        });
+    }
 
     /**
      * Run ps, filter the output and update the table model.
@@ -820,13 +826,8 @@ public final class AttachPanel extends TopComponent {
             //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
             final boolean getAllProcesses = false;
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    procTable.setEnabled(false);
-                    processModel.setDataVector(new Object[][]{{Catalog.get("MSG_Gathering_Data")}}, new Object[]{" "}); //NOI18N
-                }
-            });
-
+            tableInfo("MSG_Gathering_Data"); //NOI18N
+            
             CndRemote.validate(hostName, new Runnable() {
                 public void run() {
                     requestProcesses(fre, hostname, getAllProcesses);
@@ -911,6 +912,7 @@ public final class AttachPanel extends TopComponent {
         final PsProvider.PsData psData = getPsData();
 
         if (psData == null) {
+            tableInfo("MSG_PS_Failed"); //NOI18N
             return;
         }
 

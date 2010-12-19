@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.parsing.impl.indexing.errors;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,13 +60,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -91,7 +98,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     private static final Image ERROR_BADGE_FOLDER;
     
     static {
-        URL errorBadgeIconURL = ErrorAnnotator.class.getClassLoader().getResource(ERROR_BADGE_URL);
+        URL errorBadgeIconURL = ErrorAnnotator.class.getResource("/" + ERROR_BADGE_URL);
         assert errorBadgeIconURL != null : "Note in bug #166236";
         String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
         Image errorBadge = loadImage(ERROR_BADGE_URL);
@@ -115,7 +122,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         boolean inError = false;
         boolean singleFile = files.size() == 1;
-        
+
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
             inError = isInError(folder, false, true);
@@ -279,8 +286,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     
     private long cumulativeTime;
     private Collection<FileObject> toProcess = null;
-    
-    private final RequestProcessor.Task WORKER = new RequestProcessor("ErrorAnnotator worker", 1).create(new Runnable() {
+
+    private final RequestProcessor WORKER_THREAD = new RequestProcessor("ErrorAnnotator worker", 1);
+    private final RequestProcessor.Task WORKER = WORKER_THREAD.create(new Runnable() {
         public void run() {
             long startTime = System.currentTimeMillis();
             Collection<FileObject> toProcess;
@@ -298,6 +306,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         continue;
                     }
                 }
+
+                ensureListensOnFS(f);
 
                 boolean recError = false;
                 boolean nonRecError = false;
@@ -348,4 +358,74 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "time spent in error annotations computation: {0}, cumulative time: {1}", new Object[] {(endTime - startTime), (cumulativeTime += (endTime - startTime))});
         }
     });
+
+    private Map<FileSystem, FileChangeListener> system2RecursiveListener = new WeakHashMap<FileSystem, FileChangeListener>();
+
+    private void ensureListensOnFS(FileObject f) {
+        try {
+            FileSystem fs = f.getFileSystem();
+            if (!system2RecursiveListener.containsKey(fs)) {
+                FileChangeListener l = new RootAddedDeletedListener();
+                
+                system2RecursiveListener.put(fs, l);
+                fs.addFileChangeListener(l);
+            }
+        } catch (FileStateInvalidException ex) {
+            LOG.log(Level.FINE, null, ex);
+        }
+    }
+
+    private final class RootAddedDeletedListener extends FileChangeAdapter {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            update(fe);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            update(fe);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            update(fe);
+        }
+
+        private void update(FileEvent fe) {
+            if (RepositoryUpdater.getDefault().getOwningSourceRoot(fe.getFile()) == null) {
+                try {
+                    update(fe.getFile().getURL());
+                } catch (FileStateInvalidException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+        }
+
+        private void update(final URL root) {
+            WORKER_THREAD.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        Set<URL> toRefresh = new HashSet<URL>();
+                        URL current = root;
+
+                        toRefresh.add(current);
+                        toRefresh.add(current = new URL(current, ".")); //NOI18N
+                        
+                        for (int depth = current.getPath().split("/").length - 1; depth > 0; depth--) {  //NOI18N
+                            current = new URL(current, ".."); //NOI18N
+                            toRefresh.add(current);
+                        }
+
+                        updateInError(toRefresh);
+                    } catch (MalformedURLException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                    }
+                }
+            });
+        }
+    }
+    
 }

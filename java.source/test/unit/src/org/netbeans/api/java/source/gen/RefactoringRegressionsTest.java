@@ -49,11 +49,9 @@ import java.util.Collections;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
-import java.util.prefs.Preferences;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.ui.FmtOptions;
@@ -565,15 +563,12 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
     }
 
     public void testSpaceAfterComma2() throws Exception {
-        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-        boolean old = preferences.getBoolean(FmtOptions.spaceAfterComma, FmtOptions.getDefaultAsBoolean(FmtOptions.spaceAfterComma));
-        
-        preferences.putBoolean(FmtOptions.spaceAfterComma, false);
+        Map<String, String> origValues = Utils.setCodePreferences(Collections.singletonMap(FmtOptions.spaceAfterComma, "false"));
 
         try {
             doTestSpaceAfterComma("");
         } finally {
-            preferences.putBoolean(FmtOptions.spaceAfterComma, old);
+            Utils.setCodePreferences(origValues);
         }
     }
 

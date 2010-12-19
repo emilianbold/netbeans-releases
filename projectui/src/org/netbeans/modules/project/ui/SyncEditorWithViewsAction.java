@@ -46,6 +46,9 @@ import java.awt.event.ActionEvent;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -59,6 +62,9 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Milan Kubec
  */
+@ActionID(id = "org.netbeans.modules.project.ui.SyncEditorWithViewsAction", category = "Project")
+@ActionRegistration(displayName = "#CTL_SYNC_EDITOR_WITH_VIEWS")
+@ActionReference(path = "Menu/View", position = 1050)
 public class SyncEditorWithViewsAction extends SystemAction implements DynamicMenuContent {
 
     public static final String SYNC_ENABLED_PROP_NAME = "synchronizeEditorWithViews";

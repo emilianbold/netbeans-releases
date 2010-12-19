@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.parser.generated.EvaluatorParser;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -78,7 +77,7 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
 /**
  * Expression evaluator servise implementation.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider.class)
 public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
@@ -93,19 +92,8 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         this.level = level;
     }
 
+    @Override
     public Object eval(String expr) {
-        return eval(expr, (Resolver)null);
-    }
-
-    public Object eval(String expr, CsmInstantiation inst) {
-        return eval(expr, inst, null);
-    }
-    
-    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return eval(expr, decl, mapping, null);
-    }
-
-    public Object eval(String expr, Resolver resolver) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -117,7 +105,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(level + 1, resolver));
+            parser.setVariableProvider(new VariableProvider(level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -125,15 +113,17 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         return result;
     }
 
-    public Object eval(String expr, CsmInstantiation inst, Resolver resolver) {
+    @Override
+    public Object eval(String expr, CsmInstantiation inst) {
         if(CsmKindUtilities.isOffsetableDeclaration(inst)) {
-            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst), resolver);
+            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst));
         } else {
-            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst), resolver);
+            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst));
         }
     }
-
-    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, Resolver resolver) {
+    
+    @Override
+    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -145,7 +135,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1, resolver));
+            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -184,58 +174,72 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
             this.t = t;
         }
 
+        @Override
         public String getText() {
             return t.getText();
         }
 
+        @Override
         public void setText(String arg0) {
             t.setText(arg0);
         }
 
+        @Override
         public int getType() {
             return t.getType();
         }
 
+        @Override
         public void setType(int arg0) {
             t.setType(arg0);
         }
 
+        @Override
         public int getLine() {
             return t.getLine();
         }
 
+        @Override
         public void setLine(int arg0) {
             t.setLine(arg0);
         }
 
+        @Override
         public int getCharPositionInLine() {
             return t.getColumn();
         }
 
+        @Override
         public void setCharPositionInLine(int arg0) {
             t.setColumn(arg0);
         }
 
+        @Override
         public int getChannel() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setChannel(int arg0) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public int getTokenIndex() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setTokenIndex(int arg0) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public CharStream getInputStream() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setInputStream(CharStream arg0) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
@@ -250,62 +254,77 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
             this.tb = tb;
         }
 
+        @Override
         public Token LT(int arg0) {
             return new MyToken(tb.LT(arg0));
         }
 
+        @Override
         public void consume() {
             tb.consume();
         }
 
+        @Override
         public int LA(int arg0) {
             return tb.LA(arg0);
         }
 
+        @Override
         public int mark() {
             return tb.mark();
         }
 
+        @Override
         public int index() {
             return tb.index();
         }
 
+        @Override
         public void rewind(int arg0) {
             tb.rewind(arg0);
         }
 
+        @Override
         public void rewind() {
             tb.rewind(0);
         }
 
+        @Override
         public void seek(int arg0) {
             tb.seek(arg0);
         }
 
+        @Override
         public Token get(int arg0) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public TokenSource getTokenSource() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String toString(int arg0, int arg1) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String toString(Token arg0, Token arg1) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void release(int arg0) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public int size() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getSourceName() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }

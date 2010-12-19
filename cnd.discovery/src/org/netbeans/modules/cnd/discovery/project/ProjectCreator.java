@@ -61,6 +61,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -73,9 +75,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -181,7 +180,7 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws java.io.IOException see createProject(File, String, String, Configuration[], Iterator, Iterator)
      */
-    public AntProjectHelper createProject(String name, String displayName, 
+    public MakeProjectHelper createProject(String name, String displayName,
             Set<String> folders, Set<String> libs) throws IOException {
         File dirF = CndFileUtils.createLocalFile(projectFolder);
         if (dirF != null) {
@@ -191,8 +190,8 @@ public class ProjectCreator {
 
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
-        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(workingDir));
-        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir));
+        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
@@ -214,7 +213,8 @@ public class ProjectCreator {
                         sub, // String workingDirectory
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                         "${MAKE}  -f "+sub+"-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                        "" //String output
+                        "", //String output // NOI18N
+                        extConf
                         )));
             }
         }
@@ -232,8 +232,8 @@ public class ProjectCreator {
         Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
-            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            makefilePath = CndPathUtilitities.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath));
+            makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
             importantItems.add(makefilePath);
             importantItemsIterator = importantItems.iterator();
         }
@@ -242,7 +242,7 @@ public class ProjectCreator {
         if (sourceFiles != null) {
             it = sourceFiles.iterator();
         }
-        AntProjectHelper h1 = null;
+        MakeProjectHelper h1 = null;
         makefileName = name + "-" + makefileName + ".mk"; // NOI18N
         h1 = createProject(dirF, displayName, makefileName, new MakeConfiguration[]{extConf},
                 it, importantItemsIterator, folders, libs);
@@ -256,11 +256,11 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
+    public MakeProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
                             Iterator<File> sourceFiles, Iterator<String> importantItems,
                             Set<String> folders, Set<String> libs) throws IOException {
         FileObject dirFO = createProjectDir(dir);
-        AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
+        MakeProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         boolean successful = applyDiscovery(p, displayName, folders, libs);
         ProjectManager.getDefault().saveProject(p);
@@ -273,10 +273,10 @@ public class ProjectCreator {
     }
 
     //Create a project with specified project folder, makefile, name, source files and important items
-    private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
+    private MakeProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
             Configuration[] confs, Iterator<File> sourceFiles, Iterator<String> importantItems) throws IOException {
         //Create a helper object
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, TYPE);
+        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -286,10 +286,6 @@ public class ProjectCreator {
         nativeProjectType.appendChild(doc.createTextNode("" + 0));
         data.appendChild(nativeProjectType);
         h.putPrimaryConfigurationData(data, true);
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk
         MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
@@ -341,7 +337,7 @@ public class ProjectCreator {
             Folder top = null;
             top = fld.findFolderByName(name);
             if (top == null) {
-                top = new Folder(fld.getConfigurationDescriptor(), fld, name, name, true);
+                top = new Folder(fld.getConfigurationDescriptor(), fld, name, name, true, null);
                 fld.addFolder(top, true);
             }
             fld = top;
@@ -358,7 +354,7 @@ public class ProjectCreator {
             Folder top = null;
             top = fld.findFolderByName(part);
             if (top == null) {
-                top = new Folder(fld.getConfigurationDescriptor(), fld, part, part, true);
+                top = new Folder(fld.getConfigurationDescriptor(), fld, part, part, true, null);
                 fld.addFolder(top, true);
             }
             fld = top;
@@ -480,7 +476,8 @@ public class ProjectCreator {
                     sub, // String workingDirectory
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default", // String buildCommand // NOI18N
                     "${MAKE}  -f " + sub + "-Makefile.mk CONF=Default clean", // String cleanCommand // NOI18N
-                    "" //String output
+                    "", //String output // NOI18N
+                    conf
                     )));
         }
         makeConfigurationDescriptor.save();
@@ -488,13 +485,19 @@ public class ProjectCreator {
 
     private void removeProjectDir(File dir) {
         if (dir.exists() && dir.canRead() && dir.isDirectory()) {
-            for(File file : dir.listFiles()){
-                if (file.isDirectory()){
-                    removeProjectDir(file);
+            File[] ff = dir.listFiles();
+            if (ff != null) {
+                for(File file : ff){
+                    if (file.isDirectory()){
+                        removeProjectDir(file);
+                    }
                 }
             }
-            for(File file : dir.listFiles()){
-                file.delete();
+            ff = dir.listFiles();
+            if (ff != null) {
+                for(File file : ff){
+                    file.delete();
+                }
             }
             dir.delete();
         }

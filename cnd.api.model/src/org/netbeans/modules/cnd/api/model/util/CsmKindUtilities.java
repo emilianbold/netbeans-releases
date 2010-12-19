@@ -102,10 +102,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  */
 public class CsmKindUtilities {
 
-    public static boolean isInstantiation(CsmObject obj) {
-        return obj instanceof CsmInstantiation;
-    }
-
     private CsmKindUtilities() {
         
     }
@@ -152,6 +148,14 @@ public class CsmKindUtilities {
         } else {
             return false;
         }
+    }
+    
+    public static boolean isInstantiation(CsmObject obj) {
+        return obj instanceof CsmInstantiation;
+    }
+
+    public static boolean isSpecialization(CsmObject obj) {
+        return (obj instanceof CsmTemplate) && ((CsmTemplate)obj).isSpecialization();
     }
     
     public static boolean isTemplateInstantiation(CsmObject obj) {

@@ -84,8 +84,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         super.setUp();
         r = GlobalPathRegistry.getDefault();
         r.clear();
-        clearWorkDir();
-        root = FileUtil.toFileObject(getWorkDir());
+        root = FileUtil.createMemoryFileSystem().getRoot();
         cp1 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("1")});
         cp2 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("2")});
         cp3 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("3")});

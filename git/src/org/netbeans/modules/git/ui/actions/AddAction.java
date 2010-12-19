@@ -72,16 +72,19 @@ public class AddAction extends SingleRepositoryAction {
                 GitClient client;
                 try {
                     client = getClient();
+                    client.addNotificationListener(new DefaultFileListener(roots));
                     client.add(roots, this);
                 } catch (GitException ex) {
                     LOG.log(Level.WARNING, null, ex);
                     return;
-                }                
+                } finally {
+                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(roots);                    
+                }               
             }
             @Override
             public void finished() {
                 super.finished();
-                Git.getInstance().getFileStatusCache().refreshAllRoots(roots);
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress"));

@@ -219,4 +219,19 @@ public class ElementDescriptorTest extends NbTestCase {
         }
     }
 
+
+    public void testElementsWithEmptyContent() {
+        assertFalse(ElementDescriptor.A.isEmpty());
+        assertFalse(ElementDescriptor.COLGROUP.isEmpty());
+
+        assertTrue(ElementDescriptor.COL.isEmpty());
+    }
+
+    public void testElementsOptionalEndTag() {
+        assertFalse(ElementDescriptor.A.hasOptionalEndTag());
+
+        assertTrue(ElementDescriptor.COLGROUP.hasOptionalEndTag());
+        assertTrue(ElementDescriptor.COL.hasOptionalEndTag());
+    }
+
 }

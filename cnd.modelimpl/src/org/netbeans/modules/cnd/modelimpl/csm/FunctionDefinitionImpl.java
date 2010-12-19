@@ -99,18 +99,14 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     @Override
     public CsmFunction getDeclaration() {
-        return getDeclaration(null);
-    }
-
-    public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
         if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
-                return null;
+                return declaration;
             }
             _setDeclaration(null);
-            declaration = findDeclaration(parent);
+            declaration = findDeclaration();
             _setDeclaration(declaration);
             parseCount = newCount;
         }
@@ -157,7 +153,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return candidate;
     }
 
-    private CsmFunction findDeclaration(Resolver parent) {
+    private CsmFunction findDeclaration() {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
         if (prjDecls.isEmpty()) {
@@ -166,7 +162,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         }
         Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
         if (prjDecls.isEmpty()) {
-            CsmObject owner = findOwner(parent);
+            CsmObject owner = findOwner();
             if(owner == null) {
                 owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
             }

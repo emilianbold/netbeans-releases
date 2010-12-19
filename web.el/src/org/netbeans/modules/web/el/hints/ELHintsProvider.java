@@ -86,6 +86,9 @@ public final class ELHintsProvider implements HintsProvider {
         // computing the all hints - not just errors - due to #189590
         Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
         List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
+        if(ids == null) {
+            return ;
+        }
         for (ELRule rule : ids) {
             if (manager.isEnabled(rule)) {
                 rule.run(elContext, hints);

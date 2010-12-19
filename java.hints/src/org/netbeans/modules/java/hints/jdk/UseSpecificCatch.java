@@ -42,17 +42,21 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -77,7 +81,9 @@ public class UseSpecificCatch {
 
     @TriggerPatterns({
         @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
     })
     public static ErrorDescription hint1(HintContext ctx) {
         return impl(ctx, "java.lang.Throwable");
@@ -85,7 +91,9 @@ public class UseSpecificCatch {
 
     @TriggerPatterns({
         @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}")
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;} finally {$fin$;}")
     })
     public static ErrorDescription hint2(HintContext ctx) {
         return impl(ctx, "java.lang.Exception");
@@ -103,6 +111,8 @@ public class UseSpecificCatch {
         if (throwable == null) return null;
 
         if (exceptions.contains(throwable.asType())) return null;
+
+        if (assignsTo(ctx, ctx.getVariables().get("$t"), ctx.getMultiVariables().get("$catch$"))) return null;
         
         String displayName = NbBundle.getMessage(UseSpecificCatch.class, "ERR_UseSpecificCatch");
 
@@ -115,6 +125,26 @@ public class UseSpecificCatch {
         return ErrorDescriptionFactory.forName(ctx, tt.getCatches().get(0).getParameter().getType(), displayName, JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), new TreePath(ctx.getPath(), tt.getCatches().get(0)), exceptionHandles)));
     }
 
+    static boolean assignsTo(final HintContext ctx, TreePath variable, Iterable<? extends TreePath> statements) {
+        final Element tEl = ctx.getInfo().getTrees().getElement(variable);
+
+        if (tEl == null || tEl.getKind() != ElementKind.EXCEPTION_PARAMETER) return true;
+        final boolean[] result = new boolean[1];
+
+        for (TreePath tp : statements) {
+            new TreePathScanner<Void, Void>() {
+                @Override
+                public Void visitAssignment(AssignmentTree node, Void p) {
+                    if (tEl.equals(ctx.getInfo().getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable())))) {
+                        result[0] = true;
+                    }
+                    return super.visitAssignment(node, p);
+                }
+            }.scan(tp, null);
+        }
+
+        return result[0];
+    }
     private static final class FixImpl extends JavaFix {
 
         private final Set<TypeMirrorHandle<TypeMirror>> exceptionHandles;
@@ -143,11 +173,7 @@ public class UseSpecificCatch {
 
             VariableTree excVar = ((CatchTree) tp.getLeaf()).getParameter();
 
-            wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjointType(exceptions));
-
-            if (!excVar.getModifiers().getFlags().contains(Modifier.FINAL)) {
-                wc.rewrite(excVar.getModifiers(), wc.getTreeMaker().Modifiers(EnumSet.of(Modifier.FINAL)));
-            }
+            wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjunctiveType(exceptions));
         }
 
     }

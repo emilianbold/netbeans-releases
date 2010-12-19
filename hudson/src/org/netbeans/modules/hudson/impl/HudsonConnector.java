@@ -74,7 +74,8 @@ import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -137,13 +138,14 @@ public class HudsonConnector {
         // Parse jobs and return them
         return getJobs(docInstance);
     }
-    
+
+    @Messages("MSG_Starting=Starting {0}")
     public synchronized void startJob(final HudsonJob job) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
+                MSG_Starting(job.getName()));
         handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes()).connection(); // NOI18N
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes()).followRedirects(false).connection(); // NOI18N
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
         } finally {

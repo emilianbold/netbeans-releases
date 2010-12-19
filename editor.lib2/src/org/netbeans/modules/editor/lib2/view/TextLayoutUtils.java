@@ -65,20 +65,37 @@ final class TextLayoutUtils {
         TextLayout textLayout = (layout instanceof TextLayoutPart)
                 ? ((TextLayoutPart)layout).textLayout()
                 : (TextLayout) layout;
-        return textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
+        return getHeight(textLayout);
+    }
+    
+    public static float getHeight(TextLayout textLayout) {
+        float height = textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
+        // Ceil to whole points since when doing a compound TextLayout and then
+        // using TextLayoutUtils.getRealAlloc() with its TL.getVisualHighlightShape() and doing
+        // Graphics2D.fill(Shape) on the returned shape then for certain fonts such as
+        // Lucida Sans Typewriter size=10 on Ubuntu 10.04 the background is rendered one pixel down for certain lines
+        // so there appear white lines inside a selection.
+        return (float) Math.ceil(height);
     }
     
     public static float getWidth(Object layout, int textLength) {
         if (layout instanceof TextLayoutPart) {
             TextLayoutPart part = (TextLayoutPart) layout;
             TextLayout textLayout = part.textLayout();
+            // Ceil the last part to whole number to prevent horizontal white lines inside selection.
+            // The individual parts should be fine since they are computed by getVisualHighlightShape().
             float endX = part.isLast()
-                    ? textLayout.getAdvance()
+                    ? (float) Math.ceil(textLayout.getAdvance())
                     : index2X(textLayout, part.offsetShift() + textLength);
             return endX - part.xShift();
         } else {
-            return ((TextLayout)layout).getAdvance();
+            return getWidth((TextLayout) layout);
         }
+    }
+    
+    public static float getWidth(TextLayout layout) {
+        // Ceil the width to whole number to prevent horizontal white lines inside selection.
+        return (float) Math.ceil(((TextLayout)layout).getAdvance());
     }
     
     public static float index2X(TextLayout textLayout, int index) {
@@ -105,7 +122,7 @@ final class TextLayoutUtils {
             TextHitInfo startHit, TextHitInfo endHit)
     {
         Shape ret;
-        if (textLayoutBounds.getX() != 0d || textLayoutBounds.getY() != 0d) {
+        if (true && textLayoutBounds.getX() != 0d || textLayoutBounds.getY() != 0d) {
             Rectangle2D.Double zeroBasedBounds = ViewUtils.shape2Bounds(textLayoutBounds);
             zeroBasedBounds.x = 0;
             zeroBasedBounds.y = 0;

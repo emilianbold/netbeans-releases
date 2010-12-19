@@ -98,14 +98,61 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                 </xsd:simpleType>
             </xsd:element>
             <xsd:element name="annotation-processing" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>Annotation processing support</xsd:documentation>   
+                </xsd:annotation>
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="scan-trigger" minOccurs="0"><xsd:complexType/></xsd:element>
-                        <xsd:element name="editor-trigger" minOccurs="0"><xsd:complexType/></xsd:element>
-                        <xsd:element name="source-output" minOccurs="0" type="substitutable-text"/>
-                        <xsd:element name="processor-path" minOccurs="0" type="substitutable-text"/>
-                        <xsd:element name="processor" minOccurs="0" maxOccurs="unbounded" type="substitutable-text"/>
-                        <xsd:element name="processor-option" minOccurs="0" maxOccurs="unbounded" type="processor-option"/>
+                        <xsd:element name="scan-trigger" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    When this element exists the annotation processors are invoked during the scan
+                                    of the project and when a file is saved
+                                </xsd:documentation>
+                             </xsd:annotation>
+                            <xsd:complexType/>
+                        </xsd:element>
+                        <xsd:element name="editor-trigger" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    When this element exists the annotation processors are also invoked during
+                                    typing in the editor which may slow down editing. This element requires presence
+                                    of the scan-trigger element
+                                </xsd:documentation>
+                             </xsd:annotation>
+                            <xsd:complexType/>
+                        </xsd:element>
+                        <xsd:element name="source-output" minOccurs="0" type="substitutable-text">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    The folder to which annotation processors generate files
+                                </xsd:documentation>
+                             </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="processor-path" minOccurs="0" type="substitutable-text">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Explicit classpath holding the annotation processors. When available
+                                    this classpath is used to lookup the processors otherwise the compile 
+                                    classpath is used
+                                </xsd:documentation>
+                             </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="processor" minOccurs="0" maxOccurs="unbounded" type="substitutable-text">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Explicit processor(s) to be invoked. If available these processor(s)
+                                    are executed otherwise the processors are looked up in META-INF/services
+                                </xsd:documentation>
+                             </xsd:annotation>
+                        </xsd:element>    
+                        <xsd:element name="processor-option" minOccurs="0" maxOccurs="unbounded" type="processor-option">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    Processor specific options
+                                </xsd:documentation>
+                             </xsd:annotation>
+                        </xsd:element>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
@@ -122,8 +169,20 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
 
     <xsd:complexType name="processor-option">
         <xsd:sequence>
-            <xsd:element name="key" type="xsd:string"/>     <!-- xsd:token???? -->
-            <xsd:element name="value" type="substitutable-text"/>
+            <xsd:element name="key" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Name of the option
+                    </xsd:documentation>
+                 </xsd:annotation>
+            </xsd:element><!-- xsd:token???? -->
+            <xsd:element name="value" type="substitutable-text">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Option value
+                    </xsd:documentation>
+                 </xsd:annotation>
+            </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
 

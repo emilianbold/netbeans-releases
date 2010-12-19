@@ -76,11 +76,16 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
     static ProjectActionHandler createDelegateHandler(ProjectActionEvent pae) {
         for (ProjectActionHandlerFactory factory : Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class)) {
             if (!(factory instanceof RemoteBuildProjectActionHandlerFactory)) {
-                if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
+                if (factory.canHandle(pae)) {
                     return factory.createHandler();
                 }
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getConfiguration());
     }
 }

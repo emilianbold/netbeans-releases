@@ -167,9 +167,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
         vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
         vg.add(txtVersion, MavenValidators.createVersionValidators());
-        vg.add(txtPackage, Validators.merge(true,
-                Validators.REQUIRE_NON_EMPTY_STRING,
-                Validators.JAVA_PACKAGE_NAME));
+        vg.add(txtPackage, Validators.JAVA_PACKAGE_NAME);
         vg.add(projectNameTextField, Validators.merge(true,
                 MavenValidators.createArtifactIdValidators(),
                 Validators.REQUIRE_VALID_FILENAME

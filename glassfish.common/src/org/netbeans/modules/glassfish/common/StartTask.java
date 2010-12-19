@@ -242,7 +242,11 @@ public class StartTask extends BasicTask<OperationState> {
                         Logger.getLogger("glassfish").log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
                     }
                 }
-                mgr.restartServer(debugPort);
+                String restartQ = "";
+                if (support.supportsRestartInDebug()) {
+                    restartQ = -1 == debugPort ? "debug=false" : "debug=true";
+                }
+                mgr.restartServer(debugPort,restartQ);
                 return fireOperationStateChanged(OperationState.RUNNING,
                         "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
 

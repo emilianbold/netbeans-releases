@@ -52,27 +52,33 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.openide.util.CharSequences;
 
 /**
  * Implements 
  * @author Vladimir Kvashin
  */
-public final class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
+public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
-    private CharSequence qualifiedNameSuffix = "";
+    private CharSequence qualifiedNameSuffix = CharSequences.empty();
 
     private SpecializationDescriptor specializationDesctiptor;
 
-    private ClassImplSpecialization(AST ast, NameHolder name, CsmFile file) {
+    protected ClassImplSpecialization(AST ast, NameHolder name, CsmFile file) {
         super(name, ast, file);
     }
 
+    protected ClassImplSpecialization(AST ast, NameHolder name, CsmFile file, int start, int end) {
+        super(name, ast, file, start, end);
+    }
+
     @Override
-    protected void init(CsmScope scope, AST ast, boolean register) {
+    protected final void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
@@ -81,15 +87,19 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
         temporaryRepositoryRegistration(register, this);
         render(ast, !register);
 
+        initQualifiedName(ast, scope, register);
+
+        if (register) {
+            register(getScope(), false);
+        }
+    }
+
+    protected final void initQualifiedName(AST ast, CsmScope scope, boolean register) {
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         assert qIdToken != null;
         qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope);
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
-
-        if (register) {
-            register(getScope(), false);
-        }
     }
 
     public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
@@ -116,6 +126,7 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
         return true;
     }
 
+    @Override
     public boolean isSpecialization() {
         return true;
     }
@@ -134,6 +145,22 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
     @Override
     public String getQualifiedNamePostfix() {
         return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
+    }
+
+    protected String getQualifiedNameWithoutSuffix() {
+        CsmScope scope = getScope();
+        String name = getName().toString();
+        if (CsmKindUtilities.isNamespace(scope)) {
+            return Utils.getQualifiedName(name, (CsmNamespace) scope);
+        } else if (CsmKindUtilities.isClass(scope)) {            
+            String n = name;
+            if (name.contains("::")) { // NOI18N
+                name = name.substring(name.lastIndexOf("::") + 2); // NOI18N
+            }
+            return ((CsmClass) scope).getQualifiedName() + "::" + name; // NOI18N
+        } else {
+             return name;
+        }
     }
 
     public List<CsmSpecializationParameter> getSpecializationParameters() {

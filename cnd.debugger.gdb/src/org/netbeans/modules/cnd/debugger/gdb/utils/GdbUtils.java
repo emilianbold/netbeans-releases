@@ -524,7 +524,7 @@ public class GdbUtils {
             } 
         }
         throw new IllegalStateException(NbBundle.getMessage(
-                GdbUtils.class, "ERR_UnexpectedGDBStopMessage")); // NOI18N
+                GdbUtils.class, "ERR_UnexpectedGDBStopMessage") + ": " + s); // NOI18N
     }
     
     /**

@@ -421,7 +421,7 @@ public class DocumentUtil {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             for (FileObject root : roots ) {
                 try {
-                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL());
+                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL(), true);
                     if (impl != null) {
                         String sourceName = impl.getSourceName(value);
                         if (sourceName != null) {

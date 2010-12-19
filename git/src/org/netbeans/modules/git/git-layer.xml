@@ -53,16 +53,4 @@ made subject to such option by the copyright holder.
         </file>
     </folder>    
 
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="GitVersioning.settings" url="resources/gitversioning.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="output">
-                <file name="GitVersioning.wstcref" url="resources/GitVersioningWstcref.xml">
-                    <attr name="position" intvalue="3110"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>

@@ -761,7 +761,11 @@ public class WatchPanel {
             trees.printMessage(arg0, arg1, arg2, arg3);
         }
 
+        @Override
+        public String getDocComment(TreePath path) {
+            return trees.getDocComment(path);
+        }
+
     }
 
 }
-

@@ -53,6 +53,7 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -316,8 +317,7 @@ public final class LocalizedBundleInfo {
     }
     
     public static interface Provider {
-        /** May return <code>null</code>. */
-        LocalizedBundleInfo getLocalizedBundleInfo();
+        @CheckForNull LocalizedBundleInfo getLocalizedBundleInfo();
     }
     
 }

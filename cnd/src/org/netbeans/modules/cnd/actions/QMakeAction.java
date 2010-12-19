@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
@@ -138,7 +139,8 @@ public class QMakeAction extends AbstractExecutorRunAction {
         // Executable
         String executable = getCommand(node, project, PredefinedToolKind.QMakeTool, "qmake"); // NOI18N
         // Arguments
-        String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
+        String arguments = CndPathUtilitities.toRelativePath(buildDir, proFile.getPath());
+
         String[] args = getArguments(node, PredefinedToolKind.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);

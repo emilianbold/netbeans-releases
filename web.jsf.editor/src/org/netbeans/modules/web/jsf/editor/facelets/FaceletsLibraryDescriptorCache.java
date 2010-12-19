@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.web.jsf.editor.tld.*;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,9 +58,9 @@ public class FaceletsLibraryDescriptorCache {
 
     //uri -> library map
     private final Map<String, FaceletsLibraryDescriptor> LIBRARIES = new HashMap<String, FaceletsLibraryDescriptor>();
-    private JsfSupport support;
+    private JsfSupportImpl support;
 
-    public FaceletsLibraryDescriptorCache(JsfSupport support) {
+    public FaceletsLibraryDescriptorCache(JsfSupportImpl support) {
         this.support = support;
     }
 
@@ -90,7 +90,7 @@ public class FaceletsLibraryDescriptorCache {
     private void dumpLibs() {
         System.out.println("Available Facelets Library Descriptors:"); //NOI18N
         for (FaceletsLibraryDescriptor l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
+            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
         }
 
     }

@@ -102,7 +102,7 @@ public class RepositoryNode extends AbstractNode {
 
     @Override
     public String getShortDescription() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         buffer.append("<html>");//NOI18N
 
@@ -116,11 +116,6 @@ public class RepositoryNode extends AbstractNode {
         if (info.getRepositoryUrl() != null) {
             buffer.append(NbBundle.getMessage(RepositoryNode.class,
                     "LBL_REPO_Url", info.getRepositoryUrl()));//NOI18N
-        }
-        //show index url if available
-        if (info.getIndexUpdateUrl() != null) {
-            buffer.append(NbBundle.getMessage(RepositoryNode.class,
-                    "LBL_REPO_Index_Url", info.getIndexUpdateUrl()));//NOI18N
         }
         buffer.append("</html>");//NOI18N
 
@@ -154,34 +149,27 @@ public class RepositoryNode extends AbstractNode {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set basicProps = sheet.get(Sheet.PROPERTIES);
         try {
-            PropertySupport.Reflection id = new PropertySupport.Reflection<String>(info, String.class, "getId", null); //NOI18N
-            id.setName("Id"); //NOI18N
-            id.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Id"));
+            Node.Property<?> id = new PropertySupport.Reflection<String>(info, String.class, "getId", null); //NOI18N
+            id.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Id"));
             id.setShortDescription(""); //NOI18N
-            PropertySupport.Reflection name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
-            name.setName("name"); //NOI18N
-            name.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Name"));
+            Node.Property<?> name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
+            name.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Name"));
             name.setShortDescription(""); //NOI18N
-            PropertySupport.Reflection type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
-            type.setName("type"); //NOI18N
-            type.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Repository_Type"));
-            PropertySupport.Reflection local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
+            Node.Property<?> type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
+            type.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Repository_Type"));
+            Node.Property<?> local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
             local.setName("local"); //NOI18N
-            local.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Local"));
+            local.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Local"));
             local.setShortDescription("");
-            PropertySupport.Reflection localRepoLocation = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryPath", null); //NOI18N
-            localRepoLocation.setName("repositoryPath"); //NOI18N
-            localRepoLocation.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Local_repository_path"));
-            PropertySupport.Reflection remoteDownloadable = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isRemoteDownloadable", null); //NOI18N
-            remoteDownloadable.setName("remoteDownloadable"); //NOI18N
-            remoteDownloadable.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index"));
-            PropertySupport.Reflection repoURL = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryUrl", null); //NOI18N
-            repoURL.setName("repositoryUrl"); //NOI18N
-            repoURL.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_URL"));
-            PropertySupport.Reflection indexURL = new PropertySupport.Reflection<String>(info, String.class, "getIndexUpdateUrl", null); //NOI18N
-            indexURL.setName("indexUpdateUrl"); //NOI18N
-            indexURL.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index_URL"));
-            basicProps.put(new Node.Property[] {
+            Node.Property<?> localRepoLocation = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryPath", null); //NOI18N
+            localRepoLocation.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Local_repository_path"));
+            Node.Property<?> remoteDownloadable = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isRemoteDownloadable", null); //NOI18N
+            remoteDownloadable.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index"));
+            Node.Property<?> repoURL = new PropertySupport.Reflection<String>(info, String.class, "getRepositoryUrl", null); //NOI18N
+            repoURL.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_URL"));
+            Node.Property<?> indexURL = new PropertySupport.Reflection<String>(info, String.class, "getIndexUpdateUrl", null); //NOI18N
+            indexURL.setDisplayName(NbBundle.getMessage(RepositoryNode.class, "LBL_Remote_Index_URL"));
+            basicProps.put(new Node.Property<?>[] {
                 id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL
             
             });
@@ -198,13 +186,13 @@ public class RepositoryNode extends AbstractNode {
                     "LBL_REPO_Update_Index"));//NOI18N
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             setEnabled(false);
             RPrefreshindex.post(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     RepositoryIndexer.indexRepo(info);
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             RefreshIndexAction.this.setEnabled(true);
                         }
                     });
@@ -218,7 +206,7 @@ public class RepositoryNode extends AbstractNode {
             putValue(NAME, NbBundle.getMessage(RepositoryNode.class, "ACT_Edit..."));
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
             rrui.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
             rrui.modify(RepositoryNode.this.info);

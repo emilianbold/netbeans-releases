@@ -96,6 +96,7 @@ public class DiffStreamSource extends StreamSource {
         this.title = title;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -104,10 +105,12 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         try {
             init();
@@ -117,6 +120,7 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         init();
         if (propertyName != null) {
@@ -135,6 +139,7 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
@@ -232,10 +237,7 @@ public class DiffStreamSource extends StreamSource {
                 mimeType = SvnUtils.getMimeType(remoteFile);
             }
         } catch (Exception e) {
-            // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
-            failure.initCause(e);
-            throw failure;
+            throw new IOException("Can not load remote file for " + baseFile, e); //NOI18N
         }
         FileObject fo = FileUtil.toFileObject(baseFile);
         canWriteBaseFile = fo != null && fo.canWrite();
@@ -244,7 +246,7 @@ public class DiffStreamSource extends StreamSource {
     private void initProperty() throws IOException {
         PropertiesClient client = new PropertiesClient(baseFile);
         if (Setup.REVISION_BASE.equals(revision)) {
-            byte [] value = client.getBaseProperties().get(propertyName);
+            byte [] value = client.getBaseProperties(true).get(propertyName);
             propertyValue = value != null ? new MultiDiffPanel.Property(value) : null;
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             byte [] value = client.getProperties().get(propertyName);
