@@ -335,8 +335,14 @@ public class ThreadsCache implements Executor {
         } catch (VMDisconnectedExceptionWrapper ex) {
             parent = null;
         }
-        if (parent != null && groupMap.get(parent) == null) {
-            addedGroups.addAll(addGroups(parent));
+        if (groupMap.get(parent) == null) {
+            if (parent != null) {
+                addedGroups.addAll(addGroups(parent));
+            } else {
+                List<ThreadGroupReference> topGroups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups0(vm));
+                groupMap.put(null, topGroups);
+                addedGroups.addAll(topGroups);
+            }
         }
         List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
         if (!parentsGroups.contains(group)) {
