@@ -155,6 +155,7 @@ public class BuiltinTypes {
     }
     
     public static CsmBuiltIn getBuiltIn(CharSequence text) {
+        assert text != null && text.length() > 0;
         text = QualifiedNameCache.getManager().getString(text);
         CsmBuiltIn builtIn = types.get(text);
         if( builtIn == null ) {
