@@ -67,7 +67,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
@@ -371,7 +371,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             actions.add(null);
             //actions.add(new CodeAssistanceAction());
             // makeproject sensitive actions
-            final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
+            final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
             if (!actionsForMakeProject.isEmpty()) {
                 actions.addAll(actionsForMakeProject);

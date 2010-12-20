@@ -63,12 +63,20 @@ public class DirectoryStorage {
 
     public static class FormatException extends Exception {
 
-        public FormatException(String text) {
+        private final boolean expexted;
+
+        public FormatException(String text, boolean expected) {
             super(text);
+            this.expexted = expected;
         }
 
         public FormatException(String string, Throwable thrwbl) {
             super(string, thrwbl);
+            expexted = false;
+        }
+
+        public boolean isExpexted() {
+            return expexted;
         }
     }
 
@@ -264,6 +272,11 @@ public class DirectoryStorage {
 
             return result;
         }
+
+        @Override
+        public String toString() {
+            return name + ' ' + getAccessAsString() + ' ' + user + ' ' + group + ' ' + timestamp + ' ' + link;
+        }
     }
 
     private final Map<String, Entry> entries = new HashMap<String, Entry>();
@@ -305,11 +318,11 @@ public class DirectoryStorage {
                 }
                 if (version > VERSION) {
                     throw new FormatException("attributes file version " + version +  //NNOI18N
-                            " not supported: " + file.getAbsolutePath()); //NOI18N
+                            " not supported: " + file.getAbsolutePath(), false); //NOI18N
                 }
                 if (version < ODD_VERSION) {
                     throw new FormatException("Discarding old attributes file version " + version +  //NNOI18N
-                            ' ' + file.getAbsolutePath()); //NOI18N
+                            ' ' + file.getAbsolutePath(), true); //NOI18N
                 }
                 while ((line = br.readLine()) != null) {
                     if (line.length() == 0) {
@@ -497,6 +510,6 @@ public class DirectoryStorage {
     }
 
     private FormatException wrongFormatException() {
-        return new FormatException("Wrong file format " + file.getAbsolutePath()); //NOI18N)
+        return new FormatException("Wrong file format " + file.getAbsolutePath(), false); //NOI18N)
     }
 }

@@ -336,28 +336,6 @@ public class Gdb {
 		    // doesn't look like gdb has the equivalent of dbx' -s
 		}
 
-
-		// attach or debug corefile
-		String program = ndi.getTarget();
-		long attach_pid = ndi.getPid();
-		String corefile = ndi.getCorefile();
-
-		if (corefile != null) {
-		    // debug corefile
-		    if (program == null) {
-			program = " "; // NOI18N
-		    }
-		    avec.add(program);
-		    avec.add(corefile);
-
-		} else if (attach_pid != -1) {
-		    // attach
-		    String image = Long.toString(attach_pid);
-		    if (program == null) {
-			program = "-"; // NOI18N
-		    }
-		}
-
 		// Arrange for gdb victims to run under the Pio
 		boolean ioInWindow =
 		    true;

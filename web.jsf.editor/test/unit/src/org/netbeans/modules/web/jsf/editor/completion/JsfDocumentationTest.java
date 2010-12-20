@@ -40,59 +40,63 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.support;
+package org.netbeans.modules.web.jsf.editor.completion;
 
-import java.util.EventObject;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
- * @author Alexander Simon
+ *  
+ * @author marekfukala
  */
-public class MakeProjectEvent extends EventObject {
+public class JsfDocumentationTest extends NbTestCase {
 
-    private final String path;
-    private final boolean expected;
-
-    public MakeProjectEvent(MakeProjectHelper helper, String path, boolean expected) {
-        super(helper);
-        this.path = path;
-        this.expected = expected;
+    public JsfDocumentationTest(String name) {
+        super(name);
     }
 
-    /**
-     * Get the associated Ant project helper object.
-     * @return the project helper which fired the event
-     */
-    public MakeProjectHelper getHelper() {
-        return (MakeProjectHelper)getSource();
+     public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JsfDocumentationTest("testSectioningPattern"));
+        return suite;
     }
 
-    /**
-     * Get the path to the modified (or created or deleted) file.
-     * Paths typically used are:
-     * <ol>
-     * <li>{@link AntProjectHelper#PROJECT_PROPERTIES_PATH}
-     * <li>{@link AntProjectHelper#PRIVATE_PROPERTIES_PATH}
-     * <li>{@link AntProjectHelper#PROJECT_XML_PATH}
-     * <li>{@link AntProjectHelper#PRIVATE_XML_PATH}
-     * </ol>
-     * However for properties files, other paths may exist if the project
-     * uses them for some purpose.
-     * @return a project-relative path
-     */
-    public String getPath() {
-        return path;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        JsfDocumentation.setupDocumentationForUnitTests();
     }
 
-    /**
-     * Check whether the change was produced by calling methods on
-     * {@link AntProjectHelper} or whether it represents a change
-     * detected on disk.
-     * @return true if the change was triggered by in-memory modification methods,
-     *         false if occurred on disk in the metadata files and is being loaded
-     */
-    public boolean isExpected() {
-        return expected;
+    public void testDocZipPresence() throws IOException {
+        URL zipUrl = JsfDocumentation.getZipURL();
+        assertNotNull(zipUrl);
+
+        URLConnection con = zipUrl.openConnection();
+        assertNotNull(con);
     }
+
+    public void testResolveLink() throws IOException {
+        //from facelets descriptor help to a linked jsf-api-docs entry
+        URL url = JsfDocumentation.getDefault().resolveLink(null, "../../../javadocs/javax/faces/component/UIViewParameter.html");
+        assertNotNull(url);
+
+        String content = JsfDocumentation.getContentAsString(url, null);
+        assertNotNull(content);
+
+        //and between jsf-api-docs entries
+        URL url2 = JsfDocumentation.getDefault().resolveLink(url, "../../../javax/faces/component/UIComponent.html");
+        assertNotNull(url2);
+
+        String content2 = JsfDocumentation.getContentAsString(url2, null);
+        assertNotNull(content2);
+        
+    }
+
+   
 
 }

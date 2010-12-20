@@ -134,7 +134,16 @@ import org.openide.util.NbBundle;
         dl.getAccessibleContext().setAccessibleDescription(getMessage("ExtensionsListEditorTitle_AD"));
         dl.pack();
         dl.setSize(new java.awt.Dimension(300, (int)dl.getPreferredSize().getHeight()));
-        dl.setVisible(true);
+        
+        try {
+            dl.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+        } finally {
+            dl.dispose();
+        }
 
         ee.defaultValue = editor.getDefaultValue();
         ee.setValues( editor.getItemList() );

@@ -1547,7 +1547,17 @@ public final class MakeActionProvider implements ActionProvider {
             //DialogDisplayer.getDefault().notify(dd);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.getAccessibleContext().setAccessibleDescription(getString("BatchBuildDialogAD"));
-            dialog.setVisible(true);
+
+            try {
+                dialog.setVisible(true);
+            } catch (Throwable th){
+                if (!(th.getCause() instanceof InterruptedException)) {
+                    throw new RuntimeException(th);
+                }
+                dd.setValue(closeButton);
+            } finally {
+                dialog.setVisible(false);
+            }
         }
 
         public Configuration[] getSelectedConfs() {
