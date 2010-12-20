@@ -299,7 +299,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
 
         // neither memory nor disk cache helped
-        checkConnection(cache, remotePath, true);
+        checkConnection(this, true);
 
         Lock lock = RemoteFileSystem.getLock(cache).writeLock();
         if (trace) { trace("waiting for lock"); } // NOI18N
@@ -324,7 +324,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             DirectoryReader directoryReader = new DirectoryReader(execEnv, remotePath);
             if (trace) { trace("synchronizing"); } // NOI18N
-            directoryReader.readDirectory();
+            try {
+                directoryReader.readDirectory();
+            }  catch (IOException ex) {
+                if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    // connection was broken while we read directory content -
+                    // add notification and return cache if available
+                    fileSystem.getRemoteFileSupport().addPendingFile(this);
+                    if (loaded && storage != null) {
+                        return storage;
+                    }
+                }
+                throw ex;
+            }
             fileSystem.incrementDirSyncCount();
             Map<String, List<DirectoryStorage.Entry>> dupLowerNames = new HashMap<String, List<DirectoryStorage.Entry>>();
             boolean hasDups = false;
@@ -439,7 +451,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (child.cache.exists() && child.cache.length() > 0) {
             return;
         }
-        checkConnection(child.cache, child.remotePath, false);
+        checkConnection(child, true);
         DirectoryStorage storage = getDirectoryStorage();
         Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
         try {
@@ -464,10 +476,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         os.close();
     }
 
-    private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
+    private void checkConnection(RemoteFileObjectBase fo, boolean throwConnectException) throws ConnectException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            fileSystem.getRemoteFileSupport().addPendingFile(localFile, remotePath, isDirectory);
-            throw new ConnectException();
+            fileSystem.getRemoteFileSupport().addPendingFile(fo);
+            if (throwConnectException) {
+                throw new ConnectException();
+            }
         }
     }
 
