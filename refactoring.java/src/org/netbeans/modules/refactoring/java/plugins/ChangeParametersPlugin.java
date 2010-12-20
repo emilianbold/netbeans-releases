@@ -158,8 +158,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     final ElementUtilities elmUtils = info.getElementUtilities();
 
                     //add all references of overriding methods
-                        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-                        Element el = treePathHandle.resolveElement(info);
+                    Element el = treePathHandle.resolveElement(info);
                     ElementHandle<TypeElement>  enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                         allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                         allMethods.add(ElementHandle.create((ExecutableElement)el));
