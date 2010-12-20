@@ -43,8 +43,9 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileUtil;
@@ -120,8 +121,7 @@ public class JsfCompletionItem {
             return JSF_DEFAULT_SORT_PRIORITY; //jsf tags are more important than html content
         }
 
-        @Override
-        public String getHelp() {
+        private String getHelpContent() {
             StringBuilder sb = new StringBuilder();
             sb.append(getLibraryHelpHeader(component.getLibrary()));
             sb.append("<h1>"); //NOI18N
@@ -168,6 +168,13 @@ public class JsfCompletionItem {
         public boolean hasHelp() {
             return true;
         }
+
+        @Override
+        public HelpItem getHelpItem() {
+            return new DefaultHelpItem(null, JsfDocumentation.getDefault(), null, getHelpContent());
+        }
+
+
     }
 
     public static class JsfTagAttribute extends HtmlCompletionItem.Attribute {
@@ -183,8 +190,7 @@ public class JsfCompletionItem {
             this.attr = attr;
         }
 
-        @Override
-        public String getHelp() {
+        private String getHelpContent() {
             StringBuilder sb = new StringBuilder();
             sb.append(getLibraryHelpHeader(library));
             sb.append("<div><b>Tag:</b> "); //NOI18N
@@ -213,6 +219,12 @@ public class JsfCompletionItem {
         public boolean hasHelp() {
             return attr.getDescription() != null;
         }
+
+         @Override
+        public HelpItem getHelpItem() {
+            return new DefaultHelpItem(null, JsfDocumentation.getDefault(), null, getHelpContent());
+        }
+
     }
 
     private static String getLibraryHelpHeader(FaceletsLibrary library) {
