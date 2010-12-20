@@ -883,7 +883,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
-        return ""; //NOI18N
+        return null;
     }
 
     @Override
