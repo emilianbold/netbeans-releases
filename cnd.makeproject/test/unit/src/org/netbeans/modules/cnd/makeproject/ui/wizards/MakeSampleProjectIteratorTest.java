@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
@@ -210,6 +211,14 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
         }
+    }
+
+    @Override
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
+        list.add(MakeProjectTypeImpl.class);
+        list.addAll(super.getServices());
+        return list;
     }
 
     protected static Set<DataObject>  instantiateSample(String name, final File destdir) throws IOException, InterruptedException, InvocationTargetException {
