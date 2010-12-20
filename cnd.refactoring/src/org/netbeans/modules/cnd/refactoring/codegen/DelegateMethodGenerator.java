@@ -113,7 +113,16 @@ public class DelegateMethodGenerator implements CodeGenerator {
         final DelegatePanel panel = new DelegatePanel(component, description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setVisible(true);
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
 //            JavaSource js = JavaSource.forDocument(component.getDocument());
 //            if (js != null) {

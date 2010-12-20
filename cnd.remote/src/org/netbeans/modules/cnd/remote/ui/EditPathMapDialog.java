@@ -122,7 +122,16 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         dd.setClosingOptions(new Object[]{DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dlg.presenter = dialog;
-        dialog.setVisible(true);
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.setVisible(false);
+        }
         if (dd.getValue() == btnOK) {
             dlg.applyChanges();
             return true;
