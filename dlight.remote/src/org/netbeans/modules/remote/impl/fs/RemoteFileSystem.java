@@ -179,13 +179,13 @@ public class RemoteFileSystem extends FileSystem {
         String result = absPath;
 // # Remove all /./ sequences.
 //    local   path=${1//\/.\//\/}
-        result = result.replaceAll("[/][.][/]", "[/]");
+        result = result.replaceAll("[/][.][/]", "[/]"); // NOI18N
 
 //
 //    # Remove first dir/.. sequence.
 //    local   npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
-        if (result.startsWith("..")){
-            result = result.replaceFirst("..", "");
+        if (result.startsWith("..")){ // NOI18N
+            result = result.replaceFirst("..", ""); // NOI18N
         }
 //    # Remove remaining dir/.. sequence.
 //    while [[ $npath != $path ]]
@@ -194,10 +194,10 @@ public class RemoteFileSystem extends FileSystem {
 //        npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
 //    done
 //    echo $path
-        Pattern p = Pattern.compile(".*[/]([^/]+)[/][.][.].*");
+        Pattern p = Pattern.compile(".*[/]([^/]+)[/][.][.].*"); // NOI18N
         Matcher m = p.matcher(result);
         if (m.matches()){
-            result = result.replaceAll("[/][^/]+[/][.][.]", "");
+            result = result.replaceAll("[/][^/]+[/][.][.]", ""); // NOI18N
         }
         return result;
 

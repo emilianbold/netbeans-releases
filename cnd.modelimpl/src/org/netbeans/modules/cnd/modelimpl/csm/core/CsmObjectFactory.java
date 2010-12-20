@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
@@ -281,6 +282,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
+        } else if (object instanceof Instantiation) {
+            if (object instanceof Instantiation.Class) {
+                aHandler = INSTANTIATION_CLASS;
+            } else {
+                throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N            
+            }
         } else if (object instanceof ProgramImpl<?>) {
             aHandler = PROGRAM_IMPL;
         } else if (object instanceof SubroutineImpl<?>) {
@@ -534,6 +541,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new TemplateParameterImpl(stream);
                 break;
 
+            case INSTANTIATION_CLASS:
+                obj = new Instantiation.Class(stream);
+                break;
+                
             case PROGRAM_IMPL:
                 obj = new ProgramImpl(stream);
                 break;
@@ -644,10 +655,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
+    // instantiations
+    private static final int INSTANTIATION_CLASS            = TEMPLATE_PARAMETER_IMPL + 1;
 
     // fortran
 
-    private static final int PROGRAM_IMPL                  = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final int PROGRAM_IMPL                  = INSTANTIATION_CLASS + 1;
     private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
     private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
 
