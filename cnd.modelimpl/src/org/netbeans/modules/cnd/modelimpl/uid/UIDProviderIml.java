@@ -71,7 +71,7 @@ public final class UIDProviderIml implements UIDProvider {
 
     public static boolean isPersistable(CsmUID<?> uid) {
         // TODO: InstantiationUID is fake class which doesn't persist internal reference => we have to skip it
-        return uid != null && !(uid instanceof SelfUID<?>) && !(uid instanceof Instantiation.InstantiationUID);
+        return uid != null && !(uid instanceof SelfUID<?>) && !(uid instanceof Instantiation.InstantiationSelfUID);
     }
 
     public UIDProviderIml() {

@@ -149,6 +149,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_PARAM_LIST_KEY;
         } else if (object instanceof OffsetableDeclarationKey) {
             aHandle = KEY_DECLARATION_KEY;
+        } else if (object instanceof InstantiationKey) {
+            aHandle = KEY_INSTANTIATION_KEY;
         } else if (object instanceof ProjectSettingsValidatorKey) {
             aHandle = KEY_PRJ_VALIDATOR_KEY;
         } else if (object instanceof ProjectDeclarationContainerKey) {
@@ -208,6 +210,10 @@ public class KeyObjectFactory extends KeyFactory {
                 share = false;
                 aKey = new OffsetableDeclarationKey(aStream);
                 break;
+            case KEY_INSTANTIATION_KEY:
+                share = false;
+                aKey = new InstantiationKey(aStream);
+                break;
             case KEY_PRJ_VALIDATOR_KEY:
                 aKey = new ProjectSettingsValidatorKey(aStream);
                 break;
@@ -256,7 +262,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_INHERITANCE_KEY = KEY_INCLUDE_KEY + 1;
     public static final int KEY_PARAM_LIST_KEY  = KEY_INHERITANCE_KEY + 1;
     public static final int KEY_DECLARATION_KEY = KEY_PARAM_LIST_KEY + 1;
-    public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
+    public static final int KEY_INSTANTIATION_KEY = KEY_DECLARATION_KEY + 1;
+    public static final int KEY_PRJ_VALIDATOR_KEY = KEY_INSTANTIATION_KEY + 1;
     
     public static final int KEY_PROJECT_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
     public static final int KEY_FILE_CONTAINER_KEY = KEY_PROJECT_DECLARATION_CONTAINER_KEY + 1;

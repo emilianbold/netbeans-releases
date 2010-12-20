@@ -66,20 +66,30 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
+ * Instantiations.
  *
- * @author eu155513
+ * @author eu155513, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
+public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
     private static final int MAX_INHERITANCE_DEPTH = 20;
 
     protected final T declaration;
@@ -87,6 +97,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     private String fullName = null;
 
     private Instantiation(T declaration, CsmType instType) {
+        super(declaration.getContainingFile(), declaration.getStartOffset(), declaration.getEndOffset());
         this.declaration = declaration;
         this.mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
         // inherit mapping
@@ -121,6 +132,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     }
 
     private Instantiation(T declaration, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        super(declaration.getContainingFile(), declaration.getStartOffset(), declaration.getEndOffset());
         this.declaration = declaration;
         this.mapping = mapping;
     }
@@ -263,7 +275,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     public static CsmObject create(CsmTemplate template, CsmType type) {
 //        System.err.println("Instantiation.create for " + template + " with type " + type);
         if (template instanceof CsmClass) {
-            return new Class((CsmClass)template, type);
+            Class newClass = new Class((CsmClass)template, type);
+            if(UIDProviderIml.isPersistable(newClass.getUID())) {
+                RepositoryUtils.put(newClass);
+            }
+            return newClass;
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, type);
         } else {
@@ -277,7 +293,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
 //        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
         if (template instanceof CsmClass) {
-            return new Class((CsmClass)template, mapping);
+            Class newClass = new Class((CsmClass)template, mapping);
+            if(UIDProviderIml.isPersistable(newClass.getUID())) {
+                RepositoryUtils.put(newClass);
+            }
+            return newClass;
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
         } else {
@@ -291,26 +311,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     @Override
     public CsmFile getContainingFile() {
         return getTemplateDeclaration().getContainingFile();
-    }
-
-    @Override
-    public int getEndOffset() {
-        return getTemplateDeclaration().getEndOffset();
-    }
-
-    @Override
-    public Position getEndPosition() {
-        return getTemplateDeclaration().getEndPosition();
-    }
-
-    @Override
-    public int getStartOffset() {
-        return getTemplateDeclaration().getStartOffset();
-    }
-
-    @Override
-    public Position getStartPosition() {
-        return getTemplateDeclaration().getStartPosition();
     }
 
     @Override
@@ -344,10 +344,72 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     }
 
     @Override
-    public CsmUID<Instantiation> getUID() {
-        return new InstantiationUID(this);
+    protected CsmUID<?> createUID() {
+        return createInstantiationUID(this);
     }
 
+    public static <T extends CsmInstantiation> CsmUID<?> createInstantiationUID(CsmInstantiation inst) {
+        if(CsmKindUtilities.isClass(inst) && inst.getTemplateDeclaration() instanceof ClassImpl) {
+            final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();        
+            boolean persistable = !mapping.keySet().isEmpty();
+            for (CsmTemplateParameter param : mapping.keySet()) {
+                CsmSpecializationParameter specParam = mapping.get(param);
+                if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                    if(!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
+                        persistable = false;
+                    }
+                } else {
+                    persistable = false;
+                }
+            }
+            if(persistable) {
+                return UIDUtilities.createInstantiationUID(inst);
+            }
+        }
+        return new InstantiationSelfUID((Instantiation)inst);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        assert (declaration instanceof ClassImpl);
+        
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUID(UIDCsmConverter.declarationToUID(declaration), output);
+
+        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<CsmUID<CsmTemplateParameter>>();
+        List<CsmSpecializationParameter> vals = new ArrayList<CsmSpecializationParameter>();
+        for (CsmTemplateParameter key : mapping.keySet()) {
+            keys.add(UIDCsmConverter.declarationToUID(key));
+            vals.add(mapping.get(key));
+        }
+        factory.writeUIDCollection(keys, output, true);
+        PersistentUtils.writeSpecializationParameters(vals, output);
+    }
+
+    public Instantiation(DataInput input) throws IOException {
+        super(input);
+
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        
+        CsmUID<T> declUID = factory.readUID(input);
+        declaration = declUID.getObject();
+        
+        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<CsmUID<CsmTemplateParameter>>();
+        List<CsmSpecializationParameter> vals = new ArrayList<CsmSpecializationParameter>();
+        
+        factory.readUIDCollection(keys, input);
+        PersistentUtils.readSpecializationParameters(vals, input);
+        
+        mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+        for (int i = 0; i < keys.size() && i < vals.size(); i++) {
+            mapping.put(keys.get(i).getObject(), vals.get(i));
+        }
+    }            
+    
     //////////////////////////////
     ////////////// STATIC MEMBERS
     public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
@@ -406,7 +468,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             } else if (member instanceof CsmTypedef) {
                 return new Typedef((CsmTypedef)member, this);
             } else if (member instanceof CsmClass) {
-                return new Class((CsmClass)member, getMapping());
+                Class newClass = new Class((CsmClass)member, getMapping());
+                if(UIDProviderIml.isPersistable(newClass.getUID())) {
+                    RepositoryUtils.put(newClass);
+                }                
+                return newClass;
             } else if (member instanceof CsmClassForwardDeclaration) {
                 return new ClassForward((CsmClassForwardDeclaration)member, getMapping());
             } else if (member instanceof CsmEnum) {
@@ -487,6 +553,19 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public List<CsmTemplateParameter> getTemplateParameters() {
             return ((CsmTemplate)declaration).getTemplateParameters();
         }
+        
+        ////////////////////////////////////////////////////////////////////////////
+        // impl of SelfPersistent
+        
+        @Override
+        public void write(DataOutput output) throws IOException {
+            super.write(output);
+        }
+
+        public Class(DataInput input) throws IOException {
+            super(input);
+        }        
+        
     }
 
     private static class Inheritance implements CsmInheritance {
@@ -1476,9 +1555,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         return org.netbeans.modules.cnd.modelimpl.csm.NestedType.getNestedClassifier(memberResolver, parentClassifier, ownText);
     }
 
-    public final static class InstantiationUID implements CsmUID<Instantiation>, SelfPersistent {
+    public final static class InstantiationSelfUID implements CsmUID<CsmInstantiation>, SelfPersistent {
         private final Instantiation ref;
-        private InstantiationUID(Instantiation ref) {
+        private InstantiationSelfUID(Instantiation ref) {
             this.ref = ref;
         }
 
@@ -1494,11 +1573,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             // write nothing
         }
 
-        public InstantiationUID(DataInput input) throws IOException {
+        public InstantiationSelfUID(DataInput input) throws IOException {
             this.ref = null;
         }
     }
-
+    
     public static CharSequence getInstantiatedText(CsmType type) {
         if (type instanceof Type) {
             return ((Type)type).getInstantiatedText();

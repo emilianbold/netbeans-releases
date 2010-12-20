@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes.BuiltInUID;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
-import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.InstantiationUID;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.InstantiationSelfUID;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl.FileNameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentDeclarations.OffsetSortedKey;
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.FileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.IncludeUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.InheritanceUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.InstantiationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.MacroUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.NamespaceUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ParamListUID;
@@ -379,6 +380,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_DECLARATION_UID;
         } else if (object instanceof BuiltInUID) {
             aHandler = UID_BUILT_IN_UID;
+        } else if (object instanceof InstantiationSelfUID) {
+            aHandler = UID_INSTANTIATION_SELF_UID;
         } else if (object instanceof InstantiationUID) {
             aHandler = UID_INSTANTIATION_UID;
         } else if (object instanceof UnresolvedClassUID) {
@@ -460,11 +463,16 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 share = false;
                 break;
 
-            case UID_INSTANTIATION_UID:
-                anUID = new Instantiation.InstantiationUID(aStream);
+            case UID_INSTANTIATION_SELF_UID:
+                anUID = new Instantiation.InstantiationSelfUID(aStream);
                 share = false;
                 break;
 
+            case UID_INSTANTIATION_UID:
+                anUID = new InstantiationUID(aStream);
+                share = false;
+                break;
+                
             case UID_UNRESOLVED_CLASS:
                 anUID = new UIDUtilities.UnresolvedClassUID(aStream);
                 break;
@@ -506,7 +514,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID = UID_DECLARATION_UID + 1;
     private static final int UID_INSTANTIATION_UID = UID_BUILT_IN_UID + 1;
-    private static final int UID_UNRESOLVED_CLASS = UID_INSTANTIATION_UID + 1;
+    private static final int UID_INSTANTIATION_SELF_UID = UID_INSTANTIATION_UID + 1;
+    private static final int UID_UNRESOLVED_CLASS = UID_INSTANTIATION_SELF_UID + 1;
     private static final int UID_UNRESOLVED_FILE = UID_UNRESOLVED_CLASS + 1;
     private static final int UID_UNRESOLVED_NAMESPACE = UID_UNRESOLVED_FILE + 1;
     // index to be used in another factory (but only in one)
