@@ -75,7 +75,7 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
         FileObject fo = FileUtil.toFileObject(new File(getWorkingCopy().getCompilationUnit().getSourceFile().toUri().getPath()));
 
         Project project = FileOwnerQuery.getOwner(fo);
-        JPATargetInfo ti = project.getLookup().lookup(JPATargetInfo.class);
+        JPATargetInfo ti = project != null ? project.getLookup().lookup(JPATargetInfo.class) : null;
         boolean isEJB = false;
         if(ti != null){
             JPATargetInfo.TargetType tt = ti.getType(fo, getClassElement().getQualifiedName().toString());
