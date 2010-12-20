@@ -57,7 +57,10 @@ import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -150,7 +153,16 @@ public class RemoteFileUtil {
         if (execEnv != null && execEnv.isRemote()) {
             return getFileObject(absolutePath, execEnv);
         }
-        return CndFileUtils.toFileObject(absolutePath);
+        FileObject projectDir = project.getProjectDirectory();
+        CndUtils.assertNotNull(projectDir, "Null project dir for " + project); //NOI18N
+        final FileSystem fs;
+        try {
+            fs = projectDir.getFileSystem();
+            return fs.findResource(absolutePath);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
     public static String normalizeAbsolutePath(String absPath, Project project) {
