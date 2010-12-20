@@ -498,7 +498,7 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
-                    long lastModified = file.lastModified();
+                    long lastModified = (file == null) ? primaryFile.lastModified().getTime() : file.lastModified();
                     CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
                     final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
 
