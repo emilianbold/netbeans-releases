@@ -155,7 +155,7 @@ public final class MakeProjectGenerator {
                         for (MakeProjectTypeImpl abpt : Lookup.getDefault().lookupAll(MakeProjectTypeImpl.class)) {
                             if (abpt.getType().equals(type)) {
                                 // Well, the factory was there.
-                                throw new IllegalArgumentException("For some reason the folder " + directory + //NOI18N
+                                throw new IllegalArgumentException("For some reason the folder " + directory +
                                         " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
                             }
                         }

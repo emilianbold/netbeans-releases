@@ -240,7 +240,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             }
             return projectXml;
         } catch (SAXException e) {
-            IOException ioe = new IOException(projectDiskFile + ": " + e, e); //NOI18N
+            IOException ioe = new IOException(projectDiskFile + ": " + e, e);
             throw ioe;
         }
     }
@@ -249,7 +249,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     public void saveProject(Project project) throws IOException, ClassCastException {
         Reference<MakeProjectHelperImpl> helperRef = project2Helper.get(project);
         if (helperRef == null) {
-            StringBuilder sBuff = new StringBuilder("#191029: no project helper for a "); //NOI18N
+            StringBuilder sBuff = new StringBuilder("#191029: no project helper for a ");
             sBuff.append(project.getClass().getName()).append('\n'); // NOI18N
             sBuff.append("argument project: ").append(project).append(" => ").append(project.hashCode()).append('\n'); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
