@@ -143,7 +143,7 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
         if( operands == null ) {
             operands = new ArrayList<CsmExpression>(0);
         }
-        return operands;
+        return Collections.unmodifiableList(operands);
     }
     
     @Override
