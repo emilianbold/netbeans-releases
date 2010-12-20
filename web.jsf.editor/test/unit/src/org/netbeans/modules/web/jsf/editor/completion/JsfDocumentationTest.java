@@ -40,49 +40,63 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.web.jsf.editor.completion;
 
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ *  
  * @author marekfukala
  */
-public class DefaultHelpItem implements HelpItem {
+public class JsfDocumentationTest extends NbTestCase {
 
-    private String header, helpContent;
-    private URL helpUrl;
-    private HelpResolver helpResolver;
-
-    public DefaultHelpItem(URL helpUrl, HelpResolver helpResolver, String header) {
-        this(helpUrl, helpResolver, header, null);
+    public JsfDocumentationTest(String name) {
+        super(name);
     }
 
-    public DefaultHelpItem(URL helpUrl, HelpResolver helpResolver, String header, String helpContent) {
-        this.helpUrl = helpUrl;
-        this.helpResolver = helpResolver;
-        this.header = header;
-        this.helpContent = helpContent;
+     public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JsfDocumentationTest("testSectioningPattern"));
+        return suite;
     }
 
     @Override
-    public URL getHelpURL() {
-        return helpUrl;
+    protected void setUp() throws Exception {
+        super.setUp();
+        JsfDocumentation.setupDocumentationForUnitTests();
     }
 
-    @Override
-    public HelpResolver getHelpResolver() {
-        return helpResolver;
+    public void testDocZipPresence() throws IOException {
+        URL zipUrl = JsfDocumentation.getZipURL();
+        assertNotNull(zipUrl);
+
+        URLConnection con = zipUrl.openConnection();
+        assertNotNull(con);
     }
 
-    @Override
-    public String getHelpHeader() {
-        return header;
+    public void testResolveLink() throws IOException {
+        //from facelets descriptor help to a linked jsf-api-docs entry
+        URL url = JsfDocumentation.getDefault().resolveLink(null, "../../../javadocs/javax/faces/component/UIViewParameter.html");
+        assertNotNull(url);
+
+        String content = JsfDocumentation.getContentAsString(url, null);
+        assertNotNull(content);
+
+        //and between jsf-api-docs entries
+        URL url2 = JsfDocumentation.getDefault().resolveLink(url, "../../../javax/faces/component/UIComponent.html");
+        assertNotNull(url2);
+
+        String content2 = JsfDocumentation.getContentAsString(url2, null);
+        assertNotNull(content2);
+        
     }
 
-    @Override
-    public String getHelpContent() {
-        return helpContent;
-    }
+   
 
 }
