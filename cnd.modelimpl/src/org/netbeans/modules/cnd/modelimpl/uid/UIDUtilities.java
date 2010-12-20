@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -124,6 +125,11 @@ public class UIDUtilities {
         return UIDManager.instance().getSharedUID(uid);
     }
 
+    public static <T extends CsmInstantiation> CsmUID<T> createInstantiationUID(T inst) {
+        CsmUID<T> uid = new InstantiationUID<T>(inst);
+        return UIDManager.instance().getSharedUID(uid);
+    }
+    
     private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration) {
         assert declaration != null;
         assert declaration.getName() != null;
@@ -719,6 +725,33 @@ public class UIDUtilities {
             return "<UNNAMED OFFS-DECL UID>"; // NOI18N
         }
     }
+    
+    /* package */ static final class InstantiationUID<T extends CsmInstantiation> extends CachedUID<T> { //KeyBasedUID<T> {
+
+        public InstantiationUID(T inst) {
+            this(KeyUtilities.createInstantiationKey(inst), inst);
+        }
+
+        protected InstantiationUID(Key key, T obj) {
+            super(key, obj);
+        }
+
+        /* package */ InstantiationUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+
+        @Override
+        public String toString() {
+            String retValue = getToStringPrefix() + ":" + super.toString(); // NOI18N
+            return retValue;
+        }
+
+        protected String getToStringPrefix() {
+            return "UID for Instantiation"; // NOI18N
+        }
+    }    
+    
+    
 
     /**
      * Abstract base class for Unresolved* UIDs.
