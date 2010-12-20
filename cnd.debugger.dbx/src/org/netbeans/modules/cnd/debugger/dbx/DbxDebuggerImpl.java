@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Variable;
@@ -138,7 +137,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Autos;
 
 // for rebuildOnNextDebug
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
@@ -1093,12 +1091,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         if (getIOPack() != null) {
             getIOPack().close();
-        }
-
-        if (executor != null) {
-            // executor may sometimes be null if a session fail to start
-            // properly.
-            executor.cleanup();
         }
 
         // remember that we're shutting down.
