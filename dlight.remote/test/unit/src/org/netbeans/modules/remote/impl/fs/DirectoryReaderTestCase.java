@@ -158,9 +158,9 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         assertEntriesEqual(referenceEntries, entries);
     }
 
-    private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines) {
+    private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines, RefEntry[] refEntries) {
         List<DirectoryStorage.Entry> entries = DirectoryReader.testLsLineParser(oSFamily, lines);
-        assertEntriesEqual(referenceEntries, entries);
+        assertEntriesEqual(refEntries, entries);
     }
 
     private void assertEntriesEqual(RefEntry[] refEntries, List<DirectoryStorage.Entry> entries) {
@@ -197,7 +197,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             "lrwxrwxrwx   1 user_1563 staff          5 2010-12-05 22:16:11.954841950 +0300 link_to_dir -> dir_1",
             "lrwxrwxrwx   1 user_1563 staff         17 2010-12-05 22:16:11.957630460 +0300 link_to_file_with_a_space -> file with a space"
         };
-        doTestLsParser(HostInfo.OSFamily.SUNOS, output);
+        doTestLsParser(HostInfo.OSFamily.SUNOS, output, referenceEntries);
     }
 
     public void testLinuxLsParser() throws Exception {
@@ -211,21 +211,27 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             "lrwxrwxrwx 1 user_1563 staff   17 2010-12-06 00:10:47.000000000 +0300 link_to_file_with_a_space -> file with a space",
             "lrwxrwxrwx 1 user_1563 staff   17 2010-12-06 00:10:47.000000000 +0300 link with a space to file with a space -> file with a space"
         };
-        doTestLsParser(HostInfo.OSFamily.LINUX, output);
+        doTestLsParser(HostInfo.OSFamily.LINUX, output, referenceEntries);
     }
 
     public void testMacOsLsParser() throws Exception {
+        RefEntry[] refEntries = new RefEntry[referenceEntries.length + 1];
+        System.arraycopy(referenceEntries, 0, refEntries, 0, referenceEntries.length);
+        refEntries[refEntries.length - 1] = new RefEntry(
+                'l', "rwxr-xr-x", "root", "admin", 60, "User Guides And Information",
+                "/Library/Documentation/User Guides and Information.localized");
         String[] output = {
-            "drwxr-xr-x  2 user_1563  staff  68 Dec  5 22:12:17 2010 dir_1",
-            "prw-r--r--  1 user_1563  staff   0 Dec  5 22:12:17 2010 fifo",
-            "-rw-r--r--  1 user_1563  staff   4 Dec  5 22:12:17 2010 file with a space",
-            "-rw-r--r--  1 user_1563  staff   4 Dec  5 22:12:17 2010 just_a_file",
-            "lrwxrwxrwx  1 user_1563  staff  11 Dec  5 22:12:17 2010 just_a_link -> just_a_file",
-            "lrwxrwxrwx  1 user_1563  staff  17 Dec  5 22:12:17 2010 link with a space to file with a space -> file with a space",
-            "lrwxrwxrwx  1 user_1563  staff   5 Dec  5 22:12:17 2010 link_to_dir -> dir_1",
-            "lrwxrwxrwx  1 user_1563  staff  17 Dec  5 22:12:17 2010 link_to_file_with_a_space -> file with a space"
+            "drwxr-xr-x   2 user_1563  staff  68 Dec  5 22:12:17 2010 dir_1",
+            "prw-r--r--   1 user_1563  staff   0 Dec  5 22:12:17 2010 fifo",
+            "-rw-r--r--   1 user_1563  staff   4 Dec  5 22:12:17 2010 file with a space",
+            "-rw-r--r--   1 user_1563  staff   4 Dec  5 22:12:17 2010 just_a_file",
+            "lrwxrwxrwx   1 user_1563  staff  11 Dec  5 22:12:17 2010 just_a_link -> just_a_file",
+            "lrwxrwxrwx   1 user_1563  staff  17 Dec  5 22:12:17 2010 link with a space to file with a space -> file with a space",
+            "lrwxrwxrwx   1 user_1563  staff   5 Dec  5 22:12:17 2010 link_to_dir -> dir_1",
+            "lrwxrwxrwx   1 user_1563  staff  17 Dec  5 22:12:17 2010 link_to_file_with_a_space -> file with a space",
+            "lrwxr-xr-x   1 root       admin  60 Jul  6 14:28:09 2010 User Guides And Information -> /Library/Documentation/User Guides and Information.localized"
         };
-        doTestLsParser(HostInfo.OSFamily.MACOSX, output);
+        doTestLsParser(HostInfo.OSFamily.MACOSX, output, refEntries);
     }
 
     public void testOtherLsParser() throws Exception {
@@ -239,7 +245,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             "lrwxrwxrwx  1 user_1563  staff   5 Dec  5 22:12:17 2010 link_to_dir -> dir_1",
             "lrwxrwxrwx  1 user_1563  staff  17 Dec  5 22:12:17 2010 link_to_file_with_a_space -> file with a space"
         };
-        doTestLsParser(HostInfo.OSFamily.UNKNOWN, output);
+        doTestLsParser(HostInfo.OSFamily.UNKNOWN, output, referenceEntries);
     }
 
     public static Test suite() {

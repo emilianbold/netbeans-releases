@@ -199,14 +199,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedException ex) {
             // don't report, this just means that we aren't connected 
             // or just interrupted (for example by FileChooser UI)
+            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
         } catch (InterruptedIOException ex) {
             // don't report, for example FileChooser UI can interrupt us
+            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
+            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             // never report CancellationException
+            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
         }
         return new FileObject[0];
     }
@@ -263,7 +267,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     try {
                         storage.load();
                     } catch (DirectoryStorage.FormatException e) {
-                        RemoteLogger.getInstance().log(Level.FINE, e.getMessage(), e);
+                        Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
+                        RemoteLogger.getInstance().log(level, "Error reading directory cache", e);
+                        storageFile.delete();
                     } catch (InterruptedIOException e) {
                         throw e;
                     } catch (IOException e) {
