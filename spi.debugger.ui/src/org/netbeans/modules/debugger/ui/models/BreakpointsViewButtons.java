@@ -68,6 +68,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.debugger.ui.actions.AddBreakpointAction;
 import org.netbeans.modules.debugger.ui.models.BreakpointGroup.Group;
+import org.netbeans.modules.debugger.ui.views.VariablesViewButtons;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -85,7 +86,7 @@ public class BreakpointsViewButtons {
     public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
 
     public static JButton createNewBreakpointActionButton() {
-        JButton button = createButton(
+        JButton button = VariablesViewButtons.createButton(
                 "org/netbeans/modules/debugger/resources/breakpointsView/NewBreakpoint.gif",
                 NbBundle.getMessage (BreakpointsViewButtons.class, "Hint_New_Breakpoint")
             );
@@ -98,7 +99,7 @@ public class BreakpointsViewButtons {
     }
 
     public static synchronized JButton createGroupSelectionButton() {
-        final JButton button = createButton(
+        final JButton button = VariablesViewButtons.createButton(
                 "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointGroups_options_16.png",
                 NbBundle.getMessage (BreakpointsViewButtons.class, "Hint_Select_bp_groups")
             );
@@ -195,18 +196,6 @@ public class BreakpointsViewButtons {
         }
         List<? extends Project> sessionProjects = currentSession.lookup(null, Project.class);
         return sessionProjects.size() > 0;
-    }
-
-    private static JButton createButton (String iconPath, String tooltip) {
-        Icon icon = ImageUtilities.loadImageIcon(iconPath, false);
-        final JButton button = new JButton(icon);
-        // ensure small size, just for the icon
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
-        button.setPreferredSize(size);
-        button.setMargin(new Insets(1, 1, 1, 1));
-        button.setToolTipText(tooltip);
-        button.setFocusable(false);
-        return button;
     }
 
     // **************************************************************************

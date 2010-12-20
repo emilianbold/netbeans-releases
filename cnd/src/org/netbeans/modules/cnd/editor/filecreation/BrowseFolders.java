@@ -196,10 +196,18 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
             
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        dialog.setVisible(true);
+
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+        } finally {
+            dialog.dispose();
+        }
         
         return optionsListener.getResult();
-                
     }
     
     private void expandSelection( String preselectedFileName ) {

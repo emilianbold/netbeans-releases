@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -121,7 +122,7 @@ public class LogTest extends AbstractGitTestCase {
 //        assertRevisions(revision3, revisions[2]);
 //    }
 
-    private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) {
+    private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {
         assertEquals(expected.getRevision(), info.getRevision());
         assertEquals(expected.getAuthor().toString(), info.getAuthor().toString());
         assertEquals(expected.getCommitTime(), info.getCommitTime());

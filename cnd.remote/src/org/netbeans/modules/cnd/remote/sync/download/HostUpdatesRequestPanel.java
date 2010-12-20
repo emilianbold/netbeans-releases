@@ -98,7 +98,16 @@ public class HostUpdatesRequestPanel extends JPanel {
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.pack();
-        dlg.setVisible(true);
+        try {
+            dlg.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dlg.dispose();
+        }
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             panel.apply();
             return panel.getConfirmed();

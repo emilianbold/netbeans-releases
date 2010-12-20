@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -122,7 +122,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
     private int lastNewHostPanel = -1;
     
-    private final SelectModeDescriptorPanel importPanel;
+    private SelectModeDescriptorPanel selectModePanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
 //    private final PanelConfigureProject panelConfigureProjectFalse;
 //    private final MakefileOrConfigureDescriptorPanel makefileOrConfigureDescriptorPanel;
@@ -155,16 +155,22 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         advancedPanels.add(new SourceFoldersDescriptorPanel());
         advancedPanels.add(new ParserConfigurationDescriptorPanel());
         advancedPanels.add(new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false));
-
-        importPanel = new SelectModeDescriptorPanel(fullRemote);
-        importPanel.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                setupPanelsAndStepsIfNeed();
-            }
-        });
     }
 
+    private synchronized SelectModeDescriptorPanel getSelectModePanel() {
+        if (selectModePanel == null) {
+            selectModePanel = new SelectModeDescriptorPanel(fullRemote);
+            selectModePanel.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    setupPanelsAndStepsIfNeed();
+                }
+            });
+        }
+        return selectModePanel;
+    }
+    
     public static NewMakeProjectWizardIterator newApplication() {
         String name = APPLICATION_PROJECT_NAME; //getString("NativeNewApplicationName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
@@ -287,6 +293,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
             List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+            final SelectModeDescriptorPanel modeSelectionPanel = getSelectModePanel();
             if (fullRemote) {
                 if (selectHostPanel == null) {
                     selectHostPanel = getSelectHostWizardProvider().getSelectHostPanel();
@@ -295,18 +302,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 if (getSelectHostWizardProvider().isNewHost()) {
                     panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
                     lastNewHostPanel = panelsList.size() - 1;
-                    panelsList.add(importPanel);
+                    panelsList.add(modeSelectionPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
                     }
                 } else {
-                    panelsList.add(importPanel);
+                    panelsList.add(modeSelectionPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
                     }
                 }
             } else {
-                panelsList.add(importPanel);
+                panelsList.add(modeSelectionPanel);
                 if (!isSimple()) {
                     panelsList.addAll(advancedPanels);
                 }
@@ -427,7 +434,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(importPanel.getWizardStorage())));
+                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(getSelectModePanel().getWizardStorage())));
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -511,7 +518,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
-            MakeProjectGeneratorImpl.createProject(prjParams);
+            MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);

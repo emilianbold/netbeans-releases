@@ -68,7 +68,7 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
     }
 
     @Override
-    public void updateKeys(){
+    public void updateKeys() {
         Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
         GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
         if ((commonSupport != null)
@@ -77,21 +77,18 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
             if (childTypes != null) {
                 for (int i = 0; i < childTypes.length; i++) {
                     String type = childTypes[i];
-                    Decorator decorator = DecoratorManager.findDecorator(type, null,true);
-                    if ((decorator == null) && (type.equals(GlassfishModule.JDBC)) || (decorator != null))  {
-                        keys.add(new Hk2ItemNode(lookup,
-                                new Hk2ResourcesChildren(lookup, type),
-                                NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),  // NOI18N
-                                DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER, true)));
-                    }
+                    keys.add(new Hk2ItemNode(lookup,
+                            new Hk2ResourcesChildren(lookup, type),
+                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type), // NOI18N
+                            DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER, true)));
                 }
             }
         } else {
             String type = GlassfishModule.JDBC;
             keys.add(new Hk2ItemNode(lookup,
-                            new Hk2ResourcesChildren(lookup, type),
-                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),   // NOI18N
-                            DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER, true)));
+                    new Hk2ResourcesChildren(lookup, type),
+                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type), // NOI18N
+                    DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER, true)));
         }
         setKeys(keys);
     }

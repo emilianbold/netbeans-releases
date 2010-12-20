@@ -55,6 +55,9 @@ public class Utils {
         if (f1 == null) {
             return f2 == null;
         }
+        if (f2 == null) {
+            return f1 == null;
+        }
         if (Utilities.isMac()) {
             return f1.getPath().compareToIgnoreCase(f2.getPath()) == 0;
         }

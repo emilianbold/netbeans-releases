@@ -308,7 +308,16 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     new AddFilesFromDir(dir, progressPanel, progressDialog).start();
                 }
             });
-            progressDialog.setVisible(true);
+            try {
+                progressDialog.setVisible(true);
+            } catch (Throwable th) {
+                if (!(th.getCause() instanceof InterruptedException)) {
+                    throw new RuntimeException(th);
+                }
+                dialogDescriptor.setValue(DialogDescriptor.CLOSED_OPTION);
+            } finally {
+                progressDialog.dispose();
+            }
         //addFilesFromDirectory(dir, dir);
         }
 

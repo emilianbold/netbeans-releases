@@ -40,59 +40,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.support;
+package org.netbeans.modules.masterfs.filebasedfs.utils;
 
-import java.util.EventObject;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author Alexander Simon
- */
-public class MakeProjectEvent extends EventObject {
-
-    private final String path;
-    private final boolean expected;
-
-    public MakeProjectEvent(MakeProjectHelper helper, String path, boolean expected) {
-        super(helper);
-        this.path = path;
-        this.expected = expected;
+public class UtilsTest extends NbTestCase {
+    public UtilsTest(String s) {
+        super(s);
     }
 
-    /**
-     * Get the associated Ant project helper object.
-     * @return the project helper which fired the event
-     */
-    public MakeProjectHelper getHelper() {
-        return (MakeProjectHelper)getSource();
+    public void testEqualsToNull() {
+        assertFalse("Not equal", Utils.equals(new File("."), null));
     }
 
-    /**
-     * Get the path to the modified (or created or deleted) file.
-     * Paths typically used are:
-     * <ol>
-     * <li>{@link AntProjectHelper#PROJECT_PROPERTIES_PATH}
-     * <li>{@link AntProjectHelper#PRIVATE_PROPERTIES_PATH}
-     * <li>{@link AntProjectHelper#PROJECT_XML_PATH}
-     * <li>{@link AntProjectHelper#PRIVATE_XML_PATH}
-     * </ol>
-     * However for properties files, other paths may exist if the project
-     * uses them for some purpose.
-     * @return a project-relative path
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Check whether the change was produced by calling methods on
-     * {@link AntProjectHelper} or whether it represents a change
-     * detected on disk.
-     * @return true if the change was triggered by in-memory modification methods,
-     *         false if occurred on disk in the metadata files and is being loaded
-     */
-    public boolean isExpected() {
-        return expected;
+    public void testEqualsWithNull() {
+        assertFalse("Not equal", Utils.equals(null, new File(".")));
     }
 
 }

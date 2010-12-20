@@ -45,6 +45,8 @@ package org.netbeans.modules.git.ui.checkout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JButton;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
@@ -60,6 +62,9 @@ import org.openide.util.NbBundle;
 public class CheckoutPaths implements ActionListener {
     private CheckoutPathsPanel panel;
     private RevisionDialogController revisionPicker;
+    private JButton okButton;
+    private DialogDescriptor dd;
+    private boolean valid = true;
 
     CheckoutPaths (File repository, File[] roots) {
         revisionPicker = new RevisionDialogController(repository);
@@ -76,12 +81,19 @@ public class CheckoutPaths implements ActionListener {
 
     boolean show() {
         panel.cbUpdateIndex.addActionListener(this);
-        enableRevisionPanel();
-        
-        JButton okButton = new JButton(NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.OKButton.text")); //NOI18N
+        okButton = new JButton(NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.OKButton.text")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.title"), true,  //NOI18N
+        dd = new DialogDescriptor(panel, NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.title"), true,  //NOI18N
                 new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CheckoutPaths.class), null);
+        enableRevisionPanel();
+        revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent evt) {
+                if (evt.getPropertyName() == RevisionDialogController.PROP_VALID) {
+                    setValid(Boolean.TRUE.equals(evt.getNewValue()));
+                }
+            }
+        });
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
         return okButton == dd.getValue();
@@ -96,6 +108,13 @@ public class CheckoutPaths implements ActionListener {
 
     private void enableRevisionPanel () {
         revisionPicker.setEnabled(panel.cbUpdateIndex.isSelected());
+        setValid(valid);
     }
 
+    private void setValid (boolean flag) {
+        this.valid = flag;
+        flag |= !panel.cbUpdateIndex.isSelected();
+        okButton.setEnabled(flag);
+        dd.setValid(flag);
+    }
 }
