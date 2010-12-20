@@ -279,7 +279,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             RestUtils.ensureRestDevelopmentReady(project);
             Set<Entity> entities = Util.getEntities(project, files);
             
-            if (RestUtils.isJavaEE6(Templates.getProject(wizard))) {
+	    if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
 
                 String targetPackage = null;
                 String resourcePackage = null;
