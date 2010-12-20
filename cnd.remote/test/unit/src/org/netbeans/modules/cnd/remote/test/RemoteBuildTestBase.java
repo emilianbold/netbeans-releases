@@ -53,13 +53,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -142,7 +142,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     @Override
     protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectTypeImpl.class);
+        list.add(NativeProjectType.class);
         list.addAll(super.getServices());
         return list;
     }

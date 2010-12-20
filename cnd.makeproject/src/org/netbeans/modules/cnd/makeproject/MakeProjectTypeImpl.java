@@ -76,7 +76,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
      * Do nothing, just a service.
      * public for testing
      */
-    public MakeProjectTypeImpl() {}
+    MakeProjectTypeImpl() {}
     
     @Override
     public String getType() {
