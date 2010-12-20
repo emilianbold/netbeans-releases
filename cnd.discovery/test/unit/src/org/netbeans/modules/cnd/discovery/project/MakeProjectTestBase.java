@@ -66,10 +66,10 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -118,7 +118,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     @Override
     protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectTypeImpl.class);
+        list.add(NativeProjectType.class);
         list.addAll(super.getServices());
         return list;
     }
