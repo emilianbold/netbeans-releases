@@ -969,7 +969,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         final List<URL> result = new ArrayList<URL>(entries.size());
         for (ClassPath.Entry entry : entries) {
             final FileObject cpRoot = entry.getRoot();
-            if (!root.equals(cpRoot) && (prj == null || prj.equals(FileOwnerQuery.getOwner(cpRoot)))) {
+            if (!root.equals(cpRoot) &&
+                    (prj == null || 
+                     (cpRoot != null && prj.equals(FileOwnerQuery.getOwner(cpRoot))))) {
                 result.add(entry.getURL());
             }
         }
