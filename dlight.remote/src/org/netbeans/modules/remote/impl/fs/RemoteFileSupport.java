@@ -125,20 +125,16 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
         }
     }
 
-    public void addPendingFile(File localFile, String remotePath, boolean isDirectory) {
-        RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
-        pendingFilesQueue.add(localFile, remotePath, isDirectory);
+    public void addPendingFile(RemoteFileObjectBase fo) {
+        RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.remotePath}); //NOI18N
+        pendingFilesQueue.add(fo.remotePath);
         ConnectionNotifier.addTask(execEnv, this);
     }
 
     private static class PendingFile {
-        public final File localFile;
         public final String remotePath;
-        private final boolean isDirectory;
-        public PendingFile(File localFile, String remotePath, boolean isDirectory) {
-            this.localFile = localFile;
+        public PendingFile(String remotePath) {
             this.remotePath = remotePath;
-            this.isDirectory = isDirectory;
         }
     }
 
@@ -151,9 +147,9 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
         private final BlockingQueue<PendingFile> queue = new LinkedBlockingQueue<PendingFile>();
         private final Set<String> remoteAbsPaths = new TreeSet<String>();
 
-        public synchronized void add(File localFile, String remotePath, boolean isDirectory) {
+        public synchronized void add(String remotePath) {
             if (remoteAbsPaths.add(remotePath)) {
-                queue.add(new PendingFile(localFile, remotePath, isDirectory));
+                queue.add(new PendingFile(remotePath));
             }
         }
 
