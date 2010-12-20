@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -108,6 +110,26 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
 
+            ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+            TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
+                    @Override
+                    public Boolean visitVariable(VariableTree vt, String p) {
+                         super.visitVariable(vt, p);
+                         return vt.getName().contentEquals(p);
+                    }
+
+                    @Override
+                    public Boolean reduce(Boolean left, Boolean right) {
+                        return (left == null ? false : left) || (right == null ? false : right);
+                    }
+
+            };
+
+            if (scanner.scan(javac.getTrees().getTree(method), s)) {
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s));
+            }
+
+
             // check parameter type
             String t = paramTable[i].getType();
             if (t == null)
@@ -117,7 +139,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             s = paramTable[i].getDefaultValue();
             if ((s == null || s.length() < 1))
                 p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
-
+ 
             }
             ParameterInfo in = paramTable[i];
 
