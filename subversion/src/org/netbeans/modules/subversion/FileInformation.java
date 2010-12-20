@@ -50,7 +50,6 @@ import java.util.*;
 import java.io.Serializable;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -308,7 +307,7 @@ public class FileInformation implements Serializable {
             entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
         } catch (SVNClientException e) {
             // at least log the exception
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 Subversion.LOG.log(Level.INFO, null, e);
             }
         }
@@ -406,6 +405,7 @@ public class FileInformation implements Serializable {
         return (status & mask) != 0;
     }
 
+    @Override
     public String toString() {
         return "Text: " + status + " " + getStatusText(status) + "\nProp: " + propStatus + " " + getStatusText(propStatus); // NOI18N
     }

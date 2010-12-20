@@ -45,6 +45,7 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import javax.swing.text.Position;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.cookies.EditorCookie;
@@ -54,6 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -64,10 +66,12 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
     private int status = RefactoringElementImplementation.NORMAL;
 
     protected String name;
-    protected FileObject parentFile;
+    protected final FileObject parentFile;
     protected boolean enabled = true;
 
-    public AbstractRefactoringElement() {
+    protected AbstractRefactoringElement(@NonNull FileObject parentFile) {
+        Parameters.notNull("parentFile", parentFile);
+        this.parentFile = parentFile;
     }
 
     public boolean isEnabled() {

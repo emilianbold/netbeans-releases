@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -174,7 +175,9 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], Map<String, String> additionalEnv,
-			                TermComponent console) {
+			                TermComponent console,
+                                        boolean usePty,
+                                        boolean disableEcho) {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
 
@@ -186,9 +189,11 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
         npb.setExecutable(enginePath);
         npb.setArguments(argv);
-        npb.setUsePty(true);
-
-        npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        
+        if (usePty) {
+            npb.setUsePty(true);
+            npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        }
 
         try {
             engineProc = npb.call();
@@ -197,6 +202,10 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
 
         PtySupport.connect(console.getIO(), engineProc);
+
+        if (disableEcho) {
+            PtySupport.disableEcho(exEnv, PtySupport.getTTY(engineProc));
+        }
 
 	//startMonitor();
         
@@ -288,17 +297,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
     }
 
     public String readlink(long pid) {
-	// throw new UnsupportedOperationException();
-	String procid = "/proc/" + pid + "/exe"; // NOI18N
-	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
-        if (status.isOK()) {
-            return status.output;
-        }
-
-        // try /proc/PID/path/a.out (Solaris)
-        procid = "/proc/" + pid + "/path/a.out"; // NOI18N
-	status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
-        return status.output;
+        return PathUtils.getExePath(pid, exEnv);
     }
 
     public boolean is_64(String filep) {

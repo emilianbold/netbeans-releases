@@ -56,6 +56,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -126,11 +127,15 @@ public final class CndFileUtils {
     }
 
     public static FileObject toFileObject(File file) {
-        return CndFileSystemProvider.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return InvalidFileObjectSupport.getInvalidFileObject(file);
+        }
+        return fo;
     }
 
-    public static FileObject toFileObject(CharSequence path) {
-        return CndFileSystemProvider.toFileObject(path);
+    public static FileObject toFileObject(CharSequence absoluteLocalPath) {
+        return CndFileSystemProvider.toFileObject(absoluteLocalPath);
     }
 
     public static String getCanonicalPath(CharSequence path) throws IOException {
@@ -353,11 +358,14 @@ public final class CndFileUtils {
     }
 
     private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
-        if (file.canRead()) {
+        if (CndFileSystemProvider.canRead(file.getAbsolutePath())) {
             CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
                 CndFileSystemProvider.FileInfo curFile = listFiles[i];
                 String absPath = changeStringCaseIfNeeded(curFile.absolutePath);
+                if (isWindows) {
+                    absPath = absPath.replace('/', '\\');
+                }
                 if (curFile.directory) {
                     files.putIfAbsent(absPath, Flags.DIRECTORY);
                 } else {
@@ -397,15 +405,6 @@ public final class CndFileUtils {
         return map;
     }
 
-    private static boolean existsImpl(File file) {
-       Boolean exists = CndFileSystemProvider.exists(file.getAbsolutePath());
-       if (exists == null) {
-            return file.exists();
-       } else {
-            return exists.booleanValue();
-       }
-    }
-
     private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
        CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
        if (info == null) {
@@ -436,8 +435,10 @@ public final class CndFileUtils {
         private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
 
         private static Flags get(File file) {
-            if (existsImpl(file)) {
-                if (file.isDirectory()) {
+            file = FileUtil.normalizeFile(file);
+            FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
+            if (fo != null && fo.isValid()) {
+                if (fo.isFolder()) {
                     return DIRECTORY;
                 } else {
                     return FILE;

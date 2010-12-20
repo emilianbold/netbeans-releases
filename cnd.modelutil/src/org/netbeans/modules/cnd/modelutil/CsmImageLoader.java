@@ -186,6 +186,20 @@ public class CsmImageLoader implements CsmImageName {
             }
         } else if (CsmKindUtilities.isProject(o)) {
             return getProjectPath(((CsmProject)o).isArtificial(), false);
+        } else if (CsmKindUtilities.isFile(o)) {
+            switch (((CsmFile)o).getFileType()) {
+                case HEADER_FILE:
+                    return HEADER_FILE;
+                case SOURCE_CPP_FILE:
+                case SOURCE_FILE:
+                    return CPP_SOUCE_FILE;
+                case SOURCE_C_FILE:
+                    return C_SOUCE_FILE;
+                case SOURCE_FORTRAN_FILE:
+                    return FORTRAN_SOUCE_FILE;
+                default:
+                    return HEADER_FILE;
+            }
         }
         if (translateIcons.get(kind) != null) {
             kind = translateIcons.get(kind);

@@ -490,7 +490,7 @@ public final class ClassIndex {
             }
             for (URL srcRoot : srcRoots) {
                 oldState.add (srcRoot);
-                ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
+                ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot, true);
                 if (ci != null) {
                     ci.addClassIndexImplListener(spiListener);
                     queries.add (ci);
@@ -664,7 +664,7 @@ public final class ClassIndex {
                 }
                 if (srcRoots == null) {
                     if (!roots.remove(url)) {
-                        if (mgr.getUsagesQuery(url)!=null) {
+                        if (mgr.getUsagesQuery(url, false)!=null) {
                             newRoots.add (url);
                             result = true;
                         } else {
@@ -675,7 +675,7 @@ public final class ClassIndex {
                 else {
                     for (URL _url : srcRoots) {
                         if (!roots.remove(_url)) {
-                            if (mgr.getUsagesQuery(_url)!=null) {
+                            if (mgr.getUsagesQuery(_url, false)!=null) {
                                 newRoots.add (_url);
                                 result = true;
                             } else {
@@ -727,7 +727,7 @@ public final class ClassIndex {
                         final ClassIndexManager mgr = ClassIndexManager.getDefault();
                         for (Iterator<URL> it = unknownRoots.iterator(); it.hasNext();) {
                             final URL url = it.next();
-                            if (mgr.getUsagesQuery(url)==null) {
+                            if (mgr.getUsagesQuery(url, false)==null) {
                                 it.remove();
                             }
                         }

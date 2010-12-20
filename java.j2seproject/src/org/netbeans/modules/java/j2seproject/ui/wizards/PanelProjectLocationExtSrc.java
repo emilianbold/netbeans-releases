@@ -65,7 +65,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  * Sets up source and test folders for new Java project from existing sources.
  * @author Tomas Zezula et al.
  */
-public class PanelProjectLocationExtSrc extends SettingsPanel {
+class PanelProjectLocationExtSrc extends SettingsPanel {
 
     private PanelConfigureProject firer;
     private WizardDescriptor wizardDescriptor;
@@ -75,22 +75,25 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private static final String NB_BUILD_SCRIPT_NAME = "nbbuild.xml";          //NOI18N
 
     /** Creates new form PanelSourceFolders */
-    public PanelProjectLocationExtSrc (PanelConfigureProject panel) {
+    PanelProjectLocationExtSrc (PanelConfigureProject panel) {
         this.firer = panel;
         initComponents();
         this.projectName.getDocument().addDocumentListener (new DocumentListener (){
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
@@ -98,6 +101,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             }
         });        
         this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
+            @Override
             public void changedUpdate(DocumentEvent e) {             
                 setCalculateProjectFolder (false);
                 checkBuildScriptName();
@@ -105,6 +109,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
                 checkBuildScriptName();
@@ -112,6 +117,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
                 checkBuildScriptName();
@@ -121,14 +127,17 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         });
         this.buildScriptName.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 dataChanged();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 dataChanged();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 dataChanged();
             }
@@ -163,60 +172,67 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     }
 
 
+    @Override
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         String path = null;        
-        String projectName = null;
-        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
-        if (projectLocation == null) {
-            projectLocation = ProjectChooser.getProjectsFolder();                
+        String projName = null;
+        File projLoc = (File) settings.getProperty ("projdir");  //NOI18N
+        if (projLoc == null) {
+            projLoc = ProjectChooser.getProjectsFolder();                
             int index = WizardSettings.getNewProjectCount();
             String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
             File file;
             do {
                 index++;                            
-                projectName = MessageFormat.format (formater, new Object[]{new Integer (index)});                
-                file = new File (projectLocation, projectName);                
+                projName = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+                file = new File (projLoc, projName);                
             } while (file.exists());                                
             settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
-            this.projectLocation.setText (projectLocation.getAbsolutePath());        
+            this.projectLocation.setText (projLoc.getAbsolutePath());        
             this.setCalculateProjectFolder(true);
         }
         else {
-            projectName = (String) settings.getProperty ("name"); //NOI18N
+            projName = (String) settings.getProperty ("name"); //NOI18N
             boolean tmpFlag = this.calculatePF;
-            this.projectLocation.setText (projectLocation.getAbsolutePath());
+            this.projectLocation.setText (projLoc.getAbsolutePath());
             this.setCalculateProjectFolder(tmpFlag);
         }
-        this.projectName.setText (projectName);                
+        this.projectName.setText (projName);                
         this.projectName.selectAll();
-        String buildScriptName = (String) settings.getProperty("buildScriptName");           //NOI18N
-        if (buildScriptName == null) {
-            assert projectLocation != null;
-            buildScriptName = DEFAULT_BUILD_SCRIPT_NAME;
-            File bf = new File (projectLocation,buildScriptName);
+        String bldScrName = (String) settings.getProperty("buildScriptName");           //NOI18N
+        if (bldScrName == null) {
+            assert projLoc != null;
+            bldScrName = DEFAULT_BUILD_SCRIPT_NAME;
+            File bf = new File (projLoc,bldScrName);
             if (bf.exists()) {
-                buildScriptName = NB_BUILD_SCRIPT_NAME;
+                bldScrName = NB_BUILD_SCRIPT_NAME;
             }
             //Todo: Mybe generate other name, like nb-build2.xml - not sure if it's desirable
         }
-        this.buildScriptName.setText(buildScriptName);
+        this.buildScriptName.setText(bldScrName);
         
     }
 
+    @Override
     void store (WizardDescriptor settings) {        
         settings.putProperty ("name",this.projectName.getText()); // NOI18N
         File projectsDir = new File(this.projectLocation.getText());
         settings.putProperty ("projdir", projectsDir); // NOI18N
-        String buildScriptName = this.buildScriptName.getText();
-        if (DEFAULT_BUILD_SCRIPT_NAME.equals(buildScriptName)) {
-            buildScriptName = null;
+        String bldScrName = this.buildScriptName.getText();
+        if (DEFAULT_BUILD_SCRIPT_NAME.equals(bldScrName)) {
+            bldScrName = null;
         }
-        settings.putProperty("buildScriptName", buildScriptName);    //NOI18N
+        settings.putProperty("buildScriptName", bldScrName);    //NOI18N
     }
     
+    @Override
     boolean valid (WizardDescriptor settings) {
-        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText(), this.buildScriptName.getText());
+        String result = checkValidity (
+                this.projectName.getText(),
+                this.projectLocation.getText(),
+                this.buildScriptName.getText(),
+                this.calculatePF);
         if (result == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");   //NOI18N
             return true;
@@ -228,15 +244,13 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     }
 
     static String checkValidity (final String projectName, final String projectLocation,
-        final String buildScriptName) {
-        if ( projectName.length() == 0 
-             || projectName.indexOf('/')  > 0           //NOI18N
-             || projectName.indexOf('\\') > 0           //NOI18N
-             || projectName.indexOf(':')  > 0) {        //NOI18N
+        final String buildScriptName, final boolean calculatedFolder) {
+        if ( projectName.length() == 0 || 
+            (calculatedFolder && PanelProjectLocationVisual.isIllegalName(projectName))) {
             // Display name not specified
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
         }
-
+        
         File projLoc = new File (projectLocation).getAbsoluteFile();
 
         if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
@@ -296,6 +310,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         return null;
     }        
 
+    @Override
     void validate(WizardDescriptor settings) throws WizardValidationException {
     }
     

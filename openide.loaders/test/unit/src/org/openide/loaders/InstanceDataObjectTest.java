@@ -252,7 +252,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     }
     
     public static class TestDefinitions implements Runnable {
-        public TestDefinitions() {}
+        TestDefinitions() {}
         
         static TestDefinitions create() {
             return new TestDefinitions();

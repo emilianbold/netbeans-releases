@@ -91,16 +91,18 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.core.startup.Main;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
+import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -109,7 +111,7 @@ import org.openide.util.NbBundle;
 public class InstallSupportImpl {
     private InstallSupport support;
     private boolean progressRunning = false;
-    private static Logger err = Logger.getLogger (InstallSupportImpl.class.getName ());
+    private static final Logger LOG = Logger.getLogger (InstallSupportImpl.class.getName ());
     
     private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
     
@@ -222,7 +224,7 @@ public class InstallSupportImpl {
             runningTask = getExecutionService ().submit (downloadCallable);
             retval = runningTask.get ();
         } catch (CancellationException ex) {
-            err.log (Level.FINE, "InstallSupport.doDownload was cancelled", ex); // NOI18N
+            LOG.log (Level.FINE, "InstallSupport.doDownload was cancelled", ex); // NOI18N
             return false;
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
@@ -281,7 +283,7 @@ public class InstallSupportImpl {
             runningTask = getExecutionService ().submit (validationCallable);
             retval = runningTask.get ();
         } catch (CancellationException ex) {
-            err.log (Level.FINE, "InstallSupport.doValidate was cancelled", ex); // NOI18N
+            LOG.log (Level.FINE, "InstallSupport.doValidate was cancelled", ex); // NOI18N
             return false;
         } catch(InterruptedException iex) {
             if (iex.getCause() instanceof OperationException) {
@@ -359,14 +361,14 @@ public class InstallSupportImpl {
                     targetCluster = getTargetCluster (installed, moduleImpl, isGlobal);
                     
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
-                    err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
+                    LOG.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
                     
                     // check if 'updater.jar' or 'updater_<branding>_<locale>.jar' is being installed
                     if (AUTOUPDATE_SERVICES_MODULE.equals(moduleImpl.getCodeName())) {
-                        err.log(Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
+                        LOG.log(Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
                     }
 
                     JarFile jf = new JarFile(dest);
@@ -375,7 +377,7 @@ public class InstallSupportImpl {
                        for (JarEntry entry : Collections.list(jf.entries())) {
                             if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
                                     entry.toString().matches(ModuleUpdater.AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
-                                err.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
+                                LOG.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
                                 updaterFiles.add(new UpdaterInfo(entry, jf, targetCluster));
                                 needsRestart = true;
                                 added = true;
@@ -408,7 +410,7 @@ public class InstallSupportImpl {
                             try {
                                 info.getUpdaterJarFile().close();
                             } catch (IOException e) {
-                                err.log(Level.INFO, "Cannot close jar file " + info.getUpdaterJarFile());
+                                LOG.log(Level.INFO, "Cannot close jar file " + info.getUpdaterJarFile());
                             }
                         }
                     }
@@ -428,25 +430,23 @@ public class InstallSupportImpl {
                             files = new HashSet <File> (downloadedFiles);
                         }
                         if (! files.isEmpty ()) {
-
-                            // XXX: should run in single Thread
-                            Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
+                            try {
+                                UpdaterInternal.update(
                                     files,
                                     new RefreshModulesListener (progress),
-                                    NbBundle.getBranding(), false);
-
-                            try {
-                                th.join();
+                                    NbBundle.getBranding()
+                                );
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
+                                        LOG.log(Level.FINE, "Waiting for {0}@{1} #{2}", new Object[]{ impl.getCodeName(), impl.getSpecificationVersion(), rerunWaitCount});
                                         Thread.sleep(100);
+                                        Main.getModuleSystem().refresh();
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
-                                        err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
-                                        th.interrupt();
+                                        LOG.log (Level.INFO, "Timeout waiting for loading module {0}@{1}", new Object[]{impl.getCodeName (), impl.getSpecificationVersion ()});
                                         afterInstall ();
                                         synchronized(downloadedFiles) {
                                             downloadedFiles.clear();
@@ -457,8 +457,7 @@ public class InstallSupportImpl {
                                     }
                                 }
                             } catch(InterruptedException ie) {
-                                err.log (Level.INFO, ie.getMessage (), ie);
-                                th.interrupt();
+                                LOG.log (Level.INFO, ie.getMessage (), ie);
                             }
                         }
                         afterInstall ();
@@ -483,15 +482,15 @@ public class InstallSupportImpl {
             runningTask = getExecutionService ().submit (installCallable);
             retval = runningTask.get ();
         } catch (CancellationException ex) {
-            err.log (Level.FINE, "InstallSupport.doInstall was cancelled", ex); // NOI18N
+            LOG.log (Level.FINE, "InstallSupport.doInstall was cancelled", ex); // NOI18N
             return false;
         } catch(InterruptedException iex) {
-            err.log (Level.INFO, iex.getLocalizedMessage (), iex);
+            LOG.log (Level.INFO, iex.getLocalizedMessage (), iex);
         } catch(ExecutionException iex) {
             if (iex.getCause () instanceof OperationException) {
                 throw (OperationException) iex.getCause ();
             } else {
-                err.log (Level.INFO, iex.getLocalizedMessage (), iex);
+                LOG.log (Level.INFO, iex.getLocalizedMessage (), iex);
             }
         } finally {
             if (! retval) {
@@ -716,11 +715,11 @@ public class InstallSupportImpl {
         }
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
-        err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
+        LOG.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
         if(source==null) {
             final String errorString = NbBundle.getMessage(InstallSupportImpl.class, 
                     "InstallSupportImpl_NullSource", toUpdateImpl.getCodeName()); // NOI18N
-            err.log (Level.INFO, errorString);
+            LOG.log (Level.INFO, errorString);
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
         }
 
@@ -728,7 +727,7 @@ public class InstallSupportImpl {
         
         // skip already downloaded modules
         if (dest.exists ()) {
-            err.log (Level.FINE, "Target NBM file " + dest + " of " + toUpdateImpl.getUpdateElement () + " already downloaded.");
+            LOG.log (Level.FINE, "Target NBM file " + dest + " of " + toUpdateImpl.getUpdateElement () + " already downloaded.");
             return toUpdateImpl.getDownloadSize ();
         }
 
@@ -743,13 +742,13 @@ public class InstallSupportImpl {
             }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
         } catch (UnknownHostException x) {
-            err.log (Level.INFO, x.getMessage (), x);
+            LOG.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
         } catch (FileNotFoundException x) {
-            err.log (Level.INFO, x.getMessage (), x);
+            LOG.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL, x.getLocalizedMessage ());
         } catch (IOException x) {
-            err.log (Level.INFO, x.getMessage (), x);
+            LOG.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
         }
         
@@ -806,7 +805,7 @@ public class InstallSupportImpl {
     }
     
     static File getDestination (File targetCluster, String codeName, URL source) {
-        err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
+        LOG.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
         File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
@@ -820,7 +819,7 @@ public class InstallSupportImpl {
             );
 
         File destFile = new File (destDir, fileName + ext);
-        err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
+        LOG.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }
     
@@ -845,17 +844,17 @@ public class InstallSupportImpl {
             return contentLength;
         }
         public void streamOpened(InputStream stream, int contentLength) {
-            err.log(Level.FINEST, "Opened connection for " + source);
+            LOG.log(Level.FINEST, "Opened connection for " + source);
             this.stream = stream;
             this.contentLength = contentLength;
         }
 
         public void accessCanceled() {
-            err.log(Level.INFO, "Opening connection for " + source + "was cancelled");
+            LOG.log(Level.INFO, "Opening connection for " + source + "was cancelled");
         }
 
         public void accessTimeOut() {
-            err.log(Level.INFO, "Opening connection for " + source + "was finised due to timeout");
+            LOG.log(Level.INFO, "Opening connection for " + source + "was finised due to timeout");
         }
 
         public void notifyException(Exception x) {
@@ -899,20 +898,20 @@ public class InstallSupportImpl {
                 throw listener.getException();
             }
         } catch (FileNotFoundException x) {
-            err.log (Level.INFO, x.getMessage(), x);
+            LOG.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
                     "InstallSupportImpl_Download_Unavailable", source));            
         } catch (IOException x) {
-            err.log (Level.INFO, x.getMessage(), x);
+            LOG.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
                     "InstallSupportImpl_Download_Unavailable", source));            
         } catch (Exception x) {
-            err.log (Level.INFO, x.getMessage(), x);
+            LOG.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
                     "InstallSupportImpl_Download_Unavailable", source));
         }
         if (cancelled()) {
-            err.log(Level.FINE, "Download of " + source + " was cancelled");
+            LOG.log(Level.FINE, "Download of " + source + " was cancelled");
             throw new IOException("Download of " + source + " was cancelled");
         }
 
@@ -922,7 +921,7 @@ public class InstallSupportImpl {
         BufferedInputStream bsrc = new BufferedInputStream (is);
         BufferedOutputStream bdest = null;
         
-        err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
+        LOG.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
         boolean canceled = false;
         int increment = 0;
         try {
@@ -953,27 +952,27 @@ public class InstallSupportImpl {
             //assert estimatedSize == increment : "Increment (" + increment
             //        + ") of is equal to estimatedSize (" + estimatedSize + ").";
             if (estimatedSize != increment) {
-                err.log (Level.FINEST, "Increment (" + increment + ") of is not equal to estimatedSize (" + estimatedSize + ").");
+                LOG.log (Level.FINEST, "Increment (" + increment + ") of is not equal to estimatedSize (" + estimatedSize + ").");
             }            
         } catch (IOException ioe) {
-            err.log (Level.INFO, "Writing content of URL " + source + " failed.", ioe);
+            LOG.log (Level.INFO, "Writing content of URL " + source + " failed.", ioe);
         } finally {
             try {
                 if (bsrc != null) bsrc.close ();
                 if (bdest != null) bdest.flush ();
                 if (bdest != null) bdest.close ();
             } catch (IOException ioe) {
-                err.log (Level.INFO, ioe.getMessage (), ioe);
+                LOG.log (Level.INFO, ioe.getMessage (), ioe);
             }
         }
         if (contentLength != -1 && increment != contentLength) {
             if(canceled) {
-                err.log(Level.FINE, "Download of " + source + " was cancelled");
+                LOG.log(Level.FINE, "Download of " + source + " was cancelled");
             } else {
-                err.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
+                LOG.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
             }
             if(bdest!=null && dest.exists()) {
-                err.log(Level.INFO, "Deleting not fully downloaded file " + dest);
+                LOG.log(Level.INFO, "Deleting not fully downloaded file " + dest);
                 dest.delete();
                 File normalized = FileUtil.normalizeFile (dest);
                 synchronized(downloadedFiles) {
@@ -987,7 +986,7 @@ public class InstallSupportImpl {
             }
         }
 
-        err.log (Level.FINE, "Destination " + dest + " is successfully wrote. Size " + dest.length());
+        LOG.log (Level.FINE, "Destination " + dest + " is successfully wrote. Size " + dest.length());
         
         return estimatedSize;
     }
@@ -1027,18 +1026,18 @@ public class InstallSupportImpl {
                 }
             }
         } catch (IOException ioe) {
-            err.log (Level.INFO, ioe.getMessage (), ioe);
+            LOG.log (Level.INFO, ioe.getMessage (), ioe);
             res = "BAD_DOWNLOAD";
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
                     NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Validate_CorruptedNBM", nbmFile)); // NOI18N
         } catch (KeyStoreException kse) {
-            err.log (Level.INFO, kse.getMessage (), kse);
+            LOG.log (Level.INFO, kse.getMessage (), kse);
             res = "CORRUPTED";
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
                     NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Validate_CorruptedNBM", nbmFile)); // NOI18N
         }
         
-        err.log (Level.FINE, "NBM " + nbmFile + " was verified as " + res);
+        LOG.log (Level.FINE, "NBM " + nbmFile + " was verified as " + res);
         return el.getDownloadSize ();
     }
     
@@ -1098,34 +1097,55 @@ public class InstallSupportImpl {
             this.i = 0;
         }
         
-        public void propertyChange(PropertyChangeEvent arg0) {
-            if (org.netbeans.updater.UpdaterFrame.RUNNING.equals (arg0.getPropertyName ())) {
+        @Override
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
                     handle.progress (i++);
                 }
-            } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
+            } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
-                final FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
-                err.log(Level.FINE,
-                        "It\'s a hack: Call refresh on " + modulesRoot +
-                        " file object.");
+                Map<File,Long> modifiedFiles = NbCollections.checkedMapByFilter(
+                    (Map)ev.getNewValue(), 
+                    File.class, Long.class, true
+                );
+                long now = System.currentTimeMillis();
+                for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
+                    touch(e.getKey(), Math.max(e.getValue(), now));
+                }
+                FileUtil.getConfigRoot().refresh();
+                FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
-                    try {
-                        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-                            public void run() throws IOException {
-                                modulesRoot.getParent().refresh();
-                                modulesRoot.refresh();
-                            }
-                        });
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    LOG.fine("Refreshing Modules directory"); // NOI18N
+                    modulesRoot.refresh();
+                    LOG.fine("Done refreshing Modules directory"); // NOI18N
+                } else {
+                    LOG.warning("No Modules directory to refresh!"); // NOI18N
                 }
             } else {
-                assert false : "Unknown property " + arg0.getPropertyName ();
+                assert false : "Unknown property " + ev.getPropertyName ();
             }
         }
-    };
+    }
+    
+    private static void touch(File f, long minTime) {
+        for (int cnt = 0; ;cnt++) {
+            long time = f.lastModified();
+            if (time > minTime) {
+                break;
+            }
+            if (!f.exists()) {
+                LOG.log(Level.FINE, "File {0} does not exist anymore", f);
+                break;
+            }
+            LOG.log(Level.FINE, "Need to change time for {0} with delta {1}", new Object[]{f, minTime - f.lastModified()});
+            try { synchronized (InstallSupportImpl.class) {
+                InstallSupportImpl.class.wait(30);
+            }} catch (InterruptedException ex) {}
+            f.setLastModified(System.currentTimeMillis() - 1000);
+        }
+        LOG.log(Level.FINE, "Time stamp changed succcessfully {0}", f);
+    }
 
     private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File cluster = getElement2Clusters ().get (update);

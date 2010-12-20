@@ -368,6 +368,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -383,6 +391,14 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>2</release-version>
                         <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.jsfapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -632,6 +648,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.web.primefaces</friend>
+                <friend>org.netbeans.modules.web.adf.complib</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
                 <package>org.netbeans.modules.web.jsf.api.components</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>

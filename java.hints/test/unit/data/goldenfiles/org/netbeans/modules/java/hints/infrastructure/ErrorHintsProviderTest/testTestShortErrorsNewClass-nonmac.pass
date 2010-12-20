@@ -1,3 +1,4 @@
-10:8-10:39:error:constructor TestShortErrorsNewClass in class javahints.TestShortErrorsNewClass cannot be applied to given types
+10:8-10:39:error:constructor TestShortErrorsNewClass in class javahints.TestShortErrorsNewClass cannot be applied to given types;
   required:java.lang.String
   found:java.lang.Object
+  reason:actual argument java.lang.Object cannot be converted to java.lang.String by method invocation conversion

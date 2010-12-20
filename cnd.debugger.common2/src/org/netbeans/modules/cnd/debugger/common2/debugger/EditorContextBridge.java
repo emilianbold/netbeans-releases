@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
@@ -81,5 +83,13 @@ public class EditorContextBridge {
         contextDispatcher.addPropertyChangeListener(MIMENames.HEADER_MIME_TYPE, l);
         contextDispatcher.addPropertyChangeListener(MIMENames.ASM_MIME_TYPE, l);
         contextDispatcher.addPropertyChangeListener(MIMENames.FORTRAN_MIME_TYPE, l);
+    }
+    
+    public static DisassemblyService getCurrentDisassemblyService() {
+        DebuggerEngine currentEngine = org.netbeans.api.debugger.DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            return null;
+        }
+        return currentEngine.lookupFirst(null, DisassemblyService.class);
     }
 }

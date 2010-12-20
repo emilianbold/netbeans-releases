@@ -89,7 +89,10 @@ public class OverridesPopup extends JPanel implements FocusListener {
     private static enum Kind {
         BASE,
         DESC,
-        MAIN
+        MAIN,
+        BASE_TEMPLATE,
+        SPECIALIZATION,
+        MAIN_TEMPLATE,
     }
 
     /*package-local for test purposes*/
@@ -113,6 +116,10 @@ public class OverridesPopup extends JPanel implements FocusListener {
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/overrides-badge.png");
                 case DESC:
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/is-overridden-badge.png");
+                case BASE_TEMPLATE:
+                    return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/base-template-badge.png");
+                case SPECIALIZATION:
+                    return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/specialization-badge.png");
                 default:
                     return null;
             }
@@ -260,13 +267,17 @@ public class OverridesPopup extends JPanel implements FocusListener {
 
     public OverridesPopup(String caption,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
-            Collection<? extends CsmOffsetableDeclaration> descendantDeclarations) {
-        this(caption, null, baseDeclarations, descendantDeclarations, false);
+            Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
+        this(caption, null, baseDeclarations, descendantDeclarations, baseTemplates, templateSpecializations, false);
     }
 
     public OverridesPopup(String caption, CsmOffsetableDeclaration mainDeclaration,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations,
             boolean gotoDefinitions) {
 
         super(new BorderLayout());
@@ -290,8 +301,14 @@ public class OverridesPopup extends JPanel implements FocusListener {
         for (CsmOffsetableDeclaration decl : baseDeclarations) {
             elements.add(new Item(decl, Kind.BASE));
         }
+        for (CsmOffsetableDeclaration decl : baseTemplates) {
+            elements.add(new Item(decl, Kind.BASE_TEMPLATE));
+        }
         for (CsmOffsetableDeclaration decl : descendantDeclarations) {
             elements.add(new Item(decl, Kind.DESC));
+        }
+        for (CsmOffsetableDeclaration decl : templateSpecializations) {
+            elements.add(new Item(decl, Kind.SPECIALIZATION));
         }
         Collections.sort(elements);
 

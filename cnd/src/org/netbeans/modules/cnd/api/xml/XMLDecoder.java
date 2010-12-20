@@ -46,6 +46,9 @@ package org.netbeans.modules.cnd.api.xml;
 import java.util.HashMap;
 
 import java.util.Map;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 
 /**
@@ -174,7 +177,17 @@ public abstract class XMLDecoder {
 
         int version = getVersion(atts);
         if (version > maxVersion) {
-            throw new VersionException(what, maxVersion, version);
+            String title = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore_title"); //NOI18N
+            String message = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore"); //NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor(message,
+                    title, NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    null, NotifyDescriptor.YES_OPTION);
+            Object ret = DialogDisplayer.getDefault().notify(nd);
+            if (ret == NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+            throw new VersionException(what, false, maxVersion, version);
         }
     }
 }

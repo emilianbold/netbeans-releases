@@ -47,7 +47,6 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -60,7 +59,7 @@ import org.openide.util.Lookup;
  */
 public abstract class CndFileSystemProvider {
 
-    private static final DefaultProvider DEFAULT = new DefaultProvider();
+    private static final CndFileSystemProvider DEFAULT = new DefaultProvider();
 
     public static class FileInfo {
         public final String absolutePath;
@@ -71,7 +70,7 @@ public abstract class CndFileSystemProvider {
         }
     }
 
-    private static DefaultProvider getDefault() {
+    private static CndFileSystemProvider getDefault() {
         return DEFAULT;
     }
 
@@ -80,15 +79,29 @@ public abstract class CndFileSystemProvider {
     }
 
     public static CharSequence lowerPathCaseIfNeeded(CharSequence path) {
-        return getDefault().lowerPathCaseIfNeededImpl(path);
+        if (CndFileUtils.isSystemCaseSensitive()) {
+            return path;
+        } else {
+            // XXX: FullRemote
+            return path.toString().toLowerCase();
+        }
     }
 
     public static File toFile(FileObject fileObject) {
-        return getDefault().toFileImpl(fileObject);
+        // TODO: do we still need this?
+        File file = FileUtil.toFile(fileObject);
+        if (file == null && fileObject != null && !fileObject.isValid()) {
+            file = new File(fileObject.getPath());
+        }
+        return file;
     }
 
     public static Boolean exists(CharSequence path) {
         return getDefault().existsImpl(path);
+    }
+
+    public static Boolean canRead(CharSequence path) {
+        return getDefault().canReadImpl(path);
     }
 
     public static FileInfo[] getChildInfo(CharSequence path) {
@@ -97,12 +110,6 @@ public abstract class CndFileSystemProvider {
 
     public static FileObject toFileObject(CharSequence path) {
         FileObject result = getDefault().toFileObjectImpl(path);
-        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
-        return result;
-    }
-
-    public static FileObject toFileObject(File file) {
-        FileObject result = getDefault().toFileObjectImpl(file);
         CndUtils.assertNotNull(result, "Null file object"); //NOI18N
         return result;
     }
@@ -121,15 +128,14 @@ public abstract class CndFileSystemProvider {
      * or NULL if the file does not belong to this provider file system
      */
     protected abstract Boolean existsImpl(CharSequence path);
+    protected abstract Boolean canReadImpl(CharSequence path);
     protected abstract FileInfo[] getChildInfoImpl(CharSequence path);
 
+    /** a bridge from cnd.utils to dlight.remote */
     protected abstract FileObject toFileObjectImpl(CharSequence path);
-    protected abstract File toFileImpl(FileObject fileObject);
-    protected abstract FileObject toFileObjectImpl(File file);
     protected abstract CharSequence toPathImpl(FileObject fileObject);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
-    protected abstract boolean isMine(CharSequence path);
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
@@ -162,22 +168,6 @@ public abstract class CndFileSystemProvider {
         }
 
         @Override
-        protected File toFileImpl(FileObject fileObject) {
-            File file;
-            for (CndFileSystemProvider provider : cache) {
-                file = provider.toFileImpl(fileObject);
-                if (file != null) {
-                    return file;
-                }
-            }
-            file = FileUtil.toFile(fileObject);
-            if (file == null && fileObject != null && !fileObject.isValid()) {
-                file = new File(fileObject.getPath());
-            }
-            return file;
-        }
-
-        @Override
         public FileObject toFileObjectImpl(CharSequence path) {
             FileObject  fo;
             for (CndFileSystemProvider provider : cache) {
@@ -186,12 +176,24 @@ public abstract class CndFileSystemProvider {
                     return fo;
                 }
             }
-            File file = new File(path.toString());
+            // not cnd specific file => use default file system conversion
+            File file = new File(FileUtil.normalizePath(path.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
             }
             return fo;
+        }
+
+        @Override
+        protected Boolean canReadImpl(CharSequence path) {
+            for (CndFileSystemProvider provider : cache) {
+                Boolean result = provider.canReadImpl(path);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return new File(path.toString()).canRead();
         }
 
         @Override
@@ -217,22 +219,6 @@ public abstract class CndFileSystemProvider {
         }
 
         @Override
-        public FileObject toFileObjectImpl(File file) {
-            FileObject fo;
-            for (CndFileSystemProvider provider : cache) {
-                fo = provider.toFileObjectImpl(file);
-                if (fo != null) {
-                    return fo;
-                }
-            }
-            fo = FileUtil.toFileObject(file);
-            if (fo == null) {
-                fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
-            }
-            return fo;
-        }
-
-        @Override
         protected CharSequence toPathImpl(FileObject fileObject) {
             for (CndFileSystemProvider provider : cache) {
                 CharSequence path = provider.toPathImpl(fileObject);
@@ -252,29 +238,6 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return path.toString();
-        }
-
-        protected CharSequence lowerPathCaseIfNeededImpl(CharSequence path) {
-            if (CndFileUtils.isSystemCaseSensitive()) {
-                return path;
-            } else {
-                for (CndFileSystemProvider provider : cache) {
-                    if (provider.isMine(path)) {
-                        return path;
-                    }
-                }
-                return path.toString().toLowerCase();
-            }
-        }
-
-        @Override
-        protected boolean isMine(CharSequence path) {
-            for (CndFileSystemProvider provider : cache) {
-                if (provider.isMine(path)) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

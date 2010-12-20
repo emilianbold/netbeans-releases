@@ -77,8 +77,9 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
     private final ChangeSupport supp = new ChangeSupport(this);
     private final FileObject template;
     private final ProjectKind kind;
-    private ProjectDefinitionWizardPanel firstPanel;
-    private ClassicPackageWizardPanel secondPanel;
+    private PlatformInstallerWizardPanel firstPanel;
+    private ProjectDefinitionWizardPanel secondPanel;
+    private ClassicPackageWizardPanel thirdPanel;
     private WizardDescriptor wiz;
 
     public static ProjectWizardIterator create(FileObject template) {
@@ -200,30 +201,31 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
 
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.setHelpCtx(new HelpCtx("org.netbeans.modules.javacard.CreateProject"));
-        current();
-        firstPanel.readSettings(wiz);
+        wiz.setHelpCtx(new HelpCtx("org.netbeans.modules.javacard.CreateProject")); //NOI18N
+        firstPanel = new PlatformInstallerWizardPanel();
+        firstPanel.addChangeListener(this);
+        secondPanel = new ProjectDefinitionWizardPanel(kind);
+        secondPanel.addChangeListener(this);
+        thirdPanel = new ClassicPackageWizardPanel(kind);
+        thirdPanel.addChangeListener(this);
+        secondPanel.readSettings(wiz);
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        if (firstPanel != null) {
-            firstPanel.storeSettings(wiz);
-        }
+        secondPanel.storeSettings(wiz);
+        firstPanel.removeChangeListener(this);
+        secondPanel.removeChangeListener(this);
+        thirdPanel.removeChangeListener(this);
     }
 
     public Panel<WizardDescriptor> current() {
-        if (onFirstPanel) {
-            if (firstPanel == null) {
-                firstPanel = new ProjectDefinitionWizardPanel(kind);
-                firstPanel.addChangeListener(this);
-            }
+        if (!firstPanel.isValid()){
             return firstPanel;
-        } else {
-            if (secondPanel == null) {
-                secondPanel = new ClassicPackageWizardPanel(kind);
-                secondPanel.addChangeListener(this);
-            }
+        }
+        if (onSecondPanel) {
             return secondPanel;
+        } else {
+            return thirdPanel;
         }
     }
 
@@ -231,24 +233,25 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         return kind.getDisplayName();
     }
 
-    boolean onFirstPanel = true;
+    boolean onSecondPanel = true;
+    
     public boolean hasNext() {
-        return kind.isClassic() ? onFirstPanel : false;
+        return kind.isClassic() ? onSecondPanel : false;
     }
 
     public boolean hasPrevious() {
-        return kind.isClassic() ? !onFirstPanel : false;
+        return kind.isClassic() ? !onSecondPanel : false;
     }
 
     public void nextPanel() {
         if (kind.isClassic()) {
-            onFirstPanel = !onFirstPanel;
+            onSecondPanel = !onSecondPanel;
         }
     }
 
     public void previousPanel() {
         if (kind.isClassic()) {
-            onFirstPanel = !onFirstPanel;
+            onSecondPanel = !onSecondPanel;
         }
     }
 

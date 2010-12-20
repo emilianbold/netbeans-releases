@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 
 /**
  *
@@ -89,6 +90,16 @@ public class CsmBaseUtilities {
     public static boolean isGlobalNamespace(CsmScope scope) {
         if (CsmKindUtilities.isNamespace(scope)) {
             return ((CsmNamespace)scope).isGlobal();
+        }
+        return false;
+    }
+    
+    public static boolean sameSignature(CsmFunction checkDecl, CsmFunction targetDecl) {
+        // we treat const and non-const functions as the same
+        CharSequence sigCheck = checkDecl.getSignature().toString().replace("const", "").trim(); // NOI18N // NOI18N
+        CharSequence sigTarget = targetDecl.getSignature().toString().replace("const", "").trim(); // NOI18N // NOI18N
+        if (sigCheck.equals(sigTarget)) {
+            return true;
         }
         return false;
     }
@@ -267,47 +278,15 @@ public class CsmBaseUtilities {
     }
     
     public static CsmNamespace getFunctionNamespace(CsmFunction fun) {
-        if (CsmKindUtilities.isFunctionDefinition(fun)) {
-            CsmFunction decl = ((CsmFunctionDefinition) fun).getDeclaration();
-            fun = decl != null ? decl : fun;
-        }
-        if (fun != null) {
-            CsmScope scope = fun.getScope();
-            if (CsmKindUtilities.isNamespaceDefinition(scope)) {
-                CsmNamespace ns = ((CsmNamespaceDefinition) scope).getNamespace();
-                return ns;
-            } else if (CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
-                return ns;
-            } else if (CsmKindUtilities.isClass(scope)) {
-                return getClassNamespace((CsmClass) scope);
-            }
-        }
-        return null;
+        return CsmBaseUtilitiesProvider.getDefault().getFunctionNamespace(fun);
     }
     
     public static CsmNamespace getClassNamespace(CsmClassifier cls) {
-        CsmScope scope = cls.getScope();
-        while (scope != null) {
-            if (CsmKindUtilities.isNamespace(scope)) {
-                return (CsmNamespace) scope;
-            }
-            if (CsmKindUtilities.isScopeElement(scope)) {
-                scope = ((CsmScopeElement) scope).getScope();
-            } else {
-                break;
-            }
-        }
-        return null;
+        return CsmBaseUtilitiesProvider.getDefault().getClassNamespace(cls);
     } 
     
     public static CsmFunction getFunctionDeclaration(CsmFunction fun) {
-        assert (fun != null) : "must be not null";
-        CsmFunction funDecl = fun;
-        if (CsmKindUtilities.isFunctionDefinition(funDecl)) {
-            funDecl = ((CsmFunctionDefinition)funDecl).getDeclaration();
-        }
-        return funDecl;
+        return CsmBaseUtilitiesProvider.getDefault().getFunctionDeclaration(fun);
     }    
     
     public static boolean isFileLocalFunction(CsmFunction fun) {

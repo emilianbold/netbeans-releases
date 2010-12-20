@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -243,7 +244,7 @@ public final class AntBuildExtender {
             final FileObject projPropsFO = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             final InputStream is = projPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws Exception {
+                public @Override Void run() throws Exception {
                     EditableProperties editableProps = new EditableProperties(true);
                     
                     try {
@@ -336,10 +337,12 @@ public final class AntBuildExtender {
     private void readProjectMetadata() {
         AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(implementation.getOwningProject());
         Element cfgEl = config.getConfigurationFragment(AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
-        FileObject projectXMLFO = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-        assert projectXMLFO != null : "Missing project.xml for project " + implementation.getOwningProject();
-        FileObject nbproj = projectXMLFO.getParent();
         extensions = new HashMap<String, Extension>();
+        FileObject projectXMLFO = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        if (projectXMLFO == null) { // #192915
+            return;
+        }
+        FileObject nbproj = projectXMLFO.getParent();
         if (cfgEl != null) {
             String namespace = cfgEl.getNamespaceURI();
             NodeList roots = cfgEl.getElementsByTagNameNS(namespace, AntBuildExtenderAccessor.ELEMENT_EXTENSION);
@@ -351,7 +354,7 @@ public final class AntBuildExtender {
                 FileObject script = nbproj.getFileObject(value);
                 if (script == null) {
                     //#144658 avoid assert here, for sake of manually edited project files..
-                    Logger.getLogger(AntBuildExtender.class.getName()).severe("Missing file " + value + " for build script extension " + id + ". The extension is skipped.");
+                    Logger.getLogger(AntBuildExtender.class.getName()).log(Level.SEVERE, "Missing file {0} for build script extension {1}. The extension is skipped.", new Object[] {value, id});
                     continue;
                 }
                 Extension ext = new Extension(id, script, value);

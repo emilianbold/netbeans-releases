@@ -1738,7 +1738,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         line.indentation = calculatePreservedLineIndentation(lineBeforePreserveIndent, line.offset);
                     }
                 } else {
-                    assert false : "lineBeforePreserveIndent was not found: "+indentedLines;
+                    // #162031 and JspIndenterTest.testFormattingIssue162031()
+                    lineBeforePreserveIndent = line;
                 }
             } else {
                 lineBeforePreserveIndent = line;

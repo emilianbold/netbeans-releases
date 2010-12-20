@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.RandomlyFails;
 
@@ -58,6 +59,11 @@ public class InstallHiddenModuleTest extends OperationsTestImpl {
         super(testName);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();

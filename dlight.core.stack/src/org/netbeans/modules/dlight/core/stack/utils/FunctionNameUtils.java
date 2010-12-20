@@ -135,7 +135,11 @@ public final class FunctionNameUtils {
                 functionSignature = functionSignature.substring(0, ssOpenmp) + functionSignature.substring(j + 1);
             }
         }
-        for (int i = 0; i < functionSignature.length(); i++) {
+        //module name is included in the function
+        if (functionSignature.indexOf("`") != -1) {//NOI18N
+            start = functionSignature.indexOf("`") + 1;//NOI18N
+        }
+        for (int i = start ; i < functionSignature.length(); i++) {
             char c = functionSignature.charAt(i);
             switch (c) {
                 case '<':
@@ -158,6 +162,9 @@ public final class FunctionNameUtils {
                     }
                     break;
                 case '.':
+                   if (functionSignature.indexOf("`") != -1 && functionSignature.indexOf("`") > i) {//NOI18N
+                        break;
+                    }
                     return functionSignature.substring(start, i);
                 case ' ':
                     if (functionSignature.length() > i + 1

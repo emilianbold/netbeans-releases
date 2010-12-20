@@ -93,7 +93,7 @@ public class ShellFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
             if (fo.isValid()) {
                 return MIMENames.SHELL_MIME_TYPE.equals(FileUtil.getMIMEType(fo, MIMENames.SHELL_MIME_TYPE));
             } else {
-                return MIMEExtensions.isRegistered(MIMENames.SHELL_MIME_TYPE, FileUtil.getExtension(fo.getExt()));
+                return MIMEExtensions.isRegistered(MIMENames.SHELL_MIME_TYPE, FileUtil.getExtension(fo.getNameExt()));
             }
         }
         return false;

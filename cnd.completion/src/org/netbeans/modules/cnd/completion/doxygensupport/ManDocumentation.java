@@ -252,6 +252,9 @@ public class ManDocumentation {
         StringReader sr;
         if (exitStatus != null) {
             if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+                if (exitStatus.output.split("\n").length <= 2) { // NOI18N
+                    return null;
+                }
                 sr = new StringReader(exitStatus.output);
             } else {
                 throw new IOException(exitStatus.error);

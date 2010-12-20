@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -63,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -416,6 +415,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -467,7 +467,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N
             }
-            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -481,7 +481,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 debug.setLinkerConfiguration(linkerConfiguration);
             }
-            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
@@ -511,7 +511,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
-            MakeProjectGenerator.createProject(prjParams);
+            MakeProjectGeneratorImpl.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);

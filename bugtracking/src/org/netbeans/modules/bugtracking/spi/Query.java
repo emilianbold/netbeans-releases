@@ -130,17 +130,18 @@ public abstract class Query implements Comparable<Query> {
      * DATA
      *********/
     /**
-     * Sets te queries status as saved. The {@link IssueTable} assotiated with
+     * Sets the queries status as saved. The {@link IssueTable} associated with
      * this query will change its column layout
      *
      * @param saved
+     * XXX saved always true, isn't it?
      */
     protected void setSaved(boolean saved) {
         this.saved = saved;
         if(saved) {
             selection = null;
         }
-        fireQuerySaved();
+        fireQuerySaved(); 
     }
 
     /**
@@ -173,6 +174,7 @@ public abstract class Query implements Comparable<Query> {
      * Returns all issues given by the last refresh for
      * which applies that their ID or summary contains the
      * given criteria string
+     * XXX used only by issue table filter - move out from spi
      *
      * @param criteria
      * @return
@@ -184,6 +186,12 @@ public abstract class Query implements Comparable<Query> {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
 
+    /**
+     * 
+     * @param q
+     * @return 
+     * @deprecated
+     */
     public int compareTo(Query q) {
         if(q == null) {
             return 1;
@@ -191,12 +199,22 @@ public abstract class Query implements Comparable<Query> {
         return getDisplayName().compareTo(q.getDisplayName());
     }    
 
-    // XXX get rid of this
+    /**
+     * 
+     * @return 
+     * @deprecated 
+     */
     public long getLastRefresh() {
         return lastRefresh;
     }
 
-    // XXX used only by issue table - move out from spi
+    /**
+     * 
+     * @param issue
+     * @return 
+     * @deprecated
+     */
+    // XXX used only by issue table - move out from spi    
     public abstract int getIssueStatus(Issue issue);
 
     /*********
@@ -211,6 +229,7 @@ public abstract class Query implements Comparable<Query> {
         support.addPropertyChangeListener(listener);
     }
 
+    // XXX does this has to be protected
     protected void fireQuerySaved() {
         support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
     }
@@ -291,7 +310,7 @@ public abstract class Query implements Comparable<Query> {
 
     void setSelection(Node[] nodes) {
         this.selection = nodes;
-}
+    }
 
     protected Node[] getSelection() {
         return selection;

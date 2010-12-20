@@ -50,6 +50,8 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -79,6 +82,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private final DefaultListModel model;
     private final CreateHostVisualPanel1 createHostPanel;
     private final AtomicBoolean setupNewHost;
+    private RequestProcessor.Task focusTask;
 
     private static final String LAST_SELECTED_HOST_KEY = "last-selected-remote-host"; //NOI18N
 
@@ -95,17 +99,15 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         rbNew.setSelected(setupNewHost.get());
         rbExistent.setSelected(!setupNewHost.get());
         model = new DefaultListModel();
-        rbNew.addFocusListener(new FocusAdapter() {
+        rbNew.addActionListener(new ActionListener() {
             @Override
-            public void focusGained(FocusEvent e) {
-//                newHostPane.requestFocus();
+            public void actionPerformed(ActionEvent e) {
                 requestFocusInEDT(SelectHostVisualPanel.this.createHostPanel);
             }
         });
-        rbExistent.addFocusListener(new FocusAdapter() {
+        rbExistent.addActionListener(new ActionListener() {
             @Override
-            public void focusGained(FocusEvent e) {
-//                lstDevHosts.requestFocus();
+            public void actionPerformed(ActionEvent e) {
                 requestFocusInEDT(lstDevHosts);
             }
         });

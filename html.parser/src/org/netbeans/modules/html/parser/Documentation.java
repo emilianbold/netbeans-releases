@@ -52,6 +52,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -59,25 +63,29 @@ import java.util.regex.Pattern;
 import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.CharSequences;
 
 /**
  *
  * @author marekfukala
  */
 public class Documentation implements HelpResolver {
-    static final String SECTIONS_PATTERN_CODE ="<h\\d\\s*?id=\\\"([\\w\\d-_,]*)\\\"[^\\>]*>";//NOI18N
+
+    static final String SECTIONS_PATTERN_CODE = "<h\\d\\s*?id=\\\"([\\w\\d-_,:]*)\\\"[^\\>]*>";//NOI18N
 //    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";//NOI18N
     static final Pattern SECTIONS_PATTERN = Pattern.compile(SECTIONS_PATTERN_CODE);
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
-
+    private static final String HELP_PREFIX = "<html><head><title>help</title></head><body>"; //NOI18N
     private static final Documentation SINGLETON = new Documentation();
-
     //performance unit testing
     static long url_read_time, pattern_search_time;
 
+    private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<String, String>();
+    private static Map<URL, OffsetRange> HELP_LINKS_CACHE = new WeakHashMap<URL, OffsetRange>();
+
     public static void setupDocumentationForUnitTests() {
-         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
+        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
     }
 
     public static Documentation getDefault() {
@@ -105,10 +113,10 @@ public class Documentation implements HelpResolver {
         String link = null;
         String base = baseURL.toExternalForm();
 
-        if(relativeLink.startsWith("#")) {
+        if (relativeLink.startsWith("#")) {
             //link within the same file
             int hashIdx = base.indexOf('#');
-            if(hashIdx != -1) {
+            if (hashIdx != -1) {
                 base = base.substring(0, hashIdx);
             }
             link = base + relativeLink;
@@ -128,7 +136,7 @@ public class Documentation implements HelpResolver {
     }
 
     public URL resolveLink(String relativeLink) {
-        if(relativeLink == null) {
+        if (relativeLink == null) {
             return null;
         }
         try {
@@ -146,6 +154,12 @@ public class Documentation implements HelpResolver {
     }
 
     static String getContentAsString(URL url, Charset charset) {
+        String filePath = url.getPath();
+        String cachedContent = HELP_FILES_CACHE.get(filePath);
+        if(cachedContent != null) {
+            return cachedContent;
+        }
+
         if (charset == null) {
             charset = Charset.defaultCharset();
         }
@@ -160,7 +174,9 @@ public class Documentation implements HelpResolver {
                 content.append(buf, 0, read);
             }
             r.close();
-            return content.toString();
+            String strContent = content.toString();
+            HELP_FILES_CACHE.put(filePath, strContent);
+            return strContent;
         } catch (IOException ex) {
             Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -179,36 +195,79 @@ public class Documentation implements HelpResolver {
             return content;
         }
 
+        //tro to use cache
+        OffsetRange range = HELP_LINKS_CACHE.get(url);
+        if(range != null) {
+            return buildHelpText(content, range);
+        }
+
         //anchor
         String sectionName = surl.substring(hashIndex + 1);
         Matcher matcher = SECTIONS_PATTERN.matcher(content);
 
         int from = -1;
         int to = -1;
+        List<Integer> groupIndexes = new LinkedList<Integer>();
         while (matcher.find()) {
+            groupIndexes.add(matcher.start());
+
             if (matcher.group(1).equals(sectionName)) {
                 from = matcher.start();
-            } else if(from != -1) {
+            } else if (from != -1) {
                 //start of another section
                 to = matcher.start();
                 break;
             }
         }
-        if(to == -1) {
+        if (to == -1) {
             to = content.length();
         }
         long c = System.currentTimeMillis();
-        url_read_time = (b-a);
-        pattern_search_time = (c-b);
+        url_read_time = (b - a);
+        pattern_search_time = (c - b);
 
         if (from != -1) {
-            String stripped = content.substring(from, to);
-            //"fix" the stripped content a bit by adding html content prefix
-            return new StringBuilder().
-                    append("<html><head><title>help</title></head><body>").//NOI18N
-                    append(stripped).toString(); //NOI18N
+            return buildAndCacheHelpText(content, new OffsetRange(from, to), url);
         } else {
-            return null;
+            //no heading found for the link, lets look into the heading groups and possibly
+            //find a link in the <dfn id="..."/> form
+            int lastgi = -1;
+            for (int gi : groupIndexes) {
+                if (lastgi != -1) {
+                    //heading section <lastgi:gi>
+                    //lets try to find the link inside
+                    CharSequence sub = content.subSequence(lastgi, gi);
+                    int index = CharSequences.indexOf(
+                            sub,
+                            String.format("<dfn id=\"%s\"", sectionName)); //NOI18N
+
+                    if (index != -1) {
+                        //use this section
+                        return buildAndCacheHelpText(content, new OffsetRange(lastgi, gi), url);
+                    }
+                }
+                lastgi = gi;
+            }
+        }
+
+        return null;
+    }
+
+    private String buildAndCacheHelpText(String helpFileContent, OffsetRange strippedArea, URL url) {
+        HELP_LINKS_CACHE.put(url, strippedArea);
+        return buildHelpText(helpFileContent, strippedArea);
+    }
+
+    private String buildHelpText(String helpFileContent, OffsetRange strippedArea) {
+        return new StringBuilder().append(HELP_PREFIX).append(helpFileContent.subSequence(strippedArea.from, strippedArea.to)).toString();
+    }
+
+    private static class OffsetRange {
+        public int from, to;
+        public OffsetRange(int from, int to) {
+            this.from = from;
+            this.to = to;
         }
     }
+    
 }

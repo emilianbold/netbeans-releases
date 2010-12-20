@@ -55,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
+import org.netbeans.modules.glassfish.common.wizards.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -78,27 +80,31 @@ public final class ServerUtilities {
     public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
     static public final String PROP_FIRST_RUN = "first_run";
     private GlassfishInstanceProvider gip;
+    private GlassfishWizardProvider gwp;
     
     
-    private ServerUtilities(GlassfishInstanceProvider gip) {
+    private ServerUtilities(GlassfishInstanceProvider gip, GlassfishWizardProvider gwp) {
         assert null != gip;
         this.gip = gip;
+        this.gwp = gwp;
     }
 
     public static ServerUtilities getPreludeUtilities() {
         GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-        return null == gip ? null : new ServerUtilities(gip);
+        return null == gip ? null : new ServerUtilities(gip,null);
     }
     
     public static ServerUtilities getEe6Utilities() {
         GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
-        return null == gip ? null : new ServerUtilities(gip);
+        return null == gip ? null : new ServerUtilities(gip,
+                GlassfishWizardProvider.createEe6());
     }
 
-    public static ServerUtilities getEe6WCUtilities() {
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6WC();
-        return null == gip ? null : new ServerUtilities(gip);
-    }
+//    public static ServerUtilities getEe6WCUtilities() {
+//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+//        return null == gip ? null : new ServerUtilities(gip,
+//                GlassfishWizardProvider.createEe6WC());
+//    }
     
     /**
      * Returns the ServerInstance object for the server with the specified URI.
@@ -185,7 +191,10 @@ public final class ServerUtilities {
      * @return instance of the AddServerWizard for this server.
      */
     public InstantiatingIterator getAddInstanceIterator() {
-        return new ServerWizardIterator(gip);
+        return new ServerWizardIterator(new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3, 
+            ServerDetails.GLASSFISH_SERVER_3_1
+        });
     }
     
     /**
