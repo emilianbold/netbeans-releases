@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -300,23 +300,23 @@ public class ProjectGenerator {
     }
     
     public static String getDefaultProjectFolder() {
-        return MakeProjectGeneratorImpl.getDefaultProjectFolder();
+        return MakeProjectGenerator.getDefaultProjectFolder();
     }
 
     public static String getValidProjectName(String projectFolder) {
-        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder);
+        return MakeProjectGenerator.getValidProjectName(projectFolder);
     }
 
     public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
-        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder, suggestedProjectName);
+        return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
     }
 
     public static Project createBlankProject(ProjectParameters prjParams) throws IOException {
-        return MakeProjectGeneratorImpl.createBlankProject(prjParams);
+        return MakeProjectGenerator.createBlankProject(prjParams);
     }
 
     public static Project createProject(ProjectParameters prjParams) throws IOException {
-        MakeProject createdProject = MakeProjectGeneratorImpl.createProject(prjParams);
+        MakeProject createdProject = MakeProjectGenerator.createProject(prjParams);
         ConfigurationDescriptorProvider.recordCreatedProjectMetrics(prjParams.getConfigurations());
         return createdProject;
     }

@@ -58,6 +58,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.util.RequestProcessor;
@@ -146,8 +147,8 @@ public class DirectoryReader {
 
         private final BufferedReader reader;
 
-        public StdOutReader(InputStream stream) {
-            reader = new BufferedReader(new InputStreamReader(stream));
+        public StdOutReader(InputStream stream, boolean isRemote) {
+            reader = ProcessUtils.getReader(stream, isRemote);
         }
 
         @Override
@@ -184,8 +185,8 @@ public class DirectoryReader {
 
         private final BufferedReader reader;
 
-        public StdErrReader(InputStream stream) {
-            reader = new BufferedReader(new InputStreamReader(stream));
+        public StdErrReader(InputStream stream, boolean isRemote) {
+            reader = ProcessUtils.getReader(stream, isRemote);
         }
 
         @Override
@@ -225,8 +226,8 @@ public class DirectoryReader {
         pb.setExecutable("/bin/ls"); //NOI18N
         pb.setArguments(option, remoteDirectory);
         NativeProcess process = pb.call();
-        RP.post(new StdOutReader(process.getInputStream()));
-        RP.post(new StdErrReader(process.getErrorStream()));
+        RP.post(new StdOutReader(process.getInputStream(), execEnv.isRemote()));
+        RP.post(new StdErrReader(process.getErrorStream(), execEnv.isRemote()));
         int rc = process.waitFor();
         latch.await();
         if (rc != 0) {
