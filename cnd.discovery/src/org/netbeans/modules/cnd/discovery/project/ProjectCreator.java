@@ -61,8 +61,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -75,6 +73,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -180,7 +181,7 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws java.io.IOException see createProject(File, String, String, Configuration[], Iterator, Iterator)
      */
-    public MakeProjectHelper createProject(String name, String displayName,
+    public AntProjectHelper createProject(String name, String displayName, 
             Set<String> folders, Set<String> libs) throws IOException {
         File dirF = CndFileUtils.createLocalFile(projectFolder);
         if (dirF != null) {
@@ -242,7 +243,7 @@ public class ProjectCreator {
         if (sourceFiles != null) {
             it = sourceFiles.iterator();
         }
-        MakeProjectHelper h1 = null;
+        AntProjectHelper h1 = null;
         makefileName = name + "-" + makefileName + ".mk"; // NOI18N
         h1 = createProject(dirF, displayName, makefileName, new MakeConfiguration[]{extConf},
                 it, importantItemsIterator, folders, libs);
@@ -256,11 +257,11 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public MakeProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
+    public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
                             Iterator<File> sourceFiles, Iterator<String> importantItems,
                             Set<String> folders, Set<String> libs) throws IOException {
         FileObject dirFO = createProjectDir(dir);
-        MakeProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
+        AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         boolean successful = applyDiscovery(p, displayName, folders, libs);
         ProjectManager.getDefault().saveProject(p);
@@ -273,10 +274,10 @@ public class ProjectCreator {
     }
 
     //Create a project with specified project folder, makefile, name, source files and important items
-    private MakeProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
+    private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
             Configuration[] confs, Iterator<File> sourceFiles, Iterator<String> importantItems) throws IOException {
         //Create a helper object
-        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, TYPE);
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -286,6 +287,10 @@ public class ProjectCreator {
         nativeProjectType.appendChild(doc.createTextNode("" + 0));
         data.appendChild(nativeProjectType);
         h.putPrimaryConfigurationData(data, true);
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk
         MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
