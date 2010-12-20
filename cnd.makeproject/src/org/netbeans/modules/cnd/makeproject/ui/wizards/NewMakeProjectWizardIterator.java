@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -62,7 +63,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -511,7 +512,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
-            MakeProjectGeneratorImpl.createProject(prjParams);
+            MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);

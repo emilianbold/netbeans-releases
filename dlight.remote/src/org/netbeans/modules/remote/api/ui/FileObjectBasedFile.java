@@ -203,7 +203,11 @@ public class FileObjectBasedFile extends File {
     @Override
     public String getParent() {
 	int index = path.lastIndexOf('/');
-	return (index < 0) ? null : path.substring(0, index);
+        if (index < 0 || (index == 0 && path.length() == 1) ) {
+            return null;
+        } else {
+            return path.substring(0, index);
+        }
     }
 
     @Override

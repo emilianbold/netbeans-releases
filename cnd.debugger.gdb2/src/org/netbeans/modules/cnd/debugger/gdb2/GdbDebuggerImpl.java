@@ -724,7 +724,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         stateChanged();
 			session().setSessionState(state());
 			session().setPid(pid);
-                        interpAttach(record);
+                        requestStack(null);
                         finish();
                     }
             };
@@ -733,7 +733,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     public void doMICorefile(GdbDebuggerInfo gdi) {
         String corefile = gdi.getCorefile();
-        String cmdString = "core-file " + corefile; // NOI18N
+        String cmdString = "core " + corefile; // NOI18N
         /*
          * (gdb 6.2) core-file
          * ^done,frame={level="0",addr="0x080508ae",func="main",args=[],file="t.cc",line="4"},line="4",file="t.cc"
@@ -746,7 +746,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         state().isCore = true;
                         stateChanged();
 			session().setSessionState(state());
-                        interpCore(record);
+                        requestStack(null);
                         finish();
                     }
             };
@@ -1217,7 +1217,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 // For debugging core file
                 if ((gdi.getAction() & DebuggerManager.CORE) != 0) {
 
-                    // doMICorefile(gdi);
+                    doMICorefile(gdi);
                     gdi.removeAction(DebuggerManager.CORE);
                 }
 
@@ -1499,39 +1499,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	selectThread(current_thread_index, current_tid_no, true); 
     }
 
-    private void interpAttach(MIRecord threadframe) {
-        MITList threadresults = threadframe.results();
-        if (Log.Variable.mi_threads) {
-            System.out.println("threadframe " + threadresults.toString()); // NOI18N
-	}
-
-        /* no used for now, may be used for attaching multi-thread prog
-        MIValue tid = threadresults.valueOf("thread-id");
-        String tid_no = tid.asConst().value();
-        System.out.println("tid_no " + tid);
-         */
-
-//        if (get_frames || get_locals) { // get new Frames for current thread
-//            // would call getMILocals.
-//            showStackFrames();
+//    private void interpAttach(MIRecord threadframe) {
+//        MITList threadresults = threadframe.results();
+//        if (Log.Variable.mi_threads) {
+//            System.out.println("threadframe " + threadresults.toString()); // NOI18N
+//	}
+//
+//        /* no used for now, may be used for attaching multi-thread prog
+//        MIValue tid = threadresults.valueOf("thread-id");
+//        String tid_no = tid.asConst().value();
+//        System.out.println("tid_no " + tid);
+//         */
+//
+////        if (get_frames || get_locals) { // get new Frames for current thread
+////            // would call getMILocals.
+////            showStackFrames();
+////        }
+//
+//        GdbFrame f = null;
+//
+//        if (threadresults.isEmpty()) {
+//            f = getCurrentFrame();
+//        } else {
+//            MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
+//            f = new GdbFrame(this, frame, null); // args data are included in frame
 //        }
-
-        GdbFrame f = null;
-
-        if (threadresults.isEmpty()) {
-            f = getCurrentFrame();
-        } else {
-            MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
-            f = new GdbFrame(this, frame, null); // args data are included in frame
-        }
-        
-        if (f != null && f.getLineNo() != null && !f.getLineNo().equals("")) {
-            // has source info,
-            // get full path for current frame from gdb,
-            // update source editor, and make frame as current
-            getFullPath(f);
-        }
-    }
+//        
+//        if (f != null && f.getLineNo() != null && !f.getLineNo().equals("")) {
+//            // has source info,
+//            // get full path for current frame from gdb,
+//            // update source editor, and make frame as current
+//            getFullPath(f);
+//        }
+//    }
 
     private void updateLocalsForSelectFrame() {
         if (get_locals) { // get local vars for current frame
@@ -1539,22 +1539,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    private void interpCore(MIRecord threadframe) {
-        MITList threadresults = threadframe.results();
-        MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
-        GdbFrame f = new GdbFrame(this, frame, null); // args data are included in frame
-
-//        if (get_frames || get_locals) {
-//            // would call getMILocals.
-//            showStackFrames();
+//    private void interpCore(MIRecord threadframe) {
+//        MITList threadresults = threadframe.results();
+//        MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
+//        GdbFrame f = new GdbFrame(this, frame, null); // args data are included in frame
+//
+////        if (get_frames || get_locals) {
+////            // would call getMILocals.
+////            showStackFrames();
+////        }
+//        if (!f.getLineNo().equals("")) {
+//            // has source info,
+//            // get full path for current frame from gdb,
+//            // update source editor, and make frame as current
+//            getFullPath(f);
 //        }
-        if (!f.getLineNo().equals("")) {
-            // has source info,
-            // get full path for current frame from gdb,
-            // update source editor, and make frame as current
-            getFullPath(f);
-        }
-    }
+//    }
 
     private void setCurrentThread(int index,
 				  MIRecord threadframe,
@@ -2717,7 +2717,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    // update our views
 
-            MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
+            MIValue bkptnoValue = (results != null) ? results.valueOf("bkptno") : null; // NOI18N
             if (bkptnoValue != null) {
 		// It's a breakpoint event
                 String bkptnoString = bkptnoValue.asConst().value();
@@ -2726,7 +2726,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 // updateFiredEvent will set status
             }
 
-            MIValue frameValue = results.valueOf("frame"); // NOI18N
+            MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
 
 	    // Mac 10.4 gdb provides no "frame" attribute
 
@@ -2782,7 +2782,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             state().isProcess = true;
         }
 
-        explainStop(reason, record);
+        if (record != null) {
+            explainStop(reason, record);
+        }
 
         stateSetRunning(false);
         stateChanged();
@@ -2843,7 +2845,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * So we go through and re-reset the ignore counts for any counting
      * breakpoints.
      */
-    private void updateCounts(MIRecord stopRecord, MIRecord record) {
+    private void updateCounts(MIRecord record) {
 	MITList bptresults = record.results();
 	MITList table =
 	    bptresults.valueOf("BreakpointTable").asTuple();	// NOI18N
@@ -2938,38 +2940,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
-	// stopRecord may contain a "frame" attribute so SHOULD
-	// check for that first before asking for it.
-	// only valid for gdb 6.6 and up
-        MICommand cmd =
-            new MiCommandImpl("-stack-list-frames") { // NOI18N
-            @Override
-                    protected void onDone(MIRecord record) {
-                        genericStoppedWithSrc(stopRecord, record);
-                        finish();
-                    }
-            @Override
-                    protected void onError(MIRecord record) {
-                        genericStoppedWithSrc(stopRecord, null);
-                        finish();
-                    }
-                };
-        gdb.sendCommand(cmd);
+	requestStack(stopRecord);
 
 	// If we have any counting bpts poll the bpt list in order to
 	// learn the current bpt counts.
 	if (haveCountingBreakpoints()) {
-	    cmd = new MiCommandImpl("-break-list") { // NOI18N
+	    MICommand cmd = new MiCommandImpl("-break-list") { // NOI18N
                 @Override
 		protected void onDone(MIRecord record) {
-		    updateCounts(stopRecord, record);
+		    updateCounts(record);
 		    finish();
 		}
 	    };
 	    gdb.sendCommand(cmd);
 	}
     }
-
+    
+    protected void requestStack(final MIRecord stopRecord) {
+        MICommand cmd =
+            new MiCommandImpl("-stack-list-frames") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    genericStoppedWithSrc(stopRecord, record);
+                    finish();
+                }
+                @Override
+                protected void onError(MIRecord record) {
+                    genericStoppedWithSrc(stopRecord, null);
+                    finish();
+                }
+            };
+        gdb.sendCommand(cmd);
+    }
+    
     /**
      * The program has hit a signal; produce a popup to ask the user
      * how to handle it.
@@ -3124,23 +3127,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String program = gdi.getTarget();
         long pid = gdi.getPid();
         String corefile = gdi.getCorefile();
-        String argsFlat = "";
         final boolean isCore = (corefile != null);
 
         profileBridge.setup(gdi);
 
-        String image = "";
-
         if (corefile != null) {
             // debug corefile
-            image = corefile;
             if (program == null) {
                 program = "-"; // NOI18N
             }
 
         } else if (pid != -1) {
             // attach
-            image = Long.toString(pid);
             if (program == null) {
                 program = "-"; // NOI18N
             }
@@ -3155,8 +3153,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         String tmp_cmd;
-        if (isCore) {
-            tmp_cmd = "\n"; // NOI18N
+        if (isCore || pid != -1) {
+            tmp_cmd = "-file-symbol-file "; // NOI18N
         } else {
             tmp_cmd = "-file-exec-and-symbols "; // NOI18N
         }
@@ -3178,7 +3176,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 if (isCore) {
                     state().isCore = true;
-                    interpCore(record);
                 } else {
                     getFullPath(null);
                 }
@@ -3622,9 +3619,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
 		    handler = handlerExpert.newHandler(template, result, null);
+                    // fix for #193505
+                    if (!template.isEnabled()) {
+                        postEnableHandler(rt, handler.getId(), false);
+                    }
 		    break;
 		case RESTORE:
 		    handler = handlerExpert.newHandler(template, result, bp.restored());
+                    // fix for #193505
+                    if (!template.isEnabled()) {
+                        postEnableHandler(rt, handler.getId(), false);
+                    }
 		    assert handler.breakpoint() == bp.restored();
 		    break;
 		case MODIFY:

@@ -211,14 +211,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     if (provider != null && provider.gotDescriptor()) {
                         MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
                         Sources srcs = project.getLookup().lookup(Sources.class);
-                        final SourceGroup[] genericSG = srcs.getSourceGroups(MakeSources.GENERIC);
-                        if (genericSG != null) {
-                            for (SourceGroup sourceGroup : genericSG) {
-                                if (sourceGroup.getRootFolder().equals(context.getRoot())) {
-                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                    computeFiles(project, descriptor, matcher, result);
-                                    break;
-                                }
+                        final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
+                        if (genericSG != null && genericSG.length > 0) {
+                            if (genericSG[0].getRootFolder().equals(context.getRoot())) {
+                                NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                computeFiles(project, descriptor, matcher, result);
                             }
                         }
                         return false;
