@@ -903,16 +903,16 @@ public final class AttachPanel extends TopComponent {
 
     private void filterProcesses(final Pattern re) {
         //final PsProvider.PsData psData = psProvider.getData(selectedHost, getAll);
-        final PsProvider.PsData psData = getPsData();
+        final PsProvider.PsData pd = getPsData();
 
-        if (psData == null) {
+        if (pd == null) {
             return;
         }
 
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                processModel.setDataVector(psData.processes(re), psData.header());
+                processModel.setDataVector(pd.processes(re), pd.header());
                 procTable.setEnabled(true);
 
                 // It seems we need to reassign the renderer whenever we
@@ -931,7 +931,7 @@ public final class AttachPanel extends TopComponent {
                 try {
                     TableColumn tbc =
                             procTable.getColumnModel().getColumn(
-                            psData.commandColumnIdx());
+                            pd.commandColumnIdx());
                     tbc.setPreferredWidth(300);
                     tbc.setMinWidth(75);
                 } catch (IllegalArgumentException e) {
