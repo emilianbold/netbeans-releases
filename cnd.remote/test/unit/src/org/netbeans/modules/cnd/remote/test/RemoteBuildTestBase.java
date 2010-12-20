@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
@@ -57,6 +59,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -134,6 +137,14 @@ public class RemoteBuildTestBase extends RemoteTestBase {
             throw exRef.get();
         }
         return;
+    }
+
+    @Override
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
+        list.add(MakeProjectTypeImpl.class);
+        list.addAll(super.getServices());
+        return list;
     }
 
     protected void setupHost() throws Exception {
