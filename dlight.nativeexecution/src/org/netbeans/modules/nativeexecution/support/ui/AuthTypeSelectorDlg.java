@@ -89,7 +89,17 @@ public final class AuthTypeSelectorDlg extends javax.swing.JPanel {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setResizable(false);
-        dialog.setVisible(true);
+
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
 
         if (dd.getValue() == ok) {
             vpanel.applyChanges(null);

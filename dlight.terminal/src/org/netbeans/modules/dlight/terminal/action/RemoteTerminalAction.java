@@ -77,7 +77,17 @@ public final class RemoteTerminalAction extends TerminalAction {
                 DialogDescriptor.OK_OPTION, null);
 
         Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
-        cfgDialog.setVisible(true);
+        
+        try {
+            cfgDialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            cfgDialog.dispose();
+        }
 
         if (dd.getValue() != DialogDescriptor.OK_OPTION) {
             return null;

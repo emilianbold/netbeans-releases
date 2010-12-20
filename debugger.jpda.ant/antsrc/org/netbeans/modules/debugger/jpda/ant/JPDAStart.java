@@ -695,7 +695,7 @@ public class JPDAStart extends Task implements Runnable {
             String pathName = project.replaceProperties(paths[i]);
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
-            URL url = fileToURL (f, project, null);
+            URL url = fileToURL (f, project, null, false);
             if (url == null) continue;
             l.add (url);
         }
@@ -719,7 +719,7 @@ public class JPDAStart extends Task implements Runnable {
             File file = FileUtil.normalizeFile
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
-            URL url = fileToURL (file, project, warningFilters);
+            URL url = fileToURL (file, project, warningFilters, true);
             if (url == null) continue;
             logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
@@ -761,7 +761,7 @@ public class JPDAStart extends Task implements Runnable {
     }
 
 
-    private static URL fileToURL (File file, Project project, Pattern[] warningFilters) {
+    private static URL fileToURL (File file, Project project, Pattern[] warningFilters, boolean withSlash) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
             if (fileObject == null) {
@@ -792,7 +792,11 @@ public class JPDAStart extends Task implements Runnable {
                     return null;
                 }
             }
-            return fileObject.getURL ();
+            if (withSlash) {
+                return FileUtil.urlForArchiveOrDir(file);
+            } else {
+                return fileObject.getURL ();
+            }
         } catch (FileStateInvalidException e) {
             ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
             return null;

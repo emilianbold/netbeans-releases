@@ -477,7 +477,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
             if(header != null) {
                 sb.append(header);
             }
-            sb.append(getHelpItem().getHelpResolver().getHelpContent(getURL()));
+
+            String helpContent = getHelpItem().getHelpContent() != null
+                    ? getHelpItem().getHelpContent()
+                    : getHelpItem().getHelpResolver().getHelpContent(getURL());
+
+            sb.append(helpContent);
 
             return sb.toString();
         }
