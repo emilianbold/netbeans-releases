@@ -600,6 +600,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     private ProblemDetails currentProblemAction;
     private void placeErrorPanel(Problem problem) {
+        if (dialog==null) {
+            //refactoring cancelled
+            return;
+        }
         containerPanel.removeAll();
         errorPanel = new ErrorPanel(problem, rui);
         errorPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
