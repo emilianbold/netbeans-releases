@@ -44,6 +44,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
@@ -52,7 +53,6 @@ import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -116,55 +116,52 @@ public class HtmlCompletionQuery extends UserTask {
 
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
-        Parser.Result parserResult = resultIterator.getParserResult(offset);
+        final Parser.Result parserResult = resultIterator.getParserResult(offset);
         if (parserResult == null) {
             return;
         }
-        Snapshot snapshot = parserResult.getSnapshot();
-        int embeddedOffset = snapshot.getEmbeddedOffset(offset);
-        String resultMimeType = parserResult.getSnapshot().getMimeType();
-        if (resultMimeType.equals("text/html")) {
-            //proceed only on html content
-            this.completionResult = query((HtmlParserResult) parserResult);
-        } else if(resultMimeType.equals("text/javascript")) {
-            //complete the </script> end tag
-            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, SCRIPT_TAG_NAME);
-        } else if(resultMimeType.equals("text/x-css")) {
-            //complete the </style> end tag
-            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, STYLE_TAG_NAME);
-        }
+        final Snapshot snapshot = parserResult.getSnapshot();
+        final Document doc = snapshot.getSource().getDocument(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                int embeddedOffset = snapshot.getEmbeddedOffset(offset);
+                String resultMimeType = parserResult.getSnapshot().getMimeType();
+                if (resultMimeType.equals("text/html")) {
+                    //proceed only on html content
+                    completionResult = query((HtmlParserResult) parserResult);
+                } else if(resultMimeType.equals("text/javascript")) {
+                    //complete the </script> end tag
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, SCRIPT_TAG_NAME);
+                } else if(resultMimeType.equals("text/x-css")) {
+                    //complete the </style> end tag
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, STYLE_TAG_NAME);
+                }
+            }
+
+        });
+
     }
 
-    private CompletionResult queryHtmlEndTagInEmbeddedCode(final Snapshot snapshot, final int embeddedOffset, final String endTagName) {
+    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, Document doc, final int embeddedOffset, final String endTagName) {
         // End tag autocompletion support
         // We want the end tag autocompletion to appear just after <style> and <script> tags.
         // Since there is css language as leaf languge, this needs to be treated separately.
-        final Document doc = snapshot.getSource().getDocument(false);
-        if(doc != null) {
-            final AtomicReference<CompletionResult> result = new AtomicReference<CompletionResult>();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
-                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
-                    if(ts != null)  {
-                        if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
-                            Token openTagToken = Utils.findTagOpenToken(ts);
-                            if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
+        int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
+        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
+        if(ts != null)  {
+            if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
+                Token openTagToken = Utils.findTagOpenToken(ts);
+                if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
 
-                                List<? extends CompletionItem> items = Collections.singletonList(
-                                        HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
-                                result.set(new CompletionResult(items, offset));
-                            }
-                        }
-                    }
+                    List<? extends CompletionItem> items = Collections.singletonList(
+                            HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
+                    return new CompletionResult(items, offset);
                 }
-            });
-            if(result.get() != null) {
-                return result.get();
             }
-
         }
+
 
         String expectedCode = "</" + endTagName;
         // Common end tag completion
@@ -194,7 +191,7 @@ public class HtmlCompletionQuery extends UserTask {
             int itemOffset = embeddedOffset - patternSize + ltIndex;
 
             //convert back to document offsets
-            int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
+            documentItemOffset = snapshot.getOriginalOffset(itemOffset);
 
             List<? extends CompletionItem> items = Collections.singletonList(HtmlCompletionItem.createEndTag(endTagName, documentItemOffset, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
             return new CompletionResult(items, offset);
@@ -264,14 +261,29 @@ public class HtmlCompletionQuery extends UserTask {
 
         // Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1
         // debug>>>
-        if((astOffset - itemOffset) < 0) {
+        if((astOffset - itemOffset) < 0 || preText.length() < (astOffset - itemOffset)) {
             StringBuilder b = new StringBuilder();
-            b.append("just happened Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1\n"); //NOI18N
-            b.append("current's snapshot token sequence:\n"); //NOI18N
-            b.append(ts.toString()); //dump token seuquence
-            b.append(String.format("astOffset = %1$s, itemOffset = %2$s\n", astOffset, itemOffset)); //NOI18N
+            b.append("Inconsistency in the snapshot! Detailed info:"); //NOI18N
+            b.append("\n------------------------------------------------");
+            b.append("\ndocument.getText():");
+            try {
+                b.append(document.getText(0, document.getLength()));
+            } catch (BadLocationException ex) {
+                b.append(ex.getMessage());
+            }
+            b.append("\n------------------------------------------------");
+            b.append("\ntoken hierarchy:\n").append(hi.toString());
+            b.append("\n------------------------------------------------");
+            b.append("\ntoken sequence:\n").append(ts.toString());
+            b.append("\n------------------------------------------------");
+            b.append("\nsnapshot.getText():").append(snapshot.getText().toString());
+            b.append("\n------------------------------------------------");
+            b.append("\nsnapshot.toString():").append(snapshot).toString();
+            b.append("\nsource:").append(snapshot.getSource()).toString();
+            b.append(String.format("\nastOffset = %1$s, itemOffset = %2$s", astOffset, itemOffset)); //NOI18N
+            b.append(String.format("\npreText=%s; len=%s", preText, preText.length()));
+            
             Logger.getAnonymousLogger().warning(b.toString());
-
             //and let the original exception to be thrown so the item is properly bound to the original report
         }
         //<<<debug
