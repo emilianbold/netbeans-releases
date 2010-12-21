@@ -69,4 +69,6 @@ public interface RemoteProject {
     Mode getRemoteMode();
 
     RemoteSyncFactory getSyncFactory();
+
+    String resolveRelativeRemotePath(String path);
 }

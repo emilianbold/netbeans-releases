@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -896,18 +897,28 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
     }
 
+    private String toAbsoluteRemotePath(String path) {
+        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            path = remoteProject.resolveRelativeRemotePath(path);
+            path = RemoteFileUtil.normalizeAbsolutePath(path, remoteProject.getSourceFileSystemHost());
+        }
+        return path;
+    }
+
     private Item createItem(String path) {
         Project project = projectDescriptor.getProject();
         FileObject projectDirFO = project.getProjectDirectory();
-        if (!path.startsWith("/")) { // NOI18N
-            return new Item(path); //XXX:fullRemote
-        }
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
-            if (itemFO == null) {
-                return new Item(path); //XXX:fullRemote
+            path = toAbsoluteRemotePath(path);
+            if (FileSystemProvider.isAbsolute(path)) {
+                FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
+                if (itemFO == null) {
+                    return new Item(path); //XXX:fullRemote
+                } else {
+                    return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
+                }
             } else {
-                return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
+                return new Item(path); //XXX:fullRemote
             }
         } else {
             return new Item(path); //XXX:fullRemote convert this to use of file items as well
@@ -915,11 +926,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private String adjustOffset(String path) {
-        if (relativeOffset != null && path.startsWith("..")) // NOI18N
-        {
+        if (relativeOffset != null && path.startsWith("..")) { // NOI18N
             path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
-        return path;
+        return toAbsoluteRemotePath(path);
     }
 
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {

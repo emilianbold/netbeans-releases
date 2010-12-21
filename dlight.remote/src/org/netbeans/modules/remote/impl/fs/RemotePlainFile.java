@@ -124,11 +124,6 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public RemoteDirectory getParent() {
-        return (RemoteDirectory) super.getParent();
-    }        
-
-    @Override
     public FileLock lock() throws IOException {
         synchronized (this) {
             if (lock == null) {
@@ -142,16 +137,6 @@ public class RemotePlainFile extends RemoteFileObjectBase {
 //    public boolean isLocked() {
 //        return super.isLocked();
 //    }
-
-    @Override
-    public boolean canWrite() {
-        try {
-            return getParent().canWrite(getNameExt());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return true;
-        }
-    }
 
     @Override
     public OutputStream getOutputStream(FileLock lock) throws IOException {
