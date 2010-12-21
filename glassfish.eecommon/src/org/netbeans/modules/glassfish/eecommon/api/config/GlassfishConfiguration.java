@@ -620,7 +620,9 @@ public abstract class GlassfishConfiguration implements
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                String suspect = module.getResourceDirectory().getAbsolutePath();
+                String suspect = "";
+                if (null != module.getResourceDirectory())
+                    suspect = module.getResourceDirectory().getAbsolutePath();
                 cr = contextRoot;
                 final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
                 RequestProcessor.getDefault().post(new Runnable() {
