@@ -74,8 +74,8 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
     private GitFileInfo[] modifiedFiles;
     private static final Logger LOG = Logger.getLogger(JGitRevisionInfo.class.getName());
 
-    public JGitRevisionInfo(RevCommit next, Repository repository) {
-        this.revCommit = next;
+    public JGitRevisionInfo(RevCommit commit, Repository repository) {
+        this.revCommit = commit;
         this.repository = repository;
     }
 
