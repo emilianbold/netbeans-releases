@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,6 +67,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class JsfDocumentation implements HelpResolver {
 
+    private static final Logger LOGGER = Logger.getLogger(JsfDocumentation.class.getName());
     private static final JsfDocumentation SINGLETON = new JsfDocumentation();
     private static final String DOC_ZIP_FILE_NAME = "docs/jsf-api-docs.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
@@ -73,10 +75,6 @@ public class JsfDocumentation implements HelpResolver {
     private static final String JAVADOC_FOLDER_NAME = "javadocs/"; //NOI18N
 
     private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<String, String>();
-
-    public static void setupDocumentationForUnitTests() {
-        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
-    }
 
     public static JsfDocumentation getDefault() {
         return SINGLETON;
@@ -101,6 +99,23 @@ public class JsfDocumentation implements HelpResolver {
 
     @Override
     public URL resolveLink(URL baseURL, String relativeLink) {
+        LOGGER.log(Level.FINE, "relativeLink = ''{0}''", relativeLink); //NOI18N
+        LOGGER.log(Level.FINE, "baseURL = ''{0}''", baseURL); //NOI18N
+
+        try {
+            //test if the relative link isn't an absolute link (http://site.org/file)
+            URI u = new URI(relativeLink);
+            if (u.isAbsolute()) {
+                LOGGER.log(Level.FINE, "resolved to = ''{0}''", u.toURL()); //NOI18N
+                return u.toURL();
+            }
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+
         //make the links from taglib descriptors linkable to the jsf-api-docs content
         int javadocIndex = relativeLink.indexOf(JAVADOC_FOLDER_NAME);
         if(javadocIndex != -1) {
@@ -120,23 +135,31 @@ public class JsfDocumentation implements HelpResolver {
         } else {
             //link contains a filename
             if(baseURL != null) {
-                return getRelativeURL(baseURL, relativeLink);
+                URL url = getRelativeURL(baseURL, relativeLink);
+                LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
+                return url;
             } else {
                 link = getZipURL() + relativeLink;
             }
         }
 
         try {
-            return new URI(link).toURL();
+            URL url = new URI(link).toURL();
+            LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
+            return url;
         } catch (URISyntaxException ex) {
             Logger.getLogger(JsfDocumentation.class.getName()).log(Level.INFO, null, ex);
         } catch (MalformedURLException ex) {
             Logger.getLogger(JsfDocumentation.class.getName()).log(Level.INFO, null, ex);
         }
+        LOGGER.fine("cannot be resolved!"); //NOI18N
         return null;
     }
 
     private URL getRelativeURL(URL baseurl, String link){
+        if(link.startsWith("./")) {
+            link = link.substring(2);
+        }
         String url = baseurl.toString();
         int index;
         if (link.trim().charAt(0) == '#'){
@@ -193,18 +216,11 @@ public class JsfDocumentation implements HelpResolver {
             HELP_FILES_CACHE.put(filePath, strContent);
             return strContent;
         } catch (IOException ex) {
-            Logger.getLogger(JsfDocumentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JsfDocumentation.class.getName()).log(Level.WARNING, null, ex);
         }
 
         return null;
     }
 
-    private static class OffsetRange {
-        public int from, to;
-        public OffsetRange(int from, int to) {
-            this.from = from;
-            this.to = to;
-        }
-    }
     
 }
