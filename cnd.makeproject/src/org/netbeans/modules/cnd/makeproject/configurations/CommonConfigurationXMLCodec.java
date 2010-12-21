@@ -83,6 +83,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  * Change History:
  * V73 - NB 7.0
  * add C/C++ flag USE_LINKER_PKG_CONFIG_LIBRARIES
+ * Without changing version
+ *    added REMOTE_FILESYSTEM_BASE_DIR tag in project.xml
  * V72 - NB 7.0
  *   move platform in private project area
  * V71 - NB 7.0
@@ -237,7 +239,7 @@ public abstract class CommonConfigurationXMLCodec
     // Tools Set (Compiler set and platform)
     public final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     public final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
-    protected final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
+    public final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
     protected final static String REMOTE_MODE_ELEMENT = MakeProject.REMOTE_MODE; // NOI18N
     public final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N

@@ -110,4 +110,8 @@ public class RemoteLogger {
     public static void assertNonUiThread() {
         assertNonUiThread("Should not be called from UI thread"); //NOI18N
     }
+
+    public static void finest(Exception exception) {
+        instance.log(Level.FINEST, "FYI:", exception);
+    }
 }
