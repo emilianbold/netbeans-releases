@@ -57,8 +57,6 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach
  */
 public class InstallDisabledModuleTest extends OperationsTestImpl {
-    private Logger LOG;
-
     public InstallDisabledModuleTest(String testName) {
         super(testName);
     }
@@ -71,7 +69,6 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
-        LOG = Logger.getLogger("test.InstallDisabledModuleTest");
         
         super.setUp();        
         System.setProperty("netbeans.dirs", getWorkDirPath());
