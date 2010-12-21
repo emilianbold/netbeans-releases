@@ -183,7 +183,12 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean canWrite() {
-       return false;
+       return (fo == null) ? false : fo.canWrite();
+    }
+
+    @Override
+    public boolean canRead() {
+       return (fo == null) ? false : fo.canRead();
     }
 
     @Override

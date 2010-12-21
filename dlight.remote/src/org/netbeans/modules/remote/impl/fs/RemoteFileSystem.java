@@ -252,7 +252,7 @@ public class RemoteFileSystem extends FileSystem {
     }
 
     @Override
-    public RemoteFileObjectBase getRoot() {
+    public RemoteDirectory getRoot() {
         return root;
     }
 
@@ -296,7 +296,7 @@ public class RemoteFileSystem extends FileSystem {
         }
 
         @Override
-        public FileObject getParent() {
+        public RemoteDirectory getParent() {
             return null;
         }
 
