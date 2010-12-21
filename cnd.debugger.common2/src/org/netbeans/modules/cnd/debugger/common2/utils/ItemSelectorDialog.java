@@ -52,9 +52,7 @@ import javax.swing.border.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
-import org.openide.awt.Actions;
 import org.openide.*;
-import org.openide.util.HelpCtx;
 
 /**
  * Let's you select items from a dialog.
