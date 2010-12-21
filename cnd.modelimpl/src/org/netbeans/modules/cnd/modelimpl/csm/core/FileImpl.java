@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
@@ -76,7 +75,6 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -1521,41 +1519,39 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public final void onFakeRegisration(IncludeImpl include, CsmOffsetableDeclaration container) {
+    public final boolean onFakeIncludeRegistration(IncludeImpl include, CsmOffsetableDeclaration container) {
         synchronized (fakeIncludeRegistrations) {
             if(include != null && container != null) {
                 CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
                 CsmUID<CsmOffsetableDeclaration> containerUID = UIDCsmConverter.declarationToUID(container);
                 if(includeUid != null && containerUID != null) {
-                    boolean isNamespaceDefinition = CsmKindUtilities.isNamespaceDefinition(container);
                     // extra check to track possible double registrations like
                     // namespace AAA {
                     //   namespace Inner {
                     //        class B {
                     // #include "classBody.h"
+                    //           class Inner {
+                    // #include "innerBody.h"
+                    //           }; end of class Inner
                     //        }; end of class B
                     //   } // end of namespace Inner
                     // } // end of namespace AAA
                     // 
                     for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
                         if (fakeIncludePair.includeUid.equals(includeUid)) {
-                            Kind kind = UIDUtilities.getKind(fakeIncludePair.containerUid);
-                            // lowest priority has outer namespace definition
-                            if (isNamespaceDefinition) {
-                                // we don't want external namespace to replace anything what is already here,
-                                // i.e. nested namespace definition or class
-                                return;
-                            } else if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
-                                // ns has lower priority, remove it
-                                fakeIncludeRegistrations.remove(fakeIncludePair);
-                                break;
+                            // inner object always has higher priority
+                            if (!fakeIncludePair.containerUid.equals(containerUID)) {
+                                assert false : "trying to replace? " + include + " for container " + container + " was: " + fakeIncludePair;
                             }
+                            return false;
                         }
                     }
                     fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, containerUID));
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     private void clearFakeRegistrations() {
@@ -1974,6 +1970,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 coll.add(pair);
             }            
         }
+
+        @Override
+        public String toString() {
+            return "FakeIncludePair{" + "includeUid=" + includeUid + ", containerUid=" + containerUid + ", alreadyFixed=" + alreadyFixed + '}'; // NOI18N
+        }
+        
     }
 
     private static class EmptyCollection<T> extends AbstractCollection<T> {

@@ -138,7 +138,7 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
                         final HostInfo hostInfo;
                         try {
                             hostInfo = HostInfoUtils.getHostInfo(env);
-                            boolean isSupported = PtySupport.isSupportedFor(getEnvironment());
+                            boolean isSupported = PtySupport.isSupportedFor(env);
                             if (!isSupported) {
                                 if (!TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand())) {
                                     String message;

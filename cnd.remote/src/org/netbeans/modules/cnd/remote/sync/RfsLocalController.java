@@ -79,7 +79,9 @@ class RfsLocalController extends NamedRunnable {
     private static enum RequestKind {
         REQUEST,
         WRITTEN,
-        PING
+        PING,
+        UNKNOWN,
+        KILLED
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
@@ -130,7 +132,22 @@ class RfsLocalController extends NamedRunnable {
             case 'w':   return RequestKind.WRITTEN;
             case 'p':   return RequestKind.PING;
             default:
-                throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
+                if ("Killed".equals(request)){//NOI18N
+                    //BZ #193114 - IllegalArgumentException: Protocol error: Killed
+                    //let's check the process state
+                    if (remoteControllerProcess.getState() == NativeProcess.State.CANCELLED ||
+                            remoteControllerProcess.getState() == NativeProcess.State.FINISHED){
+                        try {
+                            int exitStatus = remoteControllerProcess.waitFor();
+                            if (exitStatus != 0){
+                                return RequestKind.KILLED;
+                            }
+                        } catch (InterruptedException ex) {
+                        }
+                        
+                    }
+                }
+                return RequestKind.UNKNOWN;
         }
     }
 
@@ -145,7 +162,14 @@ class RfsLocalController extends NamedRunnable {
                     break;
                 }
                 RequestKind kind = getRequestKind(request);
-                if (kind == RequestKind.PING) {
+                if (kind == RequestKind.KILLED){
+                    //there is something wrong with the process
+                    //print to error that remote process is killed
+                    err.append("\nRemote process is killed");//NOI18N
+                    break;
+                }else if (kind == RequestKind.UNKNOWN){
+                    err.append("\nProtocol error: " + request);//NOI18N
+                }else   if (kind == RequestKind.PING) {
                     logger.log(Level.FINEST, "PING from remote controller");
                     // no response needed
                     // respond_ok();

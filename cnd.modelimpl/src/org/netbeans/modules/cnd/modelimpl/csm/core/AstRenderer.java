@@ -70,6 +70,7 @@ import org.openide.util.Exceptions;
 public class AstRenderer {
 
     private final FileImpl file;
+    private boolean registeredFakeInclude = false;
 
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;
@@ -79,6 +80,10 @@ public class AstRenderer {
         return file;
     }
 
+    protected boolean hasRegisteredFakeIncludes() {
+        return registeredFakeInclude;
+    }
+    
     public void render(AST root) {
 //        if (file.getAbsolutePath().toString().endsWith("shared.h")) {
 //            int i = 10;
@@ -100,7 +105,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
                     NamespaceDefinitionImpl ns = NamespaceDefinitionImpl.findOrCreateNamespaceDefionition(container, token, currentNamespace, file);
                     render(token, (NamespaceImpl) ns.getNamespace(), ns);
-                    checkInnerIncludes(ns);
+                    checkInnerIncludes(ns, ns.getDeclarations());
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
@@ -614,17 +619,36 @@ public class AstRenderer {
         return false;
     }
 
-    protected void checkInnerIncludes(CsmOffsetableDeclaration inclContainer) {
+    protected void checkInnerIncludes(CsmOffsetableDeclaration inclContainer, Collection<? extends CsmObject> containerInnerObjects) {
         // Check for include directives in class
-        if (!isRenderingLocalContext() && CsmKindUtilities.isOffsetable(inclContainer)) {
-            CsmOffsetable offs = (CsmOffsetable) inclContainer;
+        if (!isRenderingLocalContext()) {
             CsmFile curFile = getContainingFile();
+            boolean alreadyInInclude = !curFile.equals(inclContainer.getContainingFile());
+            if (alreadyInInclude) {
+                // we already in phase of fixing fake includes
+                // TODO: we somehow should check includes in curFile which are valid in context of parsing from inclContainer's file
+                return;
+            }
             if (curFile instanceof FileImpl) {
+                Outer:
                 for (CsmInclude include : curFile.getIncludes()) {
                     if (include instanceof IncludeImpl) {
-                        if (include.getStartOffset() > offs.getStartOffset()
-                                && include.getEndOffset() < offs.getEndOffset()) {
-                            ((FileImpl) curFile).onFakeRegisration((IncludeImpl) include, inclContainer);
+                        if (include.getStartOffset() > inclContainer.getStartOffset() && include.getEndOffset() < inclContainer.getEndOffset()) {
+                            // check that not inside body of container's elemens
+                            for (CsmObject inner : containerInnerObjects) {
+                                if (CsmKindUtilities.isOffsetable(inner)) {
+                                    CsmOffsetable offs = (CsmOffsetable) inner;
+                                    if (curFile.equals(offs.getContainingFile())) {
+                                        // inner is in the same file as #include directive
+                                        if (include.getStartOffset() > offs.getStartOffset()
+                                                && include.getEndOffset() < offs.getEndOffset()) {
+                                            // #include inside one of inner object's body => not fake for inclContainer
+                                            continue Outer;
+                                        }
+                                    }
+                                }
+                            }
+                            registeredFakeInclude |= ((FileImpl) curFile).onFakeIncludeRegistration((IncludeImpl) include, inclContainer);
                         }
                     }
                 }

@@ -170,12 +170,14 @@ import org.openide.util.Exceptions;
         changeSupport.firePropertyChange(LOADING_STATUS, null, rdir);
 
         try {
-            result = rdir.listFiles();
+            if (dir.canRead()) {
+                result = rdir.listFiles();
+            }
         } finally {
             changeSupport.firePropertyChange(LOADING_STATUS, rdir, null);
         }
 
-        return result;
+        return (result == null) ? new File[0] : result;
     }
 
     /**
