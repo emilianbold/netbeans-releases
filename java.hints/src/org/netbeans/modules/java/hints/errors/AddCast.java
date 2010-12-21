@@ -95,6 +95,7 @@ public final class AddCast implements ErrorRule<Void> {
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, Tree[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
         
         //TODO: this does not seem nice:
         while (path != null) {
@@ -178,7 +179,7 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
-            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < offset) {
+            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start) {
                 break;
             }
 
