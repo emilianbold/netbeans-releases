@@ -435,7 +435,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (!rangePrepared && d.getCode().endsWith("proc.messager")) {
             int originalEndOffset = info.getSnapshot().getOriginalOffset(endOffset);
 
-            if (originalEndOffset <= lineOffset + text.length()) {
+            if (originalEndOffset <= lineOffset + text.length() && originalStartOffset != (-1) && originalEndOffset != (-1)) {
                 startOffset = originalStartOffset;
                 endOffset = originalEndOffset;
                 rangePrepared = true;
