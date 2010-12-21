@@ -352,16 +352,16 @@ public class OpenRemoteProjectAction extends AbstractAction {
             try {
                 if (f != null &&
                     f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
-                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
+                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. // NOI18N
                     f.getParentFile() != null) { // do not consider drive roots
                     String path = f.getAbsolutePath();
-                    String project = path+"/nbproject";
+                    String project = path+"/nbproject"; // NOI18N
                     File projectDir = chooser.getFileSystemView().createFileObject(project);
                     if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
-                        String projectXml = path+"/nbproject/project.xml";
+                        String projectXml = path+"/nbproject/project.xml"; // NOI18N
                         File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
                         if (projectFile.exists()) {
-                            String conf = path+"/nbproject/configurations.xml";
+                            String conf = path+"/nbproject/configurations.xml"; // NOI18N
                             File configuration = chooser.getFileSystemView().createFileObject(conf);
                             if (configuration.exists()) {
                                 return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N

@@ -70,21 +70,21 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
     
     private static String getName(CsmInstantiation inst) {
         StringBuilder sb = new StringBuilder(inst.getTemplateDeclaration().getName());
-        sb.append("<");
+        sb.append("<"); // NOI18N
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
         boolean first = true;
         for (CsmTemplateParameter param : mapping.keySet()) {
             CsmSpecializationParameter specParam = mapping.get(param);
             if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
                 if(!first) {
-                    sb.append(",");
+                    sb.append(","); // NOI18N
                 }
                 CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
                 sb.append(type.getCanonicalText());
                 first = false;
             }
         }
-        sb.append(">");
+        sb.append(">"); // NOI18N
         return sb.toString();
     }
 
