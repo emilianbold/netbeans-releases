@@ -162,7 +162,13 @@ public final class ProjectActionEvent {
             // TODO: get rid off one of ifs below
             assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
 
-            String outputValue = configuration.getOutputValue();
+            String outputValue;
+            if (configuration.isLibraryConfiguration()) {
+                outputValue = "";
+            }
+            else {
+                outputValue = configuration.getOutputValue();
+            }
             if (outputValue.length() > 0) {
                 outputValue = configuration.getAbsoluteOutputValue();
             }
