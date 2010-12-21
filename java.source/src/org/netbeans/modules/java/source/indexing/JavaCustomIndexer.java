@@ -642,10 +642,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     break;
                 case ENABLED_WITHIN_PROJECT:
+                    final Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
-                    } else {
-                        Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
+                        if (rootPrj == null) {
+                            depRoots = Collections.singletonList(root);
+                        } else {
+                            depRoots = new ArrayList<URL>();
+                            depRoots.add(root);
+                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
+                            depRoots.addAll(srcRoots);
+                        }
+                    } else {                        
                         if (rootPrj == null) {
                             for (URL url : depRoots) {
                                 JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
@@ -661,18 +668,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             l.add(root);
-                            depRoots = Utilities.topologicalSort(l, inverseDeps);
+                            depRoots = Utilities.topologicalSort(l, inverseDeps);                            
+                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
+                            depRoots.addAll(srcRoots);
                         }
                     }
                     break;
                 case ENABLED:
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
+                        depRoots = new ArrayList<URL>();
+                        depRoots.add(root);
                     } else {
                         List<URL> l = new ArrayList<URL>(depRoots);
                         l.add(root);
                         depRoots = Utilities.topologicalSort(l, inverseDeps);
                     }
+                    final List<? extends URL> srcRoots = getSrcRootPeers(root, null);
+                    depRoots.addAll(srcRoots);
                     break;
             }
         } catch (TopologicalSortException ex) {
@@ -943,4 +955,26 @@ public class JavaCustomIndexer extends CustomIndexer {
             return t.getMessage(null);
         }
     };
+    
+    private static List<? extends URL> getSrcRootPeers(final URL rootURL, final Project prj) {
+        final FileObject root = URLMapper.findFileObject(rootURL);
+        if (root == null) {
+            return Collections.<URL>emptyList();
+        }
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.SOURCE);
+        if (cp == null) {
+            return Collections.<URL>emptyList();
+        }
+        final List<? extends ClassPath.Entry> entries = cp.entries();
+        final List<URL> result = new ArrayList<URL>(entries.size());
+        for (ClassPath.Entry entry : entries) {
+            final FileObject cpRoot = entry.getRoot();
+            if (!root.equals(cpRoot) &&
+                    (prj == null || 
+                     (cpRoot != null && prj.equals(FileOwnerQuery.getOwner(cpRoot))))) {
+                result.add(entry.getURL());
+            }
+        }
+        return result;
+    }
 }
