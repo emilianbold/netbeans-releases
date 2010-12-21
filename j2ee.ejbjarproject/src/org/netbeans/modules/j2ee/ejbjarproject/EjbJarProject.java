@@ -459,6 +459,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 new EjbJarJPASupport(this),
                 Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
+                new EjbJarJPATargetInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
