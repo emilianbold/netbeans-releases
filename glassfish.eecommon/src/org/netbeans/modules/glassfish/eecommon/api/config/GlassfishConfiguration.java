@@ -615,15 +615,19 @@ public abstract class GlassfishConfiguration implements
     }
 
     private String cr = null;
+    
+    private static final RequestProcessor RP = new RequestProcessor("GlassFishConfiguration.setContextRoot");
 
     @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                String suspect = module.getResourceDirectory().getAbsolutePath();
+                String suspect = "";
+                if (null != module.getResourceDirectory())
+                    suspect = module.getResourceDirectory().getAbsolutePath();
                 cr = contextRoot;
                 final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
