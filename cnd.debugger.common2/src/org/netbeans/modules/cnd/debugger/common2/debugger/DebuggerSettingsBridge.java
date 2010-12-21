@@ -131,7 +131,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * since the last application (via initialApply())
      */
 
-    private static final int DIRTY_ARGS		= 1<<0;
+    private static final int DIRTY_ARGS		= 1;
     private static final int DIRTY_DIR		= 1<<1;
     private static final int DIRTY_ENVVARS	= 1<<2;
     private static final int DIRTY_PRELOAD	= 1<<3;

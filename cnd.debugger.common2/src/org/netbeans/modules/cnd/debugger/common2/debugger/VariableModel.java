@@ -355,7 +355,8 @@ public abstract class VariableModel extends ModelListenerSupport
 		     columnID == Constants.PROP_WATCH_VALUE ||
 		     columnID == Constants.PROP_LOCAL_TO_STRING ||
 		     columnID == Constants.PROP_WATCH_TO_STRING ) {
-			return new VariableValue(v.getAsText(), v.getDelta());
+			VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
+			return value.toString();
 		}
 	    else return null;
 	} else {
