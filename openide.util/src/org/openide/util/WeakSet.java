@@ -148,6 +148,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
     /**
      * compact set if it is empty by setting new capacity
      * @param newCapacity new capacity
+     * @since 8.11
      */
     public void resize(int newCapacity){
         if (isEmpty()) {
@@ -195,6 +196,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
      * @param e object to put in set.
      * @return the previous set entry equals with <tt>e</tt>, or
      *         passed object <tt>e</tt> if there were not entry in set.
+     * @since 8.11
      */
     public E putIfAbsent(E e) { return m.putIfAbsent(e); }
 
