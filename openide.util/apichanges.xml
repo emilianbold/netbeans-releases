@@ -51,6 +51,22 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="WeakSet.putIfAbsent">
+        <api name="util"/>
+        <summary>New implementation of WeakSet with two new methods <code>putIfAbsent</code> and <code>resize</code>
+        </summary>
+        <version major="8" minor="11"/>
+        <date day="22" month="12" year="2010"/>
+        <author login="vv159170"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+            New method putIfAbsent gives access to key already stored in Set. Method resize allows to change capacity of internal hash map.
+            </p>
+        </description>
+        <class package="org.openide.util" name="WeakSet"/>
+        <issue number="192759"/>
+    </change>
     <change id="NbBundle.Messages">
         <api name="util"/>
         <summary>Added <code>@NbBundle.Messages</code></summary>
