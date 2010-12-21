@@ -64,9 +64,12 @@ import java.util.Set;
 
 /**
  * This class provides storage functionality with Weak-referenced entries and
- * one new method <tt>putIfAbsent<tt> (backed by a hash table)
- * Access to set is not thread safe
+ * new method <tt>putIfAbsent<tt>. Set implementation is backed by a hash table.
+ * It also provides method <tt>resize<tt> for changing capacity 
+ * (can be used for reducing memory occupied by empty set which previously had big number of objects, but they were GCed)
+ * Access to set is not thread safe.
  *
+ * @param <E> the type of elements maintained by this set
  * @see #putIfAbsent(Object)
  * @author Vladimir Voskresensky
  */
@@ -118,7 +121,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
      * load factor (0.75) and an initial capacity sufficient to hold the
      * mappings in the specified map.
      *
-     * @param   m the map whose mappings are to be placed in this map
+     * @param   s the map whose mappings are to be placed in this map
      * @throws  NullPointerException if the specified map is null
      */
     public WeakSharedSet(Set<? extends E> s) {
@@ -139,8 +142,14 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     @Override
     @SuppressWarnings("element-type-mismatch")
     public boolean remove(Object o)   { return m.remove(o) == PRESENT; }
+    
+    
+    /**
+     * compact set if it is empty by setting new capacity
+     * @param newCapacity new capacity
+     */
     public void resize(int newCapacity){
-        if (size()==0) {
+        if (isEmpty()) {
             m.resize(newCapacity);
         }
     }
