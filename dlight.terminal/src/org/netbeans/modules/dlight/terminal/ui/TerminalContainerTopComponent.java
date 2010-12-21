@@ -73,6 +73,9 @@ import org.openide.windows.IOContainer;
 autostore = false)
 public final class TerminalContainerTopComponent extends TopComponent {
 
+    public static final String LOCAL_TERMINAL_PREFIX = "LocalTerminal"; // NOI18N
+    public static final String SILENT_MODE_COMMAND = "silent_mode"; // NOI18N
+    // private vars.... 
     private static TerminalContainerTopComponent instance;
     /** path to the icon used by the component and its open action */
     private static final String ICON_PATH = "org/netbeans/modules/dlight/terminal/ui/term.png";// NOI18N
@@ -187,9 +190,9 @@ public final class TerminalContainerTopComponent extends TopComponent {
         JComponent selectedTerminal = getIOContainer().getSelected();
         if (selectedTerminal == null) {
             for (Action action : getToolbarActions()) {
-                if (action.getValue(Action.NAME).toString().contains("LocalTerminal") // NOI18N
+                if (action.getValue(Action.NAME).toString().startsWith(LOCAL_TERMINAL_PREFIX)
                         && action.isEnabled()) {
-                    action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+                    action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, SILENT_MODE_COMMAND));
                     break;
                 }
             }

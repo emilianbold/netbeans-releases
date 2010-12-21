@@ -41,16 +41,14 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
-import javax.swing.Action;
+import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -62,15 +60,8 @@ import org.openide.util.Utilities;
 public final class LocalTerminalAction extends TerminalAction {
 
     public LocalTerminalAction() {
-        super("LocalTerminalAction", NbBundle.getMessage(LocalTerminalAction.class, "LocalTerminalShortDescr"), // NOI18N
+        super(TerminalContainerTopComponent.LOCAL_TERMINAL_PREFIX + "Action", NbBundle.getMessage(LocalTerminalAction.class, "LocalTerminalShortDescr"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
-        boolean isSupported = PtySupport.isSupportedFor(getEnvironment());
-
-        setEnabled(isSupported);
-
-        if (!isSupported && Utilities.isWindows()) {
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(LocalTerminalAction.class, "LocalTerminalShortDescr.window.nocygwin")); // NOI18N
-        }
     }
 
     @Override

@@ -66,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -97,7 +98,7 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
         instance.open();
         instance.requestActive();
@@ -134,14 +135,40 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
                             }
                         }
 
+                        final HostInfo hostInfo;
+                        try {
+                            hostInfo = HostInfoUtils.getHostInfo(env);
+                            boolean isSupported = PtySupport.isSupportedFor(getEnvironment());
+                            if (!isSupported) {
+                                if (!TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand())) {
+                                    String message;
+
+                                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                                        message = NbBundle.getMessage(TerminalAction.class, "LocalTerminalNotSupported.error.nocygwin"); // NOI18N
+                                    } else {
+                                        message = NbBundle.getMessage(TerminalAction.class, "LocalTerminalNotSupported.error"); // NOI18N
+                                    }
+
+                                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+                                    DialogDisplayer.getDefault().notify(nd);
+                                }
+                                return;
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return;
+                        } catch (CancellationException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return;
+                        }
+
                         final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                         try {
                             ioRef.set(term.getIO(env.getDisplayName(), null, ioContainer));
-                            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
+                            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                             npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
-                            final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                             String shell = hostInfo.getLoginShell();
 //                            npb.setWorkingDirectory("${HOME}");
                             npb.setExecutable(shell);
@@ -170,9 +197,6 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                                 }
                             }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                            reportInIO(ioRef.get(), ex);
                         } catch (CancellationException ex) {
                             Exceptions.printStackTrace(ex);
                             reportInIO(ioRef.get(), ex);
