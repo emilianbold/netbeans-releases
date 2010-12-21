@@ -133,6 +133,9 @@ public class DiscoveryProjectGenerator {
         for(Folder folder : root.getFolders()) {
             if (folder.getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
                 res.put(folder,folder);
+            } else if (folder.isDiskFolder()) {
+                // do not change disk folder.
+                res.put(folder,folder);
             } else {
                 Folder packFolder = packFolder(folder);
                 res.put(folder,packFolder);
