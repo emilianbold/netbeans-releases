@@ -64,13 +64,14 @@ import java.util.Set;
 
 /**
  * This class provides storage functionality with Weak-referenced entries and
- * new method <tt>putIfAbsent<tt>. Set implementation is backed by a hash table.
- * It also provides method <tt>resize<tt> for changing capacity 
+ * new method <tt>putIfAbsent</tt>. Set implementation is backed by a hash table.
+ * It also provides method <tt>resize</tt> for changing capacity of internal hash table
  * (can be used for reducing memory occupied by empty set which previously had big number of objects, but they were GCed)
  * Access to set is not thread safe.
  *
  * @param <E> the type of elements maintained by this set
  * @see #putIfAbsent(Object)
+ * @see #resize(int)
  * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
@@ -184,6 +185,12 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     /**
      * Put object in this set if equal one is not yet in set.
      * Returns previous set entry if equal object is already in set.
+     * 
+     * <pre>
+     *  WeakSharedSet&lt;MyClass&gt; set = new WeakSharedSet&lt;MyClass&gt;();
+     *  ...
+     *  MyClass sharedValue = set.putIfAbsent(new MyClass("abc));
+     * </pre>
      *
      * @param e object to put in set.
      * @return the previous set entry equals with <tt>e</tt>, or
