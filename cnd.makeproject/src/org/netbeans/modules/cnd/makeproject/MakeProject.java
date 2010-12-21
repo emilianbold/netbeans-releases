@@ -149,6 +149,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
     public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
+    public static final String REMOTE_FILESYSTEM_BASE_DIR = "remote-filesystem-base-dir"; // NOI18N
 
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
@@ -178,6 +179,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
     private /*final*/ RemoteProject.Mode remoteMode;
+    private String remoteBaseDir;
     private ExecutionEnvironment remoteFileSystemHost;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
@@ -226,6 +228,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             // XXX:fullRemote: separate user from host!
             remoteFileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
         } else if(remoteFSHostNodeList.getLength() > 0) {
+            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
+        }
+
+        NodeList remoteFSMountPoint = data.getElementsByTagName(REMOTE_FILESYSTEM_BASE_DIR);
+        if (remoteFSMountPoint.getLength() == 1) {
+            remoteBaseDir = remoteFSMountPoint.item(0).getTextContent();
+        } else if(remoteFSMountPoint.getLength() > 0) {
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
@@ -1116,6 +1125,21 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
                     return getActiveConfiguration().getRemoteSyncFactory();
             }
+        }
+
+        @Override
+        public String resolveRelativeRemotePath(String path) {
+            if (!path.startsWith("/")) { //NOI18N
+                if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES && remoteBaseDir != null && !remoteBaseDir.isEmpty()) {
+                    String resolved = remoteBaseDir;
+                    if (!resolved.endsWith("/")) { //NOI18N
+                        resolved += "/"; //NOI18N
+                    }
+                    resolved = resolved+path;
+                    return CndFileUtils.normalizeAbsolutePath(resolved);
+                }
+            }
+            return path;
         }
     }
     

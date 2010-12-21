@@ -138,6 +138,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
@@ -448,10 +449,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
                 if (root != null) {
+                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second);
                     if (entry == null || entry.includes(fo)) {
-                        final Work wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourcForBinaryRoot, true);
+                        Work wrk;
+                        if (fo.equals(root.second)) {
+                            if (scannedRoots2Dependencies.get(root.first) == EMPTY_DEPS) {
+                                //For first time seeing valid root do roots work to recalculate dependencies
+                                wrk = new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, false);
+                            } else {
+                                //Already seen files work is enough/
+                                wrk = new FileListWork(scannedRoots2Dependencies, root.first, Arrays.asList(fo.getChildren()), false, false, true, sourcForBinaryRoot, true);
+                            }
+                        } else {
+                            wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourcForBinaryRoot, true);
+                        }
                         eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
                         processed = true;
                     }
@@ -491,6 +504,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
                 if (root != null) {
+                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
                     if (entry == null || entry.includes(fo)) {
@@ -535,11 +549,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 root = getOwningSourceRoot (fo);
                 if (root != null) {
                     if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-                        String relativePath = FileUtil.getRelativePath(root.second, fo);
-                        assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-                        final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
-                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
-                        processed = true;
+                        String relativePath = null;
+                        try {
+                        //Root may be deleted -> no root.second available
+                            if (root.second != null) {
+                                relativePath = FileUtil.getRelativePath(root.second, fo);
+                            } else {
+                                relativePath = root.first.toURI().relativize(fo.getURL().toURI()).getPath();
+                            }                        
+                            assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+                            final Work wrk = new DeleteWork(root.first, Collections.singleton(relativePath));
+                            eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
+                            processed = true;
+                        } catch (FileStateInvalidException fse) {
+                            Exceptions.printStackTrace(fse);
+                        } catch (URISyntaxException use) {
+                            Exceptions.printStackTrace(use);
+                        }
                     }
                 }
             }
@@ -579,6 +605,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(newFile);
                 if (root != null) {
+                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     FileObject rootFo = root.second;
                     String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
                     String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
@@ -706,6 +733,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Document doc = jtc.getDocument();
                 Pair<URL, FileObject> root = getOwningSourceRoot(doc);
                 if (root != null) {
+                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
                     long version = DocumentUtilities.getDocumentVersion(doc);
                     Long lastIndexedVersion = (Long) doc.getProperty(PROP_LAST_INDEXED_VERSION);
                     Long lastDirtyVersion = (Long) doc.getProperty(PROP_LAST_DIRTY_VERSION);
@@ -896,6 +924,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
+            assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
             if (activeDocument == document) {
                 long version = DocumentUtilities.getDocumentVersion(activeDocument);
                 Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
@@ -1042,18 +1071,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         FileObject owningSourceRoot = null;
 
         for (URL root : clone) {
-            FileObject rootFo = URLCache.getInstance().findFileObject(root);
-            if (rootFo != null && FileUtil.isParentOf(rootFo,file)) {
-                owningSourceRootUrl = root;
-                owningSourceRoot = rootFo;
-                break;
+            try {
+                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                if (rootFo != null) {
+                    if (rootFo.equals(file) || FileUtil.isParentOf(rootFo,file)) {
+                        owningSourceRootUrl = root;
+                        owningSourceRoot = rootFo;
+                        break;
+                    }
+                } else if (file.getURL().toExternalForm().startsWith(root.toExternalForm())) {
+                    owningSourceRootUrl = root;
+                    owningSourceRoot = rootFo;
+                    break;
+                }
+            } catch (FileStateInvalidException fsi) {
+                Exceptions.printStackTrace(fsi);
             }
         }
 
         synchronized (lastOwningSourceRootCacheLock) {        
             if (owningSourceRootUrl != null) {
-                assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
                 if (doc != null) {
+                    assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
                     doc.putProperty(PROP_OWNING_SOURCE_ROOT_URL, owningSourceRootUrl);
                     doc.putProperty(PROP_OWNING_SOURCE_ROOT, owningSourceRoot);
                 }
@@ -1172,6 +1211,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         final FileObject rootFo = URLMapper.findFileObject(rootURL);
         if (rootFo == null) {
+            ctx.newRoots2Deps.put(rootURL, EMPTY_DEPS);
             return true;
         }
 
@@ -3329,7 +3369,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     return false;
                 } else {
-                    // can't traverse the root, but still mark it as scanned/finished
+                    RepositoryUpdater.getDefault().rootsListeners.add(root,true);
                     return true;
                 }
             }
