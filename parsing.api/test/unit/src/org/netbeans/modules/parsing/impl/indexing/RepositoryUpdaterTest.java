@@ -1149,6 +1149,44 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getDirtyCount());
     }
     
+    public void testFilesScannedAferSourceRootCreatedDeleted() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final File srcRoot1File = FileUtil.toFile(srcRoot1);                
+        final ClassPath cp1 = ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(srcRoot1File));
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());       
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);        
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        srcRoot1.delete();
+        
+        final File a = new File(srcRoot1File,"folder/a.foo");
+        final File b = new File(srcRoot1File,"folder/b.emb");
+        indexerFactory.indexer.setExpectedFile(new URL[]{a.toURI().toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{b.toURI().toURL()}, new URL[0], new URL[0]);
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                FileUtil.createFolder(srcRoot1File);
+                FileUtil.createData(a);
+                FileUtil.createData(b);
+            }
+        });
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+    
 
     public static class TestHandler extends Handler {
 
