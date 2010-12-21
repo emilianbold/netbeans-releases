@@ -66,8 +66,6 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     @Override
     public boolean isWindowAlphaSupported() {
-        if( !is32Bit() )
-            return false;
         boolean res = false;
         try {
             res = WindowUtils.isWindowAlphaSupported();
