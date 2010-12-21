@@ -730,7 +730,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
-            checkInnerIncludes(ClassImpl.this);
+            checkInnerIncludes(ClassImpl.this, ClassImpl.this.getMembers());
         }
 
         private CsmScope getFriendScope() {
