@@ -60,9 +60,6 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      */
     @Override
     public ExecutionEnvironment getLocal() {
-        if (!HostInfoUtils.isHostInfoAvailable(LOCAL)) {
-            getLocalHostInfo();
-        }
         return LOCAL;
     }
 
