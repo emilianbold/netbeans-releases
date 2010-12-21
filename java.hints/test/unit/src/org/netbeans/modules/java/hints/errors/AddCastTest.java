@@ -108,6 +108,11 @@ public class AddCastTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                             "package test; import java.io.File; public class Test {void foo() { File f = new |File() }}");
     }
+
+    public void test193668() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import java.util.List; public class Test { public List t(List l) { return t(c|()); } }");
+    }
     
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

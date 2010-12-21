@@ -175,6 +175,10 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
+            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < offset) {
+                break;
+            }
+
             path = path.getParentPath();
         }
         
