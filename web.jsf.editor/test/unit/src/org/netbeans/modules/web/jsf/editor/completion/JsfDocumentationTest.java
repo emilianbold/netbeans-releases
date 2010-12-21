@@ -45,7 +45,6 @@ package org.netbeans.modules.web.jsf.editor.completion;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.regex.Matcher;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
@@ -69,7 +68,7 @@ public class JsfDocumentationTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JsfDocumentation.setupDocumentationForUnitTests();
+        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
     }
 
     public void testDocZipPresence() throws IOException {
@@ -94,9 +93,26 @@ public class JsfDocumentationTest extends NbTestCase {
 
         String content2 = JsfDocumentation.getContentAsString(url2, null);
         assertNotNull(content2);
+
+        //test absolute link
+        URL aurl = new URL("http://oracle.com/index.html");
+        URL url3 = JsfDocumentation.getDefault().resolveLink(url2, aurl.toExternalForm());
+
+        assertEquals(aurl, url3);
         
     }
 
+    public void testResolveFromIndexToHelp() {
+        URL index = JsfDocumentation.getDefault().resolveLink(null, "index-all.html");
+        assertNotNull(index);
+
+        URL help = JsfDocumentation.getDefault().resolveLink(index, "./help-doc.html");
+        assertNotNull(help);
+
+        String helpContent = JsfDocumentation.getContentAsString(help, null);
+        assertNotNull(helpContent);
+        
+    }
    
 
 }
