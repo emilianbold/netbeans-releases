@@ -123,12 +123,13 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     for (Column column : metrics) {
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
+                        String longFormattedMetricString = FunctionMetricFormatter.getLongFormattedValue(functionCall, metricId);
                         String metricValString = FunctionMetricFormatter.getFormattedValue(functionCall, metricId);
                         if (!metricValString.equals("0.0")) { // NOI18N
                             below = false;
                         }
                         lineAnnotationInfo.getColumns()[col] = metricValString;
-                        lineAnnotationInfo.getNotFormattedColumns()[col] = metricVal + "";
+                        lineAnnotationInfo.getNotFormattedColumns()[col] = longFormattedMetricString;
                         int metricValLength = metricValString.length();
                         if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
                             fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
