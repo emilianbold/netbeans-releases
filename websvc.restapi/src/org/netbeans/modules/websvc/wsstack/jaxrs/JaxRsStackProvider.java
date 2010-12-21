@@ -60,15 +60,6 @@ public class JaxRsStackProvider {
         return WSStack.findWSStack(j2eePlatform.getLookup(), JaxRs.class);
     }
     
-    public static WSTool getJaxRsStackTool(J2eePlatform j2eePlatform, JaxRs.Tool toolId) {
-        WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxRs.class);
-        if (wsStack != null) {
-            return wsStack.getWSTool(toolId);
-        } else {
-            return null;
-        }
-    }
-
     public static synchronized WSStack<JaxRs> getIdeJaxRsStack() {
         if (ideJaxRsStack == null) {
             ideJaxRsStack =  WSStackFactory.createWSStack(JaxRs.class, new IdeJaxRsStack(), WSStack.Source.IDE);

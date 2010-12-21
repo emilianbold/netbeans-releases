@@ -37,51 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v3;
 
-import java.net.URL;
-import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
-import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
-import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+package org.netbeans.modules.j2ee.ejbjarproject;
 
+import java.io.IOException;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 /**
  *
- * @author ayubkhan
+ * @author sp153251
  */
-public class GlassFishV31EE6JaxRsStack extends GlassFishV3EE6JaxRsStack {
+public class EjbJarJPATargetInfo implements JPATargetInfo {
+    private EjbJarProject project;
 
-    private static final String[] GFV31_JAXRS_LIBRARIES =
-        new String[] {"jackson", "jersey-client", "jersey-core", "jersey-gf-server", "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
-
-    public GlassFishV31EE6JaxRsStack(String gfRootStr) {
-        super(gfRootStr);
+    public EjbJarJPATargetInfo(EjbJarProject project) {
+        this.project = project;
     }
 
     @Override
-    public WSTool getWSTool(Tool toolId) {
-        if (toolId == JaxRs.Tool.JAXRS) {
-            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS, GFV31_JAXRS_LIBRARIES));
-        }
-        return null;
-    }
-
-    @Override
-    public boolean isFeatureSupported(Feature feature) {
-        boolean isFeatureSupported = false;
-        if (feature == JaxRs.Feature.JAXRS) {
-            WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
-            if (wsTool != null) {
-                URL[] libs = wsTool.getLibraries();
-                if(libs != null && libs.length == GFV31_JAXRS_LIBRARIES.length) {
-                    isFeatureSupported = true;
-                }
+    public TargetType getType(FileObject target, final String fqn) {
+        EjbJar ejbjar = EjbJar.getEjbJar(target);
+        MetadataModel<EjbJarMetadata> metadataModel = ejbjar.getMetadataModel();
+        boolean isEjb = false;
+        if(metadataModel != null){
+            try {
+                String ret = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                    @Override
+                    public String run(EjbJarMetadata metadata) throws Exception {
+                        Ejb ejb = metadata.findByEjbClass(fqn);
+                        return ejb !=null ? "" : null;
+                    }
+                });
+                isEjb = ret!=null;
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        return isFeatureSupported;
+        return isEjb ? TargetType.EJB : TargetType.ANY;
     }
 
 }
