@@ -146,6 +146,10 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
+        if (tp.getLeaf().getKind() == Kind.VARIABLE) {
+            return ((VariableTree) tp.getLeaf()).getName().toString();
+        }
+        
         ExpressionTree et = (ExpressionTree) tp.getLeaf();
         String name = getName(et);
         
