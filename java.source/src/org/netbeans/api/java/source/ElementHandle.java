@@ -174,8 +174,8 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind);  // NOI18N
+                } else 
+                    log.log(Level.INFO, "Resolved type is null for kind=" + this.kind);  // NOI18N
                 break;
             }
             case INSTANCE_INIT:
@@ -194,8 +194,8 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
+                } else
+                    log.log(Level.INFO, "Resolved type is null for kind=" + this.kind); // NOI18N
                 break;
             }
             case FIELD:
@@ -214,8 +214,8 @@ public final class ElementHandle<T extends Element> {
                             }
                         }
                     }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
+                } else 
+                    log.log(Level.INFO, "Resolved type is null for kind=" + this.kind); // NOI18N
                 break;
             }
             case TYPE_PARAMETER:
@@ -229,8 +229,8 @@ public final class ElementHandle<T extends Element> {
                                  return (T)tpe;
                              }
                          }
-                     } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length);   // NOI18N
+                     } else 
+                        log.log(Level.INFO, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length);   // NOI18N
                 }
                 else if (signatures.length == 4) {
                     final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
@@ -251,8 +251,8 @@ public final class ElementHandle<T extends Element> {
                                 }
                             }
                         }
-                    } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length); // NOI18N
+                    } else 
+                        log.log(Level.INFO, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length); // NOI18N
                 }
                 else {
                     throw new IllegalStateException ();
