@@ -132,7 +132,7 @@ class RfsLocalController extends NamedRunnable {
             case 'w':   return RequestKind.WRITTEN;
             case 'p':   return RequestKind.PING;
             default:
-                if ("Killed".equals(request)){
+                if ("Killed".equals(request)){//NOI18N
                     //BZ #193114 - IllegalArgumentException: Protocol error: Killed
                     //let's check the process state
                     if (remoteControllerProcess.getState() == NativeProcess.State.CANCELLED ||
