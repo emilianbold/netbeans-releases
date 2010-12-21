@@ -623,8 +623,12 @@ public class ProjectActionSupport {
                     //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
                     executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
                     executable = CndPathUtilitities.normalizeSlashes(executable);
-                    makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
-                    // Mark the project 'modified'
+                    if (makeConfiguration.isMakefileConfiguration()) {
+                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                    }
+                    else if (makeConfiguration.isLibraryConfiguration()) {
+                        makeConfiguration.getProfile().setRunCommand(executable);
+                    }
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
                         pdp.getConfigurationDescriptor().setModified();

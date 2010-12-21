@@ -391,6 +391,20 @@ public class PersistentUtils {
             throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
         }
     }
+    
+    public static boolean isPersistable(CsmType type) {
+        if (type == null) {
+            return true;
+        } else if (type instanceof NoType) {
+            return true;
+        } else if (type instanceof TypeImpl) {
+            return true;
+        } else if (type instanceof TemplateParameterTypeImpl) {
+            return true;
+        } else {
+            return false;
+        }        
+    }
 
     public static <T extends Collection<CsmType>> void readTypes(T collection, DataInput input) throws IOException {
         int collSize = input.readInt();

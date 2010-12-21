@@ -65,7 +65,7 @@ public final class VariableColumnModels {
   	public ValueColumn() {
 	    super(Constants.PROP_LOCAL_VALUE,
 		  Catalog.get("PROP_value"),  // NOI18N
-		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor()); // NOI18N
+		  Catalog.get("HINT_value"), String.class, true, null); // NOI18N
 	}
     }
 
@@ -92,13 +92,13 @@ public final class VariableColumnModels {
 		  Catalog.get("HINT_address"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
-
+/* not used
     public static final class WatchValueColumn extends AbstractColumnModel {
 
   	public WatchValueColumn() {
 	    super(Constants.PROP_WATCH_VALUE,
 		  Catalog.get("PROP_value"), // NOI18N
-		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor()); // NOI18N
+		  Catalog.get("HINT_value"), String.class, true, null); // NOI18N
 	}
     }
 
@@ -109,5 +109,5 @@ public final class VariableColumnModels {
 		  Catalog.get("HINT_type"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
-
+*/
 }

@@ -180,7 +180,13 @@ public final class ClassIndexManager {
                         index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), false);
                         this.transientInstances.put(root,index);
                     }
-                } catch(IOException ioe) {/*Handled bellow by return null*/}            
+                } catch(IOException ioe) {/*Handled bellow by return null*/
+                } catch(IllegalStateException ise) {
+                  /* Required by some wrongly written tests
+                   * which access ClassIndex without setting the cache dir
+                   * Handled bellow by return null
+                   */
+                }
             }
             return index;
         }
