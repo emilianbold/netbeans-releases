@@ -118,6 +118,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
+    /*package*/ boolean canRead(String childNameExt) throws IOException {
+        try {
+            DirectoryStorage storage = getDirectoryStorage();
+            Entry entry = storage.getEntry(childNameExt);
+            return entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
+        } catch (ConnectException ex) {
+            return false; // don't report
+        } catch (InterruptedException ex) {
+            return false; // don't report
+        } catch (CancellationException ex) {
+            return false; // don't report
+        }
+    }
+
     private String removeDoubleSlashes(String path) {
         if (path == null) {
             return null;
@@ -163,16 +177,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
             }
         } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex);
             return null;
         } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
             return null;
         } catch (CancellationException ex) {
+            RemoteLogger.finest(ex);
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
+            RemoteLogger.finest(ex);
             return null;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+            //RemoteLogger.finest(ex);
             return null;
         }
     }
@@ -199,18 +218,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedException ex) {
             // don't report, this just means that we aren't connected 
             // or just interrupted (for example by FileChooser UI)
-            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
+            RemoteLogger.finest(ex);
         } catch (InterruptedIOException ex) {
             // don't report, for example FileChooser UI can interrupt us
-            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
+            RemoteLogger.finest(ex);
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
-            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
+            RemoteLogger.finest(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             // never report CancellationException
-            RemoteLogger.getInstance().log(Level.FINEST, "FYI:", ex);
+            RemoteLogger.finest(ex);
         }
         return new FileObject[0];
     }

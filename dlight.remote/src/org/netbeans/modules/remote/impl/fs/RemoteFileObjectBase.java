@@ -58,7 +58,7 @@ import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -171,13 +171,13 @@ public abstract class RemoteFileObjectBase extends FileObject {
     abstract public RemoteFileObjectBase getFileObject(String relativePath);
     
     @Override
-    public FileObject getParent() {
+    public RemoteDirectory getParent() {
         int slashPos = remotePath.lastIndexOf('/');
         if (slashPos > 0) {
             String parentPath = remotePath.substring(0, slashPos);
             FileObject parent = fileSystem.findResource(parentPath);
             RemoteLogger.assertTrue(parent != null, "Null parent for " + remotePath); //NOI18N
-            return parent;
+            return (RemoteDirectory )parent;
         } else {
             return fileSystem.getRoot();
         }
@@ -196,10 +196,36 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    public boolean canWrite() {
-        return false;
+    public boolean canRead() {
+        try {
+            RemoteDirectory parent = getParent();
+            if (parent == null) {
+                return true;
+            } else {
+                return getParent().canRead(getNameExt());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
     }
-    
+
+
+    @Override
+    public boolean canWrite() {
+        try {
+            RemoteDirectory parent = getParent();
+            if (parent == null) {
+                return false;
+            } else {
+                return getParent().canWrite(getNameExt());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+    }
+
     @Override
     public boolean isRoot() {
         return false;
