@@ -47,7 +47,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -109,7 +109,7 @@ public class KeyManager {
 
     private static final class KeyStorage {
 
-        private final WeakSharedSet<Key>[] instances;
+        private final WeakSet<Key>[] instances;
         private final int segmentMask; // mask
         private final int initialCapacity;
 
@@ -122,14 +122,14 @@ public class KeyManager {
             segmentMask = ssize - 1;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<Key>[] ar = new WeakSharedSet[ssize];
+            WeakSet<Key>[] ar = new WeakSet[ssize];
             for (int i = 0; i < ar.length; i++) {
-                ar[i] = new WeakSharedSet<Key>(initialCapacity);
+                ar[i] = new WeakSet<Key>(initialCapacity);
             }
             instances = ar;
         }
 
-        private WeakSharedSet<Key> getDelegate(Key key) {
+        private WeakSet<Key> getDelegate(Key key) {
             int index = key.hashCode() & segmentMask;
             return instances[index];
         }
