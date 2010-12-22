@@ -37,89 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
-import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
- * A key for CsmInstantiation
- * 
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ * Key for FileComponentInstantiationReferences.
+ *
+ * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
-/*package*/ final class InstantiationKey extends OffsetableKey {
-    
-    InstantiationKey(CsmInstantiation inst) {
-        super(inst.getTemplateDeclaration(), Utils.getCsmInstantiationKindKey(), NameCache.getManager().getString(getName(inst))); // NOI18N
-    }
-    
-    private static String getName(CsmInstantiation inst) {
-        StringBuilder sb = new StringBuilder(inst.getTemplateDeclaration().getName());
-        sb.append("<"); // NOI18N
-        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
-        boolean first = true;
-        for (CsmTemplateParameter param : mapping.keySet()) {
-            CsmSpecializationParameter specParam = mapping.get(param);
-            if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
-                if(!first) {
-                    sb.append(","); // NOI18N
-                }
-                CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
-                sb.append(type.getCanonicalText());
-                first = false;
-            }
-        }
-        sb.append(">"); // NOI18N
-        return sb.toString();
+public class FileInstantiationsKey extends ProjectFileNameBasedKey {
+
+    public FileInstantiationsKey(FileImpl file) {
+	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
 
-    /*package*/ InstantiationKey(DataInput aStream) throws IOException {
-        super(aStream);
+    public FileInstantiationsKey(DataInput aStream) throws IOException {
+	super(aStream);
     }
 
-    InstantiationKey(KeyDataPresentation presentation) {
+    FileInstantiationsKey(KeyDataPresentation presentation) {
         super(presentation);
     }
 
     @Override
-    public PersistentFactory getPersistentFactory() {
-        return CsmObjectFactory.instance();
+    public String toString() {
+	return "FileInstantiationReferencesKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
     }
 
     @Override
-    public String toString() {
-        String retValue;
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_FILE_INSTANTIATIONS_KEY + super.hashCode();
+    }
 
-        retValue = "InstantiationKey: " + super.toString(); // NOI18N
-        return retValue;
+    @Override
+    public PersistentFactory getPersistentFactory() {
+	return CsmObjectFactory.instance();
     }
 
     @Override
     public int getSecondaryDepth() {
-        return super.getSecondaryDepth() + 1;
+	return 1;
     }
 
     @Override
     public int getSecondaryAt(int level) {
-        if (level == 0) {
-            return KeyObjectFactory.KEY_INSTANTIATION_KEY;
-        } else {
-            return super.getSecondaryAt(level - 1);
-        }
+	assert level == 0;
+	return KeyObjectFactory.KEY_FILE_INSTANTIATIONS_KEY;
+    }
+
+    @Override
+    public boolean hasCache() {
+        return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+	return KeyObjectFactory.KEY_FILE_INSTANTIATIONS_KEY;
     }
 }

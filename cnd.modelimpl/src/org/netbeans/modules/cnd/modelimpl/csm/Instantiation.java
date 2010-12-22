@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
@@ -275,7 +276,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         if (template instanceof CsmClass) {
             Class newClass = new Class((CsmClass)template, type);
             if(UIDProviderIml.isPersistable(newClass.getUID())) {
-                RepositoryUtils.put(newClass);
+                CsmFile file = newClass.getContainingFile();
+                if(file instanceof FileImpl) {
+                    ((FileImpl)file).addInstantiation(newClass);
+                }
             }
             return newClass;
         } else if (template instanceof CsmFunction) {
@@ -293,7 +297,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         if (template instanceof CsmClass) {
             Class newClass = new Class((CsmClass)template, mapping);
             if(UIDProviderIml.isPersistable(newClass.getUID())) {
-                RepositoryUtils.put(newClass);
+                CsmFile file = newClass.getContainingFile();
+                if(file instanceof FileImpl) {
+                    ((FileImpl)file).addInstantiation(newClass);
+                }
             }
             return newClass;
         } else if (template instanceof CsmFunction) {
@@ -468,8 +475,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             } else if (member instanceof CsmClass) {
                 Class newClass = new Class((CsmClass)member, getMapping());
                 if(UIDProviderIml.isPersistable(newClass.getUID())) {
-                    RepositoryUtils.put(newClass);
-                }                
+                    CsmFile file = newClass.getContainingFile();
+                    if(file instanceof FileImpl) {
+                        ((FileImpl)file).addInstantiation(newClass);
+                    }
+                }
                 return newClass;
             } else if (member instanceof CsmClassForwardDeclaration) {
                 return new ClassForward((CsmClassForwardDeclaration)member, getMapping());

@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
+import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileMacrosKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileReferencesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -256,6 +257,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         new FileComponentReferences(this);
         weakFileReferences.clear();
 
+        fileInstantiationsKey = new FileInstantiationsKey(this);
+        weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey);
+        new FileComponentInstantiations(this);
+        weakFileInstantiationReferences.clear();
+        
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
@@ -699,6 +705,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         hasBrokenIncludes.set(false);
         getFileMacros().clean();
         getFileReferences().clean();
+        getFileInstantiations().clean();
         _clearErrors();
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
@@ -761,6 +768,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             getFileIncludes().clean();
             hasBrokenIncludes.set(false);
             getFileMacros().clean();
+            getFileInstantiations().clean();
             _clearErrors();
         }
         Collection<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
@@ -1211,6 +1219,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    public void addInstantiation(CsmInstantiation inst) {
+        getFileInstantiations().addInstantiation(inst);
+    }
+    
     public static final Comparator<CsmOffsetable> START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
 
         @Override
@@ -1704,6 +1716,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeBoolean(hasBrokenIncludes.get());
         fileMacrosKey.write(output);
         fileReferencesKey.write(output);
+        fileInstantiationsKey.write(output);
         factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
 
         FakeIncludePair.write(fakeIncludeRegistrations, output);
@@ -1760,6 +1773,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileReferencesKey != null : "file referebces key can not be null";
         weakFileReferences = new WeakContainer<FileComponentReferences>(this._getProject(false), fileReferencesKey);
 
+        fileInstantiationsKey = new FileInstantiationsKey(input);
+        assert fileInstantiationsKey != null : "file instantiation references key can not be null";
+        weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(this._getProject(false), fileInstantiationsKey);
+                
         factory.readUIDCollection(this.fakeFunctionRegistrations, input);
 
         FakeIncludePair.read(this.fakeIncludeRegistrations, input);
@@ -1920,6 +1937,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fd != null ? fd : FileComponentReferences.empty();
     }
 
+    private final FileInstantiationsKey fileInstantiationsKey;
+    private final WeakContainer<FileComponentInstantiations> weakFileInstantiationReferences;
+    private FileComponentInstantiations getFileInstantiations() {
+        FileComponentInstantiations fd = weakFileInstantiationReferences.getContainer();
+        return fd != null ? fd : FileComponentInstantiations.empty();
+    }
+    
     private static final class FakeIncludePair {
 
         private final CsmUID<IncludeImpl> includeUid;
