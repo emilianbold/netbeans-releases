@@ -258,6 +258,15 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
+    public GitRevisionInfo[] log (int limit, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, monitor, this);
+        cmd.setLimit(limit);
+        cmd.execute();
+        return cmd.getRevisions();
+    }
+
+    @Override
     public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         LogCommand cmd = new LogCommand(repository, monitor, this);
@@ -265,6 +274,17 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         cmd.execute();
         GitRevisionInfo[] revisions = cmd.getRevisions();
         return revisions.length == 0 ? null : revisions[0];
+    }
+
+    @Override
+    public GitRevisionInfo[] log (String revisionFrom, String revisionTo, int limit, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, monitor, this);
+        cmd.setRevisionFrom(revisionFrom);
+        cmd.setRevisionTo(revisionTo);
+        cmd.setLimit(limit);
+        cmd.execute();
+        return cmd.getRevisions();
     }
 
     /**

@@ -91,36 +91,179 @@ public class LogTest extends AbstractGitTestCase {
         assertRevisions(revision2, revision);
     }
 
-//    public void testLogRevisionRange () throws Exception {
-//        File f = new File(workDir, "testcat1");
-//        write(f, "initial content");
-//        File[] files = new File[] { f };
-//        add(files);
-//        commit(files);
-//
-//        write(f, "modification1");
-//        add(files);
-//
-//        GitClient client = getClient(workDir);
-//        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//
-//        write(f, "modification2");
-//        add(files);
-//        GitRevisionInfo revision2 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        GitRevisionInfo[] revisions = client.log(revision1.getRevision(), revision2.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        assertEquals(2, revisions.length);
-//        assertRevisions(revision1, revisions[0]);
-//        assertRevisions(revision2, revisions[1]);
-//
-//        write(f, "modification3");
-//        add(files);
-//        GitRevisionInfo revision3 = client.commit(files, "modification3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        revisions = client.log(revision1.getRevision(), revision3.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        assertEquals(3, revisions.length);
-//        assertRevisions(revision1, revisions[0]);
-//        assertRevisions(revision2, revisions[1]);
-//        assertRevisions(revision3, revisions[2]);
-//    }
+    public void testLogRevisionTo () throws Exception {
+        File f = new File(workDir, "testcat1");
+        write(f, "initial content");
+        File[] files = new File[] { f };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo revision0 = client.commit(files, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        write(f, "modification1");
+        add(files);
+
+        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification2");
+        add(files);
+        GitRevisionInfo revision2 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification3");
+        add(files);
+        GitRevisionInfo revision3 = client.commit(files, "modification3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        write(f, "modification4");
+        add(files);
+        GitRevisionInfo revision4 = client.commit(files, "modification4", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo[] revisions = client.log(null, revision4.getRevision(), -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(5, revisions.length);
+        assertRevisions(revision4, revisions[0]);
+        assertRevisions(revision3, revisions[1]);
+        assertRevisions(revision2, revisions[2]);
+        assertRevisions(revision1, revisions[3]);
+        assertRevisions(revision0, revisions[4]);
+    }
+    
+    public void testLogRevisionRange () throws Exception {
+        File f = new File(workDir, "testcat1");
+        write(f, "initial content");
+        File[] files = new File[] { f };
+        add(files);
+        commit(files);
+
+        write(f, "modification1");
+        add(files);
+
+        GitClient client = getClient(workDir);
+        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        
+        write(f, "modification2");
+        add(files);
+        GitRevisionInfo revision2 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification3");
+        add(files);
+        GitRevisionInfo revision3 = client.commit(files, "modification3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo[] revisions = client.log(revision1.getRevision(), revision3.getRevision(), -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, revisions.length);
+        assertRevisions(revision3, revisions[0]);
+        assertRevisions(revision2, revisions[1]);
+
+        write(f, "modification4");
+        add(files);
+        GitRevisionInfo revision4 = client.commit(files, "modification4", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revisions = client.log(revision1.getRevision(), revision4.getRevision(), -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(3, revisions.length);
+        assertRevisions(revision4, revisions[0]);
+        assertRevisions(revision3, revisions[1]);
+        assertRevisions(revision2, revisions[2]);
+    }
+    
+    public void testLogSingleBranch () throws Exception {
+        File f = new File(workDir, "file");
+        write(f, "initial content");
+        File[] files = new File[] { f };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo revision0 = client.commit(files, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        write(f, "modification1");
+        add(files);
+
+        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(new File(workDir, ".git/refs/heads/A"), revision1.getRevision());
+        write(new File(workDir, ".git/refs/heads/B"), revision1.getRevision());
+        write(new File(workDir, ".git/HEAD"), "ref: refs/heads/A");
+        Thread.sleep(1000);
+        write(f, "modificationOnA-1");
+        add(files);
+        GitRevisionInfo revisionA1 = client.commit(files, "modificationOnA-1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        // to B
+        write(new File(workDir, ".git/HEAD"), "ref: refs/heads/B");
+        client.reset(revision1.getRevision(), GitClient.ResetType.SOFT, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Thread.sleep(1000);
+        write(f, "modificationOnB-1");
+        add(files);
+        GitRevisionInfo revisionB1 = client.commit(files, "modificationOnB-1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        // to A
+        write(new File(workDir, ".git/HEAD"), "ref: refs/heads/A");
+        client.reset(revisionA1.getRevision(), GitClient.ResetType.SOFT, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Thread.sleep(1000);
+        write(f, "modificationOnA-2");
+        add(files);
+        GitRevisionInfo revisionA2 = client.commit(files, "modificationOnA-2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        // to B
+        write(new File(workDir, ".git/HEAD"), "ref: refs/heads/B");
+        client.reset(revisionB1.getRevision(), GitClient.ResetType.SOFT, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Thread.sleep(1000);
+        write(f, "modificationOnB-2");
+        add(files);
+        GitRevisionInfo revisionB2 = client.commit(files, "modificationOnB-2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        GitRevisionInfo[] revisions = client.log(null, "A", -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, revisions.length);
+        assertRevisions(revisionA2, revisions[0]);
+        assertRevisions(revisionA1, revisions[1]);
+        assertRevisions(revision1, revisions[2]);
+        assertRevisions(revision0, revisions[3]);
+        
+        revisions = client.log(null, "B", -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, revisions.length);
+        assertRevisions(revisionB2, revisions[0]);
+        assertRevisions(revisionB1, revisions[1]);
+        assertRevisions(revision1, revisions[2]);
+        assertRevisions(revision0, revisions[3]);
+        
+        // try both branches, how are the revisions sorted?
+        revisions = client.log(-1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(6, revisions.length);
+        assertRevisions(revisionB2, revisions[0]);
+        assertRevisions(revisionA2, revisions[1]);
+        assertRevisions(revisionB1, revisions[2]);
+        assertRevisions(revisionA1, revisions[3]);
+        assertRevisions(revision1, revisions[4]);
+        assertRevisions(revision0, revisions[5]);
+    }
+    
+    public void testLogLimit () throws Exception {
+        File f = new File(workDir, "testcat1");
+        write(f, "initial content");
+        File[] files = new File[] { f };
+        add(files);
+        commit(files);
+
+        write(f, "modification1");
+        add(files);
+
+        GitClient client = getClient(workDir);
+        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification2");
+        add(files);
+        GitRevisionInfo revision2 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification3");
+        add(files);
+        GitRevisionInfo revision3 = client.commit(files, "modification3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        write(f, "modification4");
+        add(files);
+        GitRevisionInfo revision4 = client.commit(files, "modification4", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo[] revisions = client.log(revision1.getRevision(), revision4.getRevision(), -1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(3, revisions.length);
+        assertRevisions(revision4, revisions[0]);
+        assertRevisions(revision3, revisions[1]);
+        assertRevisions(revision2, revisions[2]);
+        
+        revisions = client.log(revision1.getRevision(), revision4.getRevision(), 2, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, revisions.length);
+        assertRevisions(revision4, revisions[0]);
+        assertRevisions(revision3, revisions[1]);
+    }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {
         assertEquals(expected.getRevision(), info.getRevision());
