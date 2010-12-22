@@ -69,11 +69,11 @@ public class DocumentationTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Documentation.setupDocumentationForUnitTests();
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
     public void testDocZipPresence() throws IOException {
-        URL zipUrl = Documentation.getZipURL();
+        URL zipUrl = HtmlDocumentation.getZipURL();
         assertNotNull(zipUrl);
 
         URLConnection con = zipUrl.openConnection();
@@ -81,10 +81,10 @@ public class DocumentationTest extends NbTestCase {
     }
 
     public void testResolveLink() throws IOException {
-        URL url = Documentation.getDefault().resolveLink("sections.html#the-article-element");
+        URL url = HtmlDocumentation.getDefault().resolveLink("sections.html#the-article-element");
         assertNotNull(url);
 
-        String content = Documentation.getContentAsString(url, null);
+        String content = HtmlDocumentation.getContentAsString(url, null);
         assertTrue(content.startsWith("<!DOCTYPE html>"));
     }
 
@@ -93,7 +93,7 @@ public class DocumentationTest extends NbTestCase {
 
 
         String code = "w<h1 id=\"mojeid\">xxx<h1 id=\"jeho\">sew";
-        Matcher m = Documentation.SECTIONS_PATTERN.matcher(code);
+        Matcher m = HtmlDocumentation.SECTIONS_PATTERN.matcher(code);
         int i = 0;
         while(m.find()) {
             i++;
@@ -102,7 +102,7 @@ public class DocumentationTest extends NbTestCase {
         assertEquals(2, i);
 
         code = "<h4 id=\"the-article-element\" id=\"ddd\">";
-        m = Documentation.SECTIONS_PATTERN.matcher(code);
+        m = HtmlDocumentation.SECTIONS_PATTERN.matcher(code);
         i = 0;
         while(m.find()) {
             i++;
@@ -114,9 +114,9 @@ public class DocumentationTest extends NbTestCase {
     }
     
     public void testSectionContent() throws IOException {
-        URL url = Documentation.getDefault().resolveLink("sections.html#the-article-element");
+        URL url = HtmlDocumentation.getDefault().resolveLink("sections.html#the-article-element");
         assertNotNull(url);
-        String content = Documentation.getDefault().getHelpContent(url);
+        String content = HtmlDocumentation.getDefault().getHelpContent(url);
         assertTrue(content.substring(0, 200).indexOf("<h4 id=\"the-article-element\">") != -1);
 
     }

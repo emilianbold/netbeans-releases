@@ -226,7 +226,7 @@ public class Html5Parser implements HtmlParser {
         }
 
         public HelpResolver getHelpResolver() {
-            return Documentation.getDefault();
+            return HtmlDocumentation.getDefault();
         }
 
         public String getModelId() {

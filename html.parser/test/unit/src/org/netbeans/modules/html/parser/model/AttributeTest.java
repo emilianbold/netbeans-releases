@@ -45,7 +45,7 @@ package org.netbeans.modules.html.parser.model;
 import java.net.URL;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.Documentation;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 
 /**
  *
@@ -60,7 +60,7 @@ public class AttributeTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Documentation.setupDocumentationForUnitTests();
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
 
@@ -110,9 +110,9 @@ public class AttributeTest extends NbTestCase {
 
             String link = attr.getHelpLink();
             assertNotNull(link);
-            URL url = Documentation.getDefault().resolveLink(link);
+            URL url = HtmlDocumentation.getDefault().resolveLink(link);
             assertNotNull(url);
-            String content = Documentation.getDefault().getHelpContent(url);
+            String content = HtmlDocumentation.getDefault().getHelpContent(url);
 
             if(content == null) {
                 System.err.println(String.format("Attribute %s is missing help content for the URL %s", attr.getName(), url));
