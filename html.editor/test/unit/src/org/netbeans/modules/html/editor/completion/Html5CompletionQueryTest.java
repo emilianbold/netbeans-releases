@@ -46,7 +46,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.modules.html.parser.Documentation;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -70,7 +70,7 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
     protected void setUp() throws Exception {
         super.setUp();
         HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML5;
-        Documentation.setupDocumentationForUnitTests();
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
     public static Test Xsuite() throws IOException, BadLocationException {

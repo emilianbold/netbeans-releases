@@ -1099,7 +1099,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         synchronized (lastOwningSourceRootCacheLock) {        
             if (owningSourceRootUrl != null) {
-                if (doc != null) {
+                if (doc != null && file.isValid()) {
                     assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
                     doc.putProperty(PROP_OWNING_SOURCE_ROOT_URL, owningSourceRootUrl);
                     doc.putProperty(PROP_OWNING_SOURCE_ROOT, owningSourceRoot);
