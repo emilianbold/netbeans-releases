@@ -57,8 +57,6 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach
  */
 public class InstallDisabledModuleTest extends OperationsTestImpl {
-    private Logger LOG;
-
     public InstallDisabledModuleTest(String testName) {
         super(testName);
     }
@@ -71,7 +69,6 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
-        LOG = Logger.getLogger("test.InstallDisabledModuleTest");
         
         super.setUp();        
         System.setProperty("netbeans.dirs", getWorkDirPath());
@@ -122,6 +119,8 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
         
         File f = new File(new File(new File(new File(System.getProperty("netbeans.user")), "config"), "Modules"), "com-sun-testmodule-cluster.xml");
         LOG.log(Level.INFO, "Does {0} exists: {1}", new Object[]{f, f.exists()});
+        File m = new File(new File(new File(getWorkDir(), "test"), "modules"), "com-sun-testmodule-cluster.jar");
+        LOG.log(Level.INFO, "Does {0} exists: {1}", new Object[]{m, m.exists()});
         if (t != null) {
             throw t;
         }
