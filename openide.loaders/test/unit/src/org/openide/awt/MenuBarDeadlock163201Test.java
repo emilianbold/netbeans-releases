@@ -237,11 +237,19 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
         name.waitOK();
         assertEquals("Node name changed", "New", node.getDisplayName());
 
-        
-        EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
+        for (int i = 0; i < 15; i++) {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                }
+            });
+            if (mb.getMenuCount() != 1) {
+                continue;
             }
-        });
+            if (!mb.getMenu(0).getText().equals("New")) {
+                continue;
+            }
+            break;
+        }
 
         assertEquals("One submenu", 1, mb.getMenuCount());
         assertEquals("Named New", "New", mb.getMenu(0).getText());

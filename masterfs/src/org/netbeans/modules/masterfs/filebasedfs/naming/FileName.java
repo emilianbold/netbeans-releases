@@ -175,6 +175,19 @@ public class FileName implements FileNaming {
             sb.append(sw.toString());
         }
     }
+
+    final void recordCleanup() {
+        Throwable ex = null;
+        if (this.currentName instanceof Creation) {
+            ex = ((Creation)this.currentName);
+        }
+        if (ex != null) {
+            while (ex.getCause() != null) {
+                ex = ex.getCause();
+            }
+            ex.initCause(new Exception("Reference cleanup")); // NOI18N
+        }
+    }
     
     private static final class Creation extends Exception 
     implements CharSequence {
