@@ -64,10 +64,14 @@ import java.util.Set;
 
 /**
  * This class provides storage functionality with Weak-referenced entries and
- * one new method <tt>putIfAbsent<tt> (backed by a hash table)
- * Access to set is not thread safe
+ * new method <tt>putIfAbsent</tt>. Set implementation is backed by a hash table.
+ * It also provides method <tt>resize</tt> for changing capacity of internal hash table
+ * (can be used for reducing memory occupied by empty set which previously had big number of objects, but they were GCed)
+ * Access to set is not thread safe.
  *
+ * @param <E> the type of elements maintained by this set
  * @see #putIfAbsent(Object)
+ * @see #resize(int)
  * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
@@ -118,7 +122,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
      * load factor (0.75) and an initial capacity sufficient to hold the
      * mappings in the specified map.
      *
-     * @param   m the map whose mappings are to be placed in this map
+     * @param   s the map whose mappings are to be placed in this map
      * @throws  NullPointerException if the specified map is null
      */
     public WeakSharedSet(Set<? extends E> s) {
@@ -139,8 +143,14 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     @Override
     @SuppressWarnings("element-type-mismatch")
     public boolean remove(Object o)   { return m.remove(o) == PRESENT; }
+    
+    
+    /**
+     * compact set if it is empty by setting new capacity
+     * @param newCapacity new capacity
+     */
     public void resize(int newCapacity){
-        if (size()==0) {
+        if (isEmpty()) {
             m.resize(newCapacity);
         }
     }
@@ -175,6 +185,12 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     /**
      * Put object in this set if equal one is not yet in set.
      * Returns previous set entry if equal object is already in set.
+     * 
+     * <pre>
+     *  WeakSharedSet&lt;MyClass&gt; set = new WeakSharedSet&lt;MyClass&gt;();
+     *  ...
+     *  MyClass sharedValue = set.putIfAbsent(new MyClass("abc));
+     * </pre>
      *
      * @param e object to put in set.
      * @return the previous set entry equals with <tt>e</tt>, or
