@@ -1614,8 +1614,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private boolean fixFakeIncludeRegistrations(boolean projectParsedMode) {
         boolean wereFakes = false;
-        synchronized (fakeIncludeRegistrations) {
-            for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+        for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+            synchronized (fakeIncludePair) {
                 if (!fakeIncludePair.isFixed()) {
                     CsmInclude include = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.includeUid);
                     if (include != null) {
