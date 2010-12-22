@@ -69,7 +69,7 @@ import org.openide.util.CharSequences;
  *
  * @author marekfukala
  */
-public class Documentation implements HelpResolver {
+public class HtmlDocumentation implements HelpResolver {
 
     static final String SECTIONS_PATTERN_CODE = "<h\\d\\s*?id=\\\"([\\w\\d-_,:]*)\\\"[^\\>]*>";//NOI18N
 //    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";//NOI18N
@@ -77,7 +77,7 @@ public class Documentation implements HelpResolver {
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
     private static final String HELP_PREFIX = "<html><head><title>help</title></head><body>"; //NOI18N
-    private static final Documentation SINGLETON = new Documentation();
+    private static final HtmlDocumentation SINGLETON = new HtmlDocumentation();
     //performance unit testing
     static long url_read_time, pattern_search_time;
 
@@ -88,7 +88,7 @@ public class Documentation implements HelpResolver {
         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
     }
 
-    public static Documentation getDefault() {
+    public static HtmlDocumentation getDefault() {
         return SINGLETON;
     }
 
@@ -100,7 +100,7 @@ public class Documentation implements HelpResolver {
                     URL url = file.toURI().toURL();
                     DOC_ZIP_URL = FileUtil.getArchiveRoot(url);
                 } catch (MalformedURLException ex) {
-                    Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
                 Logger.getAnonymousLogger().warning(String.format("Cannot locate the %s documentation file.", DOC_ZIP_FILE_NAME)); //NOI18N
@@ -128,9 +128,9 @@ public class Documentation implements HelpResolver {
         try {
             return new URI(link).toURL();
         } catch (URISyntaxException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -142,9 +142,9 @@ public class Documentation implements HelpResolver {
         try {
             return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -178,7 +178,7 @@ public class Documentation implements HelpResolver {
             HELP_FILES_CACHE.put(filePath, strContent);
             return strContent;
         } catch (IOException ex) {
-            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
