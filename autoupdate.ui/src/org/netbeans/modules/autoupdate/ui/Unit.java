@@ -707,5 +707,9 @@ public abstract class Unit {
     private static String getBundle (String key) {
         return NbBundle.getMessage (Unit.class, key);
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + getDisplayName() + "]";
+    }
 }
