@@ -266,6 +266,9 @@ public class Utilities {
         for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
             boolean add = true;
             UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
+            if (invisibleUnit.getInstalled() != null && !invisibleUnit.getInstalled().isEnabled()) {
+                continue;
+            }
             for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
                 if(key.equals(invisibleUnit)) {
                     continue;
