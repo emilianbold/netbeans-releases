@@ -323,13 +323,15 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return isRemote;
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - start/stop/refresh",5); // NOI18N
+
     @Override
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
 
@@ -339,7 +341,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
     
@@ -358,7 +360,6 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return recognizers;
     }
     
-    private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - stop/refresh",5); // NOI18N
 
     @Override
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
@@ -399,7 +400,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new RestartTask(this, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
     

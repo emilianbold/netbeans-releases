@@ -205,10 +205,14 @@ public final class NamingFactory {
             }
             assert checkIndex(names, index);
             if (ref != null) {
-                ref.clear();
                 NameRef nr = refRetVal;
                 for (;;) {
                     if (nr.next() == ref) {
+                        FileNaming orig = ref.get();
+                        if (orig instanceof FileName) {
+                            ((FileName)orig).recordCleanup();
+                        }
+                        ref.clear();
                         nr.skip(ref);
                         break;
                     }
