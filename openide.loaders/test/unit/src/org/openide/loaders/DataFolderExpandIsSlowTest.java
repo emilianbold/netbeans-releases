@@ -71,6 +71,11 @@ public class DataFolderExpandIsSlowTest extends NbTestCase {
     public static NbTestSuite suite () {
         return NbTestSuite.linearSpeedSuite(DataFolderExpandIsSlowTest.class, 5, 3);
     }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
     
     @Override
     protected Level logLevel() {
