@@ -397,6 +397,12 @@ public abstract class PsProvider {
 	public int commandColumnIndex() {
 	    return 4;
 	}
+        
+        // see IZ 193741 - skip status column
+        @Override
+        protected int firstPosition() {
+            return 1;
+        }
 
         public int pidColumnIndex() {
 	    return 0;
@@ -478,6 +484,10 @@ public abstract class PsProvider {
 
     // OLD protected abstract String[] psCommand1(String root); // for executor
     protected abstract String uidCommand(); // for Runtime.exe
+    
+    protected int firstPosition() {
+        return 0;
+    }
 
     protected final ExecutionEnvironment exEnv;
 
@@ -617,7 +627,7 @@ public abstract class PsProvider {
 
 	    if (i >= 0) { // found
 		if (cx == 0) // first column
-		    fields[cx][0] = 0;
+		    fields[cx][0] = firstPosition();
 		fields[cx][1] = i + headerStr()[cx].length() - 1;
 	    }
 
