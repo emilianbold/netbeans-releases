@@ -477,4 +477,9 @@ public final class UpdateUnitProviderImpl {
         }
         return buf.toString ();
     }
+
+    @Override
+    public String toString() {
+        return provider.toString();
+    }
 }

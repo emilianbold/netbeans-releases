@@ -131,10 +131,10 @@ public class FeatureUncompleteTest extends NbTestCase {
 
         @Override
         public Map<String, UpdateItem> getUpdateItems () throws IOException {
-            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems ();
             assertNotNull ("Installed modules must found.", items);
 
-            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems ();
 
             Set<String> deps = new HashSet<String> (items.size ());
             for (String id : items.keySet ()) {
