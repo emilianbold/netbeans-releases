@@ -125,7 +125,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
      * @param   s the map whose mappings are to be placed in this map
      * @throws  NullPointerException if the specified map is null
      */
-    public WeakSet(Set<? extends E> s) {
+    public WeakSet(Collection<? extends E> s) {
         this(Math.max((int) (s.size() / SharedKeyWeakHashMap.DEFAULT_LOAD_FACTOR) + 1, 16),
                 SharedKeyWeakHashMap.DEFAULT_LOAD_FACTOR);
         addAll(s);
