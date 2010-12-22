@@ -130,6 +130,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1230,13 +1231,17 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	Host host = new Host();
 	host = CndRemote.hostFromName(host, dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
-	String execPath = executor.readlink(dt.getPid());
 	EngineDescriptor engine = ndi.getEngineDescriptor();
 	// CR 6997426, cause gdb problem IZ 193248
-	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE))
+	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE)) {
 	    ndi.setTarget("-"); //NOI18N
-	else
-	    ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
+        } else {
+            String execPath = ndi.getTarget();
+            if (host.getPlatform() != Platform.Windows_x86) {
+                execPath = executor.readlink(dt.getPid());
+            }
+            ndi.setTarget(execPath);
+        }
 
 	// CR 6997426, cause gdb problem IZ 193248
 	// ndi.setTarget("-"); // NOI18N
