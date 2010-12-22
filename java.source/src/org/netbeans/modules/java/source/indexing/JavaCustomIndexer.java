@@ -313,15 +313,11 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            if (context.getRoot() == null) {
-                JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
-                return;
-            }
             ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
-                        final JavaParsingContext javaContext = new JavaParsingContext(context);
+                        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
