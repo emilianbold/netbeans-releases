@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
@@ -102,8 +103,15 @@ public final class UIDProviderIml implements UIDProvider {
                         String line = ""; // NOI18N
                         if (obj instanceof CsmOffsetable) {
                             CsmOffsetable offsetable = (CsmOffsetable) obj;
-                            line = " ["+offsetable.getStartPosition().getLine()+":"+offsetable.getStartPosition().getColumn()+"-"+ // NOI18N
-                                    offsetable.getEndPosition().getLine()+":"+offsetable.getEndPosition().getColumn()+"]"; // NOI18N
+                            Position startPosition = offsetable.getStartPosition();
+                            Position endPosition = offsetable.getEndPosition();
+                            if (startPosition.getOffset() >= 0 && startPosition.getOffset() < offsetable.getText().length()
+                                    && endPosition.getOffset() >= 0 && endPosition.getOffset() < offsetable.getText().length()) {
+                                line = " [" + startPosition.getLine() + ":" + startPosition.getColumn() + "-" + // NOI18N
+                                        endPosition.getLine() + ":" + endPosition.getColumn() + "]"; // NOI18N
+                            } else {
+                                line = " bad position! [" + startPosition.getOffset() + "-" + endPosition.getOffset() + "]"; // NOI18N
+                            }
                         }
                         new Exception(prefix + uid + "] of " + obj + line).printStackTrace(System.err); // NOI18N
                     }
