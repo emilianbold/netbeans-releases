@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -265,5 +266,22 @@ public class WeakSetTest extends NbTestCase {
             gotException = true;
         }
         assertTrue("ConcurrentModificationException is expected", gotException);
+    }
+    
+    public void testClone() {
+        Object[] arr = new Object[]{new Integer(1), new Long(2), new Double(3)};
+        WeakSet<Object> set = new WeakSet<Object>();
+        set.addAll(Arrays.asList(arr));
+        Set<Object> second = (Set<Object>) set.clone();
+        assertEquals(second, set);
+        assertTrue(second.size() == 3);
+        set.remove(arr[0]);
+        assertFalse(second.equals(set));
+        String s = "GCing " + arr[0];
+        Reference<Object> r = new WeakReference(arr[0]);
+        arr[0] = null;
+        NbTestCase.assertGC(s, r);
+        assertEquals(second, set);
+        assertTrue(second.size() == 2);
     }
 }
