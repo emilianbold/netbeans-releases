@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
-import org.openide.filesystems.FileSystem;
 import org.netbeans.junit.*;
 import org.openide.filesystems.*;
 
@@ -73,10 +72,12 @@ public class DataFolderExpandIsSlowTest extends NbTestCase {
         return NbTestSuite.linearSpeedSuite(DataFolderExpandIsSlowTest.class, 5, 3);
     }
     
+    @Override
     protected Level logLevel() {
         return Level.INFO;
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
@@ -97,6 +98,7 @@ public class DataFolderExpandIsSlowTest extends NbTestCase {
         }
     }
     
+    @Override
     protected void tearDown() throws Exception {
         WeakReference<Object> ref = new WeakReference<Object>(root);
         this.root = null;
