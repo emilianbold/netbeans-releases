@@ -112,7 +112,7 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testCorrectSelection2() throws Exception {
-        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {int i = 3;}}", 102 - 49, 112 - 49, false);
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test(int i) {|i = 3;|}}", false);
     }
     
     public void testCorrectSelection3() throws Exception {
@@ -697,14 +697,16 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;}}",
                        78 - 25, 92 - 25,
                        "package test; public class Test {public void test() {name(); int z = 3 + 4;} private void name() { int y = 3 + 4; } }",
-                       new DialogDisplayerImpl3("name", null, true));
+                       new DialogDisplayerImpl3("name", null, true),
+                       3, 2);
     }
     
     public void testIntroduceMethodFix2() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int z = y + 4;}}",
                        93 - 25, 107 - 25,
                        "package test; public class Test {public void test() {int y = 3 + 4;name(y); } private void name(int y) { int z = y + 4; } }",
-                       new DialogDisplayerImpl3("name", null, true));
+                       new DialogDisplayerImpl3("name", null, true),
+                       2, 1);
     }
     
     public void testIntroduceMethodFix3() throws Exception {
@@ -725,7 +727,8 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int a = y + 4; int z = y + a;}}",
                        93 - 25, 107 - 25,
                        "package test; public class Test {public void test() {int y = 3 + 4; int a = name(y); int z = y + a;} private int name(int y) { int a = y + 4; return a; } }",
-                       new DialogDisplayerImpl3("name", null, true));
+                       new DialogDisplayerImpl3("name", null, true),
+                       2, 1);
     }
     
     public void testIntroduceMethodFix6() throws Exception {
@@ -739,7 +742,8 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; import java.io.IOException; public class Test {public void test() {while (true) {int y = 3 + 4;}}}",
                        120 - 25, 134 - 25,
                        "package test; import java.io.IOException; public class Test {public void test() {while (true) {name(); }} private void name() { int y = 3 + 4; } }",
-                       new DialogDisplayerImpl3("name", null, true));
+                       new DialogDisplayerImpl3("name", null, true),
+                       3, 2);
     }
     
     public void testIntroduceMethodFix8() throws Exception {
@@ -780,7 +784,8 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodPosition() throws Exception {
         performFixTest("package test; public class Test {public void foo() { int i = 1; } public void foo1() {}}", 78 - 25, 88 - 25,
                 "package test; public class Test {public void foo() {name(); } private void name() { int i = 1; } public void foo1() {}}",
-                new DialogDisplayerImpl3("name", null, true));
+                new DialogDisplayerImpl3("name", null, true),
+                       3, 2);
     }
 
     
@@ -1333,6 +1338,44 @@ public class IntroduceHintTest extends NbTestCase {
                        "}").replaceAll("[ \t\n]+", " "),
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
                        1, 0);
+    }
+
+    public void testLocalVariableToField1() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        |int i = 0;|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private static int i = 0;\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, false, EnumSet.of(Modifier.PRIVATE), false, true),
+                       3, 1);
+    }
+
+    public void testLocalVariableToConstant1() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        |int i = 0;|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private static final int i = 0;\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, false, false, true, EnumSet.of(Modifier.PRIVATE)),
+                       3, 0);
     }
 
     protected void prepareTest(String code) throws Exception {
