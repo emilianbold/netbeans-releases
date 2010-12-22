@@ -91,7 +91,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
         Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [" + getTestProject() + "] was entered");
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
         }
         for (KenaiProject prj : result) {
             assertEquals("NetBeans java.net tests", prj.getDisplayName());
@@ -123,7 +123,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
         Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [" + getTestProject() + "] was entered");
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
         }
         for (KenaiProject prj : result) {
             assertEquals("NetBeans java.net tests", prj.getDisplayName());
@@ -141,7 +141,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
         Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [" + getTestProject() + "] was entered");
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
         }
         for (KenaiProject prj : result) {
             assertEquals("NetBeans java.net tests", prj.getDisplayName());
