@@ -459,13 +459,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 //For first time seeing valid root do roots work to recalculate dependencies
                                 wrk = new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, false);
                             } else {
-                                //Already seen files work is enough/
-                                wrk = new FileListWork(scannedRoots2Dependencies, root.first, Arrays.asList(fo.getChildren()), false, false, true, sourcForBinaryRoot, true);
+                                //Already seen files work is enough
+                                final FileObject[] children = fo.getChildren();
+                                if (children.length > 0) {
+                                    wrk = new FileListWork(scannedRoots2Dependencies, root.first, Arrays.asList(children), false, false, true, sourcForBinaryRoot, true);
+                                } else {
+                                    //If no children nothing needs to be done - save some CPU time
+                                    wrk = null;
+                                }
                             }
                         } else {
                             wrk = new FileListWork(scannedRoots2Dependencies, root.first, Collections.singleton(fo), false, false, true, sourcForBinaryRoot, true);
                         }
-                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
+                        if (wrk != null) {
+                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
+                        }
                         processed = true;
                     }
                 }
