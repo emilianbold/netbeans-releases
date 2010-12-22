@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -58,6 +59,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.openide.filesystems.FileObject;
 
 class JavaParsingContext {
 
@@ -71,10 +73,16 @@ class JavaParsingContext {
     final FQN2Files fqn2Files;
 
     public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
-        cpInfo = ClasspathInfo.create(context.getRoot());
-        sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
-        filter = JavaFileFilterQuery.getFilter(context.getRoot());
-        encoding = FileEncodingQuery.getEncoding(context.getRoot());
+        this(context, false);
+    }
+    
+    JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
+        final FileObject root = context.getRoot();
+        final boolean rootNotNeeded = allowNonExistentRoot && root == null;
+        cpInfo = rootNotNeeded ? null : ClasspathInfo.create(root);
+        sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(root);
+        filter = rootNotNeeded ? null : JavaFileFilterQuery.getFilter(root);
+        encoding = rootNotNeeded ? null : FileEncodingQuery.getEncoding(root);
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
@@ -95,7 +103,7 @@ class JavaParsingContext {
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(context.getRootURI());
     }
-
+        
     private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
         for (CompileTuple compileTuple : virtualSources) {
             ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, compileTuple.jfo);

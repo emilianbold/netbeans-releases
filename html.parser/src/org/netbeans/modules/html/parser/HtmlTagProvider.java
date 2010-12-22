@@ -220,8 +220,8 @@ public class HtmlTagProvider {
 
             return isPureHtmlTag() && descriptor.getHelpLink() != null
                     ? new DefaultHelpItem(
-                    Documentation.getDefault().resolveLink(descriptor.getHelpLink()),
-                    Documentation.getDefault(),
+                    HtmlDocumentation.getDefault().resolveLink(descriptor.getHelpLink()),
+                    HtmlDocumentation.getDefault(),
                     header.toString())
                     : null;
 
@@ -262,8 +262,8 @@ public class HtmlTagProvider {
             header.append("'</h2>");//NOI18N
 
             return new DefaultHelpItem(
-                    Documentation.getDefault().resolveLink(attr.getHelpLink()),
-                    Documentation.getDefault(),
+                    HtmlDocumentation.getDefault().resolveLink(attr.getHelpLink()),
+                    HtmlDocumentation.getDefault(),
                     header.toString());
         }
     }
