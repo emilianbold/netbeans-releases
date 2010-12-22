@@ -48,6 +48,8 @@
 package org.openide.util;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.AbstractCollection;
@@ -75,12 +77,15 @@ import java.util.Set;
  * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
-public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
-    private final SharedKeyWeakHashMap<E, Boolean> m;  // The backing map
+public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializable {
+    private transient SharedKeyWeakHashMap<E, Boolean> m;  // The backing map
     private transient Set<E> s;       // Its keySet
     // Dummy value to associate with an Object in the backing Map
     @SuppressWarnings("BooleanConstructorCall")
     private static final Object PRESENT = new Boolean(true);
+    
+    /** load factor */
+    private final float loadFactor;
 
     /**
      * Constructs a new, empty <tt>WeakSet</tt> with the given initial
@@ -93,6 +98,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
      */
     public WeakSet(int initialCapacity, float loadFactor) {
         m = new SharedKeyWeakHashMap<E, Boolean>(initialCapacity, loadFactor);
+        this.loadFactor = loadFactor;
         s = m.keySet();
     }
 
@@ -112,8 +118,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
      * capacity (16) and load factor (0.75).
      */
     public WeakSet() {
-        m = new SharedKeyWeakHashMap<E, Boolean>();
-        s = m.keySet();
+        this(SharedKeyWeakHashMap.DEFAULT_INITIAL_CAPACITY, SharedKeyWeakHashMap.DEFAULT_LOAD_FACTOR);
     }
 
     /**
@@ -202,10 +207,27 @@ public class WeakSet <E> extends AbstractSet<E> implements Set<E> {
 
     private static final long serialVersionUID = 2454657854757543876L;
 
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+        stream.writeObject(toArray());
+    }
+
     private void readObject(java.io.ObjectInputStream stream)
     throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
+        Object[] arr = (Object[]) stream.readObject();
+        m = new SharedKeyWeakHashMap<E, Boolean>(arr.length, loadFactor);
+        for (Object object : arr) {
+            m.putIfAbsent((E)object);
+        }
         s = m.keySet();
+    }
+
+    @Override
+    public Object clone() {
+        WeakSet<E> nws = new WeakSet<E>(size(), loadFactor);
+        nws.addAll(this);
+        return nws;
     }
 
     // delegate class with only one special method putOrGet
