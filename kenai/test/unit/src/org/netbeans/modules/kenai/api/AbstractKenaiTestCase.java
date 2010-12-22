@@ -85,8 +85,16 @@ public abstract class AbstractKenaiTestCase extends NbTestCase {
             br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             uname = br.readLine();
             passw = br.readLine();
+            
+            String proxy = br.readLine();
+            String port = br.readLine();
+
+            if(proxy != null) {
+                System.setProperty("https.proxyHost", proxy);
+                System.setProperty("https.proxyPort", port);
+            }
             br.close();
-        }                
+        }              
     }
     
     protected String getTestProject() {
