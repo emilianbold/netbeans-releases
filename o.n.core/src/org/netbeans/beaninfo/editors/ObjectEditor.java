@@ -85,7 +85,7 @@ implements ExPropertyEditor {
      * Either Boolean.TRUE or a String, in such case the string represents
      * human readable name of the value.
      */
-    private static final String PROP_NULL = "nullValue"; // NOI18N
+    /*package*/ static final String PROP_NULL = "nullValue"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. 
      * A lookup to use to query for results.
      */
