@@ -628,11 +628,17 @@ public class ImportExecutable implements PropertyChangeListener {
                                         }
                                     }
                                     if (prefferedFolder != null) {
-                                        Item item = bridge.createItem(name);
-                                        item = prefferedFolder.addItem(item);
-                                        bridge.setHeaderTool(item);
-                                        if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
-                                            needCheck.add(path);
+                                        String relPath = bridge.getRelativepath(name);
+                                        Item item = bridge.getProjectItem(relPath);
+                                        if (item == null) {
+                                            item = bridge.createItem(name);
+                                            item = prefferedFolder.addItem(item);
+                                        }
+                                        if (item != null) {
+                                            bridge.setHeaderTool(item);
+                                            if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
+                                                needCheck.add(path);
+                                            }
                                         }
                                     }
                                 }
