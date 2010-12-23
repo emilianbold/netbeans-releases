@@ -283,5 +283,14 @@ public class WeakSetTest extends NbTestCase {
         NbTestCase.assertGC(s, r);
         assertEquals(second, set);
         assertTrue(second.size() == 2);
+        
+        class MySet extends WeakSet {
+            
+        }
+        WeakSet<Object> cloningSet = new MySet();
+        cloningSet.addAll(set);
+        Object clone = cloningSet.clone();
+        assertTrue(clone instanceof MySet);
+        assertEquals(clone, set);
     }
 }
