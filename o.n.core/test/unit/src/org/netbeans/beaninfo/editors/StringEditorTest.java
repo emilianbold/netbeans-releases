@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,53 +42,73 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.updateprovider;
+package org.netbeans.beaninfo.editors;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.ServiceProvider;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.InvocationTargetException;
+import junit.framework.TestCase;
+import org.openide.nodes.Node;
 
-/** Default implementation of InstalledUpdateProvider.
+/**
  *
- * @author Jiri Rechtacek
+ * @author rkubacki
  */
-@ServiceProvider(service=InstalledUpdateProvider.class)
-public final class InstalledModuleProvider extends InstalledUpdateProvider {
-    private LookupListener  lkpListener;
-    private Lookup.Result<ModuleInfo> result;
-    private Map<String, ModuleInfo> moduleInfos;
+public class StringEditorTest extends TestCase {
+    static {
+        PropertyEditorManager.registerEditor (String.class, StringEditor.class);
+    }
 
-    @Override
-    protected synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
-        if (moduleInfos == null || force) {
-            Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
-            moduleInfos = new HashMap<String, ModuleInfo> ();
-            for (ModuleInfo info: infos) {
-                moduleInfos.put (info.getCodeNameBase (), info);
-            }            
+    public void testNullValueSupport() throws Exception {
+        NP np = new NP();
+        String defaultValue = "<null value>";
+        String customValue = "Hello world!";
+        np.setValue(ObjectEditor.PROP_NULL, defaultValue);
+        
+        PropertyEditor p = np.getPropertyEditor();
+        assertNotNull("There is some editor", p);
+        assertEquals("It is StringEditor", StringEditor.class, p.getClass());
+        ((StringEditor) p).readEnv(np);
+        
+        p.setValue(null);
+        String value = (String)p.getValue ();
+        assertNull(value);
+        assertEquals(defaultValue, p.getAsText());
+
+        p.setValue(customValue);
+        value = (String)p.getValue ();
+        assertEquals(customValue, value);
+        assertEquals(customValue, p.getAsText());
+
+        np.setValue(ObjectEditor.PROP_NULL, Boolean.TRUE);
+        ((StringEditor) p).readEnv(np);
+        p.setValue(null);
+        value = (String)p.getValue ();
+        assertNull(value);
+        assertFalse("we've better than default 'null' string", "null".equals(defaultValue));
+    }
+
+    class NP extends Node.Property<String> {
+        public String value;
+        
+        public NP () {
+            super (String.class);
         }
-        assert moduleInfos != null;
-        return new HashMap<String, ModuleInfo> (moduleInfos);
-    }
 
-    public InstalledModuleProvider() {
-        result = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo> (ModuleInfo.class));
-        lkpListener = new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                clearModuleInfos();
-            }
-        };
-        result.addLookupListener(lkpListener);
-    }
+        public @Override void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            value = val;
+        }
 
-    private synchronized void clearModuleInfos() {
-        moduleInfos = null;
+        public @Override String getValue() throws IllegalAccessException, InvocationTargetException {
+            return value;
+        }
+
+        public @Override boolean canWrite() {
+            return true;
+        }
+
+        public @Override boolean canRead() {
+            return true;
+        }
     }
 }

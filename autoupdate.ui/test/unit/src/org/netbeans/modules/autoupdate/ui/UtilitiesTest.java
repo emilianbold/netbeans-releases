@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.updateprovider;
+package org.netbeans.modules.autoupdate.ui;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.autoupdate.UpdateItem;
 
-/** Default implementation of InstalledUpdateProvider.
- *
- * @author Jiri Rechtacek
- */
-@ServiceProvider(service=InstalledUpdateProvider.class)
-public final class InstalledModuleProvider extends InstalledUpdateProvider {
-    private LookupListener  lkpListener;
-    private Lookup.Result<ModuleInfo> result;
-    private Map<String, ModuleInfo> moduleInfos;
+public class UtilitiesTest extends NbTestCase {
+
+    public UtilitiesTest(String n) {
+        super(n);
+    }
 
     @Override
-    protected synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
-        if (moduleInfos == null || force) {
-            Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
-            moduleInfos = new HashMap<String, ModuleInfo> ();
-            for (ModuleInfo info: infos) {
-                moduleInfos.put (info.getCodeNameBase (), info);
-            }            
-        }
-        assert moduleInfos != null;
-        return new HashMap<String, ModuleInfo> (moduleInfos);
+    protected void setUp() throws Exception {
+        MockServices.setServices(
+            MockUpdateProvider.class,
+            MockInstalledModuleProvider.class
+        );
+        MockModuleInfo enabled = MockModuleInfo.create("module.one", "1.0", true);
+        MockModuleInfo disabled = MockModuleInfo.create("module.two", "1.0", false);
+        MockInstalledModuleProvider.setModuleItems(enabled, disabled);
+        
+        Map<String,UpdateItem> ui = new HashMap<String, UpdateItem>();
+        ui.put(enabled.getCodeNameBase(), enabled.toUpdateItem("1.1"));
+        ui.put(disabled.getCodeNameBase(), disabled.toUpdateItem("1.1"));
+        MockUpdateProvider.setUpdateItems(ui);
+    }
+    
+    public void testIgnoresDisabledModules() {
+        List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits();
+        List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, true);
+        
+        assertNotNull("Categories created", categories);
+        assertEquals("Something in there", 1, categories.size());
+        List<Unit> units = categories.get(0).getUnits();
+        assertEquals("Only one unit in category: " + units, 1, units.size());
+        assertEquals("Only the enabled module present: " + units, "module.one", units.get(0).getDisplayName());
     }
 
-    public InstalledModuleProvider() {
-        result = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo> (ModuleInfo.class));
-        lkpListener = new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                clearModuleInfos();
-            }
-        };
-        result.addLookupListener(lkpListener);
-    }
-
-    private synchronized void clearModuleInfos() {
-        moduleInfos = null;
-    }
 }

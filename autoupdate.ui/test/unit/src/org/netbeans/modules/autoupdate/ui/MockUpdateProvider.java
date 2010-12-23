@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.autoupdate.updateprovider;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.ServiceProvider;
-
-/** Default implementation of InstalledUpdateProvider.
  *
- * @author Jiri Rechtacek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@ServiceProvider(service=InstalledUpdateProvider.class)
-public final class InstalledModuleProvider extends InstalledUpdateProvider {
-    private LookupListener  lkpListener;
-    private Lookup.Result<ModuleInfo> result;
-    private Map<String, ModuleInfo> moduleInfos;
+
+package org.netbeans.modules.autoupdate.ui;
+
+import java.io.IOException;
+import java.util.Map;
+import junit.framework.Assert;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.spi.autoupdate.UpdateItem;
+import org.netbeans.spi.autoupdate.UpdateProvider;
+
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class MockUpdateProvider implements UpdateProvider {
+    private static Map<String,UpdateItem> updateItems;
+    private static Map<String,UpdateItem> pendingUpdateItems;
+    
+    public static void setUpdateItems(Map<String,UpdateItem> items) {
+        pendingUpdateItems = items;
+    }
+    
+    
+    @Override
+    public String getName() {
+        return "MockUpdateProvider";
+    }
 
     @Override
-    protected synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
-        if (moduleInfos == null || force) {
-            Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
-            moduleInfos = new HashMap<String, ModuleInfo> ();
-            for (ModuleInfo info: infos) {
-                moduleInfos.put (info.getCodeNameBase (), info);
-            }            
+    public String getDisplayName() {
+        return "Mock Update Provider";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Sample mock update provider";
+    }
+
+    @Override
+    public CATEGORY getCategory() {
+        return CATEGORY.STANDARD;
+    }
+
+    @Override
+    public Map<String, UpdateItem> getUpdateItems() throws IOException {
+        if (updateItems == null) {
+            Assert.assertNotNull("Pending items are provided", pendingUpdateItems);
+            updateItems = pendingUpdateItems;
+            pendingUpdateItems = null;
         }
-        assert moduleInfos != null;
-        return new HashMap<String, ModuleInfo> (moduleInfos);
+        return updateItems;
     }
 
-    public InstalledModuleProvider() {
-        result = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo> (ModuleInfo.class));
-        lkpListener = new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                clearModuleInfos();
-            }
-        };
-        result.addLookupListener(lkpListener);
+    @Override
+    public boolean refresh(boolean force) throws IOException {
+        Assert.assertNotNull("Pending items are provided", pendingUpdateItems);
+        updateItems = null;
+        return true;
     }
 
-    private synchronized void clearModuleInfos() {
-        moduleInfos = null;
-    }
 }
