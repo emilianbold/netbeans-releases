@@ -320,6 +320,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                         final JavaParsingContext javaContext = new JavaParsingContext(context, true);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
+                        if (javaContext.uq.isEmpty())
+                            return null; //No java no need to continue
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         for (Indexable i : files) {
