@@ -189,12 +189,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         assert moduleInfo != null : "Each ModuleUpdateElementImpl has ModuleInfo, but " + this;
         
         // find really module info if present
-        ModuleInfo info = null;
-        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (mi.getCodeNameBase().equals(moduleInfo.getCodeNameBase())) {
-                info = mi;
-            }
-        }
+        ModuleInfo info = Utilities.toModule (this.moduleInfo);
         if (info != null) {
             this.moduleInfo = info;
         } else {
