@@ -160,7 +160,8 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     @Override
-    protected void removeNativeFileItem(CsmUID<CsmFile> file) {
+    protected NativeFileItem removeNativeFileItem(CsmUID<CsmFile> file) {
+        return null;
     }
 
     @Override

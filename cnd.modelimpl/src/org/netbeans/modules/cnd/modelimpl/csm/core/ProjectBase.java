@@ -1742,7 +1742,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem);
 
-    protected abstract void removeNativeFileItem(CsmUID<CsmFile> file);
+    protected abstract NativeFileItem removeNativeFileItem(CsmUID<CsmFile> file);
 
     protected abstract void clearNativeFileContainer();
 
