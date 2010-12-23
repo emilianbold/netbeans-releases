@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -188,7 +189,12 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         assert moduleInfo != null : "Each ModuleUpdateElementImpl has ModuleInfo, but " + this;
         
         // find really module info if present
-        ModuleInfo info = Utilities.toModule (this.moduleInfo);
+        ModuleInfo info = null;
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (mi.getCodeNameBase().equals(moduleInfo.getCodeNameBase())) {
+                info = mi;
+            }
+        }
         if (info != null) {
             this.moduleInfo = info;
         } else {

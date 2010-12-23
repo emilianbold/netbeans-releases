@@ -167,7 +167,7 @@ public class Utilities {
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
-            if (! u.isPending() && el != null) {
+            if (! u.isPending() && el != null && el.isEnabled()) {
                 List<UpdateElement> updates = u.getAvailableUpdates ();
                 if (updates.isEmpty()) {
                     continue;
@@ -231,6 +231,9 @@ public class Utilities {
             for(UpdateUnit uu : otherUnits) {
                 UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
                 if (u != null) {
+                    if (u.getInstalled() != null && !u.getInstalled().isEnabled()) {
+                        continue;
+                    }
                     boolean exist = false;
                     for(Unit.InternalUpdate internal : internals) {
                         if(internal.getVisibleUnit() == u) {
@@ -263,6 +266,9 @@ public class Utilities {
         for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
             boolean add = true;
             UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
+            if (invisibleUnit.getInstalled() != null && !invisibleUnit.getInstalled().isEnabled()) {
+                continue;
+            }
             for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
                 if(key.equals(invisibleUnit)) {
                     continue;
