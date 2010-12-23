@@ -42,11 +42,17 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.Utils;
@@ -62,16 +68,32 @@ public class LogCommand extends GitCommand {
     private final RevisionInfoListener listener;
     private final List<GitRevisionInfo> revisions;
     private String revision;
+    private String revisionFrom;
+    private String revisionTo;
+    private int limit;
 
     public LogCommand (Repository repository, ProgressMonitor monitor, RevisionInfoListener listener) {
         super(repository, monitor);
         this.monitor = monitor;
         this.listener = listener;
+        this.limit = -1;
         this.revisions = new LinkedList<GitRevisionInfo>();
     }
 
     public void setRevision (String revision) {
         this.revision = revision;
+    }
+
+    public void setRevisionFrom (String revisionFrom) {
+        this.revisionFrom = revisionFrom;
+    }
+
+    public void setRevisionTo (String revisionTo) {
+        this.revisionTo = revisionTo;
+    }
+
+    public void setLimit (int limit) {
+        this.limit = limit;
     }
 
     @Override
@@ -80,7 +102,33 @@ public class LogCommand extends GitCommand {
         if (revision != null) {
             RevCommit commit = Utils.findCommit(repository, revision);
             addRevision(new JGitRevisionInfo(commit, repository));
-        }
+        } else {
+            org.eclipse.jgit.api.LogCommand cmd = new Git(repository).log();
+            try {
+                if (revisionTo != null && revisionFrom != null) {
+                    cmd.addRange(Utils.findCommit(repository, revisionFrom), Utils.findCommit(repository, revisionTo));
+                } else if (revisionTo != null) {
+                    cmd.add(Utils.findCommit(repository, revisionTo));
+                } else if (revisionFrom != null) {
+                    cmd.not(Utils.findCommit(repository, revisionFrom));
+                } else {
+                    BranchCommand branchCommand = new BranchCommand(repository, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    branchCommand.execute();
+                    for (Map.Entry<String, GitBranch> e : branchCommand.getBranches().entrySet()) {
+                        cmd.add(Utils.findCommit(repository, e.getValue().getId()));
+                    }
+                }
+                int remaining = limit;
+                for (Iterator<RevCommit> it = cmd.call().iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0; --remaining) {
+                    RevCommit commit = it.next();
+                    addRevision(new JGitRevisionInfo(commit, repository));
+                }
+            } catch (MissingObjectException ex) {
+                throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
+            } catch (Exception ex) {
+                throw new GitException(ex);
+            }
+        } 
     }
 
     @Override
@@ -88,6 +136,12 @@ public class LogCommand extends GitCommand {
         StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
         if (revision != null) {
             sb.append("--no-walk ").append(revision);
+        } else if (revisionTo != null && revisionFrom != null) {
+            sb.append(revisionFrom).append("..").append(revisionTo); //NOI18N
+        } else if (revisionTo != null) {
+            sb.append(revisionTo);
+        } else if (revisionFrom != null) {
+            sb.append(revisionFrom).append(".."); //NOI18N
         }
         return sb.toString();
     }
