@@ -209,17 +209,23 @@ public final class ProjectImpl extends ProjectBase {
                     }
                 }
             }
+            LinkedList<FileImpl> toReparse = new LinkedList<FileImpl>();
             for (FileImpl impl : files) {
                 if (impl != null) {
-                    removeNativeFileItem(impl.getUID());
-                    impl.dispose();
-                    removeFile(impl.getAbsolutePath());
-                    APTDriver.getInstance().invalidateAPT(impl.getBuffer());
-                    APTFileCacheManager.invalidate(impl.getBuffer());
-                    ParserQueue.instance().remove(impl);
+                    NativeFileItem removedNativeFileItem = removeNativeFileItem(impl.getUID());
+                    // this is analogue of synchronization if method was called from different threads,
+                    // because removeNativeFileItem is thread safe and removes only once
+                    if (removedNativeFileItem != null) {
+                        toReparse.addLast(impl);
+                        impl.dispose();
+                        removeFile(impl.getAbsolutePath());
+                        APTDriver.getInstance().invalidateAPT(impl.getBuffer());
+                        APTFileCacheManager.invalidate(impl.getBuffer());
+                        ParserQueue.instance().remove(impl);
+                    }
                 }
             }
-            DeepReparsingUtils.reparseOnRemoved(files, this);
+            DeepReparsingUtils.reparseOnRemoved(toReparse, this);
         } finally {
             Notificator.instance().flush();
         }
@@ -409,8 +415,8 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    protected void removeNativeFileItem(CsmUID<CsmFile> file) {
-        nativeFiles.removeNativeFileItem(file);
+    protected NativeFileItem removeNativeFileItem(CsmUID<CsmFile> file) {
+        return nativeFiles.removeNativeFileItem(file);
     }
 
     @Override
