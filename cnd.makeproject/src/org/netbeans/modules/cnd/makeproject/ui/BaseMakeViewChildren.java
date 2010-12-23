@@ -89,30 +89,13 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             //System.err.println("BaseMakeViewChildren: FindPathMode " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
             // no wait node for direct search
             super.addNotify();
-            folder.addChangeListener(this);
-            setKeys(getKeys());
+            getAddNotifyRunnable().run();
         } else {
             //System.err.println("BaseMakeViewChildren: create wait node " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
             if (SwingUtilities.isEventDispatchThread()) {
                 super.addNotify();
                 setKeys(new Object[]{getWaitNode()});
-                LOAD_NODES_RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (isRoot() && folder == null) {
-                            folder = provider.getMakeConfigurationDescriptor().getLogicalFolders();
-                            onFolderChange(folder);
-                        }
-                        folder.addChangeListener(BaseMakeViewChildren.this);
-                        // between posting this task and running it can be become deleted (see iz #142240)
-                        // TODO: fix workflow instead?
-                        if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
-                            //System.err.println("ExternalFilesChildren: setting real nodes");
-                            setKeys(getKeys());
-                        }
-                    }
-                }, WAIT_DELAY);
+                LOAD_NODES_RP.post(getAddNotifyRunnable(), WAIT_DELAY);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -123,6 +106,22 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 });
             }
         }
+    }
+
+    private Runnable getAddNotifyRunnable() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (isRoot() && folder == null) {
+                    folder = provider.getMakeConfigurationDescriptor().getLogicalFolders();
+                    onFolderChange(folder);
+                }
+                folder.addChangeListener(BaseMakeViewChildren.this);
+                if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
+                    setKeys(getKeys());
+                }
+            }
+        };
     }
 
     private Node getWaitNode() {

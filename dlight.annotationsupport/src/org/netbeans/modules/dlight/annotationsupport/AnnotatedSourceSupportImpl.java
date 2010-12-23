@@ -201,6 +201,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 if (ret == null && FileUtil.toFile(fo) != null) {
                     ret = FileUtil.toFile(fo).getPath();
                 }
+                if (ret != null) {
+                    ret = FileUtil.normalizePath(ret);
+                }
             }
         }
 
