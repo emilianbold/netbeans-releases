@@ -268,7 +268,7 @@ public class WeakSetTest extends NbTestCase {
         assertTrue("ConcurrentModificationException is expected", gotException);
     }
     
-    public void testClone() {
+    public void testClone() throws CloneNotSupportedException {
         Object[] arr = new Object[]{new Integer(1), new Long(2), new Double(3)};
         WeakSet<Object> set = new WeakSet<Object>();
         set.addAll(Arrays.asList(arr));
@@ -283,5 +283,14 @@ public class WeakSetTest extends NbTestCase {
         NbTestCase.assertGC(s, r);
         assertEquals(second, set);
         assertTrue(second.size() == 2);
+        
+        class MySet extends WeakSet {
+            
+        }
+        WeakSet<Object> cloningSet = new MySet();
+        cloningSet.addAll(set);
+        Object clone = cloningSet.clone();
+        assertTrue(clone instanceof MySet);
+        assertEquals(clone, set);
     }
 }
