@@ -203,7 +203,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             }
 
             assertTrue("HostInfo MUST be available already (30 seconds passed)", count > 0); // NOI18N
-            assertTrue("HostInfo cannot be available already (only " + ((60 - count) * 2) + " seconds passed)", count < 15); // NOI18N
+            assertTrue("HostInfo cannot be available already (only " + ((60 - count) / 2) + " seconds passed)", count < 55); // NOI18N
 
             long startTime = System.currentTimeMillis();
             HostInfoUtils.dumpInfo(HostInfoUtils.getHostInfo(local), System.out);
