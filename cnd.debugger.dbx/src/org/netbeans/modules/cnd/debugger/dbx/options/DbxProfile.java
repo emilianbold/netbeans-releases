@@ -167,20 +167,20 @@ public class DbxProfile extends DbgProfile {
 	Sheet.Set set;
 
 	set = new Sheet.Set();
-	set.setName("General"); // NOI18N
-	set.setDisplayName("General"); // FIXUP I18N // NOI18N
-	set.setShortDescription("General"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("General"));
+	set.setDisplayName(Catalog.get("General"));
+	set.setShortDescription(Catalog.get("General"));
 
 	set.put(DebuggerOption.DBX_INIT_FILE.createNodeProp(this));
-	set.put(new PathmapNodeProp(this, "PathmapPropDisplayName")); // NOI18N
+	set.put(new PathmapNodeProp(this, Catalog.get("PathmapPropDisplayName")));
 	set.put(new ExceptionsNodeProp(this));
 	set.put(new SignalsNodeProp(this));
 	sheet.put(set);
 
 	set = new Sheet.Set();
-	set.setName("Expression Presentation"); // NOI18N
-	set.setDisplayName("Expression Presentation"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Expression Presentation"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("ExpressionPresentation"));
+	set.setDisplayName(Catalog.get("ExpressionPresentation"));
+	set.setShortDescription(Catalog.get("ExpressionPresentation"));
 	set.put(DebuggerOption.OUTPUT_BASE.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_DYNAMIC_TYPE.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_INHERITED_MEMBERS.createNodeProp(this));
@@ -191,9 +191,9 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 
 	set = new Sheet.Set();
-	set.setName("Expression Evaluation"); // NOI18N
-	set.setDisplayName("Expression Evaluation"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Expression Evaluation"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("ExpressionEvaluation"));
+	set.setDisplayName(Catalog.get("ExpressionEvaluation"));
+	set.setShortDescription(Catalog.get("ExpressionEvaluation"));
 	set.put(DebuggerOption.ARRAY_BOUNDS_CHECK.createNodeProp(this));
 	set.put(DebuggerOption.C_ARRAY_OP.createNodeProp(this));
 	set.put(DebuggerOption.INPUT_CASE_SENSITIVE.createNodeProp(this));
@@ -206,9 +206,9 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 
 	set = new Sheet.Set();
-	set.setName("Session Startup"); // NOI18N
-	set.setDisplayName("Session Startup"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Session Startup"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("SessionStartup"));
+	set.setDisplayName(Catalog.get("SessionStartup"));
+	set.setShortDescription(Catalog.get("SessionStartup"));
 	set.put(DebuggerOption.OPTION_EXEC32.createNodeProp(this));
 	/* Global options
 	set.put(DebuggerOption.PROC_EXCLUSIVE_ATTACH.createNodeProp(this));
@@ -219,9 +219,9 @@ public class DbxProfile extends DbgProfile {
 	
 	/* Global options
 	set = new Sheet.Set();
-	set.setName("Window Properties"); // NOI18N
-	set.setDisplayName("Window Properties"); // FIXUP I18N
-	set.setShortDescription("Window Properties"); // FIXUP I18N
+	set.setName(Catalog.get("WindowProperties"));
+	set.setDisplayName(Catalog.get("WindowProperties"));
+	set.setShortDescription(Catalog.get("WindowProperties"));
 	set.put(DebuggerOption.FRONT_DBX.createNodeProp(this));
 	set.put(DebuggerOption.FRONT_PIO.createNodeProp(this));
 	set.put(DebuggerOption.OPEN_THREADS.createNodeProp(this));
@@ -232,18 +232,18 @@ public class DbxProfile extends DbgProfile {
 	
 	/* Global options
 	set = new Sheet.Set();
-	set.setName("Persistence"); // NOI18N
-	set.setDisplayName("Persistence"); // FIXUP I18N
-	set.setShortDescription("Persistence"); // FIXUP I18N
+	set.setName(Catalog.get("Persistence"));
+	set.setDisplayName(Catalog.get("Persistence"));
+	set.setShortDescription(Catalog.get("Persistence"));
 	set.put(DebuggerOption.SAVE_BREAKPOINTS.createNodeProp(this));
 	set.put(DebuggerOption.SAVE_WATCHES.createNodeProp(this));
 	sheet.put(set);
 	*/
 	
 	set = new Sheet.Set();
-	set.setName("Execution & IO RunProfile"); // NOI18N
-	set.setDisplayName("Execution & IO RunProfile"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Execution & IO RunProfile"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("ExecutionIORunProfile"));
+	set.setDisplayName(Catalog.get("ExecutionIORunProfile"));
+	set.setShortDescription(Catalog.get("ExecutionIORunProfile"));
 	set.put(DebuggerOption.RUN_IO.createNodeProp(this));
 	set.put(DebuggerOption.RUN_PTY.createNodeProp(this));
 	set.put(DebuggerOption.RUN_QUICK.createNodeProp(this));
@@ -252,27 +252,27 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Multi-Threading"); // NOI18N
-	set.setDisplayName("Multi-Threading"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Multi-Threading"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("MultiThreading"));
+	set.setDisplayName(Catalog.get("MultiThreading"));
+	set.setShortDescription(Catalog.get("MultiThreading"));
 	set.put(DebuggerOption.MT_SYNC_TRACKING.createNodeProp(this));
 	set.put(DebuggerOption.MT_SCALABLE.createNodeProp(this));
 	set.put(DebuggerOption.MT_RESUME_ONE.createNodeProp(this));
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Follow Fork"); // NOI18N
-	set.setDisplayName("Follow Fork"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Follow Fork"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("FollowFork"));
+	set.setDisplayName(Catalog.get("FollowFork"));
+	set.setShortDescription(Catalog.get("FollowFork"));
 	set.put(DebuggerOption.FOLLOW_FORK_MODE.createNodeProp(this));
 	// OLD See 6573955
 	// OLD set.put(DebuggerOption.FOLLOW_FORK_INHERIT.createNodeProp(this));
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Stack Presentation"); // NOI18N
-	set.setDisplayName("Stack Presentation"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Stack Presentation"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("StackPresentation"));
+	set.setDisplayName(Catalog.get("StackPresentation"));
+	set.setShortDescription(Catalog.get("StackPresentation"));
 	set.put(DebuggerOption.OUTPUT_SHORT_FILE_NAME.createNodeProp(this));
 	set.put(DebuggerOption.STACK_VERBOSE.createNodeProp(this));
 	set.put(DebuggerOption.STACK_MAX_SIZE.createNodeProp(this));
@@ -280,21 +280,21 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 
 	set = new Sheet.Set();
-	set.setName("Debugging Behaviour"); // NOI18N
-	set.setDisplayName("Debugging Behaviour"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Debugging Behaviour"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("DebuggingBehaviour"));
+	set.setDisplayName(Catalog.get("DebuggingBehaviour"));
+	set.setShortDescription(Catalog.get("DebuggingBehaviour"));
 	set.put(DebuggerOption.STEP_EVENTS.createNodeProp(this));
 	set.put(DebuggerOption.STEP_GRANULARITY.createNodeProp(this));
 	/* Global options
-	set.pu(DebuggerOption.TRACE_SPEED.createNodeProp(this));
+	set.put(DebuggerOption.TRACE_SPEED.createNodeProp(this));
 	set.put(DebuggerOption.RUN_AUTOSTART.createNodeProp(this));
 	*/
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Logging"); // NOI18N
-	set.setDisplayName("Logging"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Logging"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("Logging"));
+	set.setDisplayName(Catalog.get("Logging"));
+	set.setShortDescription(Catalog.get("Logging"));
 	set.put(DebuggerOption.OUTPUT_LOG_FILE.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_LOG_FILE_NAME.createNodeProp(this));
 	set.put(DebuggerOption.SESSION_LOG_FILE.createNodeProp(this));
@@ -302,9 +302,9 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Debugging Performance"); // NOI18N
-	set.setDisplayName("Debugging Performance"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Debugging Performance"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("DebuggingPerformance"));
+	set.setDisplayName(Catalog.get("DebuggingPerformance"));
+	set.setShortDescription(Catalog.get("DebuggingPerformance"));
 	set.put(DebuggerOption.STACK_VERBOSE.createNodeProp(this));
 	set.put(DebuggerOption.STACK_MAX_SIZE.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_MAX_OBJECT_SIZE.createNodeProp(this));
@@ -315,9 +315,9 @@ public class DbxProfile extends DbgProfile {
 	sheet.put(set);
 	
 	set = new Sheet.Set();
-	set.setName("Back Doors"); // NOI18N
-	set.setDisplayName("Back Doors"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Back Doors"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("BackDoors"));
+	set.setDisplayName(Catalog.get("BackDoors"));
+	set.setShortDescription(Catalog.get("BackDoors"));
 	set.put(DebuggerOption.FIX_VERBOSE.createNodeProp(this));
 	set.put(DebuggerOption.POP_AUTO_DESTRUCT.createNodeProp(this));
 	set.put(DebuggerOption.DISSASSEMLER_VERSION.createNodeProp(this));
