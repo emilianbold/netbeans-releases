@@ -224,14 +224,18 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {      
-        WeakSet<E> nws = (WeakSet<E>) super.clone();
-        // sharing load factor is ok
-        // but we can not share maps, recreate them
-        nws.m = new SharedKeyWeakHashMap<E, Boolean>(size(), loadFactor);
-        nws.s = nws.m.keySet();
-        nws.addAll(this);
-        return nws;
+    public Object clone() {      
+        try {
+            WeakSet<E> nws = (WeakSet<E>) super.clone();
+            // sharing load factor is ok
+            // but we can not share maps, recreate them
+            nws.m = new SharedKeyWeakHashMap<E, Boolean>(size(), loadFactor);
+            nws.s = nws.m.keySet();
+            nws.addAll(this);
+            return nws;
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("base class doesn't support clone", e); // NOI18N
+        }
     }
 
     // delegate class with only one special method putOrGet
