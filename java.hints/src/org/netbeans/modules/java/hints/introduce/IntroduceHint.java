@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -459,23 +460,32 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     List<TreePathHandle> params = new LinkedList<TreePathHandle>();
 
+                    boolean error186980 = false;
                     for (VariableElement ve : scanner.usedLocalVariables) {
-                        params.add(TreePathHandle.create(info.getTrees().getPath(ve), info));
+                        TreePath path = info.getTrees().getPath(ve);
+                        if (path == null) {
+                            error186980 = true;
+                            Logger.getLogger(IntroduceHint.class.getName()).warning("Cannot get TreePath for local variable " + ve + "\nfile=" + info.getFileObject().getPath());
+                        } else {
+                            params.add(TreePathHandle.create(path, info));
+                        }
                     }
 
-                    Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
+                    if (!error186980) {
+                        Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
 
-                    Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
+                        Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
 
-                    for (TypeMirror tm : exceptions) {
-                        exceptionHandles.add(TypeMirrorHandle.create(tm));
+                        for (TypeMirror tm : exceptions) {
+                            exceptionHandles.add(TypeMirrorHandle.create(tm));
+                        }
+
+                        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
+
+                        typeVars.retainAll(scanner.usedTypeVariables);
+
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
                     }
-
-                    int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
-
-                    typeVars.retainAll(scanner.usedTypeVariables);
-
-                    methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
                 }
             }
 
