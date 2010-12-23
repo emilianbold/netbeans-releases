@@ -128,6 +128,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         Notification n;
         synchronized (this) {
             n = notification;
+            shown = false;
         }
         if (n != null) {
             n.clear();
