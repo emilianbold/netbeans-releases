@@ -83,7 +83,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -1136,7 +1135,14 @@ abstract public class CsmCompletionQuery {
                             List<CsmObject> res;
                             if (openingSource) {
                                 res = new ArrayList<CsmObject>();
-                                res.add(lastType.getClassifier());
+                                if (cls == null) {
+                                    cls = lastType.getClassifier();
+                                }
+                                if (cls == null || CsmKindUtilities.isBuiltIn(cls)) {
+                                    res.add(lastType);
+                                } else {
+                                    res.add(cls);
+                                }
                             } else { // not source-help
                                 res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, true, sort); // NOI18N
                             }
@@ -2762,7 +2768,7 @@ abstract public class CsmCompletionQuery {
         List<CsmResultItem> ret = new ArrayList<CsmResultItem>();
         for (Object obj : dataList) {
             CsmResultItem item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement, instantiateTypes);
-            assert item != null : "why null item? object " + obj;
+            assert item != null : "why null item? object " + obj + " iof " + (obj==null?"null":obj.getClass()) + " in expr" + substituteExp;
             if (item != null) {
                 item.setSubstituteOffset(substituteOffset);
                 item.setHint(hint);
