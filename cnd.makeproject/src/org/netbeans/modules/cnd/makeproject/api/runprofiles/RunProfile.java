@@ -85,7 +85,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_RUNDIR_CHANGED = "rundir-ch"; // NOI18N
     public static final String PROP_ENVVARS_CHANGED = "envvars-ch"; // NOI18N
     public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch"; // NOI18N
-    public static final String DEFAULT_RUN_COMMAND = "${OUTPUT_PATH}"; // NOI18N
+    public static final String DEFAULT_RUN_COMMAND = "\"${OUTPUT_PATH}\""; // NOI18N
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
