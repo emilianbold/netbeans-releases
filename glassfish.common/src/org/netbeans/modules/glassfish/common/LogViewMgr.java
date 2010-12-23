@@ -216,7 +216,7 @@ public class LogViewMgr {
         }
     }
 
-    private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
+    //private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
 
     /**
      * Reads a newly included InputSreams
@@ -231,7 +231,9 @@ public class LogViewMgr {
                 // LoggerRunnable will close the stream if necessary.
                 LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
-                RP.post(logger);
+                Thread t = new Thread(logger);
+                t.setDaemon(true);
+                t.start();
             }
         }
     }
