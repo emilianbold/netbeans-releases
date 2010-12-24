@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -83,9 +84,7 @@ public class HelperUtility {
             throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
         }
 
-        if (!HostInfoUtils.isHostInfoAvailable(env)) {
-            throw new IllegalStateException("No hostinfo for " + env.toString()); // NOI18N
-        }
+        Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
 
         String result = null;
 
