@@ -900,12 +900,18 @@ public class LogReader {
             for(String s : files) {
                 if (relativeFolder == null) {
                     res.add(s);
+                    if (res.size() > 1) {
+                        return res;
+                    }
                 } else {
                     if (subFolder == null) {
                         String path = s;
                         if (path.endsWith(relativeFolder)) {
                             path = path.substring(0,path.length()-relativeFolder.length()-1);
                             res.add(path);
+                            if (res.size() > 1) {
+                                return res;
+                            }
                         }
                     } else {
                         for(String sub : getSubfolders()) {
@@ -915,6 +921,9 @@ public class LogReader {
                                  pathCandidate = pathCandidate.substring(0,j);
                                 if (subFolders.contains(pathCandidate)){
                                     res.add(sub);
+                                    if (res.size() > 1) {
+                                        return res;
+                                    }
                                 }
                             }
                         }
