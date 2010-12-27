@@ -43,9 +43,12 @@
 package org.netbeans.modules.remote.api.ui;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -249,24 +252,24 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public File[] listFiles() {
+        return listFiles((FilenameFilter) null);
+    }
+
+    @Override
+    public File[] listFiles(FilenameFilter filter) {
         if (fo == null) {
             return NO_CHILDREN;
         }
 
         FileObject[] children = fo.getChildren();
 
-        if (children.length == 0) {
-            //fo.refresh();
-            children = fo.getChildren();
-        }
-
-        File[] res = new File[children.length];
-        int idx = 0;
+        List<File> res = new ArrayList<File>(children.length);
         for (FileObject child : children) {
-            res[idx++] = new FileObjectBasedFile(env, child);
+            if (filter == null || filter.accept(this, child.getNameExt())) {
+                res.add(new FileObjectBasedFile(env, child));
+            }
         }
-
-        return res;
+        return res.toArray(new File[res.size()]);
     }
 
     @Override
