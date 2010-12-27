@@ -50,9 +50,16 @@ public class RemoteLogger {
             java.util.logging.Logger.getLogger("remote.support.logger"); // NOI18N
     
     private static boolean assertionsEnabled = false;
+    
+    /** for test purposes */
+    private static volatile Exception lastAssertion;
 
     static {
         assert (assertionsEnabled = true);
+    }
+
+    public static Exception getLastAssertion() {
+        return lastAssertion;
     }
 
     private RemoteLogger() {}
@@ -62,39 +69,49 @@ public class RemoteLogger {
         return instance;
     }
 
+    public static void assertTrueInConsole(boolean value, String message) {
+        if (assertionsEnabled && !value) {
+            instance.log(Level.INFO, message);
+        }
+    }
+
     public static void assertTrue(boolean value) {
         if (assertionsEnabled && !value) {
             String message = "Assertion error"; //NOI18N
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
     public static void assertTrue(boolean value, String message) {
         if (assertionsEnabled && !value) {
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
     public static void assertFalse(boolean value) {
         if (assertionsEnabled && value) {
             String message = "Assertion error"; //NOI18N
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
     public static void assertFalse(boolean value, String message) {
         if (assertionsEnabled && value) {
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
-    public static final void assertNonUiThread(String message) {
+    public static void assertNonUiThread(String message) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
-    public static final void assertNonUiThread() {
+    public static void assertNonUiThread() {
         assertNonUiThread("Should not be called from UI thread"); //NOI18N
+    }
+
+    public static void finest(Exception exception) {
+        instance.log(Level.FINEST, "FYI:", exception);
     }
 }

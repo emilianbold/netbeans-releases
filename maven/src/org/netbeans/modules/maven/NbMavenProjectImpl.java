@@ -215,7 +215,7 @@ public final class NbMavenProjectImpl implements Project {
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
-        auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
+        auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         cppProvider = new ClassPathProviderImpl(this);
@@ -280,13 +280,7 @@ public final class NbMavenProjectImpl implements Project {
             //#136184 NumberFormatException
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         }
-        File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-        try {
-            return embedder.readProject(fallback);
-        } catch (Exception x) {
-            // oh well..
-        }
-        return null;
+        return getFallbackProject();
     }
 
     public List<String> getCurrentActiveProfiles() {
@@ -580,17 +574,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public String getName() {
-        String toReturn = null;
-        MavenProject pr = getOriginalMavenProject();
-        if (pr != null) {
-            toReturn = pr.getId();
-        }
-        if (toReturn == null) {
-            toReturn = getProjectDirectory().getName() + " _No Project ID_"; //NOI18N
-
-        }
-        toReturn = toReturn.replace(":", "_");
-        return toReturn;
+        return getOriginalMavenProject().getId().replace(':', '_');
     }
     /**
      * TODO move elsewhere?
@@ -803,7 +787,7 @@ public final class NbMavenProjectImpl implements Project {
                             !("webapp".equalsIgnoreCase(name)) && //NOI18N
                             !("groovy".equalsIgnoreCase(name)) && //NOI18N
                             !("scala".equalsIgnoreCase(name)) //NOI18N
-                            && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
+                            && VisibilityQuery.getDefault().isVisible(new File(dir, name));
                 }
             });
             if (fls != null) { //#166709 listFiles() shall not return null for existing folders
@@ -977,7 +961,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public boolean isErrorPom(MavenProject pr) {
-        if ("error".equals(pr.getArtifactId()) && "error".equals(pr.getGroupId()) && "unknown".equals(pr.getVersion())) {
+        if ("error".equals(pr.getArtifactId()) && "error".equals(pr.getGroupId())) {
             return true;
         }
         return false;
@@ -1009,7 +993,7 @@ public final class NbMavenProjectImpl implements Project {
         public String getDisplayName() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
             if (isErrorPom(pr)) {
-                return NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_FailedLoadingProject");
+                return NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_misconfigured_project", getProjectDirectory().getNameExt());
             }
             String toReturn = pr.getName();
             if (toReturn == null) {

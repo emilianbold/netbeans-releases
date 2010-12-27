@@ -295,6 +295,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
                     // copy of compilation unit.
                     if (imports.contains(njuImport)) {
                         cutCopy = make.CompilationUnit(
+                            cut.getPackageAnnotations(),
                             cut.getPackageName(),
                             imports,
                             cut.getTypeDecls(),

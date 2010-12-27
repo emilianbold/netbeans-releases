@@ -59,10 +59,13 @@ import com.sun.tools.javac.util.List;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementScanner6;
 import javax.tools.Diagnostic;
 
@@ -73,10 +76,12 @@ import javax.tools.Diagnostic;
 class CleaningAnnotationProcessorImpl implements Runnable {
     private final ProcessingEnvironment processingEnv;
     private final RoundEnvironment roundEnv;
+    private final Set<String> seenElements;
     
-    public CleaningAnnotationProcessorImpl(ProcessingEnvironment processingEnv, RoundEnvironment roundEnv) {
+    public CleaningAnnotationProcessorImpl(ProcessingEnvironment processingEnv, RoundEnvironment roundEnv, Set<String> seenElements) {
         this.processingEnv = processingEnv;
         this.roundEnv = roundEnv;
+        this.seenElements = seenElements;
     }
 
     @Override
@@ -91,19 +96,34 @@ class CleaningAnnotationProcessorImpl implements Runnable {
             final Trees t = Trees.instance(processingEnv);
             final Collection<JCTree> toClean = new LinkedList<JCTree>();
 
-            new ElementScanner6<Void, Void>() {
-                @Override
-                public Void visitExecutable(ExecutableElement e, Void p) {
-                    Tree tree = t.getTree(e);
-
-                    if (tree != null && tree.getKind() == Kind.METHOD) {
-                        JCMethodDecl jcTree = (JCMethodDecl) tree;
-
-                        toClean.add(jcTree.defaultValue);
-                    }
-                    return super.visitExecutable(e, p);
+            for (Element el : roundEnv.getRootElements()) {
+                if (el.getKind().isClass() || el.getKind().isInterface()) {
+                    seenElements.add(((TypeElement) el).getQualifiedName().toString());
                 }
-            }.scan(roundEnv.getRootElements(), null);
+            }
+
+            for (String fqn : seenElements) {
+                TypeElement resolved = processingEnv.getElementUtils().getTypeElement(fqn);
+
+                if (resolved == null) {
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Cannot clean " + fqn);
+                    continue;
+                }
+
+                new ElementScanner6<Void, Void>() {
+                    @Override
+                    public Void visitExecutable(ExecutableElement e, Void p) {
+                        Tree tree = t.getTree(e);
+
+                        if (tree != null && tree.getKind() == Kind.METHOD) {
+                            JCMethodDecl jcTree = (JCMethodDecl) tree;
+
+                            toClean.add(jcTree.defaultValue);
+                        }
+                        return super.visitExecutable(e, p);
+                    }
+                }.scan(resolved, null);
+            }
 
             Method cleanTrees = JavacProcessingEnvironment.class.getDeclaredMethod("cleanTrees", List.class);
 

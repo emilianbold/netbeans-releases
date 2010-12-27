@@ -86,7 +86,7 @@ public final class ProjectDefinitionWizardPanel implements
                 "WIZARD_STEP_CREATE_PROJECT"); //NOI18N
             component.addChangeListener(this);
             // Sets step number of a component
-            component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
+            component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
             // Sets steps names for a panel
             if (kind.isClassic()) {
                 String nextStepName = NbBundle.getMessage(ProjectDefinitionWizardPanel.class, "WIZARD_STEP_PACKAGE_AID"); //NOI18N

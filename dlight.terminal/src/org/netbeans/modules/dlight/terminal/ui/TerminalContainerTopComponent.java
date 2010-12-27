@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -61,6 +62,7 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.IOContainer;
 
 /**
@@ -71,12 +73,14 @@ import org.openide.windows.IOContainer;
 autostore = false)
 public final class TerminalContainerTopComponent extends TopComponent {
 
+    public static final String LOCAL_TERMINAL_PREFIX = "LocalTerminal"; // NOI18N
+    public static final String SILENT_MODE_COMMAND = "silent_mode"; // NOI18N
+    // private vars.... 
     private static TerminalContainerTopComponent instance;
     /** path to the icon used by the component and its open action */
     private static final String ICON_PATH = "org/netbeans/modules/dlight/terminal/ui/term.png";// NOI18N
     private static final String PREFERRED_ID = "TerminalContainerTopComponent";// NOI18N
     private final TerminalContainer tc;
-
 
     public TerminalContainerTopComponent() {
         initComponents();
@@ -113,10 +117,10 @@ public final class TerminalContainerTopComponent extends TopComponent {
         actionsBar.setFocusable(false);
         add(actionsBar, java.awt.BorderLayout.LINE_START);
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar actionsBar;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -180,10 +184,19 @@ public final class TerminalContainerTopComponent extends TopComponent {
         super.componentDeactivated();
         tc.componentDeactivated();
     }
-    
+
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        JComponent selectedTerminal = getIOContainer().getSelected();
+        if (selectedTerminal == null) {
+            for (Action action : getToolbarActions()) {
+                if (action.getValue(Action.NAME).toString().startsWith(LOCAL_TERMINAL_PREFIX)
+                        && action.isEnabled()) {
+                    action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, SILENT_MODE_COMMAND));
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -221,20 +234,13 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     private void fillToolBar() {
         actionsBar.removeAll();
-        Action[] toolbarActions = getToolbarActions();
-        for (int i = 0; i < toolbarActions.length; i++) {
-            JButton button = new JButton(actions[i]);
-            button.setBorderPainted(false);
-            button.setOpaque(false);
-            button.setText(null);
-            button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-            Object icon = actions[i].getValue(Action.SMALL_ICON);
-            if (!(icon instanceof Icon)) {
-                throw new IllegalStateException("No icon provided for " + actions[i]); //NOI18N
+
+        for (Action action : getToolbarActions()) {
+            if (action instanceof Presenter.Toolbar) {
+                actionsBar.add(((Presenter.Toolbar) action).getToolbarPresenter());
             }
-            button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
-            actionsBar.add(button);
         }
+
         actionsBar.revalidate();
         actionsBar.repaint();
     }

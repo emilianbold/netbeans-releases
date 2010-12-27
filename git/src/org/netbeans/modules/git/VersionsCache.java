@@ -88,7 +88,7 @@ public class VersionsCache {
                 GitClient client = Git.getInstance().getClient(repository);
                 boolean result;
                 if (GitUtils.INDEX.equals(revision)) {
-                    result = client.catIndexEntry(base, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    result = client.catIndexEntry(base, 0, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } else {
                     result = client.catFile(base, revision, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
                 }

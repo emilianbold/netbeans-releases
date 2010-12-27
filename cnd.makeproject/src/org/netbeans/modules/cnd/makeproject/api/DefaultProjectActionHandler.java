@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -98,7 +97,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
     // second is in canCancel
-    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
+    private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = false;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -138,18 +137,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
         // we don't need quoting - it's execution responsibility
-        ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
+        ArrayList<String> args = pae.getArguments();
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
         boolean runInInternalTerminal = false;
+        boolean runInExternalTerminal = false;
         CompilerSet cs = null;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
-
+            runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;
             if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
                 String errmsg;
                 if (Utilities.isMac()) {
@@ -162,18 +162,21 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             if (!conf.getDevelopmentHost().isLocalhost()) {
-                if (RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) {
-                    //TODO: only output window for remote for now
-                    consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                if ((RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) || (runInExternalTerminal)) {
+                    //use default consoly type for remote run
+                    //the default is Internal Terminal
+                    consoleType = RunProfile.getDefaultConsoleType();
+                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;                            
                 }
             }
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = CndPathUtilitities.naturalize(exe);
-                } else if (conf.getDevelopmentHost().isLocalhost()) {
+                    exe = CndPathUtilitities.naturalizeSlashes(exe);
+                } 
+                if (conf.getDevelopmentHost().isLocalhost()) {
                     exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
-                }
+                } 
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
                 showInput = false;
@@ -227,7 +230,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
-                    conf.getCompilerSet().getCompilerSet(),
+                    pae.getProject(), conf.getCompilerSet().getCompilerSet(),
                     execEnv, CndFileUtils.toFileObject(runDirectory));
         }
 
@@ -417,7 +420,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     outputListener.flush();
                     outputListener.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 }
                 outputListener = null;
             }

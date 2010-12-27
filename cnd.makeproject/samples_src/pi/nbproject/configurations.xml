@@ -30,7 +30,6 @@
     <conf name="Serial" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
@@ -61,7 +60,6 @@
     <conf name="Pthreads" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -96,7 +94,6 @@
     <conf name="Pthreads_safe" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -131,7 +128,6 @@
     <conf name="Pthread_Hot" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -166,7 +162,6 @@
     <conf name="OpenMP" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>

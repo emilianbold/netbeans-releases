@@ -136,8 +136,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             LifecycleManager.getDefault().saveAll();
         }
         DataObject dataObject = node.getCookie(DataObject.class);
-        final FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = CndFileUtils.toFile(fileObject);
+        final FileObject makeFileObject = dataObject.getPrimaryFile();
         // Build directory
         String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
         // Executable
@@ -145,11 +144,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Arguments
         String[] args;
         if (target.length() == 0) {
-            args = new String[]{"-f", makefile.getName()}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt()}; // NOI18N
         } else {
-            args = new String[]{"-f", makefile.getName(), target}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt(), target}; // NOI18N
         }
-        final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        final ExecutionEnvironment execEnv = getExecutionEnvironment(makeFileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
@@ -182,7 +181,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         traceExecutable(executable, buildDir, args, envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).

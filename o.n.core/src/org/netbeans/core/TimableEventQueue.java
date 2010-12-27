@@ -77,7 +77,7 @@ import org.openide.windows.WindowManager;
 final class TimableEventQueue extends EventQueue 
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
-    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, false); // NOI18N
     private static final int QUANTUM;
     private static final int REPORT;
     static {
@@ -98,14 +98,19 @@ implements Runnable {
     private volatile ActionListener stoppable;
     private volatile boolean isWaitCursor;
     static volatile Thread eq;
-    private final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+    private final Frame mainWindow;
 
-    public TimableEventQueue() {
+    TimableEventQueue(Frame f) {
+        this.mainWindow = f;
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
     }
 
     static void initialize() {
+        initialize(null, true);
+    }
+    static void initialize(final Frame f, final boolean defaultWindow) {
+        
         // #28536: make sure a JRE bug does not prevent the event queue from having
         // the right context class loader
         // and #35470: do it early, before any module-loaded AWT code might run
@@ -116,11 +121,15 @@ implements Runnable {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
                 @Override
                 public Void run() {
+                    Frame use = f;
+                    if (defaultWindow && use == null) {
+                        use = WindowManager.getDefault().getMainWindow();
+                    }
                     ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
                     if (scl != null) {
                         Thread.currentThread().setContextClassLoader(scl);
                     }
-                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue());
+                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue(use));
                     LOG.fine("Initialization done");
                     return null;
                 }
@@ -133,16 +142,21 @@ implements Runnable {
     @Override
     protected void dispatchEvent(AWTEvent event) {
         eq = Thread.currentThread();
+        boolean scheduled = false;
         try {
-            tick("dispatchEvent"); // NOI18N
+            scheduled = tick("dispatchEvent"); // NOI18N
             super.dispatchEvent(event);
         } finally {
-            done();
+            if (scheduled) {
+                done();
+            }
         }
     }
 
     private void done() {
         TIMEOUT.cancel();
+        TIMEOUT.waitFinished();
+
         LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
         long r;
         if (isWaitCursor) {
@@ -173,13 +187,19 @@ implements Runnable {
         }
         return;
     }
+    
+    private boolean isShowing() {
+        return mainWindow == null || mainWindow.isShowing();
+    }
 
-    private void tick(String name) {
+    private boolean tick(String name) {
         start = System.currentTimeMillis();
-        if (start >= ignoreTill && mainWindow.isShowing()) {
+        if (start >= ignoreTill && isShowing()) {
             LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
+            return true;
         }
+        return false;
     }
 
     @Override

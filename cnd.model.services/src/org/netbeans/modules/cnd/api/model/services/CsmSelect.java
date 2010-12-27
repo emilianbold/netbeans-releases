@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider;
@@ -70,7 +72,11 @@ import org.openide.util.Lookup;
 public class CsmSelect {
 
     private static CsmSelectProvider DEFAULT = new Default();
-
+    public static final CsmFilter FUNCTION_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                                                    CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
+    public static final CsmFilter CLASSIFIER_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT,
+                                                    CsmDeclaration.Kind.UNION, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.TYPEDEF);
+    
     public static CsmFilterBuilder getFilterBuilder() {
         return getDefault().getFilterBuilder();
     }
@@ -126,34 +132,46 @@ public class CsmSelect {
             Collection<CsmFunction> result, Collection<CsmProject> processedProjects) {
         if (!processedProjects.contains(project)) {
             processedProjects.add(project);
-            // find "::" in Name
-            int pos = -1;
-            for (int i = qName.length()-2; i > 1; i--) {
-                if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
-                    pos = i;
-                    break;
-                }
-            }
+            // find last "::" in Name
+            int pos = findLastScopeDelimeterPos(qName);
             if (pos == -1) {
                 // qName resides in global namespace
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
+                         FUNCTION_KIND_FILTER,
                          CsmSelect.getFilterBuilder().createNameFilter(qName, true, true, false));
                 getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
             } else {
                 // split qName into owner name and function name
-                CharSequence ownerQName = qName.subSequence(0, pos);
+                CharSequence nsQName = qName.subSequence(0, pos);
+                CharSequence classQName = nsQName;
                 CharSequence funcName = qName.subSequence(pos+2, qName.length());
-                CsmNamespace nsp = project.findNamespace(ownerQName);
-                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                         CsmDeclaration.Kind.FUNCTION_FRIEND,CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
-                         CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
-                if (nsp != null) {
-                    getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                CharSequence shortFuncName = funcName;
+                CsmNamespace nsp = project.findNamespace(nsQName);
+                // we can have explicit template specialization like std::Class<int>::foo 
+                while (nsp == null && pos >= 0) {
+                    pos = findLastScopeDelimeterPos(nsQName);
+                    if (pos >= 0) {
+                        nsQName = nsQName.subSequence(0, pos);
+                        nsp = project.findNamespace(nsQName);
+                        funcName = qName.subSequence(pos+2, qName.length());
+                    }
                 }
-                for (CsmClassifier cls : project.findClassifiers(ownerQName)) {
+                if (nsp == null) {
+                    nsp = project.getGlobalNamespace();
+                    funcName = qName;
+                }
+                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         FUNCTION_KIND_FILTER,
+                         CsmSelect.getFilterBuilder().createNameFilter(funcName, true, true, false));
+                getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                
+                if (!shortFuncName.equals(funcName)) {
+                    filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                            FUNCTION_KIND_FILTER,
+                            CsmSelect.getFilterBuilder().createNameFilter(shortFuncName, true, true, false));
+                }
+
+                for (CsmClassifier cls : project.findClassifiers(classQName)) {
                     if (CsmKindUtilities.isClass(cls)) {
                         getFunctions(CsmSelect.getClassMembers((CsmClass) cls, filter), result);
                     }
@@ -165,6 +183,17 @@ public class CsmSelect {
         }
     }
 
+    private static int findLastScopeDelimeterPos(CharSequence qName) {
+        int pos = -1;
+        for (int i = qName.length()-2; i > 1; i--) {
+            if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
+                pos = i;
+                break;
+            }
+        }
+        return pos;
+    }
+
     private static void getFunctions(Iterator<? extends CsmOffsetableDeclaration> iter, Collection<CsmFunction> result) {
         while (iter.hasNext()) {
             CsmOffsetableDeclaration decl = iter.next();
@@ -172,6 +201,10 @@ public class CsmSelect {
                 result.add((CsmFunction) decl);
             }
         }
+    }
+
+    public static Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor nameFilter) {
+        return getDefault().getFileUIDs(csmProject, nameFilter);
     }
 
     private CsmSelect() {
@@ -314,6 +347,15 @@ public class CsmSelect {
                 return service.hasDeclarations(file);
             }
             return file.getDeclarations().isEmpty();
+        }
+
+        @Override
+        public Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor filter) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getFileUIDs(csmProject, filter);
+            }
+            return Collections.<CsmUID<CsmFile>>emptyList().iterator();
         }
     }
 }

@@ -566,7 +566,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         String golden =
             "@YY\n" +
             "package zoo;\n\n" +
-            "import foo.YY;\n";
+            "import foo.YY;\n" + /*XXX:*/"\n";
 
         JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
 

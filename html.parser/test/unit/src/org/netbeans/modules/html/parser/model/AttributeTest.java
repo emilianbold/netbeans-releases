@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.html.parser.model;
 
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 
 /**
  *
@@ -54,6 +56,14 @@ public class AttributeTest extends NbTestCase {
     public AttributeTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        HtmlDocumentation.setupDocumentationForUnitTests();
+    }
+
+
 
     public void testBasic() {
         ElementDescriptor div = ElementDescriptor.forName("div");
@@ -89,6 +99,25 @@ public class AttributeTest extends NbTestCase {
         Link domInterface = div.getDomInterface();
         assertNotNull(domInterface);
         assertEquals("HTMLDivElement", domInterface.getName());
+
+    }
+
+    public void testEachAttributesHasSomeHelp() {
+        ElementDescriptor a = ElementDescriptor.A;
+        Collection<Attribute> attrs = a.getAttributes();
+
+        for(Attribute attr : attrs) {
+
+            String link = attr.getHelpLink();
+            assertNotNull(link);
+            URL url = HtmlDocumentation.getDefault().resolveLink(link);
+            assertNotNull(url);
+            String content = HtmlDocumentation.getDefault().getHelpContent(url);
+
+            if(content == null) {
+                System.err.println(String.format("Attribute %s is missing help content for the URL %s", attr.getName(), url));
+            }
+        }
 
     }
 

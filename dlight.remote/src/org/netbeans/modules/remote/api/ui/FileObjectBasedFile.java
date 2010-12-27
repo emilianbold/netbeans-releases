@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -75,6 +76,7 @@ public class FileObjectBasedFile extends File {
 
     public FileObjectBasedFile(ExecutionEnvironment env, String path) {
         super(path);
+        RemoteLogger.assertTrue(path != null, "Path should not be null"); //NOI18N
         this.fo = null;
         this.path = toUnix(super.getPath());
         this.env = env;
@@ -181,7 +183,12 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean canWrite() {
-       return false;
+       return (fo == null) ? false : fo.canWrite();
+    }
+
+    @Override
+    public boolean canRead() {
+       return (fo == null) ? false : fo.canRead();
     }
 
     @Override
@@ -201,7 +208,11 @@ public class FileObjectBasedFile extends File {
     @Override
     public String getParent() {
 	int index = path.lastIndexOf('/');
-	return (index < 0) ? null : path.substring(0, index);
+        if (index < 0 || (index == 0 && path.length() == 1) ) {
+            return null;
+        } else {
+            return path.substring(0, index);
+        }
     }
 
     @Override
@@ -245,7 +256,7 @@ public class FileObjectBasedFile extends File {
         FileObject[] children = fo.getChildren();
 
         if (children.length == 0) {
-            fo.refresh();
+            //fo.refresh();
             children = fo.getChildren();
         }
 

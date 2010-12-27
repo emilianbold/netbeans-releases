@@ -58,7 +58,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
@@ -147,7 +147,7 @@ public class JsfElCompletionProvider implements CompletionProvider {
                             }
 
                             //check web beans
-                            JsfSupport jsfSupport = JsfSupport.findFor(fObject);
+                            JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(fObject);
                             List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
                             for (WebBean bean : namedElements) {
                                 String beanName = bean.getName();

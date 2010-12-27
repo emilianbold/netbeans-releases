@@ -73,9 +73,9 @@ import org.openide.awt.Mnemonics;
  * 
  * @author Maros Sandor
  */
-public class VCSCommitTable implements AncestorListener, TableModelListener, MouseListener {    
+public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, TableModelListener, MouseListener {    
     
-    private VCSCommitTableModel tableModel;
+    private VCSCommitTableModel<F> tableModel;
     private JTable              table;
     private JComponent          component;
     
@@ -84,14 +84,22 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
     private String[]            sortByColumns;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
     private VCSCommitPanel commitPanel;
-    
-    public VCSCommitTable(VCSCommitTableModel tableModel) {
-        init(tableModel);
-        this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
-        setSortingStatus();            
+
+    private String errroMessage;
+    private final boolean editable;
+        
+    public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
+        this(tableModel, true);
     }
 
-    private void init(VCSCommitTableModel tableModel) {
+    public VCSCommitTable (VCSCommitTableModel<F> tableModel, boolean isEditable) {
+        this.editable = isEditable;
+        init(tableModel);
+        this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };
+        setSortingStatus();
+    }
+
+    private void init(VCSCommitTableModel<F> tableModel) {
         this.tableModel = tableModel;
         tableModel.addTableModelListener(this);
         sorter = new TableSorter(tableModel);
@@ -105,6 +113,8 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VCSCommitTable.class, "ACSN_CommitTable")); // NOI18N        
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VCSCommitTable.class, "ACSD_CommitTable")); // NOI18N        
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
@@ -118,21 +128,31 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         setColumns(VCSCommitTableModel.COMMIT_COLUMNS);
     }
 
+    void labelFor(JLabel label) {
+        label.setLabelFor(table);
+    }
+    
     @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
     public boolean containsCommitable() {
-        Map<VCSFileNode, VCSCommitOptions> map = getCommitFiles();
-        for(VCSCommitOptions co : map.values()) {
-            if(co != VCSCommitOptions.EXCLUDE) {
+        List<F> list = getCommitFiles();
+        for(F file : list) {
+            if(file.getCommitOptions() != VCSCommitOptions.EXCLUDE) {
+                errroMessage = null;
                 return true;
             }
         }
+        errroMessage = NbBundle.getMessage(VCSCommitTable.class, "MSG_ERROR_NO_FILES");
         return false;
     }
 
+    public String getErrorMessage() {
+        return errroMessage;
+    }
+    
     /**
      * Sets sizes of Commit table columns, kind of hardcoded.
      */ 
@@ -231,14 +251,14 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         setDefaultColumnSizes();
     }
 
-    public void setNodes(VCSFileNode[] nodes) {
+    public void setNodes(F[] nodes) {
         tableModel.setNodes(nodes);
     }
 
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<VCSFileNode, VCSCommitOptions> getCommitFiles() {
+    public List<F> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 
@@ -348,6 +368,11 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
                     }
                 }
             }
+
+            @Override
+            public boolean isEnabled() {
+                return editable;
+            }
         });
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
@@ -441,6 +466,7 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
+            setEnabled(editable);
             setBackground(hasFocus || isSelected ? table.getSelectionBackground() : table.getBackground());
             setHorizontalAlignment(SwingConstants.LEFT);
             return this;
@@ -458,6 +484,7 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
             JCheckBox checkbox = (JCheckBox) editorComponent;
             checkbox.setSelected(value == null ? false : (Boolean) value);
             checkbox.setHorizontalAlignment(SwingConstants.LEFT);
+            checkbox.setEnabled(editable);
             return super.getTableCellEditorComponent(table, value, isSelected, row, column);
         }
     }

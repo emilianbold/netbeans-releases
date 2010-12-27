@@ -79,13 +79,13 @@ public abstract class MIProxy {
     private final String prompt;
     private final MIParser parser;
 
-    protected MIProxy(MICommandInjector injector, String prompt) {
+    protected MIProxy(MICommandInjector injector, String prompt, String encoding) {
 	assert prompt != null;
 
 	cmdManager = new MICommandManager(injector);
 	this.prompt = prompt;
 
-	parser = new MIParser();
+	parser = new MIParser(encoding);
     }
 
 
@@ -213,5 +213,9 @@ public abstract class MIProxy {
 
     protected void errorBadLine(String data) {
 	cmdManager.echo(String.format("unrecognized line: %s\r", data)); // NOI18N
+    }
+    
+    protected void clearMessages() {
+        cmdManager.clearMessages();
     }
 }

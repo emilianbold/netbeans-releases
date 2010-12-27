@@ -44,7 +44,6 @@
 
 package org.netbeans.api.project.ant;
 
-import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import java.util.Collections;
@@ -54,6 +53,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
+import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelperTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
@@ -75,7 +77,6 @@ public class AntBuildExtenderTest extends NbTestCase {
     private FileObject extension1;
     private ProjectManager pm;
     private Project p;
-    private AntProjectHelper h;
     private GeneratedFilesHelper gfh;
     private ExtImpl extenderImpl;
     
@@ -94,7 +95,6 @@ public class AntBuildExtenderTest extends NbTestCase {
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         extenderImpl.project = p;
-        h = p.getLookup().lookup(AntProjectHelper.class);
         gfh = p.getLookup().lookup(GeneratedFilesHelper.class);
         assertNotNull(gfh);
     }
@@ -124,8 +124,6 @@ public class AntBuildExtenderTest extends NbTestCase {
     public void testRemoveExtension() {
         AntBuildExtender instance = p.getLookup().lookup(AntBuildExtender.class);
         testAddExtension();
-        extenderImpl.oldElement = p.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(
-                AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
         instance.removeExtension("milos");
         Element el = p.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(
                 AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
@@ -141,26 +139,22 @@ public class AntBuildExtenderTest extends NbTestCase {
         AntBuildExtender.Extension ext = instance.getExtension("milos");
         assertNotNull(ext);
     }
+
+    public void testBrokenProject() throws Exception { // ##192915
+        AntBuildExtender instance = p.getLookup().lookup(AntBuildExtender.class);
+        projdir.getFileObject("nbproject/project.xml").delete();
+        assertNull(instance.getExtension("whatever"));
+    }
     
-    private class ExtImpl implements AntBuildExtenderImplementation {
+    private static class ExtImpl implements AntBuildExtenderImplementation {
         Project project;
-        Element newElement;
-        Element oldElement;
         List<String> targets = Collections.singletonList("all");
 
-        public List<String> getExtensibleTargets() {
+        public @Override List<String> getExtensibleTargets() {
             return targets;
         }
 
-        public void updateBuildExtensionMetadata(Element element) {
-            newElement = element;
-        }
-
-        public Element getBuildExtensionMetadata() {
-            return oldElement;
-        }
-
-        public Project getOwningProject() {
+        public @Override Project getOwningProject() {
             return project;
         }
 

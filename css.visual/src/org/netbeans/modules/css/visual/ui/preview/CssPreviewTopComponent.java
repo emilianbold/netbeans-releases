@@ -47,10 +47,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -91,7 +92,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     
         public void activate(final CssRuleContext content) {
             assert SwingUtilities.isEventDispatchThread();
-            LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);//NOI18N
+            LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task {0}", content);//NOI18N
 
             //the CssPreviewGenerator.getPreviewCode() needs to run outside of AWT
             RequestProcessor.getDefault().post(new Runnable() {
@@ -306,10 +307,11 @@ public final class CssPreviewTopComponent extends TopComponent {
         if (parser != null) {
             try {
                 DefaultHandler handler = new DefaultHandler();
-                parser.parse(new ByteArrayInputStream(htmlCode.toString().getBytes()), handler);
+                InputSource inputSource = new InputSource(new StringReader(htmlCode.toString()));
+                parser.parse(inputSource, handler);
             } catch (SAXException ex) {
                 LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex); //NOI18N
-                LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
+                LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n{0}", htmlCode); //NOI18N
                 setError();
                 return;
             } catch (IOException ex) {
@@ -327,14 +329,15 @@ public final class CssPreviewTopComponent extends TopComponent {
                 relativeURL = source.toURL().toExternalForm();
             }
 
-            LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
+            LOGGER.log(Level.FINE, "preview - setting content {0}", htmlCode); //NOI18N
             //set XHTML preview panel content - the generated sample
-            previewPanel.setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
+            InputSource inputSource = new InputSource(new StringReader(htmlCode.toString()));
+            previewPanel.setDocument(inputSource, relativeURL);
         } catch (Throwable e) {
             //an error - show message into the preview
             setError();
             LOGGER.log(Level.INFO, "An error occured in the preview component.", e); //NOI18N
-            LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
+            LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n{0}", htmlCode); //NOI18N
         }
     }
     

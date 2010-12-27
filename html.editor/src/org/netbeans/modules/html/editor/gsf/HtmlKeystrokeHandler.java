@@ -202,7 +202,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
         if(root != null) {
             //find leaf at the position
-            AstNode node = AstNodeUtils.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
+            AstNode node = AstNodeUtils.findNode(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {

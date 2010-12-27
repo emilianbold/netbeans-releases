@@ -162,7 +162,7 @@ public final class ShellValidationSupport {
 
     public static boolean confirm(final String header, final String footer, final ShellValidationStatus status) {
         if (status == null || status == NOSHELL) {
-            if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+            if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
                 System.err.println(loc("ShellValidationSupport.ValidationError.NoShell"));
             } else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -185,7 +185,7 @@ public final class ShellValidationSupport {
         }
 
         Object response = null;
-        if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+        if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
             System.err.println(loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"));
             System.err.println(header);
             for (String error : status.shell.getValidationStatus().getErrors()) {
@@ -213,7 +213,18 @@ public final class ShellValidationSupport {
                     DialogDescriptor.DEFAULT_ALIGN, null, null);
 
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dialog.setVisible(true);
+            
+            try {
+                dialog.setVisible(true);
+            } catch (Throwable th) {
+                if (!(th.getCause() instanceof InterruptedException)) {
+                    throw new RuntimeException(th);
+                }
+                dd.setValue(DialogDescriptor.CANCEL_OPTION);
+            } finally {
+                dialog.dispose();
+            }
+
             response = dd.getValue();
 
             if (response == DialogDescriptor.YES_OPTION && errorPanel.isRememberDecision()) {

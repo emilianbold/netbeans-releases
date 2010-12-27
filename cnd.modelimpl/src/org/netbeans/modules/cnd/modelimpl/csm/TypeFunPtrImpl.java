@@ -186,6 +186,9 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         if (inFunctionParams && next == null) {
             next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         }
+        if (inFunctionParams && next != null && next.getType() == CPPTokenTypes.RPAREN) {
+            next = next.getNextSibling();
+        }
 
         if (next == null) {
             return false;

@@ -47,14 +47,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +68,7 @@ import org.openide.util.NbBundle;
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private String libraryName;
-    private LibraryDescriptor generatedDescribingLibrary;
+    private AbstractLibraryDescriptor generatedDescribingLibrary;
 
     //for undeclared libraries w/o prefix
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
@@ -77,6 +81,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
+    public LibraryType getType() {
+        return LibraryType.COMPOSITE;
+    }
+
+    @Override
     public String getNamespace() {
         return getDeclaredNamespace() != null ? getDeclaredNamespace() : getDefaultNamespace();
     }
@@ -86,7 +95,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     public String getDefaultNamespace() {
-        return JsfUtils.getCompositeLibraryURL(getLibraryName());
+        return LibraryUtils.getCompositeLibraryURL(getLibraryName());
     }
 
     @Override
@@ -110,8 +119,8 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public LibraryDescriptor getLibraryDescriptor() {
-        LibraryDescriptor libDescriptor = support.getJsfSupport().getLibraryDescriptor(getNamespace());
+    public AbstractLibraryDescriptor getLibraryDescriptor() {
+        AbstractLibraryDescriptor libDescriptor = support.getJsfSupport().getLibraryDescriptor(getNamespace());
             if (libDescriptor != null) {
                 //ohh, someone made a .taglib.xml or TLD for us, nice...
                 return libDescriptor;
@@ -147,7 +156,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     }
 
-    private class CCTldLibrary extends LibraryDescriptor {
+    private class CCTldLibrary extends AbstractLibraryDescriptor {
 
         private Map<String, Tag> cctags = new HashMap<String, Tag>();
         private String virtualLibraryPrefix;
@@ -202,7 +211,12 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                     }
                 }
 
-                assert tokens.size() >= 2; //at least library name && the filename remained
+                assert tokens.size() >= 2 : String.format("Suspicious relative path %s (tokens.size()=%s) for component %s of composite component's library %s", //NOI18N
+                        relativePath,
+                        tokens.size(),
+                        cname,
+                        getLibraryName()); //at least library name && the filename remained
+                
                 tokens.removeLast(); //remove the filename
 
                 //one or more tokens left
@@ -227,7 +241,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                     attrs.put(attrname, new Attribute(attrname, description, required));
                 }
 
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append("<p><b>"); //NOI18N
                 sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE") );//NOI18N
                 sb.append("</b>");//NOI18N
@@ -237,7 +251,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("<p>");//NOI18N
                 sb.append(getAttributesDescription(model, false));
                 sb.append("</p>");//NOI18N
-                sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
+                sb.append("<p style=\"color: red\">").append(msgNoTld).append("</p>"); //NOI18N
 
                 Tag t = new TagImpl(cname, sb.toString(), attrs);
                 cctags.put(cname, t);
@@ -250,7 +264,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             }
 
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("<b>");//NOI18N
             sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_TAG_ATTRS"));//NOI18N
             sb.append("</b>");//NOI18N
@@ -292,7 +306,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
             if(includeNoDescriptorMsg) {
                 String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
-                sb.append("<p style=\"color: red\">" + msgNoDescriptor + "</p>");
+                sb.append("<p style=\"color: red\">").append(msgNoDescriptor).append("</p>");
             } //NOI18N
 
             return sb.toString();

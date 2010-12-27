@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.LogViewMgr;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -82,7 +81,7 @@ public class ViewServerLogAction extends NodeAction {
                 String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
                 return uri != null && uri.length() > 0 &&
                     (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ||
-                    (commonSupport.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6WC()) && commonSupport.isRemote() && isRunning(commonSupport)));
+                    (commonSupport.isRestfulLogAccessSupported() && commonSupport.isRemote() && isRunning(commonSupport)));
             }
         }
         return false;

@@ -54,7 +54,8 @@ import java.util.Map;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 
 /**
  * Instance properties for Hudson instance
@@ -94,7 +95,15 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     public boolean isPersisted() {
         return true;
     }
-    
+
+    @Messages({
+        "TXT_Instance_Prop_Name=Name",
+        "DESC_Instance_Prop_Name=Hudson's instance name",
+        "TXT_Instance_Prop_Url=URL",
+        "DESC_Instance_Prop_Url=Hudson's instance URL",
+        "TXT_Instance_Prop_Sync=Autosynchronization time",
+        "DESC_Instance_Prop_Sync=Autosynchronization time in minutes (if it's 0 the autosynchronization is off)"
+    })
     public Sheet.Set getSheetSet() {
         if (null == set) {
             set = Sheet.createPropertiesSet();
@@ -105,16 +114,16 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
             // Put properties in
             set.put(new PropertySupport[] {
                 new HudsonInstanceProperty(INSTANCE_NAME,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Name"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Name"),
+                        TXT_Instance_Prop_Name(),
+                        DESC_Instance_Prop_Name(),
                         true, false),
                         new HudsonInstanceProperty(INSTANCE_URL,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Url"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Url"),
+                        TXT_Instance_Prop_Url(),
+                        DESC_Instance_Prop_Url(),
                         true, false),
                         new PropertySupport<Integer>(INSTANCE_SYNC, Integer.class,
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "TXT_Instance_Prop_Sync"),
-                        NbBundle.getMessage(HudsonInstanceProperties.class, "DESC_Instance_Prop_Sync"),
+                        TXT_Instance_Prop_Sync(),
+                        DESC_Instance_Prop_Sync(),
                         true, true) {
                             public Integer getValue() {
                                 return Integer.valueOf(get(INSTANCE_SYNC));

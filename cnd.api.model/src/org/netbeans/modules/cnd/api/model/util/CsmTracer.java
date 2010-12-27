@@ -86,7 +86,11 @@ public final class CsmTracer {
     }
 
     public CsmTracer(Writer writer) {
-        this.printStream = new PrintStream(new WriterOutputStream(writer));
+        this.printStream = toPrintStream(writer);
+    }
+    
+    public static PrintStream toPrintStream(Writer writer) {
+        return new PrintStream(new WriterOutputStream(writer));
     }
     
     public void setDeep(boolean deep) {

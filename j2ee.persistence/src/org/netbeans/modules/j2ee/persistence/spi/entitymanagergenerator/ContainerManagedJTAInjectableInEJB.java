@@ -50,8 +50,15 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
+import java.io.File;
+import java.text.MessageFormat;
 import java.util.Collections;
-import javax.lang.model.element.Modifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
+import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in EJB 3 
@@ -61,16 +68,31 @@ import javax.lang.model.element.Modifier;
  */
 public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGenerationStrategySupport {
     
+    @Override
     public ClassTree generate() {
         
         ClassTree modifiedClazz = getClassTree();
-        
+        FileObject fo = FileUtil.toFileObject(new File(getWorkingCopy().getCompilationUnit().getSourceFile().toUri().getPath()));
+
+        Project project = FileOwnerQuery.getOwner(fo);
+        JPATargetInfo ti = project != null ? project.getLookup().lookup(JPATargetInfo.class) : null;
+        boolean isEJB = false;
+        if(ti != null){
+            JPATargetInfo.TargetType tt = ti.getType(fo, getClassElement().getQualifiedName().toString());
+            isEJB = JPATargetInfo.TargetType.EJB.equals(tt);
+        }
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
                 getGenerationOptions().getModifiers(),
                 Collections.<AnnotationTree>emptyList()
                 );
         
-       FieldInfo em = getEntityManagerFieldInfo();
+        FieldInfo em = getEntityManagerFieldInfo();
+        if(!em.isExisting()){
+            modifiedClazz = createEntityManager(Initialization.INJECT);
+        }
+        if(!isEJB){
+            modifiedClazz = getTreeMaker().insertClassMember(modifiedClazz, getIndexForField(modifiedClazz), createUserTransaction());
+        }
         
         MethodTree newMethod = getTreeMaker().Method(
                 methodModifiers,
@@ -79,17 +101,28 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{ " +
-                generateCallLines(em.getName()) +
-                "}",
+                "{ " + getMethodBody(em, isEJB) + "}",
                 null
                 );
      
-        if(!em.isExisting()){
-            modifiedClazz = createEntityManager(Initialization.INJECT);
-        }
-        
+
         return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }
-    
+    private String getMethodBody(FieldInfo em, boolean isEJB){
+        boolean simple = GenerationOptions.Operation.GET_EM.equals(getGenerationOptions().getOperation());//if simple (or with return etc) - no transactions
+        String text =
+                (isEJB || simple ?
+                    "" :
+                ("try '{'\n" +
+                "    utx.begin();\n")) +
+                generateCallLines(em.getName()) +
+                (isEJB || simple ?
+                    "" :
+                "    utx.commit();\n" +
+                "} catch(Exception e) '{'\n" +
+                "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
+                "    throw new RuntimeException(e);\n" +
+                "}");
+        return MessageFormat.format(text, em.getName());
+    }
 }

@@ -310,8 +310,8 @@ made subject to such option by the copyright holder.
 
                 <folder name="apisupport">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
-                    <file name="org-netbeans-modules-java.hints-IllegalInstanceOf.instance"/>
-                    <file name="org-netbeans-modules-java.hints-EmptyCancelForCancellableTask.instance"/>
+                    <file name="org-netbeans-modules-java.hints-IllegalInstanceOf.instance"/> <!-- XXX not really specific to NB development (just JSR 269) -->
+                    <file name="org-netbeans-modules-java.hints-EmptyCancelForCancellableTask.instance"/> <!-- XXX would better be in apisupport.refactoring -->
                 </folder>
 
                 <folder name="empty">

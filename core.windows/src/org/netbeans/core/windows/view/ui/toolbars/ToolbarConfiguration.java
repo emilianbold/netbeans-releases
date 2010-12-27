@@ -151,8 +151,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
 
     private void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
-        Frame frame = WindowManager.getDefault().getMainWindow();
-        boolean fullScreen = (frame instanceof MainWindow) && ((MainWindow)frame).isFullScreenMode();
+        boolean fullScreen = MainWindow.getInstance().isFullScreenMode();
 
         Map<String, ToolbarConstraints> name2constr = collectAllConstraints();
         // generate list of available toolbars
