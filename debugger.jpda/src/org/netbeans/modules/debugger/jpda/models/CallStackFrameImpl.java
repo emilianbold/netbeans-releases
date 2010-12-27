@@ -48,6 +48,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
@@ -63,6 +64,8 @@ import com.sun.jdi.request.StepRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -73,6 +76,7 @@ import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
@@ -507,6 +511,58 @@ public class CallStackFrameImpl implements CallStackFrame {
                         return null;
                     }
                 }
+
+                int frameCount = 0;
+                try {
+                    frameCount = ThreadReferenceWrapper.frameCount0(tr);
+                } catch (IncompatibleThreadStateException itsex) {
+                    ErrorManager.getDefault().notify(itsex);
+                    return null;
+                }
+
+                Logger logger = Logger.getLogger(CallStackFrameImpl.class.getName());
+
+                // Find out if method <classType>.<methodName> is native:
+                String classType = operation.getMethodClassType();
+                String methodName = operation.getMethodName();
+                String methodDescriptor = null;
+                try {
+                    java.lang.reflect.Field methodDescriptorField = Operation.class.getDeclaredField("methodDescriptor");
+                    methodDescriptorField.setAccessible(true);
+                    methodDescriptor = (String) methodDescriptorField.get(operation);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("findOperationArguments(): Operation method name = '"+operation.getMethodName()+"', method descriptor = '"+methodDescriptor+"', class type = '"+operation.getMethodClassType()+"'");
+                }
+
+                List<ReferenceType> classes = VirtualMachineWrapper.classesByName0(vm, classType);
+                for (ReferenceType clazz : classes) {
+                    try {
+                        List<Method> methods;
+                        if (methodDescriptor != null) {
+                            methods = ReferenceTypeWrapper.methodsByName(clazz, methodName, methodDescriptor);
+                        } else {
+                            methods = ReferenceTypeWrapper.methodsByName(clazz, methodName);
+                        }
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("  Methods = "+methods);
+                        }
+                        for (Method method : methods) {
+                            if (method.isNative()) {
+                                List<LocalVariable> noArgsList = new ArrayList<LocalVariable>(1);
+                                noArgsList.add(new ArgumentObjectVariable(debuggerImpl,
+                                                             null,
+                                                             NbBundle.getMessage(CallStackFrameImpl.class, "MSG_NoArgsForNative"),
+                                                             ""));
+                                return noArgsList;
+                            }
+                        }
+                    } catch (ClassNotPreparedExceptionWrapper ex) {
+                    }
+                }
+
                 com.sun.jdi.request.StepRequest step = EventRequestManagerWrapper.createStepRequest(
                         VirtualMachineWrapper.eventRequestManager(vm),
                         tr,
@@ -547,6 +603,11 @@ public class CallStackFrameImpl implements CallStackFrame {
                 StackFrame sf = null;
                 List<com.sun.jdi.Value> arguments = null;
                 try {
+                    int newFrameCount = ThreadReferenceWrapper.frameCount0(tr);
+                    if (!(newFrameCount > frameCount)) {
+                        // Oops, we're not in the desired method...
+                        return null;
+                    }
                     sf = ThreadReferenceWrapper.frames(tr, 0, 1).get(0);
                     arguments = getArgumentValues(sf);
                 } catch (IncompatibleThreadStateException itsex) {

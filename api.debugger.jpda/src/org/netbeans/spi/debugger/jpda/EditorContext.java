@@ -499,6 +499,7 @@ public abstract class EditorContext {
         private Position methodStartPosition;
         private Position methodEndPosition;
         private String methodName;
+        private String methodDescriptor; // TODO: Add API get/set, accessed through reflection in the meantime.
         private String methodClassType;
         private Variable returnValue;
         

@@ -84,6 +84,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup.Result;
+import org.openide.util.lookup.AbstractLookup;
 
 
 /**
@@ -100,6 +101,8 @@ abstract class Lookup implements ContextProvider {
     public static final String NOTIFY_LOAD_LAST = "load last";
     public static final String NOTIFY_UNLOAD_FIRST = "unload first";
     public static final String NOTIFY_UNLOAD_LAST = "unload last";
+
+    private static final Logger logger = Logger.getLogger(Lookup.class.getName());
     
     public <T> T lookupFirst(String folder, Class<T> service) {
         List<? extends T> l = lookup(folder, service);
@@ -225,6 +228,7 @@ abstract class Lookup implements ContextProvider {
         private String rootFolder;
         private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
         private final HashMap<String, Object> instanceCache = new HashMap<String, Object>();
+        private final HashMap<String, Object> origInstanceCache = new HashMap<String, Object>();
         private Lookup context;
         private org.openide.util.Lookup.Result<ModuleInfo> moduleLookupResult;
         private ModuleChangeListener modulesChangeListener;
@@ -391,6 +395,13 @@ abstract class Lookup implements ContextProvider {
                         Object instance = instanceCache.get(clazz);
                         if (instance.getClass().getClassLoader() == cl) {
                             instanceCache.remove(clazz);
+                            origInstanceCache.remove(clazz);
+                        } else {
+                            instance = origInstanceCache.get(clazz);
+                            if (instance != null && instance.getClass().getClassLoader() == cl) {
+                                instanceCache.remove(clazz);
+                                origInstanceCache.remove(clazz);
+                            }
                         }
                     }
                 }
@@ -573,7 +584,7 @@ abstract class Lookup implements ContextProvider {
                     try {
                         add(service.cast(instance), className);
                     } catch (ClassCastException cce) {
-                        Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                        logger.log(Level.WARNING, null, cce);
                     }
                     listenOn(instance.getClass().getClassLoader());
                 } else if (checkClassName(className)) {
@@ -593,12 +604,36 @@ abstract class Lookup implements ContextProvider {
                 Object instance = null;
                 synchronized(instanceCache) {
                     instance = instanceCache.get (className);
+                    Object origInstance = origInstanceCache.get(className);
+                    if (origInstance != null && li instanceof AbstractLookup.Pair) {
+                        // Check whether the cached original instance was created by this lookup item.
+                        // If yes, we can use it, if not, we should create a new instance.
+                        try {
+                            java.lang.reflect.Method creatorOfMethod = AbstractLookup.Pair.class.getDeclaredMethod("creatorOf", Object.class);
+                            creatorOfMethod.setAccessible(true);
+                            Object isCreator = creatorOfMethod.invoke(li, origInstance);
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("fillServiceInstance("+li+"):");
+                                logger.fine("  className = \""+className+"\", orig instance = "+origInstance+", instance = "+instance+", is creator or = "+isCreator);
+                                if (!Boolean.TRUE.equals(isCreator)) {
+                                    logger.fine("\n!!!\n"+li+" is not a creator of "+origInstance+" !\nCreating a new instance...");
+                                }
+                            }
+                            if (!Boolean.TRUE.equals(isCreator)) {
+                                instance = null;
+                                instanceCache.remove(className);
+                                origInstanceCache.remove(className);
+                            }
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
                 }
                 if (instance != null) {
                     try {
                         add(service.cast(instance), className);
                     } catch (ClassCastException cce) {
-                        Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                        logger.log(Level.WARNING, null, cce);
                     }
                     listenOn(instance.getClass().getClassLoader());
                 } else {
@@ -721,6 +756,7 @@ abstract class Lookup implements ContextProvider {
                             }
                             if (instance == null) {
                                 instance = lookupItem.getInstance();
+                                Object origInstance = instance;
                                 //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
                                 if (instance instanceof ContextAwareService) {
                                     ContextAwareService cas = (ContextAwareService) instance;
@@ -730,6 +766,7 @@ abstract class Lookup implements ContextProvider {
                                 }
                                 synchronized (instanceCache) {
                                     instanceCache.put (cn, instance);
+                                    origInstanceCache.put(cn, origInstance);
                                 }
                             }
                         }
