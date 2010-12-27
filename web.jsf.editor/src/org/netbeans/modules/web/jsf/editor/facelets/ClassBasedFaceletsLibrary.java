@@ -43,6 +43,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
@@ -58,8 +61,8 @@ import org.openide.util.WeakListeners;
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-    private final FileObject libraryDescriptorFile;
     private FaceletsLibraryDescriptor libraryDescriptor;
+    private final String defaultPrefix;
 
     private FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
 
@@ -71,25 +74,16 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, final FaceletsLibrarySupport support, String namespace) {
         super(support, namespace);
-        if (libraryDescriptorSourceURL == null) {
-            throw new NullPointerException("libraryDescriptorSourceURL cannot be null!"); //NOI18N
-        }
-        libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
-        if (libraryDescriptorFile == null) {
-            Logger.getAnonymousLogger().info(
-                    String.format("Cannot convert facelets library descriptor's URL %s into a FileObject?!?!",
-                    libraryDescriptorSourceURL.toString())); //NOI18N
-        } else {
-            //listen on the library descriptor for changes and possibly reset libraries cache
-            libraryDescriptorFile.addFileChangeListener(
-                    WeakListeners.create(FileChangeListener.class, FILE_CHANGE_LISTENER, libraryDescriptorFile));
+        
+        this.defaultPrefix = generateDefaultPrefix();
 
-            //parse the descriptor
-            try {
-                libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
-            } catch (LibraryDescriptorException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        assert libraryDescriptorSourceURL != null;
+
+        FileObject libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
+        try {
+            libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
+        } catch (LibraryDescriptorException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -106,6 +100,11 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     @Override
     public String getDefaultNamespace() {
         return null;
+    }
+
+    @Override
+    public String getDefaultPrefix() {
+        return defaultPrefix;
     }
     
     @Override
@@ -171,6 +170,37 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     public Function createFunction(String name, Method method) {
         return new Function(name, method);
+    }
+
+    private String generateDefaultPrefix() {
+        //generate a default prefix from the namespace
+        String ns = getNamespace();
+        final String HTTP_PREFIX = "http://"; //NOI18N
+        if(ns.startsWith(HTTP_PREFIX)) {
+            ns = ns.substring(HTTP_PREFIX.length());
+        }
+        StringTokenizer st = new StringTokenizer(ns, "/.");
+        List<String> tokens = new LinkedList<String>();
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if(token.length() > 0) {
+                tokens.add(token);
+            }
+        }
+        if(tokens.isEmpty()) {
+            //shoult not happen for normal URLs
+            return "lib"; //NOI18N
+        }
+
+        if(tokens.size() == 1) {
+            return tokens.iterator().next();
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for(String token : tokens) {
+                buf.append(token.charAt(0));
+            }
+            return buf.toString();
+        }
     }
 
    

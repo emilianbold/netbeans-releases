@@ -162,7 +162,7 @@ public class JsfElExpressionTest extends TestBase {
                 new SimpleFileOwnerQueryImplementation(),
                 classpathProvider,
                 new TestLanguageProvider(),
-                new FakeWebModuleProvider(getTestFile("testWebProject")));
+                new FakeWebModuleProvider(getTestFile("testWebProject"), srcFo));
 
         IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
     }
