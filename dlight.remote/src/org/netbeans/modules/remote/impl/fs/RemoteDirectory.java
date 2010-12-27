@@ -84,7 +84,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private Reference<DirectoryStorage> storageRef;
 
-    public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);
     }
@@ -216,7 +216,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             return childrenFO;
         } catch (InterruptedException ex) {
-            // don't report, this just means that we aren't connected 
+            // don't report, this just means that we aren't connected
             // or just interrupted (for example by FileChooser UI)
             RemoteLogger.finest(ex);
         } catch (InterruptedIOException ex) {
@@ -264,9 +264,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 storage = storageRef.get();
             }
         }
-        if (storage != null && storageFile.lastModified() >= fileSystem.getDirtyTimestamp()) {
-            trace("timestamps check passed; returning cached storage"); // NOI18N
-            return storage;
+        if (storage != null) {
+            if (storageFile.lastModified() >= fileSystem.getDirtyTimestamp()) {
+                trace("timestamps check passed; returning cached storage"); // NOI18N
+                return storage;
+            } else if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                trace("timestamps check NOT passed, but the host is offline; returning cached storage"); // NOI18N
+                fileSystem.getRemoteFileSupport().addPendingFile(this);
+                return storage;
+            }
         }
 
         if (trace && storageFile.lastModified() < fileSystem.getDirtyTimestamp()) {
@@ -285,6 +291,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     lock.lock();
                     try {
                         storage.load();
+                        loaded = true;
                     } catch (DirectoryStorage.FormatException e) {
                         Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
                         RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
@@ -302,19 +309,30 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             loaded = true;
         }
 
-        if (loaded && storageFile.lastModified() >= fileSystem.getDirtyTimestamp()) {
-            synchronized (this) {
-                if (storageRef != null) {
-                    DirectoryStorage s = storageRef.get();
-                    if (s != null) {
-                        if (trace) { trace("returning storage that was loaded by other thread"); } // NOI18N
-                        return s;
-                    }
-                }
-                storageRef = new SoftReference<DirectoryStorage>(storage);
+        if (loaded) {
+            boolean ok = false;
+            if (storageFile.lastModified() >= fileSystem.getDirtyTimestamp()) {
+                trace("timestamps check passed; returning just loaded storage"); // NOI18N
+                ok = true;
+            } else if(!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                trace("timestamps check NOT passed, but the host is offline; returning just loaded storage"); // NOI18N
+                ok = true;
+                fileSystem.getRemoteFileSupport().addPendingFile(this);
             }
-            if (trace) { trace("returning just loaded storage"); } // NOI18N
-            return storage;
+            if (ok) {
+                synchronized (this) {
+                    if (storageRef != null) {
+                        DirectoryStorage s = storageRef.get();
+                        if (s != null) {
+                            if (trace) { trace("returning storage that was loaded by other thread"); } // NOI18N
+                            return s;
+                        }
+                    }
+                    storageRef = new SoftReference<DirectoryStorage>(storage);
+                }
+                if (trace) { trace("returning just loaded storage"); } // NOI18N
+                return storage;
+            }
         }
 
         // neither memory nor disk cache helped
@@ -400,7 +418,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         changed = true;
                         invalidate(oldEntry);
                         cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
-                    }                    
+                    }
                 }
                 newEntry.setCache(cacheName);
                 if (!RemoteFileSystemUtils.isSystemCaseSensitive()) {
@@ -508,7 +526,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     public FileType getType() {
         return FileType.Directory;
     }
-    
+
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
@@ -530,7 +548,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private static void setStorageTimestamp(File cache, final long timestamp, boolean recursive) {
-        cache.setLastModified(timestamp);        
+        cache.setLastModified(timestamp);
         if (recursive && cache.exists()) {
             // no need to gather all files into array - process just in filter
             cache.listFiles(new FileFilter() {
