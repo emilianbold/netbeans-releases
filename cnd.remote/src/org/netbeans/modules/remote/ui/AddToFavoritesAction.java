@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -60,6 +61,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -88,7 +91,13 @@ public class AddToFavoritesAction extends SingleHostAction {
 
     @Override
     public boolean isVisible(Node node) {
-        return isRemote(node);
+        TopComponent favoritesComponent = getFavorites();
+        return favoritesComponent != null && isRemote(node);
+    }
+
+    private static TopComponent getFavorites() {
+        TopComponent favoritesComponent = WindowManager.getDefault().findTopComponent("favorites"); // NOI18N
+        return favoritesComponent;
     }
 
     @Override
@@ -134,29 +143,41 @@ public class AddToFavoritesAction extends SingleHostAction {
         
         @Override
         protected void performAction(final ExecutionEnvironment env, Node node) {
-            Runnable runnable = new Runnable() {
+            final TopComponent favorites = getFavorites();
+            if (favorites != null) {
+                Runnable runnable = new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        ConnectionManager.getInstance().connectTo(env);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    FileSystem fs = FileSystemProvider.getFileSystem(env);
-                    FileObject fo = getRoot(env, fs);
-                    if (fo != null && !Favorites.getDefault().isInFavorites(fo)) {
+                    @Override
+                    public void run() {
                         try {
-                            Favorites.getDefault().add(fo);
-                        } catch (NullPointerException ex) {
-                        } catch (DataObjectNotFoundException ex) {
+                            ConnectionManager.getInstance().connectTo(env);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (CancellationException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
+                        FileSystem fs = FileSystemProvider.getFileSystem(env);
+                        FileObject fo = getRoot(env, fs);
+                        if (fo != null && !Favorites.getDefault().isInFavorites(fo)) {
+                            try {
+                                Favorites.getDefault().add(fo);
+                            } catch (NullPointerException ex) {
+                            } catch (DataObjectNotFoundException ex) {
+                            }
+                        }
+                        Runnable openFavorites = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                favorites.open();
+                                favorites.requestActive();
+                            }
+                        };
+                        SwingUtilities.invokeLater(openFavorites);
                     }
-                }
-            };
-            RequestProcessor.getDefault().post(runnable);
+                };
+                RequestProcessor.getDefault().post(runnable);
+            }
         }
 
         @Override
