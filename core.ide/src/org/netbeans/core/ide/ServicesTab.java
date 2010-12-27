@@ -46,10 +46,11 @@ import java.awt.BorderLayout;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -60,7 +61,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Handle;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -74,6 +74,11 @@ import org.openide.windows.WindowManager;
 /**
  * Services tab which lists nodes found in {@code UI/Runtime}.
  */
+@TopComponent.Description(preferredID=ServicesTab.ID, iconBase="org/netbeans/core/ide/resources/services.gif", persistenceType=TopComponent.PERSISTENCE_ALWAYS)
+@TopComponent.Registration(mode="explorer", position=500, openAtStartup=false)
+@ActionID(category="Window", id="org.netbeans.core.ide.ServicesTabAction")
+@ActionReference(path="Menu/Window", position=400)
+@TopComponent.OpenActionRegistration(displayName="#CTL_ServicesTabAction", preferredID=ServicesTab.ID)
 public class ServicesTab extends TopComponent implements ExplorerManager.Provider {
 
     private static final long serialVersionUID = 1L;
@@ -94,38 +99,11 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
         view.setRootVisible(false);
         setLayout(new BorderLayout());
         add(view);
-        setName(preferredID());
+        setName(ID);
         setDisplayName(NbBundle.getMessage(ServicesTab.class, "LBL_Services"));
-        setIcon(ImageUtilities.loadImage("org/netbeans/core/ide/resources/services.gif", true));
     }
 
-    private static final String ID = "services"; // NOI18N
-    protected @Override String preferredID() {
-        return ID;
-    }
-    private static ServicesTab DEFAULT;
-    public static synchronized ServicesTab getDefault() {
-        if (DEFAULT == null) {
-            DEFAULT = new ServicesTab();
-        }
-        return DEFAULT;
-    }
-    static synchronized ServicesTab findDefault() {
-        if (DEFAULT == null) {
-            TopComponent tc = WindowManager.getDefault().findTopComponent(ID);
-            if (tc instanceof ServicesTab) {
-                DEFAULT = (ServicesTab) tc;
-            } else {
-                Logger.getLogger(ServicesTab.class.getName()).warning("Cannot find tab by ID");
-                DEFAULT = new ServicesTab();
-            }
-        }
-        return DEFAULT;
-    }
-
-    public @Override int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
-    }
+    static final String ID = "services"; // NOI18N
 
     public ExplorerManager getExplorerManager() {
         return manager;
@@ -159,8 +137,13 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
 
         public @Override Handle getHandle() {
             return new Handle() {
-                public Node getNode() throws IOException {
-                    return findDefault().manager.getRootContext();
+                public @Override Node getNode() throws IOException {
+                    TopComponent tc = WindowManager.getDefault().findTopComponent(ID);
+                    if (tc instanceof ServicesTab) {
+                        return ((ServicesTab) tc).manager.getRootContext();
+                    } else {
+                        throw new IOException("no ServicesTab");
+                    }
                 }
             };
         }

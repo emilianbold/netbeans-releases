@@ -48,8 +48,10 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -445,6 +447,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private javax.swing.JTextField runDirectoryTextField;
     // End of variables declaration//GEN-END:variables
     
+    private Project[] getOpenedProjects() {
+        List<Project> res = new ArrayList<Project>();
+        for(Project p :OpenProjects.getDefault().getOpenProjects()) {
+            if (p.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
+                res.add(p);
+            }
+        }
+        return res.toArray(new Project[res.size()]);
+    }
+
     private void initGui() {
         ActionListener projectComboBoxActionListener = projectComboBox.getActionListeners()[0];
         projectComboBox.removeActionListener(projectComboBoxActionListener);
@@ -454,7 +466,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBox.setVisible(isRun);
         projectLabel.setVisible(isRun);
         if (isRun) {
-            projectChoices = OpenProjects.getDefault().getOpenProjects();
+            projectChoices = getOpenedProjects();
             for (int i = 0; i < projectChoices.length; i++) {
                 projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
             }
@@ -605,12 +617,12 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     // Working dir
                     String wd = new File(getExecutablePath()).getParentFile().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-                    wd = CndPathUtilitities.normalize(wd);
+                    wd = CndPathUtilitities.normalizeSlashes(wd);
                     conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
                     // Executable
                     String exe = getExecutablePath();
                     exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-                    exe = CndPathUtilitities.normalize(exe);
+                    exe = CndPathUtilitities.normalizeSlashes(exe);
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
                     ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
@@ -664,7 +676,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         // Working dir
         String wd = runDirectoryTextField.getText();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalize(wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();

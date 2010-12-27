@@ -83,6 +83,10 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         assertTrue(repositoryMetadata.exists());
     }
     
+    protected File getRepositoryLocation() {
+        return repositoryLocation;
+    }
+    
     protected File createFolder(String name) throws IOException {
         FileObject wd = FileUtil.toFileObject(getWorkDir());
         FileObject folder = wd.createFolder(name);

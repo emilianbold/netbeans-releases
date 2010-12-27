@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -168,6 +169,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 }
             });
             JScrollPane spane = new JScrollPane (this.resources);            
+            spane.setPreferredSize(new Dimension(400,200));
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;

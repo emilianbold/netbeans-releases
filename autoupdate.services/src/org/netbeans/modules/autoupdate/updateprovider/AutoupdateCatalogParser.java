@@ -244,7 +244,8 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 } catch (IOException e) {
                 }
             }
-            ERR.log (Level.SEVERE, "Cannot estabilish input stream for " + toParse , ex);
+            ERR.log (Level.SEVERE, "Cannot estabilish input stream for {0}", toParse);
+            ERR.log (Level.INFO, "Parsing exception", ex);
             return new InputSource();
         }
     }

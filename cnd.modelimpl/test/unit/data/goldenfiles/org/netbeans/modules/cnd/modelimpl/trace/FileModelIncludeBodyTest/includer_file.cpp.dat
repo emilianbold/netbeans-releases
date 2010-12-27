@@ -1,0 +1,96 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE includer_file.cpp
+Includes:
+"innernsbody.h" [3:1/61-3:25/85]
+"outerbody.h" [6:1/136-6:23/158]
+"innerbody.h" [9:1/212-9:23/234]
+"methodbody.h" [12:1/273-12:24/296]
+"outerbody.h" [17:1/386-17:23/408]
+"outernsbody.h" [21:1/439-21:25/463]
+Macros:
+#define 'PART1' [5:1/122-5:14/135]
+#define 'PART2' [16:1/372-16:14/385]
+NAMESPACE DEFINITOIN OuterNSIncluder [1:1/0-22:2/465] SCOPE: includer_file.cpp
+    VARIABLE outerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: OuterNSIncluder 
+    NAMESPACE DEFINITOIN InnnerNSIncluder [2:5/32-20:6/438] SCOPE: includer_file.cpp
+        VARIABLE innerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: InnnerNSIncluder 
+        STRUCT OuterClassIncluder (OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder ) [4:9/94-19:10/431] lcurly=120 SCOPE: InnnerNSIncluder 
+            BASE CLASSES:
+            MEMBERS:
+                FIELD PUBLIC part1OuterIncluder [3:1/14-3:24/37]  TYPE: int TEXT=int  [3:1/14-3:4/17]  INIT: null  SCOPE: OuterClassIncluder 
+                FIELD PUBLIC part2OuterIncluder [5:1/58-5:24/81]  TYPE: int TEXT=int  [5:1/58-5:4/61]  INIT: null  SCOPE: OuterClassIncluder 
+                STRUCT InnerClassIncluder (OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder ) [8:13/184-15:14/370] lcurly=210 SCOPE: OuterClassIncluder 
+                    BASE CLASSES:
+                    MEMBERS:
+                        FIELD PUBLIC fieldIncluder [4:1/44-4:19/62]  TYPE: int TEXT=int  [4:1/44-4:4/47]  INIT: null  SCOPE: InnerClassIncluder 
+                        FUNCTION DEFINITION foooIncluder  [3:4/64-4:26/111] MethodDDImpl SCOPE: InnerClassIncluder 
+                            SIGNATURE foooIncluder()
+                            UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::foooIncluder()
+                            DECLARATION: foooIncluder  [3:4/64-4:26/111]
+                            PARAMETERS:
+                            RETURNS void TEXT=void  [3:4/64-3:8/68]
+                            STATEMENT COMPOUND  [3:24/84-4:26/111] SCOPE: foooIncluder 
+                        FUNCTION DEFINITION booIncluder  [11:17/252-14:18/356] MethodDDImpl SCOPE: InnerClassIncluder 
+                            SIGNATURE booIncluder()
+                            UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::booIncluder()
+                            DECLARATION: booIncluder  [11:17/252-14:18/356]
+                            PARAMETERS:
+                            RETURNS void TEXT=void  [11:17/252-11:21/256]
+                            STATEMENT COMPOUND  [11:36/271-14:18/356] SCOPE: booIncluder 
+                                STATEMENT EXPRESSION  [13:21/317-13:41/337] SCOPE: Stmt  [11:36/271-14:18/356] text: 'localvarIncluder = 1'
+
+========== Dumping model of PROJECT DummyProject
+VARIABLE deepFieldIncluder [2:1/1-2:23/23]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: $Global$ 
+VARIABLE fieldIncluder [4:1/44-4:19/62]  TYPE: int TEXT=int  [4:1/44-4:4/47]  INIT: null  SCOPE: $Global$ 
+FUNCTION DEFINITION foooIncluder  [6:1/64-8:2/111] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foooIncluder()
+    UNIQUE NAME f:foooIncluder()
+    DECLARATION: foooIncluder  [6:1/64-8:2/111]
+    PARAMETERS:
+    RETURNS void TEXT=void  [6:1/64-6:5/68]
+    STATEMENT COMPOUND  [6:21/84-8:2/111] SCOPE: foooIncluder 
+VARIABLE innerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: InnnerNSIncluder 
+VARIABLE localvarIncluder [2:1/1-2:22/22]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: $Global$ 
+VARIABLE part1OuterIncluder [3:1/14-3:24/37]  TYPE: int TEXT=int  [3:1/14-3:4/17]  INIT: null  SCOPE: $Global$ 
+VARIABLE part2OuterIncluder [5:1/58-5:24/81]  TYPE: int TEXT=int  [5:1/58-5:4/61]  INIT: null  SCOPE: $Global$ 
+VARIABLE outerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: OuterNSIncluder 
+NAMESPACE DEFINITIONS for OuterNSIncluder (OuterNSIncluder) 
+    includer_file.cpp  [1:1/0-22:2/465]
+NAMESPACE OuterNSIncluder (OuterNSIncluder) 
+    VARIABLE outerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: OuterNSIncluder 
+    NAMESPACE DEFINITIONS for InnnerNSIncluder (OuterNSIncluder::InnnerNSIncluder) 
+        includer_file.cpp  [2:5/32-20:6/438]
+    NAMESPACE InnnerNSIncluder (OuterNSIncluder::InnnerNSIncluder) 
+        STRUCT OuterClassIncluder (OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder ) [4:9/94-19:10/431] lcurly=120 SCOPE: InnnerNSIncluder 
+            BASE CLASSES:
+            MEMBERS:
+                FIELD PUBLIC part1OuterIncluder [3:1/14-3:24/37]  TYPE: int TEXT=int  [3:1/14-3:4/17]  INIT: null  SCOPE: OuterClassIncluder 
+                FIELD PUBLIC part2OuterIncluder [5:1/58-5:24/81]  TYPE: int TEXT=int  [5:1/58-5:4/61]  INIT: null  SCOPE: OuterClassIncluder 
+                STRUCT InnerClassIncluder (OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder ) [8:13/184-15:14/370] lcurly=210 SCOPE: OuterClassIncluder 
+                    BASE CLASSES:
+                    MEMBERS:
+                        FIELD PUBLIC fieldIncluder [4:1/44-4:19/62]  TYPE: int TEXT=int  [4:1/44-4:4/47]  INIT: null  SCOPE: InnerClassIncluder 
+                        FUNCTION DEFINITION foooIncluder  [3:4/64-4:26/111] MethodDDImpl SCOPE: InnerClassIncluder 
+                            SIGNATURE foooIncluder()
+                            UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::foooIncluder()
+                            DECLARATION: foooIncluder  [3:4/64-4:26/111]
+                            PARAMETERS:
+                            RETURNS void TEXT=void  [3:4/64-3:8/68]
+                            STATEMENT COMPOUND  [3:24/84-4:26/111] SCOPE: foooIncluder 
+                        FUNCTION DEFINITION booIncluder  [11:17/252-14:18/356] MethodDDImpl SCOPE: InnerClassIncluder 
+                            SIGNATURE booIncluder()
+                            UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::booIncluder()
+                            DECLARATION: booIncluder  [11:17/252-14:18/356]
+                            PARAMETERS:
+                            RETURNS void TEXT=void  [11:17/252-11:21/256]
+                            STATEMENT COMPOUND  [11:36/271-14:18/356] SCOPE: booIncluder 
+                                STATEMENT EXPRESSION  [13:21/317-13:41/337] SCOPE: Stmt  [11:36/271-14:18/356] text: 'localvarIncluder = 1'
+        VARIABLE innerNSVarIncluder [2:1/1-2:24/24]  TYPE: int TEXT=int  [2:1/1-2:4/4]  INIT: null  SCOPE: InnnerNSIncluder 
+

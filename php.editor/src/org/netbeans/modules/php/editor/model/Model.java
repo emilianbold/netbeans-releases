@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -54,6 +55,9 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
  * @author Radek Matous
  */
 public final class Model {
+    
+    private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
+    
     private ModelVisitor modelVisitor;
     private final PHPParseResult info;
     private OccurencesSupport occurencesSupport;
@@ -67,7 +71,7 @@ public final class Model {
 //    }
 
     public List<PhpBaseElement>  getExtendedElements() {
-        return getModelVisitor().extendedElements();
+        return getModelVisitor().extendedElements();        
     }
 
     public FileScope getFileScope() {
@@ -120,9 +124,12 @@ public final class Model {
      */
     synchronized ModelVisitor getModelVisitor() {
         if (modelVisitor == null) {
+            long start = System.currentTimeMillis();
             modelVisitor = new ModelVisitor(info);
             modelVisitor.scan(Utils.getRoot(info));
-        }
+            long end = System.currentTimeMillis();
+            LOGGER.fine("Building model took: " + (end - start));
+            }
 
         return modelVisitor;
     }

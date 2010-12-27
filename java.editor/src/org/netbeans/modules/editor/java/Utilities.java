@@ -87,7 +87,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -113,6 +115,7 @@ public final class Utilities {
     private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
             if (settingName == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(settingName)) {
@@ -451,7 +454,7 @@ public final class Utilities {
         List<String> result = new ArrayList<String>();
         if (type == null)
             return result;
-        List<String> vnct = varNamesForType(type, types, elements);
+        List<String> vnct = varNamesForType(type, types, elements, prefix);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
@@ -507,16 +510,16 @@ public final class Utilities {
         return inAnonymousOrLocalClass(parentPath);
     }
         
-    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
+    private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
         switch (type.getKind()) {
             case ARRAY:
                 TypeElement iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
                 TypeMirror iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 TypeMirror ct = ((ArrayType)type).getComponentType();
                 if (ct.getKind() == TypeKind.ARRAY && iterable != null && types.isSubtype(ct, iterable))
-                    return varNamesForType(ct, types, elements);
+                    return varNamesForType(ct, types, elements, prefix);
                 List<String> vnct = new ArrayList<String>();
-                for (String name : varNamesForType(ct, types, elements))
+                for (String name : varNamesForType(ct, types, elements, prefix))
                     vnct.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                 return vnct;
             case BOOLEAN:
@@ -542,8 +545,11 @@ public final class Utilities {
                     al.add(tn);
                     sb.append(tn.charAt(0));
                 }
-                if (sb.length() > 0)
-                    al.add(sb.toString());
+                if (sb.length() > 0) {
+                    String s = sb.toString();
+                    if (prefix == null || prefix.length() == 0 || s.startsWith(prefix))
+                        al.add(s);
+                }
                 return al;
             case DECLARED:
                 iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
@@ -564,22 +570,25 @@ public final class Utilities {
                     if (tas.size() > 0) {
                         TypeMirror et = tas.get(0);
                         if (et.getKind() == TypeKind.ARRAY || (et.getKind() != TypeKind.WILDCARD && types.isSubtype(et, iterable))) {
-                            al.addAll(varNamesForType(et, types, elements));
+                            al.addAll(varNamesForType(et, types, elements, prefix));
                         } else {
-                            for (String name : varNamesForType(et, types, elements))
+                            for (String name : varNamesForType(et, types, elements, prefix))
                                 al.add(name.endsWith("s") ? name + "es" : name + "s"); //NOI18N
                         }
                     }
                 }
-                if (sb.length() > 0)
-                    al.add(sb.toString());
+                if (sb.length() > 0) {
+                    String s = sb.toString();
+                    if (prefix == null || prefix.length() == 0 || s.startsWith(prefix))
+                        al.add(s);
+                }
                 return al;
             case WILDCARD:
                 TypeMirror bound = ((WildcardType)type).getExtendsBound();
                 if (bound == null)
                     bound = ((WildcardType)type).getSuperBound();
                 if (bound != null)
-                    return varNamesForType(bound, types, elements);
+                    return varNamesForType(bound, types, elements, prefix);
         }
         return Collections.<String>emptyList();
     }
@@ -882,6 +891,19 @@ public final class Utilities {
 
         return found;
     }
+
+    public static Set<Severity> disableErrors(FileObject file) {
+        if (file.getAttribute(DISABLE_ERRORS) != null) {
+            return EnumSet.allOf(Severity.class);
+        }
+        if (!file.canWrite() && FileUtil.getArchiveFile(file) != null) {
+            return EnumSet.allOf(Severity.class);
+        }
+
+        return EnumSet.noneOf(Severity.class);
+    }
+
+    private static final String DISABLE_ERRORS = "disable-java-errors";
 
     private Utilities() {
     }

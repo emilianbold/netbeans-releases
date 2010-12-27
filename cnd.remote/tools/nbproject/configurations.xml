@@ -2,20 +2,6 @@
 <configurationDescriptor version="69">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <df name="tools" root=".">
-      <df name="build">
-        <df name="Linux-x86" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-        <df name="Linux-x86_64" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-        <df name="SunOS-sparc" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-        <df name="SunOS-sparc_64" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-        <df name="SunOS-x86" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-        <df name="SunOS-x86_64" kind="SOURCE_LOGICAL_FOLDER">
-        </df>
-      </df>
       <df name="test">
         <df name="subdir">
         </df>

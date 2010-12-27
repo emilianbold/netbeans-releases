@@ -42,10 +42,14 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -57,7 +61,7 @@ public final class DocumentBasedIndexManager {
 
     private static DocumentBasedIndexManager instance;
 
-    private final Map<URL, DocumentBasedIndex> indexes = new HashMap<URL, DocumentBasedIndex> ();
+    private final Map<URL, DocumentIndex> indexes = new HashMap<URL, DocumentIndex> ();
 
     private DocumentBasedIndexManager() {}
 
@@ -76,22 +80,26 @@ public final class DocumentBasedIndexManager {
         return instance;
     }
 
-    public synchronized DocumentBasedIndex getIndex (final URL root, final Mode mode) throws IOException {
+    public synchronized DocumentIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
-        DocumentBasedIndex li = indexes.get(root);
+        DocumentIndex li = indexes.get(root);
         if (li == null) {
-            switch (mode) {
-                case CREATE:
-                    li = new DocumentBasedIndex(root);
-                    indexes.put(root,li);
-                    break;
-                case IF_EXIST:
-                    final FileObject fo = URLMapper.findFileObject(root);
-                    if (fo != null && fo.isFolder() && fo.getChildren(false).hasMoreElements()) {
-                        li = new DocumentBasedIndex(root);
+            try {
+                switch (mode) {
+                    case CREATE:                    
+                        li = IndexManager.createDocumentIndex(new File(root.toURI()));
                         indexes.put(root,li);
-                    }
-                    break;
+                        break;
+                    case IF_EXIST:
+                        final FileObject fo = URLMapper.findFileObject(root);
+                        if (fo != null && fo.isFolder() && fo.getChildren(false).hasMoreElements()) {
+                            li = IndexManager.createDocumentIndex(new File(root.toURI()));
+                            indexes.put(root,li);
+                        }
+                        break;
+                }
+            } catch (URISyntaxException e) {
+                throw new IOException(e);
             }
         }
         return li;

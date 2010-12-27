@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 
 public class DisassemblerWindowAction extends CallableSystemAction implements StateListener {
 
-    String menu_name;
-    String group_name;
+    private final String menu_name;
+    private final String group_name;
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -6814567172958445516L;    
@@ -71,14 +71,7 @@ public class DisassemblerWindowAction extends CallableSystemAction implements St
     public String getName() {
 	return menu_name;
     }
-
-    // interface SystemAction
-    @Override
-    public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-        return debugger != null;
-    }
-
+    
     // interface SystemAction
     @Override
     protected void initialize() {

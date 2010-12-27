@@ -349,12 +349,14 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     
     private ProjectBase getProject(NativeFileItem nativeFile, boolean createIfNeeded) {
         assert nativeFile != null : "must not be null";
-        assert nativeFile.getFile() != null : "must be associated with valid file";
-        assert nativeFile.getNativeProject() != null : "must have container project";
         ProjectBase csmProject = null;
         try {
             NativeProject aNnativeProject = nativeFile.getNativeProject();
-	    assert(aNnativeProject != null) : "NativeFileItem should never return null NativeProject";
+            assert (aNnativeProject == null) || this.nativeProject.equals(aNnativeProject) : "listener was attached to " + this.nativeProject + "\n was notified from " + aNnativeProject;
+            // removed file can have null project
+            if (aNnativeProject == null) {
+                aNnativeProject = this.nativeProject;
+            }
             if (aNnativeProject != null) {
                 csmProject = createIfNeeded ? (ProjectBase) model._getProject(aNnativeProject) :
                     (ProjectBase) model.findProject(aNnativeProject);

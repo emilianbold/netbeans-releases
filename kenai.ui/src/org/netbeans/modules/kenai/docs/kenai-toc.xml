@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+    <tocitem text="IDE Basics">
+        <tocitem text="Collaborative Development">
+            <tocitem text="Using a Team Server" target="kenai_projects" />
+            <tocitem text="Adding a Team Server" target="team_addserver" />
+            <tocitem text="Sharing a Local Project" target="kenai_share" />
+            <tocitem text="Creating and Opening Projects" target="kenai_create" />
+            <tocitem text="Team Project Tasks: Quick Reference" target="kenai_quickref" />
+            <tocitem text="Using the Team Dashboard" target="kenai_workingwith" />
+            <tocitem text="Logging in to Chat" target="kenai_chatlogin" />
+            <tocitem text="Chatting with Project Members" target="kenai_members" />
+        </tocitem>
+    </tocitem>
+</toc>

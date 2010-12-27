@@ -71,7 +71,8 @@ public class ClassPathSupport {
     /** Creates leaf PathResourceImplementation.
      * The created PathResourceImplementation has exactly one immutable root.
      * @param url the root of the resource. The URL must refer to folder. In the case of archive file
-     * the jar protocol URL must be used.
+     * the jar protocol URL must be used. The folder URL has to end with '/' The {@link FileUtil#urlForArchiveOrDir}
+     * can be used to create folder URLs.
      * @return PathResourceImplementation
      */
     public static PathResourceImplementation createResource (URL url) {
@@ -136,9 +137,11 @@ public class ClassPathSupport {
 
     /**
      * Create ClassPath for the given array of class path roots
-     * @param roots array of URLs which must correspond to directory.
+     * @param roots array of URLs which must correspond to folder.
      * In the case of archive file, the jar protocol URL must be used.
-     *   Cannot be null; can be empty array; array can contain nulls.
+     * The folder URL has to end with '/'. The {@link FileUtil#urlForArchiveOrDir}
+     * can be used to create folder URLs.
+     * Cannot be null; can be empty array; array can contain nulls.
      * @return API classpath
      */
     public static ClassPath createClassPath(URL... roots) {

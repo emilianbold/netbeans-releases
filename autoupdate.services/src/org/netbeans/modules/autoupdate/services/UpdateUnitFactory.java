@@ -133,7 +133,7 @@ public class UpdateUnitFactory {
         // append installed units
         Map<String, UpdateUnit> mappedImpl = appendUpdateItems (
                 new HashMap<String, UpdateUnit> (),
-                InstalledModuleProvider.getDefault ());
+                InstalledModuleProvider.getDefault());
         reportRunTime ("Append installed units.");
 
         for (UpdateUnitProvider up : updates) {
@@ -294,7 +294,7 @@ public class UpdateUnitFactory {
             unitImpl = Trampoline.API.impl (unit);
         }
         
-        if (provider instanceof InstalledUpdateProvider) {
+        if (provider == InstalledUpdateProvider.getDefault()) {
             if (unitImpl.getInstalled () == null) {
                 unitImpl.setInstalled (element);
             }

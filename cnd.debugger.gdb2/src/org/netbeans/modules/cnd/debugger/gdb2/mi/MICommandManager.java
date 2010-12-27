@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /*
  * Manages ...
@@ -56,14 +56,17 @@ import java.util.Map;
 
 class MICommandManager {
     private final MICommandInjector injector;
-    private int commandToken = 1;
-    private final Map<Integer, MICommand> pendingCommands =
-            new LinkedHashMap<Integer, MICommand>();
+    
+    private static final int MIN_TOKEN = 2;
+    private static final int MAX_TOKEN = Integer.MAX_VALUE-1000;
+
+    private int commandToken = MIN_TOKEN;
+    
+    private final ConcurrentLinkedQueue<MICommand> pendingCommands = new ConcurrentLinkedQueue<MICommand>();
 
     public MICommandManager(MICommandInjector injector) {
 	this.injector = injector;
     } 
-
 
     /**
      * Send a command immediately or queue it up if there are
@@ -72,13 +75,16 @@ class MICommandManager {
      * NOTE: Currently commands are always sent immediately.
      */
 
-    public void send(MICommand cmd) {
+    public synchronized void send(MICommand cmd) {
 	cmd.setManagerData(this, commandToken++);
-	pendingCommands.put(cmd.getToken(), cmd);
-	injector.inject("" + cmd.getToken() + cmd.command() + "\n"); // NOI18N
-	
+        // limit max token to avoid prsing errors
+        if (commandToken > MAX_TOKEN) {
+            commandToken = MIN_TOKEN;
+        }
+	pendingCommands.add(cmd);
+	injector.inject(String.valueOf(cmd.getToken()) + cmd.command() + "\n"); // NOI18N
     }
-
+    
     /**
      * We're done with this command. 
      * Take it off the pending list send off any queued up commands.
@@ -87,17 +93,19 @@ class MICommandManager {
      */
 
     void finish(MICommand cmd) {
-	pendingCommands.remove(cmd.getToken());
+        pendingCommands.remove(cmd);
 	if (Log.MI.finish) {
 	    injector.log(String.format("## finished %d\n\r", cmd.getToken())); // NOI18N
 	    injector.log(String.format("## outstanding: ")); // NOI18N
-	    if (pendingCommands.isEmpty()) {
-		injector.log(String.format("none")); // NOI18N
-	    } else {
-		for (MICommand oc : pendingCommands.values()) {
-		    injector.log(String.format(" %d", oc.getToken())); // NOI18N
-		}
-	    }
+            synchronized (pendingCommands) {
+                if (pendingCommands.isEmpty()) {
+                    injector.log(String.format("none")); // NOI18N
+                } else {
+                    for (MICommand oc : pendingCommands) {
+                        injector.log(String.format(" %d", oc.getToken())); // NOI18N
+                    }
+                }
+            }
 	    injector.log(String.format("\n\r")); // NOI18N
 	}
     }
@@ -107,14 +115,28 @@ class MICommandManager {
      */
 
     public void dispatch(MIRecord record) {
-	int token = record.token();
-	MICommand cmd = pendingCommands.get(token);
-	if (cmd == null) {
-	    injector.log(String.format("No command for token %d\n\r", token)); // NOI18N
+        int token = record.token();
+	MICommand cmd = pendingCommands.peek();
+        
+        while (cmd != null && cmd.getToken() < token) {
+            // an error happened somewhere
+            // delete all unanswered commands
+            cmd = pendingCommands.poll();
+            injector.log(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
+            cmd = pendingCommands.peek();
+        }
+	if (cmd == null || cmd.getToken() != token) {
+	    injector.log(String.format("No command for record %s\n\r", record)); // NOI18N
+            streamMessages.clear();
+            consoleMessages.clear();
 	    return;
 	}
 
 	record.setCommand(cmd);
+        cmd.recordLogStream(streamMessages);
+        streamMessages.clear();
+        cmd.recordConsoleStream(consoleMessages);
+        consoleMessages.clear();
 
 	if (record.isError()) {
 	    injector.log(record.error() + "\n\r"); // NOI18N
@@ -145,40 +167,25 @@ class MICommandManager {
 	} 
     }
 
+    private final LinkedList<String> streamMessages = new LinkedList<String>();
     /**
      * Record logStream data into the current pending command.
      */
     void logStream(String data) {
-	if (pendingCommands.isEmpty()) {
-	    /*
-	    System.out.printf("--- logStream dropped\n");
-	    */
-	    return;
-	}
-	MICommand oc = pendingCommands.values().iterator().next();
-	/* 
-	System.out.printf("--- logStream added to %d:\n", oc.getToken());
-	System.out.printf("    %s\n", data);
-	*/
-	oc.recordLogStream(data);
+        streamMessages.add(data);
     }
 
+    private final LinkedList<String> consoleMessages = new LinkedList<String>();
     /**
      * Record logConsole data into the current pending command.
      */
     void logConsole(String data) {
-	if (pendingCommands.isEmpty()) {
-	    /*
-	    System.out.printf("--- logConsole dropped\n");
-	    */
-	    return;
-	}
-	MICommand oc = pendingCommands.values().iterator().next();
-	/*
-	System.out.printf("--- logConsole added to %d:\n", oc.getToken());
-	System.out.printf("    %s\n", data);
-	*/
-	oc.recordConsoleStream(data);
+        consoleMessages.add(data);
+    }
+    
+    void clearMessages() {
+        streamMessages.clear();
+        consoleMessages.clear();
     }
 
     /**

@@ -111,7 +111,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public abstract class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
@@ -136,9 +136,9 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     private final VCSCommitDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
+    public VCSCommitPanel(VCSCommitTable table, VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
         this.parameters = parameters;
-        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
+        this.commitTable = table;
         this.diffProvider = diffProvider;
         
         parameters.addChangeListener(this);
@@ -159,7 +159,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         this.preferences = preferences;
     }
     
-    public VCSCommitTable getCommitTable() {
+    public VCSCommitTable<F> getCommitTable() {
         return commitTable;
     }
     
@@ -169,7 +169,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
                 return f;
             }
         }
-        assert false : "no filter selected"; // there always must be one
+        assert false : "no filter selected"; // there always must be one NOI18N
         return null;
     }
 
@@ -178,7 +178,8 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
-        errorLabel.setText(htmlErrorLabel);
+        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>"); // NOI18N
+        errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
     @Override
@@ -187,7 +188,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         
         preferences.addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
-        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);        
+        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);          
     }
 
     public VCSCommitParameters getParameters() {
@@ -224,8 +225,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
-    
-    protected abstract void commitTableChanged();
     
     protected abstract void computeNodes();
     
@@ -293,11 +292,13 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         basePanel.add(filesPanel);
         
         // hooks area
-        if(!hooks.isEmpty()) {            
-            HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);                                                              
+        int hooksWidth = -1;
+        if(!hooks.isEmpty()) {
+            HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);
             hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
             basePanel.add(hooksPanel);
             basePanel.add(makeVerticalStrut(hooksPanel, errorLabel, RELATED, this));
+            hooksWidth = hooksPanel.getPreferedWidth();
         } else {
             basePanel.add(makeVerticalStrut(filesPanel, errorLabel, RELATED, this));            
         }
@@ -310,7 +311,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
         errorLabel.setVisible(false);
-        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/info.png", false)); // NOI18N        
+        errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/util/resources/error.gif", false)); // NOI18N        
         
         progressPanel.setAlignmentY(LEFT_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -320,8 +321,19 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
                                     getContainerGap(EAST)));  // right
         
         basePanel.add(bottomPanel);
+        
+        int baseWidth = basePanel.getPreferredSize().width;
+        int baseHeight = basePanel.getPreferredSize().height;
+        int parametersWidth = parametersPane1.getPreferredSize().width;
+        
+        if(baseWidth < parametersWidth) baseWidth = parametersWidth;
+        if(baseWidth < hooksWidth) baseWidth = hooksWidth;
+        basePanel.setPreferredSize(new Dimension(baseWidth, baseHeight));
+        
         setLayout(new BoxLayout(this, Y_AXIS));
-        add(basePanel);                    
+        add(basePanel);  
+        
+        
     }// </editor-fold>
 
     static Component makeVerticalStrut(JComponent compA,
@@ -383,19 +395,33 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             if(diffProvider != null) {
                 commitTable.setModifiedFiles(diffProvider.getModifiedFiles());
             }
-        } else if(e.getSource() == parameters) {
-            boolean commitable = parameters.isCommitable();
-            commitButton.setEnabled(commitable);
-            if(!commitable) {
-                String warning = parameters.getWarning();
-                errorLabel.setText(warning != null ? warning : "");             // NOI18N
-            } else {
-                errorLabel.setText("");                                         // NOI18N
-            }
-            errorLabel.setVisible(!errorLabel.getText().isEmpty());
+        } else if(e.getSource() == parameters || e.getSource() == commitTable) {
+            valuesChanged();    
         }
     }
 
+    private void valuesChanged() {
+        String errroMsg = null;
+        boolean commitable = true;
+        try {
+            commitable = parameters.isCommitable();            
+            if(!commitable) {
+                errroMsg = parameters.getErrorMessage();
+                return;
+            } 
+            
+            commitable &= commitTable.containsCommitable();
+            if(!commitable) {
+                errroMsg = commitTable.getErrorMessage();
+                return;
+            }             
+            
+        } finally {
+            commitButton.setEnabled(commitable);
+            setErrorLabel(errroMsg != null ? errroMsg : "");             // NOI18N            
+        }        
+    }
+    
     void openDiff (VCSFileNode[] nodes) {
         if(diffProvider == null) {
             return;
@@ -484,19 +510,19 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
         table.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                commitTableChanged();
+                valuesChanged();
             }
         });
 
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-        dialog.addWindowListener(new DialogBoundsPreserver(preferences, "git.commit.dialog")); // NOI18N
+        dialog.addWindowListener(new DialogBoundsPreserver(preferences, this.getClass().getName())); 
         dialog.pack();
         dialog.setVisible(true);
         

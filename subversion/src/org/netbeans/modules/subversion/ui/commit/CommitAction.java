@@ -137,6 +137,11 @@ public class CommitAction extends ContextAction {
         commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
     }
 
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/commit.png"; // NOI18N
+    }
+
     /**
      * Returns true if the given nodes are from the versioning view or the diff view.
      * In such case the deep scan is not required because the files and their statuses should already be known
@@ -977,10 +982,7 @@ public class CommitAction extends ContextAction {
             //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
                 ISVNStatus st = null;
-                if(file.isDirectory() &&
-                    ( removeCandidates.contains(file) ||
-                      ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
-                {
+                if(removeCandidates.contains(file) || ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())) {
                     recursiveCommits.add(file);
                 }
             }
@@ -1018,8 +1020,11 @@ public class CommitAction extends ContextAction {
         List<File> unmanaged = new ArrayList<File>();
         File file = node.getFile();
         File parent = file.getParentFile();
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         while (true) {
-            if (new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
+            // added parent does not have metadata in 1.7, now, does it?
+            // in that case we need to check it's status
+            if (SvnUtils.hasMetadata(parent) || (cache.getStatus(parent).getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
                 break;
             }
             unmanaged.add(0, parent);

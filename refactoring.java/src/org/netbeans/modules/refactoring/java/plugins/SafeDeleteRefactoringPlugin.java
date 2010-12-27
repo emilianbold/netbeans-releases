@@ -45,6 +45,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -138,7 +139,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 continue;
             }
             if (!isPendingDelete(elem, refactoredObjects)) {
-                problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
+                problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
                 break;
             }
         }
@@ -174,6 +175,27 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         
         fireProgressListenerStop();
         return null;
+    }
+
+    private String getWhereUsedItemNames() {
+        final StringBuilder b = new StringBuilder();
+        for (final TreePathHandle handle:grips) {
+            try {
+                JavaSource.forFileObject(handle.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        if (b.length() > 0) {
+                            b.append(", ");
+                        }
+                        b.append(handle.resolveElement(parameter).getSimpleName());
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return b.toString();
     }
 
     private class ProblemDetailsImplemen implements ProblemDetailsImplementation {

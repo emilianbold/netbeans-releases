@@ -115,6 +115,11 @@ public class Constants {
 
     public static final String HASH_SET_TYPE = "java.util.HashSet"; //NOI18N
     
+    public static final String REQUESTED_SCOPE = "RequestScoped"; //NOI18N
+    
+    public static final String FQN_REQUESTED_SCOPE ="javax.enterprise.context." // NOI18N
+                +REQUESTED_SCOPE;
+    
     public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
     
     public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };

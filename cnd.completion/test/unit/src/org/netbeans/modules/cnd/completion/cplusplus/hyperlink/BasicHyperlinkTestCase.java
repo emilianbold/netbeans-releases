@@ -54,6 +54,23 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test192897() throws Exception {
+        // #192897 -  unstable LiteSQL accuracy test
+        performTest("iz192897.h", 23, 20, "iz192897.h", 6, 13);
+        performTest("iz192897.cc", 10, 15, "iz192897.h", 8, 13);
+        performTest("iz192897.h", 24, 20, "iz192897.h", 9, 13);
+        performTest("iz192897.cc", 11, 20, "iz192897.h", 9, 13);        
+    }
+    
+    public void test191446_2() throws Exception {
+        // #191446 -  no code assistance for elementes #include'ed in namespace body
+        performTest("iz191446_2.cc", 24, 30, "iz191446_2.h", 18, 5);
+        performTest("iz191446_2.cc", 15, 34, "iz191446_2.cc", 13, 17);
+        performTest("iz191446_2.cc", 24, 10, "iz191446_2.cc", 23, 9);
+        performTest("iz191446_2.cc", 17, 25, "iz191446_2.cc", 12, 17);
+        performTest("iz191446_2.cc", 15, 20, "iz191446_2.cc", 14, 17);
+    }
+    
     public void test191446() throws Exception {
         // #191446 -  no code assistance for elementes #include'ed in namespace body
         performTest("iz191446.cc", 7, 25, "iz191446.h", 5, 1);
@@ -445,6 +462,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
     }
 
+    public void test186780() throws Exception {
+        // #186780 -  Random resolving of variable type  
+        performTest("IZ186780.cc", 16, 30, "IZ186780.cc", 7, 1);
+        performTest("IZ186780.cc", 16, 50, "IZ186780.cc", 3, 5);
+        performTest("IZ186780.cc", 17, 40, "IZ186780.cc", 4, 5);
+        performTest("IZ186780.c", 3, 15, "IZ186780.c", 3, 1);
+        performTest("IZ186780.c", 5, 15, "IZ186780.c", 3, 1);
+    }
+    
     public void testIZ140795() throws Exception {
         // IZ#140795 : Usage of enumerators of nested enums
         // of the template specializations are unresolved
@@ -516,7 +542,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
-        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
+        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 9);
     }
 
     public void testIZ136731() throws Exception {
@@ -644,7 +670,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ145071_2() throws Exception {
         // IZ#145071 : forward declarations in function body marked as error
         performTest("IZ145071_2.cc", 2, 12, "IZ145071_2.cc", 2, 5);
-        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 5);
+        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 13);
         performTest("IZ145071_2.cc", 10, 12, "IZ145071_2.cc", 10, 5);
         performTest("IZ145071_2.cc", 11, 20, "IZ145071_2.cc", 10, 5);
     }
@@ -753,6 +779,28 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testBug188925() throws Exception {
         // Bug 188925 - unable to resolve identifier in templates
         performTest("bug188925.cpp", 40, 24, "bug188925.cpp", 26, 13);
+    }
+
+    public void testBug159328() throws Exception {
+        // Bug 159328 - Unresolved static cast to template
+        performTest("bug159328.cpp", 9, 42, "bug159328.cpp", 5, 5);
+    }
+
+    public void testBug192967() throws Exception {
+        // Bug 192967 - dereference of return type of ternary operator is not resolved
+        performTest("bug192967.cpp", 8, 41, "bug192967.cpp", 3, 5);
+        performTest("bug192967.cpp", 21, 41, "bug192967.cpp", 14, 5);
+    }
+        
+    public void testBug190885() throws Exception {
+        // Bug 190885 - created unittest++ project, unable to resolve identifiers error
+        performTest("bug190885.cpp", 4, 10, "bug190885.cpp", 4, 5);
+        performTest("bug190885.cpp", 7, 10, "bug190885.cpp", 7, 5);
+    }
+
+    public void testBug188305() throws Exception {
+        // Bug 188305 - c++ parser complains about struct instance declaration
+        performTest("bug188305.cpp", 6, 16, "bug188305.cpp", 6, 7);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

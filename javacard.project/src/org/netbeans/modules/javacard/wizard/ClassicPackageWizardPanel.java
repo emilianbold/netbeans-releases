@@ -79,7 +79,7 @@ public final class ClassicPackageWizardPanel implements
                 "WIZARD_STEP_ENTER_PKG_AID"); //NOI18N
             component.addChangeListener(this);
             // Sets step number of a component
-            component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
+            component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); //NOI18N
             // Sets steps names for a panel
             if (kind.isClassic()) {
                 String prevStepName = NbBundle.getMessage(ProjectDefinitionWizardPanel.class, "WIZARD_STEP_CREATE_PROJECT"); //NOI18N

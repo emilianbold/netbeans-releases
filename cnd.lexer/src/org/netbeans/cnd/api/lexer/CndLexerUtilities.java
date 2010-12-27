@@ -474,7 +474,7 @@ public final class CndLexerUtilities {
         return FILTER_GCC_CPP;
     }
 
-    public static Filter<CppTokenId> getHeaderFilter() {
+    public synchronized static Filter<CppTokenId> getHeaderFilter() {
         if (FILTER_HEADER == null) {
             FILTER_HEADER = new Filter<CppTokenId>();
             addCommonCCKeywords(FILTER_HEADER);

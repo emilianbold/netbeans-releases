@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
@@ -62,6 +63,10 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -69,6 +74,9 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  */
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
+    private static final boolean DISABLE_LL_TOOL_ON_UBUNTU = 
+            Boolean.parseBoolean(System.getProperty("DISABLE_LL_TOOL_ON_UBUNTU", "true")); // NOI18N
+    
     private final List<DLightConfigurationOptionsListener> listeners = new ArrayList<DLightConfigurationOptionsListener>();
     private static final Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
     private String DLightCollectorString = "SunStudio";//NOI18N
@@ -110,7 +118,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public void configure(Project project) {
-        areCollectorsTurnedOn = true;
+        turnCollectorsState(true);
         this.currentProject = project;
         Configuration activeConfiguration = getActiveConfiguration();
 //        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
@@ -119,15 +127,32 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
         gizmoOptions = GizmoOptionsProvider.getOptions(activeConfiguration);
         gizmoOptions.init(activeConfiguration);
-        turnCollectorsState(true);
         profileOnRun = gizmoOptions.getProfileOnRunValue();
 
         if (!(activeConfiguration instanceof MakeConfiguration)) {
             return;
         }
-
+        
+        final DevelopmentHostConfiguration developmentHost = ((MakeConfiguration) activeConfiguration).getDevelopmentHost();
+        
         //if we have sun studio compiler along compiler collections presentedCompiler
-        CompilerSetManager compilerSetManager = CompilerSetManager.get(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+        final ExecutionEnvironment execEnv = developmentHost.getExecutionEnvironment();
+        final String platform = developmentHost.getBuildPlatformDisplayName();        
+        
+        HostInfo hostInfo = null;
+
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (Throwable ex) {
+        }
+        
+        if (hostInfo == null) {
+            // Host info must be available
+            // hostInfo == null should not happen
+            return;
+        }
+        
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(execEnv);
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
 
         boolean hasSunStudio = false;
@@ -138,19 +163,27 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 break;
             }
         }
-
-        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+                    
         DLightConfiguration dlightConfiguration = gizmoOptions.getDLightConfiguration();
         //get all names from the inside usinf providers
 //        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
         DLightCollectorString = dlightConfiguration.getCollectorProviders();
         DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
-
-        if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) ||
-                (platform.indexOf("Linux") != -1 && DLightCollectorString != null //NOI18N
-                && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)) {
-            setForLinux();
+        
+        boolean isUnsupportedPlatform = !GizmoServiceInfo.isPlatformSupported(platform);
+        boolean isSunStudioCollectorSelected = SUNSTUDIO.equals(DLightCollectorString);
+        boolean isLinux = hostInfo.getOSFamily() == OSFamily.LINUX;
+        
+        if (isLinux || isUnsupportedPlatform) {
+            turnCollectorsState(isSunStudioCollectorSelected && hasSunStudio);
+            
+            if (DISABLE_LL_TOOL_ON_UBUNTU && hostInfo.getOS().getName().toLowerCase().contains("ubuntu")) { // NOI18N
+                DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER);
+            } else {
+                DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, LL_MONITOR);
+            }
         }
+        
 //        List<String> platforms = dlightConfiguration.getPlatforms();
         //if platform is not supported
 
@@ -183,22 +216,6 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 //                setForLinux();
 //            }
 //        }
-    }
-
-    private boolean setForLinux() {
-        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-        if (platform.indexOf("Linux") != -1 || !GizmoServiceInfo.isPlatformSupported(platform)) {//NOI18N
-            areCollectorsTurnedOn = false;
-            if (platform.indexOf("Linux") != -1) {//NOI18N
-                DLightCollectorString = SUNSTUDIO;
-            } else {
-                DLightCollectorString = "";//NOI18N
-            }
-
-            DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, LL_MONITOR);
-            return true;
-        }
-        return false;
     }
 
     private Configuration getActiveConfiguration() {

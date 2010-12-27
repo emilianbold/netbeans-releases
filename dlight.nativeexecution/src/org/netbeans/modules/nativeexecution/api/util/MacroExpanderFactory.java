@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
 public final class MacroExpanderFactory {
 
@@ -73,7 +74,8 @@ public final class MacroExpanderFactory {
             ExecutionEnvironment execEnv, ExpanderStyle style) {
 
         if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
-            throw new IllegalStateException("Host info " + execEnv + " must be available at this point"); // NOI18N
+            Logger.assertNonUiThread("Don't call getExpander() from the UI thread while info is not known. " + // NOI18N
+                    "Use quick isHostInfoAvailable() to detect whether info is available or not and go out of EDT if not"); // NOI18N
         }
 
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;

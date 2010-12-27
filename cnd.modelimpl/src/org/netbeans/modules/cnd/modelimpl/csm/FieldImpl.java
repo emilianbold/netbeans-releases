@@ -94,6 +94,11 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         return visibility;
     }
 
+    @Override
+    public String toString() {
+        return "FIELD " + super.toString(); // NOI18N
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

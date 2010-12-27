@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.openide.util.Exceptions;
 
 /**
  * Notifier implementation using fam library
@@ -88,13 +87,9 @@ public class FAMNotifier extends Notifier<Integer> {
     }
 
     @Override
-    public String nextEvent() throws IOException {
+    public String nextEvent() throws IOException, InterruptedException {
         while (lib.FAMPending(conn) <= 0) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            Thread.sleep(1000);
         }
         FAMLibrary.FAMEvent evt = new FAMLibrary.FAMEvent();
         if (lib.FAMNextEvent(conn, evt) != -1) {

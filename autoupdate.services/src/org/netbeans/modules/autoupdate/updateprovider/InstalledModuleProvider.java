@@ -44,36 +44,28 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.modules.autoupdate.services.Utilities;
-import org.netbeans.spi.autoupdate.UpdateItem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
+/** Default implementation of InstalledUpdateProvider.
  *
  * @author Jiri Rechtacek
  */
-public class InstalledModuleProvider implements InstalledUpdateProvider {
-    private static InstalledModuleProvider DEFAULT;
+@ServiceProvider(service=InstalledUpdateProvider.class)
+public final class InstalledModuleProvider extends InstalledUpdateProvider {
     private LookupListener  lkpListener;
     private Lookup.Result<ModuleInfo> result;
     private Map<String, ModuleInfo> moduleInfos;
 
-    // XXX: should be removed
-    public static Map<String, ModuleInfo> getInstalledModules () {
-        return getDefault ().getModuleInfos (false);
-    }
-    
-    private synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
+    @Override
+    protected synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
         if (moduleInfos == null || force) {
             Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
             moduleInfos = new HashMap<String, ModuleInfo> ();
@@ -85,16 +77,10 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         return new HashMap<String, ModuleInfo> (moduleInfos);
     }
 
-    public static InstalledModuleProvider getDefault () {
-        if (DEFAULT == null) {
-            DEFAULT = new InstalledModuleProvider ();
-        }
-        return DEFAULT;
-    }
-        
-    private InstalledModuleProvider() {
+    public InstalledModuleProvider() {
         result = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo> (ModuleInfo.class));
         lkpListener = new LookupListener() {
+            @Override
             public void resultChanged(LookupEvent ev) {
                 clearModuleInfos();
             }
@@ -104,50 +90,5 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
 
     private synchronized void clearModuleInfos() {
         moduleInfos = null;
-    }
-
-    public String getName () {
-        return "installed-module-provider";
-    }
-
-    public String getDisplayName () {
-        return getName ();
-    }
-
-    public String getDescription () {
-        return null;
-    }
-
-    public Map<String, UpdateItem> getUpdateItems () throws IOException {
-        Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
-        for (ModuleInfo info : getModuleInfos (true).values ()) {
-            Date time = null; // XXX: it's too expensive, should be extracted lazy - Utilities.readInstallTimeFromUpdateTracking (info);
-            String installTime = null;
-            if (time != null) {
-                installTime = Utilities.formatDate(time);
-            }
-            UpdateItemImpl impl = new InstalledModuleItem (
-                    info.getCodeNameBase (),
-                    info.getSpecificationVersion () == null ? null : info.getSpecificationVersion ().toString (),
-                    info,
-                    null, // XXX author
-                    null, // installed cluster
-                    installTime
-                    
-                    );
-            
-            UpdateItem updateItem = Utilities.createUpdateItem (impl);
-            res.put (info.getCodeName () + '_' + info.getSpecificationVersion (), updateItem);
-        }
-        return res;
-    }
-
-    public boolean refresh (boolean force) throws IOException {
-        getModuleInfos(false);
-        return true;
-    }
-
-    public CATEGORY getCategory() {
-        return CATEGORY.COMMUNITY;
     }
 }

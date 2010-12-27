@@ -49,7 +49,6 @@ import java.util.Enumeration;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 import org.w3c.dom.*;
 
@@ -57,7 +56,6 @@ import org.netbeans.editor.*;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.text.syntax.*;
-import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
 import org.netbeans.modules.xml.text.bracematch.XMLBraceMatcher;
@@ -222,9 +220,9 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                 // prolog, internal DTD no completition yet
                 if (helper.getToken().getTokenID() == PI_CONTENT) {
                     if (helper.getPreText().endsWith("encoding=")) {                        // NOI18N
-                        List encodings = new ArrayList(2);
-                        encodings.add(new XMLResultItem("\"UTF-8\""));          // NOI18N
-                        encodings.add(new XMLResultItem("\"UTF-16\""));         // NOI18N
+//                        List encodings = new ArrayList(2);
+//                        encodings.add(new XMLResultItem(0, "\"UTF-8\""));          // NOI18N
+//                        encodings.add(new XMLResultItem(1, "\"UTF-16\""));         // NOI18N
                         //TODOxxx
 //                        return new XMLCompletionResult(
 //                                component,
@@ -345,10 +343,11 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     
     private List<CompletionItem> translateEntityRefs(Enumeration refs ) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(133);
+        int i = 0;
         while ( refs.hasMoreElements() ) {
             GrammarResult next = (GrammarResult) refs.nextElement();
             if(next != null && next.getNodeName() != null) {
-                EntityRefResultItem ref = new EntityRefResultItem(next);
+                EntityRefResultItem ref = new EntityRefResultItem(i++, next);
                 result.add( ref );
             }
         }
@@ -358,6 +357,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     /** Translate results perfromer (DOM nodes) format to CompletionQuery.ResultItems format. */
     private List<CompletionItem> translateElements(Enumeration els, String prefix, GrammarQuery perfomer) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(13);
+        int i = 0;
         while (els.hasMoreElements()) {
             GrammarResult next = (GrammarResult) els.nextElement();
             if (prefix.equals(next.getNodeName())) {
@@ -367,7 +367,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                 continue;
             }
             if(next != null && next.getNodeName() != null) {
-                ElementResultItem ei = new ElementResultItem(next);
+                ElementResultItem ei = new ElementResultItem(i++, next);
                 result.add( ei );
             }
         }
@@ -377,10 +377,11 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     
     private List<CompletionItem> translateAttributes(Enumeration attrs, boolean boundary) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(13);
+        int i = 0;
         while (attrs.hasMoreElements()) {
             GrammarResult next = (GrammarResult) attrs.nextElement();
             if(next != null && next.getNodeName() != null) {
-                AttributeResultItem attr = new AttributeResultItem(next, false);
+                AttributeResultItem attr = new AttributeResultItem(i++, next, false);
                 result.add( attr );
             }
         }
@@ -389,10 +390,11 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     
     private List<CompletionItem> translateValues(Enumeration values ) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(3);
+        int i = 0;
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
             if(next != null && next.getDisplayName() != null) {
-                ValueResultItem val = new ValueResultItem(next);
+                ValueResultItem val = new ValueResultItem(i++, next);
                 result.add( val );
             }
         }
@@ -421,7 +423,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
             return Collections.EMPTY_LIST;
         }
         
-        XMLResultItem res = new ElementResultItem(prefix + name);
+        XMLResultItem res = new ElementResultItem(0, prefix + name);
         //if ( Util.THIS.isLoggable() ) Util.THIS.debug("    result=" + res);
         
         List<CompletionItem> list = new ArrayList<CompletionItem>(1);

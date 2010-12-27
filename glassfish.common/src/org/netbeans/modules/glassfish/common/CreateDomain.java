@@ -79,9 +79,10 @@ public class CreateDomain extends Thread {
     final private Map<String, String> ip;
     private GlassfishInstanceProvider gip;
     private boolean register;
+    private final String installRootKey;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register, boolean useDefaultPorts) {
+            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register, boolean useDefaultPorts, String installRootKey) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;
@@ -90,6 +91,7 @@ public class CreateDomain extends Thread {
         this.gip = gip;
         map.putAll(ip);
         this.register = register;
+        this.installRootKey = installRootKey;
         computePorts(ip,map, useDefaultPorts);
     }
 
@@ -222,7 +224,7 @@ public class CreateDomain extends Thread {
                 }
             } else {
                 if (register) {
-                    NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+gip.getInstallRootKey(),
+                    NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+installRootKey,
                             "false");
                 }
             }

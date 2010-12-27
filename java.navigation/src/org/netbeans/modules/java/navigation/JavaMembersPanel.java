@@ -148,34 +148,27 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         this();
         enterBusy();
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     JavaSource javaSource = JavaSource.forFileObject(fileObject);
                     if (javaSource != null) {
                         javaSource.runUserActionTask(new Task<CompilationController>() {
+                            @Override
                             public void run(CompilationController compilationController) throws Exception {
                                 compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                                Trees trees = compilationController.getTrees();
-                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
-                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
-                                Set<Element> elementsSet = new LinkedHashSet<Element>(typeDecls.size() + 1);
-                                for (Tree tree : typeDecls) {
-                                    Element element = trees.getElement(trees.getPath(
-                                                compilationUnitTree, tree));
-
-                                    if (element != null) {
-                                        if (elementsSet.size() == 0) {
-                                            Element enclosingElement = element.getEnclosingElement();
-
-                                            if ((enclosingElement != null) &&
-                                                    (enclosingElement.getKind() == ElementKind.PACKAGE)) {
-                                                // add package
-                                                elementsSet.add(enclosingElement);
-                                            }
+                                final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
+                                final Set<Element> elementsSet = new LinkedHashSet<Element>(topLevels.size() + 1);
+                                for (TypeElement element : topLevels) {                                    
+                                    if (elementsSet.isEmpty()) {
+                                        final Element enclosingElement = element.getEnclosingElement();
+                                        if (enclosingElement != null &&
+                                            enclosingElement.getKind() == ElementKind.PACKAGE) {
+                                            // add package
+                                            elementsSet.add(enclosingElement);
                                         }
-
-                                        elementsSet.add(element);
                                     }
+                                    elementsSet.add(element);                                    
                                 }
                                 ElementHandle[] handles = new ElementHandle[elementsSet.size()];
                                 Iterator<Element> elements = elementsSet.iterator();
@@ -185,6 +178,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                                 javaMembersModel = new JavaMembersModel(fileObject, handles);
                                 javaMembersFilterModel = javaMembersModel.getFilterModel();
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run () {
                                         javaMembersTree.setModel(javaMembersFilterModel);
                                     }
@@ -198,6 +192,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                 }
                 finally {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run () {
                             leaveBusy();
                         }

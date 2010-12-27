@@ -146,8 +146,8 @@ public class CommandRunner extends BasicTask<OperationState> {
      * Sends restart-domain command to server (asynchronous)
      *
      */
-    public Future<OperationState> restartServer(int debugPort) {
-        final String restartQuery = cf.getRestartQuery(debugPort);
+    public Future<OperationState> restartServer(int debugPort, String query) {
+        final String restartQuery = query; // cf.getRestartQuery(debugPort);
         if (-1 == debugPort || "".equals(restartQuery) ) {
             return execute(new ServerCommand("restart-domain") {
 

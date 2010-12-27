@@ -66,6 +66,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private final static String ENVIRONMENT_ELEMENT = "environment"; // NOI18N
     private final static String ARGS_ELEMENT = "args"; // NOI18N
     private final static String RUNDIR_ELEMENT = "rundir"; // NOI18N
+    private final static String RUNCOMMAND_ELEMENT = "runcommand"; // NOI18N
     private final static String BUILD_FIRST_ELEMENT = "buildfirst"; // NOI18N
     private final static String CONSOLE_TYPE_ELEMENT = "console-type"; // NOI18N
     private final static String TERMINAL_TYPE_ELEMENT = "terminal-type"; // NOI18N
@@ -75,6 +76,13 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     public final static String FALSE_VALUE = "false"; // NOI18N
 
 
+    /*
+        Versions changes tracker (started from version 6):
+
+        2010/12/09
+            Run Command field is added (see Bug 154529). Version is not upgraded, because default value the property is provided.
+
+     */
     private final static int thisversion = 6;
 
     public RunProfileXMLCodec(RunProfile profile) {
@@ -86,11 +94,13 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return PROFILE_ID;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "run profile"; // NOI18N
         int maxVersion = getVersion();
@@ -98,11 +108,13 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         profile.clearChanged();
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (element.equals(VARIABLE_ELEMENT)) {
 	    profile.getEnvironment().
@@ -111,12 +123,16 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (element.equals(ARGS_ELEMENT)) {
 	    profile.setArgsRaw(currentText);
 	}
 	else if (element.equals(RUNDIR_ELEMENT)) {
 	    profile.setRunDir(currentText);
+	}
+	else if (element.equals(RUNCOMMAND_ELEMENT)) {
+	    profile.setRunCommand(currentText);
 	}
 	else if (element.equals(BUILD_FIRST_ELEMENT)) {
 	    profile.setBuildFirst(currentText.equals(TRUE_VALUE));
@@ -129,6 +145,9 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
                 idx = 0;
             }
             if (element.equals(CONSOLE_TYPE_ELEMENT)) {
+                if (idx == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                    idx = RunProfile.getDefaultConsoleType();
+                }
                 profile.getConsoleType().setValue(idx);
             } else if (element.equals(TERMINAL_TYPE_ELEMENT)) {
                 profile.getTerminalType().setValue(idx);
@@ -172,10 +191,13 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
     private static void encode(XMLEncoderStream xes, RunProfile profile) {
 	xes.elementOpen(PROFILE_ID, getVersion());
-	xes.element(ARGS_ELEMENT, profile.getArgsFlat());
+        xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand());
+        xes.element(ARGS_ELEMENT, profile.getArgsFlat());
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
-        xes.element(CONSOLE_TYPE_ELEMENT, Integer.toString(profile.getConsoleType().getValue()));
+        if (profile.getConsoleType().getModified()) {
+            xes.element(CONSOLE_TYPE_ELEMENT, Integer.toString(profile.getConsoleType().getValue()));
+        }
         xes.element(TERMINAL_TYPE_ELEMENT, Integer.toString(profile.getTerminalType().getValue()));
         xes.element(REMOVE_INSTRUMENTATION_ELEMENT, Integer.toString(profile.getRemoveInstrumentation().getValue()));
 	encode(xes, profile.getEnvironment());
@@ -183,6 +205,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	encode(xes, profile);
     } 

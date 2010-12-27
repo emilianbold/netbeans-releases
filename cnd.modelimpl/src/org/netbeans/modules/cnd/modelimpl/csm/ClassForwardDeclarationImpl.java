@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
@@ -152,11 +154,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     @Override
     public CsmClass getCsmClass() {
-        return  getCsmClass(null);
-    }
-    
-    public CsmClass getCsmClass(Resolver resolver) {
-        CsmObject o = resolve(resolver);
+        CsmObject o = resolve();
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
 
@@ -165,6 +163,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return templateDescriptor != null;
     }
 
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
@@ -182,8 +185,14 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return new CharSequence[0];
     }
     
-    private CsmObject resolve(Resolver resolver) {
-        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASS);
+    private CsmObject resolve() {
+        CsmObject result = null;
+        Resolver aResolver = ResolverFactory.createResolver(this);
+        try {
+            result = aResolver.resolve(nameParts, Resolver.CLASS);
+        } finally {
+            ResolverFactory.releaseResolver(aResolver);
+        }
         if (result == null) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
         }
@@ -226,7 +235,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
      * Creates a fake class this forward declaration refers to
      */
     protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
+        return ForwardClass.create(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
     }
 
     @Override

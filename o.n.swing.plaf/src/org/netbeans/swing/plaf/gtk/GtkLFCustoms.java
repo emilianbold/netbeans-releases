@@ -76,7 +76,8 @@ public class GtkLFCustoms extends LFCustoms {
 
         Object selBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.DARK, Color.CYAN) : (Object) Color.CYAN;
         Object selFg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.TEXT_FOREGROUND, Color.BLACK) : (Object) Color.BLACK;
-
+        
+        Object bg = ThemeValue.functioning() ? ThemeValue.TEXT_BACKGROUND : Color.WHITE;
         Object fb = new Color (144, 144, 255);
         Object tabBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_INTFRAME, ThemeValue.DARK, fb) : (Object) fb;
         
@@ -105,7 +106,7 @@ public class GtkLFCustoms extends LFCustoms {
             PROPSHEET_DISABLED_FOREGROUND, new Color(161,161,146),
             "Table.selectionBackground", selBg, //NOI18N
             "Table.selectionForeground", selFg, //NOI18N
-            PROPSHEET_BACKGROUND, Color.WHITE,
+            PROPSHEET_BACKGROUND, bg,
             "window", light,
             
             VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),

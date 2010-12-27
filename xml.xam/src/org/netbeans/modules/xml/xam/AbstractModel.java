@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
@@ -89,7 +88,6 @@ public abstract class AbstractModel<T extends Component<T>>
     private boolean inSync;
     private boolean inUndoRedo;
     private EventListenerList componentListeners;
-    private Semaphore transactionSemaphore;
     private Transaction transaction;
     private ModelSource source;
     private UndoableEditListener[] savedUndoableEditListeners;
@@ -99,7 +97,6 @@ public abstract class AbstractModel<T extends Component<T>>
         pcs = new PropertyChangeSupport(this);
         ues = new ModelUndoableEditSupport();
         componentListeners = new EventListenerList();
-        transactionSemaphore = new Semaphore(1,true); // binary semaphore
         status = State.VALID;
     }
 
@@ -371,7 +368,7 @@ public abstract class AbstractModel<T extends Component<T>>
             transaction = null;
             setInSync(false);
             setInUndoRedo(false);
-            transactionSemaphore.release();
+            notifyAll();
             transactionCompleted();
         }
     }
@@ -401,15 +398,15 @@ public abstract class AbstractModel<T extends Component<T>>
         if (! inSync && ! getModelSource().isEditable()) {
             throw new IllegalArgumentException("Model source is read-only."); // NOI18N
         }
-        
-        transactionSemaphore.acquireUninterruptibly();
-        // other correctly behaving threads will be blocked acquiring the 
-        // semaphore here. Also store the current Thread to ensure that 
-        // no other writes are occurring
-        assert transaction == null;
-        
+
+        while (transaction != null) {
+            try {
+                wait();
+            } catch (InterruptedException ignorredex) {}
+        }
+
         if (! inSync && getState() == State.NOT_WELL_FORMED) {
-            transactionSemaphore.release();
+            notifyAll();
             // It's allowed ot modify underlaing document if it's not well formed
             return false;
         }
@@ -444,7 +441,7 @@ public abstract class AbstractModel<T extends Component<T>>
             transaction = null;
             setInSync(false);
             setInUndoRedo(false);
-            transactionSemaphore.release();
+            notifyAll();
             transactionCompleted();
         }
     }
@@ -463,7 +460,7 @@ public abstract class AbstractModel<T extends Component<T>>
             transaction = null;
             setInSync(false);
             setInUndoRedo(false);
-            transactionSemaphore.release();
+            notifyAll();
             transactionCompleted();
         }
     }

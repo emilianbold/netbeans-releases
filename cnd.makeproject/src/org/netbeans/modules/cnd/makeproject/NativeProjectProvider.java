@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -513,6 +514,45 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             });
         } else {
             checkForChangedItemsWorker(folder, item);
+        }
+    }
+
+    public void checkForChangedItems(final Delta delta) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    checkForChangedItemsWorker(delta);
+                }
+            });
+        } else {
+            checkForChangedItemsWorker(delta);
+        }
+    }
+
+    private void checkForChangedItemsWorker(Delta delta) {
+        if (delta.isEmpty()) {
+            return;
+        }
+        clearCache();
+        synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                return;
+            }
+        }
+        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
+            list.addAll(delta.exluded);
+            fireFilesRemoved(list);
+        }
+        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
+            list.addAll(delta.included);
+            fireFilesAdded(list);
+        }
+        if (!delta.changed.isEmpty()) {
+            fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
         }
     }
 

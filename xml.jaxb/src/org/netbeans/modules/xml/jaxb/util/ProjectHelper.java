@@ -112,6 +112,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.WeakListeners;
 
 /**
@@ -910,14 +912,28 @@ public class ProjectHelper {
     }
 
     public static void cleanCompileXSDs(final Project project, 
-            final boolean addLibs){
+            final boolean addLibs)
+    {
+        cleanCompileXSDs(project, addLibs, null);
+    }
+    
+    public static void cleanCompileXSDs(final Project project, 
+            final boolean addLibs, TaskListener listener ){
         executeAntTarget(project, addLibs, 
-                JAXBWizModuleConstants.JAXB_CLEAN_COMPILE_TARGET);
+                JAXBWizModuleConstants.JAXB_CLEAN_COMPILE_TARGET, listener );
+    }
+    
+    private static void executeAntTarget(final Project project,
+            final boolean addLibs,
+            final String antTarget)
+    {
+        executeAntTarget(project, addLibs, antTarget, null );
     }
 
     private static void executeAntTarget(final Project project,
             final boolean addLibs,
-            final String antTarget){
+            final String antTarget, TaskListener listener )
+    {
         final ProgressHandle progressHandle = ProgressHandleFactory
                 .createHandle(NbBundle.getMessage(ProjectHelper.class, 
                 "MSG_JAXB_PROGRESS")); //NOI18N;
@@ -956,7 +972,11 @@ public class ProjectHelper {
             }
         };
 
-        RequestProcessor.getDefault().post(run);
+        Task task = RequestProcessor.getDefault().create(run);
+        if ( listener != null ){
+            task.addTaskListener(listener);
+        }
+        task.schedule(0);
     }
     
 //    private static boolean isJDK6(final Project prj) {

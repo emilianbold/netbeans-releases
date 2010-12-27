@@ -200,7 +200,16 @@ public class FollowUp extends JPanel {
                             true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                    dlg.setVisible(true);
+                    try {
+                        dlg.setVisible(true);
+                    } catch (Throwable th) {
+                        if (!(th.getCause() instanceof InterruptedException)) {
+                            throw new RuntimeException(th);
+                        }
+                        descriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+                    } finally {
+                        dlg.dispose();
+                    }
                 }
             }
         };

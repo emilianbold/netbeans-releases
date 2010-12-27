@@ -53,6 +53,7 @@ public final class GdbFrame extends Frame {
   
     private MITList MIframe;
     private MITList args_list = null;
+    private String fullname = null;
 
     public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs) {
 	super(debugger);
@@ -101,6 +102,11 @@ public final class GdbFrame extends Frame {
 	    else
 	        source = "";
 	}
+        
+        MIValue fn = MIframe.valueOf("fullname"); // NOI18N
+        if (fn != null) {
+            fullname = fn.asConst().value();
+        }
 
 	// handle args info
 	if (frameargs != null) 
@@ -136,10 +142,6 @@ public final class GdbFrame extends Frame {
 	attr_signame = "";
     }
 
-    public void setCurrent(boolean current) {
-	this.current = current;
-    }
-
     public MITList getMIframe() {
 	return MIframe;
     }
@@ -150,6 +152,11 @@ public final class GdbFrame extends Frame {
 
     public MITList getMIArgs() {
 	return args_list;
+    }
+    
+    @Override
+    public String getFullPath() {
+        return debugger.remoteToLocal("Gdb frame", debugger.fmap().engineToWorld(fullname)); //NOI18N
     }
 
 }

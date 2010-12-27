@@ -61,6 +61,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -81,9 +82,33 @@ public class InvalidFileObjectSupport {
         return instance.getInvalidFileObject(path);
     }
 
+    public static FileObject getInvalidFileObject(File file) {
+        return getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
+    }
+
     public static FileSystem getDummyFileSystem() {
         return dummyFileSystem;
     }
+
+    private static synchronized FileSystem getFileFileSystem() {
+        if (fileFileSystem == null) {
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
+            if (tmpDirFo != null) {
+                try {
+                    fileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    // it's no use to log it here
+                }
+            }
+            if (fileFileSystem == null) {
+                fileFileSystem = getDummyFileSystem();
+            }
+        }
+        return fileFileSystem;
+    }
+
 
     private InvalidFileObjectSupport(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
@@ -108,6 +133,7 @@ public class InvalidFileObjectSupport {
 
     private static final Map<FileSystem, InvalidFileObjectSupport> instances = new WeakHashMap<FileSystem, InvalidFileObjectSupport>();
     private static final DummyFileSystem dummyFileSystem = new DummyFileSystem();
+    private static FileSystem fileFileSystem;
 
     private static class DummyFileSystem extends FileSystem {
 
