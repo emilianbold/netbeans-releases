@@ -181,7 +181,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         traceExecutable(executable, buildDir, args, envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).

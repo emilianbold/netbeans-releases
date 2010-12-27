@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
@@ -78,8 +79,8 @@ public final class GCCErrorParser extends ErrorParser {
     private boolean isEntered;
     private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
 
-    public GCCErrorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-        super(execEnv, relativeTo);
+    public GCCErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+        super(project, execEnv, relativeTo);
         this.relativesTo.push(relativeTo);
         this.relativesLevel.push(0);
         this.isEntered = false;
