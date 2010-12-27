@@ -59,10 +59,13 @@ public abstract class FaceletsLibrary implements Library {
         this.support = support;
     }
 
+    @Override
     public abstract Collection<NamedComponent> getComponents();
 
+    @Override
     public abstract AbstractLibraryDescriptor getLibraryDescriptor();
 
+    @Override
      public Tag getTag(String name) {
         FaceletsLibraryDescriptor fld = support.getJsfSupport().getFaceletsLibraryDescriptor(getNamespace());
         Tag faceletsTag = getTag(fld, name);
@@ -163,10 +166,12 @@ public abstract class FaceletsLibrary implements Library {
             this.name = name;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Tag getTag() {
             return FaceletsLibrary.this.getTag(getName());
         }
@@ -175,6 +180,7 @@ public abstract class FaceletsLibrary implements Library {
             return FaceletsLibrary.this;
         }
 
+        @Override
         public String[][] getDescription() {
             return new String[][]{{"name", getName()}}; //NOI18N
         }
@@ -376,6 +382,7 @@ public abstract class FaceletsLibrary implements Library {
             assert tag1 != null;
         }
 
+        @Override
         public String getName() {
             return tag1.getName() == null && tag2 != null ? tag2.getName() : tag1.getName();
         }
