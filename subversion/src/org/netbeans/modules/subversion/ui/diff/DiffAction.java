@@ -77,6 +77,11 @@ public class DiffAction extends ContextAction {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/diff.png"; // NOI18N
+    }
     
     public static void diff(Context ctx, int type, String contextName, boolean initialStatusRefreshDisabled) {
         MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName, initialStatusRefreshDisabled); // spawns bacground DiffPrepareTask

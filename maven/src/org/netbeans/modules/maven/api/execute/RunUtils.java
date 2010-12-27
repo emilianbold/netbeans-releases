@@ -50,6 +50,7 @@ import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.LifecycleManager;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 
@@ -67,6 +68,9 @@ public final class RunUtils {
      *  execute maven build in netbeans execution engine.
      */
     public static ExecutorTask executeMaven(RunConfig config) {
+        // save all edited files.. maybe finetune for project's files only, however that would fail for multiprojects..
+        LifecycleManager.getDefault().saveAll();
+
         MavenExecutor exec = new MavenCommandLineExecutor(config);
         return executeMavenImpl(config.getTaskDisplayName(), exec);
     }

@@ -142,6 +142,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         controlToolbar.add(btnRefresh);
 
+        jPanel3.setMaximumSize(new java.awt.Dimension(20, 32767));
         jPanel3.setOpaque(false);
         controlToolbar.add(jPanel3);
 

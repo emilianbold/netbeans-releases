@@ -129,7 +129,18 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
                 new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
+
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CLOSED_OPTION);
+        } finally {
+            dialog.dispose();
+        }
+        
         if (dd.getValue() == jOK) {
             tp.applyChanges(true);
             return true;

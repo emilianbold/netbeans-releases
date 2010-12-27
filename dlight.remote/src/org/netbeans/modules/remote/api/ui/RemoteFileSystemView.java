@@ -90,6 +90,7 @@ import org.openide.util.Exceptions;
 
     @Override
     public File createFileObject(String path) {
+        RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
         FileObject fo = fs.findResource(path);
         if (fo == null || !fo.isValid()) {
             RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", path);
@@ -169,12 +170,14 @@ import org.openide.util.Exceptions;
         changeSupport.firePropertyChange(LOADING_STATUS, null, rdir);
 
         try {
-            result = rdir.listFiles();
+            if (dir.canRead()) {
+                result = rdir.listFiles();
+            }
         } finally {
             changeSupport.firePropertyChange(LOADING_STATUS, rdir, null);
         }
 
-        return result;
+        return (result == null) ? new File[0] : result;
     }
 
     /**

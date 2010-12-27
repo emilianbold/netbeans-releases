@@ -53,9 +53,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 
 /**
  * Lazy compound statements
@@ -64,26 +65,24 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    private LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
-        super(ast, file, scope);
-        assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
+    private LazyCompoundStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
+        super(file, start, end, scope);
     }
 
     public static LazyCompoundStatementImpl create(AST ast, CsmFile file, CsmFunction scope) {
-        return new LazyCompoundStatementImpl(ast, file, scope);
+        assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
+        return new LazyCompoundStatementImpl(file, getStartOffset(ast), getEndOffset(ast), scope);
     }
 
     @Override
-    protected AST resolveLazyStatement(TokenStream tokenStream) {
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
-        if (!TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG) {
-            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+    protected CsmParserResult resolveLazyStatement(TokenStream tokenStream) {
+        CsmParser parser = CsmParserProvider.createParser(getContainingFile());
+        if (parser != null) {
+            parser.init(this, tokenStream);
+            return parser.parse(CsmParser.ConstructionKind.COMPOUND_STATEMENT);
         }
-        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
-        parser.setLazyCompound(false);
-        parser.compound_statement();
-        AST out = parser.getAST();
-        return out;
+        assert false : "parser not found";
+        return null;
     }
 
     @Override

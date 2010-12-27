@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -388,7 +389,6 @@ public final class LibraryManager {
     final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
             librariesEntries.remove(entry.getPath().toString());
-            UIDManager.instance().clearProjectCache(RepositoryUtils.UIDtoKey(entry.getUID()));
             entry.dispose(true);
         }
     }
@@ -493,11 +493,22 @@ public final class LibraryManager {
         
     }
     
-    public void dumpInfo(PrintWriter printOut) {
+    public void dumpInfo(PrintWriter printOut,boolean withContainers) {
         printOut.printf("LibraryManager: libs=%d\n", librariesEntries.size());// NOI18N
         int ind = 1;
         for (Map.Entry<String, LibraryEntry> entry : librariesEntries.entrySet()) {
-             printOut.printf("Lib[%d] %s with LibEntry %s\n", ind++, entry.getKey(), entry.getValue());// NOI18N
+            printOut.printf("Lib[%d] %s with LibEntry %s\n", ind++, entry.getKey(), entry.getValue());// NOI18N
+            if (withContainers) {
+                CsmProject library = UIDCsmConverter.UIDtoProject(entry.getValue().libraryUID);
+                if (library == null) {
+                    printOut.printf("Library was NOT restored from repository\n");// NOI18N
+                } else if (library instanceof ProjectBase) {
+                    printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)library).isDisposing());// NOI18N
+                    ((ProjectBase)library).traceFileContainer(printOut);
+                } else {
+                    printOut.printf("Library's project has unexpected class type %s\n", library.getClass().getName());// NOI18N
+                }
+            }
         }
     }
 

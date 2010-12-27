@@ -52,9 +52,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -158,12 +160,22 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 return;
             }            
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
-            String tmpDir = System.getProperty("java.io.tmp"); // NOI18N
+            String tmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
             if (tmpDir == null) {
                 tmpDir = "/var/tmp";// NOI18N
             }
             try {
-                File tmpFile = File.createTempFile("cnd_diagnostics_", ".txt", new File(tmpDir));// NOI18N
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss");// NOI18N
+                String date = df.format(new Date());
+                File tmpFile;
+                try {
+                    File file = new File(tmpDir, "cnd_diagnostics_" + date + ".txt");// NOI18N
+                    file.delete();
+                    file.createNewFile();
+                    tmpFile = file;
+                } catch (IOException e) {
+                    tmpFile = File.createTempFile("cnd_diagnostics_", ".txt", new File(tmpDir));// NOI18N
+                }
                 PrintWriter pw = new PrintWriter(tmpFile);
                 String taskName = "Cnd Diagnostics - " + tmpFile.getName(); // NOI18N
                 InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
@@ -202,6 +214,8 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     out.println(line);
                 } while (true);
                 err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N 
+                err.close();
+                out.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

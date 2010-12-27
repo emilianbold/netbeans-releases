@@ -879,12 +879,17 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         
     }
 
-    class GlyphGutterFoldHierarchyListener implements FoldHierarchyListener{
+    class GlyphGutterFoldHierarchyListener implements FoldHierarchyListener, Runnable {
     
         public GlyphGutterFoldHierarchyListener(){
         }
         
         public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             repaint();
         }
     }

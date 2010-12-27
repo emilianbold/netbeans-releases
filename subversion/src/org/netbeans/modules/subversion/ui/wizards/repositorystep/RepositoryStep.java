@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -105,6 +104,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         return new HelpCtx(helpID);
     }        
 
+    @Override
     protected JComponent createComponent() {
         if (repository == null) {         
             repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
@@ -118,27 +118,32 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         return panel;
     }
 
+    @Override
     protected void validateBeforeNext() {            
         try {
             support = new RepositoryStepProgressSupport(panel.progressPanel);        
             SVNUrl url = getUrl();
-            support.setRepositoryRoot(url);            
-            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
-            RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
-            task.waitFinished();
+            if (url != null) {
+                support.setRepositoryRoot(url);
+                RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+                RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
+                task.waitFinished();
+            }
         } finally {
             support = null;
         }
     }
     
+    @Override
     public void prepareValidation() {                
     }
 
     private SVNUrl getUrl() {        
         try {
             return getSelectedRepositoryConnection().getSvnUrl();                
-        } catch (MalformedURLException mue) {                            
-            Subversion.LOG.log(Level.INFO, null, mue); // should not happen
+        } catch (MalformedURLException mue) {
+            // probably a synchronization issue
+            invalid(new WizardMessage(mue.getLocalizedMessage(), false));
         }                                
         return null;
     }
@@ -163,6 +168,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         }
     }                       
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Repository.PROP_VALID)) {
             if(repository.isValid()) {
@@ -185,6 +191,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             super(panel);
         }
 
+        @Override
         public void perform() {
             final RepositoryConnection rc = getSelectedRepositoryConnection();
             if (rc == null) {
@@ -247,7 +254,8 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     return;
                 }
             } catch (MalformedURLException ex) {
-                Subversion.LOG.log(Level.INFO, null, ex); // should not happen
+                // probably a synchronization issue
+                invalidMsg = new WizardMessage(ex.getLocalizedMessage(), false);
             } finally {
                 if(isCanceled()) {
                     valid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Canceled"), false)); // NOI18N
@@ -259,6 +267,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             }
         }
 
+        @Override
         public void setEditable(boolean editable) {
             repository.setEditable(editable);        
         }        

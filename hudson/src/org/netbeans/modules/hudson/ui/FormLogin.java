@@ -51,7 +51,8 @@ import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.ui.Bundle.*;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -71,6 +72,10 @@ public class FormLogin extends JPanel {
     @ServiceProvider(service=PasswordAuthorizer.class, position=1000)
     public static class AuthImpl implements PasswordAuthorizer {
 
+        @Messages({
+            "FormLogin.log_in=Log in to Hudson",
+            "# {0} - server location", "# {1} - user name", "FormLogin.password_description=Password for {1} on {0}"
+        })
         public String[] authorize(URL home) {
             FormLogin panel = new FormLogin();
             String server = HudsonManagerImpl.simplifyServerLocation(home.toString(), true);
@@ -83,7 +88,7 @@ public class FormLogin extends JPanel {
                 }
             }
             panel.locationField.setText(home.toString());
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FormLogin.class, "FormLogin.log_in"));
+            DialogDescriptor dd = new DialogDescriptor(panel, FormLogin_log_in());
             if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
@@ -91,7 +96,7 @@ public class FormLogin extends JPanel {
             loginPrefs().put(server, username);
             String password = new String(panel.passField.getPassword());
             panel.passField.setText("");
-            Keyring.save(server, password.toCharArray(), NbBundle.getMessage(FormLogin.class, "FormLogin.password_description", home, username));
+            Keyring.save(server, password.toCharArray(), FormLogin_password_description(home, username));
             return new String[] {username, password};
         }
     }

@@ -42,11 +42,12 @@
 package org.netbeans;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -65,11 +66,23 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
         if (!proxyFactoryInitialized) {
             URLStreamHandler originalJarHandler = null;
             try {
-                Method m = URL.class.getDeclaredMethod("getURLStreamHandler", String.class);
-                m.setAccessible(true);
-                originalJarHandler = (URLStreamHandler) m.invoke(null, "jar");
+                List<Field> candidates = new ArrayList<Field>();
+                for (Field f : URL.class.getDeclaredFields()) {
+                    if (f.getType() == URLStreamHandler.class) {
+                        candidates.add(f);
+                    }
+                }
+                if (candidates.size() != 1) {
+                    throw new Exception("No, or multiple, URLStreamHandler-valued fields in URL: " + candidates);
+                }
+                Field f = candidates.get(0);
+                f.setAccessible(true);
+                originalJarHandler = (URLStreamHandler) f.get(new URL("jar:file:/sample.jar!/"));
+                LOG.log(Level.FINE, "found originalJarHandler: {0}", originalJarHandler);
             } catch (Throwable t) {
-                LOG.log(Level.SEVERE, "No way to find original stream handler for jar protocol", t); // NOI18N
+                if (originalJarHandler == null) {
+                    LOG.log(Level.SEVERE, "No way to find original stream handler for jar protocol", t); // NOI18N
+                }
             }
             try {
                 URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(null, originalJarHandler));
@@ -113,9 +126,10 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
 
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals("jar")) {
-            return new JarClassLoader.JarURLStreamHandler(originalJarHandler);
+            return originalJarHandler != null ? new JarClassLoader.JarURLStreamHandler(originalJarHandler) : null;
         } else if (protocol.equals("file") || protocol.equals("http") || protocol.equals("https") || protocol.equals("resource")) { // NOI18N
             // Well-known handlers in JRE. Do not try to initialize lookup, etc.
+            // (delegate already ignores these, but we cannot afford to look for URLSHFs in default lookup either.)
             return null;
         } else {
             if (delegate != null) {

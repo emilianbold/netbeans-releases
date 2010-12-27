@@ -90,6 +90,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 
@@ -632,8 +633,13 @@ public final class CommandBasedDeployer {
         String port = parts.length > 1 ? parts[1] : "";
 
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .redirectErrorStream(true)
-                .addArgument("-cp") // NOI18N
+                .redirectErrorStream(true);
+        // NB supports only JDK6+ while WL 9, only JDK 5
+        if (deploymentManager.getDomainVersion() == null
+                || !deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
+        }
+        builder = builder.addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
                 .addArgument("weblogic.Deployer") // NOI18N
                 .addArgument("-adminurl") // NOI18N
@@ -679,13 +685,14 @@ public final class CommandBasedDeployer {
         // TODO configurable ? or use the jdk server is running on ?
         JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = "java"; // NOI18N
+        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
         if (folders.size() > 0) {
             FileObject folder = folders.iterator().next();
             File file = FileUtil.toFile(folder);
             if (file != null) {
                 javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator + "java"; // NOI18N
+                        + "bin" + File.separator
+                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
             }
         }
         return javaBinary;

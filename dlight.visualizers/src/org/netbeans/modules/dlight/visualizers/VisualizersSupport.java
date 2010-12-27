@@ -59,10 +59,7 @@ final class VisualizersSupport implements SessionStateListener, DLightSessionLis
     VisualizersSupport(SessionStateListener sessionStateListener) {
         this.sessionStateListener = sessionStateListener;
         final DLightManager mgr = DLightManager.getDefault();
-        final DLightSession activeSession = mgr.getActiveSession();
-        mgr.addDLightSessionListener(this);
-        activeSession.addSessionStateListener(this);
-        currentSessionState = activeSession.getState();
+        mgr.addDLightSessionListener(VisualizersSupport.this);
     }
 
     protected boolean isSessionRunning() {
@@ -77,6 +74,7 @@ final class VisualizersSupport implements SessionStateListener, DLightSessionLis
         return (currentSessionState == SessionState.ANALYZE);
     }
 
+    @Override
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         currentSessionState = newState;
 
@@ -88,9 +86,10 @@ final class VisualizersSupport implements SessionStateListener, DLightSessionLis
         if (newState == SessionState.STARTING || newState == SessionState.RUNNING) {
             sessionStateListener.sessionStateChanged(session, oldState, newState);
             return;
-        }
+        }        
     }
 
+    @Override
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
@@ -99,17 +98,21 @@ final class VisualizersSupport implements SessionStateListener, DLightSessionLis
 
         if (newSession != null) {
             newSession.addSessionStateListener(this);
-            sessionStateChanged(newSession, SessionState.CONFIGURATION, newSession.getState());
+            currentSessionState = newSession.getState();
+            sessionStateChanged(newSession, null, currentSessionState);
         }
     }
 
+    @Override
     public void sessionAdded(DLightSession newSession) {
     }
 
+    @Override
     public void sessionRemoved(DLightSession removedSession) {
         if (removedSession != null) {
             removedSession.removeSessionStateListener(this);
             sessionStateListener.sessionStateChanged(removedSession, removedSession.getState(), SessionState.CLOSED);
+            DLightManager.getDefault().removeDLightSessionListener(this);    
             //stopTimer();
         }
     }

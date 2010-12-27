@@ -52,6 +52,8 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -64,11 +66,14 @@ import org.openide.util.Exceptions;
  */
 public final class ClassIndexManager {
 
+    public static final String PROP_SOURCE_ROOT = "source";  //NOI18N
+    
     private static final byte OP_ADD    = 1;
     private static final byte OP_REMOVE = 2;
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
+    private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
     private final InternalLock internalLock;
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
     private boolean invalid;
@@ -141,19 +146,49 @@ public final class ClassIndexManager {
             }
         }
     }
-               
-    public ClassIndexImpl getUsagesQuery (URL root) {
+          
+    @CheckForNull
+    public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {
         synchronized (internalLock) {
             assert root != null;
             if (invalid) {
                 return null;
             }
-            ClassIndexImpl index = this.instances.get (root);
+            Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
+            ClassIndexImpl index = pair.first;
             if (index != null) {
                 return index;
             }
-            root = AptCacheForSourceQuery.getSourceFolder(root);
-            return root == null ? null : this.instances.get(root);
+            URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
+            if (translatedRoot != null) {
+                pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
+                index = pair.first;
+                if (index != null) {
+                    return index;
+                }
+            } else {
+                translatedRoot = root;
+            }
+            if (beforeCreateAllowed) {
+                String attr = null;
+                try {
+                    attr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);            
+                    if (Boolean.TRUE.toString().equals(attr)) {
+                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), true);
+                        this.transientInstances.put(root,index);
+                    } else if (Boolean.FALSE.toString().equals(attr)) {
+                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), false);
+                        this.transientInstances.put(root,index);
+                    }
+                } catch(IOException ioe) {/*Handled bellow by return null*/
+                } catch(IllegalStateException ise) {
+                  /* Required by some wrongly written tests
+                   * which access ClassIndex without setting the cache dir
+                   * Handled bellow by return null
+                   */
+                }
+            }
+            return index;
         }
     }
 
@@ -163,19 +198,23 @@ public final class ClassIndexManager {
             if (invalid) {
                 return null;
             }
-            ClassIndexImpl qi = this.instances.get (root);
+            Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
+            ClassIndexImpl qi = pair.first;
             if (qi == null) {
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
+                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
                 this.instances.put(root,qi);
                 if (added != null) {
                     added.add (root);
                 }
-            }
-            else if (source && !qi.isSource()){
+            } else if (source && !qi.isSource()){
                 //Wrongly set up freeform project, which is common for it, prefer source
                 qi.close ();
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
+                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
                 this.instances.put(root,qi);
+                if (added != null) {
+                    added.add (root);
+                }
+            } else if (pair.second) {
                 if (added != null) {
                     added.add (root);
                 }
@@ -228,6 +267,27 @@ public final class ClassIndexManager {
                 }
             }
         }
+    }
+    
+    @NonNull
+    private Pair<ClassIndexImpl,Boolean> getClassIndex(
+            final URL root,
+            final boolean allowTransient,
+            final boolean promote) {
+        ClassIndexImpl index = this.instances.get (root);
+        boolean promoted = false;
+        if (index == null && allowTransient) {            
+            if (promote) {
+                index = this.transientInstances.remove(root);
+                if (index != null) {
+                    this.instances.put(root, index);
+                    promoted = true;
+                }
+            } else {
+                index = this.transientInstances.get(root);
+            }
+        }
+        return Pair.<ClassIndexImpl,Boolean>of(index,promoted);
     }
     
     

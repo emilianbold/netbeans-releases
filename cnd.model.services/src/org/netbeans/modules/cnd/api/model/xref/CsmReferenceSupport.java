@@ -60,10 +60,10 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
-import org.openide.util.CharSequences;
 
 /**
  * some help methods to support CsmReference objects
@@ -116,10 +116,7 @@ public final class CsmReferenceSupport {
             CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
             if (fqnCheck.equals(fqnTarget)) {
                 if (CsmKindUtilities.isFunction(checkDecl) && CsmKindUtilities.isFunction(targetDecl)) {
-                    // we treat const and non-const functions as the same
-                    fqnCheck = ((CsmFunction) checkDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
-                    fqnTarget = ((CsmFunction) targetDecl).getSignature().toString().replace("const", "").trim(); // NOI18N
-                    if (fqnCheck.equals(fqnTarget)) {
+                    if (CsmBaseUtilities.sameSignature((CsmFunction)checkDecl, (CsmFunction)targetDecl)) {
                         return true;
                     }
                 } else {

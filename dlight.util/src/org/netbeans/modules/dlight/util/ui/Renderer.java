@@ -51,6 +51,8 @@ import javax.swing.JComponent;
  */
 public interface Renderer<T> {
 
+    void reset();
+
     /**
      * @param data  object to render
      * @return component representing data in visual form

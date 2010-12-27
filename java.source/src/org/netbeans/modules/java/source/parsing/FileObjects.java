@@ -1174,6 +1174,7 @@ public class FileObjects {
                 //No need to delegate to super (file does not exist)
                 throw fnf;
             } catch (IOException e) {
+                //Broken or unsupported zip file, try to delegate to ZipFile
                 return super.openInputStream();
             } catch (IndexOutOfBoundsException e) {
                 return super.openInputStream();

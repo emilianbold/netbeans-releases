@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -151,10 +152,12 @@ public class BuiltinTypes {
             }
             sb.append(token.getText());
         }
+        assert sb.length() > 0 : "no name in " + AstUtil.toString(ast);
         return getBuiltIn(sb.toString());
     }
     
     public static CsmBuiltIn getBuiltIn(CharSequence text) {
+        assert text != null && text.length() > 0;
         text = QualifiedNameCache.getManager().getString(text);
         CsmBuiltIn builtIn = types.get(text);
         if( builtIn == null ) {

@@ -952,7 +952,6 @@ public class TraceModel extends TraceModelBase {
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
         FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
         print("Testing APT Parser"); // NOI18N
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
         File file = buffer.getFile();
         long time = System.currentTimeMillis();
         if (cleanAPT) {

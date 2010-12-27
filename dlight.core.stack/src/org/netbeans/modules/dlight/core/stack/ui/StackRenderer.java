@@ -66,10 +66,16 @@ public final class StackRenderer implements Renderer<DataRow> {
 
     private final Lock lock = new Lock();
     private final List<Column> stackColumns;
+    private final boolean useHMTL;
 
     public StackRenderer(List<Column> stackColumns) {
+        this(stackColumns, false);
+    }
+
+    public StackRenderer(List<Column> stackColumns, boolean useHtml) {
         this.stackColumns = Collections.unmodifiableList(
                 new ArrayList<Column>(stackColumns)); // yes, it's paranoia :)
+        this.useHMTL = useHtml;
     }
 
     @Override
@@ -115,6 +121,15 @@ public final class StackRenderer implements Renderer<DataRow> {
     }
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;
+
+    @Override
+    public void reset() {
+       stackDataProvider = null;
+       stackDataProviderSearched = false;
+
+    }
+
+
 
     private synchronized StackDataProvider findStackDataProvider() {
         if (stackDataProvider == null && !stackDataProviderSearched) {

@@ -125,15 +125,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         updateString(ip,GlassfishModule.START_DERBY_FLAG, isRemote ? "false" : "true"); // NOI18N
         updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG, "true");  // NOI18N
         updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
+        String deployerUri = ip.get(GlassfishModule.URL_ATTR);
 
-        if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, adminPort);
-            ip.put(URL_ATTR, deployerUrl);
-        }
         // Asume a local instance is in NORMAL_MODE
         // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
         // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
-        ip.put(JVM_MODE, isRemote && !instanceProvider.equals(GlassfishInstanceProvider.getEe6WC()) ? DEBUG_MODE : NORMAL_MODE);
+        ip.put(JVM_MODE, isRemote && !deployerUri.contains("deployer:gfv3ee6wc") ? DEBUG_MODE : NORMAL_MODE);
         properties.putAll(ip);
         
         // XXX username/password handling at some point.
@@ -326,13 +323,15 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return isRemote;
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - start/stop/refresh",5); // NOI18N
+
     @Override
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
 
@@ -342,7 +341,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
     
@@ -361,7 +360,6 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return recognizers;
     }
     
-    private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - stop/refresh",5); // NOI18N
 
     @Override
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
@@ -402,7 +400,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new RestartTask(this, stateListener));
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
     
@@ -693,7 +691,18 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public String getResourcesXmlName() {
-        return instanceProvider.getResourcesXmlName();
+        return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT) ?
+                "glassfish-resources" : "sun-resources"; // NOI18N
+    }
+
+    @Override
+    public boolean supportsRestartInDebug() {
+        return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT);
+    }
+
+    @Override
+    public boolean isRestfulLogAccessSupported() {
+        return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT);
     }
 
     class StartOperationStateListener implements OperationStateListener {

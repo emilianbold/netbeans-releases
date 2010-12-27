@@ -44,6 +44,11 @@
 
 package org.openide.filesystems;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
 /**
  *
  * @author Radek Matous
@@ -80,5 +85,28 @@ public class MemoryFSTestHid extends TestBaseHid {
         assertEquals(file.getAttribute("name"), "value");
         root.setAttribute("rootName", "rootValue");
         assertEquals(root.getAttribute("rootName"), "rootValue");        
-    }        
+    }
+
+    public void testURLs() throws Exception {
+        FileObject file = FileUtil.createData(testedFS.getRoot(), "/folder/file");
+        OutputStream os = file.getOutputStream();
+        os.write("hello".getBytes());
+        os.close();
+        file.setAttribute("mimeType", "text/x-hello");
+        URL u = file.getURL();
+        assertEquals("/folder/file", u.getPath());
+        URLConnection conn = u.openConnection();
+        conn.connect();
+        assertEquals(5, conn.getContentLength());
+        assertEquals(file.lastModified().getTime(), conn.getLastModified());
+        assertEquals("text/x-hello", conn.getContentType());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copy(conn.getInputStream(), baos);
+        assertEquals("hello", baos.toString());
+        assertEquals(file, URLMapper.findFileObject(u));
+        assertEquals(null, URLMapper.findURL(file, URLMapper.EXTERNAL));
+        assertEquals(null, URLMapper.findURL(file, URLMapper.NETWORK));
+        assertEquals(u, new URL(file.getParent().getURL(), file.getNameExt()));
+    }
+
 }

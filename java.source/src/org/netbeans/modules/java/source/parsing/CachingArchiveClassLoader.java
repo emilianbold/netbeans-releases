@@ -89,11 +89,18 @@ public final class CachingArchiveClassLoader extends ClassLoader {
         if (file != null) {
             try {
                 final int len = readJavaFileObject(file);
+                int lastDot = name.lastIndexOf('.');
+                if (lastDot != (-1)) {
+                    String pack = name.substring(0, lastDot);
+                    if (getPackage(pack) == null) {
+                        definePackage(pack, null, null, null, null, null, null, null);
+                    }
+                }
                 return defineClass(name, buffer, 0, len);
             } catch (FileNotFoundException fnf) {
                 LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(Level.INFO, "Resource: {0} cannot be read.", file.toUri()); //NOI18N
             }
         }
         return super.findClass(name);

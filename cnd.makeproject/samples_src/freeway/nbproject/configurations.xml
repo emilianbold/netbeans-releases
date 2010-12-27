@@ -39,11 +39,9 @@
       <conf name="Default" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <ccTool>
-          <commandLine>`pkg-config --cflags gtk+-2.0`</commandLine>
         </ccTool>
         <linkerTool>
           <linkerLibItems>

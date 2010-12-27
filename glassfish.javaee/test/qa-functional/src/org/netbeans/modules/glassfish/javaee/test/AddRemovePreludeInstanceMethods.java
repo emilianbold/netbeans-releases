@@ -74,87 +74,87 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
     GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
     
     public void addPreludeInstance() throws IOException {
-            File f = new File(Util._PRELUDE_LOCATION);
-
-            if (!f.exists() || f.list().length < 1) {
-                // time to retrieve
-                Retriever r = new Retriever(f.getParentFile(),gip.getIndirectDownloadUrl(),
-                        AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
-                        gip.getDirectDownloadUrl(), new Retriever.Updater() {
-
-                    public void updateMessageText(String msg) {
-                        //System.out.println(msg);
-                    }
-
-                    public void updateStatusText(String status) {
-                        //System.out.println(status);
-                    }
-
-                    public void clearCancelState() {
-                    }
-                }, "glassfishv3");
-                r.run();
-            }
-            ServerWizardIterator inst = new ServerWizardIterator(gip);
-            WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
-
-            inst.setInstallRoot(Util._PRELUDE_LOCATION);
-            int dex = Util._PRELUDE_LOCATION.lastIndexOf(File.separator);
-            if (dex > -1) {
-                inst.setInstallRoot(Util._PRELUDE_LOCATION.substring(0, dex));
-            }
-            inst.setGlassfishRoot(Util._PRELUDE_LOCATION); // "/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish");
-            inst.setDomainLocation(Util._PRELUDE_LOCATION+ File.separator + "domains" +
-                    File.separator + "domain1");
-            inst.setHttpPort(8080);
-            inst.setAdminPort(4848);
-            wizard.putProperty("ServInstWizard_displayName","Prelude V3");
-            
-            inst.initialize(wizard);
-            inst.instantiate();
-            
-            ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
-            
-            Util.sleep(SLEEP);
+//            File f = new File(Util._PRELUDE_LOCATION);
+//
+//            if (!f.exists() || f.list().length < 1) {
+//                // time to retrieve
+//                Retriever r = new Retriever(f.getParentFile(),gip.getIndirectDownloadUrl(),
+//                        AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
+//                        gip.getDirectDownloadUrl(), new Retriever.Updater() {
+//
+//                    public void updateMessageText(String msg) {
+//                        //System.out.println(msg);
+//                    }
+//
+//                    public void updateStatusText(String status) {
+//                        //System.out.println(status);
+//                    }
+//
+//                    public void clearCancelState() {
+//                    }
+//                }, "glassfishv3");
+//                r.run();
+//            }
+//            ServerWizardIterator inst = new ServerWizardIterator(gip);
+//            WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
+//
+//            inst.setInstallRoot(Util._PRELUDE_LOCATION);
+//            int dex = Util._PRELUDE_LOCATION.lastIndexOf(File.separator);
+//            if (dex > -1) {
+//                inst.setInstallRoot(Util._PRELUDE_LOCATION.substring(0, dex));
+//            }
+//            inst.setGlassfishRoot(Util._PRELUDE_LOCATION); // "/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish");
+//            inst.setDomainLocation(Util._PRELUDE_LOCATION+ File.separator + "domains" +
+//                    File.separator + "domain1");
+//            inst.setHttpPort(8080);
+//            inst.setAdminPort(4848);
+//            wizard.putProperty("ServInstWizard_displayName","Prelude V3");
+//            
+//            inst.initialize(wizard);
+//            inst.instantiate();
+//            
+//            ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
+//            
+//            Util.sleep(SLEEP);
     }
     
     public void removePreludeInstance() {
-        try {
-            Util.sleep(SLEEP);
-            
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
-            boolean wasRunning = inst.isRunning();
-            
-            inst.remove();
-            
-            if (wasRunning) {
-                Util.sleep(SLEEP);
-            }
-
-            try {
-                ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
-            } catch (Exception e) {
-                if (wasRunning && inst.isRunning()) {
-                    fail("remove did not stop the instance");
-                }
-                String instances[] = ServerRegistry.getInstance().getInstanceURLs();
-                if (null != instances) {
-                    if (instances.length > 0) {
-                        fail("too many instances");
-                    }
-                } 
-
-                return;
-            }
-
-            fail("v3 Prelude instance still exists !");
-        } finally {
-//                File ff = new File(Util._PRELUDE_LOCATION);
-//                if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
-//                    System.out.println("Deleting: " + ff.getAbsolutePath());
-//                    Util.deleteJunk(ff.getParentFile());
+//        try {
+//            Util.sleep(SLEEP);
+//            
+//            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
+//            boolean wasRunning = inst.isRunning();
+//            
+//            inst.remove();
+//            
+//            if (wasRunning) {
+//                Util.sleep(SLEEP);
+//            }
+//
+//            try {
+//                ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
+//            } catch (Exception e) {
+//                if (wasRunning && inst.isRunning()) {
+//                    fail("remove did not stop the instance");
 //                }
-        }
+//                String instances[] = ServerRegistry.getInstance().getInstanceURLs();
+//                if (null != instances) {
+//                    if (instances.length > 0) {
+//                        fail("too many instances");
+//                    }
+//                } 
+//
+//                return;
+//            }
+//
+//            fail("v3 Prelude instance still exists !");
+//        } finally {
+////                File ff = new File(Util._PRELUDE_LOCATION);
+////                if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
+////                    System.out.println("Deleting: " + ff.getAbsolutePath());
+////                    Util.deleteJunk(ff.getParentFile());
+////                }
+//        }
     }
 
     public void deleteJunkInstall() {
@@ -166,10 +166,10 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
     }
 
     public void checkJavaDB() {
-        String location = DerbySupport.getLocation();
-        if (null == location || location.trim().length() < 1) {
-            fail("JavaDB is not registered!");
-        }
+//        String location = DerbySupport.getLocation();
+//        if (null == location || location.trim().length() < 1) {
+//            fail("JavaDB is not registered!");
+//        }
     }
     
     public static Test suite() {

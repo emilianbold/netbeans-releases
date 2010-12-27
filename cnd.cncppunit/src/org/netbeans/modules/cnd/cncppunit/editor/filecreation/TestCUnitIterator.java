@@ -79,7 +79,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 /**
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class TestCUnitIterator extends AbstractUnitTestIterator {
     private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;

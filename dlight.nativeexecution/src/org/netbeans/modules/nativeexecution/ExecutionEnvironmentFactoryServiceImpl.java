@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService.class, position = 100)
@@ -60,9 +57,6 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      */
     @Override
     public ExecutionEnvironment getLocal() {
-        if (!HostInfoUtils.isHostInfoAvailable(LOCAL)) {
-            getLocalHostInfo();
-        }
         return LOCAL;
     }
 
@@ -155,7 +149,7 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
                 int port = Integer.parseInt(strPort);
                 return createNew(user, host, port);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                Exceptions.printStackTrace(e);
                 return createNew(user, host);
             }
         }
@@ -165,25 +159,5 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
     @Override
     public ExecutionEnvironment createNew(String schema) {
         return null;
-    }
-
-    private synchronized void getLocalHostInfo() {
-        if (HostInfoUtils.isHostInfoAvailable(LOCAL)) {
-            return;
-        }
-
-        Runnable task = new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    HostInfoUtils.getHostInfo(LOCAL);
-                } catch (IOException ex) {
-                } catch (CancellationException ex) {
-                }
-            }
-        };
-
-        RequestProcessor.getDefault().post(task).waitFinished();
     }
 }

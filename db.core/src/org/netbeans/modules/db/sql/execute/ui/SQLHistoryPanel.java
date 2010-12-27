@@ -49,7 +49,6 @@ package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,6 +99,7 @@ import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
 import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.netbeans.modules.db.sql.history.SQLHistoryPersistenceManager;
+import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -161,7 +161,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         initSQLHistoryTableData();
         initComponents();
         setupSQLSaveLimit();
-        initComponentData();
         initTask = RP.post(new Runnable() {
 
             @Override
@@ -258,15 +257,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    Point origin = e.getPoint();
-                    int row = sqlHistoryTable.rowAtPoint(origin);
-                    int column = sqlHistoryTable.columnAtPoint(origin);
-                    if (row == -1 || column != 0) {
-                        return;
-                    } else {
-                        insertSQL();
-                    }
+                if (MouseUtils.isDoubleClick(e)) {
+                    insertSQL();
+                    e.consume();
                 }
             }
         });

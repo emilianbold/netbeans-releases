@@ -75,8 +75,38 @@ fi
 USER=${USER:-`logname 2>/dev/null`}
 USER=${USER:-${USERNAME}}
 TMPBASE=${TMPBASE:-/var/tmp}
-TMPDIRBASE=${TMPBASE}/dlight_${USER}/${NB_KEY}
-mkdir -p "${TMPDIRBASE}"
+
+SUFFIX=0
+TMPDIRBASE=${TMPBASE}/dlight_${USER}
+mkdir -p ${TMPDIRBASE}
+while [ ! -w ${TMPDIRBASE} -a ${SUFFIX} -lt 5 ]; do
+    echo "Warning: ${TMPDIRBASE} is not writable">&2
+    SUFFIX=`expr 1 + ${SUFFIX}`
+    TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
+    /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+done
+
+if [ -w ${TMPDIRBASE} ]; then
+    SUFFIX=0
+    TMPBASE=${TMPDIRBASE}
+    TMPDIRBASE=${TMPBASE}/${NB_KEY}
+    mkdir -p ${TMPDIRBASE}
+    while [ ! -w ${TMPDIRBASE} -a ${SUFFIX} -lt 5 ]; do
+        echo "Warning: ${TMPDIRBASE} is not writable">&2
+        SUFFIX=`expr 1 + ${SUFFIX}`
+        TMPDIRBASE=${TMPBASE}/${NB_KEY}_${SUFFIX}
+        /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+    done
+fi
+
+if [ ! -w ${TMPDIRBASE} ]; then
+    TMPDIRBASE=${TMPBASE}
+fi
+
+if [ ! -w ${TMPDIRBASE} ]; then
+    echo "Error: {TMPDIRBASE} is not writable">&2
+fi
+
 ENVFILE="${TMPDIRBASE}/env"
 
 echo BITNESS=${BITNESS}
