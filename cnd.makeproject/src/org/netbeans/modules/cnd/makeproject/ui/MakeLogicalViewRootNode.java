@@ -151,11 +151,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         folder = logicalFolders;
         ic.add(logicalFolders);
-        FolderSearchInfo old = getLookup().lookup(FolderSearchInfo.class);
-        if (old != null) {
-            ic.remove(old);
-        }
-        ic.add(new FolderSearchInfo(logicalFolders));
         setChildren(new LogicalViewChildren(folder, provider));
         stateChanged(null);
     }
@@ -167,11 +162,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         this.folder = folder;
         ic.add(folder);
-        FolderSearchInfo old = getLookup().lookup(FolderSearchInfo.class);
-        if (old != null) {
-            ic.remove(old);
-        }
-        ic.add(new FolderSearchInfo(folder));
         stateChanged(null);
         Runnable runnable = new Runnable() {
             @Override
