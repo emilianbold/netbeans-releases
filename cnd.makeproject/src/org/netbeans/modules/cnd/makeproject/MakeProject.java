@@ -1072,10 +1072,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/");
+            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/"); // NOI18N
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            addFolder(res, baseDirFileObject.getFileObject("nbproject"));
-            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"));
+            addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
             return res.iterator();
 
         }
