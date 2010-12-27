@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.api.ui;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.concurrent.CancellationException;
@@ -171,7 +172,15 @@ import org.openide.util.Exceptions;
 
         try {
             if (dir.canRead()) {
-                result = rdir.listFiles();
+                if (useFileHiding) {
+                    result = rdir.listFiles(new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            return ! name.startsWith(".");
+                        }
+                    });
+                } else {
+                    result = rdir.listFiles();
+                }
             }
         } finally {
             changeSupport.firePropertyChange(LOADING_STATUS, rdir, null);
