@@ -95,6 +95,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
+                <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
             </friend-packages>
         </data>

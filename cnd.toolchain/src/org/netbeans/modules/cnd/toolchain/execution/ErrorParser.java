@@ -43,8 +43,12 @@
 package org.netbeans.modules.cnd.toolchain.execution;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -63,11 +67,23 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
 
     protected FileObject relativeTo;
     protected final ExecutionEnvironment execEnv;
+    private NativeProject nativeProject;
+    private NativeFileSearch nativeFileSearch;
 
-    public ErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo) {
+    public ErrorParser(Project project,ExecutionEnvironment execEnv, FileObject relativeTo) {
         super();
         this.relativeTo = relativeTo;
         this.execEnv = execEnv;
+        init(project);
+    }
+
+    private void init(Project project) {
+        if (project != null) {
+            nativeProject = project.getLookup().lookup(NativeProject.class);
+            if (nativeProject != null) {
+                nativeFileSearch = nativeProject.getNativeFileSearch();
+            }
+        }
     }
 
     protected FileObject resolveFile(String fileName) {
@@ -91,6 +107,28 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
+        FileObject resolved = _resolveRelativePath(relativeDir, relativePath);
+        if (resolved != null && resolved.isValid()) {
+            return resolved;
+        }
+        if (nativeFileSearch != null) {
+            relativePath = relativePath.replace('\\', '/'); // NOI18N
+            int i = relativePath.lastIndexOf('/'); // NOI18N
+            String nameExt;
+            if (i >= 0) {
+                nameExt = relativePath.substring(i+1);
+            } else {
+                nameExt = relativePath;
+            }
+            Collection<CharSequence> searchFile = nativeFileSearch.searchFile(nativeProject, nameExt);
+            if (searchFile.size() == 1) {
+                return _resolveRelativePath(relativeDir, searchFile.iterator().next().toString());
+            }
+        }
+        return null;
+    }
+
+    private FileObject _resolveRelativePath(FileObject relativeDir, String relativePath) {
         if (ToolUtils.isPathAbsolute(relativePath)) {
             // NOI18N
             if (execEnv.isRemote() || Utilities.isWindows()) {
