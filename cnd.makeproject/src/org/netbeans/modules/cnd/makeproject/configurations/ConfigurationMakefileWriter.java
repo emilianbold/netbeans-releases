@@ -762,7 +762,7 @@ public class ConfigurationMakefileWriter {
                         if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                             MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
                             file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                        } else {
+                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                             file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         }
@@ -884,7 +884,7 @@ public class ConfigurationMakefileWriter {
                                 if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                     MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
                                     file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                                } else {
+                                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                                     MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                                     file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                                 }
@@ -1001,7 +1001,7 @@ public class ConfigurationMakefileWriter {
                         if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                             MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
                             file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                        } else {
+                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                             file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         }
@@ -1152,7 +1152,7 @@ public class ConfigurationMakefileWriter {
                         }
                     }
                 } else {
-                    assert false;
+                    continue;
                 }
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
@@ -1313,11 +1313,11 @@ public class ConfigurationMakefileWriter {
                             if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
                                 if (compilerSet != null) {
                                     String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                                    String target;
+                                    String target = file;
                                     if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                         MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
                                         target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                                    } else {
+                                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                                         MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                                         target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                                     }
