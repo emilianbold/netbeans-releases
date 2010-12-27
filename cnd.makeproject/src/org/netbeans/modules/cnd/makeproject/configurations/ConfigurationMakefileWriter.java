@@ -696,12 +696,21 @@ public class ConfigurationMakefileWriter {
                     String objectFiles = ""; // NOI18N
                     Item[] items = folder.getAllItemsAsArray();
                     for (int k = 0; k < items.length; k++) {
+                        ItemConfiguration itemConfiguration = items[k].getItemConfiguration(conf);
+                        if (itemConfiguration.getExcluded().getValue()) {
+                            continue;
+                        }
+                        if (!itemConfiguration.isCompilerToolConfiguration()) {
+                            continue;
+                        }
                         if (items[k].hasHeaderOrSourceExtension(false, false)) {
                             continue;
                         }
+                        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                         String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
-                        String objectFile = file.replaceFirst("\\..*", ".o"); // NOI18N
-                        objectFiles += "${TESTDIR}/" + objectFile + " "; // NOI18N
+                        String objectFile = compilerConfiguration.getOutputFile(items[k], conf, false);
+                        objectFile = objectFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                        objectFiles += objectFile + " "; // NOI18N
                     }
                     objectFiles += "${OBJECTFILES:%.o=%_nomain.o}"; // NOI18N
 
