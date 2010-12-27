@@ -499,7 +499,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return true;
     }
 
-    private boolean isValidProjectName(String text) {
+    public static boolean isValidProjectName(String text) {
         // unix allows a lot of strange names, but let's prohibit this for project
         // using symbols invalid on Windows
         if (text.length() == 0 || text.startsWith(" ") || // NOI18N
@@ -520,7 +520,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return ok;
     }
 
-    private boolean hasIllegalChar(String text) {
+    private static boolean hasIllegalChar(String text) {
         return text.contains(":") || // NOI18N
                text.contains("*") || // NOI18N
                text.contains("?") || // NOI18N
@@ -866,7 +866,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         controller.fireChangeEvent(); // Notify that the panel changed
     }
 
-    static File getCanonicalFile(File file) {
+    public static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {

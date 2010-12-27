@@ -224,7 +224,7 @@ public class DirectoryReader {
         String option = getFullTimeLsOption(oSFamily);
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
         pb.setExecutable("/bin/ls"); //NOI18N
-        pb.setArguments(option, remoteDirectory);
+        pb.setArguments(option, "-A", remoteDirectory); //NOI18N
         NativeProcess process = pb.call();
         RP.post(new StdOutReader(process.getInputStream(), execEnv.isRemote()));
         RP.post(new StdErrReader(process.getErrorStream(), execEnv.isRemote()));

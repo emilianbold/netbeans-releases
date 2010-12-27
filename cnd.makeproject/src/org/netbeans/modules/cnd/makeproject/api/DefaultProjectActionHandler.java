@@ -230,7 +230,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
-                    conf.getCompilerSet().getCompilerSet(),
+                    pae.getProject(), conf.getCompilerSet().getCompilerSet(),
                     execEnv, CndFileUtils.toFileObject(runDirectory));
         }
 
