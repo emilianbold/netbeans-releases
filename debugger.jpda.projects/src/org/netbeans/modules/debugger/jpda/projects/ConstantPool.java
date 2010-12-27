@@ -81,13 +81,23 @@ public class ConstantPool {
     }
 
     /**
-     * @param index Index to contsnat pool entries
+     * @param index Index to constant pool entries
      * @return method name
      * @throws IndexOutOfBoundsException when the constant pool size is smaller than index.
      */
     public String getMethodName(int index) {
         EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index);
         return ((EntryUTF8) entries.get(((EntryNameType) entries.get(methodRef.nameAndTypeIndex)).getNameIndex())).getUTF8();
+    }
+
+    /**
+     * @param index Index to constant pool entries
+     * @return method name
+     * @throws IndexOutOfBoundsException when the constant pool size is smaller than index.
+     */
+    public String getMethodDescriptor(int index) {
+        EntryFieldMethodRef methodRef = (EntryFieldMethodRef) entries.get(index);
+        return ((EntryUTF8) entries.get(((EntryNameType) entries.get(methodRef.nameAndTypeIndex)).getDescriptorIndex())).getUTF8();
     }
 
     public static ConstantPool parse(byte[] bytes) {

@@ -146,10 +146,12 @@ class AST2Bytecode {
                     TreePath nodePath = trees.getPath(cu, node);
                     if (nodePath != null && !ci.getTreeUtilities().isSynthetic(nodePath)) {
                         String methodNameInBytecode = null;
+                        String methodDescriptorInBytecode = null;
                         if (constantPool != null) {
                             int constantPoolIndex = ((bytecodes[from+1] & 0xFF) << 8) + (bytecodes[from+2] & 0xFF);
                             try {
                                 methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                                methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
                             } catch (IndexOutOfBoundsException ioobex) {
                                 ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
                                 Exceptions.printStackTrace(ioobex);
@@ -268,6 +270,7 @@ class AST2Bytecode {
                                         int constantPoolIndex = ((bytecodes[next+1] & 0xFF) << 8) + (bytecodes[next+2] & 0xFF);
                                         try {
                                             methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                                            methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
                                         } catch (IndexOutOfBoundsException ioobex) {
                                             ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
                                             Exceptions.printStackTrace(ioobex);
@@ -277,6 +280,7 @@ class AST2Bytecode {
                                             break;
                                         } else {
                                             //System.err.println("AST2Bytecode: skipped method in bytecode '"+methodNameInBytecode+"'");
+                                            methodDescriptorInBytecode = null;
                                         }
                                     }
                                     next += getInstrSize(opcode, bytecodes, next);
@@ -331,6 +335,13 @@ class AST2Bytecode {
                                         methodClassType,
                                         from
                                 );
+                        try {
+                            java.lang.reflect.Field methodDescriptorField = EditorContext.Operation.class.getDeclaredField("methodDescriptor");
+                            methodDescriptorField.setAccessible(true);
+                            methodDescriptorField.set(op, methodDescriptorInBytecode);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                         //treeNodes.get(treeIndex).setCodeIndex(from);
                         operations.add(op);
                     }
