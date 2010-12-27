@@ -911,8 +911,12 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
-        ArrayList<DataObject> files = new ArrayList<DataObject>();
+        LinkedHashSet<DataObject> files = new LinkedHashSet<DataObject>();
+        getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+        return files;
+    }
 
+    private void getAllItemsAsDataObjectSet(Set<DataObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
@@ -922,14 +926,11 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
                         files.add(da);
                     }
-                }
-                if (item instanceof Folder) {
-                    files.addAll(((Folder) item).getAllItemsAsDataObjectSet(projectFilesOnly, MIMETypeFilter));
+                } else if (item instanceof Folder) {
+                    ((Folder) item).getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
                 }
             }
         }
-
-        return new LinkedHashSet<DataObject>(files);
     }
 
     /*

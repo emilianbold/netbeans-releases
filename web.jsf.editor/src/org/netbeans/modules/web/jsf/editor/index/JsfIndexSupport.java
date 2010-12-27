@@ -40,53 +40,21 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.facelets;
+package org.netbeans.modules.web.jsf.editor.index;
 
-import com.sun.faces.spi.ConfigurationResourceProvider;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.servlet.ServletContext;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 
 /**
- * Facelets taglibs provider searching for the descriptors on project's source classpath.
  *
  * @author marekfukala
  */
-class FaceletTaglibraryConfigProvider implements ConfigurationResourceProvider {
+public class JsfIndexSupport {
 
-    private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
+    public static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
+    public static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
-    private ClassPath classpath;
-
-    public FaceletTaglibraryConfigProvider(ClassPath classpath) {
-        this.classpath = classpath;
+     public static boolean isFaceletsLibraryDescriptor(FileObject file) {
+        return file.getNameExt().endsWith(FACELETS_LIB_SUFFIX);
     }
-
-    @Override
-    public Collection<URL> getResources(ServletContext sc) {
-        List<FileObject> metainfs = classpath.findAllResources("META-INF"); //NOI18N
-
-        Collection<URL> urls = new ArrayList<URL>();
-        for(FileObject metainf : metainfs) {
-            Collection<FileObject> descriptors = JsfBinaryIndexer.findLibraryDescriptors(metainf, FACELETS_LIB_SUFFIX);
-            for(FileObject fo : descriptors) {
-                try {
-                    urls.add(fo.getURL());
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-
-        return urls;
-    }
-
 
 }

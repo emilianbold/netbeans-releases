@@ -39,9 +39,10 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor;
 
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -62,11 +64,13 @@ import org.openide.util.test.MockLookup;
  */
 public class TestBaseForTestProject extends TestBase {
 
+    private FileObject srcFo, webFo, projectFo, javaLibSrc;
+
     public TestBaseForTestProject(String name) {
         super(name);
     }
 
-     @Override
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -76,17 +80,21 @@ public class TestBaseForTestProject extends TestBase {
         //so InstalledFileLocatorImpl finds the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
         System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
 
-        FileObject srcFo = getTestFile("testWebProject/src");
+        this.projectFo = getTestFile("testWebProject");
+        this.srcFo = getTestFile("testWebProject/src");
+        this.webFo = getTestFile("testWebProject/web");
+
+        this.javaLibSrc = getTestFile("testJavaJSFLibrary/src");
 
         //create classpath
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
         cps.put(ClassPath.COMPILE, createServletAPIClassPath());
         cps.put(ClassPath.EXECUTE, createServletAPIClassPath());
-        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo}));
+        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
         cps.put(ClassPath.BOOT, createBootClassPath());
 
         ClassPathProvider classpathProvider = new TestClassPathProvider(cps);
-        Sources sources = new TestSources(srcFo, getTestFile("testWebProject/web"));
+        Sources sources = new TestSources(srcFo, webFo);
 
         MockLookup.setInstances(
                 new OpenProject(),
@@ -95,9 +103,37 @@ public class TestBaseForTestProject extends TestBase {
                 new SimpleFileOwnerQueryImplementation(),
                 classpathProvider,
                 new TestLanguageProvider(),
-                new FakeWebModuleProvider(getTestFile("testWebProject")));
+                new FakeWebModuleProvider(webFo, srcFo));
 
-        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
+        refreshIndexAndWait();
     }
 
+    protected void refreshIndexAndWait() throws FileStateInvalidException {
+        //uff, it looks like we need to refresh the source roots separately since
+        //if I use the project's folder here, then the index data are stored to
+        //its index folder, but later the QuerySupport uses different cache folders
+        //for webFO and srcFO so the index returns nothing.
+        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
+        IndexingManager.getDefault().refreshIndexAndWait(webFo.getURL(), null);
+        IndexingManager.getDefault().refreshIndexAndWait(javaLibSrc.getURL(), null);
+    }
+
+    protected JsfSupportImpl getJsfSupportImpl() {
+        JsfSupportImpl instance = JsfSupportImpl.findFor(getWebFolder());
+        assertNotNull(instance);
+
+        return instance;
+    }
+
+    protected FileObject getSourcesFolder() {
+        return srcFo;
+    }
+
+    protected FileObject getWebFolder() {
+        return webFo;
+    }
+
+    protected FileObject getProjectFolder() {
+        return projectFo;
+    }
 }

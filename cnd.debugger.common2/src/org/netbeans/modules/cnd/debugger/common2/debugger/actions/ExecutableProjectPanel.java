@@ -478,6 +478,14 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         return null;
     }
 
+    /*package*/ int getSelectedProjectIndex() {
+        return projectComboBox.getSelectedIndex();
+    }
+
+    /*package*/ void setSelectedProjectIndex(int index) {
+        projectComboBox.setSelectedIndex(index);
+    }
+
     /** Look up i18n strings here */
     private ResourceBundle bundle;
 

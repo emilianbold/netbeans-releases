@@ -73,6 +73,7 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.InstanceContent;
+import org.openidex.search.SearchInfo;
 
 /**
  * Support for creating logical views.
@@ -117,13 +118,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         ic.add(logicalFolders);
         ic.add(getProject());
-        ic.add(new FolderSearchInfo(logicalFolders));
+        SearchInfo searchInfo = project.getLookup().lookup(SearchInfo.class);
+        ic.add(searchInfo);
         projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
     }
 
     private void createLoadingRoot() {
         InstanceContent ic = new InstanceContent();
         ic.add(getProject());
+        SearchInfo searchInfo = project.getLookup().lookup(SearchInfo.class);
+        ic.add(searchInfo);
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
     }
 

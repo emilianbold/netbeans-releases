@@ -124,6 +124,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -1071,7 +1072,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
+            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/");
+            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+            addFolder(res, baseDirFileObject.getFileObject("nbproject"));
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"));
+            return res.iterator();
+
+        }
+
+        private void addFolder(Set<DataObject> res, FileObject fo) {
+            if (fo != null && fo.isFolder() && fo.isValid()) {
+                for(FileObject f : fo.getChildren()) {
+                    DataObject dataObject;
+                    try {
+                        dataObject = DataObject.find(f);
+                        if (dataObject != null) {
+                            res.add(dataObject);
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                    }
+                }
+            }
         }
     }
 

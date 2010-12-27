@@ -49,7 +49,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
@@ -67,8 +66,10 @@ import org.openide.util.NbBundle;
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
-    private String libraryName;
-    private AbstractLibraryDescriptor generatedDescribingLibrary;
+    private final String libraryName;
+    private final AbstractLibraryDescriptor generatedLibraryDescriptor;
+    private final String defaultPrefix;
+    private Collection<NamedComponent> components;
 
     //for undeclared libraries w/o prefix
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
@@ -78,6 +79,17 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace) {
         super(support, namespace);
         this.libraryName = libraryName;
+
+        //the default prefix is always computed from the composite library location
+        //since even if there's a descriptor for the library, it doesn't contain
+        //such information
+        this.defaultPrefix = generateVirtualLibraryPrefix();
+
+        //it looks like there's no intention of the spec creators to use the facelet
+        //descriptor for anything else than declaring the composite component
+        //non-default namespace. So all the information about tags, their attributes
+        //etc. needs to be parsed from the components themselves.
+        generatedLibraryDescriptor = new CCTldLibrary();
     }
 
     @Override
@@ -94,8 +106,14 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         return super.getNamespace();
     }
 
+    @Override
     public String getDefaultNamespace() {
         return LibraryUtils.getCompositeLibraryURL(getLibraryName());
+    }
+
+    @Override
+    public String getDefaultPrefix() {
+        return defaultPrefix;
     }
 
     @Override
@@ -108,29 +126,21 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public Collection<NamedComponent> getComponents() {
-        Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
-        Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-        for (String compName : componentNames) {
-            NamedComponent comp = new CompositeComponent(compName);
-            components.add(comp);
+    public synchronized Collection<NamedComponent> getComponents() {
+        if(components == null) {
+            components = new ArrayList<NamedComponent>();
+            Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
+            for (String compName : componentNames) {
+                NamedComponent comp = new CompositeComponent(compName);
+                components.add(comp);
+            }
         }
         return components;
     }
 
     @Override
-    public AbstractLibraryDescriptor getLibraryDescriptor() {
-        AbstractLibraryDescriptor libDescriptor = support.getJsfSupport().getLibraryDescriptor(getNamespace());
-            if (libDescriptor != null) {
-                //ohh, someone made a .taglib.xml or TLD for us, nice...
-                return libDescriptor;
-            }
-        //most cases, no tld, generate something so the completion and other stuff works
-        //todo - implement reasonable caching
-//        if (generatedDescribingLibrary == null) {
-        generatedDescribingLibrary = new CCTldLibrary();
-//        }
-        return generatedDescribingLibrary;
+    public synchronized AbstractLibraryDescriptor getLibraryDescriptor() {
+        return generatedLibraryDescriptor;
     }
 
     @Override
@@ -142,6 +152,28 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private JsfIndex index() {
         return support.getJsfSupport().getIndex();
+    }
+
+    private String generateVirtualLibraryPrefix() {
+        StringTokenizer st = new StringTokenizer(getLibraryName(), "/"); //NOI18N
+        LinkedList<String> tokens = new LinkedList<String>();
+        while (st.hasMoreTokens()) {
+            tokens.add(st.nextToken());
+        }
+
+        //one or more tokens left
+        if (tokens.size() == 1) {
+            //just library folder
+            return tokens.peek();
+        } else {
+            //more folders
+            StringBuilder sb = new StringBuilder();
+            for (String folderName : tokens) {
+                sb.append(folderName.charAt(0)); //add first char
+            }
+            return sb.toString();
+        }
+
     }
 
     public class CompositeComponent extends NamedComponent {
@@ -159,7 +191,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     private class CCTldLibrary extends AbstractLibraryDescriptor {
 
         private Map<String, Tag> cctags = new HashMap<String, Tag>();
-        private String virtualLibraryPrefix;
 
         public CCTldLibrary() { 
             init();
@@ -173,8 +204,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
         @Override
         public String getDefaultPrefix() {
-            //return an artificial made up prefix extracted from the library relative path
-            return virtualLibraryPrefix != null ? virtualLibraryPrefix : super.getDefaultPrefix();
+            return CompositeComponentLibrary.this.getDefaultPrefix();
         }
 
         private void init() {
@@ -189,48 +219,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 //2. if there are more folders, make the prefix from their first letters
                 //note: we may generate duplicated prefixes for different libraries
                 String relativePath = model.getRelativePath();
-                StringTokenizer st = new StringTokenizer(relativePath, "/"); //NOI18N
-                LinkedList<String> tokens = new LinkedList<String>();
-                while(st.hasMoreTokens()) {
-                    tokens.add(st.nextToken());
-                }
-
-                //there should be at least the resources folder, library folder + component filename
-                //but the path may also include META-INF folder and possibly?? some others before the
-                //resources folder, lets remove theese first
-                Iterator<String> sitr = tokens.iterator();
-                while(sitr.hasNext()) {
-                    String token = sitr.next();
-                    if("resources".equalsIgnoreCase(token)) { //NOI18N
-                        //remove the item and finish
-                        sitr.remove();
-                        break;
-                    } else {
-                        //remove the item
-                        sitr.remove();
-                    }
-                }
-
-                assert tokens.size() >= 2 : String.format("Suspicious relative path %s (tokens.size()=%s) for component %s of composite component's library %s", //NOI18N
-                        relativePath,
-                        tokens.size(),
-                        cname,
-                        getLibraryName()); //at least library name && the filename remained
-                
-                tokens.removeLast(); //remove the filename
-
-                //one or more tokens left
-                if(tokens.size() == 1) {
-                    //just library folder
-                    virtualLibraryPrefix = tokens.peek();
-                } else {
-                    //more folders
-                    StringBuilder sb = new StringBuilder();
-                    for(String folderName : tokens) {
-                        sb.append(folderName.charAt(0)); //add first char
-                    }
-                    virtualLibraryPrefix = sb.toString();
-                }
                 
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
