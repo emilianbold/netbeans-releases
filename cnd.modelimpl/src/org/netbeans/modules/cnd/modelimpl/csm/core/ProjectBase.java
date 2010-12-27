@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
@@ -1060,9 +1061,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        File file = nativeFile.getFile();
-        CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getName() + ") returned null file; FileObject is " + nativeFile.getFileObject()); //NOI18N
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
+        String entryKey;
+        if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+            FileObject fo = nativeFile.getFileObject();
+            // no normalization is needed
+            entryKey = FileContainer.getFileKey(fo.getPath(), true).toString();
+        } else {
+            File file = nativeFile.getFile();
+            CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getName() + ") returned null file; FileObject is " + nativeFile.getFileObject()); //NOI18N
+            entryKey = FileContainer.getFileKey(file, true).toString();
+        }
+        StartEntry startEntry = new StartEntry(entryKey,
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
