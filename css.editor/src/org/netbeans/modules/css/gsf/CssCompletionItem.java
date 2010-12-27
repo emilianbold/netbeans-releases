@@ -154,6 +154,7 @@ public class CssCompletionItem implements CompletionProposal {
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
 
+    protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     protected static int SORT_PRIORITY = 300;
 
     private CssCompletionItem() {
@@ -253,7 +254,7 @@ public class CssCompletionItem implements CompletionProposal {
         boolean defaultIcon = colorCode == null;
         if (defaultIcon) {
             //unknown color code, we still want a generic icon
-            colorCode = "ffffff"; //NOI18N
+            colorCode = WHITE_COLOR_HEX_CODE; 
         }
         
         if(colorCode.length() == 3) {
@@ -271,7 +272,13 @@ public class CssCompletionItem implements CompletionProposal {
         g.setColor(transparent);
         g.fillRect(0, 0, COLOR_ICON_SIZE, COLOR_ICON_SIZE);
 
-        g.setColor(Color.decode("0x" + colorCode)); //NOI18N
+        try {
+            g.setColor(Color.decode("0x" + colorCode)); //NOI18N
+        } catch (NumberFormatException ignoredException) {
+            //unparseable code
+            colorCode = WHITE_COLOR_HEX_CODE; 
+            defaultIcon = true;
+        }
         g.fillRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE,
                 COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
                 COLOR_RECT_SIZE - 1,
