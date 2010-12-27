@@ -76,4 +76,6 @@ public interface APTTraceFlags {
     public static final boolean APT_ABSOLUTE_INCLUDES = DebugUtils.getBoolean("apt.absolute.include", true); // NOI18N
     
     public static final boolean APT_RECURSIVE_BUILD = DebugUtils.getBoolean("apt.recursive.build", true); // NOI18N
+
+    public static final boolean APT_USE_FILE_OBJECTS = DebugUtils.getBoolean("apt.file.objects", false); // NOI18N
 }
