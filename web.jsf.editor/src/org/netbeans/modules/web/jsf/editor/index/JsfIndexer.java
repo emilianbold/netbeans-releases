@@ -73,7 +73,7 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndexer extends EmbeddingIndexer {
 
-    private static final Logger LOG = Logger.getLogger(JsfIndexer.class.getSimpleName());
+    public static final Logger LOG = Logger.getLogger(JsfIndexer.class.getName());
 
     private Set<String> modifications;
 
@@ -85,7 +85,6 @@ public class JsfIndexer extends EmbeddingIndexer {
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
             FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            LOG.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
 
@@ -96,6 +95,8 @@ public class JsfIndexer extends EmbeddingIndexer {
                 modifications.add(model.storeToIndex(document));
                 documents.add(document);
             }
+            LOG.log(Level.FINE, "indexing {0}, found {1} document.", new Object[]{fo.getPath(), documents.size()}); //NOI18N
+
 
             //add the documents to the index
             for (IndexDocument d : documents) {
@@ -126,6 +127,7 @@ public class JsfIndexer extends EmbeddingIndexer {
 	@Override
 	public boolean scanStarted(Context context) {
             try {
+                LOG.log(Level.FINE, "scanning of {0} started", context.getRoot()); //NOI18N
                 this.modifications = new HashSet<String>();
                 return IndexingSupport.getInstance(context).isValid();
             } catch (IOException ex) {
@@ -137,6 +139,7 @@ public class JsfIndexer extends EmbeddingIndexer {
 	@Override
 	public void scanFinished(Context context) {
 	    super.scanFinished(context);
+            LOG.log(Level.FINE, "scanning of {0} finished", context.getRoot()); //NOI18N
 	    
 	    if(context.getRoot() != null) {
 		JsfSupportImpl jsfsupport = JsfSupportImpl.findFor(context.getRoot());

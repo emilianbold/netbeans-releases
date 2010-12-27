@@ -298,23 +298,24 @@ public class TestBase extends CslTestBase {
 
     protected static class FakeWebModuleProvider implements WebModuleProvider {
 
-        private FileObject webRoot;
+        private FileObject webRoot, javaSources;
 
-        public FakeWebModuleProvider(FileObject webRoot) {
+        public FakeWebModuleProvider(FileObject webRoot, FileObject javaSources) {
             this.webRoot = webRoot;
         }
 
         public WebModule findWebModule(FileObject file) {
-            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
+            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot, javaSources));
         }
     }
 
     private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
 
-        private FileObject webRoot;
+        private FileObject webRoot, javaSources;
 
-        public FakeWebModuleImplementation2(FileObject webRoot) {
+        public FakeWebModuleImplementation2(FileObject webRoot, FileObject javaSources) {
             this.webRoot = webRoot;
+            this.javaSources = javaSources;
         }
 
         public FileObject getDocumentBase() {
@@ -338,7 +339,7 @@ public class TestBase extends CslTestBase {
         }
 
         public FileObject[] getJavaSources() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new FileObject[]{javaSources};
         }
 
         public MetadataModel<WebAppMetadata> getMetadataModel() {
