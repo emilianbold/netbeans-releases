@@ -202,7 +202,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
             if (parent == null) {
                 return true;
             } else {
-                return getParent().canRead(getNameExt());
+                return parent.canRead(getNameExt());
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -218,7 +218,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
             if (parent == null) {
                 return false;
             } else {
-                return getParent().canWrite(getNameExt());
+                return parent.canWrite(getNameExt());
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
