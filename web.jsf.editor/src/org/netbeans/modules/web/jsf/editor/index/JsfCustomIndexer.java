@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -152,7 +153,10 @@ public class JsfCustomIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-            //no-op
+            Iterator<? extends Indexable> itr = dirty.iterator();
+            while(itr.hasNext()) {
+                System.out.println("dirty: " + itr.next().getRelativePath());
+            }
         }
 
         @Override

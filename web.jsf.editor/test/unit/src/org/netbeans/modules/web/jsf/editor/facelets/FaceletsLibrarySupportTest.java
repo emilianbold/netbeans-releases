@@ -45,11 +45,14 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 import org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndexer;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
@@ -63,6 +66,13 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
     public FaceletsLibrarySupportTest(String name) {
         super(name);
+    }
+
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+//        suite.addTest(new FaceletsLibrarySupportTest("testCompositeComponentLibraryWithoutDescriptorFromLibraryProject"));
+//        suite.addTest(new FaceletsLibrarySupportTest("testCompositeComponentLibraryWithDescriptorFromLibraryProject"));
+        return suite;
     }
 
     @Override
@@ -177,5 +187,65 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         assertNotNull(a.getDescription());
 
     }
+
+    public void testCompositeComponentLibraryWithoutDescriptorFromLibraryProject() {
+        JsfSupportImpl instance = getJsfSupportImpl();
+
+//        debugLibraries(instance);
+
+        String libNs = LibraryUtils.getCompositeLibraryURL("cclib");
+
+        Library lib = instance.getLibrary(libNs);
+        assertNotNull(String.format("Library %s not found!", libNs), lib);
+
+        assertNotNull(lib.getLibraryDescriptor());
+        assertEquals("cclib", lib.getDefaultPrefix());
+        assertSame(LibraryType.COMPOSITE, lib.getType());
+
+        assertEquals(libNs, lib.getDefaultNamespace());
+        assertEquals(libNs, lib.getNamespace());
+        Tag t = lib.getTag("cc");
+        assertNotNull(t);
+
+        assertEquals("cc", t.getName());
+        Attribute a = t.getAttribute("ccattr");
+        assertNotNull(a);
+        assertEquals("ccattr", a.getName());
+
+    }
+
+    public void testCompositeComponentLibraryWithDescriptorFromLibraryProject() {
+        JsfSupportImpl instance = getJsfSupportImpl();
+
+        String libNs = "http://mysite.org/cclib2";
+
+        Library lib = instance.getLibrary(libNs);
+        assertNotNull(String.format("Library %s not found!", libNs), lib);
+
+        assertNotNull(lib.getLibraryDescriptor());
+        assertEquals("cclib2", lib.getDefaultPrefix());
+        assertSame(LibraryType.COMPOSITE, lib.getType());
+
+        String ezCompLibraryDefaultNS = LibraryUtils.getCompositeLibraryURL("cclib2");
+        assertEquals(ezCompLibraryDefaultNS, lib.getDefaultNamespace());
+        assertEquals(libNs, lib.getNamespace());
+        Tag t = lib.getTag("cc2");
+        assertNotNull(t);
+
+        assertEquals("cc2", t.getName());
+        Attribute a = t.getAttribute("ccattr2");
+        assertNotNull(a);
+        assertEquals("ccattr2", a.getName());
+
+    }
+
+    private void debugLibraries(JsfSupport jsfs) {
+        System.out.println("Found libraries:");
+        for(Library lib : jsfs.getLibraries().values()) {
+            System.out.println(lib.getNamespace());
+        }
+        System.out.println("-------------------");
+    }
+
 
 }
