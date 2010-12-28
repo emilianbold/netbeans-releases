@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
@@ -166,7 +165,7 @@ public class PersistentUtils {
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            PersistentUtils.writeUTF(((AbstractFileBuffer)buffer).getAbsolutePath(), output);
+            ((AbstractFileBuffer) buffer).write(output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -176,8 +175,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        buffer = new FileBufferFile(absPath);
+        buffer = new FileBufferFile(input);
         return buffer;
     }
 
