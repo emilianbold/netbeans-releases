@@ -611,8 +611,12 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 respCode == HttpURLConnection.HTTP_FORBIDDEN) {
                             // connection to manager has not been allowed
                             authorized = false;
+                            String messageId = "MSG_AuthorizationFailed";  // NOI18N
+                            if (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
+                                messageId = "MSG_AuthorizationFailedRemote"; // NOI18N
+                            }
                             return fireOperationStateChanged(OperationState.FAILED, 
-                                    "MSG_AuthorizationFailed", serverCmd.toString(), instanceName); // NOI18N
+                                    messageId, serverCmd.toString(), instanceName);
                         }
 
                         // !PW FIXME log status for debugging purposes
