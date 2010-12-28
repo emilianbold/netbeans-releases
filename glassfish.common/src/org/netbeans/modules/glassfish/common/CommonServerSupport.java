@@ -474,6 +474,11 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
     }
+    private Future<OperationState> execute(boolean irr, ServerCommand command, OperationStateListener... osl) {
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties(), osl);
+        return mgr.execute(command);
+    }
+
     @Override
     public AppDesc [] getModuleList(String container) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
@@ -601,7 +606,16 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             long start = System.nanoTime();
             Commands.LocationCommand command = new Commands.LocationCommand();
             try {
-                Future<OperationState> result = execute(true,command);
+                Future<OperationState> result = execute(true,command,new OperationStateListener() {
+                    @Override
+                    public void operationStateChanged(OperationState newState, String message) {
+                        if (OperationState.FAILED == newState) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                            Logger.getLogger("glassfish").log(Level.INFO, message);
+                        }
+                    }
+                });
                 if(result.get(timeout, units) == OperationState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE, "{0} responded in {1}ms", new Object[]{command.getCommand(), (end - start) / 1000000});  // NOI18N
