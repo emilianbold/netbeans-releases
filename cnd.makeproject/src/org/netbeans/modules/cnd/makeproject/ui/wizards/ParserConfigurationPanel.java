@@ -171,7 +171,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         jPanel1 = new javax.swing.JPanel();
 
         setMinimumSize(new java.awt.Dimension(300, 158));
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         codeModelPanel.setLayout(new java.awt.GridBagLayout());
@@ -258,6 +258,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(bundle.getString("SourceFoldersInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;

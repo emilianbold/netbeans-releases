@@ -108,14 +108,18 @@ public abstract class CndFileSystemProvider {
         return getDefault().getChildInfoImpl(path);
     }
 
-    public static FileObject toFileObject(CharSequence path) {
-        FileObject result = getDefault().toFileObjectImpl(path);
+    public static FileObject toFileObject(CharSequence absPath) {
+        FileObject result = getDefault().toFileObjectImpl(absPath);
         CndUtils.assertNotNull(result, "Null file object"); //NOI18N
         return result;
     }
 
-    public static CharSequence toPath(FileObject fileObject) {
-        CharSequence result = getDefault().toPathImpl(fileObject);
+    public static FileObject urlToFileObject(CharSequence url) {
+        return getDefault().urlToFileObjectImpl(url);
+    }
+
+    public static CharSequence fileObjectToUrl(FileObject fileObject) {
+        CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
         CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
         return result;
     }
@@ -132,8 +136,10 @@ public abstract class CndFileSystemProvider {
     protected abstract FileInfo[] getChildInfoImpl(CharSequence path);
 
     /** a bridge from cnd.utils to dlight.remote */
-    protected abstract FileObject toFileObjectImpl(CharSequence path);
-    protected abstract CharSequence toPathImpl(FileObject fileObject);
+    protected abstract FileObject toFileObjectImpl(CharSequence absPath);
+
+    protected abstract CharSequence fileObjectToUrlImpl(FileObject fileObject);
+    protected abstract FileObject urlToFileObjectImpl(CharSequence url);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
 
@@ -168,16 +174,16 @@ public abstract class CndFileSystemProvider {
         }
 
         @Override
-        public FileObject toFileObjectImpl(CharSequence path) {
+        public FileObject toFileObjectImpl(CharSequence absPath) {
             FileObject  fo;
             for (CndFileSystemProvider provider : cache) {
-                fo = provider.toFileObjectImpl(path);
+                fo = provider.toFileObjectImpl(absPath);
                 if (fo != null) {
                     return fo;
                 }
             }
             // not cnd specific file => use default file system conversion
-            File file = new File(FileUtil.normalizePath(path.toString()));
+            File file = new File(FileUtil.normalizePath(absPath.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
@@ -219,9 +225,21 @@ public abstract class CndFileSystemProvider {
         }
 
         @Override
-        protected CharSequence toPathImpl(FileObject fileObject) {
+        protected FileObject urlToFileObjectImpl(CharSequence url) {
             for (CndFileSystemProvider provider : cache) {
-                CharSequence path = provider.toPathImpl(fileObject);
+                FileObject fo = provider.urlToFileObjectImpl(url);
+                if (fo != null) {
+                    return fo;
+                }
+            }
+            File file = new File(FileUtil.normalizePath(url.toString()));
+            return FileUtil.toFileObject(file);
+        }
+
+        @Override
+        protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
+            for (CndFileSystemProvider provider : cache) {
+                CharSequence path = provider.fileObjectToUrlImpl(fileObject);
                 if (path != null) {
                     return path;
                 }

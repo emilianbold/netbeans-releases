@@ -66,7 +66,7 @@ public class JsfCustomIndexer extends CustomIndexer {
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
     static final int INDEXER_VERSION = 1;
 
-    private static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
+    public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
 
     private AtomicBoolean changeFlag;
 

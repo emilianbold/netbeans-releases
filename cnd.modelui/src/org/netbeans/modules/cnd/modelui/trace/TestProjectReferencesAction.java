@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -58,8 +59,9 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.Cancellable;
+import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.IOProvider;
@@ -109,11 +111,45 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         CharSequence name = p.getName();
         Map<CharSequence, Long> out = times.get(name);
         if (out == null) {
-            times.put(name, out = new ConcurrentHashMap<CharSequence, Long>());
+            out = new ConcurrentHashMap<CharSequence, Long>();
+            loadXRefTimes(p, out);
+            times.put(name, out);
         }
         return out;
     }
+    
+    private void loadXRefTimes(CsmProject p, Map<CharSequence, Long> out) throws NumberFormatException {
+        // try to load
+        Preferences props = getProjectPrefs(p);
+        if (props != null) {
+            String storedTimes = props.get("xRefTimes", ""); // NOI18N
+            String[] split = storedTimes.split("\n");// NOI18N
+            for (String fileTime : split) {
+                int delim = fileTime.lastIndexOf("|");
+                if (delim > 0) {
+                    try {
+                        out.put(CharSequences.create(fileTime.substring(0, delim)), Long.parseLong(fileTime.substring(delim+1)));
+                    } catch (NumberFormatException e) {
+                        Exceptions.printStackTrace(e);
+                        // continue
+                    }
+                }
+            }
+        }
+    }
 
+    private void saveXRefTimes(CsmProject p, Map<CharSequence, Long> out) throws NumberFormatException {
+        // try to save
+        Preferences props = getProjectPrefs(p);
+        if (props != null) {
+            StringBuilder storedTimes = new StringBuilder();
+            for (Map.Entry<CharSequence, Long> entry : out.entrySet()) {
+                storedTimes.append(entry.getKey()).append("|").append(entry.getValue().toString()).append("\n"); // NOI18N
+            }
+            props.put("xRefTimes", storedTimes.toString()); // NOI18N
+        }
+    }
+    
     static final class SmartCompletionAnalyzerAction extends TestProjectReferencesAction {
 
         SmartCompletionAnalyzerAction() {
@@ -255,6 +291,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         handle.finish();
         out.println("Analyzing " + p.getName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
         if (timeThreshold > 0) {
+            saveXRefTimes(p, fileTimes);
             err.println(fileTimes.size() + " files which were analyzed longer than " + timeThreshold + "ms are remembered"); // NOI18N
         }
         err.flush();

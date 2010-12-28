@@ -478,12 +478,36 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         return null;
     }
 
-    /*package*/ int getSelectedProjectIndex() {
-        return projectComboBox.getSelectedIndex();
+    /*package*/ String getSelectedProjectPath() {
+        Project prj = getSelectedProject();
+        return (prj != null)? prj.getProjectDirectory().getPath(): "";
     }
 
-    /*package*/ void setSelectedProjectIndex(int index) {
-        projectComboBox.setSelectedIndex(index);
+    /*package*/ void setSelectedProjectByPath(String path) {
+        if (path == null || path.length() == 0) {
+            projectComboBox.setSelectedIndex(0);
+            return;
+        }
+        ProjectCBItem prj = getProjectByPath(path);
+        if (prj != null) {
+            projectComboBox.setSelectedItem(prj);
+        }
+    }
+
+    /*package*/ boolean containsProjectWithPath(String path) {
+        return getProjectByPath(path) != null;
+    }
+
+    private ProjectCBItem getProjectByPath(String path) {
+        for(int i=0; i<projectComboBox.getModel().getSize(); i++) {
+            Object item = projectComboBox.getModel().getElementAt(i);
+            if (item instanceof ProjectCBItem) {
+                if (((ProjectCBItem) item).getProject().getProjectDirectory().getPath().equals(path)) {
+                    return (ProjectCBItem) item;
+                }
+            }
+        }
+        return null;
     }
 
     /** Look up i18n strings here */

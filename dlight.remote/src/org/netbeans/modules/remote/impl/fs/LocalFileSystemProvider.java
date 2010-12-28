@@ -176,7 +176,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public FileObject getFileObject(String absoluteURL) {
+    public FileObject urlToFileObject(String absoluteURL) {
         File file = new File(absoluteURL);
         return FileUtil.toFileObject(file);
     }
