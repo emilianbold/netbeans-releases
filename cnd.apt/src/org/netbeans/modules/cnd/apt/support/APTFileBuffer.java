@@ -57,6 +57,7 @@ public interface APTFileBuffer {
     public File getFile(); // XXX:FileObject conversion: remove
     public FileObject getFileObject();
     public CharSequence getAbsolutePath();
+    public CharSequence getUrl();
     public Reader getReader() throws IOException;    
     public char[] getCharBuffer() throws IOException;
     public int getLength();

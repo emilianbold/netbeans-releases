@@ -99,7 +99,7 @@ public class RemoteFileSystemUtils {
     public static ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ConnectionManager.getInstance().getRecentConnections()) {
-            if (hostName.equals(EnvUtils.toHostID(env))) {
+            if (hostName.equals(env.getHost())) {
                 if (port == 0 || port == env.getSSHPort()) {
                     result = env;
                     if (ConnectionManager.getInstance().isConnectedTo(env)) {
