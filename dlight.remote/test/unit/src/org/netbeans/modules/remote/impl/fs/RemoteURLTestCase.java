@@ -87,6 +87,18 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
+    public void testURLtoFileObject() throws Exception {
+        String absPath = "/usr/include/stdlib.h";
+        FileObject fo = rootFO.getFileObject(absPath);
+        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        assertNotNull("null URL", url);
+        FileObject fo2 = URLMapper.findFileObject(url);
+        assertNotNull("null file object by URL " + url, fo2);
+        assertEquals("file objects differ", fo, fo2);
+    }
+
+    @ForAllEnvironments
     public void testURLConnectionRead() throws Exception {
         String tempFile = null;
         try {

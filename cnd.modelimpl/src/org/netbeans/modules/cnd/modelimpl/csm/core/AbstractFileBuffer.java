@@ -56,12 +56,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
+    private final CharSequence url;
     private Charset encoding;
     
     protected AbstractFileBuffer(CharSequence absPath) {
@@ -76,6 +77,14 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             CndUtils.assertNormalized(new File(absPath.toString()));
         }
         this.absPath = FilePathCache.getManager().getString(absPath);
+        this.url = this.absPath;
+    }
+
+    protected AbstractFileBuffer(FileObject fileObject) {
+        CharSequence aPath = fileObject.getPath();
+        CharSequence anUrl = CndFileUtils.fileObjectToUrl(fileObject);
+        this.absPath = FilePathCache.getManager().getString(aPath);
+        this.url = FilePathCache.getManager().getString(anUrl);
     }
 
     @Override
@@ -92,21 +101,35 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
 
     @Override
+    public CharSequence getUrl() {
+        return url;
+    }
+
+    @Override
     public File getFile() {
         return new File(absPath.toString());
     }
 
     @Override
     public FileObject getFileObject() {
-        return CndFileUtils.toFileObject(absPath); // XXX:FileObject conversion
+        if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+            return CndFileUtils.urlToFileObject(url);
+        } else {
+            return CndFileUtils.toFileObject(absPath);
+        }
     }
 
     @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
-            File file = getFile();
-            // file must be normalized
-            FileObject fo = CndFileUtils.toFileObject(file);
+            FileObject fo;
+            if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+                fo = getFileObject();
+            } else {
+                File file = getFile();
+                // file must be normalized
+                fo = CndFileUtils.toFileObject(file);
+            }
             if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
             } else { // paranoia
@@ -126,10 +149,12 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
+        PersistentUtils.writeUTF(url, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        this.url = PersistentUtils.readUTF(input, FilePathCache.getManager());
         assert this.absPath != null;
     }
 
