@@ -493,6 +493,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         viewComboBox = new javax.swing.JComboBox();
         binaryField = new EditableComboBox();
 
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         binaryLabel.setLabelFor(binaryField);

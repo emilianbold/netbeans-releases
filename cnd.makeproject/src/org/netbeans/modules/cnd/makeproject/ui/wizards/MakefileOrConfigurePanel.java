@@ -321,7 +321,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle"); // NOI18N
@@ -344,7 +344,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(makefileRadioButton, gridBagConstraints);
         makefileRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "MAKEFILE_RADIO_BUTTON_AD")); // NOI18N
 
@@ -389,7 +389,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(configureRadioButton, gridBagConstraints);
         configureRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_RADIO_BUTTON_AD")); // NOI18N
 
@@ -467,7 +467,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(runConfigureCheckBox, gridBagConstraints);
 
         makeCheckBox.setSelected(true);
@@ -478,7 +478,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(makeCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(runSubfolderCheckBox, org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "run.configure.subfolder")); // NOI18N
@@ -510,6 +510,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(bundle.getString("MakefileOrConfigureInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -528,7 +529,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
