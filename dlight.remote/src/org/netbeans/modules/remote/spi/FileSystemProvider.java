@@ -155,17 +155,17 @@ public final class FileSystemProvider {
         }
     }
 
-    public static FileObject getFileObject(String path) {
+    public static FileObject urlToFileObject(String url) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
-            if (provider.isMine(path)) {
-                return provider.getFileObject(path);
+            if (provider.isMine(url)) {
+                return provider.urlToFileObject(url);
             }
         }
-        noProvidersWarning(path);
+        noProvidersWarning(url);
         return null;
     }
 
-    public static String toURL(FileObject fileObject) {
+    public static String fileObjectToUrl(FileObject fileObject) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileObject)) {
                 return provider.toURL(fileObject);

@@ -75,18 +75,23 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
-    protected FileObject toFileObjectImpl(CharSequence path) {
-        FileSystemAndString p = getFileSystemAndRemotePath(path);
+    protected FileObject toFileObjectImpl(CharSequence absPath) {
+        FileSystemAndString p = getFileSystemAndRemotePath(absPath);
         if (p == null) {
-            return FileSystemProvider.getFileObject(path.toString());
+            return FileSystemProvider.urlToFileObject(absPath.toString());
         } else {
             return p.getFileObject();
         }
     }
 
     @Override
-    protected CharSequence toPathImpl(FileObject fileObject) {
-        return FileSystemProvider.toURL(fileObject);
+    protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
+        return FileSystemProvider.fileObjectToUrl(fileObject);
+    }
+
+    @Override
+    protected FileObject urlToFileObjectImpl(CharSequence url) {
+        return FileSystemProvider.urlToFileObject(url.toString());
     }
 
     @Override
