@@ -61,6 +61,8 @@ public interface FileSystemProviderImplementation {
     boolean isMine(ExecutionEnvironment env);
     boolean isMine(FileObject fileObject);
     boolean isMine(String absoluteURL);
+    boolean isMine(FileSystem fileSystem);
+    ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
     boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException;
     void addDownloadListener(FileSystemProvider.DownloadListener listener);
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);

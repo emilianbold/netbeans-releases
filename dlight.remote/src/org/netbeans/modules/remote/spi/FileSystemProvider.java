@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -74,6 +75,24 @@ public final class FileSystemProvider {
 
     public static FileSystem getFileSystem(ExecutionEnvironment env) {
         return getFileSystem(env, "/"); //NOI18N
+    }
+
+    public static ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.getExecutionEnvironment(fileSystem);
+            }
+        }
+        return ExecutionEnvironmentFactory.getLocal();
+    }
+
+    public static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject) {
+        try {
+            return getExecutionEnvironment(fileObject.getFileSystem());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);            
+        }
+        return ExecutionEnvironmentFactory.getLocal();
     }
 
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
