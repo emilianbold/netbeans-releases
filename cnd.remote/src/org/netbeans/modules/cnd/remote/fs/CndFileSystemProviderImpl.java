@@ -91,7 +91,13 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
-        return FileSystemProvider.urlToFileObject(url.toString());
+        // That's legacy: an url can be a path to RFS cache file.
+        FileSystemAndString p = getFileSystemAndRemotePath(url);
+        if (p == null) {
+            return FileSystemProvider.urlToFileObject(url.toString());
+        } else {
+            return p.getFileObject();
+        }
     }
 
     @Override

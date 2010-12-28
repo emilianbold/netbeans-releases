@@ -125,7 +125,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             String storedTimes = props.get("xRefTimes", ""); // NOI18N
             String[] split = storedTimes.split("\n");// NOI18N
             for (String fileTime : split) {
-                int delim = fileTime.lastIndexOf("|");
+                int delim = fileTime.lastIndexOf("|"); // NOI18N
                 if (delim > 0) {
                     try {
                         out.put(CharSequences.create(fileTime.substring(0, delim)), Long.parseLong(fileTime.substring(delim+1)));
