@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,14 +49,18 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -64,7 +69,7 @@ import org.openide.util.test.MockLookup;
  */
 public class TestBaseForTestProject extends TestBase {
 
-    private FileObject srcFo, webFo, projectFo, javaLibSrc;
+    private FileObject srcFo, webFo, projectFo, javaLibSrc, javaLibProjectFo;
 
     public TestBaseForTestProject(String name) {
         super(name);
@@ -81,27 +86,55 @@ public class TestBaseForTestProject extends TestBase {
         System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
 
         this.projectFo = getTestFile("testWebProject");
+        assertNotNull(projectFo);
         this.srcFo = getTestFile("testWebProject/src");
+        assertNotNull(srcFo);
         this.webFo = getTestFile("testWebProject/web");
+        assertNotNull(webFo);
 
+        this.javaLibProjectFo = getTestFile("testJavaJSFLibrary");
+        assertNotNull(javaLibProjectFo);
         this.javaLibSrc = getTestFile("testJavaJSFLibrary/src");
+        assertNotNull(javaLibSrc);
 
-        //create classpath
+        Map<FileObject, ProjectInfo> projects = new HashMap<FileObject, ProjectInfo>();
+
+        //create classpath for web project
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
-        cps.put(ClassPath.COMPILE, createServletAPIClassPath());
+
+        //depend also on the java library
+        cps.put(ClassPath.COMPILE, 
+                ClassPathSupport.createProxyClassPath(
+                    createServletAPIClassPath(),
+                    ClassPathSupport.createClassPath(new FileObject[]{javaLibSrc})));
+        
         cps.put(ClassPath.EXECUTE, createServletAPIClassPath());
         cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
         cps.put(ClassPath.BOOT, createBootClassPath());
-
-        ClassPathProvider classpathProvider = new TestClassPathProvider(cps);
+        ClassPathProvider classpathProvider = new TestMultiClassPathProvider(projectFo, cps);
         Sources sources = new TestSources(srcFo, webFo);
+
+        projects.put(projectFo, new ProjectInfo(classpathProvider, sources));
+
+        //create classpath for java library project
+        cps = new HashMap<String, ClassPath>();
+        cps.put(ClassPath.BOOT, createBootClassPath());
+        cps.put(ClassPath.COMPILE, createBootClassPath());
+        cps.put(ClassPath.EXECUTE, createBootClassPath());
+        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{javaLibSrc}));
+        ClassPathProvider javaLibClasspathProvider = new TestMultiClassPathProvider(javaLibProjectFo, cps);
+        Sources javaLibSources = new TestSources(javaLibSrc);
+
+        projects.put(javaLibProjectFo, new ProjectInfo(javaLibClasspathProvider, javaLibSources));
+
+        ClassPathProvider mergedClassPathProvider = new MergedClassPathProvider(projects);
 
         MockLookup.setInstances(
                 new OpenProject(),
                 new TestUserCatalog(),
-                new TestProjectFactory(classpathProvider, sources),
+                new TestMultiProjectFactory(projects),
                 new SimpleFileOwnerQueryImplementation(),
-                classpathProvider,
+                mergedClassPathProvider,
                 new TestLanguageProvider(),
                 new FakeWebModuleProvider(webFo, srcFo));
 
@@ -135,5 +168,92 @@ public class TestBaseForTestProject extends TestBase {
 
     protected FileObject getProjectFolder() {
         return projectFo;
+    }
+
+    private static class ProjectInfo {
+        
+        private ClassPathProvider cpp;
+        private Sources sources;
+
+        public ProjectInfo(ClassPathProvider cpp, Sources sources) {
+            this.cpp = cpp;
+            this.sources = sources;
+        }
+
+        public ClassPathProvider getCpp() {
+            return cpp;
+        }
+
+        public Sources getSources() {
+            return sources;
+        }
+
+    }
+
+    private static class MergedClassPathProvider implements ClassPathProvider {
+
+        private Map<FileObject, ProjectInfo> projects;
+
+        public MergedClassPathProvider(Map<FileObject, ProjectInfo> projects) {
+            this.projects = projects;
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            for(FileObject fo : projects.keySet()) {
+                if(FileUtil.isParentOf(fo, file)) {
+                    return projects.get(fo).getCpp().findClassPath(file, type);
+                }
+            }
+            return null;
+        }
+
+    }
+
+    private static class TestMultiProjectFactory implements ProjectFactory {
+
+        private Map<FileObject, ProjectInfo> projects;
+
+        public  TestMultiProjectFactory(Map<FileObject, ProjectInfo> projects) {
+            this.projects = projects;
+        }
+
+        @Override
+        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            ProjectInfo pi = projects.get(projectDirectory);
+            return pi != null ? new TestProject(projectDirectory, state, pi.getCpp(), pi.getSources() ) : null;
+        }
+
+        @Override
+        public void saveProject(Project project) throws IOException, ClassCastException {
+        }
+
+        @Override
+        public boolean isProject(FileObject dir) {
+            return projects.containsKey(dir);
+        }
+    }
+
+    private static class TestMultiClassPathProvider implements ClassPathProvider {
+
+        private Map<String, ClassPath> map;
+        private FileObject root;
+
+        public TestMultiClassPathProvider(FileObject root, Map<String, ClassPath> map) {
+            this.map = map;
+            this.root = root;
+        }
+
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (FileUtil.isParentOf(root, file)) {
+                if (map != null) {
+                    return map.get(type);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
     }
 }

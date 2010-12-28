@@ -47,6 +47,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
+import org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndexer;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
@@ -66,10 +67,13 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
     @Override
     protected void setUp() throws Exception {
+        JsfCustomIndexer.LOGGER.setLevel(Level.FINE);
         JsfIndexer.LOG.setLevel(Level.FINE);
+
         Handler h = new ConsoleHandler();
         h.setLevel(Level.FINE);
         JsfIndexer.LOG.addHandler(h);
+        JsfCustomIndexer.LOGGER.addHandler(h);
         super.setUp();
     }
 
@@ -148,30 +152,30 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
     }
 
-//    public void testClassBaseLibraryFromLibraryProject() {
-//        JsfSupportImpl instance = getJsfSupportImpl();
-//
-//        String libNs = "http://mysite.org/classTaglibIJL";
-//
-//        Library lib = instance.getLibrary(libNs);
-//        assertNotNull(String.format("Library %s not found!", libNs), lib);
-//
-//        assertNotNull(lib.getLibraryDescriptor());
-//        assertEquals("moc", lib.getDefaultPrefix());
-//        assertSame(LibraryType.CLASS, lib.getType());
-//
-//        assertEquals(libNs, lib.getNamespace());
-//        Tag t = lib.getTag("mytag");
-//        assertNotNull(t);
-//
-//        assertEquals("mytag", t.getName());
-//        assertNotNull(t.getDescription());
-//
-//        Attribute a = t.getAttribute("myattr");
-//        assertNotNull(a);
-//        assertEquals("myattr", a.getName());
-//        assertNotNull(a.getDescription());
-//
-//    }
+    public void testClassBaseLibraryFromLibraryProject() {
+        JsfSupportImpl instance = getJsfSupportImpl();
+
+        String libNs = "http://mysite.org/classTaglibIJL";
+
+        Library lib = instance.getLibrary(libNs);
+        assertNotNull(String.format("Library %s not found!", libNs), lib);
+
+        assertNotNull(lib.getLibraryDescriptor());
+        assertEquals("moc", lib.getDefaultPrefix());
+        assertSame(LibraryType.CLASS, lib.getType());
+
+        assertEquals(libNs, lib.getNamespace());
+        Tag t = lib.getTag("mytag");
+        assertNotNull(t);
+
+        assertEquals("mytag", t.getName());
+        assertNotNull(t.getDescription());
+
+        Attribute a = t.getAttribute("myattr");
+        assertNotNull(a);
+        assertEquals("myattr", a.getName());
+        assertNotNull(a.getDescription());
+
+    }
 
 }

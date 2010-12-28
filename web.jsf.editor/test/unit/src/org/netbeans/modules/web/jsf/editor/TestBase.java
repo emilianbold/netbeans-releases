@@ -376,7 +376,7 @@ public class TestBase extends CslTestBase {
         }
     }
 
-    protected final class TestProject implements Project {
+    protected static class TestProject implements Project {
 
         private final FileObject dir;
         final ProjectState state;
