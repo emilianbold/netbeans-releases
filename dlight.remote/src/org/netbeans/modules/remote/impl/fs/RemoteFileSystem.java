@@ -142,6 +142,10 @@ public class RemoteFileSystem extends FileSystem {
         resetDirtyTimestamp();
     }
 
+    /*package for test needs*/ void testResetDirtyTimestamp() {
+        resetDirtyTimestamp();
+    }
+
     private void resetDirtyTimestamp() {
         cache.setLastModified(System.currentTimeMillis());
         dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
