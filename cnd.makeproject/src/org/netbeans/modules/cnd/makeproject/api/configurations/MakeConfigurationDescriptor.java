@@ -155,10 +155,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void closed() {
         ToolsPanelSupport.removeCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
-            DataObject dao = item.getDataObject();
-            if (dao != null) {
-                dao.removePropertyChangeListener(item);
-            }
+            item.onClose();
         }
         closed(rootFolder);
     }

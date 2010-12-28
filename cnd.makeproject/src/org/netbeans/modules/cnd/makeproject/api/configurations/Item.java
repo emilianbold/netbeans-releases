@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -439,6 +440,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return dataObject;
     }
 
+    public final void onClose() {
+        DataObject dao = getDataObject();
+        if (dao != null) {
+            dao.removePropertyChangeListener(this);
+            NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
+            if (set != null) {
+                set.remove(this);
+            }
+        }
+    }
+    
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
