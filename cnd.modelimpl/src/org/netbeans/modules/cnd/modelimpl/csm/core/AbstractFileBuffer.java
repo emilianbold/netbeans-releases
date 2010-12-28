@@ -75,6 +75,9 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(CharSequence absPath) {
         if (CndUtils.isDebugMode()) {
             CndUtils.assertNormalized(new File(absPath.toString()));
+            if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+                System.err.printf("Warning: AbstractFileBuffer(String): %s\n", absPath);
+            }
         }
         this.absPath = FilePathCache.getManager().getString(absPath);
         this.url = this.absPath;
@@ -83,8 +86,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(FileObject fileObject) {
         CharSequence aPath = fileObject.getPath();
         CharSequence anUrl = CndFileUtils.fileObjectToUrl(fileObject);
+        if (!anUrl.toString().startsWith("rfs:")) {
+            System.err.printf("Strange URL prefix: %s\n", anUrl);
+        }
         this.absPath = FilePathCache.getManager().getString(aPath);
         this.url = FilePathCache.getManager().getString(anUrl);
+        if (CndUtils.isDebugMode()) {
+            FileObject fo2 = CndFileUtils.urlToFileObject(url);
+            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
+        }
     }
 
     @Override
@@ -145,8 +155,9 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
-    protected void write(DataOutput output) throws IOException {
+
+    // final is important here - see PersistentUtils.writeBuffer/readBuffer
+    public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
         PersistentUtils.writeUTF(url, output);
