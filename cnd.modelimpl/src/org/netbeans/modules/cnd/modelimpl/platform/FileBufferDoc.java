@@ -66,6 +66,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
+import org.openide.filesystems.FileObject;
 
 /**
  * FileBuffer implementation
@@ -87,6 +88,13 @@ public class FileBufferDoc extends AbstractFileBuffer {
     
     public FileBufferDoc(CharSequence absPath, Document doc) {
         super(absPath);
+        this.doc = doc;
+        changedSegment = new ChangedSegment(doc);
+        resetLastModified();
+    }
+
+    public FileBufferDoc(FileObject fileObject, Document doc) {
+        super(fileObject);
         this.doc = doc;
         changedSegment = new ChangedSegment(doc);
         resetLastModified();
