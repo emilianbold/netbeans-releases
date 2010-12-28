@@ -74,18 +74,6 @@ public class JsfCustomIndexer extends CustomIndexer {
         this.changeFlag = changeFlag;
     }
 
-
-//    JSOU TU DVA PROBLEMY:
-//        1) JsfIndex.getAllFaceletsLibraryDescriptors() vrati FO pro kazdy descriptor,
-//           ale jednou se ten descriptor najde pres Custom indexer a jednou pres Binary,
-//           pokud je zbuildovano. Je potreba zajistit, aby se library delal z toho custom
-//           pokud jsou oba
-//
-//        2) poslouchani na zmenach knihoven - je treba dodelat do FaceletsLibrarySupport
-//           mapu Library - timestamp source file a pokazdy kdyz se neco preindexuje, tak
-//           to checkovat, aby se spravne projevily zmeny pri modifikacich descriptoru
-//           
-
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         for (Indexable i : files) {
