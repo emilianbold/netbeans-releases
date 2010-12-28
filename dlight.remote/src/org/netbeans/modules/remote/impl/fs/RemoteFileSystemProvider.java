@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.openide.filesystems.FileObject;
@@ -120,6 +121,19 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public boolean isMine(FileObject fileObject) {
         return fileObject instanceof RemoteFileObjectBase;
+    }
+
+    @Override
+    public boolean isMine(FileSystem fileSystem) {
+        return fileSystem instanceof RemoteFileSystem;
+    }
+
+    @Override
+    public ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
+        if (fileSystem instanceof RemoteFileSystem) {
+            return ((RemoteFileSystem) fileSystem).getExecutionEnvironment();
+        }
+        return ExecutionEnvironmentFactory.getLocal();
     }
 
     @Override
