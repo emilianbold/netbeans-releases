@@ -56,7 +56,7 @@ public interface FileSystemProviderImplementation {
     String normalizeAbsolutePath(String absPath, ExecutionEnvironment env);
     FileObject normalizeFileObject(FileObject fileObject);
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
-    FileObject getFileObject(String absoluteURL);
+    FileObject urlToFileObject(String absoluteURL);
     String toURL(FileObject fileObject);
     boolean isMine(ExecutionEnvironment env);
     boolean isMine(FileObject fileObject);

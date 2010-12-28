@@ -137,7 +137,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public FileObject getFileObject(String path) {
+    public FileObject urlToFileObject(String path) {
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:,hostname:22/tmp/filename.ext"
             int port = 0;

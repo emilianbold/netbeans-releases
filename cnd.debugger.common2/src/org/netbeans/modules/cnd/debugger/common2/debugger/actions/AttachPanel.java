@@ -1100,15 +1100,23 @@ public final class AttachPanel extends TopComponent {
             if (processes.isEmpty()) {
                 return false;
             }
-            loadedPID = processes.get(0).get(psData.pidColumnIdx());
-            executableProjectPanel.setExecutablePath(props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
-            executableProjectPanel.setSelectedProjectIndex(props.getInt(SELECTED_PROJECT_PROP, -1));
             EngineType et = EngineTypeManager.getEngineTypeByID(props.getString(ENGINE_PROP, "")); //NOI18N
             if (et == null) {
                 return false;
             }
+            String hostName = props.getString(HOST_NAME_PROP, ""); //NOI18N
+            hostCombo.setSelectedItem(hostName);
+            if (!hostCombo.getSelectedItem().equals(hostName)) {
+                return false;
+            }
+            String selectedProject = props.getString(SELECTED_PROJECT_PROP, "");  //NOI18N
+            if (!executableProjectPanel.containsProjectWithPath(selectedProject)) {
+                return false;
+            }
+            executableProjectPanel.setSelectedProjectByPath(selectedProject);
+            loadedPID = processes.get(0).get(psData.pidColumnIdx());
+            executableProjectPanel.setExecutablePath(props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
             engine = new EngineDescriptor(et);
-            hostCombo.setSelectedIndex(props.getInt(HOST_NAME_PROP, -1));
             return true;
         }
 
@@ -1117,16 +1125,16 @@ public final class AttachPanel extends TopComponent {
             if (selectedCommand != null) {
                 props.setString(COMMAND_PROP, selectedCommand);
                 props.setString(EXECUTABLE_PATH_PROP, executableProjectPanel.getExecutablePath());
-                props.setInt(SELECTED_PROJECT_PROP, executableProjectPanel.getSelectedProjectIndex());
+                props.setString(SELECTED_PROJECT_PROP, executableProjectPanel.getSelectedProjectPath());
                 props.setString(ENGINE_PROP, engine.getType().getDebuggerID());
-                props.setInt(HOST_NAME_PROP, hostCombo.getSelectedIndex());
+                props.setString(HOST_NAME_PROP, (String) hostCombo.getSelectedItem());
             }
         }
 
         public String getDisplayName() {
             String selectedCommand = getSelectedProcessCommand();
             if (selectedCommand != null) {
-                return getString("ATTACH_HISTORY_MESSAGE", (new File(selectedCommand)).getName()); //NOI18N
+                return getString("ATTACH_HISTORY_MESSAGE", (new File(selectedCommand)).getName(), (String) hostCombo.getSelectedItem()); //NOI18N
             }
             return ""; //NOI18N
         }

@@ -225,6 +225,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         sourceFolder = new javax.swing.JTextField();
         sourceBrowseButton = new javax.swing.JButton();
 
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         instructionPanel.setLayout(new java.awt.BorderLayout());
@@ -235,6 +236,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         instructions.setBorder(null);
         instructions.setEditable(false);
         instructions.setFocusable(false);
+        instructions.setOpaque(false);
         jScrollPane1.setViewportView(instructions);
 
         instructionPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);

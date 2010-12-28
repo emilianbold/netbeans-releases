@@ -301,6 +301,14 @@ public final class CndFileUtils {
        }
    }
 
+    public static FileObject urlToFileObject(CharSequence url) {
+        return CndFileSystemProvider.urlToFileObject(url);
+    }
+
+    public static CharSequence fileObjectToUrl(FileObject fileObject) {
+        return CndFileSystemProvider.fileObjectToUrl(fileObject);
+    }
+
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
 

@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -79,6 +80,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -418,6 +421,35 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
         return new FileBufferFile(normalizeFile.getAbsolutePath());
+    }
+
+    public static FileBuffer getFileBuffer(FileObject fo) {
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                if (dao.isModified()) {
+                    EditorCookie editor = dao.getCookie(EditorCookie.class);
+                    if (editor != null) {
+                        Document doc = editor.getDocument();
+                        if (doc != null) {
+                            return new FileBufferDoc(fo, doc);
+                        }
+                    }
+                }
+            } catch (DataObjectNotFoundException e) {
+                // nothing
+            }
+            return new FileBufferFile(fo);
+        } else {
+            FileSystem fs;
+            try {
+                fs = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                fs = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+            return new FileBufferFile(InvalidFileObjectSupport.getInvalidFileObject(fs, fo.getPath()));
+        }
     }
 
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
