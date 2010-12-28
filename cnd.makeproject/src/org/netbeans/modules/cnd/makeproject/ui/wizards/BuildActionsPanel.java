@@ -197,7 +197,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         instructionsTextArea = new javax.swing.JTextArea();
         group2Label = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         buildCommandWorkingDirLabel.setLabelFor(buildCommandWorkingDirTextField);
@@ -301,6 +301,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(bundle.getString("BuildActionsInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
