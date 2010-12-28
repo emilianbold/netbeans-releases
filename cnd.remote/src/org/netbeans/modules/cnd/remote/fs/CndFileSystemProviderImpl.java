@@ -148,9 +148,9 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
                 if (slashPos >= 0) {
-                    String hostName = rest.subSequence(0, slashPos).toString();
+                    String hostID = rest.subSequence(0, slashPos).toString();
                     CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                    ExecutionEnvironment env = getExecutionEnvironment(hostName, 0);
+                    ExecutionEnvironment env = getExecutionEnvironmentByHostID(hostID);
                     if (env != null) {
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         return new FileSystemAndString(fs, remotePath);
@@ -184,15 +184,13 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
     }
 
-    public static ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
+    private static ExecutionEnvironment getExecutionEnvironmentByHostID(String hostID) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
-            if (hostName.equals(EnvUtils.toHostID(env))) {
-                if (port == 0 || port == env.getSSHPort()) {
-                    result = env;
-                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                        break;
-                    }
+            if (hostID.equals(EnvUtils.toHostID(env))) {
+                result = env;
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    break;
                 }
             }
         }
