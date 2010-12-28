@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,18 +74,6 @@ public class JsfCustomIndexer extends CustomIndexer {
     public JsfCustomIndexer(AtomicBoolean changeFlag) {
         this.changeFlag = changeFlag;
     }
-
-
-//    JSOU TU DVA PROBLEMY:
-//        1) JsfIndex.getAllFaceletsLibraryDescriptors() vrati FO pro kazdy descriptor,
-//           ale jednou se ten descriptor najde pres Custom indexer a jednou pres Binary,
-//           pokud je zbuildovano. Je potreba zajistit, aby se library delal z toho custom
-//           pokud jsou oba
-//
-//        2) poslouchani na zmenach knihoven - je treba dodelat do FaceletsLibrarySupport
-//           mapu Library - timestamp source file a pokazdy kdyz se neco preindexuje, tak
-//           to checkovat, aby se spravne projevily zmeny pri modifikacich descriptoru
-//           
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
@@ -164,7 +153,10 @@ public class JsfCustomIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-            //no-op
+            Iterator<? extends Indexable> itr = dirty.iterator();
+            while(itr.hasNext()) {
+                System.out.println("dirty: " + itr.next().getRelativePath());
+            }
         }
 
         @Override

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.editor.index;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -155,6 +156,10 @@ public class JsfIndexer extends EmbeddingIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+            Iterator<? extends Indexable> itr = dirty.iterator();
+            while(itr.hasNext()) {
+                System.out.println("dirty: " + itr.next().getRelativePath());
+            }
         }
 
         @Override
@@ -172,10 +177,10 @@ public class JsfIndexer extends EmbeddingIndexer {
             FileObject fo = snapshot.getSource().getFileObject();
             String sourceFileMimeType = fo.getMIMEType();
             if ("text/xhtml".equals(sourceFileMimeType)) { //NOI18N
-                WebModule wm = WebModule.getWebModule(fo);
-                if (wm != null) {
+//                WebModule wm = WebModule.getWebModule(fo);
+//                if (wm != null) {
                     return true;
-                }
+//                }
             }
             return false;
         }
