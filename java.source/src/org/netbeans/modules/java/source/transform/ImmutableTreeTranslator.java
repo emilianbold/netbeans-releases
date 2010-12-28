@@ -237,12 +237,12 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
             if (t == null || isEmpty(t))
                 continue;
             switch (t.getKind()) {
-                case BLOCK: {
 // #pf: the following code was commented out because it is not always reasonable
 // to inline functionality. -- Sometimes there is conflict between minimal 
 // changes and this optimization. -- Consider rename refactoring in case --
 // User expects identifier change, but optimization replaces whole block. 
 // See BodyStatementTest.java:testRenameInCase() for details.
+//                case BLOCK: {
 //                    BlockTree bt = (BlockTree)t;
 //                    boolean canInline = !bt.isStatic(); // don't inline static initializers
 //                    if (canInline)
@@ -259,7 +259,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 //                    else
 //                        newTrees.add(t); // just add block
 //                    break;
-                }
+//                }
                 case RETURN:
                 case THROW:
                 case BREAK:
