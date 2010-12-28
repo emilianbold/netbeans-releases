@@ -234,12 +234,19 @@ public class BreakpointGroup {
                             Project[] prjs = bprops.getProjects();
                             if (prjs != null && prjs.length > 0) {
                                 if (prjs.length == 1) {
-                                    propertyName = ProjectUtils.getInformation(prjs[0]).getDisplayName();
-                                    id = prjs[0];
+                                    if (prjs[0] != null) {
+                                        propertyName = ProjectUtils.getInformation(prjs[0]).getDisplayName();
+                                        id = prjs[0];
+                                    }
                                 } else {
                                     propertyNames = new String[prjs.length];
                                     idz = prjs;
                                     for (int i = 0; i < prjs.length; i++) {
+                                        if (prjs[i] == null) {
+                                            propertyNames = null;
+                                            idz = null;
+                                            break;
+                                        }
                                         propertyNames[i] = ProjectUtils.getInformation(prjs[i]).getDisplayName();
                                     }
                                 }
@@ -381,6 +388,9 @@ public class BreakpointGroup {
                                     Map<Project, Set<? extends Project>> subProjects) {
         if (projects != null && projects.length > 0) {
             for (Project p : projects) {
+                if (p == null) {
+                    return true;
+                }
                 if (openedProjectsCache.contains(p)) {
                     return true;
                 }
@@ -440,6 +450,9 @@ public class BreakpointGroup {
         if (projects != null && projects.length > 0) {
             boolean contains = false;
             for (Project p : projects) {
+                if (p == null) {
+                    return true;
+                }
                 if (openProjects.contains(p)) {
                     contains = true;
                     break;
