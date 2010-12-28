@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.index;
 
 import org.openide.filesystems.FileObject;
@@ -53,8 +52,7 @@ public class JsfIndexSupport {
     public static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
     public static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
-     public static boolean isFaceletsLibraryDescriptor(FileObject file) {
+    public static boolean isFaceletsLibraryDescriptor(FileObject file) {
         return file.getNameExt().endsWith(FACELETS_LIB_SUFFIX);
     }
-
 }

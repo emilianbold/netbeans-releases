@@ -73,7 +73,7 @@ public class JsfIndex {
     /** Creates a new instance of JsfIndex */
     private JsfIndex(WebModule wm) {
         this.base = wm.getDocumentBase();
-        sourceRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.SOURCE).getRoots());
+        
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
         Collection<FileObject> roots = new HashSet<FileObject>();
         roots.addAll(Arrays.asList(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE).getRoots()));
@@ -81,7 +81,7 @@ public class JsfIndex {
         binaryRoots = roots.toArray(new FileObject[]{});
 
         Collection<FileObject> croots = QuerySupport.findRoots(base, null, null, null);
-        customRoots = croots.toArray(new FileObject[]{});
+        sourceRoots = customRoots = croots.toArray(new FileObject[]{});
     }
 
     private QuerySupport createEmbeddingIndex() throws IOException {

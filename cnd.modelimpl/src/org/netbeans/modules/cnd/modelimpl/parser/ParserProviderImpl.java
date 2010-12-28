@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -111,27 +112,31 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
-            this.kind = kind;
-            switch (kind) {
-                case TRANSLATION_UNIT:
-                    parser.translation_unit();
-                    break;
-                case TRY_BLOCK:
-                    parser.setLazyCompound(false);
-                    parser.function_try_block(CsmKindUtilities.isConstructor((((CsmScopeElement)parserContainer).getScope())));
-                    break;
-                case COMPOUND_STATEMENT:
-                    parser.setLazyCompound(false);
-                    parser.compound_statement();
-                    break;
-                case NAMESPACE_DEFINITION_BODY:
-                    parser.translation_unit();
-                    break;
-                case CLASS_BODY:
-                    parser.fix_fake_class_members();
-                    break;
-                default:
-                    assert false: "unexpected parse kind " + kind;
+            try {
+                this.kind = kind;
+                switch (kind) {
+                    case TRANSLATION_UNIT:
+                        parser.translation_unit();
+                        break;
+                    case TRY_BLOCK:
+                        parser.setLazyCompound(false);
+                        parser.function_try_block(CsmKindUtilities.isConstructor((((CsmScopeElement)parserContainer).getScope())));
+                        break;
+                    case COMPOUND_STATEMENT:
+                        parser.setLazyCompound(false);
+                        parser.compound_statement();
+                        break;
+                    case NAMESPACE_DEFINITION_BODY:
+                        parser.translation_unit();
+                        break;
+                    case CLASS_BODY:
+                        parser.fix_fake_class_members();
+                        break;
+                    default:
+                        assert false: "unexpected parse kind " + kind;
+                }
+            } catch (Throwable ex) {
+                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
             }
             ast = parser.getAST();
             return this;
@@ -215,19 +220,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public CsmParserResult parse(ConstructionKind kind) {
-            this.kind = kind;
-            switch (kind) {
-                case TRANSLATION_UNIT:
-                    try {
-                        ret = parser.program();
-                    } catch (org.antlr.runtime.RecognitionException ex) {
-                        System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                    } catch (Exception ex) {
-                        System.err.println("Fortran parser error at parsing file " + file.getAbsolutePath()); // NOI18N
-                    }
-                    break;
-                default:
-                    assert false : "unexpected parse kind " + kind;    
+            try {
+                this.kind = kind;
+                switch (kind) {
+                    case TRANSLATION_UNIT:
+                            ret = parser.program();
+                        break;
+                    default:
+                        assert false : "unexpected parse kind " + kind;    
+                }
+            } catch (Exception ex) {
+                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
             }
             return this;
         }

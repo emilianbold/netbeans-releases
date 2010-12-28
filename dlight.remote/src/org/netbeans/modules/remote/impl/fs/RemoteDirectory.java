@@ -108,7 +108,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage storage = getDirectoryStorage();
             Entry entry = storage.getEntry(childNameExt);
-            return entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
+            return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedException ex) {
@@ -122,7 +122,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage storage = getDirectoryStorage();
             Entry entry = storage.getEntry(childNameExt);
-            return entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
+            return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedException ex) {

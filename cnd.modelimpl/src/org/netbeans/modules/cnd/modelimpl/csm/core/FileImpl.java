@@ -1088,9 +1088,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 parser.translation_unit();
                 return new ParserBasedTokenBuffer(parser);
             }
-        } catch (Error ex) {
+        } catch (Throwable ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
-            throw ex;
         } finally {
             if (TraceFlags.TRACE_ERROR_PROVIDER) {
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);

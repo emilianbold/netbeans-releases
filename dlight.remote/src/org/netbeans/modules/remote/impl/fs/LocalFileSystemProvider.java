@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -144,19 +145,29 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
+        return ExecutionEnvironmentFactory.getLocal();
+    }
+
+    @Override
     public boolean isMine(FileObject fileObject) {
         try {
-            FileSystem fileSystem = fileObject.getFileSystem();
-            if (fileSystem instanceof LocalFileSystem) {
-                return true;
-            } else {
-                FileSystem rootFS = getRootFileSystem();
-                if (rootFS != null && rootFS.getClass() == fileSystem.getClass()) {
-                    return true;
-                }
-            }
+            return isMine(fileObject.getFileSystem());
         } catch (FileStateInvalidException ex) {
             RemoteLogger.getInstance().log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isMine(FileSystem fileSystem) {
+        if (fileSystem instanceof LocalFileSystem) {
+            return true;
+        } else {
+            FileSystem rootFS = getRootFileSystem();
+            if (rootFS != null && rootFS.getClass() == fileSystem.getClass()) {
+                return true;
+            }
         }
         return false;
     }

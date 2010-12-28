@@ -219,11 +219,6 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
-    
     public FileBufferFile(DataInput input) throws IOException {
         super(input);
     }
