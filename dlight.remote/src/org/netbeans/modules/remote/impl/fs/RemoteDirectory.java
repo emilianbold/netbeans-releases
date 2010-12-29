@@ -160,6 +160,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return null;
             }
         }
+        if (".".equals(relativePath)) {
+            return this;
+        } else if ("..".equals(relativePath)) {
+            return getParent();
+        }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
             DirectoryStorage storage = getDirectoryStorage();
