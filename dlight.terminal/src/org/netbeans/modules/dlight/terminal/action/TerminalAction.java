@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
@@ -187,7 +189,11 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
                             SwingUtilities.invokeLater(this);
 
                             try {
-                                result.get();
+                                // if terminal can not be started then ExecutionException should be thrown
+                                // wait one second to see if terminal can not be started. otherwise it's OK to exit by TimeOut
+                                result.get(1, TimeUnit.SECONDS);
+                            } catch (TimeoutException ex) {
+                                // we should be there
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {
