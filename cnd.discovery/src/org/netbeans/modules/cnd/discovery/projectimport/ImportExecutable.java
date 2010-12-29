@@ -567,7 +567,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 }
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
-                                    needCheck.add(item.getFile().getAbsolutePath());
+                                    needCheck.add(item.getAbsolutePath());
                                 }
                             }
                         } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {

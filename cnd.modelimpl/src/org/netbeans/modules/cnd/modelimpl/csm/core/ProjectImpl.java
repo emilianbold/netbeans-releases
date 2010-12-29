@@ -186,7 +186,7 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); //NOI18N
+            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
         }
         DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this);
     }

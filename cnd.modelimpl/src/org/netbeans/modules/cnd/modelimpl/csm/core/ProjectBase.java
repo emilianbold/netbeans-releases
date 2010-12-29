@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -849,7 +850,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (fileAndHandler.fileImpl.isParsed()){
                     if (validator.arePropertiesChanged(nativeFile)) {
                         if (TraceFlags.TRACE_VALIDATION) {
-                            System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
+                            System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
                         }
                         reparseOnPropertyChanged.add(nativeFile);
                     }
@@ -860,7 +861,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
                         } else {
                             if (TraceFlags.TRACE_VALIDATION) {
-                                System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
+                                System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
                             }
                             reparseOnPropertyChanged.add(nativeFile);
                         }
@@ -870,7 +871,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             } else {
                 if (TraceFlags.TRACE_VALIDATION) {
-                    System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());
+                    System.err.printf("Validation: file %s is changed\n", nativeFile.getAbsolutePath());
                 }
                 if (validator.arePropertiesChanged(nativeFile)) {
                     reparseOnPropertyChanged.add(nativeFile);
@@ -996,7 +997,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         case CPP:
                         case FORTRAN:
                         case C_HEADER:
-                            projectFiles.add(item.getFile().getAbsolutePath());
+                            projectFiles.add(item.getAbsolutePath());
                             //this would be a workaround for #116706 Code assistance do not recognize changes in file
                             //projectFiles.add(item.getFile().getCanonicalPath());
                             break;
@@ -2612,6 +2613,24 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
 
+        @Override
+        public String getAbsolutePath() {
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return ((FileObject) fileObjectOrAbsPath).getPath();
+            } else {
+                return (String) fileObjectOrAbsPath;
+            }
+        }
+
+        @Override
+        public String getName() {
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return ((FileObject) fileObjectOrAbsPath).getNameExt();
+            } else {
+                return CndPathUtilitities.getBaseName((String) fileObjectOrAbsPath);
+            }
+        }
+        
         @Override
         public Language getLanguage() {
             return NativeFileItem.Language.C_HEADER;
