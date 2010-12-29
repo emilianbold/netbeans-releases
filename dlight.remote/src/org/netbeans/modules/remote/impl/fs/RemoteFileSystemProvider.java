@@ -85,13 +85,13 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             if (isPathAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
-                    baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
+                    return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
                 // it's RemoteDirectory responsibility to normalize in this case
-                baseFileObject.getFileObject(relativeOrAbsolutePath);
+                return baseFileObject.getFileObject(relativeOrAbsolutePath);
             }
         }
         return null;
