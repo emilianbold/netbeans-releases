@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -175,7 +176,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
-        CharSequence rootUrl = CndFileUtils.fileObjectToUrl(fileSystem.getRoot());
+        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fileSystem.getRoot()));
         PersistentUtils.writeUTF(rootUrl, output);
     }  
     
