@@ -142,13 +142,23 @@ public final class ProjectActionEvent {
         return type.getLocalizedName();
     }
 
+    private String getExecutableFromRunCommand() {
+        String[] runCommand = getRunCommand();
+        if (runCommand.length == 0) {
+            return "";
+        }
+        return runCommand[0];
+    }
+
     public String getExecutable() {
 	if (type == PredefinedType.RUN) {
-            String[] runCommand = getRunCommand();
-            if (runCommand.length == 0) {
-                return "";
-            }
-            return runCommand[0];
+            return getExecutableFromRunCommand();
+        }
+        // FIXUP: This is temporary solution to avoid Select Executable window appearance
+        // during the debug of the library.
+        // The fix is made based on assumption that for debugging library some binary should be chosen as Run Command
+	if ((type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) && configuration.isLibraryConfiguration()) {
+            return getExecutableFromRunCommand();
         }
 	return executable;
     }
