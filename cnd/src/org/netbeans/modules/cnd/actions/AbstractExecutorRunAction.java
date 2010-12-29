@@ -356,10 +356,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    private static Map<String, String> getDefaultEnvironment(ExecutionEnvironment execEnv, Node node) {
+    private static Map<String, String> getDefaultEnvironment(ExecutionEnvironment execEnv, Node node, Project project) {
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         String defaultPath = pi.getPathAsString();
-        CompilerSet cs = getCompilerSet(node, null);
+        CompilerSet cs = getCompilerSet(node, project);
         if (cs != null) {
             defaultPath = cs.getDirectory() + pi.pathSeparator() + defaultPath;
             // TODO Provide platform info
@@ -381,8 +381,8 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static Map<String, String> getEnv(ExecutionEnvironment execEnv, Node node, List<String> additionalEnvironment) {
-        Map<String, String> envMap = new HashMap<String, String>(getDefaultEnvironment(execEnv, node));
+    protected static Map<String, String> getEnv(ExecutionEnvironment execEnv, Node node, Project project, List<String> additionalEnvironment) {
+        Map<String, String> envMap = new HashMap<String, String>(getDefaultEnvironment(execEnv, node, project));
         envMap.putAll(getExecCookieEnvironment(node));
         if (additionalEnvironment != null) {
             envMap.putAll(parseEnvironmentVariables(additionalEnvironment));

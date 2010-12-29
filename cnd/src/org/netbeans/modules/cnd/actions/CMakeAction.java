@@ -152,7 +152,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, null);
+        Map<String, String> envMap = getEnv(execEnv, node, project, null);
         StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
             argsFlat.append(" "); // NOI18N

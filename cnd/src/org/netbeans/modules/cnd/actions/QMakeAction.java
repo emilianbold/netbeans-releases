@@ -154,7 +154,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, null);
+        Map<String, String> envMap = getEnv(execEnv, node, project, null);
         StringBuilder argsFlat = new StringBuilder(arguments);
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N

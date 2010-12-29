@@ -160,7 +160,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
+        Map<String, String> envMap = getEnv(execEnv, node, project, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }

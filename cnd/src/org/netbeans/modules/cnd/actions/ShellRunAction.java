@@ -202,7 +202,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
-        Map<String, String> envMap = getEnv(execEnv, node, null);
+        Map<String, String> envMap = getEnv(execEnv, node, project, null);
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("RUN_LABEL", node.getName()) : getString("RUN_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
