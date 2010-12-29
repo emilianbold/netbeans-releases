@@ -64,6 +64,8 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -428,8 +430,28 @@ public final class CndFileUtils {
        }
        return info;
     }
+    
+    public static synchronized FileSystem getLocalFileSystem() {
+        if (fileFileSystem == null) {
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
+            if (tmpDirFo != null) {
+                try {
+                    fileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    // it's no use to log it here
+                }
+            }
+            if (fileFileSystem == null) {
+                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+        }
+        return fileFileSystem;
+    }
 
     private static final Lock maRefLock = new ReentrantLock();
+    private static FileSystem fileFileSystem;
     
     private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
     private final static class Flags {

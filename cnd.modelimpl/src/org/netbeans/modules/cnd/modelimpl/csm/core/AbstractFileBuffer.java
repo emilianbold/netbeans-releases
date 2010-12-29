@@ -58,10 +58,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,32 +73,38 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
-    private final CharSequence url;
+    private final FileSystem fileSystem;
     private Charset encoding;
     
-    protected AbstractFileBuffer(CharSequence absPath) {
+    protected AbstractFileBuffer(CharSequence absPath) {        
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertNormalized(new File(absPath.toString()));
+            File file = new File(absPath.toString());
+            CndUtils.assertFileMode(file);
+            CndUtils.assertNormalized(file);
             if (CndTraceFlags.USE_FILE_OBJECTS) {
                 System.err.printf("Warning: AbstractFileBuffer(String): %s\n", absPath);
             }
         }
         this.absPath = FilePathCache.getManager().getString(absPath);
-        this.url = this.absPath;
+        this.fileSystem = CndFileUtils.getLocalFileSystem();
     }
 
     protected AbstractFileBuffer(FileObject fileObject) {
-        CharSequence aPath = fileObject.getPath();
-        CharSequence anUrl = CndFileUtils.fileObjectToUrl(fileObject);
-        if (!anUrl.toString().startsWith("rfs:")) { // NOI18N
-            System.err.printf("Strange URL prefix: %s\n", anUrl);
-        }
-        this.absPath = FilePathCache.getManager().getString(aPath);
-        this.url = FilePathCache.getManager().getString(anUrl);
+        this.absPath = FilePathCache.getManager().getString(fileObject.getPath());
+        this.fileSystem = getFileSystem(fileObject);
         if (CndUtils.isDebugMode()) {
-            FileObject fo2 = CndFileUtils.urlToFileObject(url);
+            FileObject fo2 = fileSystem.findResource(absPath.toString());
             CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
         }
+    }
+
+    private static FileSystem getFileSystem(FileObject fileObject) {
+        try {
+            return fileObject.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return InvalidFileObjectSupport.getDummyFileSystem();
+        }       
     }
 
     @Override
@@ -112,8 +122,13 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public CharSequence getUrl() {
-        return url;
+        return CndFileUtils.fileObjectToUrl(getFileObject());
     }
+
+    @Override
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }    
 
     @Override
     public File getFile() {
@@ -123,7 +138,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     @Override
     public FileObject getFileObject() {
         if (CndTraceFlags.USE_FILE_OBJECTS) {
-            return CndFileUtils.urlToFileObject(url);
+            return fileSystem.findResource(absPath.toString());
         } else {
             return CndFileUtils.toFileObject(absPath);
         }
@@ -160,12 +175,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
-        PersistentUtils.writeUTF(url, output);
+        CharSequence rootUrl = CndFileUtils.fileObjectToUrl(fileSystem.getRoot());
+        PersistentUtils.writeUTF(rootUrl, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        this.url = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
+        this.fileSystem = rootFileObject.getFileSystem();
         assert this.absPath != null;
     }
 

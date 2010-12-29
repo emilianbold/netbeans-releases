@@ -60,6 +60,8 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Code Folding parser based on matching balanced { and }
@@ -101,8 +103,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         return out;
     }
 
-    private static APTFoldingParser getParser(String name, TokenStream lexer) {
-        APTFile apt = APTBuilder.buildAPT(name, lexer);
+    private static APTFoldingParser getParser(FileSystem fileSystem, String name, TokenStream lexer) {
+        APTFile apt = APTBuilder.buildAPT(fileSystem, name, lexer);
         APTFoldingWalker walker = new APTFoldingWalker(apt);
         // TODO: may be use simplified filter for everything?
         String filterName = APTLanguageSupport.GNU_CPP;
@@ -112,31 +114,32 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         return parser;
     }
 
-    public static List<CppFoldRecord> parse(String name, Reader source) {
+    public static List<CppFoldRecord> testParse(FileSystem fileSystem, String name, Reader source) {
         try {
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source, APTLanguageSupport.GNU_CPP);
-            APTFoldingParser parser = getParser(name, lexer);
+            APTFoldingParser parser = getParser(fileSystem, name, lexer);
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());
         } catch (Exception e) {
             if (reportErrors) {
                 System.err.println("exception: " + e); // NOI18N
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return null;
     }
 
-    public static List<CppFoldRecord> parse(String name, char[] buf) {
+    public static List<CppFoldRecord> parse(FileObject fo, char[] buf) {
         try {
+            String name = fo.getPath();
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP);
-            APTFoldingParser parser = getParser(name, lexer);
+            APTFoldingParser parser = getParser(fo.getFileSystem(), name, lexer);
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());
         } catch (Exception e) {
             if (reportErrors) {
                 System.err.println("exception: " + e); // NOI18N
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return null;
@@ -665,9 +668,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     String name = field.getName();
                     names[value] = name;
                 } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
             }
         }
