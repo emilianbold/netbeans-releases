@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
@@ -74,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -151,21 +153,23 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
-        File shellFile = CndFileUtils.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
-        String buildDir = getAbsoluteBuildDir(bdir, shellFile).getAbsolutePath();
+        FileObject buildDirObject = RemoteFileUtil.getFileObject(fileObject.getParent(), bdir);
+        String buildDir = buildDirObject.getPath();
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
-        String shellFilePath = CndPathUtilitities.toRelativePath(buildDir, shellFile.getPath()); // Absolute path to shell file
-        if (shellFilePath.equals(shellFile.getName())) {
+        String shellFilePath = CndPathUtilitities.toRelativePath(buildDirObject, fileObject);
+        if (shellFilePath.equals(fileObject.getNameExt())) {
             shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
         }
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        if (FileSystemProvider.getExecutionEnvironment(buildDirObject).isLocal()) {
+            buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        }
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;
@@ -187,7 +191,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             }
         }
         if (shellCommand.length() == 0) {
-            shellCommand = shellFile.getAbsolutePath();
+            shellCommand = fileObject.getPath();
         } else {
             argsFlat.append(shellFilePath);
         }

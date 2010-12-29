@@ -81,12 +81,12 @@ import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -148,7 +148,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (project == null) {
             project = findInOpenedProject(fileObject);
         }
-        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
+        ExecutionEnvironment developmentHost = null;
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
@@ -156,6 +156,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 if (dh != null) {
                     developmentHost = dh;
                 }
+            }
+        }
+        if (developmentHost == null) {
+            developmentHost = FileSystemProvider.getExecutionEnvironment(fileObject);
+            if (developmentHost == null || developmentHost.isLocal()) {
+                developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
             }
         }
         return developmentHost;
@@ -460,27 +466,6 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         // See IZ#157677:LiteSQL is not configurable in case of symlinks.
     }
 
-    protected static File getAbsoluteBuildDir(String bdir, File startFile) {
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = startFile.getParentFile();
-        } else if (CndPathUtilitities.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(startFile.getParentFile(), bdir);
-        }
-        // Canonical path not appropriate here.
-        // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
-        // See IZ#157677:LiteSQL is not configurable in case of symlinks.
-        //try {
-        //    buildDir = buildDir.getCanonicalFile();
-        //} catch (IOException ioe) {
-        //    // FIXUP
-        //}
-        buildDir = CndFileUtils.normalizeFile(buildDir.getAbsoluteFile());
-        return buildDir;
-    }
-
     protected static void saveNode(Node node) {
         //Save file
         SaveCookie save = node.getLookup().lookup(SaveCookie.class);
@@ -528,7 +513,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return null;
         }
         if (execEnv.isRemote()) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            RemoteProject remoteProject = null;
+            if (project != null) {
+                remoteProject = project.getLookup().lookup(RemoteProject.class);
+            }
             PathMap mapper;
             if (remoteProject != null) {
                 mapper = remoteProject.getSyncFactory().getPathMap(execEnv);
