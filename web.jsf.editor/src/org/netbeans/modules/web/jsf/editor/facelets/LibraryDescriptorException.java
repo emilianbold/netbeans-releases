@@ -39,53 +39,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 /**
- * Per web-module instance
  *
  * @author marekfukala
  */
-public class TldLibrariesCache {
+public class LibraryDescriptorException extends Exception {
 
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private JsfSupportImpl support;
-
-    public TldLibrariesCache(JsfSupportImpl support) {
-        this.support = support;
+    public LibraryDescriptorException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-   public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
-        }
-    }
-
-    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-            TldLibrary lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getTldFile(namespace);
-                if (file != null) {
-                    lib = TldLibrary.create(file);
-                    LIBRARIES.put(namespace, lib);
-                }
-            }
-            return lib;
-        }
-    }
-
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
-
-    }
 }

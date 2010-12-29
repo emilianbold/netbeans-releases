@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.completion;
 
+import java.net.URL;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
@@ -48,7 +49,9 @@ import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -129,10 +132,16 @@ public class JsfCompletionItem {
             sb.append("</h1>"); //NOI18N
 
             if(Boolean.getBoolean("show-facelets-libraries-locations")) {
-                sb.append("<div style=\"font-size: smaller; color: gray;\">");
-                sb.append("Source: ");
-                sb.append(FileUtil.getFileDisplayName(component.getLibrary().getLibraryDescriptor().getDefinitionFile()));
-                sb.append("</div>");
+                URL url = component.getLibrary().getLibraryDescriptorSource();
+                if(url != null) {
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if(fo != null) {
+                        sb.append("<div style=\"font-size: smaller; color: gray;\">");
+                        sb.append("Source: ");
+                        sb.append(FileUtil.getFileDisplayName(fo));
+                        sb.append("</div>");
+                    }
+                }
             }
 
             org.netbeans.modules.web.jsfapi.api.Tag tag = component.getTag();

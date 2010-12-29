@@ -188,52 +188,8 @@ public class JsfIndex {
         return null;
     }
 
-    //--------------- BINARY INDEX ---------------------
-    public Map<String, FileObject> getAllTldLibraries() {
-        Map<String, FileObject> map = new HashMap<String, FileObject>();
-        try {
-            Collection<? extends IndexResult> results = createBinaryIndex().query(
-                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY,
-                    "true",
-                    QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
-
-            for (IndexResult result : results) {
-                FileObject file = result.getFile(); //expensive? use result.getRelativePath?
-                if (file != null) {
-                    map.put(result.getValue(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY), file);
-                }
-
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return map;
-    }
-
-    public FileObject getTldFile(String namespace) {
-        try {
-            Collection<? extends IndexResult> results =
-                    createBinaryIndex().query(
-                    JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY,
-                    namespace, QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
-
-            //now filter out all libs which are no of TLD type
-            for (IndexResult result : results) {
-                if (result.getValue(JsfBinaryIndexer.TLD_LIBRARY_MARK_KEY) != null) {
-                    return result.getFile();
-                }
-            }
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-
-    public Collection<FileObject> getAllFaceletsLibraryDescriptors() {
-        Collection<FileObject> files = new ArrayList<FileObject>();
+    public Collection<IndexedFile> getAllFaceletsLibraryDescriptors() {
+        Collection<IndexedFile> files = new ArrayList<IndexedFile>();
         try {
             //order of the following queries DOES matter! read comment #3 in FaceletsLibrarySupport.parseLibraries()
 
@@ -242,12 +198,14 @@ public class JsfIndex {
                     JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
                     "true", //NOI18N
                     QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY);
+                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
+                    JsfIndexSupport.TIMESTAMP_KEY);
 
             for (IndexResult result : binResults) {
                 FileObject file = result.getFile();
                 if (file != null) {
-                    files.add(file);
+                    long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
+                    files.add(new IndexedFile(timestamp, file));
                 }
 
             }
@@ -257,12 +215,14 @@ public class JsfIndex {
                     JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
                     "true", //NOI18N
                     QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY);
+                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
+                    JsfIndexSupport.TIMESTAMP_KEY);
 
             for (IndexResult result : eiResults) {
                 FileObject file = result.getFile();
                 if (file != null) {
-                    files.add(file);
+                    long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
+                    files.add(new IndexedFile(timestamp, file));
                 }
 
             }
@@ -273,40 +233,4 @@ public class JsfIndex {
         return files;
     }
 
-    public FileObject getFaceletsLibaryDescriptorFile(String namespace) {
-        try {
-            //order of the following queries DOES matter! read comment #3 in FaceletsLibrarySupport.parseLibraries()
-
-            //query binary index
-            Collection<? extends IndexResult> binResults =
-                    createBinaryIndex().query(
-                    JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY,
-                    namespace, QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
-
-            //now filter out all libs which are not of Facelets type
-            for (IndexResult result : binResults) {
-                if (result.getValue(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY) != null) {
-                    return result.getFile();
-                }
-            }
-
-            //query custom (sources) index
-            Collection<? extends IndexResult> eiResults =
-                    createCustomIndex().query(
-                    JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY,
-                    namespace, QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY);
-
-            //now filter out all libs which are not of Facelets type
-            for (IndexResult result : eiResults) {
-                if (result.getValue(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY) != null) {
-                    return result.getFile();
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
 }

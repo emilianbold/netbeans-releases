@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.openide.filesystems.FileObject;

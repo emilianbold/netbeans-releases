@@ -39,9 +39,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsfapi.api;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.Map;
+import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  *

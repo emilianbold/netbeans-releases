@@ -96,6 +96,7 @@ import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -155,6 +156,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void recolor(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.extWriteLock();
@@ -193,6 +195,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 final FaceletsLibrary tldl = libs.get(namespace);
                 AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+                    @Override
                     public void visit(AstNode node) {
                         if (node.type() == AstNode.NodeType.OPEN_TAG ||
                                 node.type() == AstNode.NodeType.ENDTAG) {
@@ -347,20 +350,23 @@ public class JsfHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
         
-        Tag tag = flib.getTag(tagName);
-        if (tag != null) {
-            Collection<Attribute> attrs = tag.getAttributes();
-            //TODO resolve help
-            Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
+        LibraryComponent comp = flib.getComponent(tagName);
+        if (comp != null) {
+            Tag tag = comp.getTag();
+            if (tag != null) {
+                Collection<Attribute> attrs = tag.getAttributes();
+                //TODO resolve help
+                Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
 
-            for (Attribute a : attrs) {
-                String attrName = a.getName();
-                if (!existingAttrNames.contains(attrName) ||
-                        existingAttrNames.contains(context.getItemText())) {
-                    //show only unused attributes except the one where the caret currently stays
-                    //this is because of we need to show the item in the completion since
-                    //use might want to see javadoc of already used attribute
-                    items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
+                for (Attribute a : attrs) {
+                    String attrName = a.getName();
+                    if (!existingAttrNames.contains(attrName)
+                            || existingAttrNames.contains(context.getItemText())) {
+                        //show only unused attributes except the one where the caret currently stays
+                        //this is because of we need to show the item in the completion since
+                        //use might want to see javadoc of already used attribute
+                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
+                    }
                 }
             }
 
@@ -494,6 +500,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                                         AstNode root = hresult.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
                                         AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+                                            @Override
                                             public void visit(AstNode node) {
                                                 if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
                                                     for (AstNode child : node.children()) {

@@ -41,13 +41,10 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
-import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
-import org.netbeans.modules.web.jsfapi.api.LibraryDescriptor;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Tag;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 public abstract class FaceletsLibrary implements Library {
 
@@ -60,33 +57,11 @@ public abstract class FaceletsLibrary implements Library {
     }
 
     @Override
-    public abstract Collection<NamedComponent> getComponents();
+    public abstract Collection<? extends NamedComponent> getComponents();
 
-    @Override
-    public abstract AbstractLibraryDescriptor getLibraryDescriptor();
+    public abstract URL getLibraryDescriptorSource();
 
-    @Override
-     public Tag getTag(String name) {
-        FaceletsLibraryDescriptor fld = support.getJsfSupport().getFaceletsLibraryDescriptor(getNamespace());
-        Tag faceletsTag = getTag(fld, name);
-        TldLibrary tld = support.getJsfSupport().getTldLibrary(getNamespace());
-        Tag tldTag = getTag(tld, name);
-        Tag coreTag = getTag(getLibraryDescriptor(), name);
-
-        if(faceletsTag == null) {
-            return tldTag != null ? new ProxyTag(tldTag, coreTag) : coreTag;
-        } else {
-            return new ProxyTag(new ProxyTag(faceletsTag, tldTag), coreTag);
-        }
-    }
-
-    private Tag getTag(LibraryDescriptor ld, String tagName) {
-        if(ld == null) {
-            return null;
-        } else {
-            return ld.getTags().get(tagName);
-        }
-    }
+    public abstract LibraryDescriptor getLibraryDescriptor();
 
     @Override
     public String getNamespace() {
@@ -102,21 +77,6 @@ public abstract class FaceletsLibrary implements Library {
             }
         }
         return null;
-    }
-
-    @Override
-    public String getDefaultPrefix() {
-        //returns either facelets or tld library
-        String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
-        if(prefixFromTheLibrary == null && namespace != null) {
-            //workaround - the facelets libraries (.taglib.xml) files don't declare the default prefix for the library
-            //so workarounding by using corrsponding .tld file if found
-            TldLibrary tldl = support.getJsfSupport().getTldLibrary(namespace);
-            return tldl != null ? tldl.getDefaultPrefix() : null;
-        } else {
-            return prefixFromTheLibrary;
-        }
-
     }
 
     @Override
@@ -173,7 +133,7 @@ public abstract class FaceletsLibrary implements Library {
 
         @Override
         public Tag getTag() {
-            return FaceletsLibrary.this.getTag(getName());
+            return getLibraryDescriptor().getTags().get(getName());
         }
 
         public FaceletsLibrary getLibrary() {

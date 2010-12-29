@@ -4,7 +4,9 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:x="http://mysite.org/cclib2">
+      xmlns:x="http://mysite.org/cclib2"
+      xmlns:cclib="http://java.sun.com/jsf/composite/cclib"
+      xmlns:moc="http://mysite.org/classTaglibIJL">
     <h:head>
         <h:outputStylesheet name="css/default.css"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -19,5 +21,7 @@
             <ui:insert name="body">Default Body</ui:insert>
         </p>
     </h:body>
-    
+    <cclib:cc ccattr22=""/>
+    <moc:mytag myattr="sss"/>
+    <x:cc2/>
 </html>

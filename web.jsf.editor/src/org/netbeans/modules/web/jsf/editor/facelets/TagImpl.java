@@ -1,4 +1,4 @@
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.Collection;
 import java.util.Map;
@@ -18,7 +18,7 @@ public final class TagImpl implements Tag {
         this.attrs = attrs;
         //add the default ID attribute
         if (getAttribute(ID_ATTR_NAME) == null) {
-            attrs.put(ID_ATTR_NAME, new Attribute(ID_ATTR_NAME, "", false));
+            attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
         }
     }
 
