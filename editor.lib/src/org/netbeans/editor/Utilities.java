@@ -51,10 +51,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,9 +71,12 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -88,6 +94,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
@@ -97,6 +104,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.EditorView;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -1616,7 +1624,7 @@ public class Utilities {
             throw new IllegalArgumentException("No EditorKit for '" + mimeType + "' mimetype."); //NOI18N
         }
 
-        JEditorPane editorPane = new JEditorPane();
+        final JEditorPane editorPane = new JEditorPane();
         editorPane.setEditorKit(kit);
 
         editorPane.putClientProperty(
@@ -1644,7 +1652,7 @@ public class Utilities {
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
 
-        JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         sp.setBorder(referenceTextField.getBorder());
         sp.setBackground(referenceTextField.getBackground());
 
@@ -1662,8 +1670,71 @@ public class Utilities {
             sp.setPreferredSize(referenceTextField.getPreferredSize());
         }
         sp.setMinimumSize(sp.getPreferredSize());
+        final DocumentListener manageViewListener = new ManageViewPositionListener(editorPane, sp);
+        DocumentUtilities.addDocumentListener(editorPane.getDocument(), manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
+        editorPane.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("document".equals(evt.getPropertyName())) { // NOI18N
+                    Document oldDoc = (Document) evt.getOldValue();
+                    if (oldDoc != null) {
+                        DocumentUtilities.removeDocumentListener(oldDoc, manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
+                    }
+                    Document newDoc = (Document) evt.getNewValue();
+                    if (newDoc != null) {
+                        DocumentUtilities.addDocumentListener(newDoc, manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
+                    }
+                }
+            }
+        });
 
         return new JComponent [] { sp, editorPane };
+    }
+
+    private static final class ManageViewPositionListener implements DocumentListener {
+
+        private JEditorPane editorPane;
+        private JScrollPane sp;
+
+        public ManageViewPositionListener(JEditorPane editorPane, JScrollPane sp) {
+            this.editorPane = editorPane;
+            this.sp = sp;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        private void changed() {
+            JViewport viewport = sp.getViewport();
+            Point viewPosition = viewport.getViewPosition();
+            if (viewPosition.x > 0) {
+                try {
+                    Rectangle textRect = editorPane.getUI().modelToView(editorPane, editorPane.getDocument().getLength());
+                    int textLength = textRect.x + textRect.width;
+                    int viewLength = viewport.getExtentSize().width;
+                    //System.out.println("Utilities.createSingleLineEditor(): spLength = "+sp.getSize().width+", viewLength = "+viewLength+", textLength = "+textLength+", viewPosition = "+viewPosition);
+                    if (textLength < (viewPosition.x + viewLength)) {
+                        viewPosition.x = Math.max(textLength - viewLength, 0);
+                        viewport.setViewPosition(viewPosition);
+                        //System.out.println("Utilities.createSingleLineEditor(): setting new view position = "+viewPosition);
+                    }
+                } catch (BadLocationException blex) {
+                    Exceptions.printStackTrace(blex);
+                }
+            }
+        }
     }
 
     private static final String NO_ACTION = "no-action"; //NOI18N
