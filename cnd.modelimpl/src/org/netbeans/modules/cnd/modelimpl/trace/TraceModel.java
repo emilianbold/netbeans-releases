@@ -518,7 +518,7 @@ public class TraceModel extends TraceModelBase {
         if (printUserFileList) {
             print("Processing files:\n"); // NOI18N
             for (NativeFileItem file : getFileItems()) {
-                print(file.getFile().getAbsolutePath() + ' ', false);
+                print(file.getAbsolutePath() + ' ', false);
             }
             print("");
         }
@@ -950,7 +950,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
+        FileBuffer buffer = new FileBufferFile(item.getAbsolutePath());
         print("Testing APT Parser"); // NOI18N
         File file = buffer.getFile();
         long time = System.currentTimeMillis();
@@ -1167,7 +1167,7 @@ public class TraceModel extends TraceModelBase {
         AST ast = null;
 
         if (dumpStatistics) {
-            Diagnostic.initFileStatistics(item.getFile().getAbsolutePath());
+            Diagnostic.initFileStatistics(item.getAbsolutePath());
         }
 
         long time = System.currentTimeMillis();
@@ -1202,7 +1202,7 @@ public class TraceModel extends TraceModelBase {
             result.setTime(time);
             result.setLineCount(countLines(fileImpl));
             if (!quiet) {
-                print("Processing " + item.getFile().getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
+                print("Processing " + item.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
             }
         }
 
@@ -1212,7 +1212,7 @@ public class TraceModel extends TraceModelBase {
                 if (Diagnostic.getStatisticsLevel() > 1) {
                     postfix += "." + Diagnostic.getStatisticsLevel(); // NOI18N
                 }
-                String name = item.getFile().getName() + postfix;
+                String name = item.getName() + postfix;
                 String theDumpFile = new File(this.dumpDir, name).getAbsolutePath();
                 Diagnostic.dumpFileStatistics(theDumpFile);
             }
@@ -1222,10 +1222,10 @@ public class TraceModel extends TraceModelBase {
         }
 
         if (testCache) {
-            cacheTimes.put(item.getFile().getName(), Long.valueOf(time));
+            cacheTimes.put(item.getName(), Long.valueOf(time));
         }
         if (dumpAst) {
-            System.out.println("AST DUMP for file " + item.getFile().getName()); // NOI18N
+            System.out.println("AST DUMP for file " + item.getName()); // NOI18N
             dumpAst(tree);
         }
 
@@ -1261,7 +1261,7 @@ public class TraceModel extends TraceModelBase {
         }
 
         if (showAstWindow) {
-            test(tree, item.getFile().getName());
+            test(tree, item.getName());
         }
 
         return result;

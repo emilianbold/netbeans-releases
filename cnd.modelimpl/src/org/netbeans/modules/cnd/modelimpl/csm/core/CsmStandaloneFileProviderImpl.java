@@ -559,6 +559,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public FileObject getFileObject() {
             return file;
         }
+        
+        @Override
+        public String getAbsolutePath() {
+            return file.getPath();
+        }
+
+        @Override
+        public String getName() {
+            return file.getNameExt();
+        }       
 
         @Override
         public List<String> getSystemIncludePaths() {

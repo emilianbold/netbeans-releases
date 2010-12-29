@@ -243,7 +243,7 @@ public final class DeepReparsingUtils {
     static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
         Set<String> names = new HashSet<String>();
         for (NativeFileItem item : toReparse) {
-            names.add(item.getFile().getName());
+            names.add(item.getName());
         }
         reparseOnAdded(names, project);
     }

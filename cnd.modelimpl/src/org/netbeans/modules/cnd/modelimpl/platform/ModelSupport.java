@@ -242,7 +242,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static void trace(NativeFileItem nativeFile) {
         try {
-            Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
+            Diagnostic.trace("  native file item" + nativeFile.getAbsolutePath()); // NOI18N
             Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
             Diagnostic.trace("    user macros: " + nativeFile.getUserMacroDefinitions()); // NOI18N
             Diagnostic.trace("    system includes: " + nativeFile.getSystemIncludePaths()); // NOI18N
@@ -290,11 +290,11 @@ public class ModelSupport implements PropertyChangeListener {
         }
         System.err.println("\nSources: (" + sources.size() + " files )");
         for (NativeFileItem elem : sources) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
         System.err.println("\nHeaders: (" + headers.size() + " files )");
         for (NativeFileItem elem : headers) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
 
         System.err.println("End of project dump\n\n\n");
