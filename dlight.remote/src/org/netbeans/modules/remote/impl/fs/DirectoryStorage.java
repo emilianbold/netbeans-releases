@@ -308,7 +308,7 @@ public class DirectoryStorage {
                 String line = br.readLine();
                 String prefix = "VERSION="; // NOI18N
                 if (line == null || ! line.startsWith(prefix)) {
-                    throw wrongFormatException();
+                    throw wrongFormatException(line);
                 }
                 int version;
                 try {
@@ -426,13 +426,13 @@ public class DirectoryStorage {
             }
         }
         if (currIndex < link - 1) {
-            throw wrongFormatException();
+            throw wrongFormatException(line);
         }
         long sz;
         try {
             sz = Long.parseLong(params[size]);
         } catch (NumberFormatException ex) {
-            throw wrongFormatException();
+            throw wrongFormatException(line);
         }
         return new Entry(params[name], params[cache], params[access], params[user], params[group], sz, params[timestamp], params[link]);
     }
@@ -509,7 +509,7 @@ public class DirectoryStorage {
         }
     }
 
-    private FormatException wrongFormatException() {
-        return new FormatException("Wrong file format " + file.getAbsolutePath(), false); //NOI18N)
+    private FormatException wrongFormatException(String line) {
+        return new FormatException("Wrong file format " + file.getAbsolutePath() + " line " + line, false); //NOI18N)
     }
 }

@@ -106,18 +106,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    public FileObject createData(String name, String ext) throws IOException {
-        throw new ReadOnlyException();
-    }
-
-    @Override
-    public FileObject createFolder(String name) throws IOException {
-        throw new ReadOnlyException();
-    }
-
-    @Override
     public void delete(FileLock lock) throws IOException {
-        throw new ReadOnlyException();
+        RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
     }
 
     @Override
