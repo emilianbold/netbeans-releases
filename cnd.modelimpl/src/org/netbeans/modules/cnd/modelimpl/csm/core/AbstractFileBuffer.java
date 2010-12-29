@@ -86,7 +86,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(FileObject fileObject) {
         CharSequence aPath = fileObject.getPath();
         CharSequence anUrl = CndFileUtils.fileObjectToUrl(fileObject);
-        if (!anUrl.toString().startsWith("rfs:")) {
+        if (!anUrl.toString().startsWith("rfs:")) { // NOI18N
             System.err.printf("Strange URL prefix: %s\n", anUrl);
         }
         this.absPath = FilePathCache.getManager().getString(aPath);
