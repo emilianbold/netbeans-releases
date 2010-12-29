@@ -55,19 +55,12 @@ import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * per web-module instance
@@ -110,8 +103,6 @@ public class JsfSupportImpl implements JsfSupport {
         return new JsfSupportImpl(project, wm, classPath);
 
     }
-    private TldLibrariesCache tldLibrariesCache;
-    private FaceletsLibraryDescriptorCache faceletsDescriptorsCache;
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private Project project;
     private WebModule wm;
@@ -123,10 +114,6 @@ public class JsfSupportImpl implements JsfSupport {
         this.project = project;
         this.wm = wm;
         this.classpath = classPath;
-        
-        //create classpath support
-        this.tldLibrariesCache = new TldLibrariesCache(this);
-        this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
 
         //adds a classpath listener which invalidates the index instance after classpath change
@@ -137,8 +124,6 @@ public class JsfSupportImpl implements JsfSupport {
                 synchronized (JsfSupportImpl.this) {
                     index = null;
                 }
-                tldLibrariesCache.clearCache();
-                faceletsDescriptorsCache.clearCache();
             }
         });
         //register html extension
@@ -162,19 +147,6 @@ public class JsfSupportImpl implements JsfSupport {
         return wm;
     }
 
-    @Override
-    public String toString() {
-        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
-    }
-
-    /** Returns a library descriptor for facelets library. If there is a .taglib.xml
-     *  file returns the data from it otherwise tries to find corresponding .tld file.
-     */
-    @Override
-    public AbstractLibraryDescriptor getLibraryDescriptor(String namespace) {
-        FaceletsLibraryDescriptor fld = getFaceletsLibraryDescriptor(namespace);
-        return fld != null ? fld : getTldLibrary(namespace);
-    }
 
     @Override
     public Library getLibrary(String namespace) {
@@ -188,27 +160,6 @@ public class JsfSupportImpl implements JsfSupport {
     }
 
     //garbage methods below, needs cleanup!
-
-    public TldLibrary getTldLibrary(String namespace) {
-        try {
-            return tldLibrariesCache.getLibrary(namespace);
-        } catch (LibraryDescriptorException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
-    }
-
-    public FaceletsLibraryDescriptor getFaceletsLibraryDescriptor(String namespace) {
-        try {
-            return faceletsDescriptorsCache.getLibrary(namespace);
-        } catch (LibraryDescriptorException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
-    }
-
- 
-
     public synchronized JsfIndex getIndex() {
         if(index == null) {
 	    this.index = JsfIndex.create(wm);
@@ -228,5 +179,9 @@ public class JsfSupportImpl implements JsfSupport {
 	return webBeansModel;
     }
 
+    @Override
+    public String toString() {
+        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
+    }
     
 }

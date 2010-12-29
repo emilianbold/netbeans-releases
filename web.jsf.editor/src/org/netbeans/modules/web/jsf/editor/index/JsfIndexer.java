@@ -43,11 +43,8 @@ package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -59,8 +56,6 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -76,12 +71,6 @@ public class JsfIndexer extends EmbeddingIndexer {
 
     public static final Logger LOG = Logger.getLogger(JsfIndexer.class.getName());
 
-    private Set<String> modifications;
-
-    public JsfIndexer(Set<String> modifications) {
-	this.modifications = modifications;
-    }
-
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
@@ -93,7 +82,7 @@ public class JsfIndexer extends EmbeddingIndexer {
             Collection<JsfPageModel> models = JsfPageModelFactory.getModels((HtmlParserResult) parserResult);
             for (JsfPageModel model : models) {
                 IndexDocument document = support.createDocument(indexable);
-                modifications.add(model.storeToIndex(document));
+                model.storeToIndex(document);
                 documents.add(document);
             }
             LOG.log(Level.FINE, "indexing {0}, found {1} document.", new Object[]{fo.getPath(), documents.size()}); //NOI18N
@@ -114,12 +103,10 @@ public class JsfIndexer extends EmbeddingIndexer {
         static final String NAME = "jsf"; //NOI18N
         static final int VERSION = 1;
 
-	private Set<String> modifications;
-
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             if (isIndexable(snapshot)) {
-                return new JsfIndexer(modifications);
+                return new JsfIndexer();
             } else {
                 return null;
             }
@@ -129,7 +116,6 @@ public class JsfIndexer extends EmbeddingIndexer {
 	public boolean scanStarted(Context context) {
             try {
                 LOG.log(Level.FINE, "scanning of {0} started", context.getRoot()); //NOI18N
-                this.modifications = new HashSet<String>();
                 return IndexingSupport.getInstance(context).isValid();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -141,25 +127,16 @@ public class JsfIndexer extends EmbeddingIndexer {
 	public void scanFinished(Context context) {
 	    super.scanFinished(context);
             LOG.log(Level.FINE, "scanning of {0} finished", context.getRoot()); //NOI18N
-	    
-	    if(context.getRoot() != null) {
-		JsfSupportImpl jsfsupport = JsfSupportImpl.findFor(context.getRoot());
-		if(jsfsupport != null) {
-		    jsfsupport.getFaceletsLibrarySupport().librariesChanged(modifications);
-		}
-	    }
 	}
 	
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            //no-op
         }
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-            Iterator<? extends Indexable> itr = dirty.iterator();
-            while(itr.hasNext()) {
-                System.out.println("dirty: " + itr.next().getRelativePath());
-            }
+            //no-op
         }
 
         @Override
@@ -173,16 +150,11 @@ public class JsfIndexer extends EmbeddingIndexer {
         }
 
         private boolean isIndexable(Snapshot snapshot) {
-            //index only text/xhtml files within web projects
+            //index all text/xhtml files, not only in web projects since there might be java library with facelets components
             FileObject fo = snapshot.getSource().getFileObject();
             String sourceFileMimeType = fo.getMIMEType();
-            if ("text/xhtml".equals(sourceFileMimeType)) { //NOI18N
-//                WebModule wm = WebModule.getWebModule(fo);
-//                if (wm != null) {
-                    return true;
-//                }
-            }
-            return false;
+            return "text/xhtml".equals(sourceFileMimeType);
         }
+        
     } //end of Factory class
 }

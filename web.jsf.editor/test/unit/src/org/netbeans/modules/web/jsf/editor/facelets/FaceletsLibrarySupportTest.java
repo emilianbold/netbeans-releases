@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.io.IOException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -54,9 +55,12 @@ import org.netbeans.modules.web.jsf.editor.index.JsfIndexer;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -70,8 +74,7 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-//        suite.addTest(new FaceletsLibrarySupportTest("testCompositeComponentLibraryWithoutDescriptorFromLibraryProject"));
-//        suite.addTest(new FaceletsLibrarySupportTest("testCompositeComponentLibraryWithDescriptorFromLibraryProject"));
+        suite.addTest(new FaceletsLibrarySupportTest("testModifyCompositeComponentLibrary"));
         return suite;
     }
 
@@ -95,19 +98,32 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library ezcompLib = instance.getLibrary(ezCompLibraryNS);
         assertNotNull(String.format("Library %s not found!", ezCompLibraryNS), ezcompLib);
 
-        assertNotNull(ezcompLib.getLibraryDescriptor());
+        assertTrue(ezcompLib instanceof CompositeComponentLibrary);
+        CompositeComponentLibrary cclib = (CompositeComponentLibrary)ezcompLib;
+
+        assertNotNull(cclib.getLibraryDescriptor());
         assertEquals("ezcomp", ezcompLib.getDefaultPrefix());
         assertSame(LibraryType.COMPOSITE, ezcompLib.getType());
 
         assertEquals(ezCompLibraryNS, ezcompLib.getDefaultNamespace());
         assertEquals(ezCompLibraryNS, ezcompLib.getNamespace());
-        Tag t = ezcompLib.getTag("test");
+        Tag t = cclib.getLibraryDescriptor().getTags().get("test");
         assertNotNull(t);
 
         assertEquals("test", t.getName());
         Attribute a = t.getAttribute("testAttr");
         assertNotNull(a);
         assertEquals("testAttr", a.getName());
+
+        //we should be able to get same info via components
+        LibraryComponent comp = ezcompLib.getComponent("test");
+        assertEquals("test", comp.getName());
+        Tag t2 = comp.getTag();
+        assertNotNull(t2);
+
+        Attribute a2 = t2.getAttribute("testAttr");
+        assertNotNull(a2);
+        assertEquals("testAttr", a2.getName());
 
     }
 
@@ -119,14 +135,17 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library ezcompLib = instance.getLibrary(ezCompLibraryNS);
         assertNotNull(String.format("Library %s not found!", ezCompLibraryNS), ezcompLib);
 
-        assertNotNull(ezcompLib.getLibraryDescriptor());
+        assertTrue(ezcompLib instanceof CompositeComponentLibrary);
+        CompositeComponentLibrary cclib = (CompositeComponentLibrary)ezcompLib;
+
+        assertNotNull(cclib.getLibraryDescriptor());
         assertEquals("ezcomp2", ezcompLib.getDefaultPrefix());
         assertSame(LibraryType.COMPOSITE, ezcompLib.getType());
 
         String ezCompLibraryDefaultNS = LibraryUtils.getCompositeLibraryURL("ezcomp2");
         assertEquals(ezCompLibraryDefaultNS, ezcompLib.getDefaultNamespace());
         assertEquals(ezCompLibraryNS, ezcompLib.getNamespace());
-        Tag t = ezcompLib.getTag("test");
+        Tag t = cclib.getLibraryDescriptor().getTags().get("test");
         assertNotNull(t);
 
         assertEquals("test", t.getName());
@@ -144,12 +163,15 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertNotNull(lib.getLibraryDescriptor());
+        assertTrue(lib instanceof ClassBasedFaceletsLibrary);
+        ClassBasedFaceletsLibrary cblib = (ClassBasedFaceletsLibrary)lib;
+
+        assertNotNull(cblib.getLibraryDescriptor());
         assertEquals("moc", lib.getDefaultPrefix());
         assertSame(LibraryType.CLASS, lib.getType());
 
         assertEquals(libNs, lib.getNamespace());
-        Tag t = lib.getTag("mytag");
+        Tag t = cblib.getLibraryDescriptor().getTags().get("mytag");
         assertNotNull(t);
 
         assertEquals("mytag", t.getName());
@@ -159,6 +181,16 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         assertNotNull(a);
         assertEquals("myattr", a.getName());
         assertNotNull(a.getDescription());
+
+        //we should be able to get same info via components
+        LibraryComponent comp = lib.getComponent("mytag");
+        assertEquals("mytag", comp.getName());
+        Tag t2 = comp.getTag();
+        assertNotNull(t2);
+
+        Attribute a2 = t2.getAttribute("myattr");
+        assertNotNull(a2);
+        assertEquals("myattr", a2.getName());
 
     }
 
@@ -170,12 +202,15 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertNotNull(lib.getLibraryDescriptor());
+        assertTrue(lib instanceof ClassBasedFaceletsLibrary);
+        ClassBasedFaceletsLibrary cblib = (ClassBasedFaceletsLibrary)lib;
+
+        assertNotNull(cblib.getLibraryDescriptor());
         assertEquals("moc", lib.getDefaultPrefix());
         assertSame(LibraryType.CLASS, lib.getType());
 
         assertEquals(libNs, lib.getNamespace());
-        Tag t = lib.getTag("mytag");
+        Tag t = cblib.getLibraryDescriptor().getTags().get("mytag");
         assertNotNull(t);
 
         assertEquals("mytag", t.getName());
@@ -198,13 +233,16 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertNotNull(lib.getLibraryDescriptor());
+        assertTrue(lib instanceof CompositeComponentLibrary);
+        CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
+
+        assertNotNull(cclib.getLibraryDescriptor());
         assertEquals("cclib", lib.getDefaultPrefix());
         assertSame(LibraryType.COMPOSITE, lib.getType());
 
         assertEquals(libNs, lib.getDefaultNamespace());
         assertEquals(libNs, lib.getNamespace());
-        Tag t = lib.getTag("cc");
+        Tag t = cclib.getLibraryDescriptor().getTags().get("cc");
         assertNotNull(t);
 
         assertEquals("cc", t.getName());
@@ -222,14 +260,17 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertNotNull(lib.getLibraryDescriptor());
+        assertTrue(lib instanceof CompositeComponentLibrary);
+        CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
+
+        assertNotNull(cclib.getLibraryDescriptor());
         assertEquals("cclib2", lib.getDefaultPrefix());
         assertSame(LibraryType.COMPOSITE, lib.getType());
 
         String ezCompLibraryDefaultNS = LibraryUtils.getCompositeLibraryURL("cclib2");
         assertEquals(ezCompLibraryDefaultNS, lib.getDefaultNamespace());
         assertEquals(libNs, lib.getNamespace());
-        Tag t = lib.getTag("cc2");
+        Tag t = cclib.getLibraryDescriptor().getTags().get("cc2");
         assertNotNull(t);
 
         assertEquals("cc2", t.getName());
@@ -238,6 +279,57 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         assertEquals("ccattr2", a.getName());
 
     }
+
+    public void testModifyCompositeComponentLibrary() throws IOException {
+        //verifies if the composite library model updates if one of the composite
+        //components changes.
+
+        JsfSupportImpl instance = getJsfSupportImpl();
+
+        String ezCompLibraryNS = LibraryUtils.getCompositeLibraryURL("ezcomp");
+
+        Library ezcompLib = instance.getLibrary(ezCompLibraryNS);
+        assertNotNull(String.format("Library %s not found!", ezCompLibraryNS), ezcompLib);
+
+        assertTrue(ezcompLib instanceof CompositeComponentLibrary);
+        CompositeComponentLibrary cclib = (CompositeComponentLibrary)ezcompLib;
+        
+        LibraryComponent t = ezcompLib.getComponent("test");
+        assertNotNull(t);
+
+        assertEquals("test", t.getName());
+
+        //now rename the test.xhtml file and check if the library is updated
+        FileObject testFo = getTestFile("testWebProject/web/resources/ezcomp/test.xhtml");
+        assertNotNull(testFo);
+
+        FileLock lock = testFo.lock();
+        try {
+            testFo.rename(lock, "renamed", "xhtml");
+        } finally {
+            lock.releaseLock();
+        }
+
+        testFo.getParent().refresh();
+        refreshIndexAndWait();
+
+        //there shouldn't be such tag
+        LibraryComponent lc2 = cclib.getComponent("test");
+        assertNull(lc2);
+        
+        Tag t2 = cclib.getLibraryDescriptor().getTags().get("test");
+        assertNull(t2);
+
+        //but the renamed one
+        LibraryComponent lc3 = cclib.getComponent("renamed");
+        assertNotNull(lc3);
+
+        Tag t3 = cclib.getLibraryDescriptor().getTags().get("renamed");
+        assertNotNull(t3);
+        
+
+    }
+
 
     private void debugLibraries(JsfSupport jsfs) {
         System.out.println("Found libraries:");

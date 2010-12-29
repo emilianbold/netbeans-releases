@@ -41,20 +41,16 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
@@ -67,16 +63,17 @@ import org.openide.util.NbBundle;
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private final String libraryName;
-    private final AbstractLibraryDescriptor generatedLibraryDescriptor;
+    private final LibraryDescriptor generatedLibraryDescriptor;
     private final String defaultPrefix;
-    private Collection<NamedComponent> components;
+    private URL libraryDescriptorURL;
 
-    //for undeclared libraries w/o prefix
+    //for composite component libraries without facelets library descriptor
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
-        this(support, libraryName, null);
+        this(support, libraryName, null, null);
     }
 
-    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace) {
+    //for cc libraries with facelets library descriptor, the constructor is called by Mojarra
+    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace, URL libraryDescriptorURL) {
         super(support, namespace);
         this.libraryName = libraryName;
 
@@ -89,7 +86,15 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         //descriptor for anything else than declaring the composite component
         //non-default namespace. So all the information about tags, their attributes
         //etc. needs to be parsed from the components themselves.
-        generatedLibraryDescriptor = new CCTldLibrary();
+        generatedLibraryDescriptor = new CCVirtualLibraryDescriptor();
+
+        //the descriptor just defines the library namespace and location
+        this.libraryDescriptorURL = libraryDescriptorURL;
+    }
+
+    @Override
+    public URL getLibraryDescriptorSource() {
+        return libraryDescriptorURL;
     }
 
     @Override
@@ -101,7 +106,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     public String getNamespace() {
         return getDeclaredNamespace() != null ? getDeclaredNamespace() : getDefaultNamespace();
     }
-    
+
     public String getDeclaredNamespace() {
         return super.getNamespace();
     }
@@ -126,28 +131,26 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public synchronized Collection<NamedComponent> getComponents() {
-        if(components == null) {
-            components = new ArrayList<NamedComponent>();
-            Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
-            for (String compName : componentNames) {
-                NamedComponent comp = new CompositeComponent(compName);
-                components.add(comp);
-            }
+    public synchronized Collection<CompositeComponent> getComponents() {
+        Collection<CompositeComponent> components = new ArrayList<CompositeComponent>();
+        Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
+        for (String compName : componentNames) {
+            CompositeComponent comp = new CompositeComponent(compName);
+            components.add(comp);
         }
         return components;
     }
 
     @Override
-    public synchronized AbstractLibraryDescriptor getLibraryDescriptor() {
+    public synchronized LibraryDescriptor getLibraryDescriptor() {
         return generatedLibraryDescriptor;
     }
 
     @Override
     public String toString() {
         return "CompositeComponent(" + (getNamespace() == null ? //NOI18N
-            "created via indexing" :  //NOI18N
-            "created by Mojarra") + " " + super.toString(); //NOI18N
+                "created via indexing" : //NOI18N
+                "created by Mojarra") + " " + super.toString(); //NOI18N
     }
 
     private JsfIndex index() {
@@ -188,50 +191,59 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     }
 
-    private class CCTldLibrary extends AbstractLibraryDescriptor {
-
-        private Map<String, Tag> cctags = new HashMap<String, Tag>();
-
-        public CCTldLibrary() { 
-            init();
-        }
-
-        @Override
-        protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
-            //this library type does not need to parse any content this way
-            //sure the inheritance is a mess
-        }
+    private class CCVirtualLibraryDescriptor implements LibraryDescriptor {
 
         @Override
         public String getDefaultPrefix() {
             return CompositeComponentLibrary.this.getDefaultPrefix();
         }
 
-        private void init() {
-            Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
-            for (String cname : componentNames) {
-                CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
-		if(model == null) {
-		    return ;
-		}
-                //generate a virtual library prefix:
-                //1. if there is just one folder level up to the resources folder, use it as a prefix
-                //2. if there are more folders, make the prefix from their first letters
-                //note: we may generate duplicated prefixes for different libraries
+        @Override
+        public Map<String, Tag> getTags() {
+            Map<String, Tag> map = new HashMap<String, Tag>();
+            Collection<CompositeComponent> components = getComponents();
+            for (CompositeComponent cc : components) {
+                map.put(cc.getName(), new LazyLoadingTag(cc));
+            }
+            return map;
+        }
+
+        @Override
+        public String getNamespace() {
+            return CompositeComponentLibrary.this.getNamespace();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return CompositeComponentLibrary.this.getDisplayName();
+        }
+
+        private class LazyLoadingTag implements Tag {
+
+            private CompositeComponent cc;
+            private Map<String, Attribute> attrs;
+            private String description;
+
+            public LazyLoadingTag(CompositeComponent cc) {
+                this.cc = cc;
+            }
+
+            private synchronized void load() {
+                CompositeComponentModel model = cc.getComponentModel();
                 String relativePath = model.getRelativePath();
-                
-                Map<String, Attribute> attrs = new HashMap<String, Attribute>();
+
+                attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
-                    String description = getAttributesDescription(model, true);
-                    attrs.put(attrname, new Attribute(attrname, description, required));
+                    String attributeDescription = getAttributesDescription(model, true);
+                    attrs.put(attrname, new Attribute.DefaultAttribute(attrname, attributeDescription, required));
                 }
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("<p><b>"); //NOI18N
-                sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE") );//NOI18N
+                sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE"));//NOI18N
                 sb.append("</b>");//NOI18N
                 sb.append("&nbsp;");//NOI18N
                 sb.append(relativePath);
@@ -241,68 +253,89 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">").append(msgNoTld).append("</p>"); //NOI18N
 
-                Tag t = new TagImpl(cname, sb.toString(), attrs);
-                cctags.put(cname, t);
-            }
-        }
-
-        private String getAttributesDescription(CompositeComponentModel model, boolean includeNoDescriptorMsg) {
-            if(model.getExistingInterfaceAttributes().isEmpty()) {
-                return NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_TAG_ATTRS");//NOI18N
+                description = sb.toString();
             }
 
+            private String getAttributesDescription(CompositeComponentModel model, boolean includeNoDescriptorMsg) {
+                if (model.getExistingInterfaceAttributes().isEmpty()) {
+                    return NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_TAG_ATTRS");//NOI18N
+                }
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("<b>");//NOI18N
-            sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_TAG_ATTRS"));//NOI18N
-            sb.append("</b>");//NOI18N
-            sb.append("<table border=\"1\">"); //NOI18N
+                StringBuilder sb = new StringBuilder();
+                sb.append("<b>");//NOI18N
+                sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_TAG_ATTRS"));//NOI18N
+                sb.append("</b>");//NOI18N
+                sb.append("<table border=\"1\">"); //NOI18N
 
-            for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
-                //first generate entry for the attribute name
-                sb.append("<tr>"); //NOI18N
-                sb.append("<td>"); //NOI18N
-                sb.append("<div style=\"font-weight: bold\">"); //NOI18N
-                String attrname = descr.get("name"); //NOI18N);
-                sb.append(attrname);
-                sb.append("</div>"); //NOI18N
-                sb.append("</td>"); //NOI18N
-
-                //then for the rest of the attributes, except the "name" atttribute
-                if(descr.size() > 1) {
+                for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
+                    //first generate entry for the attribute name
+                    sb.append("<tr>"); //NOI18N
                     sb.append("<td>"); //NOI18N
-                    sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
-                    for (String key : descr.keySet()) {
-                        if (key.equals("name")) {//NOI18N
-                            continue; //skip name
-                        }
-                        String val = descr.get(key);
-                        sb.append("<tr><td><b>");//NOI18N
-                        sb.append(key);
-                        sb.append("</b></td><td>");//NOI18N
-                        sb.append(val);
-                        sb.append("</td></tr>");//NOI18N
-                    }
-                    sb.append("</table>"); //NOI18N
-
-
+                    sb.append("<div style=\"font-weight: bold\">"); //NOI18N
+                    String attrname = descr.get("name"); //NOI18N);
+                    sb.append(attrname);
+                    sb.append("</div>"); //NOI18N
                     sb.append("</td>"); //NOI18N
+
+                    //then for the rest of the attributes, except the "name" atttribute
+                    if (descr.size() > 1) {
+                        sb.append("<td>"); //NOI18N
+                        sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
+                        for (String key : descr.keySet()) {
+                            if (key.equals("name")) {//NOI18N
+                                continue; //skip name
+                            }
+                            String val = descr.get(key);
+                            sb.append("<tr><td><b>");//NOI18N
+                            sb.append(key);
+                            sb.append("</b></td><td>");//NOI18N
+                            sb.append(val);
+                            sb.append("</td></tr>");//NOI18N
+                        }
+                        sb.append("</table>"); //NOI18N
+
+
+                        sb.append("</td>"); //NOI18N
+                    }
+                    sb.append("</tr>"); //NOI18N
                 }
-                sb.append("</tr>"); //NOI18N
-                }
-            sb.append("</table>"); //NOI18N
+                sb.append("</table>"); //NOI18N
 
-            if(includeNoDescriptorMsg) {
-                String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
-                sb.append("<p style=\"color: red\">").append(msgNoDescriptor).append("</p>");
-            } //NOI18N
+                if (includeNoDescriptorMsg) {
+                    String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
+                    sb.append("<p style=\"color: red\">").append(msgNoDescriptor).append("</p>");
+                } //NOI18N
 
-            return sb.toString();
-        }
+                return sb.toString();
+            }
 
-        @Override
-        public Map<String, Tag> getTags() {
-            return cctags;
+            @Override
+            public String getName() {
+                return cc.getName();
+            }
+
+            @Override
+            public String getDescription() {
+                load();
+                return description;
+            }
+
+            @Override
+            public boolean hasNonGenenericAttributes() {
+                return getAttributes().size() > 1; //the ID attribute is the default generic one
+            }
+
+            @Override
+            public Collection<Attribute> getAttributes() {
+                load();
+                return attrs.values();
+            }
+
+            @Override
+            public Attribute getAttribute(String name) {
+                load();
+                return attrs.get(name);
+            }
         }
     }
 }

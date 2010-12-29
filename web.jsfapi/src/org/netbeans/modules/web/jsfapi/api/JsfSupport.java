@@ -59,8 +59,6 @@ public interface JsfSupport {
 
     public WebModule getWebModule();
 
-    public LibraryDescriptor getLibraryDescriptor(String namespace);
-
     public Library getLibrary(String namespace);
     
     /**

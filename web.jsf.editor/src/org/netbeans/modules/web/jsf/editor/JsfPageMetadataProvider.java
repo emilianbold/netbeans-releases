@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.jsf.editor;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -92,7 +91,7 @@ public class JsfPageMetadataProvider implements WebPageMetadataProvider {
         Collection<String> namespaces = result.getAllDeclaredNamespaces().keySet();
         Collection<String> jsfNamespaces = new HashSet<String>();
         for(String ns : namespaces) {
-            if(jsfs.getLibraryDescriptor(ns) != null) {
+            if(jsfs.getLibrary(ns) != null) {
                 jsfNamespaces.add(ns);
             }
         }

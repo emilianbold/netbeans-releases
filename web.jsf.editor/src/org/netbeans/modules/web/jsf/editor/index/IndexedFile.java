@@ -37,61 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.web.jsf.editor.tld.*;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
+package org.netbeans.modules.web.jsf.editor.index;
+
 import org.openide.filesystems.FileObject;
 
 /**
- * Per web-module instance
+ * The need for this class seems strange to me since I would expect such functionality
+ * (providing timestamp for each index result) being part of the indexing support itself.
+ *
+ * Possibly remove if there's a standard way of doing this.
  *
  * @author marekfukala
  */
-public class FaceletsLibraryDescriptorCache {
+public class IndexedFile {
 
-    //uri -> library map
-    private final Map<String, FaceletsLibraryDescriptor> LIBRARIES = new HashMap<String, FaceletsLibraryDescriptor>();
-    private JsfSupportImpl support;
+    private long timestamp;
+    private FileObject file;
 
-    public FaceletsLibraryDescriptorCache(JsfSupportImpl support) {
-        this.support = support;
+    public IndexedFile(long timestamp, FileObject file) {
+        this.timestamp = timestamp;
+        this.file = file;
     }
 
-    public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
-        }
+    public FileObject getFile() {
+        return file;
     }
 
-    public FaceletsLibraryDescriptor getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-        FaceletsLibraryDescriptor lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getFaceletsLibaryDescriptorFile(namespace);
-                if (file != null) {
-                    lib = FaceletsLibraryDescriptor.create(file);
-                    LIBRARIES.put(namespace, lib);
-                } else {
-                    //try to get the library descriptor from the bundled jsf-impl.jar
-                    return DefaultFaceletLibraries.getInstance().getLibrariesDescriptors().get(namespace);
-                }
-            }
-            return lib;
-        }
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    private void dumpLibs() {
-        System.out.println("Available Facelets Library Descriptors:"); //NOI18N
-        for (FaceletsLibraryDescriptor l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
-
-    }
+    
 }
