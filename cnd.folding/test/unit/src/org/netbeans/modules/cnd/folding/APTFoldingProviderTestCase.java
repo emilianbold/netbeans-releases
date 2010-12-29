@@ -52,6 +52,9 @@ import java.util.List;
 import org.netbeans.editor.Analyzer;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -93,10 +96,10 @@ public class APTFoldingProviderTestCase extends CndBaseTestCase {
             System.out.println(getWorkDir());
         }
         File testSourceFile = getDataFile(source);
+        FileObject fo = FileUtil.toFileObject(testSourceFile);
         char[] text = Analyzer.loadFile(testSourceFile.getAbsolutePath());
         Reader reader = new StringReader(new String(text));
-        APTFoldingProvider provider = new APTFoldingProvider();
-        List<CppFoldRecord> folds = provider.parse(source, reader);
+        List<CppFoldRecord> folds = APTFoldingParser.testParse(new DummyFileSystem(), source, reader);
         Collections.sort(folds, FOLD_COMPARATOR);
         for (CppFoldRecord fold : folds) {
             ref(fold.toString());
@@ -110,4 +113,36 @@ public class APTFoldingProviderTestCase extends CndBaseTestCase {
             return o1.getStartOffset() - o2.getStartOffset();
         }
     };
+    
+    private static class DummyFileSystem extends FileSystem {
+
+        public DummyFileSystem() {
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FileObject getRoot() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FileObject findResource(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public org.openide.util.actions.SystemAction[] getActions() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
 }

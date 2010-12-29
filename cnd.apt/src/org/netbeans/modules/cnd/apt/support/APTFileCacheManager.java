@@ -164,9 +164,9 @@ public final class APTFileCacheManager {
         return out;
     }
 
-    public static void setAPTCacheEntry(CharSequence file, APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+    public static void setAPTCacheEntry(APTFileBuffer buffer, APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
         if (entry != null) {
-            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(file, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(buffer.getAbsolutePath(), cleanOthers ? Boolean.TRUE : Boolean.FALSE);
             APTIncludeHandler.State key = getKey(preprocHandler);
             cache.put(key, APTFileCacheEntry.toSerial(entry));
         }

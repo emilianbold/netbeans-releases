@@ -173,6 +173,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return path;
     }
 
+    @Override
     public String getAbsolutePath() {
         synchronized (this) {
             if (fileObject != null) {
@@ -187,6 +188,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return getName();
     }
 
+    @Override
     public String getName() {
         return CndPathUtilitities.getBaseName(path);
     }

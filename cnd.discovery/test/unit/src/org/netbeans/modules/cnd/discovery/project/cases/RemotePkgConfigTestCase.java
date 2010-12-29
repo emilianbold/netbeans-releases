@@ -37,16 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-package org.netbeans.modules.cnd.debug;
+import org.junit.Test;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-    public static final boolean USE_FILE_OBJECTS = DebugUtils.getBoolean("cnd.file.objects", false); // NOI18N
+public class RemotePkgConfigTestCase extends MakeProjectTestBase {
+
+    private ExecutionEnvironment env;
+
+    public RemotePkgConfigTestCase() {
+        super("RemotePkgConfig");
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        env = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2");
+        ConnectionManager.getInstance().connectTo(env);
+        ServerRecord record = ServerList.get(env);
+        record.setUp();
+        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), true, true);
+        CompilerSetManager.get(env).initialize(true, true, null);
+        CompilerSetManager.get(env).finishInitialization();
+    }
+
+    @Override
+    protected ExecutionEnvironment getEE() {
+        return env;
+    }
+
+    @Test
+    public void testPkgConfig() {
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, true, "");
+    }
+
 }

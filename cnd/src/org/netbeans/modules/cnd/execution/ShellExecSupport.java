@@ -45,10 +45,9 @@ package org.netbeans.modules.cnd.execution;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.settings.ShellSettings;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.PropertySupport;
@@ -213,9 +212,8 @@ public class ShellExecSupport extends ExecutionSupport {
 
         // If no shell command set, read first line in script and use if set here
         if (shellCommand == null || shellCommand.length() == 0) {
-            String fullFileName = CndFileUtils.toFile(fo).getPath();
             try {
-                BufferedReader in = new BufferedReader(new FileReader(fullFileName));
+                BufferedReader in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
                 if (in != null) {
                     String firstLine = in.readLine();
                     if (firstLine != null) {

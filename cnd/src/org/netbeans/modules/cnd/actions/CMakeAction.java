@@ -64,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -132,19 +133,26 @@ public class CMakeAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,PredefinedToolKind.CMakeTool);
+        FileObject buildDirFileObject = getBuildDirectory(node,PredefinedToolKind.CMakeTool);
+        if (buildDirFileObject == null) {
+            trace("Run folder folder is null"); //NOI18N
+            return null;
+        }
+        String buildDir = buildDirFileObject.getPath();
         // Executable
         String executable = getCommand(node, project, PredefinedToolKind.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, PredefinedToolKind.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
+            buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        }
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, null);
+        Map<String, String> envMap = getEnv(execEnv, node, project, null);
         StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
             argsFlat.append(" "); // NOI18N
@@ -174,7 +182,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, argsFlat, envMap);
+        traceExecutable(executable, buildDir, argsFlat, execEnv.toString(), envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
 

@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -113,12 +114,17 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             @Override
             public void run() {
                 if (isRoot() && folder == null) {
-                    folder = provider.getMakeConfigurationDescriptor().getLogicalFolders();
-                    onFolderChange(folder);
+                    MakeConfigurationDescriptor mcd = provider.getMakeConfigurationDescriptor();
+                    if (mcd != null) {
+                        folder = mcd.getLogicalFolders();
+                        onFolderChange(folder);
+                    }
                 }
-                folder.addChangeListener(BaseMakeViewChildren.this);
-                if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
-                    setKeys(getKeys());
+                if (folder != null) { // normally it shouldn't happen, but might happen if the project metadata is broken
+                    folder.addChangeListener(BaseMakeViewChildren.this);
+                    if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
+                        setKeys(getKeys());
+                    }
                 }
             }
         };

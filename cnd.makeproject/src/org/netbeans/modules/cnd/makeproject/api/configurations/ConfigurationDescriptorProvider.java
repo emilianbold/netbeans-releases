@@ -116,7 +116,7 @@ public class ConfigurationDescriptorProvider {
             synchronized (readLock) {
                 // check again that someone already havn't read
                 if (shouldBeLoaded()) {
-                    LOGGER.log(Level.FINE, "Start of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
+                    LOGGER.log(Level.FINE, "Start reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
                     // It's important to set needReload=false before calling
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.

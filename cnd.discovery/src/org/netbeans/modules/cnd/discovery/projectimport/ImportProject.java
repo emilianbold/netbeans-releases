@@ -353,7 +353,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
-            configureFileObject = RemoteFileUtil.getFileObject(normPath, executionEnvironment);
+            configureFileObject = RemoteFileUtil.getFileObject(normPath, fileSystemExecutionEnvironment);
             configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(configurePath), pathMode);
             configurePath = CndPathUtilitities.normalizeSlashes(configurePath);
             importantItems.add(configurePath);
@@ -708,7 +708,8 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         if (!fullRemote) {
-            downloadRemoteFile(FileUtil.toFile(makeFileObject)); // FileUtil.toFile SIC! - always local
+            downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
+            makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
         }
         scanConfigureLog(logFile);
         if (makeFileObject != null && makeFileObject.isValid()) {

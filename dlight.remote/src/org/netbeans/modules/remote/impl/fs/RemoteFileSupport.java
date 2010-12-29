@@ -116,7 +116,11 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             // die after half a minute inactivity period
             while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
                 RemoteFileObjectBase dir = fs.findResource(pendingFile.remotePath);
-                dir.ensureSync();
+                if (dir != null) {
+                    dir.ensureSync();
+                } else {
+                    RemoteLogger.getInstance().log(Level.INFO, "Directory {0}:{1} does not exist (was it removed?)", new Object[]{execEnv, pendingFile.remotePath});
+                }
                 handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
             }
         } finally {

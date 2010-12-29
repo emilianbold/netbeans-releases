@@ -64,6 +64,8 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -139,16 +141,20 @@ public final class CndFileUtils {
     }
 
     public static String getCanonicalPath(CharSequence path) throws IOException {
-        return new File(path.toString()).getCanonicalPath(); // XXX:FileObject conversion - delegate to provider!
+        return new File(path.toString()).getCanonicalPath(); // XXX:fullRemote conversion - delegate to provider!
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
         File file = FileUtil.toFile(fo);
         if (file != null) {
-            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:FileObject conversion - delegate to provider!
+            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:fullRemote - delegate to provider!
         } else {
             return fo;
         }
+    }
+    
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        return getCanonicalFileObject(fo).getPath(); // XXX:fullRemote - delegate to provider!
     }
 
     public static boolean isValidLocalFile(String absolutePath) {
@@ -424,8 +430,28 @@ public final class CndFileUtils {
        }
        return info;
     }
+    
+    public static synchronized FileSystem getLocalFileSystem() {
+        if (fileFileSystem == null) {
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
+            if (tmpDirFo != null) {
+                try {
+                    fileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    // it's no use to log it here
+                }
+            }
+            if (fileFileSystem == null) {
+                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+        }
+        return fileFileSystem;
+    }
 
     private static final Lock maRefLock = new ReentrantLock();
+    private static FileSystem fileFileSystem;
     
     private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
     private final static class Flags {

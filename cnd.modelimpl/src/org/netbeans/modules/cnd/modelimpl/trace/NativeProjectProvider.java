@@ -307,7 +307,7 @@ public final class NativeProjectProvider {
 
         private NativeFileItem findFileItem(String path) {
             for (NativeFileItem item : files) {
-                if (item.getFile().getAbsolutePath().equalsIgnoreCase(path)) {
+                if (item.getAbsolutePath().equalsIgnoreCase(path)) {
                     return item;
                 }
             }
@@ -401,6 +401,16 @@ public final class NativeProjectProvider {
         @Override
         public FileObject getFileObject() {
             return CndFileUtils.toFileObject(file); // XXX:FileObject conversion
+        }
+        
+        @Override
+        public String getAbsolutePath() {
+            return file.getAbsolutePath();
+        }
+
+        @Override
+        public String getName() {
+            return file.getName();
         }
 
         @Override
