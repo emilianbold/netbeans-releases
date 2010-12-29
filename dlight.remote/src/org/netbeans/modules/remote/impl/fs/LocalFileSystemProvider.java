@@ -140,6 +140,29 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+        File file = FileUtil.toFile(fileObject);
+        RemoteLogger.assertTrue(file != null, "null file"); //NOI18N
+        if (file == null) {
+            return fileObject;
+        } else {
+            File canonicalFile = file.getCanonicalFile();
+            if (canonicalFile.equals(file)) {
+                return fileObject;
+            } else {
+                FileObject canonicalFileObject = FileUtil.toFileObject(canonicalFile);
+                RemoteLogger.assertTrue(canonicalFileObject != null, "null canonical file"); //NOI18N
+                return (canonicalFileObject == null) ? fileObject : canonicalFileObject;
+            }
+        }
+    }
+
+    @Override
+    public String getCanonicalPath(FileObject fileObject) throws IOException {
+        return getCanonicalFileObject(fileObject).getPath();
+    }
+
+    @Override
     public boolean isMine(ExecutionEnvironment env) {
         return env.isLocal();
     }

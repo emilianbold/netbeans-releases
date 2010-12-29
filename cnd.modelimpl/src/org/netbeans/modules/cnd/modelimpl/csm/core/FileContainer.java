@@ -79,6 +79,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -142,11 +144,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	}
     }
     
-    public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
+    public void putFile(FileImpl impl, APTPreprocHandler.State state) {
+        File file = impl.getFile();
+        CndUtils.assertFileMode(file);
         CharSequence path = getFileKey(file, true);
+        CharSequence canonicalPath = getCanonicalKey(file, path);
         FileEntry newEntry;
         CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
-        newEntry = new FileEntry(uid, state, path);
+        newEntry = new FileEntry(uid, state, path, canonicalPath);
         FileEntry old;
 
         old = myFiles.put(path, newEntry);
@@ -328,6 +333,21 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         } else {
             key = file.getAbsolutePath();
+        }
+        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
+    }
+    
+    public static CharSequence getFileKey(FileObject fileObject, boolean sharedText) {
+        Parameters.notNull("null file", fileObject); //NOI18N
+        String key = null;
+        if (TraceFlags.USE_CANONICAL_PATH) {
+            try {
+                key = CndFileUtils.getCanonicalPath(fileObject);
+            } catch (IOException ex) {
+                key = fileObject.getPath();
+            }
+        } else {
+            key = fileObject.getPath();
         }
         return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
     }
@@ -585,7 +605,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
 
-        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
+        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey, CharSequence canonicalFileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
 //            if (state == null) {
@@ -593,7 +613,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 //                    CndUtils.assertTrueInConsole(false, "creating null based entry for " + fileKey); // NOI18N
 //                }
 //            }
-            this.canonical = getCanonicalKey(fileKey);
+            this.canonical = canonicalFileKey;
             this.modCount = 0;
         }
         
@@ -931,9 +951,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     }
     
-    private static CharSequence getCanonicalKey(CharSequence fileKey) {
+    private static CharSequence getCanonicalKey(File file, CharSequence fileKey) {
         try {
-            CharSequence res = new File(fileKey.toString()).getCanonicalPath();
+            CharSequence res = file.getCanonicalPath();
             res = FilePathCache.getManager().getString(res);
             if (fileKey.equals(res)) {
                 return fileKey;
@@ -944,4 +964,19 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return fileKey;
         }
     }
+    
+    private static CharSequence getCanonicalKey(FileObject fileObject, CharSequence fileKey) {
+        try {
+            CharSequence res = CndFileUtils.getCanonicalPath(fileObject);
+            res = FilePathCache.getManager().getString(res);
+            if (fileKey.equals(res)) {
+                return fileKey;
+            }
+            return res;
+        } catch (IOException e) {
+            // skip exception
+            return fileKey;
+        }
+    }
+    
 }

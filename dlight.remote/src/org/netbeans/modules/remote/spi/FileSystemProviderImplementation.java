@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -66,4 +67,6 @@ public interface FileSystemProviderImplementation {
     boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException;
     void addDownloadListener(FileSystemProvider.DownloadListener listener);
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);
+    FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;
+    String getCanonicalPath(FileObject fileObject) throws IOException;
 }

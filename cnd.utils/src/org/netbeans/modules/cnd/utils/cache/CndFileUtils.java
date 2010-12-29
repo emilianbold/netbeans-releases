@@ -139,16 +139,20 @@ public final class CndFileUtils {
     }
 
     public static String getCanonicalPath(CharSequence path) throws IOException {
-        return new File(path.toString()).getCanonicalPath(); // XXX:FileObject conversion - delegate to provider!
+        return new File(path.toString()).getCanonicalPath(); // XXX:fullRemote conversion - delegate to provider!
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
         File file = FileUtil.toFile(fo);
         if (file != null) {
-            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:FileObject conversion - delegate to provider!
+            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:fullRemote - delegate to provider!
         } else {
             return fo;
         }
+    }
+    
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        return getCanonicalFileObject(fo).getPath(); // XXX:fullRemote - delegate to provider!
     }
 
     public static boolean isValidLocalFile(String absolutePath) {

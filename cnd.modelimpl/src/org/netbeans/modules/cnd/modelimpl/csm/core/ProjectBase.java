@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
@@ -97,6 +96,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -825,7 +825,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
 
         FileAndHandler fileAndHandler;
-        if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+        if (CndTraceFlags.USE_FILE_OBJECTS) {
             fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
         } else {
             fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFile()), nativeFile, fileType);
@@ -1067,7 +1067,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         String entryKey;
-        if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+        if (CndTraceFlags.USE_FILE_OBJECTS) {
             FileObject fo = nativeFile.getFileObject();
             // no normalization is needed
             entryKey = FileContainer.getFileKey(fo.getPath(), true).toString();
@@ -1863,7 +1863,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);
                 }
-                putFile(file, impl, initial);
+                putFile(impl, initial);
                 // NB: parse only after putting into a map
                 if (scheduleParseIfNeed) {
                     APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
@@ -1905,7 +1905,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (impl == null) {
                     assert preprocHandler != null;
                     impl = new FileImpl(buf, this, fileType, nativeFile);
-                    putFile(file, impl, preprocHandler.getState());
+                    putFile(impl, preprocHandler.getState());
                 } else {
                     aUid = impl.getUID();
                 }
@@ -1935,11 +1935,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         getFileContainer().removeFile(file);
     }
 
-    protected final void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
+    protected final void putFile(FileImpl impl, APTPreprocHandler.State state) {
         if (state != null && !state.isCleaned()) {
             state = APTHandlersSupport.createCleanPreprocState(state);
         }
-        getFileContainer().putFile(file, impl, state);
+        getFileContainer().putFile(impl, state);
     }
 
     protected Collection<Key> getLibrariesKeys() {

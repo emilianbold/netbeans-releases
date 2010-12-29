@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -158,6 +159,26 @@ public final class FileSystemProvider {
         } else {
             return baseFileObject.getFileObject(relativeOrAbsolutePath);
         }
+    }
+
+    public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getCanonicalFileObject(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return fileObject;
+    }
+    
+    public static String getCanonicalPath(FileObject fileObject) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getCanonicalPath(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return fileObject.getPath();
     }
 
     public static boolean isAbsolute(String path) {

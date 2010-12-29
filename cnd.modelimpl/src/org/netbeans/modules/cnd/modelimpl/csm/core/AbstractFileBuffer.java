@@ -56,7 +56,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -75,7 +75,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(CharSequence absPath) {
         if (CndUtils.isDebugMode()) {
             CndUtils.assertNormalized(new File(absPath.toString()));
-            if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+            if (CndTraceFlags.USE_FILE_OBJECTS) {
                 System.err.printf("Warning: AbstractFileBuffer(String): %s\n", absPath);
             }
         }
@@ -122,7 +122,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
-        if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+        if (CndTraceFlags.USE_FILE_OBJECTS) {
             return CndFileUtils.urlToFileObject(url);
         } else {
             return CndFileUtils.toFileObject(absPath);
@@ -133,7 +133,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public final Reader getReader() throws IOException {
         if (encoding == null) {
             FileObject fo;
-            if (APTTraceFlags.APT_USE_FILE_OBJECTS) {
+            if (CndTraceFlags.USE_FILE_OBJECTS) {
                 fo = getFileObject();
             } else {
                 File file = getFile();
