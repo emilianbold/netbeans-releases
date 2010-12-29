@@ -105,7 +105,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         @Override
-        public void putFile(File file, FileImpl impl, State state) {
+        public void putFile(FileImpl impl, State state) {
             // do nothing
         }
 
