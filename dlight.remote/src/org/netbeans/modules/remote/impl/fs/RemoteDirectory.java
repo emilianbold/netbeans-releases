@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.SyncFailedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
@@ -68,6 +69,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
@@ -106,7 +108,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException {
         try {
-            DirectoryStorage storage = getDirectoryStorage();
+            DirectoryStorage storage = getDirectoryStorage(true);
             Entry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
@@ -120,7 +122,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
-            DirectoryStorage storage = getDirectoryStorage();
+            DirectoryStorage storage = getDirectoryStorage(true);
             Entry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
@@ -130,6 +132,62 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (CancellationException ex) {
             return false; // don't report
         }
+    }
+
+    @Override
+    public FileObject createData(String name, String ext) throws IOException {
+        return create(name + '.' + ext, false);
+    }
+
+    @Override
+    public FileObject createFolder(String name) throws IOException {
+        return create(name, true);
+    }
+
+    private FileObject create(String name, boolean directory) throws IOException {
+        RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
+        String path = remotePath + '/' + name;
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
+        }
+        ProcessUtils.ExitStatus res;
+        if (directory) {
+            res = ProcessUtils.execute(execEnv, "mkdir", path); //NOI18N
+        } else {
+            String keyword = "exists"; // NOI18N
+            String script = String.format("test -e %s && echo \"%s\" || touch %s", name, keyword, name); // NOI18N
+            res = ProcessUtils.executeInDir(remotePath, execEnv, "sh", "-c", script); // NOI18N
+            if (res.isOK() && keyword.equals(res.output)) {
+                throw new IOException("Already exists: " + getUrlToReport(path)); // NOI18N
+            }
+        }
+        if (res.isOK()) {
+            try {
+                refreshImpl(false);
+                ensureSync();
+                FileObject fo = getFileObject(name);
+                if (fo == null) {
+                    throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                }
+                return fo;
+            } catch (ConnectException ex) {
+                throw new IOException("Can not create " + path, ex); // NOI18N
+            } catch (InterruptedIOException ex) {
+                throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
+            } catch (IOException ex) {
+                throw ex;
+            } catch (InterruptedException ex) {
+                throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
+            } catch (CancellationException ex) {
+                throw new IOException("Can not create " + path + ": cancelled", ex); // NOI18N
+            }
+        } else {
+            throw new IOException("Can not create " + getUrlToReport(path) + ": " + res.error); // NOI18N
+        }
+    }
+
+    private String getUrlToReport(String path) {
+        return execEnv.getDisplayName() + ':' + path;
     }
 
     private String removeDoubleSlashes(String path) {
@@ -167,7 +225,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
-            DirectoryStorage storage = getDirectoryStorage();
+            DirectoryStorage storage = getDirectoryStorage(true);
             DirectoryStorage.Entry entry = storage.getEntry(relativePath);
             if (entry == null) {
                 return null;
@@ -204,7 +262,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public FileObject[] getChildren() {
         try {
-            DirectoryStorage storage = getDirectoryStorage();
+            DirectoryStorage storage = getDirectoryStorage(true);
             List<DirectoryStorage.Entry> entries = storage.list();
             FileObject[] childrenFO = new FileObject[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
@@ -241,14 +299,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException {
-        getDirectoryStorage();
+        getDirectoryStorage(true);
     }
 
-    private DirectoryStorage getDirectoryStorage() throws
+    private DirectoryStorage getDirectoryStorage(boolean sync) throws
             ConnectException, IOException, InterruptedException, CancellationException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl();
+            return getDirectoryStorageImpl(sync);
         } finally {
             if (trace) {
                 trace("sync took {0} ms", System.currentTimeMillis() - time); // NOI18N
@@ -256,7 +314,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    private DirectoryStorage getDirectoryStorageImpl() throws
+    private DirectoryStorage getDirectoryStorageImpl(boolean sync) throws
             ConnectException, IOException, InterruptedException, CancellationException {
 
         DirectoryStorage storage = null;
@@ -275,6 +333,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return storage;
             } else if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 trace("timestamps check NOT passed, but the host is offline; returning cached storage"); // NOI18N
+                fileSystem.getRemoteFileSupport().addPendingFile(this);
+                return storage;
+            } else if (!sync) {
+                trace("timestamps check NOT passed, but no sync is required; returning cached storage"); // NOI18N
                 fileSystem.getRemoteFileSupport().addPendingFile(this);
                 return storage;
             }
@@ -321,6 +383,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 ok = true;
             } else if(!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 trace("timestamps check NOT passed, but the host is offline; returning just loaded storage"); // NOI18N
+                ok = true;
+                fileSystem.getRemoteFileSupport().addPendingFile(this);
+            } else if (!sync) {
+                trace("timestamps check NOT passed, but no sync is required; returning just loaded storage"); // NOI18N
                 ok = true;
                 fileSystem.getRemoteFileSupport().addPendingFile(this);
             }
@@ -496,7 +562,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return;
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage();
+        DirectoryStorage storage = getDirectoryStorage(true);
         Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
         try {
             int rc = task.get().intValue();
