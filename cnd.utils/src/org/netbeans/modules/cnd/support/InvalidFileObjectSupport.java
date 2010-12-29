@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -119,17 +120,13 @@ public class InvalidFileObjectSupport {
             if (CndUtils.isDebugMode() && new File(path.toString()).exists()) {
                 CndUtils.getLogger().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
             }
-            FileObject fo = fileObjects.get(path);
-            if (fo == null) {
-                fo = new InvalidFileObject(fileSystem, path);
-                fileObjects.put(path, fo);
-            }
+            FileObject fo = fileObjects.putIfAbsent(new InvalidFileObject(fileSystem, path));
             return fo;
         }
     }
 
     private final FileSystem fileSystem;
-    private final Map<CharSequence, FileObject> fileObjects = new WeakHashMap<CharSequence, FileObject>();
+    private final WeakSet<FileObject> fileObjects = new WeakSet<FileObject>();
 
     private static final Map<FileSystem, InvalidFileObjectSupport> instances = new WeakHashMap<FileSystem, InvalidFileObjectSupport>();
     private static final DummyFileSystem dummyFileSystem = new DummyFileSystem();
@@ -331,6 +328,32 @@ public class InvalidFileObjectSupport {
         @Override
         @Deprecated
         public void setImportant(boolean b) {
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final InvalidFileObject other = (InvalidFileObject) obj;
+            if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+                return false;
+            }
+            if (this.path != other.path && (this.path == null || !this.path.equals(other.path))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+            hash = 11 * hash + (this.path != null ? this.path.hashCode() : 0);
+            return hash;
         }
     }
 }
