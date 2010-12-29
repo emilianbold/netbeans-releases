@@ -37,55 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.openide.filesystems.FileObject;
+import org.junit.Test;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.openide.util.Utilities;
 
 /**
- * Per web-module instance
  *
- * @author marekfukala
+ * @author Alexander Simon
  */
-public class TldLibrariesCache {
+public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private JsfSupportImpl support;
+    private ExecutionEnvironment env;
 
-    public TldLibrariesCache(JsfSupportImpl support) {
-        this.support = support;
+    public RemotePkgConfigTestCase() {
+        super("RemotePkgConfig");
     }
 
-   public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
-        }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        env = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2");
+        ConnectionManager.getInstance().connectTo(env);
+        ServerRecord record = ServerList.get(env);
+        record.setUp();
+        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), true, true);
+        CompilerSetManager.get(env).initialize(true, true, null);
+        CompilerSetManager.get(env).finishInitialization();
     }
 
-    public synchronized TldLibrary getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-            TldLibrary lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getTldFile(namespace);
-                if (file != null) {
-                    lib = TldLibrary.create(file);
-                    LIBRARIES.put(namespace, lib);
-                }
-            }
-            return lib;
-        }
+    @Override
+    protected ExecutionEnvironment getEE() {
+        return env;
     }
 
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
-
+    @Test
+    public void testPkgConfig() {
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, true, "");
     }
+
 }

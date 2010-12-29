@@ -1050,7 +1050,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
         if (TraceFlags.APT_FILE_CACHE_ENTRY) {
-            APTFileCacheManager.setAPTCacheEntry(getAbsolutePath(), preprocHandler, entry, cleanOthers);
+            APTFileCacheManager.setAPTCacheEntry(getBuffer(), preprocHandler, entry, cleanOthers);
         }
     }
 

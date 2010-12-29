@@ -39,25 +39,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsfapi.api;
 
-import java.util.Map;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 /**
  *
  * @author marekfukala
  */
-public interface LibraryDescriptor extends LibraryInfo {
+public class LibraryDescriptorException extends Exception {
 
-    @Override
-    public String getNamespace();
-
-    @Override
-    public String getDefaultPrefix();
-
-    @Override
-    public String getDisplayName();
-
-    public Map<String, Tag> getTags();
+    public LibraryDescriptorException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

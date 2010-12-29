@@ -40,13 +40,27 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debug;
+package org.netbeans.modules.cnd.discovery.project.tests;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.discovery.project.cases.RemotePkgConfigTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-    public static final boolean USE_FILE_OBJECTS = DebugUtils.getBoolean("cnd.file.objects", false); // NOI18N
+public class Remote1DiscoverySuiteTest extends CndBaseTestSuite {
+
+    public Remote1DiscoverySuiteTest() {
+        super("C/C++ Remote Configure Discovery Test"); // NOI18N
+
+        addTestSuite(RemotePkgConfigTestCase.class);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new Remote1DiscoverySuiteTest();
+        return suite;
+    }
 }

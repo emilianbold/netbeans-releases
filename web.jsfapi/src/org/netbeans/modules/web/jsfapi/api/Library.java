@@ -40,23 +40,14 @@ package org.netbeans.modules.web.jsfapi.api;
 
 import java.util.Collection;
 
-public interface Library {
-
-    public String getNamespace();
+public interface Library extends LibraryInfo {
 
     public String getDefaultNamespace();
 
-    public LibraryDescriptor getLibraryDescriptor();
-
     public LibraryType getType();
 
-    public String getDefaultPrefix();
-
-    public String getDisplayName();
-
     public Collection<? extends LibraryComponent> getComponents();
-    public LibraryComponent getComponent(String componentName);
 
-    public Tag getTag(String name);
+    public LibraryComponent getComponent(String componentName);
 
 }

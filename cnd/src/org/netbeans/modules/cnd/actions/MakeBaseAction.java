@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -64,7 +63,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -138,7 +137,12 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         final FileObject makeFileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
+        FileObject buildDirFileObject = getBuildDirectory(node,PredefinedToolKind.MakeTool);
+        if (buildDirFileObject == null) {
+            trace("Run folder folder is  null"); //NOI18N
+            return null;
+        } 
+        String buildDir = buildDirFileObject.getPath();
         // Executable
         String executable = getCommand(node, project, PredefinedToolKind.MakeTool, "make"); // NOI18N
         // Arguments
@@ -149,12 +153,14 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             args = new String[]{"-f", makeFileObject.getNameExt(), target}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(makeFileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
+            buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        }
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
+        Map<String, String> envMap = getEnv(execEnv, node, project, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
@@ -178,7 +184,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, args, envMap);
+        traceExecutable(executable, buildDir, args, execEnv.toString(), envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
                 new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N

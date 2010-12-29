@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,7 +52,6 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.modules.web.jsfapi.api.LibraryDescriptor;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

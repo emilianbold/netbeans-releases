@@ -49,9 +49,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
-import org.netbeans.modules.web.jsf.editor.tld.TagImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
@@ -132,7 +129,7 @@ public final class FaceletsLibraryDescriptor extends AbstractLibraryDescriptor {
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.put(aName, new Attribute(aName, aDescription, aRequired));
+                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aRequired));
                     }
 
                     tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));

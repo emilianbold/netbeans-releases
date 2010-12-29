@@ -42,8 +42,6 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -52,7 +50,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -65,15 +62,9 @@ import org.openide.util.Exceptions;
 public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
-    static final int INDEXER_VERSION = 1;
+    static final int INDEXER_VERSION = 2;
 
     public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
-
-    private AtomicBoolean changeFlag;
-
-    public JsfCustomIndexer(AtomicBoolean changeFlag) {
-        this.changeFlag = changeFlag;
-    }
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
@@ -88,11 +79,10 @@ public class JsfCustomIndexer extends CustomIndexer {
                         if(namespace != null) {
                             IndexingSupport sup = IndexingSupport.getInstance(context);
                             IndexDocument doc = sup.createDocument(file);
+                            doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
                             doc.addPair(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY, namespace, true, true);
                             doc.addPair(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
                             sup.addDocument(doc);
-
-                            changeFlag.set(true);
 
                             LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                         }
@@ -106,11 +96,9 @@ public class JsfCustomIndexer extends CustomIndexer {
 
     public static class Factory extends CustomIndexerFactory {
 
-        private AtomicBoolean changeFlag = new AtomicBoolean(false);
-
         @Override
         public CustomIndexer createIndexer() {
-            return new JsfCustomIndexer(changeFlag);
+            return new JsfCustomIndexer();
         }
 
         @Override
@@ -121,7 +109,6 @@ public class JsfCustomIndexer extends CustomIndexer {
         @Override
 	public boolean scanStarted(Context context) {
             try {
-                this.changeFlag.set(false);
                 return IndexingSupport.getInstance(context).isValid();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -132,18 +119,6 @@ public class JsfCustomIndexer extends CustomIndexer {
         @Override
 	public void scanFinished(Context context) {
 	    super.scanFinished(context);
-
-            if(changeFlag.get()) {
-                //there has been a change to a library, lets regenerate the descriptor models
-                //TODO: do this selectively per changed library, so far the FaceletsLibrarySupport
-                //doesn't support this.
-                if(context.getRoot() != null) {
-                    JsfSupportImpl jsfsupport = JsfSupportImpl.findFor(context.getRoot());
-                    if(jsfsupport != null) {
-                        jsfsupport.getFaceletsLibrarySupport().invalidateLibrariesCache();
-                    }
-                }
-            }
 	}
 
         @Override
@@ -153,10 +128,7 @@ public class JsfCustomIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-            Iterator<? extends Indexable> itr = dirty.iterator();
-            while(itr.hasNext()) {
-                System.out.println("dirty: " + itr.next().getRelativePath());
-            }
+            //no-op
         }
 
         @Override

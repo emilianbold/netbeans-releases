@@ -46,38 +46,24 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.editor.tld.AbstractLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.WeakListeners;
 
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
     private FaceletsLibraryDescriptor libraryDescriptor;
     private final String defaultPrefix;
-
-    private FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            support.libraryChanged(ClassBasedFaceletsLibrary.this);
-        }
-    };
+    private final URL libraryDescriptorSource;
 
     public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, final FaceletsLibrarySupport support, String namespace) {
         super(support, namespace);
+        assert libraryDescriptorSourceURL != null;
         
         this.defaultPrefix = generateDefaultPrefix();
-
-        assert libraryDescriptorSourceURL != null;
+        this.libraryDescriptorSource = libraryDescriptorSourceURL;
 
         FileObject libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
         try {
@@ -90,6 +76,11 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     //for default libraries
     void setComponents(Collection<NamedComponent> components) {
         this.components.addAll(components);
+    }
+
+    @Override
+    public URL getLibraryDescriptorSource() {
+        return libraryDescriptorSource;
     }
 
     @Override
@@ -114,8 +105,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     @Override
     public AbstractLibraryDescriptor getLibraryDescriptor() {
-        AbstractLibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
-        return ld == null ? libraryDescriptor : ld;
+        return libraryDescriptor;
     }
 
     public void putConverter(String name, String id) {

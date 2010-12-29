@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -85,13 +88,13 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             if (isPathAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
-                    baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
+                    return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
                 // it's RemoteDirectory responsibility to normalize in this case
-                baseFileObject.getFileObject(relativeOrAbsolutePath);
+                return baseFileObject.getFileObject(relativeOrAbsolutePath);
             }
         }
         return null;
@@ -128,6 +131,25 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return fileSystem instanceof RemoteFileSystem;
     }
 
+    @Override
+    public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+        while (fileObject instanceof RemoteLink) {
+            FileObject delegate = ((RemoteLink) fileObject).getDelegate();
+            if (delegate == null) {
+                RemoteLogger.getInstance().log(Level.INFO, "Null delegate for remote link {0}", fileObject); //NOI18N
+                break;
+            } else {
+                fileObject = delegate;
+            }
+        }
+        return fileObject;
+    }
+
+    @Override
+    public String getCanonicalPath(FileObject fileObject) throws IOException {
+        return getCanonicalFileObject(fileObject).getPath();
+    }
+    
     @Override
     public ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
         if (fileSystem instanceof RemoteFileSystem) {

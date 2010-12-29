@@ -41,57 +41,25 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.web.jsf.editor.tld.*;
-import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
- * Per web-module instance
  *
  * @author marekfukala
  */
-public class FaceletsLibraryDescriptorCache {
+public interface LibraryDescriptor extends LibraryInfo {
 
-    //uri -> library map
-    private final Map<String, FaceletsLibraryDescriptor> LIBRARIES = new HashMap<String, FaceletsLibraryDescriptor>();
-    private JsfSupportImpl support;
+    @Override
+    public String getNamespace();
 
-    public FaceletsLibraryDescriptorCache(JsfSupportImpl support) {
-        this.support = support;
-    }
+    @Override
+    public String getDefaultPrefix();
 
-    public void clearCache() {
-        synchronized (LIBRARIES) {
-            LIBRARIES.clear();
-        }
-    }
+    @Override
+    public String getDisplayName();
 
-    public FaceletsLibraryDescriptor getLibrary(String namespace) throws LibraryDescriptorException {
-        synchronized (LIBRARIES) {
-        FaceletsLibraryDescriptor lib = LIBRARIES.get(namespace);
-            if (lib == null) {
-                FileObject file = support.getIndex().getFaceletsLibaryDescriptorFile(namespace);
-                if (file != null) {
-                    lib = FaceletsLibraryDescriptor.create(file);
-                    LIBRARIES.put(namespace, lib);
-                } else {
-                    //try to get the library descriptor from the bundled jsf-impl.jar
-                    return DefaultFaceletLibraries.getInstance().getLibrariesDescriptors().get(namespace);
-                }
-            }
-            return lib;
-        }
-    }
+    public Map<String, Tag> getTags();
 
-    private void dumpLibs() {
-        System.out.println("Available Facelets Library Descriptors:"); //NOI18N
-        for (FaceletsLibraryDescriptor l : LIBRARIES.values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getNamespace() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
-        }
-
-    }
 }

@@ -168,7 +168,7 @@ public class APTDriverImpl {
                 // ok, create new apt
                 TokenStream ts = getTokenStream(buffer, lang, !withTokens);
                 // build apt from light token stream
-                apt = APTBuilder.buildAPT(path, ts);
+                apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
                 if (!withTokens) {
                     fullAPT = null;
                     if (apt != null) {

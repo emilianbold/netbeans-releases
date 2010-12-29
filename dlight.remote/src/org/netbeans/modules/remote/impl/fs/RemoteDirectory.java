@@ -160,6 +160,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return null;
             }
         }
+        if (".".equals(relativePath)) { // NOI18N
+            return this;
+        } else if ("..".equals(relativePath)) { // NOI18N
+            return getParent();
+        }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
             DirectoryStorage storage = getDirectoryStorage();
@@ -445,7 +450,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
             if (changed) {
                 if (hasDups) {
-                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry : dupLowerNames.entrySet()) {
+                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry :
+                        new ArrayList<Map.Entry<String, List<DirectoryStorage.Entry>>>(dupLowerNames.entrySet())) {
+
                         List<DirectoryStorage.Entry> dupEntries = mapEntry.getValue();
                         if (dupEntries.size() > 1) {
                             for (int i = 0; i < dupEntries.size(); i++) {

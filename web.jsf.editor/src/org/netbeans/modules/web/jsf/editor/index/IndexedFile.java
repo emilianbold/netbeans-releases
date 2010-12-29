@@ -37,19 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.jsf.editor.index;
+
+import org.openide.filesystems.FileObject;
 
 /**
+ * The need for this class seems strange to me since I would expect such functionality
+ * (providing timestamp for each index result) being part of the indexing support itself.
+ *
+ * Possibly remove if there's a standard way of doing this.
  *
  * @author marekfukala
  */
-public class LibraryDescriptorException extends Exception {
+public class IndexedFile {
 
-    public LibraryDescriptorException(String message, Throwable cause) {
-        super(message, cause);
+    private long timestamp;
+    private FileObject file;
+
+    public IndexedFile(long timestamp, FileObject file) {
+        this.timestamp = timestamp;
+        this.file = file;
     }
 
+    public FileObject getFile() {
+        return file;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    
 }
