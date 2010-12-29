@@ -450,7 +450,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
             if (changed) {
                 if (hasDups) {
-                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry : dupLowerNames.entrySet()) {
+                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry :
+                        new ArrayList<Map.Entry<String, List<DirectoryStorage.Entry>>>(dupLowerNames.entrySet())) {
+
                         List<DirectoryStorage.Entry> dupEntries = mapEntry.getValue();
                         if (dupEntries.size() > 1) {
                             for (int i = 0; i < dupEntries.size(); i++) {
