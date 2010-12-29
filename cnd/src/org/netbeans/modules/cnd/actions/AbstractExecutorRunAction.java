@@ -90,6 +90,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -202,52 +203,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected static boolean isSunStudio(Node node, Project project) {
-        DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        if (project == null) {
-            project = findProject(node);
-        }
-        if (project == null) {
-            project = findInOpenedProject(fileObject);
-        }
-        CompilerSet set = null;
-        if (project != null) {
-            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
-            if (toolchain != null) {
-                set = toolchain.getCompilerSet();
-            }
-        }
-        if (set == null) {
-            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
-        }
+        CompilerSet set = getCompilerSet(node, project);
         if (set == null) {
             return false;
         }
         return set.getCompilerFlavor().isSunStudioCompiler();
     }
 
-    protected static CompilerSet getCompilerSet(Node node) {
-        Project project;
-        DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        project = findProject(node);
-        if (project == null) {
-            project = findInOpenedProject(fileObject);
-        }
-        CompilerSet set = null;
-        if (project != null) {
-            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
-            if (toolchain != null) {
-                set = toolchain.getCompilerSet();
-            }
-        }
-        if (set == null) {
-            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
-        }
-        return set;
-    }
-
-    protected static String getCommand(Node node, Project project, PredefinedToolKind tool, String defaultName) {
+    protected static CompilerSet getCompilerSet(Node node, Project project) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
@@ -264,8 +227,19 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+            ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileObject);
+            if (!executionEnvironment.isLocal()) {
+                set = CompilerSetManager.get(executionEnvironment).getDefaultCompilerSet();
+            }
+            if (set == null) {
+                set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+            }
         }
+        return set;
+    }
+
+    protected static String getCommand(Node node, Project project, PredefinedToolKind tool, String defaultName) {
+        CompilerSet set = getCompilerSet(node, project);
         String command = null;
         if (set != null) {
             Tool aTool = set.findTool(tool);
@@ -297,7 +271,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected static String getBuildDirectory(Node node, PredefinedToolKind tool) {
+    protected static FileObject getBuildDirectory(Node node, PredefinedToolKind tool) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject makeFileDir = dataObject.getPrimaryFile().getParent();
         // Build directory
@@ -319,7 +293,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (bdir == null) {
-            return makeFileDir.getPath();
+            return makeFileDir;
         } else {
             return getAbsolutePath(bdir, makeFileDir);
         }
@@ -385,7 +359,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     private static Map<String, String> getDefaultEnvironment(ExecutionEnvironment execEnv, Node node) {
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         String defaultPath = pi.getPathAsString();
-        CompilerSet cs = getCompilerSet(node);
+        CompilerSet cs = getCompilerSet(node, null);
         if (cs != null) {
             defaultPath = cs.getDirectory() + pi.pathSeparator() + defaultPath;
             // TODO Provide platform info
@@ -448,19 +422,24 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return false;
     }
 
-    protected static String getAbsolutePath(String bdir, FileObject relativeDirFO) {
+    private static FileObject getAbsolutePath(String bdir, FileObject relativeDirFO) {
         if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            return relativeDirFO.getPath();
+            return relativeDirFO;
         } else if (CndPathUtilitities.isPathAbsolute(bdir)) {
-            return bdir;
+            try {
+                return relativeDirFO.getFileSystem().findResource(bdir);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } else {
             FileObject buildDirFO = relativeDirFO.getFileObject(bdir);
             if (buildDirFO == null) {
                 return null;
             } else {
-                return buildDirFO.getPath();
+                return buildDirFO;
             }
         }
+        return null;
         // Canonical path not appropriate here.
         // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
         // See IZ#157677:LiteSQL is not configurable in case of symlinks.
@@ -477,11 +456,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, String buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, StringBuilder argsFlat, String host, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
             buf.append("\n\tin folder   ").append(buildDir); // NOI18N
             buf.append("\n\targuments   ").append(argsFlat); // NOI18N
+            buf.append("\n\thost        ").append(host); // NOI18N
             buf.append("\n\tenvironment "); // NOI18N
             for (Map.Entry<String, String> v : envMap.entrySet()) {
                 buf.append("\n\t\t").append(v.getKey()).append("=").append(v.getValue()); // NOI18N
@@ -491,14 +471,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static void traceExecutable(String executable, String buildDir, String[] args, Map<String, String> envMap) {
+    protected static void traceExecutable(String executable, String buildDir, String[] args, String host, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder argsFlat = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
                 argsFlat.append(" "); // NOI18N
                 argsFlat.append(args[i]);
             }
-            traceExecutable(executable, buildDir, argsFlat, envMap);
+            traceExecutable(executable, buildDir, argsFlat, host, envMap);
         }
     }
 

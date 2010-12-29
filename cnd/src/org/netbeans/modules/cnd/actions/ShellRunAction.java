@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -156,6 +155,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Build directory
         String bdir = bes.getRunDirectory();
         FileObject buildDirObject = RemoteFileUtil.getFileObject(fileObject.getParent(), bdir);
+        if (buildDirObject == null) {
+            trace("Run folder folder is null"); //NOI18N
+            return null;
+        }
         String buildDir = buildDirObject.getPath();
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
@@ -219,7 +222,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(shellCommand, buildDir, argsFlat, envMap);
+        traceExecutable(shellCommand, buildDir, argsFlat, execEnv.toString(), envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
 
@@ -266,7 +269,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             return newShellCommand;
         }
         List<CompilerSet> list = new ArrayList<CompilerSet>();
-        CompilerSet set = getCompilerSet(node);
+        CompilerSet set = getCompilerSet(node, null);
         if (set != null) {
             list.add(set);
         }
