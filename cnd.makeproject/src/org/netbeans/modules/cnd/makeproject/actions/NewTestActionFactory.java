@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -126,6 +127,11 @@ public final class NewTestActionFactory {
             this.project = project;
             this.context = context;
             this.generateCode = generateCode;
+            
+            MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+            if(mcd != null && mcd.getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                this.setEnabled(false);
+            }
         }
 
         public
