@@ -180,7 +180,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
     private /*final*/ RemoteProject.Mode remoteMode;
-    private String remoteBaseDir;
+    private final String remoteBaseDir;
     private ExecutionEnvironment remoteFileSystemHost;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
@@ -233,10 +233,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         NodeList remoteFSMountPoint = data.getElementsByTagName(REMOTE_FILESYSTEM_BASE_DIR);
-        if (remoteFSMountPoint.getLength() == 1) {
+        if (remoteFSMountPoint.getLength() > 0) {
             remoteBaseDir = remoteFSMountPoint.item(0).getTextContent();
-        } else if(remoteFSMountPoint.getLength() > 0) {
-            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
+            CndUtils.assertTrueInConsole(remoteFSMountPoint.getLength() == 1, 
+                    "Wrong project.xml structure: too many remote base dirs " + remoteFSMountPoint); //NOI18N
+        } else {            
+            remoteBaseDir = null;
         }
 
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
@@ -1148,6 +1150,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             }
         }
 
+        @Override
+        public String getBaseDir() {
+            return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
+        }
+        
         @Override
         public String resolveRelativeRemotePath(String path) {
             if (!path.startsWith("/")) { //NOI18N
