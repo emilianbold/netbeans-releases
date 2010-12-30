@@ -45,8 +45,11 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTDriverImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Thread safe driver to obtain APT for the file.
@@ -54,33 +57,52 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
  * @author Vladimir Voskresensky
  */
 public final class APTDriver {
-    private static final APTDriver singleton = new APTDriver();
+    
+    private static final Map<FileSystem, APTDriverImpl> drivers = new WeakHashMap<FileSystem, APTDriverImpl>();
     
     /** Creates a new instance of APTCreator */
     private APTDriver() {
     }
     
-    public static APTDriver getInstance() {
-        return singleton;
+    private static APTDriverImpl getInstance(APTFileBuffer buffer) {
+        FileSystem fs = buffer.getFileSystem();
+        synchronized (APTDriver.class) {
+            APTDriverImpl impl = drivers.get(fs);
+            if (impl == null) {
+                impl = new APTDriverImpl();
+                drivers.put(fs, impl);
+            }
+            return impl;
+        }
     }
 
-    public APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
-        return APTDriverImpl.findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
+    public static APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
+        return getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
     }
     
-    public APTFile findAPT(APTFileBuffer buffer, String lang) throws IOException {
-        return APTDriverImpl.findAPT(buffer, true, lang);
+    public static APTFile findAPT(APTFileBuffer buffer, String lang) throws IOException {
+        return getInstance(buffer).findAPT(buffer, true, lang);
     }
     
-    public void invalidateAPT(APTFileBuffer buffer) {
-        APTDriverImpl.invalidateAPT(buffer);
+    public static void invalidateAPT(APTFileBuffer buffer) {
+        getInstance(buffer).invalidateAPT(buffer);
     }
     
-    public void invalidateAll() {
-        APTDriverImpl.invalidateAll();
+    public static void invalidateAll() {
+        synchronized (APTDriver.class) {
+            for (APTDriverImpl driver : drivers.values()) {
+                driver.invalidateAll();
+            }
+            drivers.clear();
+        }        
     }
     
-    public void close() {
-        APTDriverImpl.close();
+    public static void close() {
+        synchronized (APTDriver.class) {
+            for (APTDriverImpl driver : drivers.values()) {
+                driver.close();
+            }
+            drivers.clear();
+        }        
     }
 }

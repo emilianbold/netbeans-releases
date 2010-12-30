@@ -193,7 +193,7 @@ public class TraceXRef extends TraceModel {
             }
         } finally {
             super.shutdown(true);
-            APTDriver.getInstance().close();
+            APTDriver.close();
             APTFileCacheManager.close();
         }
     }
