@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -52,6 +53,7 @@ import javax.swing.SwingUtilities;
 public class Logger {
 
     private static boolean assertionsEnabled = false;
+    private static Level nonUIThreadAssertionLevel;
     private static final long startTimeMillis = System.currentTimeMillis();
     private static final java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger(
@@ -59,6 +61,12 @@ public class Logger {
 
     static {
         assert (assertionsEnabled = true);
+        String level = System.getProperty("Execution.nonUIThreadAsservionLevel", "INFO").toUpperCase(); // NOI18N
+        try {
+            nonUIThreadAssertionLevel = Level.parse(level);
+        } catch (IllegalArgumentException ex) {
+            nonUIThreadAssertionLevel = Level.INFO;
+        }
         instance.addHandler(new LoggerHandler());
     }
 
@@ -101,7 +109,7 @@ public class Logger {
 
     public static void assertNonUiThread(String message) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(nonUIThreadAssertionLevel, message, new Exception(message));
         }
     }
 
