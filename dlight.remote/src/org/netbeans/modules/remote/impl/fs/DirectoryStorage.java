@@ -385,7 +385,7 @@ public class DirectoryStorage {
             char c = line.charAt(i);
             switch (c) {
                 case '\\':
-                    if (currIndex == name && ! escape) {
+                    if (((currIndex == name) || (currIndex == cache)) && ! escape) {
                         escape = true;
                     } else {
                         currText.append(c);
@@ -446,7 +446,7 @@ public class DirectoryStorage {
                 for (Entry entry : entries.values()) {
                     wr.write(escape(entry.name));
                     wr.write(' ');
-                    wr.write(entry.cache);
+                    wr.write(escape(entry.cache));
                     wr.write(' ');
                     wr.write(entry.type);
                     wr.write(entry.getAccessAsString());
