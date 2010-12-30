@@ -84,6 +84,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -91,6 +95,17 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class PersistentUtils {
+
+    public static FileSystem readFileSystem(DataInput input) throws IOException {
+        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
+        return rootFileObject.getFileSystem();
+    }
+    
+    public static void writeFileSystem(FileSystem fs, DataOutput output) throws IOException {
+        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
+        PersistentUtils.writeUTF(rootUrl, output);        
+    }
 
     public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, DataInput input) throws IOException {
         int size = input.readInt();
@@ -637,8 +652,8 @@ public class PersistentUtils {
         APTSerializeUtils.writePreprocState(cleanedState, output);
     }
 
-    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
-        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
+        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(fs, input);
         assert state.isCleaned();
         return state;
     }

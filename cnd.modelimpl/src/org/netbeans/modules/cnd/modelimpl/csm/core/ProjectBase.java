@@ -128,6 +128,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -140,7 +141,7 @@ import org.openide.util.Parameters;
  * @author Vladimir Kvashin
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
-
+    
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
@@ -182,6 +183,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
         this.platformProject = platformProject;
+        if (platformProject instanceof NativeProject) {
+            fileSystem = ((NativeProject) platformProject).getFileSystem();
+        } else {
+            fileSystem = CndFileUtils.getLocalFileSystem();
+        }
         // remember in repository
         RepositoryUtils.hang(this);
         // create global namespace
@@ -1045,7 +1051,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(File file) {
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
+        StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
@@ -1076,7 +1082,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getName() + ") returned null file; FileObject is " + nativeFile.getFileObject()); //NOI18N
             entryKey = FileContainer.getFileKey(file, true).toString();
         }
-        StartEntry startEntry = new StartEntry(entryKey,
+        CndUtils.assertTrue(nativeFile.getNativeProject().getFileSystem().equals(getFileSystem()), "File systems differ"); //NOI18N
+        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey,
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
@@ -1570,6 +1577,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return the projectRoots
      */
     protected abstract SourceRootContainer getProjectRoots();
+
+    /*package*/ FileSystem getFileSystem() {
+        return fileSystem;
+    }
 
     private static enum ComparisonResult {
 
@@ -2689,6 +2700,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CsmUID<CsmNamespace> globalNamespaceUID;
     private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
     private Object platformProject;
+    private FileSystem fileSystem;
+
     /**
      * Some notes concerning disposing and disposeLock fields.
      *
@@ -2754,6 +2767,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     @Override
     public void write(DataOutput aStream) throws IOException {
         assert aStream != null;
+        PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
@@ -2771,6 +2785,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected ProjectBase(DataInput aStream) throws IOException {
+
+        fileSystem = PersistentUtils.readFileSystem(aStream);
 
         setStatus(Status.Restored);
 

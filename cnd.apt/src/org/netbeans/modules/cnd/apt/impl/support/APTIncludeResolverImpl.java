@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 
 /**
  * implementation of include resolver
@@ -66,10 +67,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> systemIncludePaths;
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
+    private final FileSystem fileSystem;
     
-    public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
+    public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+        this.fileSystem = fs;
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
