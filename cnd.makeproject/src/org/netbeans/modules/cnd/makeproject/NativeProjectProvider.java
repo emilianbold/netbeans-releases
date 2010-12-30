@@ -109,24 +109,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private static final boolean TRACE = false;
     private final Project project;
-    private final FileSystem fileSystem;
-    private final String projectRoot;
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
 
-    public NativeProjectProvider(Project project, RemoteProject rp, ConfigurationDescriptorProvider projectDescriptorProvider) {
+    public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
-        this.projectDescriptorProvider = projectDescriptorProvider;        
-        if (rp == null) {
-            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
-            fileSystem = CndFileUtils.getLocalFileSystem();
-            projectRoot = project.getProjectDirectory().getPath();
-        } else {
-            ExecutionEnvironment env = rp.getSourceFileSystemHost();
-            fileSystem = FileSystemProvider.getFileSystem(env);
-            projectRoot = rp.getBaseDir();
-        }
-        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N
+        this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
     @Override
@@ -170,6 +158,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public FileSystem getFileSystem() {
+        FileSystem fileSystem;
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
+            fileSystem = CndFileUtils.getLocalFileSystem();
+        } else {
+            ExecutionEnvironment env = rp.getSourceFileSystemHost();
+            fileSystem = FileSystemProvider.getFileSystem(env);
+        }
+        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N        
         return fileSystem;
     }
 
@@ -187,6 +185,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public String getProjectRoot() {
+        String projectRoot;
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
+            projectRoot = project.getProjectDirectory().getPath();
+        } else {
+            projectRoot = rp.getBaseDir();
+        }
+        CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
         return projectRoot;
     }
 

@@ -679,7 +679,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
         CndFileUtils.clearFileExistenceCache();
-        APTSystemStorage.getDefault().dispose();
+        APTSystemStorage.dispose();
     }
 
     @Override

@@ -313,7 +313,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        final RemoteProjectImpl rp = new RemoteProjectImpl();
         Lookup lkp = Lookups.fixed(new Object[]{
                     new Info(),
                     aux,
@@ -330,12 +329,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     helper,
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
-                    new NativeProjectProvider(this, rp, projectDescriptorProvider),
+                    new NativeProjectProvider(this, projectDescriptorProvider),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this), rp,
+                    new MakeProjectEncodingQueryImpl(this), 
+                    new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
                 });

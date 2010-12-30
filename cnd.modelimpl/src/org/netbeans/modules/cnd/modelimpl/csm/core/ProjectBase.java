@@ -150,6 +150,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
+        sysAPTData = APTSystemStorage.getInstance(fileSystem);
+        userPathStorage = new APTIncludePathStorage(fileSystem);
         declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
         weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
         classifierStorageKey = new ClassifierContainerKey(getUniqueName());
@@ -2735,8 +2737,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final Key classifierStorageKey;
 
     // collection of sharable system macros and system includes
-    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
-    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
+    private final APTSystemStorage sysAPTData;
+    private final APTIncludePathStorage userPathStorage;
     private static final class NamespaceLock {}
     private final Object namespaceLock = new NamespaceLock();
     private final Key declarationsSorageKey;
@@ -2787,6 +2789,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected ProjectBase(DataInput aStream) throws IOException {
 
         fileSystem = PersistentUtils.readFileSystem(aStream);
+        sysAPTData = APTSystemStorage.getInstance(fileSystem);
+        userPathStorage = new APTIncludePathStorage(fileSystem);
 
         setStatus(Status.Restored);
 
