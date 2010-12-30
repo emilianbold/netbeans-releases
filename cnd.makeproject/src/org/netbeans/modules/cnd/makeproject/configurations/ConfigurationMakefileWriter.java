@@ -674,7 +674,13 @@ public class ConfigurationMakefileWriter {
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     output = CppUtils.normalizeDriveLetter(cs, output);
                     String command = getLinkerTool(projectDescriptor, conf, testLinkerConfiguration, compilerSet);
+                    for (LinkerConfiguration lc : linkerConfigurations) {
+                        command += lc.getCommandLineConfiguration().getValue() + " "; // NOI18N                    
+                    }
                     command += "-o " + output + " "; // NOI18N
+                    if (cs != null && testLinkerConfiguration.getStripOption().getValue()) {
+                        command += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
+                    }                    
                     command += "$^" + " "; // NOI18N
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N
 
