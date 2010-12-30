@@ -43,9 +43,9 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -231,7 +231,11 @@ public class DirectoryReader {
         int rc = process.waitFor();
         latch.await();
         if (rc != 0) {
-            throw new IOException(errorOutput.toString());
+            if (rc == 2) {
+                throw new FileNotFoundException(errorOutput.toString());
+            } else {
+                throw new IOException(errorOutput.toString());
+            }
         }
         if (criticalException.get() != null) {
             throw criticalException.get();
