@@ -160,21 +160,17 @@ public class AddToFavoritesAction extends SingleHostAction {
                             Exceptions.printStackTrace(ex);
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
-                        FileObject fo = getRoot(env, fs);
+                        final FileObject fo = getRoot(env, fs);
                         if (fo != null) {
-                            if (!Favorites.getDefault().isInFavorites(fo)) {
-                                try {
-                                    Favorites.getDefault().add(fo);
-                                } catch (NullPointerException ex) {
-                                } catch (DataObjectNotFoundException ex) {
-                                }
-                            }
                             Runnable openFavorites = new Runnable() {
 
                                 @Override
                                 public void run() {
-                                    favorites.open();
-                                    favorites.requestActive();
+                                    try {
+                                        Favorites.getDefault().selectWithAddition(fo);
+                                    } catch (DataObjectNotFoundException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
                             };
                             SwingUtilities.invokeLater(openFavorites);
