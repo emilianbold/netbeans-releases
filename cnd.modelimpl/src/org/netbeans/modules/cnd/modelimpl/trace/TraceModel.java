@@ -1094,7 +1094,7 @@ public class TraceModel extends TraceModelBase {
             getProject().debugInvalidateFiles();
         } else {
             APTDriver.getInstance().invalidateAPT(buffer);
-            APTFileCacheManager.invalidate(buffer);
+            APTFileCacheManager.getInstance(buffer.getFileSystem()).invalidate(buffer.getAbsolutePath());
         }
     }
     long minDriver = Long.MAX_VALUE;

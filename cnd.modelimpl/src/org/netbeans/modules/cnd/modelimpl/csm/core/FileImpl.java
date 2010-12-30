@@ -645,8 +645,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 postMarkedAsModified();
             }
             if (invalidateCache) {
-                APTDriver.getInstance().invalidateAPT(this.getBuffer());
-                APTFileCacheManager.invalidate(this.getBuffer());
+                final FileBuffer buf = this.getBuffer();
+                APTDriver.getInstance().invalidateAPT(buf);
+                APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             }
         }
     }
@@ -1043,14 +1044,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
-        APTFileCacheEntry out = APTFileCacheManager.getEntry(getAbsolutePath(), preprocHandler, createExclusiveIfAbsent);
+        APTFileCacheEntry out = APTFileCacheManager.getInstance(getBuffer().getFileSystem()).getEntry(getAbsolutePath(), preprocHandler, createExclusiveIfAbsent);
         assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 
     public final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
         if (TraceFlags.APT_FILE_CACHE_ENTRY) {
-            APTFileCacheManager.setAPTCacheEntry(getBuffer(), preprocHandler, entry, cleanOthers);
+            final FileBuffer buf = getBuffer();
+            APTFileCacheManager.getInstance(buf.getFileSystem()).setAPTCacheEntry(buf.getAbsolutePath(), preprocHandler, entry, cleanOthers);
         }
     }
 
@@ -1900,7 +1902,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /*package-local*/ void clearStateCache() {
         tsRef.clear();
         stateCache.clearStateCache();
-        APTFileCacheManager.invalidate(this.getBuffer());
+        final FileBuffer buf = this.getBuffer();
+        APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
+        
     }
 
     private final FileDeclarationsKey fileDeclarationsKey;
