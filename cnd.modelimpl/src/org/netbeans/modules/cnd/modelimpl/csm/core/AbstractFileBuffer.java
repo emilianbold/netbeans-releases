@@ -176,15 +176,12 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
-        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fileSystem.getRoot()));
-        PersistentUtils.writeUTF(rootUrl, output);
+        PersistentUtils.writeFileSystem(fileSystem, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
-        this.fileSystem = rootFileObject.getFileSystem();
+        this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
     }
 

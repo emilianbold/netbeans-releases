@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -806,7 +807,7 @@ public class TraceModel extends TraceModelBase {
                 qInc.add(path);
             }
         }
-        StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        StartEntry startEntry = new StartEntry(CndFileUtils.getLocalFileSystem(), file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
