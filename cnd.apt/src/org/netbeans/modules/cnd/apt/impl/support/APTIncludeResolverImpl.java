@@ -101,31 +101,31 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private ResolvedPath resolveFilePath(String includedFile, boolean system, boolean includeNext) {
         ResolvedPath result = null;
         if (includedFile != null && (includedFile.length() > 0)) {
-            result = APTIncludeUtils.resolveAbsFilePath(includedFile);
+            result = APTIncludeUtils.resolveAbsFilePath(fileSystem, includedFile);
             if (result == null && !system && !includeNext) {
                 // for <system> "current dir" has lowest priority
                 // for #include_next should start from another dir
-                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
                 PathsCollectionIterator paths = 
                         new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
-                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, paths, includedFile, startOffset);
             }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
-                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             }
         }
         if (result == null && fileSearch != null) {
             String path = fileSearch.searchInclude(includedFile, baseFile);
             if (path != null) {
-                result = APTIncludeUtils.resolveFilePath(CndPathUtilitities.getBaseName(path), path);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilitities.getBaseName(path), path);
             }
         }
         return result;
-    }  
+    }
 
 //    private String resolveNextFilePath(String file, boolean system) {
 //        String result = null;
