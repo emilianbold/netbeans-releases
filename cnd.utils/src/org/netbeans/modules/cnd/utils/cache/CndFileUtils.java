@@ -393,9 +393,13 @@ public final class CndFileUtils {
     }
 
     private static String changeStringCaseIfNeeded(String path) {
-        return CndFileSystemProvider.lowerPathCaseIfNeeded(path).toString();
+        if (CndFileUtils.isSystemCaseSensitive()) {
+            return path;
+        } else {
+            return path.toString().toLowerCase();
+        }
     }
-    
+
 //    public static String getHitRate() {
 //	return "" + hits + "/" + calls; // NOI18N
 //    }

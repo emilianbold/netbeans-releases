@@ -78,15 +78,6 @@ public abstract class CndFileSystemProvider {
         return getDefault().getCaseInsensitivePathImpl(path);
     }
 
-    public static CharSequence lowerPathCaseIfNeeded(CharSequence path) {
-        if (CndFileUtils.isSystemCaseSensitive()) {
-            return path;
-        } else {
-            // XXX: FullRemote
-            return path.toString().toLowerCase();
-        }
-    }
-
     public static File toFile(FileObject fileObject) {
         // TODO: do we still need this?
         File file = FileUtil.toFile(fileObject);
