@@ -788,8 +788,8 @@ public class TraceModel extends TraceModelBase {
             //ex.printStackTrace();
         }
     }
-    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
-    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance(CndFileUtils.getLocalFileSystem());
+    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage(CndFileUtils.getLocalFileSystem());
     
     private APTIncludeHandler getIncludeHandler(File file) {
         List<String> systemIncludes = getSystemIncludes();

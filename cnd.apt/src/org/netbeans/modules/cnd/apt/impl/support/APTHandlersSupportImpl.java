@@ -89,9 +89,9 @@ public class APTHandlersSupportImpl {
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
         for (IncludeDirEntry includeDirEntry : userIncludePaths) {
-            if (!accessor.isExistingDirectory(includeDirEntry)) {
+            if (!accessor.isExistingDirectory(startFile.getFileSystem(), includeDirEntry)) {
                 // check if this is file
-                if (CndFileUtils.isExistingFile(includeDirEntry.getAsSharedCharSequence().toString())) {
+                if (CndFileUtils.isExistingFile(startFile.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
                     fileEntries.add(includeDirEntry);
                 }
             }

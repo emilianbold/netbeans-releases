@@ -324,21 +324,21 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 systemIncludePaths.add(i, path);
             }
             
             size = input.readInt();
             userIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 userIncludePaths.add(i, path);                
             }
 
             size = input.readInt();
             userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 userIncludeFilePaths.add(i, path);
             }
 

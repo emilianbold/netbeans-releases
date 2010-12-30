@@ -99,7 +99,7 @@ public class APTIncludeUtils {
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
-            if (accessor.isExistingDirectory(dirPrefix)) {
+            if (accessor.isExistingDirectory(fs, dirPrefix)) {
                 String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;
@@ -137,6 +137,6 @@ public class APTIncludeUtils {
     }
 
     private static boolean isExistingFile(FileSystem fs, String filePath) {
-        return CndFileUtils.isExistingFile(filePath);
+        return CndFileUtils.isExistingFile(fs, filePath);
     }
 }
