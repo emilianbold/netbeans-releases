@@ -120,8 +120,8 @@ public class FileBufferDoc extends AbstractFileBuffer {
                 }
             }
             // TODO: think over when do invalidate? before informing listeners or after
-            APTDriver.getInstance().invalidateAPT(this);
-            APTFileCacheManager.invalidate(this);
+            APTDriver.invalidateAPT(this);
+            APTFileCacheManager.getInstance(getFileSystem()).invalidate(getAbsolutePath());
         }
     }
 

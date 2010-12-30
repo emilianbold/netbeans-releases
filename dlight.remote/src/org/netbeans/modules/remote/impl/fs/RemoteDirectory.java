@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.SyncFailedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
@@ -72,6 +71,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -288,6 +288,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             RemoteLogger.finest(ex);
+        } catch (FileNotFoundException ex) {
+            RemoteLogger.finest(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
@@ -434,6 +436,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (trace) { trace("synchronizing"); } // NOI18N
             try {
                 directoryReader.readDirectory();
+            }  catch (FileNotFoundException ex) {
+                throw ex;
             }  catch (IOException ex) {
                 if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                     // connection was broken while we read directory content -
@@ -600,9 +604,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return FileType.Directory;
     }
 
+    public final InputStream getInputStream() throws FileNotFoundException {
+        throw new FileNotFoundException(getPath());
+    }
+
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    public final OutputStream getOutputStream(final FileLock lock) throws IOException {
+        throw new IOException(getPath());
     }
 
     private void invalidate(DirectoryStorage.Entry oldEntry) {
