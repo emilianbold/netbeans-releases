@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 
 /**
@@ -76,6 +77,8 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     private final CsmUID<CsmClassForwardDeclaration> classForwardUID;
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
+    private int lastParseCount = -1;    
+    private int lastFileID = -1;
     
     private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         super(ast, file);
@@ -141,23 +144,61 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION;
     }
 
+    private boolean needRecount(int newParseCount, Resolver currentResolver) {
+        if (lastParseCount != newParseCount) {
+            return true;
+        }
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        if (lastFileID != fileID) {
+            return true;
+        }
+        return false;
+    }
+
+    private void updateCache(int newParseCount, Resolver currentResolver) {
+        lastParseCount = newParseCount;
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        lastFileID = fileID;
+    }
+    
     @Override
     public CsmClass getReferencedClass() {
         CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
-        if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
-            cls = null;
-            CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
-            if(CsmBaseUtilities.isValid(cfd)) {
-                cls = cfd.getCsmClass();
+        int newParseCount = FileImpl.getParseCount();
+        Resolver currentResolver = ResolverFactory.getCurrentResolver();
+        if (needRecount(newParseCount, currentResolver)) {
+            if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
+                cls = null;
+                CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
+                if(CsmBaseUtilities.isValid(cfd)) {
+                    cls = cfd.getCsmClass();
+                }
+                friendUID = UIDCsmConverter.declarationToUID(cls);
             }
-            friendUID = UIDCsmConverter.declarationToUID(cls);
-        }
-        if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
-            CsmObject o = resolve();
-            if (CsmKindUtilities.isClass(o)) {
-                cls = (CsmClass) o;
-                friendUID = UIDCsmConverter.objectToUID(cls);
+            if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
+                CsmObject o = resolve();
+                if (CsmKindUtilities.isClass(o)) {
+                    cls = (CsmClass) o;
+                    friendUID = UIDCsmConverter.objectToUID(cls);
+                }
             }
+            updateCache(newParseCount, currentResolver);
+        //} else {
+        //    System.err.println("cache hit FriendClassImpl");
         }
         return cls;
     }
