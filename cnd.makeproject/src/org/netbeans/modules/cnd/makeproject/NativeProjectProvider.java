@@ -114,10 +114,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
 
-    public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
+    public NativeProjectProvider(Project project, RemoteProject rp, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;        
-        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
         if (rp == null) {
             CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
             fileSystem = CndFileUtils.getLocalFileSystem();
