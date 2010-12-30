@@ -54,6 +54,8 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -140,6 +142,7 @@ public class AddToFavoritesAction extends SingleHostAction {
         }
 
         protected abstract FileObject getRoot(ExecutionEnvironment env, FileSystem fs);
+        protected abstract String getPath(ExecutionEnvironment env);
         
         @Override
         protected void performAction(final ExecutionEnvironment env, Node node) {
@@ -158,22 +161,32 @@ public class AddToFavoritesAction extends SingleHostAction {
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         FileObject fo = getRoot(env, fs);
-                        if (fo != null && !Favorites.getDefault().isInFavorites(fo)) {
-                            try {
-                                Favorites.getDefault().add(fo);
-                            } catch (NullPointerException ex) {
-                            } catch (DataObjectNotFoundException ex) {
+                        if (fo != null) {
+                            if (!Favorites.getDefault().isInFavorites(fo)) {
+                                try {
+                                    Favorites.getDefault().add(fo);
+                                } catch (NullPointerException ex) {
+                                } catch (DataObjectNotFoundException ex) {
+                                }
                             }
-                        }
-                        Runnable openFavorites = new Runnable() {
+                            Runnable openFavorites = new Runnable() {
 
-                            @Override
-                            public void run() {
-                                favorites.open();
-                                favorites.requestActive();
+                                @Override
+                                public void run() {
+                                    favorites.open();
+                                    favorites.requestActive();
+                                }
+                            };
+                            SwingUtilities.invokeLater(openFavorites);
+                        } else {
+                            String msg;
+                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                                msg = NbBundle.getMessage(AddToFavoritesAction.class, "NotConnected", getPath(env), env.getDisplayName());
+                            } else {
+                                msg = NbBundle.getMessage(AddToFavoritesAction.class, "NoRemotePath", getPath(env));
                             }
-                        };
-                        SwingUtilities.invokeLater(openFavorites);
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                        }
                     }
                 };
                 RequestProcessor.getDefault().post(runnable);
@@ -195,6 +208,11 @@ public class AddToFavoritesAction extends SingleHostAction {
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
             return fs.getRoot();
         }
+
+        @Override
+        protected String getPath(ExecutionEnvironment env) {
+            return "/"; // NOI18N
+        }
     }
     private static final class AddHome extends AddPlace {
 
@@ -204,12 +222,17 @@ public class AddToFavoritesAction extends SingleHostAction {
 
         @Override
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
+            String path = getPath(env);
+            return path == null ? null : fs.findResource(path);
+        }
+        
+        @Override
+        protected String getPath(ExecutionEnvironment env) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                 if (hostInfo != null) {
                     String userDir = hostInfo.getUserDir();
-                    FileObject home = fs.findResource(userDir);
-                    return home;
+                    return userDir;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -229,6 +252,11 @@ public class AddToFavoritesAction extends SingleHostAction {
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
             return fs.getRoot();
         }
+        
+        @Override
+        protected String getPath(ExecutionEnvironment env) {
+            return "/"; // NOI18N
+        }
     }
     private static final class AddMirror extends AddPlace {
 
@@ -238,8 +266,14 @@ public class AddToFavoritesAction extends SingleHostAction {
 
         @Override
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
+            String path = getPath(env);
+            return path == null ? null : fs.findResource(path);
+        }
+        
+        @Override
+        protected String getPath(ExecutionEnvironment env) {
             String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(env);
-            return fs.findResource(remoteSyncRoot);
+            return remoteSyncRoot;
         }
     }
 }
