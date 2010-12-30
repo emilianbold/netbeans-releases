@@ -153,7 +153,7 @@ public class TraceModel extends TraceModelBase {
 
     public static void main(String[] args) {
         new TraceModel(true).test(args);
-        APTDriver.getInstance().close();
+        APTDriver.close();
         APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
@@ -883,7 +883,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPTLight(buffer);
+            apt = APTDriver.findAPTLight(buffer);
         }
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
@@ -918,7 +918,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+            apt = APTDriver.findAPT(buffer, getFileLanguage(file));
         }
         APTMacroMap macroMap = getMacroMap(file);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
@@ -1089,11 +1089,11 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
             firstFile = file.getAbsolutePath();
-            APTDriver.getInstance().invalidateAll();
+            APTDriver.invalidateAll();
             APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
         } else {
-            APTDriver.getInstance().invalidateAPT(buffer);
+            APTDriver.invalidateAPT(buffer);
             APTFileCacheManager.getInstance(buffer.getFileSystem()).invalidate(buffer.getAbsolutePath());
         }
     }
@@ -1104,7 +1104,7 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(file));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {

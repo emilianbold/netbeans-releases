@@ -646,7 +646,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             if (invalidateCache) {
                 final FileBuffer buf = this.getBuffer();
-                APTDriver.getInstance().invalidateAPT(buf);
+                APTDriver.invalidateAPT(buf);
                 APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             }
         }
@@ -678,9 +678,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         ChangedSegment changedSegment = null;
         try {
             if (full) {
-                fileAPT = APTDriver.getInstance().findAPT(this.getBuffer(), getFileLanguage());
+                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage());
             } else {
-                fileAPT = APTDriver.getInstance().findAPTLight(this.getBuffer());
+                fileAPT = APTDriver.findAPTLight(this.getBuffer());
             }
             if (getBuffer() instanceof FileBufferDoc) {
                 changedSegment = ((FileBufferDoc) getBuffer()).getLastChangedSegment();

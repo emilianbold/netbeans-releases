@@ -674,7 +674,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         UniqueNameCache.getManager().dispose();
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
-        APTDriver.getInstance().close();
+        APTDriver.close();
         APTFileCacheManager.close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();

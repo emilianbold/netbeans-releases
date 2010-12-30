@@ -118,7 +118,7 @@ public final class ProjectImpl extends ProjectBase {
         }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            APTDriver.getInstance().invalidateAPT(buf);
+            APTDriver.invalidateAPT(buf);
             APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             // listener will be triggered immediately, because editor based buffer
             // will be notifies about editing event exactly after onFileEditStart
@@ -220,7 +220,7 @@ public final class ProjectImpl extends ProjectBase {
                         impl.dispose();
                         removeFile(impl.getAbsolutePath());
                         final FileBuffer buf = impl.getBuffer();
-                        APTDriver.getInstance().invalidateAPT(buf);
+                        APTDriver.invalidateAPT(buf);
                         APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                         ParserQueue.instance().remove(impl);
                     }
