@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -168,13 +169,6 @@ public final class NativeProjectProvider {
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
-
-	public NativeProjectImpl(String projectRoot,
-		List<String> sysIncludes, List<String> usrIncludes, 
-		List<String> sysMacros, List<String> usrMacros) {
-	    
-	    this(projectRoot, sysIncludes, usrIncludes, sysMacros, usrMacros, false);
-	}
 	
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
@@ -215,6 +209,11 @@ public final class NativeProjectProvider {
             return null;
         }
 
+        @Override
+        public FileSystem getFileSystem() {
+            return CndFileUtils.getLocalFileSystem();
+        }
+        
         @Override
         public List<String> getSourceRoots() {
             return Collections.<String>emptyList();

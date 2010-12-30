@@ -63,7 +63,7 @@ public interface RemoteProject {
     static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
     
     ExecutionEnvironment getDevelopmentHost();
-
+    
     ExecutionEnvironment getSourceFileSystemHost();
 
     Mode getRemoteMode();
@@ -71,4 +71,10 @@ public interface RemoteProject {
     RemoteSyncFactory getSyncFactory();
 
     String resolveRelativeRemotePath(String path);
+    
+    /**
+     * Base project directory (to resolve relative paths against)
+     * @return 
+     */
+    String getBaseDir();
 }

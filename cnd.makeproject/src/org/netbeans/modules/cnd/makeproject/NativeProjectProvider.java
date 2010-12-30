@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -87,16 +88,19 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -104,13 +108,26 @@ import org.openide.util.RequestProcessor;
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
 
     private static final boolean TRACE = false;
-    private Project project;
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final Project project;
+    private final FileSystem fileSystem;
+    private final String projectRoot;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
 
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
-        this.projectDescriptorProvider = projectDescriptorProvider;
+        this.projectDescriptorProvider = projectDescriptorProvider;        
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
+            fileSystem = CndFileUtils.getLocalFileSystem();
+            projectRoot = project.getProjectDirectory().getPath();
+        } else {
+            ExecutionEnvironment env = rp.getSourceFileSystemHost();
+            fileSystem = FileSystemProvider.getFileSystem(env);
+            projectRoot = rp.getBaseDir();
+        }
+        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N
     }
 
     @Override
@@ -153,6 +170,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    @Override
     public List<String> getSourceRoots() {
         MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
         if (descriptor != null) {
@@ -166,7 +188,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public String getProjectRoot() {
-        return FileUtil.toFile(project.getProjectDirectory()).getPath();
+        return projectRoot;
     }
 
     @Override
