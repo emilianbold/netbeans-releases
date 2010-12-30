@@ -148,9 +148,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Arguments
         String[] args;
         if (target.length() == 0) {
-            args = new String[]{"-f", makeFileObject.getNameExt()}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt()/*, "MAKE="+executable*/}; // NOI18N
         } else {
-            args = new String[]{"-f", makeFileObject.getNameExt(), target}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt(), target/*, "MAKE="+executable*/}; // NOI18N
         }
         final ExecutionEnvironment execEnv = getExecutionEnvironment(makeFileObject, project);
         if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {

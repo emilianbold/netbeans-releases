@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,13 +56,12 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemotePlainFile extends RemoteFileObjectBase {
+public final class RemotePlainFile extends RemoteFileObjectBase {
 
     private FileLock lock;
     private final char fileTypeChar;
@@ -103,7 +103,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         try {
             getParent().ensureChildSync(this);
         } catch (ConnectException ex) {
-            return null;
+            return new ByteArrayInputStream(new byte[] {});
         } catch (IOException ex) {             
             throwFileNotFoundException(ex);
         } catch (InterruptedException ex) {
@@ -112,7 +112,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
             throwFileNotFoundException(ex);
         } catch (CancellationException ex) {
             // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
-            return null;
+            return new ByteArrayInputStream(new byte[] {});
         }
         return new FileInputStream(cache);
     }
@@ -152,9 +152,6 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     public OutputStream getOutputStream(FileLock lock) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
-        }
-        if (isFolder()) {
-            throw new IOException(getPath());
         }
         return new DelegateOutputStream();
     }

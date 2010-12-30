@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteLink extends RemoteFileObjectBase {
+public final class RemoteLink extends RemoteFileObjectBase {
 
     private String link;
 
