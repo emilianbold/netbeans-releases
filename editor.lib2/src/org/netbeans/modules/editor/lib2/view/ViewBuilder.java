@@ -97,6 +97,9 @@ final class ViewBuilder {
 
     private final FactoryState[] factoryStates;
 
+    /**
+     * Replace of paragraph views in a document view.
+     */
     private final ViewReplace<DocumentView,ParagraphView> dReplace;
 
     /**
@@ -105,10 +108,16 @@ final class ViewBuilder {
      */
     private ViewReplace<ParagraphView,EditorView> fReplace;
 
+    /**
+     * Actual replace inside current paragraph.
+     */
     private ViewReplace<ParagraphView,EditorView> pReplace;
 
     private boolean viewRemovalFinished;
 
+    /**
+     * List of all paragraph replaces done so far.
+     */
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
 
     private int docViewEndOffset;

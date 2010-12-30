@@ -138,6 +138,7 @@ public final class ViewUpdates implements DocumentListener {
         int startOffset, int endOffset,
         int modOffset, int offsetDelta, boolean createLocalViews)
     {
+        assert !buildingViews : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
                 paragraphViewIndex, viewFactories, startOffset, endOffset,
                 modOffset, offsetDelta, createLocalViews
@@ -522,6 +523,8 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             try {
                 documentView.checkDocumentLocked();
+                // Check buildingViews flag since it's possible that asking for a highlight
+                // triggered firing of a highlight change resulting in checkRebuild() call
                 if (!buildingViews && documentView.isActive()) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
