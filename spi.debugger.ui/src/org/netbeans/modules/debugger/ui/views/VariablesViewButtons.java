@@ -189,7 +189,7 @@ public class VariablesViewButtons {
             setButtonSelected(SHOW_WATCHES, isSelected);
             if (isSelected) {
                 // close watches view
-                closeView("watchesView"); // NOI18N
+                //closeView("watchesView"); Do not close the view, leave it up to the user choice. // NOI18N
             } else {
                 // open watches view
                 openView("watchesView", false); // NOI18N
@@ -211,7 +211,7 @@ public class VariablesViewButtons {
             setButtonSelected(SHOW_EVALUTOR_RESULT, isSelected);
             if (isSelected) {
                 // close watches view
-                closeView("resultsView"); // NOI18N
+                //closeView("resultsView"); Do not close the view, leave it up to the user choice. // NOI18N
             } else {
                 // open watches view
                 openView("resultsView", false); // NOI18N

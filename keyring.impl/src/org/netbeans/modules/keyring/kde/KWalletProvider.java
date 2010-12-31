@@ -130,9 +130,16 @@ public class KWalletProvider implements KeyringProvider{
             return true;
         }
         char[] localWallet = defaultLocalWallet;
-        result = runCommand("localWallet");
+        result = runCommand("localWallet");                      
         if(result.exitCode == 0) {                    
             localWallet = result.retVal;
+        }
+            
+        if(new String(localWallet).contains(".service")) {            
+            //Temporary workaround for the bug in kdelibs/kdeui/util/kwallet.cpp
+            //The bug was fixed http://svn.reviewboard.kde.org/r/5885/diff/
+            //but many people currently use buggy kwallet
+            return false;
         }
         result = runCommand("open", localWallet , "0".toCharArray(), getApplicationName(true));
         if(result.exitCode == 2) { 
