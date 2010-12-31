@@ -543,10 +543,6 @@ public class HtmlCompletionQuery extends UserTask {
                     return null;
                 }
                 HtmlTagAttribute attribute = tag.getAttribute(argName);
-                if(attribute == null) {
-                    return null;
-                }
-
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {

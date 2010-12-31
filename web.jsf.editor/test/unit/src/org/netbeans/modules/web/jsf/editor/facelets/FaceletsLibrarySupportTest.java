@@ -322,7 +322,7 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
         //but the renamed one
         LibraryComponent lc3 = cclib.getComponent("renamed");
-        assertNotNull(lc3);
+        assertNotNull(lc3); //this seems to randomly fail!
 
         Tag t3 = cclib.getLibraryDescriptor().getTags().get("renamed");
         assertNotNull(t3);

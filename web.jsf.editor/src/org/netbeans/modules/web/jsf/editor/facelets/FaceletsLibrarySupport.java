@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
@@ -69,7 +68,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -357,18 +355,18 @@ public class FaceletsLibrarySupport {
     }
 
 
-    private void debugLibraries() {
-        System.out.println("Facelets Libraries:");  //NOI18N
-        System.out.println("====================");  //NOI18N
-        for (FaceletsLibrary lib : faceletsLibraries.values()) {
-            System.out.println("Library: " + lib.getNamespace());  //NOI18N
-            System.out.println("----------------------------------------------------");  //NOI18N
-            for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
-                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");  //NOI18N
-            }
-            System.out.println();
-        }
-    }
+//    private void debugLibraries() {
+//        System.out.println("Facelets Libraries:");  //NOI18N
+//        System.out.println("====================");  //NOI18N
+//        for (FaceletsLibrary lib : faceletsLibraries.values()) {
+//            System.out.println("Library: " + lib.getNamespace());  //NOI18N
+//            System.out.println("----------------------------------------------------");  //NOI18N
+//            for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
+//                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");  //NOI18N
+//            }
+//            System.out.println();
+//        }
+//    }
 
     public static class Compiler {
 

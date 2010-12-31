@@ -42,23 +42,15 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.Map;
-import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  *
  * @author marekfukala
  */
-public interface LibraryDescriptor extends LibraryInfo {
+public interface LibraryDescriptor {
 
-    @Override
     public String getNamespace();
-
-    @Override
-    public String getDefaultPrefix();
-
-    @Override
-    public String getDisplayName();
 
     public Map<String, Tag> getTags();
 

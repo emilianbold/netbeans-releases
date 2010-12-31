@@ -79,16 +79,24 @@ public abstract class FaceletsLibrary implements Library {
         return null;
     }
 
+    //since the web-facelettaglibrary_2_0.xsd schema doesn't define any library default prefixes as the TLDs do,
+    //we need to define them manually
+    @Override
+    public String getDefaultPrefix() {
+        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getNamespace());
+    }
+
     @Override
     public String getDisplayName() {
-        return getLibraryDescriptor() != null ? getLibraryDescriptor().getDisplayName() : getNamespace();
+        String displayName = DefaultFaceletLibraries.getLibraryDisplayName(getNamespace());
+        return displayName != null ? displayName : getNamespace();
     }
 
     @Override
     public String toString() {
         return "FaceletsLibrary(namespace=" + getNamespace() +
                 ", default prefix= " + getDefaultPrefix() +
-                ", tld library= " + getLibraryDescriptor(); //NOI18N
+                ", descriptor= " + getLibraryDescriptor(); //NOI18N
     }
 
 
