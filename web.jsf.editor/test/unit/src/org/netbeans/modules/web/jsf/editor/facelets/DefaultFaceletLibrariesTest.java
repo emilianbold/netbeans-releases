@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
@@ -84,8 +83,6 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
             assertNotNull(descr);
 
             assertEquals(dli.getNamespace(), descr.getNamespace());
-            assertEquals(dli.getDefaultPrefix(), descr.getDefaultPrefix());
-            assertEquals(dli.getDisplayName(), descr.getDisplayName());
 
             assertNotNull(descr.getDefinitionFile());
 

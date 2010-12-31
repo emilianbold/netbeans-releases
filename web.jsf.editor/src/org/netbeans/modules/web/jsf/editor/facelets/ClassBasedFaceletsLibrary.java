@@ -95,7 +95,9 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     @Override
     public String getDefaultPrefix() {
-        return defaultPrefix;
+        //non standard library will use a prefix generated from the library namespace
+        String superdefaultPrefix = super.getDefaultPrefix();
+        return superdefaultPrefix != null ? superdefaultPrefix : defaultPrefix;
     }
     
     @Override
@@ -104,7 +106,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public AbstractLibraryDescriptor getLibraryDescriptor() {
+    public FaceletsLibraryDescriptor getLibraryDescriptor() {
         return libraryDescriptor;
     }
 
