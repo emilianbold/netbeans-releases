@@ -194,11 +194,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     private class CCVirtualLibraryDescriptor implements LibraryDescriptor {
 
         @Override
-        public String getDefaultPrefix() {
-            return CompositeComponentLibrary.this.getDefaultPrefix();
-        }
-
-        @Override
         public Map<String, Tag> getTags() {
             Map<String, Tag> map = new HashMap<String, Tag>();
             Collection<CompositeComponent> components = getComponents();
@@ -211,11 +206,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         @Override
         public String getNamespace() {
             return CompositeComponentLibrary.this.getNamespace();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return CompositeComponentLibrary.this.getDisplayName();
         }
 
         private class LazyLoadingTag implements Tag {

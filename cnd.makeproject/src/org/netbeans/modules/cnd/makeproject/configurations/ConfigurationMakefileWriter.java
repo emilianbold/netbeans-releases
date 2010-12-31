@@ -622,12 +622,12 @@ public class ConfigurationMakefileWriter {
     }
 
     private static String getLinkerTool(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, LinkerConfiguration linkerConfiguration, CompilerSet compilerSet){
-        final CompilerFlavor compilerFlavor = compilerSet.getCompilerFlavor();
-        final ToolchainDescriptor toolchainDescriptor = compilerFlavor.getToolchainDescriptor();
-        final LinkerDescriptor linker = toolchainDescriptor.getLinker();
-        String getPreferredCompiler = linker.getPreferredCompiler();
         if (linkerConfiguration.getTool().getModified()) {
             return linkerConfiguration.getTool().getValue() + " "; // NOI18N
+        }
+        String getPreferredCompiler = null;
+        if (compilerSet != null) {
+            getPreferredCompiler = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getPreferredCompiler();
         }
         if (getPreferredCompiler != null) {
             if ("c".equals(getPreferredCompiler)) { // NOI18N
