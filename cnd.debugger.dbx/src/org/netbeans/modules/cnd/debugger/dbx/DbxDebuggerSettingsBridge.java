@@ -252,9 +252,10 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	    */
 	    String runDirectory = mainRunProfile.getRunDirectory();
 	    runDirectory = dbxDebugger().localToRemote("applyRunDirectory", runDirectory); // NOI18N
-	    int index = runDirectory.indexOf('~');
-	    if (index != -1)
-		runDirectory = runDirectory.substring(index);
+	    // CR 6983742, 7009459
+	    boolean found = runDirectory.startsWith("//~"); // NOI18N
+	    if (found)
+		runDirectory = runDirectory.substring(2); // skip "//"
 	    dbx().sendCommand(0, 0, "cd " + runDirectory); //NOI18N
 	}
     }

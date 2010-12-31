@@ -1047,6 +1047,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	// Similar to DbxDebuggerSettingsBridge.applyRunDirectory()
 	String runDirectory = profileBridge().getCurrentSettings().runProfile().getRunDirectory();
 	runDirectory = localToRemote("applyRunDirectory1", runDirectory); // NOI18N
+	// CR 6983742, 7009459
+	boolean found = runDirectory.startsWith("//~"); // NOI18N
+	if (found)
+	    runDirectory = runDirectory.substring(2); // skip "//"
 	if (runDirectory != null)
 	    dbx.sendCommand(0, 0, "cd " + runDirectory); //NOI18N
 
