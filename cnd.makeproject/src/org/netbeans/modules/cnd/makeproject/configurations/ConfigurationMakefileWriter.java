@@ -60,6 +60,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -619,7 +622,10 @@ public class ConfigurationMakefileWriter {
     }
 
     private static String getLinkerTool(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, LinkerConfiguration linkerConfiguration, CompilerSet compilerSet){
-        String getPreferredCompiler = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getPreferredCompiler();
+        final CompilerFlavor compilerFlavor = compilerSet.getCompilerFlavor();
+        final ToolchainDescriptor toolchainDescriptor = compilerFlavor.getToolchainDescriptor();
+        final LinkerDescriptor linker = toolchainDescriptor.getLinker();
+        String getPreferredCompiler = linker.getPreferredCompiler();
         if (linkerConfiguration.getTool().getModified()) {
             return linkerConfiguration.getTool().getValue() + " "; // NOI18N
         }
