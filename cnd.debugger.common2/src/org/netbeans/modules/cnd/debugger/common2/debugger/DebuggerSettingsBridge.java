@@ -328,7 +328,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	String args = currentRunProfile().getArgsFlat();
 	String redirection = currentDbgProfile().getRedirection();
 	if (redirection != null) {
-	    args += " ";
+	    args += " ";//NOI18N
 	    args += currentDbgProfile().getRedirection();
 	}
 	if (args != null)
