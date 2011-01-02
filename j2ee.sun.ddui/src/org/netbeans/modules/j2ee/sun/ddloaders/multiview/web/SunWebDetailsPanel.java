@@ -257,11 +257,6 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
         }
 
         protected String getValue() {
-            String contextRoot = sunWebApp.getContextRoot();
-            if (contextRoot == null || contextRoot.trim().length() == 0) {
-                sunWebApp.setContextRoot("/"); //NOI18N
-                synchronizer.requestUpdateData();
-            }
             return sunWebApp.getContextRoot();
         }
 
