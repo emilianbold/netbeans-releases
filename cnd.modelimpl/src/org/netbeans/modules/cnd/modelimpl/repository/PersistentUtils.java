@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
@@ -85,6 +84,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -92,6 +95,17 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class PersistentUtils {
+
+    public static FileSystem readFileSystem(DataInput input) throws IOException {
+        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
+        return rootFileObject.getFileSystem();
+    }
+    
+    public static void writeFileSystem(FileSystem fs, DataOutput output) throws IOException {
+        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
+        PersistentUtils.writeUTF(rootUrl, output);        
+    }
 
     public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, DataInput input) throws IOException {
         int size = input.readInt();
@@ -166,7 +180,7 @@ public class PersistentUtils {
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            PersistentUtils.writeUTF(((AbstractFileBuffer)buffer).getAbsolutePath(), output);
+            ((AbstractFileBuffer) buffer).write(output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -176,8 +190,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        buffer = new FileBufferFile(absPath);
+        buffer = new FileBufferFile(input);
         return buffer;
     }
 
@@ -240,7 +253,9 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            assert CharSequences.isCompact(st);
+            if(!CharSequences.isCompact(st)) {
+                assert CharSequences.isCompact(st);
+            }
             aStream.writeUTF(st.toString());
         }
     }
@@ -388,6 +403,20 @@ public class PersistentUtils {
         } else {
             throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
         }
+    }
+    
+    public static boolean isPersistable(CsmType type) {
+        if (type == null) {
+            return true;
+        } else if (type instanceof NoType) {
+            return true;
+        } else if (type instanceof TypeImpl) {
+            return true;
+        } else if (type instanceof TemplateParameterTypeImpl) {
+            return true;
+        } else {
+            return false;
+        }        
     }
 
     public static <T extends Collection<CsmType>> void readTypes(T collection, DataInput input) throws IOException {
@@ -623,8 +652,8 @@ public class PersistentUtils {
         APTSerializeUtils.writePreprocState(cleanedState, output);
     }
 
-    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
-        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
+        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(fs, input);
         assert state.isCleaned();
         return state;
     }

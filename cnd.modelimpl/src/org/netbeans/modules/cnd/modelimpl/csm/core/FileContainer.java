@@ -79,6 +79,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Parameters;
 
 /**
@@ -93,7 +96,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     private final Object lock = new Lock();
     private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
     private final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
-
+    private final FileSystem fileSystem;
+            
     // empty stub
     private static final FileContainer EMPTY = new FileContainer() {
 
@@ -103,7 +107,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         @Override
-        public void putFile(File file, FileImpl impl, State state) {
+        public void putFile(FileImpl impl, State state) {
             // do nothing
         }
 
@@ -116,12 +120,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
 	super(new FileContainerKey(project.getUniqueName()), false);
+        fileSystem = project.getFileSystem();
 	put();
     }
     
     public FileContainer (DataInput input) throws IOException {
 	super(input);
-        readStringToFileEntryMap(input, myFiles);
+        fileSystem = PersistentUtils.readFileSystem(input);
+        readStringToFileEntryMap(fileSystem, input, myFiles);
         readStringToStringsArrMap(input, canonicFiles);
 	//trace(canonicFiles, "Read in ctor:");
     }
@@ -129,6 +135,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     // only for creating EMPTY stub
     private FileContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        fileSystem = null;
     }
 
     /*package*/ static FileContainer empty() {
@@ -142,11 +149,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	}
     }
     
-    public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
+    public void putFile(FileImpl impl, APTPreprocHandler.State state) {
+        File file = impl.getFile();
+        CndUtils.assertFileMode(file);
         CharSequence path = getFileKey(file, true);
+        CharSequence canonicalPath = getCanonicalKey(file, path);
         FileEntry newEntry;
         CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
-        newEntry = new FileEntry(uid, state, path);
+        newEntry = new FileEntry(uid, state, path, canonicalPath);
         FileEntry old;
 
         old = myFiles.put(path, newEntry);
@@ -310,6 +320,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
+        PersistentUtils.writeFileSystem(fileSystem, aStream);
 	// maps are concurrent, so we don't need synchronization here
         writeStringToFileEntryMap(aStream, myFiles);
         writeStringToStringsArrMap(aStream, canonicFiles);
@@ -328,6 +339,21 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         } else {
             key = file.getAbsolutePath();
+        }
+        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
+    }
+    
+    public static CharSequence getFileKey(FileObject fileObject, boolean sharedText) {
+        Parameters.notNull("null file", fileObject); //NOI18N
+        String key = null;
+        if (TraceFlags.USE_CANONICAL_PATH) {
+            try {
+                key = CndFileUtils.getCanonicalPath(fileObject);
+            } catch (IOException ex) {
+                key = fileObject.getPath();
+            }
+        } else {
+            key = fileObject.getPath();
         }
         return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
     }
@@ -454,7 +480,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void  readStringToFileEntryMap(
-            final DataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
+            FileSystem fs, DataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
         assert aMap != null;
@@ -466,7 +492,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
         for (int i = 0; i < size; i++) {
             CharSequence key = PersistentUtils.readUTF(input, pathManager);
-            FileEntry value = new FileEntry(input);
+            FileEntry value = new FileEntry(fs, input);
             
             assert key != null;
             assert value != null;
@@ -565,7 +591,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private volatile int modCount;
 
         @SuppressWarnings("unchecked")
-        private FileEntry (final DataInput input) throws IOException {
+        private FileEntry (FileSystem fs, DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = PersistentUtils.readUTF(input, FilePathCache.getManager());
             modCount = input.readInt();
@@ -573,11 +599,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 int cnt = input.readInt();
                 assert cnt > 0;
                 if (cnt == 1) {
-                    data = readStatePair(input);
+                    data = readStatePair(fs, input);
                 } else {
                     data = new ArrayList<PreprocessorStatePair>(cnt);
                     for (int i = 0; i < cnt; i++) {
-                        ((List<PreprocessorStatePair>) data).add(readStatePair(input));
+                        ((List<PreprocessorStatePair>) data).add(readStatePair(fs, input));
                     }
                 }
             } else {
@@ -585,7 +611,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
 
-        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
+        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey, CharSequence canonicalFileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
 //            if (state == null) {
@@ -593,7 +619,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 //                    CndUtils.assertTrueInConsole(false, "creating null based entry for " + fileKey); // NOI18N
 //                }
 //            }
-            this.canonical = getCanonicalKey(fileKey);
+            this.canonical = canonicalFileKey;
             this.modCount = 0;
         }
         
@@ -618,11 +644,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
         
-        private static PreprocessorStatePair readStatePair(DataInput input) throws IOException {
+        private static PreprocessorStatePair readStatePair(FileSystem fs, DataInput input) throws IOException {
             if (input.readBoolean()) {
                 APTPreprocHandler.State state = null;
                 if (input.readBoolean()){
-                    state = PersistentUtils.readPreprocState(input);
+                    state = PersistentUtils.readPreprocState(fs, input);
                 }
                 FilePreprocessorConditionState pcState = null;
                 if (input.readBoolean()){
@@ -931,9 +957,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     }
     
-    private static CharSequence getCanonicalKey(CharSequence fileKey) {
+    private static CharSequence getCanonicalKey(File file, CharSequence fileKey) {
         try {
-            CharSequence res = new File(fileKey.toString()).getCanonicalPath();
+            CharSequence res = file.getCanonicalPath();
             res = FilePathCache.getManager().getString(res);
             if (fileKey.equals(res)) {
                 return fileKey;
@@ -944,4 +970,19 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return fileKey;
         }
     }
+    
+    private static CharSequence getCanonicalKey(FileObject fileObject, CharSequence fileKey) {
+        try {
+            CharSequence res = CndFileUtils.getCanonicalPath(fileObject);
+            res = FilePathCache.getManager().getString(res);
+            if (fileKey.equals(res)) {
+                return fileKey;
+            }
+            return res;
+        } catch (IOException e) {
+            // skip exception
+            return fileKey;
+        }
+    }
+    
 }

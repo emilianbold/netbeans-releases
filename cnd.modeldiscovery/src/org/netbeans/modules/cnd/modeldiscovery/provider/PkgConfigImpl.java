@@ -59,12 +59,12 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 
@@ -178,7 +178,8 @@ public class PkgConfigImpl implements PkgConfig {
     private void initPackages(List<String> folders, boolean isWindows) {
         Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
-            FileObject file = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(folder), pi.getExecutionEnvironment());
+            ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
+            FileObject file = RemoteFileUtil.getFileObject(RemoteFileUtil.normalizeAbsolutePath(folder, execEnv), execEnv);
             if (file == null) {
                 continue;
             }
@@ -206,6 +207,11 @@ public class PkgConfigImpl implements PkgConfig {
     @Override
     public PackageConfiguration getPkgConfig(String pkg) {
         return getConfig(pkg);
+    }
+
+    @Override
+    public List<PackageConfiguration> getAvaliablePkgConfigs() {
+        return new ArrayList<PackageConfiguration>(configurations.values());
     }
 
     @Override
@@ -361,7 +367,8 @@ public class PkgConfigImpl implements PkgConfig {
                     continue;
                 }
             }
-            FileObject dir = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(entry.getKey()), pi.getExecutionEnvironment());
+            String normalizedPath = RemoteFileUtil.normalizeAbsolutePath(entry.getKey(), pi.getExecutionEnvironment());
+            FileObject dir = RemoteFileUtil.getFileObject(normalizedPath, pi.getExecutionEnvironment());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
             if (TRACE) {
                 System.err.println("init search base for "+entry.getKey());
@@ -478,6 +485,12 @@ public class PkgConfigImpl implements PkgConfig {
                     }
                 } else if (line.startsWith("Version:")){ // NOI18N
                     pc.version = line.substring(8).trim();
+                } else if (line.startsWith("Description:")){ // NOI18N
+                    pc.displayName = line.substring(12).trim();
+                } else if (line.startsWith("Libs:")){ // NOI18N
+                    String value = line.substring(5).trim();
+                    value = expandMacros(value,vars);
+                    pc.libs = value;
                 } else if (line.startsWith("Cflags:")){ // NOI18N
                     String value = line.substring(7).trim();
                     value = expandMacros(value,vars);
@@ -606,8 +619,10 @@ public class PkgConfigImpl implements PkgConfig {
         List<String> requires = new ArrayList<String>();
         List<String> macros = new ArrayList<String>();
         List<String> paths = new ArrayList<String>();
+        String libs = "";
         private String name;
         private String version;
+        private String displayName;
         private PackageConfigurationImpl(String name){
             this.name = name;
         }
@@ -623,14 +638,30 @@ public class PkgConfigImpl implements PkgConfig {
         }
 
         @Override
+        public String getLibs() {
+            return libs;
+        }
+
+        @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String getVersion() {
+            return version;
         }
 
         @Override
         public String toString() {
             return name+" "+paths+" "+macros; // NOI18N
         }
+
     }
 
     /*package-local*/ class ResolvedPathImpl implements ResolvedPath {

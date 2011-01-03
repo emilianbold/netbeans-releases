@@ -322,7 +322,25 @@ public class AstUtil {
         return null;
     }
 
+    public static String toString(AST ast) {
+        final StringBuilder out = new StringBuilder();
+        ASTVisitor impl = new ASTVisitor() {
 
+            @Override
+            public void visit(AST node) {
+                print(node, out);
+                for (AST node2 = node; node2 != null; node2 = node2.getNextSibling()) {
+                    if (node2.getFirstChild() != null) {
+                        out.append('>');
+                        visit(node2.getFirstChild());
+                        out.append('<');
+                    }
+                }
+            }
+        };
+        impl.visit(ast);
+        return out.toString();
+    }
 
     public static void toStream(AST ast, final PrintStream ps) {
         ASTVisitor impl = new ASTVisitor() {
@@ -371,6 +389,19 @@ public class AstUtil {
         ps.print(ast.getColumn());
         ps.print(']');
         //ps.print('\n');
+    }
+    
+    private static void print(AST ast, StringBuilder out) {
+        out.append('[');
+        out.append(ast.getText());
+        out.append('(');
+        out.append(ast.getType());
+        out.append(')');
+        out.append(ast.getLine());
+        out.append(':');
+        out.append(ast.getColumn());
+        out.append(']');
+        //out.append('\n');
     }
 
     private static int fileIndex = 0;

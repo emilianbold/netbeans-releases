@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import junit.framework.AssertionFailedError;
+import org.netbeans.editor.Finder;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -133,8 +134,11 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         assertSame(getExpectedVersion(), result[0].getSyntaxAnalyzerResult().getHtmlVersion());
 
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
-//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
-
+        
+        if(type != Match.EMPTY) {
+            assertNotNull("null completion query result", completionResult);
+        }
+        
         if (expectedItemsNames.length == 0 && completionResult == null) {
             //result may be null if we do not expect any result, nothing to test then
             return;
@@ -197,9 +201,8 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         assertNotNull(result[0]);
 
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
-//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
-        assertNotNull(result);
+        assertNotNull(completionResult);
         Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
@@ -254,6 +257,21 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         return args;
     }
 
+    protected TestSource getTestSource(String testFilePath, boolean removePipe) throws BadLocationException {
+        FileObject source = getTestFile(DATA_DIR_BASE + testFilePath);
+        BaseDocument doc = getDocument(source);
+        StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+        int pipeIndex = sb.indexOf("|");
+        assertTrue(String.format("Errorneous test file %s, there is no pipe char specifying the completion offset!", testFilePath),
+                pipeIndex != -1);
+
+        if(removePipe) {
+            sb.deleteCharAt(pipeIndex);
+        }
+
+        return new TestSource(sb.toString(), pipeIndex);
+    }
+
     private void testCompletionResults(String testFile) throws IOException, BadLocationException, ParseException {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
@@ -292,4 +310,25 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
 
     }
+
+
+    protected static class TestSource {
+        private String code;
+        private int position;
+
+        private TestSource(String code, int position) {
+            this.code = code;
+            this.position = position;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+        
+    }
+
 }

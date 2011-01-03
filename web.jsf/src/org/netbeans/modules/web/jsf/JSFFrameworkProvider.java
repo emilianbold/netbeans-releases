@@ -95,6 +95,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultRenderKitId;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
@@ -562,6 +563,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB) && !isJSF20) {
                         createFacesConfig = true;
                     }
+                    if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
+                        if (panel.getJsfComponentDescriptor().getDefaultRenderKitId() != null)
+                            createFacesConfig = true;
+                    }
                 }
                 if (createFacesConfig) {
                     String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
@@ -609,6 +614,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
                                 application.addViewHandler(viewHandler);
+                            }
+                            // A component library may require a render kit
+                            if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
+                                String drki = panel.getJsfComponentDescriptor().getDefaultRenderKitId();
+                                if (drki != null) {
+                                    List<DefaultRenderKitId> drkits = application.getDefaultRenderKitIds();
+                                    boolean alreadyDefined = false;
+                                    if (drkits != null){
+                                        for (DefaultRenderKitId drkit : drkits) {
+                                            if (drki.equals(drkit.getText().trim())){
+                                                alreadyDefined = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!alreadyDefined){
+                                        DefaultRenderKitId newdrki = model.getFactory().createDefaultRenderKitId();
+                                        newdrki.setText(drki);
+                                        application.addDefaultRenderKitId(newdrki);
+                                    }
+                                }
                             }
                             ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
                             // FIXME icefaces on server

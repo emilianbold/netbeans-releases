@@ -48,6 +48,8 @@ import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Parameters;
 
 /**
  * implementation of APTFile
@@ -56,47 +58,63 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {
     private static final long serialVersionUID = -6182803432699849825L;
+    transient private FileSystem fileSystem;
     private final CharSequence path;
     transient private boolean tokenized;
     
     /** Copy constructor */
     /**package*/ APTFileNode(APTFileNode orig) {
         super(orig);
+        this.fileSystem = orig.fileSystem;
         this.path = orig.path;
-        this.tokenized = false;
+        this.tokenized = false;        
     }
     
     /** Creates a new instance of APTFileNode */
-    public APTFileNode(CharSequence path) {
+    public APTFileNode(FileSystem fileSystem, CharSequence path) {
+        Parameters.notNull("null fileSystem", fileSystem); //NOI18N
+        this.fileSystem = fileSystem;
         this.path = FilePathCache.getManager().getString(path);
         tokenized = true;
     }
     
+    @Override
     public final int getType() {
         return APT.Type.FILE;
     }    
     
 
+    @Override
     public int getOffset() {
         return -1;
     }
 
+    @Override
     public int getEndOffset() {
         return -1;
     }
     
+    @Override
     public APT getNextSibling() {
         return null;
     }              
 
+    @Override
     public String getText() {
         return "FILE:{" + getPath() + "}"; // NOI18N
     }
 
+    @Override
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    @Override
     public CharSequence getPath() {
         return path;
     }
 
+    @Override
     public boolean isTokenized() {
         return tokenized;
     }
@@ -126,6 +144,7 @@ public final class APTFileNode extends APTContainerNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
+    @Override
     public final void setNextSibling(APT next) {
         assert(false):"Illegal to add siblings to file node"; // NOI18N
     }

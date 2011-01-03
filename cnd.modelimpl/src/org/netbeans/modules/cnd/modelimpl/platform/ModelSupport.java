@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -79,6 +80,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -239,7 +242,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static void trace(NativeFileItem nativeFile) {
         try {
-            Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
+            Diagnostic.trace("  native file item" + nativeFile.getAbsolutePath()); // NOI18N
             Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
             Diagnostic.trace("    user macros: " + nativeFile.getUserMacroDefinitions()); // NOI18N
             Diagnostic.trace("    system includes: " + nativeFile.getSystemIncludePaths()); // NOI18N
@@ -287,11 +290,11 @@ public class ModelSupport implements PropertyChangeListener {
         }
         System.err.println("\nSources: (" + sources.size() + " files )");
         for (NativeFileItem elem : sources) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
         System.err.println("\nHeaders: (" + headers.size() + " files )");
         for (NativeFileItem elem : headers) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
 
         System.err.println("End of project dump\n\n\n");
@@ -420,6 +423,35 @@ public class ModelSupport implements PropertyChangeListener {
         return new FileBufferFile(normalizeFile.getAbsolutePath());
     }
 
+    public static FileBuffer getFileBuffer(FileObject fo) {
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                if (dao.isModified()) {
+                    EditorCookie editor = dao.getCookie(EditorCookie.class);
+                    if (editor != null) {
+                        Document doc = editor.getDocument();
+                        if (doc != null) {
+                            return new FileBufferDoc(fo, doc);
+                        }
+                    }
+                }
+            } catch (DataObjectNotFoundException e) {
+                // nothing
+            }
+            return new FileBufferFile(fo);
+        } else {
+            FileSystem fs;
+            try {
+                fs = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                fs = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+            return new FileBufferFile(InvalidFileObjectSupport.getInvalidFileObject(fs, fo.getPath()));
+        }
+    }
+
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
         LowMemoryAlerter alerter = Lookup.getDefault().lookup(LowMemoryAlerter.class);
         if (alerter != null) {
@@ -498,7 +530,7 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
-                    long lastModified = file.lastModified();
+                    long lastModified = (file == null) ? primaryFile.lastModified().getTime() : file.lastModified();
                     CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
                     final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
 

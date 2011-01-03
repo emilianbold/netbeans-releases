@@ -264,6 +264,9 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.parser</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                         <recursive/>
                         <compile-dependency/>

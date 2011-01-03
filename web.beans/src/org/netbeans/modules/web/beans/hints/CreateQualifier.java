@@ -99,6 +99,10 @@ public class CreateQualifier implements ErrorRule<Void> {
     
     private static final String PRODUCER_ANNOTATION = 
         "javax.enterprise.inject.Produces";                     // NOI18N
+    
+    private static final String INTERCEPTOR_ANNOTATION = 
+        "javax.interceptor.Interceptor";                        // NOI18N
+    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.java.hints.spi.Rule#getId()
@@ -113,7 +117,7 @@ public class CreateQualifier implements ErrorRule<Void> {
      */
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(CreateQualifier.class, "LBL_CreateQualifier");
+        return NbBundle.getMessage(CreateQualifier.class, "LBL_CreateCDIAnnotation");
     }
 
     /* (non-Javadoc)
@@ -234,7 +238,7 @@ public class CreateQualifier implements ErrorRule<Void> {
                         contentEquals(PRODUCER_ANNOTATION))
             {
 
-                return createFix(compilationInfo, annotation, parent);
+                return createQualifierFix(compilationInfo, annotation, parent);
             }
             
         }
@@ -259,18 +263,13 @@ public class CreateQualifier implements ErrorRule<Void> {
             }
         }
         if ( parameterHasAnnotation && hasDisposesObserves ){
-            return createFix(compilationInfo, annotation, parent);
+            return createQualifierFix(compilationInfo, annotation, parent);
         }
         return Collections.<Fix>emptyList();
     }
 
-    /**
-     * @param compilationInfo
-     * @param annotation
-     * @param classElement
-     * @return
-     */
-    private List<Fix> createFix( CompilationInfo compilationInfo,
+
+    private List<Fix> createQualifierFix( CompilationInfo compilationInfo,
             Element annotation, Element classElement )
     {
         PackageElement packageElement = compilationInfo.getElements()
@@ -279,6 +278,20 @@ public class CreateQualifier implements ErrorRule<Void> {
                 ElementHandle.create(classElement),
                 compilationInfo.getClasspathInfo());
         return Collections.<Fix> singletonList(new CreateQualifierFix(
+                compilationInfo, annotation.getSimpleName().toString(),
+                packageElement.getQualifiedName().toString(),
+                targetFile));
+    }
+    
+    private List<Fix> createInterceptorFix( CompilationInfo compilationInfo,
+            Element annotation, Element classElement )
+    {
+        PackageElement packageElement = compilationInfo.getElements()
+                .getPackageOf(classElement);
+        FileObject targetFile = SourceUtils.getFile(
+                ElementHandle.create(classElement),
+                compilationInfo.getClasspathInfo());
+        return Collections.<Fix> singletonList(new CreateInterceptorBinding(
                 compilationInfo, annotation.getSimpleName().toString(),
                 packageElement.getQualifiedName().toString(),
                 targetFile));
@@ -308,7 +321,7 @@ public class CreateQualifier implements ErrorRule<Void> {
             }
         }
         if ( hasRequiredAnnotation && isInjectionPoint ){
-            return createFix(compilationInfo, annotation, parent);
+            return createQualifierFix(compilationInfo, annotation, parent);
         }
         return Collections.<Fix>emptyList();
     }
@@ -318,12 +331,29 @@ public class CreateQualifier implements ErrorRule<Void> {
     {
         List<? extends AnnotationMirror> allAnnotationMirrors = 
             compilationInfo.getElements().getAllAnnotationMirrors(clazz);
+        boolean isInterceptor = false;
+        boolean hasAnnotation = false;
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
-            if ( annotationMirror.getAnnotationType().asElement().equals( annotation)){
-                return createFix(compilationInfo, annotation, clazz);
+            Element annotationElement = annotationMirror.getAnnotationType().asElement();
+            if ( annotationElement.equals( annotation)){
+                hasAnnotation = true;
+            }
+            if ( annotationElement instanceof TypeElement && 
+                    ((TypeElement)annotationElement).getQualifiedName().
+                    contentEquals(INTERCEPTOR_ANNOTATION))
+            {
+                isInterceptor = true;
             }
         }
-        return Collections.<Fix>emptyList();
+        if ( !hasAnnotation ){
+            return Collections.<Fix>emptyList();
+        }
+        if ( isInterceptor ){
+            return createInterceptorFix(compilationInfo, annotation, clazz);
+        }
+        else {
+            return createQualifierFix(compilationInfo, annotation, clazz);
+        }
     }
 
     private boolean checkProject(){

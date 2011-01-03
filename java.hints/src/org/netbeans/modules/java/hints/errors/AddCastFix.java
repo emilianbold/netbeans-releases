@@ -87,10 +87,11 @@ final class AddCastFix implements Fix {
                 public void run(final WorkingCopy working) throws IOException {
                     working.toPhase(Phase.RESOLVED);
                     TypeMirror[] tm = new TypeMirror[1];
+                    Tree[] tmTree = new Tree[1];
                     ExpressionTree[] expression = new ExpressionTree[1];
                     Tree[] leaf = new Tree[1];
                     
-                    AddCast.computeType(working, position, tm, expression, leaf);
+                    AddCast.computeType(working, position, tm, tmTree, expression, leaf);
                     
                     if (tm[0] == null) {
                         //cannot resolve anymore:
@@ -104,7 +105,7 @@ final class AddCastFix implements Fix {
                         toCast = make.Parenthesized(toCast);
                     }
                     
-                    ExpressionTree cast = make.TypeCast(make.Type(tm[0]), toCast);
+                    ExpressionTree cast = make.TypeCast(tmTree[0] != null ? tmTree[0] : make.Type(tm[0]), toCast);
                     
                     working.rewrite(expression[0], cast);
                 }

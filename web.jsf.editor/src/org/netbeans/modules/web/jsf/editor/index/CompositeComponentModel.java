@@ -55,7 +55,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -149,7 +149,7 @@ public class CompositeComponentModel extends JsfPageModel {
         //store implementation mark
         document.addPair(HAS_IMPLEMENTATION_KEY, Boolean.toString(hasImplementation), false, true);
 
-	return JsfUtils.getCompositeLibraryURL(libraryName);
+	return LibraryUtils.getCompositeLibraryURL(libraryName);
 
     }
 
@@ -225,7 +225,7 @@ public class CompositeComponentModel extends JsfPageModel {
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
-            AstNode node = result.root(JsfUtils.COMPOSITE_LIBRARY_NS); //NOI18N
+            AstNode node = result.root(LibraryUtils.COMPOSITE_LIBRARY_NS); //NOI18N
             if(node == null) {
                 return null; //no composite library declaration
             }

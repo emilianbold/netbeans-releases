@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.favorites;
 
-import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +74,6 @@ import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
@@ -86,8 +84,6 @@ import org.openide.util.datatransfer.PasteType;
 public final class FavoritesNode extends FilterNode implements Index {
     /** default node */
     private static Node node;
-    /** node that represents root of filesystems */
-    private static Node root;
 
     /** Creates new ProjectRootFilterNode. */
     private FavoritesNode(Node node) {
@@ -218,16 +214,6 @@ public final class FavoritesNode extends FilterNode implements Index {
         if (ind != null) {
             ind.removeChangeListener(chl);
         }
-    }
-    
-    @Override
-    public Image getIcon (int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
-    }
-    
-    @Override
-    public Image getOpenedIcon (int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
     }
     
     @Override

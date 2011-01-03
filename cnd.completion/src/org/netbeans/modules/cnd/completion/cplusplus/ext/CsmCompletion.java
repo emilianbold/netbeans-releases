@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -92,6 +93,10 @@ abstract public class CsmCompletion {
     public static final SimpleClass LONG_CLASS = new SimpleClass("long", ""); // NOI18N
     public static final SimpleClass SHORT_CLASS = new SimpleClass("short", ""); // NOI18N
     public static final SimpleClass VOID_CLASS = new SimpleClass("void", ""); // NOI18N
+    public static final SimpleClass UNSIGNED_CHAR_CLASS = new SimpleClass("unsigned char", ""); // NOI18N
+    public static final SimpleClass UNSIGNED_INT_CLASS = new SimpleClass("unsigned int", ""); // NOI18N
+    public static final SimpleClass UNSIGNED_LONG_CLASS = new SimpleClass("unsigned long", ""); // NOI18N
+    public static final SimpleClass UNSIGNED_SHORT_CLASS = new SimpleClass("unsigned short", ""); // NOI18N
     public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, false, 0, false);
     public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, false, 0, false);
     public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, false, 0, false);
@@ -100,6 +105,10 @@ abstract public class CsmCompletion {
     public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, false, 0, false);
     public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, false, 0, false);
     public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, false, 0, false);
+    public static final BaseType UNSIGNED_CHAR_TYPE = new BaseType(UNSIGNED_CHAR_CLASS, 0, false, 0, false);
+    public static final BaseType UNSIGNED_INT_TYPE = new BaseType(UNSIGNED_INT_CLASS, 0, false, 0, false);
+    public static final BaseType UNSIGNED_LONG_TYPE = new BaseType(UNSIGNED_LONG_CLASS, 0, false, 0, false);
+    public static final BaseType UNSIGNED_SHORT_TYPE = new BaseType(UNSIGNED_SHORT_CLASS, 0, false, 0, false);
     public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, false, 0, false);
     public static final SimpleClass INVALID_CLASS = new SimpleClass("", ""); // NOI18N
     public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, false, 0, false);
@@ -139,7 +148,8 @@ abstract public class CsmCompletion {
         // initialize primitive types cache
         BaseType[] types = new BaseType[]{
             BOOLEAN_TYPE, BYTE_TYPE, CHAR_TYPE, DOUBLE_TYPE, FLOAT_TYPE,
-            INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE
+            INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE,
+            UNSIGNED_CHAR_TYPE, UNSIGNED_INT_TYPE, UNSIGNED_LONG_TYPE, UNSIGNED_SHORT_TYPE
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
@@ -152,7 +162,7 @@ abstract public class CsmCompletion {
         types = new BaseType[]{
                     NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE,
                     CONST_BOOLEAN_TYPE, CONST_BYTE_TYPE, CONST_CHAR_TYPE, CONST_DOUBLE_TYPE, CONST_FLOAT_TYPE,
-                    CONST_INT_TYPE, CONST_LONG_TYPE, CONST_SHORT_TYPE, CONST_VOID_TYPE
+                    CONST_INT_TYPE, CONST_LONG_TYPE, CONST_SHORT_TYPE, CONST_VOID_TYPE                    
                  };
 
         for (int i = types.length - 1; i >= 0; i--) {
@@ -256,10 +266,12 @@ abstract public class CsmCompletion {
      * @param obj
      * @return
      */
-    public static CsmType getObjectType(CsmObject obj) {
+    public static CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
         CsmType type = null;
-        if (CsmKindUtilities.isClassifier(obj)) {
-            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+        if (CsmKindUtilities.isTypedef(obj)) {
+            type = ((CsmTypedef)obj).getType();
+        } else if (CsmKindUtilities.isClassifier(obj)) {
+            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, _constIfClassifier);
         } else if (CsmKindUtilities.isFunction(obj)) {
             CsmFunction fun = (CsmFunction) obj;
             if (CsmKindUtilities.isConstructor(fun)) {

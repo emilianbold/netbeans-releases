@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.CachedUID;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -119,7 +119,7 @@ public class UIDManager {
 
     private static final class UIDStorage {
 
-        private final WeakSharedSet<CsmUID<?>>[] instances;
+        private final WeakSet<CsmUID<?>>[] instances;
         private final int segmentMask; // mask
         private final int initialCapacity;
 
@@ -132,14 +132,14 @@ public class UIDManager {
             segmentMask = ssize - 1;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<CsmUID<?>>[] ar = new WeakSharedSet[ssize];
+            WeakSet<CsmUID<?>>[] ar = new WeakSet[ssize];
             for (int i = 0; i < ar.length; i++) {
-                ar[i] = new WeakSharedSet<CsmUID<?>>(initialCapacity);
+                ar[i] = new WeakSet<CsmUID<?>>(initialCapacity);
             }
             instances = ar;
         }
 
-        private WeakSharedSet<CsmUID<?>> getDelegate(CsmUID<?> uid) {
+        private WeakSet<CsmUID<?>> getDelegate(CsmUID<?> uid) {
             int index = uid.hashCode() & segmentMask;
             return instances[index];
         }

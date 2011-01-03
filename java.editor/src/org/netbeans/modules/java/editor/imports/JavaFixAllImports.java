@@ -237,7 +237,7 @@ public class JavaFixAllImports {
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
     
     private static void performFixImports(WorkingCopy wc, ImportData data, String[] selections, boolean removeUnusedImports) throws IOException {

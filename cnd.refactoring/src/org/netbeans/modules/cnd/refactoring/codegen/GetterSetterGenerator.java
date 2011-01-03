@@ -216,7 +216,16 @@ public class GetterSetterGenerator implements CodeGenerator {
         String title = GeneratorUtils.getGetterSetterDisplayName(type);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setVisible(true);
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             GeneratorUtils.generateGettersAndSetters(contextPath, panel.getVariables(), panel.isMethodInline(), type, isUpperCase);
         }

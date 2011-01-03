@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -83,19 +84,23 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -103,8 +108,8 @@ import org.openide.util.RequestProcessor;
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
 
     private static final boolean TRACE = false;
-    private Project project;
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final Project project;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
 
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -152,6 +157,21 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
+    public FileSystem getFileSystem() {
+        FileSystem fileSystem;
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
+            fileSystem = CndFileUtils.getLocalFileSystem();
+        } else {
+            ExecutionEnvironment env = rp.getSourceFileSystemHost();
+            fileSystem = FileSystemProvider.getFileSystem(env);
+        }
+        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N        
+        return fileSystem;
+    }
+
+    @Override
     public List<String> getSourceRoots() {
         MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
         if (descriptor != null) {
@@ -165,7 +185,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public String getProjectRoot() {
-        return FileUtil.toFile(project.getProjectDirectory()).getPath();
+        String projectRoot;
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
+            projectRoot = project.getProjectDirectory().getPath();
+        } else {
+            projectRoot = rp.getBaseDir();
+        }
+        CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
+        return projectRoot;
     }
 
     @Override
@@ -513,6 +542,45 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             });
         } else {
             checkForChangedItemsWorker(folder, item);
+        }
+    }
+
+    public void checkForChangedItems(final Delta delta) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    checkForChangedItemsWorker(delta);
+                }
+            });
+        } else {
+            checkForChangedItemsWorker(delta);
+        }
+    }
+
+    private void checkForChangedItemsWorker(Delta delta) {
+        if (delta.isEmpty()) {
+            return;
+        }
+        clearCache();
+        synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                return;
+            }
+        }
+        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
+            list.addAll(delta.exluded);
+            fireFilesRemoved(list);
+        }
+        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
+            list.addAll(delta.included);
+            fireFilesAdded(list);
+        }
+        if (!delta.changed.isEmpty()) {
+            fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
         }
     }
 

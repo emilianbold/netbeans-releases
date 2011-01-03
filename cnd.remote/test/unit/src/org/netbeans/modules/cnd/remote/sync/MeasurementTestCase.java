@@ -163,8 +163,11 @@ public class MeasurementTestCase extends RemoteTestBase {
     @org.netbeans.api.annotations.common.SuppressWarnings("OBL")
     private void change(File file) throws IOException {
         if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
-                change(child);
+            File[] ff = file.listFiles();
+            if (ff != null) {
+                for (File child : ff) {
+                    change(child);
+                }
             }
         } else {
             if (file.length() <= MAX_SIZE) {

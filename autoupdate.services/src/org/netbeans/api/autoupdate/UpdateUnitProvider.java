@@ -178,5 +178,9 @@ public final class UpdateUnitProvider {
     public void setEnable (boolean state) {
         impl.setEnable (state);
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + impl + "]";
+    }
 }

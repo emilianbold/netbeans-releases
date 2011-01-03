@@ -373,11 +373,7 @@ public class DependenciesNode extends AbstractNode {
                 ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                        pnl.getGroupId(), pnl.getArtifactId(), version,
                        null, pnl.getScope(), null,false);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
-                    }
-                });
+                project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
             }
         }
     }
@@ -438,11 +434,7 @@ public class DependenciesNode extends AbstractNode {
         
         public void actionPerformed(ActionEvent evnt) {
             setEnabled(false);
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
-                }
-            });
+            project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
         }
     }
     

@@ -51,7 +51,11 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.openide.loaders.RuntimeCatalog;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -124,6 +128,7 @@ public class XMLDataObject extends MultiDataObject {
     /**
      * Chain of resolvers contaning all EntityResolvers registred by a user.
      */
+    @Deprecated
     private static XMLEntityResolverChain chainingEntityResolver;
     
     /** map of DTD publicID => Info. */
@@ -638,17 +643,22 @@ public class XMLDataObject extends MultiDataObject {
      * @param validate if true validating parser is returned
      * @throws FactoryConfigurationError 
      * @return sax parser or null if no parser can be created
-     * @deprecated Use {@link XMLUtil#createXMLReader(boolean,boolean ) Util} instead
+     * @deprecated Use {@link XMLUtil#createXMLReader(boolean,boolean)} instead
      * setting ns to false.
      * For more details see {@link #createParser() createParser}
      */
     @Deprecated
     public static Parser createParser (boolean validate) {
-        
-        Parser parser = XMLDataObjectImpl.makeParser(validate);
-        parser.setEntityResolver(getChainingEntityResolver());
-        return parser;
-        
+        try {
+            Parser parser = new org.xml.sax.helpers.XMLReaderAdapter (XMLUtil.createXMLReader(validate));
+            parser.setEntityResolver(getChainingEntityResolver());
+            return parser;
+        } catch (SAXException ex) {
+            Exceptions.attachLocalizedMessage(ex,
+                                          "Can not create a SAX parser!\nCheck javax.xml.parsers.SAXParserFactory property features and the parser library presence on classpath."); // NOI18N
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
 
@@ -670,12 +680,36 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Document createDocument() {
         
-        deprecated();
-        
         try {
-            return XMLDataObjectImpl.makeBuilder(false).newDocument();
-        } catch (IOException ex) {
-            return null;
+            DocumentBuilder builder;
+            DocumentBuilderFactory factory;
+
+            //create factory according to javax.xml.parsers.SAXParserFactory property
+            //or platform default (i.e. com.sun...)
+            try {
+                factory = DocumentBuilderFactory.newInstance();
+                factory.setValidating(false);
+                factory.setNamespaceAware(false);
+            } catch (FactoryConfigurationError err) {
+                Exceptions.attachLocalizedMessage(err,
+                                                  "Can not create a factory!\nCheck " +
+                                                  "javax.xml.parsers.DocumentBuilderFactory" +
+                                                  "  property and the factory library presence on classpath."); // NOI18N
+                Exceptions.printStackTrace(err);
+                return null;
+            }
+
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException ex) {
+                SAXException sex = new SAXException("Configuration exception."); // NOI18N
+                sex.initCause(ex);
+                Exceptions.attachLocalizedMessage(sex,
+                        "Can not create a DOM builder!\nCheck javax.xml.parsers.DocumentBuilderFactory property and the builder library presence on classpath."); // NOI18N
+                throw sex;
+            }
+
+            return builder.newDocument();
         } catch (SAXException ex) {
             return null;
         }
@@ -694,43 +728,9 @@ public class XMLDataObject extends MultiDataObject {
      */
     @Deprecated
     public static void write (Document doc, Writer writer) throws IOException {
-
-        deprecated();
-
-        // WARNING: back compatability code
-        
-        //use reflection to access "friendly" implementation in other package
-        
-        final String FAILURE = "org.openide.xml.XMLUtilImpl.write() invocation failed.";  //NOI18N
-        
-        try {
-            Class clzz = Class.forName("org.openide.xml.XMLUtilImpl");  //NOI18N
-
-            Method impl = clzz.getDeclaredMethod("write", new Class[] {//NOI18N
-                Document.class, Object.class, String.class
-            }); 
-            impl.setAccessible(true);
-            impl.invoke(null, new Object[] {doc, writer, null});                    
-
-        } catch (IllegalAccessException ex) {
-            throw new IOException(FAILURE);
-        } catch (IllegalArgumentException ex) {
-            throw new IOException(FAILURE);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(FAILURE);
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(FAILURE);
-        } catch (InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof IOException) {
-                throw (IOException) t;
-            } else if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else if (t instanceof Error) {
-                throw (Error) t;
-            }
-            throw new IOException(FAILURE);
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        writer.write(baos.toString("UTF-8"));
     }
 
     /**
@@ -779,12 +779,7 @@ public class XMLDataObject extends MultiDataObject {
      */
     @Deprecated
     public static void registerCatalogEntry (String publicId, String uri) {
-        
-        if (publicId == null) 
-            throw new IllegalArgumentException("null public ID is not allowed."); //NOI18N
-
-        XMLDataObjectImpl.registerCatalogEntry(publicId, uri);
-        
+        Lookup.getDefault().lookup(RuntimeCatalog.class).registerCatalogEntry(publicId, uri);
     }
 
     /**
@@ -812,10 +807,7 @@ public class XMLDataObject extends MultiDataObject {
      */
     @Deprecated
     public static void registerCatalogEntry (String publicId, String resourceName, ClassLoader loader) {
-        if (publicId == null) 
-            throw new IllegalArgumentException("null public ID is not allowed."); //NOI18N
-
-        XMLDataObjectImpl.registerCatalogEntry(publicId, "nbres:/" + resourceName);  //NOI18N
+        Lookup.getDefault().lookup(RuntimeCatalog.class).registerCatalogEntry(publicId, resourceName, loader);
     }
 
     /**
@@ -834,7 +826,7 @@ public class XMLDataObject extends MultiDataObject {
      * @return true if successfully added
      */
     @Deprecated
-    public static final boolean addEntityResolver(EntityResolver resolver) {
+    public static boolean addEntityResolver(EntityResolver resolver) {
         // return false; Is is deprecated :-)
         return getChainingEntityResolver().addEntityResolver(resolver);
     }
@@ -850,12 +842,13 @@ public class XMLDataObject extends MultiDataObject {
      * @return removed resolver instance or null if not present
      */    
     @Deprecated
-    public static final EntityResolver removeEntityResolver(EntityResolver resolver) {
+    public static EntityResolver removeEntityResolver(EntityResolver resolver) {
         return getChainingEntityResolver().removeEntityResolver(resolver);
     }
 
 
     /** Accessor method for chaining entity resolver implementation. */
+    @Deprecated
     private static synchronized XMLEntityResolverChain getChainingEntityResolver() {
 
         if (chainingEntityResolver == null) {                    
@@ -909,28 +902,6 @@ public class XMLDataObject extends MultiDataObject {
         }
     }
 
-    /*
-     * Guess from stack trace who calls deprecated method and print it.
-     */
-    private static void deprecated() {
-        StringWriter wr = new StringWriter();
-        PrintWriter pr = new PrintWriter(wr);
-        new Exception("").printStackTrace(pr); // NOI18N
-        pr.flush();
-        String stack = wr.toString().trim();
-
-        int start = stack.indexOf("\n"); // NOI18N
-        int end = stack.indexOf("\n", start + 1); // NOI18N
-        while (stack.indexOf("XMLDataObject", start + 1 )>0) { // NOI18N
-            start = end;
-            end = stack.indexOf("\n", start + 1); // NOI18N
-        }        
-
-        String line =  stack.substring(start + 1, end).trim();
-
-        System.out.println("Warning: deprecated method called " + line); // NOI18N
-    }
-    
     /**
      * Default ErrorHandler reporting to log.
      */

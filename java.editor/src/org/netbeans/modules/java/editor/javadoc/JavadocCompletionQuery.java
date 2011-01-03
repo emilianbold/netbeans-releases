@@ -553,7 +553,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }
             
             completeTypeVarName(emd, prefix, substitutionOffset);
-        } else if (jdctx.jdoc.isClass()) {
+        } else if (jdctx.jdoc.isClass() || jdctx.jdoc.isInterface()) {
             completeTypeVarName(jdctx.jdoc, prefix, substitutionOffset);
         }
     }
@@ -568,7 +568,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }
         }
 
-        com.sun.javadoc.TypeVariable[] tparams = holder.isClass()
+        com.sun.javadoc.TypeVariable[] tparams = (holder.isClass() || holder.isInterface())
                 ? ((ClassDoc) holder).typeParameters()
                 : ((ExecutableMemberDoc) holder).typeParameters();
         

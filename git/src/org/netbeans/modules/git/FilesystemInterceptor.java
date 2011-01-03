@@ -382,6 +382,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 }
             }
         });
+        private final GitRepositories gitRepositories = GitRepositories.getInstance();
 
         public void initializeFor (File file) {
             if (addFileToInitialize(file)) {
@@ -454,6 +455,8 @@ class FilesystemInterceptor extends VCSInterceptor {
                     return;
                 }
             }
+            boolean add = false;
+            boolean remove = false;
             synchronized (indexFiles) {
                 indexFiles.remove(indexFile);
                 FileChangeListener list = gitFolderRLs.remove(gitFolder);
@@ -470,6 +473,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                         });
                     }
                     gitFolderRLs.put(gitFolder, list);
+                    add = true;
                 } else {
                     if (list != null) {
                         final FileChangeListener fList = list;
@@ -484,6 +488,17 @@ class FilesystemInterceptor extends VCSInterceptor {
                         });
                     }
                     Git.STATUS_LOG.fine("refreshAdminFolderTimestamp: " + indexFile.getAbsolutePath() + " no longer exists"); //NOI18N
+                    remove = true;
+                }
+                if (remove) {
+                    gitRepositories.remove(gitFolder.getParentFile());
+                } else if (add) {
+                    File repository = gitFolder.getParentFile();
+                    if (!repository.equals(Git.getInstance().getRepositoryRoot(repository))) {
+                        // guess this is needed, versionedFilesChanged might not have been called yet (see InitAction)
+                        Git.getInstance().versionedFilesChanged();
+                    }
+                    gitRepositories.add(repository);
                 }
             }
         }

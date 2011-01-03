@@ -47,41 +47,40 @@ package org.netbeans.editor;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.logging.Level;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.ButtonModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.plaf.TextUI;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Document;
-import javax.swing.text.Caret;
-import javax.swing.text.Position;
-import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.CannotRedoException;
-import java.awt.Toolkit;
-import java.util.Date;
-import java.text.SimpleDateFormat;
-import javax.swing.JMenuItem;
-import javax.swing.JCheckBoxMenuItem;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.ButtonModel;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TextUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -90,10 +89,11 @@ import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -1662,37 +1662,33 @@ public class ActionFactory {
                                 public void run () {
                                     try {
 
-                                        int startPos;
-                                        Position endPosition;
+                                        int startPos, endPos;
                                         if (Utilities.isSelectionShowing(caret)) {
                                             startPos = target.getSelectionStart();
-                                            endPosition = doc.createPosition(target.getSelectionEnd());
+                                            endPos = target.getSelectionEnd();
                                         } else {
                                             startPos = 0;
-                                            endPosition = doc.createPosition(doc.getLength());
+                                            endPos = doc.getLength();
                                         }
 
                                         int pos = startPos;
                                         if (gdoc != null) {
                                             pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
                                         }
-
-                                        if (canceled.get()) return;
-                                        // Once we start formatting, the task can't be canceled
                                         
-                                        while (pos < endPosition.getOffset()) {
-                                            int stopPos = endPosition.getOffset();
+                                        LinkedList<PositionRegion> regions = new LinkedList<PositionRegion>();
+                                        while (pos < endPos) {
+                                            int stopPos = endPos;
                                             if (gdoc != null) { // adjust to start of the next guarded block
                                                 stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                                if (stopPos == -1 || stopPos > endPosition.getOffset()) {
-                                                    stopPos = endPosition.getOffset();
+                                                if (stopPos == -1 || stopPos > endPos) {
+                                                    stopPos = endPos;
                                                 }
                                             }
 
                                             if (pos < stopPos) {
-                                                Position stopPosition = doc.createPosition(stopPos);
-                                                formatter.reformat(pos, stopPos);
-                                                pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
+                                                regions.addFirst(new PositionRegion(doc, pos, stopPos));
+                                                pos = stopPos;
                                             } else {
                                                 pos++; //ensure to make progress
                                             }
@@ -1701,7 +1697,14 @@ public class ActionFactory {
                                                 pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
                                             }
                                         }
+                                        
+                                        if (canceled.get()) return;
+                                        // Once we start formatting, the task can't be canceled
 
+                                        for (PositionRegion region : regions) {
+                                            formatter.reformat(region.getStartOffset(), region.getEndOffset());
+                                        }
+                                        
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {

@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.websvc.rest.model.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
@@ -59,6 +64,7 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
     private String consumeMime;
     private String produceMime;
     private String path;
+    private Map<String,String> queryParams;
     
     public HttpMethodImpl(ExecutableElement methodElement) {
         super(methodElement);   
@@ -67,6 +73,8 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
         this.consumeMime = Utils.getConsumeMime(methodElement);
         this.produceMime = Utils.getProduceMime(methodElement);
         this.path = Utils.hasUriTemplate(methodElement) ? Utils.getUriTemplate(methodElement) : ""; //NOI18N
+        this.queryParams = new HashMap<String, String>();
+        Utils.fillQueryParams( queryParams , methodElement);
     }
 
     public String getType() {
@@ -83,6 +91,14 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
     
     public String getPath() {
         return path;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.model.api.HttpMethod#getQueryParams()
+     */
+    @Override
+    public Map<String, String> getQueryParams() {
+        return queryParams;
     }
     
     public Status refresh(Element element) {    
@@ -108,10 +124,36 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
             isModified = true;
         }
         
+        Map<String,String> map = new HashMap<String, String>();
+        Utils.fillQueryParams( map , element);
+        Set<String> current = map.keySet();
+        Set<String> original = queryParams.keySet();
+        if ( current.containsAll(original) && current.size() != original.size()){
+            for( Entry<String, String> entry : queryParams.entrySet()){
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if ( value == null && map.get(key) != null ){
+                    queryParams = map;
+                    isModified = true;
+                    break;
+                }
+                else if ( value!= null && !value.equals( map.get(key))){
+                    queryParams = map;
+                    isModified = true;
+                    break;
+                }
+            }
+        }
+        else {
+            queryParams = map;
+            isModified = true;
+        }
+        
         if (isModified) {
             return Status.MODIFIED;
         }
         
         return Status.UNMODIFIED;
     }
+
 }

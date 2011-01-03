@@ -81,14 +81,22 @@ import org.openide.util.NbBundle;
 public class MakeConfiguration extends Configuration {
 
     public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
+    public static final String NBPROJECT_PRIVATE_FOLDER = "nbproject/private"; // NOI18N
     public static final String PROJECT_XML = "project.xml"; // NOI18N
     public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N
     public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
+    public static final String MAKEFILE_VARIABLES = "Makefile-variables.mk"; // NOI18N
     public static final String BUILD_FOLDER = "build"; // NOI18N
     public static final String DIST_FOLDER = "dist"; // NOI18N
     public static final String EXT_FOLDER = "_ext"; // NOI18N
     public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
     public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
+
+    public static final String CND_CONF_MACRO = "${CND_CONF}"; // NOI18N
+    public static final String CND_PLATFORM_MACRO = "${CND_PLATFORM}"; // NOI18N
+    public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
+    public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
+
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
@@ -138,10 +146,10 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
-        this(baseDir, name, configurationTypeValue, hostUID, null);
+        this(baseDir, name, configurationTypeValue, hostUID, null, true);
     }
 
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(baseDir, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
@@ -151,8 +159,12 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
-        CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
-        compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
+        if (defaultToolCollection) {
+            compilerSet = new CompilerSet2Configuration(developmentHost);
+        } else {
+            CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+            compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
+        }
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
@@ -160,8 +172,8 @@ public class MakeConfiguration extends Configuration {
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
-        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
-        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
+        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null, this);
+        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null, this);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
         assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
@@ -425,7 +437,9 @@ public class MakeConfiguration extends Configuration {
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
+        getCCompilerConfiguration().setOwner(makeConf);
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
+        getCCCompilerConfiguration().setOwner(makeConf);
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
         getAssemblerConfiguration().assign(makeConf.getAssemblerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
@@ -564,7 +578,9 @@ public class MakeConfiguration extends Configuration {
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        clone.getCCompilerConfiguration().setOwner(clone);
         clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        clone.getCCCompilerConfiguration().setOwner(clone);
         clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
         clone.setAssemblerConfiguration(getAssemblerConfiguration().clone());
         clone.setLinkerConfiguration(getLinkerConfiguration().clone());
@@ -895,7 +911,7 @@ public class MakeConfiguration extends Configuration {
         }
         if (!CndPathUtilitities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = CndPathUtilitities.normalize(output);
+            output = CndPathUtilitities.normalizeSlashes(output);
         }
         return expandMacros(output);
     }
@@ -906,13 +922,14 @@ public class MakeConfiguration extends Configuration {
 
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests"); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' +MakeConfiguration.CND_CONF_MACRO+ '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
-        val = CndPathUtilitities.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
-        val = CndPathUtilitities.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
-        val = CndPathUtilitities.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
         return val;
     }
 

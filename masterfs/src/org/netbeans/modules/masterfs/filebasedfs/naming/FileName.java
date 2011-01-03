@@ -47,6 +47,8 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.CharSequences;
@@ -60,11 +62,16 @@ public class FileName implements FileNaming {
     private final Integer id;
     private CharSequence currentName;
 
-    protected FileName(final FileNaming parent, final File file) {
+    protected FileName(final FileNaming parent, final File file, Integer theKey) {
         this.parent = parent;
         this.name = CharSequences.create(parseName(parent, file));
-        id = NamingFactory.createID(file);
+        this.id = theKey == null ? NamingFactory.createID(file) : theKey;
         this.currentName = name;
+        boolean debug = false;
+        assert debug = true;
+        if (debug) {
+            this.currentName = new Creation(name);
+        }
     }
 
     private static String parseName(final FileNaming parent, final File file) {
@@ -151,6 +158,73 @@ public class FileName implements FileNaming {
 
     void updateCase(String name) {
         assert String.CASE_INSENSITIVE_ORDER.compare(name, this.name.toString()) == 0: "Only case can be changed. Was: " + this.name + " name: " + name;
-        this.currentName = CharSequences.create(name);
+        final CharSequence value = CharSequences.create(name);
+        if (this.currentName instanceof Creation) {
+            ((Creation)this.currentName).delegate = value;
+        } else {
+            this.currentName = value;
+        }
     }
+
+    public void dumpCreation(StringBuilder sb) {
+        if (this.currentName instanceof Creation) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            ((Creation)this.currentName).printStackTrace(pw);
+            pw.close();
+            sb.append(sw.toString());
+        }
+    }
+
+    final void recordCleanup() {
+        Throwable ex = null;
+        if (this.currentName instanceof Creation) {
+            ex = ((Creation)this.currentName);
+        }
+        if (ex != null) {
+            while (ex.getCause() != null) {
+                ex = ex.getCause();
+            }
+            ex.initCause(new Exception("Reference cleanup")); // NOI18N
+        }
+    }
+    
+    private static final class Creation extends Exception 
+    implements CharSequence {
+        CharSequence delegate;
+
+        private Creation(CharSequence name) {
+            delegate = name;
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return delegate.equals(obj);
+        }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return delegate.subSequence(start, end);
+        }
+
+        @Override
+        public int length() {
+            return delegate.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return delegate.charAt(index);
+        }
+    } // end of Creation
 }

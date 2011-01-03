@@ -56,8 +56,8 @@ public class NativeFileContainer {
 	myFiles.put(file, nativeFileItem);
     }
     
-    /*package-local*/ final void removeNativeFileItem(CsmUID<CsmFile> file) {
-	myFiles.remove(file);
+    /*package-local*/ final NativeFileItem removeNativeFileItem(CsmUID<CsmFile> file) {
+	return myFiles.remove(file);
     }
 
     /*package-local*/ final void clear() {

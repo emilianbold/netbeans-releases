@@ -60,7 +60,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -93,17 +94,20 @@ public class ShowFailures extends AbstractAction implements Runnable {
         this(module.getBuild().getJob(), module.getUrl(), module.getBuildDisplayName());
     }
 
+    @Messages("ShowFailures.label=Show Test Failures")
     private ShowFailures(HudsonJob job, String url, String displayName) {
         this.job = job;
         this.url = url;
         this.displayName = displayName;
-        putValue(NAME, NbBundle.getMessage(ShowFailures.class, "ShowFailures.label"));
+        putValue(NAME, ShowFailures_label());
     }
 
     public void actionPerformed(ActionEvent e) {
         new RequestProcessor(url + "testReport").post(this); // NOI18N
     }
 
+    @Messages({"# {0} - job #build", "ShowFailures.title={0} Test Failures",
+               "# {0} - class & method name of failed test", "# {1} - suite name of failed test", "ShowFailures.from_suite={0} (from {1})"})
     public void run() {
         try {
             XMLReader parser = XMLUtil.createXMLReader();
@@ -113,7 +117,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 Hyperlinker hyperlinker = new Hyperlinker(job);
                 private void prepareOutput() {
                     if (io == null) {
-                        String title = NbBundle.getMessage(ShowFailures.class, "ShowFailures.title", displayName);
+                        String title = ShowFailures_title(displayName);
                         io = IOProvider.getDefault().getIO(title, new Action[0]);
                         io.select();
                     }
@@ -191,12 +195,13 @@ public class ShowFailures extends AbstractAction implements Runnable {
                         }
                         String name = c.className + "." + c.name;
                         if (s.name != null && !s.name.equals(c.className)) {
-                            name = NbBundle.getMessage(ShowFailures.class, "ShowFailures.from_suite", name, s.name);
+                            name = ShowFailures_from_suite(name, s.name);
                         }
                         println();
                         out.println(name, new OutputListener() {
                             public void outputLineAction(OutputEvent ev) {
                                 try {
+                                    // XXX try to find name in Java method index and open it instead
                                     URLDisplayer.getDefault().showURL(new URL(url +
                                             "testReport/" + c.className.replaceFirst("[.][^.]+$", "") + "/" + // NOI18N
                                             c.className.replaceFirst(".+[.]", "") + "/" + c.name + "/")); // NOI18Nb

@@ -74,6 +74,7 @@ public class KillActionProvider extends NativeActionsProvider {
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void postAction (final Object action,
 			    final Runnable actionPerformedNotifier) {
 	// Comes on the eventQ

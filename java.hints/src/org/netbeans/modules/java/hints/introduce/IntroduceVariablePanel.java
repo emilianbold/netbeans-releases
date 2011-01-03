@@ -57,7 +57,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     
     private JButton btnOk;
     
-    public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant, JButton btnOk) {
+    public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant, boolean variableRewrite, JButton btnOk) {
         this.btnOk = btnOk;
         
         initComponents();
@@ -100,14 +100,17 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 break;
             }
         }
-        if (introduceConstant)
+        if (introduceConstant && !variableRewrite)
             name.setText(defaultName.toUpperCase());
         else
             name.setText(defaultName);
-        if ( name != null && defaultName.trim().length() > 0 ) {
+        if ( name != null && defaultName.trim().length() > 0 && !variableRewrite) {
             this.name.setCaretPosition(defaultName.length());
             this.name.setSelectionStart(0);
             this.name.setSelectionEnd(defaultName.length());
+        }
+        if (variableRewrite) {
+            name.setEditable(false);
         }
     }
     

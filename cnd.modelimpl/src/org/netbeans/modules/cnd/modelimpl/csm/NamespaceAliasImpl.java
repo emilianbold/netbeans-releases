@@ -188,7 +188,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
     
     @Override
     public String toString() {
-        return "" + getKind() + ' ' + alias + '=' + namespace /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
+        return "" + getKind() + ' ' + alias + '=' + namespace + getPositionString(); // NOI18N
     }
     
     @Override

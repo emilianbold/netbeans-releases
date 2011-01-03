@@ -108,6 +108,20 @@ is the proper place.
 
 <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+    <change id="private.factories">
+        <api name="settings_spi"/>
+        <summary>Factory methods can be private</summary>
+        <version major="1" minor="29"/>
+        <date day="30" month="11" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="compatible"/>
+        <description>
+            To be consistent with behavior of methodvalue attribute of
+            <a href="@org-openide-filesystems@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>,
+            now the factory methods referenced from settings files can be <code> private static</code>
+            as well.
+        </description>
+    </change>
     <change id="readResolveBehaviour">
         <api name="settings_spi"/>
         <summary>readProperties can designate its replace</summary>

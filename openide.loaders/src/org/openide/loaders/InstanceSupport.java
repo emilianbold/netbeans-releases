@@ -217,7 +217,9 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                     return SharedClassObject.findObject (c.asSubclass(SharedClassObject.class), true);
                 } else {
                     // create new instance
-                    return c.newInstance();
+                    Constructor<?> init = c.getDeclaredConstructor();
+                    init.setAccessible(true);
+                    return init.newInstance((Object[]) null);
                 }
             }
         } catch (IOException ex) {

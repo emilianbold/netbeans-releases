@@ -351,7 +351,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             return;
         }
 
-        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilitities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

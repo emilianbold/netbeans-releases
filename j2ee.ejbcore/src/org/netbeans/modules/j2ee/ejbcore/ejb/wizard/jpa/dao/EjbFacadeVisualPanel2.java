@@ -84,12 +84,14 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         updateSourceGroupPackages();
 
         // set default source group and package cf. targetFolder
-        SourceGroup targetSourceGroup = SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder);
+        SourceGroup targetSourceGroup = targetFolder !=null ? SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder) : sourceGroups[0];
         if (targetSourceGroup != null) {
             locationComboBox.setSelectedItem(targetSourceGroup);
-            String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
-            if (targetPackage != null) {
-                packageComboBoxEditor.setText(targetPackage);
+            if(targetFolder != null){
+                String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
+                if (targetPackage != null) {
+                    packageComboBoxEditor.setText(targetPackage);
+                }
             }
         }
         updateCheckboxes();

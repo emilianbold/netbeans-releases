@@ -67,11 +67,19 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    
+
     protected StatementBase(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file);
+        this(ast, file, getStartOffset(ast), getEndOffset(ast), scope);
+    }
+
+    protected StatementBase(CsmFile file, int start, int end, CsmScope scope) {
+        this(null, file, start, end, scope);
+    }
+    
+    private StatementBase(AST ast, CsmFile file, int start, int end, CsmScope scope) {
+        super(file, start, end);
         this.ast = ast;
-        if( scope != null ) {
+        if (scope != null) {
             setScope(scope);
         }
     }

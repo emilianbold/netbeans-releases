@@ -46,8 +46,6 @@ import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -60,11 +58,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
+import org.netbeans.modules.web.jsf.editor.index.IndexedFile;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -78,9 +76,9 @@ import org.openide.util.NbBundle;
  *
  * @author marekfukala
  */
-public class FaceletsLibrarySupport implements PropertyChangeListener {
+public class FaceletsLibrarySupport {
 
-    private JsfSupport jsfSupport;
+    private JsfSupportImpl jsfSupport;
 
     /**
      * Library's namespace to library instance map.
@@ -91,24 +89,23 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
      */
     private Map<String, FaceletsLibrary> faceletsLibraries;
 
+    private long libraries_hash;
+
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            ddChanged();
+            invalidateLibrariesCache();
         }
 
     };
     
     private static final String DD_FILE_NAME = "web.xml"; //NOI18N
 
-    public FaceletsLibrarySupport(JsfSupport jspSupport) {
+    public FaceletsLibrarySupport(JsfSupportImpl jspSupport) {
         this.jsfSupport = jspSupport;
-
-        //listen on classpath and refresh the libraries when changed
-        jspSupport.getClassPath().addPropertyChangeListener(this);
 
         //listen on /WEB-INF/web.xml changes - <param-name>javax.faces.FACELETS_LIBRARIES</param-name>
         //may change and redefine the libraries
@@ -142,40 +139,18 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         }
     }
 
-    //TODO cache the context-param entry value and check if has changed,
-    //now we invalidate libs on each change
-    private synchronized void ddChanged() {
-        faceletsLibraries = null; //invalidate libraries, force refresh
-    }
-
-    public JsfSupport getJsfSupport() {
+    public JsfSupportImpl getJsfSupport() {
         return jsfSupport;
     }
 
-    //TODO: the method is supposed to refresh JUST the given library
-    public synchronized void libraryChanged(FaceletsLibrary library) {
-        faceletsLibraries = null; //refresh all
-    }
-
-    //called by JsfIndexer when scanning finishes
-    public synchronized void librariesChanged(Collection<String> librariesNamespaces) {
-	//just check if the library already exist and if not, refresh all libs
-
-	//if faceletsLibraries are null, we cannot call getLibraries() which could
-	//call back to the indexing
-	if(faceletsLibraries != null && !getLibraries().keySet().containsAll(librariesNamespaces)) {
-	    faceletsLibraries = null;
-	}
-    }
-
-    @Override
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        //classpath changed, rescan libraries
+    private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
     }
 
     /** @return URI -> library map */
     public synchronized Map<String, FaceletsLibrary> getLibraries() {
+        checkLibraryDescriptorsUpToDate();
+
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
 
@@ -183,11 +158,29 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 //an error when scanning libraries, return no libraries, but give it a next try
                 return Collections.emptyMap();
             }
+
             updateCompositeLibraries(faceletsLibraries);
         }
 
-
         return faceletsLibraries;
+    }
+
+    private void checkLibraryDescriptorsUpToDate() {
+        //check whether the library descriptors have changes since the last time
+        long hash = 7;
+        for (IndexedFile indexedFile : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
+            long timestamp = indexedFile.getTimestamp();
+            hash = 79 * hash + timestamp;
+        }
+
+        if(hash != libraries_hash) {
+            LOGGER.info("Invalidating facelets libraries due to a library descriptor change."); //NOI18N
+            
+            //some library descriptor has been modified, invalidate the cache
+            invalidateLibrariesCache();
+            libraries_hash = hash;
+        }
+
     }
 
     // This method creates a library instances for the composite libraries without
@@ -236,9 +229,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     private Map<String, FaceletsLibrary> _findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
-        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" +
-                originalLoader.getClass().getName() +
-                ", the used URLClassLoader will also contain following roots:"); //NOI18N
+        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class={0}, "
+                + "the used URLClassLoader will also contain following roots:",
+                originalLoader.getClass().getName()); //NOI18N
 
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
@@ -248,9 +241,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 String fsName = cpRoot.getFileSystem().getDisplayName(); //any better way?
                 if(!(fsName.endsWith("jsf-impl.jar") || fsName.endsWith("jsf-api.jar"))) { //NOI18N
                     urlsToLoad.add(URLMapper.findURL(cpRoot, URLMapper.INTERNAL));
-                    LOGGER.log(Level.FINE, "+++" + cpRoot); //NOI18N
+                    LOGGER.log(Level.FINE, "+++{0}", cpRoot); //NOI18N
                 } else {
-                    LOGGER.log(Level.FINE, "---" + cpRoot); //NOI18N
+                    LOGGER.log(Level.FINE, "---{0}", cpRoot); //NOI18N
                 }
 
             } catch (FileStateInvalidException ex) {
@@ -277,6 +270,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 	    
 	};
 
+        ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(proxyLoader);
 
@@ -285,7 +279,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         } finally {
             //reset the original loader
-            Thread.currentThread().setContextClassLoader(originalLoader);
+            Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
     }
 
@@ -298,16 +292,11 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
-        //searches source classpath for .taglib.xml files
-        ClassPath sourceClasspath = ClassPath.getClassPath(getJsfSupport().getWebModule().getDocumentBase(), ClassPath.SOURCE);
-        faceletTaglibProviders.add(new FaceletTaglibraryConfigProvider(sourceClasspath));
-
-        //2. second add provider which looks for libs in the jars on the project classpath
-        //we already identified the library descriptors during indexing, no need
-        //to scan again, just use the files from index
+        //2. second add a provider returning URLs of library descriptors found during indexing
+        //   the URLs points to both source roots and binary roots of dependent libraries.
         final Collection<URL> urls = new ArrayList<URL>();
-        for (FileObject file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
+        for (IndexedFile file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
+            urls.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL));
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
 
@@ -366,18 +355,18 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     }
 
 
-    private void debugLibraries() {
-        System.out.println("Facelets Libraries:");  //NOI18N
-        System.out.println("====================");  //NOI18N
-        for (FaceletsLibrary lib : faceletsLibraries.values()) {
-            System.out.println("Library: " + lib.getNamespace());  //NOI18N
-            System.out.println("----------------------------------------------------");  //NOI18N
-            for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
-                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");  //NOI18N
-            }
-            System.out.println();
-        }
-    }
+//    private void debugLibraries() {
+//        System.out.println("Facelets Libraries:");  //NOI18N
+//        System.out.println("====================");  //NOI18N
+//        for (FaceletsLibrary lib : faceletsLibraries.values()) {
+//            System.out.println("Library: " + lib.getNamespace());  //NOI18N
+//            System.out.println("----------------------------------------------------");  //NOI18N
+//            for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
+//                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");  //NOI18N
+//            }
+//            System.out.println();
+//        }
+//    }
 
     public static class Compiler {
 
