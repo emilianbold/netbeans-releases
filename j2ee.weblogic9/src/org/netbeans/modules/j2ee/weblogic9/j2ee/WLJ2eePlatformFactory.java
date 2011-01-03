@@ -407,7 +407,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
                     list.add(fileToUrl(apiFile));
-                    list.addAll(getApiJarClassPath(apiFile));
+                    list.addAll(getJarClassPath(apiFile));
                 }
                 
                 // patches
@@ -638,50 +638,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 url = FileUtil.getArchiveRoot(url);
             }
             return url;
-        }
-
-        private List<URL> getApiJarClassPath(File apiFile) {
-            List<URL> urls = new ArrayList<URL>();
-
-            try {
-                JarFile file = new JarFile(apiFile);
-                try {
-                    Manifest manifest = file.getManifest();
-                    Attributes attrs = manifest.getMainAttributes();
-                    String value = attrs.getValue("Class-Path"); //NOI18N
-                    if (value != null) {
-                        String[] values = value.split("\\s+"); // NOI18N
-                        FileObject baseDir = null;
-                        File serverLib = WLPluginProperties.getServerLibDirectory(dm, false);
-                        if (serverLib != null) {
-                            baseDir = FileUtil.toFileObject(FileUtil.normalizeFile(serverLib));
-                        }
-
-                        if (baseDir != null) {
-                            for (String cpElement : values) {
-                                if (!"".equals(cpElement.trim())) { // NOI18N
-                                    FileObject fo = baseDir.getFileObject(cpElement);
-                                    if (fo == null) {
-                                        continue;
-                                    }
-                                    File fileElem = FileUtil.normalizeFile(FileUtil.toFile(fo));
-                                    if (fileElem != null) {
-                                        urls.add(fileToUrl(fileElem));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Could not read WebLogic API JAR", ex);
-                } finally {
-                    file.close();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Could not open WebLogic API JAR", ex);
-            }
-
-            return urls;
         }
         
         private static List<URL> getJarClassPath(URL url) {
