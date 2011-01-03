@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el;
 
-package org.netbeans.modules.web.common.api;
+import com.sun.el.parser.Node;
 
-import java.util.List;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public interface ValueCompletion<T> {
+public class NodeUtil {
 
-    /** @param offset is the anchor offset - beginning of the attribute value */
-    public List<T> getItems(FileObject file, int offset, String valuePart);
+    private static final String INDENT = "    ";//NOI18N
 
+    public static String dump(Node node) {
+        StringBuilder buf = new StringBuilder();
+        dump(node, "", buf);
+        return buf.toString();
+    }
+
+    private static void dump(Node node, String prefix, StringBuilder buf) {
+        buf.append(prefix);
+        buf.append(node.toString());
+        buf.append('\n');
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            Node child = node.jjtGetChild(i);
+            dump(child, prefix + INDENT, buf);
+        }
+    }
 }

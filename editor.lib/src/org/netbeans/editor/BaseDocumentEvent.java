@@ -252,7 +252,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
     public @Override void undo() throws CannotUndoException {
         BaseDocument doc = (BaseDocument)getDocument();
-        doc.incrementDocVersion();
 
         inUndo = true;
 
@@ -267,6 +266,8 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         // Super of undo()
         doc.atomicLockImpl();
         try {
+            doc.incrementDocVersion();
+            
             if (!canUndo()) {
                 throw new CannotUndoException();
             }
@@ -312,7 +313,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
     public @Override void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
-        doc.incrementDocVersion();
         
         boolean notifyMod;
         try {
@@ -330,6 +330,8 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         inRedo = true;
         boolean modFinished = false; // Whether modification succeeded
         try {
+            doc.incrementDocVersion();
+
             if (previous != null) {
                 previous.redo();
             }

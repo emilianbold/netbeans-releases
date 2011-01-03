@@ -544,7 +544,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private List<? extends CompletionProposal> completeImport(FileObject base, int offset, String prefix, boolean addQuotes, boolean addSemicolon) {
         FileReferenceCompletion<CssCompletionItem> fileCompletion = new CssLinkCompletion(addQuotes, addSemicolon);
-        return fileCompletion.getItems(base, offset, prefix);
+        return fileCompletion.getItems(base, offset - prefix.length(), prefix);
     }
 
     private List<CompletionProposal> completeHtmlSelectors(String prefix, int offset) {

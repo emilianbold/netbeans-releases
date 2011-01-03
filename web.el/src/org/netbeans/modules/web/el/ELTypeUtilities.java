@@ -565,6 +565,10 @@ public final class ELTypeUtilities {
                                 };
                                 runTask(task);
                                 enclosing = task.getResult();
+
+                                if(enclosing == null) {
+                                    return ;
+                                }
                             } else {
                                 enclosing = propertyType;
                             }

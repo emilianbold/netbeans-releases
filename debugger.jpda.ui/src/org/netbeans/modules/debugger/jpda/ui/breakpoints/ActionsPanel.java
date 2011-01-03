@@ -73,6 +73,7 @@ public class ActionsPanel extends javax.swing.JPanel {
         ResourceBundle bundle = NbBundle.getBundle(ActionsPanel.class);
         org.openide.awt.Mnemonics.setLocalizedText(defaultActionCheckBox, bundle.getString("LBL_Use_As_Default_Option")); // NOI18N
         defaultActionCheckBox.setToolTipText(bundle.getString("TTT_Use_As_Default_Option"));
+        checkBoxPanel.setPreferredSize(defaultActionCheckBox.getPreferredSize());
         
         cbSuspend.addItem (bundle.getString("LBL_CB_Actions_Panel_Suspend_None"));
         cbSuspend.addItem (bundle.getString("LBL_CB_Actions_Panel_Suspend_Current"));
@@ -119,6 +120,7 @@ public class ActionsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         cbSuspend = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
+        checkBoxPanel = new javax.swing.JPanel();
         defaultActionCheckBox = new javax.swing.JCheckBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
@@ -168,6 +170,8 @@ public class ActionsPanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_PrintText")); // NOI18N
 
+        checkBoxPanel.setLayout(new java.awt.GridBagLayout());
+
         org.openide.awt.Mnemonics.setLocalizedText(defaultActionCheckBox, "jCheckBox1");
         defaultActionCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,7 +183,14 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
-        add(defaultActionCheckBox, gridBagConstraints);
+        checkBoxPanel.add(defaultActionCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        add(checkBoxPanel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_Actions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -228,6 +239,7 @@ private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSuspend;
+    private javax.swing.JPanel checkBoxPanel;
     private javax.swing.JCheckBox defaultActionCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
