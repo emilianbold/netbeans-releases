@@ -1378,6 +1378,10 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 0);
     }
 
+    public void test193775() throws Exception {
+        performCheckFixesTest("package test; import java.util.Collection; import java.util.Map.Entry; public class Test { public void test(|Collection<Entry> e|) {} }");
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
@@ -1527,13 +1531,26 @@ public class IntroduceHintTest extends NbTestCase {
         assertEquals(golden, errorMessages.get(kind));
     }
     
+    private void performCheckFixesTest(String code, String... goldenFixes) throws Exception {
+        int[] span = new int[2];
+
+        code = TestUtilities.detectOffsets(code, span);
+
+        performCheckFixesTest(code, span[0], span[1], goldenFixes);
+    }
+
     private void performCheckFixesTest(String code, int start, int end, String... goldenFixes) throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         
         prepareTest(code);
         
         List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), new AtomicBoolean());
-        
+
+        if (goldenFixes.length == 0 && errors.isEmpty()) {
+            //OK:
+            return;
+        }
+
         assertEquals(errors.toString(), 1, errors.size());
         
         List<Fix> fixes = errors.get(0).getFixes().getFixes();

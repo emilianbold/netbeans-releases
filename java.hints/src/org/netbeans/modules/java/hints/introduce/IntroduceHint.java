@@ -196,7 +196,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Tree leaf = tp.getLeaf();
 
             if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
-                && leaf.getKind() != Kind.VARIABLE)
+                && (leaf.getKind() != Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
                continue;
 
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
@@ -547,6 +547,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         TreePath method = findMethod(block);
 
         if (method == null) {
+            errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
+            return null;
+        }
+
+        if (method.getLeaf().getKind() == Kind.METHOD && ((MethodTree) method.getLeaf()).getParameters().contains(block.getLeaf())) {
             errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
             return null;
         }
