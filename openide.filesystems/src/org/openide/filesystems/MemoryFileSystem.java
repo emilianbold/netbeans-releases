@@ -47,10 +47,16 @@ package org.openide.filesystems;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -60,8 +66,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.util.URLStreamHandlerRegistration;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Simple implementation of memory file system.
@@ -69,6 +80,9 @@ import java.util.logging.Logger;
  */
 final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileSystem.Info, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Attr {
     private static final Logger ERR = Logger.getLogger(MemoryFileSystem.class.getName());
+
+    private static final AtomicLong COUNT = new AtomicLong();
+    private final long id = COUNT.incrementAndGet();
     
     /** time when the filesystem was created. It is supposed to be the default
      * time of modification for all resources that has not been modified yet
@@ -92,7 +106,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
 
         
         try {
-            _setSystemName("MemoryFileSystem" + String.valueOf(System.identityHashCode(this)));
+            _setSystemName("MemoryFileSystem" + String.valueOf(id));
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
@@ -399,5 +413,90 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
          */
         ERR.fine(sb.toString());
     }    
-    
+
+    // Support for URLs of the form memory://fs23/folder/file
+    @ServiceProvider(service=URLMapper.class)
+    public static final class Mapper extends URLMapper {
+        private static final Map<Long,Reference<FileSystem>> filesystems = new HashMap<Long,Reference<FileSystem>>(); // i.e. a sparse array by id
+        public @Override URL getURL(FileObject fo, int type) {
+            if (type != URLMapper.INTERNAL) {
+                return null;
+            }
+            try {
+                FileSystem fs = fo.getFileSystem();
+                if (fs instanceof MemoryFileSystem) {
+                    String path = fo.getPath();
+                    if (fo.isFolder()) {
+                        path += '/';
+                    }
+                    return url((MemoryFileSystem) fs, path);
+                }
+            } catch (FileStateInvalidException x) {
+                // ignore
+            }
+            return null;
+        }
+        // keep as separate method to avoid linking Handler until needed
+        private static synchronized URL url(MemoryFileSystem fs, String path) {
+            synchronized (filesystems) {
+                Reference<FileSystem> r = filesystems.get(fs.id);
+                if (r == null || r.get() == null) {
+                    r = new WeakReference<FileSystem>(fs);
+                    filesystems.put(fs.id, r);
+                }
+            }
+            try {
+                return new URL(null, Handler.PROTOCOL + "://fs" + fs.id + "/" + path, new Handler());
+            } catch (MalformedURLException x) {
+                throw new AssertionError(x);
+            }
+        }
+        private static final Pattern HOST = Pattern.compile("fs(\\d+)"); // NOI18N
+        static FileObject find(URL url) {
+            if (!Handler.PROTOCOL.equals(url.getProtocol())) {
+                return null;
+            }
+            Matcher m = HOST.matcher(url.getHost());
+            if (!m.matches()) {
+                return null;
+            }
+            Reference<FileSystem> r;
+            synchronized (filesystems) {
+                r = filesystems.get(Long.parseLong(m.group(1)));
+            }
+            if (r == null) {
+                return null;
+            }
+            FileSystem fs = r.get();
+            if (fs == null) {
+                return null;
+            }
+            return fs.findResource(url.getPath().substring(1));
+        }
+        public @Override FileObject[] getFileObjects(URL url) {
+            FileObject f = find(url);
+            return f != null ? new FileObject[] {f} : null;
+        }
+    }
+    @URLStreamHandlerRegistration(protocol=Handler.PROTOCOL)
+    public static final class Handler extends URLStreamHandler {
+        static final String PROTOCOL = "memory"; // NOI18N
+        protected @Override URLConnection openConnection(URL u) throws IOException {
+            return new MemoryConnection(u);
+        }
+        private static class MemoryConnection extends FileURL {
+            MemoryConnection(URL u) {
+                super(u);
+            }
+            public @Override synchronized void connect() throws IOException {
+                if (fo == null) {
+                    fo = Mapper.find(url);
+                }
+                if (fo == null) {
+                    throw new FileNotFoundException(url.toString());
+                }
+            }
+        }
+    }
+
 }

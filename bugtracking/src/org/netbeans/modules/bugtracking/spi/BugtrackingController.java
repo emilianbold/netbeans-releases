@@ -69,7 +69,7 @@ public abstract class BugtrackingController {
     public abstract JComponent getComponent() ;
 
     /**
-     * Returns the help context assotiated with this controllers visual component
+     * Returns the help context associated with this controllers visual component
      * @return
      */
     public abstract HelpCtx getHelpCtx();
@@ -95,14 +95,16 @@ public abstract class BugtrackingController {
     public abstract void applyChanges() throws IOException; 
 
     /**
-     * Should be called when this controllers parent component is openened
+     * Called when this controller was openened
+     * @deprecated 
      */
     public void opened() {
 
     }
 
     /**
-     * Should be called when this controllers parent component is closed
+     * Called when this controller was closed
+     * @deprecated 
      */
     public void closed() {
 

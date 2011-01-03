@@ -6141,10 +6141,7 @@ org.netbeans.modules.localhistory.LocalHistoryVCSAnnotator
 org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem$FSCallable
 org.netbeans.modules.masterfs.filebasedfs.naming.UNCName
 org.netbeans.modules.masterfs.filebasedfs.naming.UNCName$UNCFile
-org.netbeans.modules.maven.cos.CopyResourcesOnSave
 org.netbeans.modules.maven.indexer.Installer
-org.netbeans.modules.maven.ModInstall
-org.netbeans.modules.maven.ModInstall$OpenProjectsListener
 org.netbeans.modules.mercurial.FileStatusCache$ChangedEvent
 org.netbeans.modules.mercurial.HgException
 org.netbeans.modules.mercurial.HgProgressSupport
@@ -7008,8 +7005,6 @@ org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory$Data
 org.netbeans.modules.localhistory.store.LocalHistoryStoreImpl$StoreDataFile
 org.netbeans.modules.localhistory.utils.FileUtils
 org.netbeans.modules.maven.NbMavenProjectFactory
-org.netbeans.modules.maven.NbMavenProjectImpl
-org.netbeans.modules.maven.api.NbMavenProject
 org.netbeans.modules.maven.hints.pom.TaskListBridge
 org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl
 org.netbeans.modules.maven.queries.RepositorySourceForBinaryQueryImpl
@@ -7397,4 +7392,59 @@ org.openide.nodes.Children$LazyChildren
 
 
 
+# Lucene 2.9 + common index
+org.apache.lucene.analysis.TokenStream$MethodSupport
+org.apache.lucene.analysis.TokenStream$TokenWrapperAttributeFactory
+org.apache.lucene.analysis.TokenWrapper
+org.apache.lucene.analysis.tokenattributes.FlagsAttribute
+org.apache.lucene.analysis.tokenattributes.OffsetAttribute
+org.apache.lucene.analysis.tokenattributes.PayloadAttribute
+org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute
+org.apache.lucene.analysis.tokenattributes.TermAttribute
+org.apache.lucene.analysis.tokenattributes.TypeAttribute
+org.apache.lucene.index.DocFieldProcessorPerThread$PerDoc
+org.apache.lucene.index.DocInverterPerThread$SingleTokenTokenStream
+org.apache.lucene.index.DocumentsWriter$IndexingChain
+org.apache.lucene.index.DocumentsWriter$PerDocBuffer
+org.apache.lucene.index.FieldInvertState
+org.apache.lucene.index.FormatPostingsDocsConsumer
+org.apache.lucene.index.FormatPostingsDocsWriter
+org.apache.lucene.index.FormatPostingsFieldsConsumer
+org.apache.lucene.index.FormatPostingsFieldsWriter
+org.apache.lucene.index.FormatPostingsPositionsConsumer
+org.apache.lucene.index.FormatPostingsPositionsWriter
+org.apache.lucene.index.FormatPostingsTermsConsumer
+org.apache.lucene.index.FormatPostingsTermsWriter
+org.apache.lucene.index.IndexWriter$ReaderPool
+org.apache.lucene.index.SegmentWriteState
+org.apache.lucene.search.Explanation$IDFExplanation
+org.apache.lucene.search.ExtendedFieldCache
+org.apache.lucene.search.FieldCache
+org.apache.lucene.search.FieldCache$ByteParser
+org.apache.lucene.search.FieldCache$DoubleParser
+org.apache.lucene.search.FieldCache$FloatParser
+org.apache.lucene.search.FieldCache$IntParser
+org.apache.lucene.search.FieldCache$LongParser
+org.apache.lucene.search.FieldCache$Parser
+org.apache.lucene.search.FieldCache$ShortParser
+org.apache.lucene.search.FieldCache$StringIndex
+org.apache.lucene.search.FieldCacheImpl
+org.apache.lucene.search.FieldCacheImpl$AutoCache
+org.apache.lucene.search.FieldCacheImpl$ByteCache
+org.apache.lucene.search.FieldCacheImpl$Cache
+org.apache.lucene.search.FieldCacheImpl$CustomCache
+org.apache.lucene.search.FieldCacheImpl$DoubleCache
+org.apache.lucene.search.FieldCacheImpl$FloatCache
+org.apache.lucene.search.FieldCacheImpl$IntCache
+org.apache.lucene.search.FieldCacheImpl$LongCache
+org.apache.lucene.search.FieldCacheImpl$ShortCache
+org.apache.lucene.search.FieldCacheImpl$StringCache
+org.apache.lucene.search.FieldCacheImpl$StringIndexCache
+org.apache.lucene.search.Similarity$MethodSupport
+org.apache.lucene.store.NativeFSLock
+org.apache.lucene.store.SimpleFSDirectory$SimpleFSIndexOutput
+org.apache.lucene.util.Attribute
+org.apache.lucene.util.AttributeImpl
+org.apache.lucene.util.AttributeSource$AttributeFactory
+org.apache.lucene.util.AttributeSource$AttributeFactory$DefaultAttributeFactory
 

@@ -76,6 +76,7 @@ public abstract class ReconfigureProvider {
             return null;
         }
 
+        @Override
         public void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags) {
             ReconfigureProvider service = getService();
             if (service != null) {

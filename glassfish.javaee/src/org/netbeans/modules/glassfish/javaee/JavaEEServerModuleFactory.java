@@ -259,7 +259,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
-    private static final String V31_RESTLIB = "restlib_gfv31ee6"; // NOI18N
 
     private static  boolean ensureRestLibSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
@@ -281,12 +280,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
         File f = ServerUtilities.getJarName(installRoot, "gmbal" + ServerUtilities.GFV3_VERSION_MATCHER);
         if (f != null && f.exists()) {
-            if (isGFV31) {
-                name = V31_RESTLIB;
-            } else {
-                name = V3_RESTLIB;
-            }
-
+            name = V3_RESTLIB;
         }
         // javadoc
         List<URL> javadocList = new ArrayList<URL>();
@@ -316,7 +310,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String SERVER_LIBRARY_TYPE = "serverlibrary"; // NOI18N
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
-    private static final String JAVA_EE_6_31_LIB = "Java-EE-GlassFish-3.1"; // NOI18N
     private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
 
     private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
@@ -365,9 +358,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 } catch (MalformedURLException ex) {
                 }
             }
-        }
-        if (isGFV31) {
-            name = JAVA_EE_6_31_LIB;
         }
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }

@@ -71,18 +71,23 @@ class TemplatesPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
 
+        jLabel1.setLabelFor(templateTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.jLabel1.text")); // NOI18N
+        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.jLabel1.TTtext")); // NOI18N
 
         templateTextArea.setColumns(20);
         templateTextArea.setRows(5);
         jScrollPane1.setViewportView(templateTextArea);
 
         org.openide.awt.Mnemonics.setLocalizedText(autoFillInCheckBox, org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.autoFillInCheckBox.text")); // NOI18N
+        autoFillInCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.autoFillInCheckBox.TTtext")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(openButton, org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.openButton.text")); // NOI18N
+        openButton.setToolTipText(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.openButton.TTtext")); // NOI18N
         openButton.setActionCommand(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.openButton.actionCommand")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(saveButton, org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.saveButton.text")); // NOI18N
+        saveButton.setToolTipText(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "TemplatesPanel.saveButton.TTtext")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

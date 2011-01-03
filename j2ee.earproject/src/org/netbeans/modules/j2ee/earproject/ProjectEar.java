@@ -549,6 +549,12 @@ public final class ProjectEar extends J2eeApplicationProvider
         return deployOnSaveSupport;
     }
     
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE)) &&
+            !Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    }
+    
     public File getDeploymentConfigurationFile(String name) {
         String path = getConfigSupport().getContentRelativePath(name);
         if (path == null) {

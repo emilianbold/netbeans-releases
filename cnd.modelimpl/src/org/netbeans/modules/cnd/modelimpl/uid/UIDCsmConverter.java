@@ -176,6 +176,15 @@ public final class UIDCsmConverter {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
 
+    public static <T> Collection<T> UIDsToInstantiations(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
+        return out;
+    }
+
+    public static <T> Iterator<T> UIDsToInstantiations(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
+    
     public static <T> Collection<T> UIDsToCsmObjects(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;

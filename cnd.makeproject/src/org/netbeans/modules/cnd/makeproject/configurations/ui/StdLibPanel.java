@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;

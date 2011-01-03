@@ -431,7 +431,6 @@ public final class Source {
     // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
-    private static final Map<FileObject,Void> detached = new WeakHashMap<FileObject, Void>();
     private static final ThreadLocal<Boolean> suppressListening = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -495,12 +494,6 @@ public final class Source {
         boolean listen = !suppressListening.get();
         if (listen) {
             support.init();
-        } else {
-            synchronized (Source.class) {
-                if (this.fileObject != null) {
-                    detached.put(this.fileObject,null);
-                }
-            }
         }
     }
 
@@ -707,17 +700,6 @@ public final class Source {
 
         public void suppressListening(final boolean suppress) {
             suppressListening.set(suppress);
-            if (!suppress) {
-                //clean up after suppress
-                synchronized (Source.class) {
-                    for (Iterator<FileObject> it = detached.keySet().iterator(); it.hasNext();) {
-                        final FileObject fo = it.next();
-                        it.remove();
-                        instances.remove(fo);
-                    }
-                    assert detached.isEmpty();
-                }
-            }
         }
 
         @Override

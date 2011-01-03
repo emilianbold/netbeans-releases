@@ -26,7 +26,6 @@
     <conf name="FastBuild" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -58,7 +57,6 @@
     <conf name="Debug" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -82,7 +80,6 @@
     <conf name="PerformanceDebug" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -114,7 +111,6 @@
     <conf name="DianogsableRelease" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -146,7 +142,6 @@
     <conf name="Release" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -178,7 +173,6 @@
     <conf name="PerformanceRelease" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
@@ -210,7 +204,6 @@
     <conf name="PerformanceRelease64Bits" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>

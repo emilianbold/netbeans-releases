@@ -53,6 +53,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -122,7 +125,28 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         });
     }
 
-    public @Override synchronized Element getConfigurationFragment(final String elementName, final String namespace, boolean shared) {
+    public @Override Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
+        Element e = doGetConfigurationFragment(elementName, namespace, shared);
+        return e != null ? cloneSafely(e) : null;
+    }
+    // Copied from AntProjectHelper.
+    private static final DocumentBuilder db;
+    static {
+        try {
+            db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e);
+        }
+    }
+    private static Element cloneSafely(Element el) { // #190845
+        // #50198: for thread safety, use a separate document.
+        // Using XMLUtil.createDocument is much too slow.
+        synchronized (db) {
+            Document dummy = db.newDocument();
+            return (Element) dummy.importNode(el, true);
+        }
+    }
+    private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {

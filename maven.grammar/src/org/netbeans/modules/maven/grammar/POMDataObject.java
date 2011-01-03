@@ -159,6 +159,10 @@ public class POMDataObject extends MultiDataObject {
             return name;
         }
 
+        protected @Override boolean asynchronousOpen() {
+            return true;
+        }
+
         // XXX override initializeCloneableEditor if needed; see AntProjectDataEditor
 
     }

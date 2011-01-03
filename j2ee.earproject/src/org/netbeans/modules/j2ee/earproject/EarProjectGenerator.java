@@ -77,6 +77,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
@@ -622,14 +623,8 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        boolean deployOnSaveEnabled = false;
-        try {
-            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
-                    .isDeployOnSaveSupported();
-        } catch (InstanceRemovedException ex) {
-            // false
-        }
-        ep.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
+        ep.setProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE, "true");
+        ep.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, DeployOnSaveUtils.isDeployOnSaveSupported(serverInstanceID));
 
         String srcLevel = sourceLevel;
         if (srcLevel == null) {

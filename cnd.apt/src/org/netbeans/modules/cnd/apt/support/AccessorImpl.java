@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -61,7 +62,7 @@ class AccessorImpl extends SupportAPIAccessor {
     }
 
     @Override
-    public boolean isExistingDirectory(IncludeDirEntry entry) {
-        return entry.isExistingDirectory();
+    public boolean isExistingDirectory(FileSystem fs, IncludeDirEntry entry) {
+        return entry.isExistingDirectory(fs);
     }
 }

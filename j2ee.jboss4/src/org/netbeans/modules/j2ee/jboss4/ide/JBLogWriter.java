@@ -71,7 +71,14 @@ public final class JBLogWriter {
     
     private static final Logger LOGGER = Logger.getLogger(JBLogWriter.class.getName());
     
-    private final static int DELAY = 500;
+    private static final int DELAY_MIN = 50;
+    
+    private static final int DELAY_MAX = 300;
+    
+    private static final int DELAY_INC = 50;
+    
+    private static final int INC_COUNT = 10;
+    
     private static final int START_TIMEOUT = 300000;
     
     /**
@@ -559,6 +566,9 @@ public final class JBLogWriter {
         }
         
         public void run() {
+            int currentDelay = DELAY_MIN;
+            int noReadCount = 0;
+            
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "START thread " + Thread.currentThread().getId());
             }
@@ -604,7 +614,19 @@ public final class JBLogWriter {
                 }
 
                 try {
-                    Thread.sleep(DELAY); // give the server some time to write the output
+                    if (!read) {
+                        noReadCount++;
+                        if (noReadCount == INC_COUNT) {
+                            noReadCount = 0;
+                            currentDelay += DELAY_INC;
+                            currentDelay = Math.min(currentDelay, DELAY_MAX);
+                        }
+                    } else {
+                        // agressive decrement
+                        currentDelay = DELAY_MIN;
+                        noReadCount = 0;
+                    }
+                    Thread.sleep(currentDelay); // give the server some time to write the output
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

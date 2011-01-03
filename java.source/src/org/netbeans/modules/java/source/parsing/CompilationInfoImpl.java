@@ -48,6 +48,7 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.util.JCDiagnostic;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -411,6 +412,7 @@ public final class CompilationInfoImpl {
             this.source2Errors = new HashMap<JavaFileObject, TreeMap<Integer, Diagnostic<? extends JavaFileObject>>>();
         }
         
+        @Override
         public void report(Diagnostic<? extends JavaFileObject> message) {
             if (partialReparseErrors != null) {
                 if (this.jfo != null && this.jfo == message.getSource()) {
@@ -443,9 +445,13 @@ public final class CompilationInfoImpl {
                 Map<Integer,Diagnostic<? extends JavaFileObject>> tail = errors.tailMap(to);
                 this.affectedErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>(tail.size());
                 for (Iterator<Map.Entry<Integer,Diagnostic<? extends JavaFileObject>>> it = tail.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<Integer,Diagnostic<? extends JavaFileObject>> e = it.next();
+                    Map.Entry<Integer,Diagnostic<? extends JavaFileObject>> e = it.next();                    
+                    final JCDiagnostic diagnostic = (JCDiagnostic)e.getValue();
                     it.remove();
-                    this.affectedErrors.add(new D ((JCDiagnostic)e.getValue()));
+                    if (diagnostic == null) {
+                        throw new IllegalStateException("#184910: diagnostic == null " + mapArraysToLists(Thread.getAllStackTraces())); //NOI18N
+                    }
+                    this.affectedErrors.add(new D (diagnostic));
                 }
             }
             else {
@@ -455,7 +461,15 @@ public final class CompilationInfoImpl {
         
         final void endPartialReparse (final int delta) {
             this.currentDelta+=delta;
-        }        
+        }
+        
+        private static <A,B> Map<A,List<B>> mapArraysToLists (final Map<? extends A, B[]> map) {
+            final Map<A,List<B>> result = new HashMap<A, List<B>>();
+            for (Map.Entry<? extends A,B[]> entry : map.entrySet()) {
+                result.put(entry.getKey(), Arrays.asList(entry.getValue()));
+            }
+            return result;
+        } 
         
         private final class D implements Diagnostic {
             
@@ -466,14 +480,17 @@ public final class CompilationInfoImpl {
                 this.delegate = delegate;
             }
 
+            @Override
             public Kind getKind() {
                 return this.delegate.getKind();
             }
 
+            @Override
             public Object getSource() {
                 return this.delegate.getSource();
             }
 
+            @Override
             public long getPosition() {
                 long ret = this.delegate.getPosition();
                 if (delegate.hasFixedPositions()) {
@@ -482,6 +499,7 @@ public final class CompilationInfoImpl {
                 return ret;
             }
 
+            @Override
             public long getStartPosition() {
                 long ret = this.delegate.getStartPosition();
                 if (delegate.hasFixedPositions()) {
@@ -490,6 +508,7 @@ public final class CompilationInfoImpl {
                 return ret;
             }
 
+            @Override
             public long getEndPosition() {
                 long ret = this.delegate.getEndPosition();
                 if (delegate.hasFixedPositions()) {
@@ -498,18 +517,22 @@ public final class CompilationInfoImpl {
                 return ret;
             }
 
+            @Override
             public long getLineNumber() {
                 return -1;
             }
 
+            @Override
             public long getColumnNumber() {
                 return -1;
             }
 
+            @Override
             public String getCode() {
                 return this.delegate.getCode();
             }
 
+            @Override
             public String getMessage(Locale locale) {
                 return this.delegate.getMessage(locale);
             }

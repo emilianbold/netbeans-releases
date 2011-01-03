@@ -70,6 +70,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
 import org.openide.modules.Dependency;
@@ -181,7 +182,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     }
     
     private void appendDependingLazy (final String tableTitle, final String dependenciesTitle) {
-        lazyDependingTask = RequestProcessor.getDefault ().post (new Runnable () {
+        lazyDependingTask = Installer.RP.post (new Runnable () {
+            @Override
             public void run () {
                 JPanel body = null;
                 // init required elements

@@ -67,6 +67,7 @@ implements SaveCookie {
     }
 
     public void testActionWorksOnSaveCookieOnly() {
+        cnt = 0;
         Lookup lkp = Lookups.singleton(this);
         SaveAction sa = SaveAction.get(SaveAction.class);
         Action clone = sa.createContextAwareInstance(lkp);
@@ -76,5 +77,24 @@ implements SaveCookie {
 
     public void save() throws IOException {
         cnt++;
+    }
+    
+    public void testActionWorksOnMultipleSaveCookies() {
+        cnt = 0;
+        SaveCookie cookie1 = new SaveCookieTestImpl();
+        SaveCookie cookie2 = new SaveCookieTestImpl();
+        Lookup lkp = Lookups.fixed(cookie1, cookie2);
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action clone = sa.createContextAwareInstance(lkp);
+        clone.actionPerformed(new ActionEvent(this, 0, ""));
+        assertEquals("Save was called multiple times", 2, cnt);
+    }
+
+    private class SaveCookieTestImpl implements SaveCookie {
+
+        @Override
+        public void save() throws IOException {
+            cnt++;
+        }
     }
 }

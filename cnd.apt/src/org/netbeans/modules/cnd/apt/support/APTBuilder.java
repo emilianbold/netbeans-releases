@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.openide.filesystems.FileSystem;
 
 /**
  * builds APT from TokenStream and APTLight from APT
@@ -58,8 +59,8 @@ public final class APTBuilder {
     private APTBuilder() {
     }
 
-    public static APTFile buildAPT(CharSequence path, TokenStream ts) {
-        return new APTBuilderImpl().buildAPT(path, ts);
+    public static APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts) {
+        return new APTBuilderImpl().buildAPT(fileSystem, path, ts);
     }
     
     public static APT buildAPTLight(APT apt) {

@@ -121,6 +121,46 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug190668.cpp", 16, 6, "bug190668.cpp", 11, 5);
     }
 
+    public void testBug187258() throws Exception {
+        // Bug 187258 - code model does not find template specialization for unsigned type
+        performTest("bug187258.cpp", 22, 50, "bug187258.cpp", 14, 5);
+        performTest("bug187258.cpp", 21, 45, "bug187258.cpp", 6, 5);
+    }
+
+    public void testExplicitSpecializations() throws Exception {
+        // Improving specializations
+        performTest("explicit_specializations.cpp", 5, 11, "explicit_specializations.cpp", 8, 1);
+//        performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
+        performTest("explicit_specializations.cpp", 15, 11, "explicit_specializations.cpp", 18, 1);
+        performTest("explicit_specializations.cpp", 18, 64, "explicit_specializations.cpp", 15, 5);
+        performTest("explicit_specializations.cpp", 22, 56, "explicit_specializations.cpp", 24, 1);
+        performTest("explicit_specializations.cpp", 24, 56, "explicit_specializations.cpp", 22, 1);
+        
+        performTest("explicit_specializations.cpp", 25, 5, "explicit_specializations.cpp", 4, 5);
+
+        performTest("explicit_specializations.cpp", 31, 9, "explicit_specializations.cpp", 24, 1);
+        performTest("explicit_specializations.cpp", 34, 9, "explicit_specializations.cpp", 18, 1);
+        performTest("explicit_specializations.cpp", 37, 9, "explicit_specializations.cpp", 8, 1);
+    }
+
+    public void testIZ144156_func_spec_main() throws Exception {
+        performTest("template_fun_spec.cc", 9, 33, "template_fun_spec.cc", 35, 1); // base template
+        performTest("template_fun_spec.cc", 35, 33, "template_fun_spec.cc", 9, 1); // and back
+    }
+    public void testIZ144156_func_partial_spec_pair() throws Exception {
+        performTest("template_fun_spec.cc", 15, 33, "template_fun_spec.cc", 45, 1); // partial spec. for pair<T,T>
+        performTest("template_fun_spec.cc", 45, 33, "template_fun_spec.cc", 15, 1); // and back
+    }
+    public void testIZ144156_func_full_spec_pair_char() throws Exception {
+        performTest("template_fun_spec.cc", 21, 26, "template_fun_spec.cc", 55, 1); // full spec. for pair<char,char>
+        performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
+    }
+
+    public void testBug185045() throws Exception {
+        // Bug 185045 - [code model] Incorrect hyperlink with template specialization function
+        performTest("bug185045.cpp", 12, 9, "bug185045.cpp", 7, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -128,19 +168,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
             return TemplateSpecializationsTestCase.class;
         }
 
-        public void testIZ144156_func_spec_main() throws Exception {
-            performTest("template_fun_spec.cc", 9, 33, "template_fun_spec.cc", 35, 1); // base template
-            performTest("template_fun_spec.cc", 35, 33, "template_fun_spec.cc", 9, 1); // and back
+        public void testExplicitSpecializations2() throws Exception {
+            // Improving specializations
+            performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);
         }
-        public void testIZ144156_func_partial_spec_pair() throws Exception {
-            performTest("template_fun_spec.cc", 15, 33, "template_fun_spec.cc", 45, 1); // partial spec. for pair<T,T>
-            performTest("template_fun_spec.cc", 45, 33, "template_fun_spec.cc", 15, 1); // and back
-        }
-        public void testIZ144156_func_full_spec_pair_char() throws Exception {
-            performTest("template_fun_spec.cc", 21, 26, "template_fun_spec.cc", 55, 1); // full spec. for pair<char,char>
-            performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
-        }
-        
+
         public void testIZ143977_Parm_in_Loki_1() throws Exception {
             performTest("iz143977_1.cc", 45, 33, "iz143977_1.cc", 11, 9);
             performTest("iz143977_1.cc", 46, 33, "iz143977_1.cc", 12, 9);

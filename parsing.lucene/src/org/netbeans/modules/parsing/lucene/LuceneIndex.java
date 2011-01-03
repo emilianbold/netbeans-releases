@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -135,7 +136,7 @@ public class LuceneIndex implements Index {
         Parameters.notNull("result", result);       //NOI18N        
         final IndexReader in = dirCache.getReader();
         if (in == null) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+            LOGGER.log(Level.FINE, "{0} is invalid!", this);
             return;
         }
         if (selector == null) {
@@ -242,6 +243,7 @@ public class LuceneIndex implements Index {
             searcher.close();
         }
         
+        boolean logged = false;
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
             if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
@@ -250,7 +252,20 @@ public class LuceneIndex implements Index {
             final T value = convertor.convert(doc);
             if (value != null) {
                 final Set<Term> terms = termCollector.get(docNum);
-                result.put (value, convertTerms(termConvertor, terms));
+                if (terms != null) {
+                    result.put (value, convertTerms(termConvertor, terms));
+                } else {
+                    if (!logged) {
+                        LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                new Object[] {
+                                    in.maxDoc(),
+                                    in.numDocs(),
+                                    termCollector.docs()
+                                });
+                        logged = true;
+                    }
+                    LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                }
             }
         }
     }
@@ -787,21 +802,24 @@ public class LuceneIndex implements Index {
         }
         
         private IOException annotateException (final IOException ioe) {
-            String message;
+            final StringBuilder message = new StringBuilder();            
             File[] children = folder.listFiles();
             if (children == null) {
-                message = "Non existing index folder";
+                message.append("Non existing index folder");    //NOI18N
             }
             else {
-                StringBuilder b = new StringBuilder();
+                message.append("Current Lucene version: ").     //NOI18N
+                        append(LucenePackage.get().getSpecificationVersion()).
+                        append('(').    //NOI18N
+                        append(LucenePackage.get().getImplementationVersion()).
+                        append(")\n");    //NOI18N
                 for (File c : children) {
-                    b.append(c.getName()).append(" f: ").append(c.isFile()).
+                    message.append(c.getName()).append(" f: ").append(c.isFile()).
                     append(" r: ").append(c.canRead()).
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
-                message = b.toString();
             }
-            return Exceptions.attachMessage(ioe, message);
+            return Exceptions.attachMessage(ioe, message.toString());
         }
         
         private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {

@@ -104,7 +104,7 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), files[i].getPath(), project);
-	    itemPath = CndPathUtilitities.normalize(itemPath);
+	    itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
                 items.add(item);

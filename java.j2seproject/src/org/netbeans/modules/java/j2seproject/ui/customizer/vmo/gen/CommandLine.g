@@ -1,70 +1,155 @@
 grammar CommandLine;
 
-options { 
-   output=AST;
-   ASTLabelType=CommonTree;
-}
-
-@header {
-
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
-
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.*;
-import java.util.Collections;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
+options {
+	language=Java;
+	output = AST;
+	ASTLabelType = CommonTree;
 }
 
 @lexer::header {
 package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
-
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.LinkedList;
 }
 
 @lexer::members {
-    private Queue<Token> safeguard = new LinkedList<Token>();
+
+    private final Queue<Token> tokens = new LinkedList<Token>();
 
     @Override
-    public void recover(RecognitionException re) {
-	
+    public void recover(final RecognitionException re) {	
         input.rewind();
-        while (input.getCharPositionInLine() <= re.charPositionInLine) {
-            try {
-                state.token = null;
-                state.channel = Token.DEFAULT_CHANNEL;
-                state.tokenStartCharIndex = input.index();
-                state.tokenStartCharPositionInLine = input.getCharPositionInLine();
-                state.tokenStartLine = input.getLine();
-                state.text = null;
-                mLetter();
-                safeguard.offer(emit());
-            } catch (RecognitionException e) {
-                input.consume();
-            }
+        state.type = TEXT;
+        state.token = null;
+        state.channel = Token.DEFAULT_CHANNEL;
+        state.tokenStartCharIndex = input.index();
+        state.tokenStartCharPositionInLine = input.getCharPositionInLine();
+        state.tokenStartLine = input.getLine();
+        state.text = null;
+        //read upto white space and emmit as TEXT, todo: specail ERROR token should be better
+        while (!((input.LA(1)>='\t' && input.LA(1)<='\n')||(input.LA(1)>='\f' && input.LA(1)<='\r')||input.LA(1)==' '||input.LA(1) == EOF)) {                
+            input.seek(input.index()+1);
         }
-        skip();
-
+        tokens.add(emit());
     }
-
+    
     @Override
-    public void reportError(RecognitionException e) {
-        //System.out.println("ERROR: " + e);        // no reporting yet.
-    }
-
-    @Override
-    public Token nextToken() {        
-        safeguard.offer(super.nextToken());
-        return safeguard.poll();
+    public Token nextToken() {
+    	tokens.add(super.nextToken());
+    	return tokens.poll();
     }
 }
 
+@parser::header {
+package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.*;
+}
+
 @parser::members {
-    public List<JavaVMOption<?>> parse() {
+
+	private static final String SERVER = "server";
+	private static final String CLIENT = "client";
+	private static final String ESA = "esa";
+	private static final String ESA_LONG = "enablesystemassertions";
+	private static final String DSA = "dsa";
+	private static final String DSA_LONG = "disablesystemassertions";
+	private static final String EA = "ea";
+	private static final String EA_LONG = "enableassertions";
+	private static final String DA = "da";
+	private static final String DA_LONG = "disableassertions";
+	private static final String VERBOSE = "verbose";
+	private static final String SVERSION = "showversion";
+	private static final String HELP = "?";
+	private static final String HELP_LONG = "help";
+	private static final String X = "X";
+	private static final String XINT = "Xint";
+	private static final String XBATCH = "Xbatch";
+	private static final String XCJNI = "Xcheck";
+	private static final String XFUTURE = "Xfuture";
+	private static final String XNOCLSGC = "Xnoclassgc";
+	private static final String XINCGC = "Xincgc";
+	private static final String XPROF = "Xprof";
+	private static final String XRS = "Xrs";
+	private static final String XSHARE = "Xshare";
+	private static final String JRE_SEARCH="jre-restrict-search";
+	private static final String JRE_NO_SEARCH="jre-no-restrict-search";
+	private static final String SPLASH = "splash";
+	private static final String XLOGGC = "Xloggc";
+	private static final String JAVAAGENT = "javaagent";
+	private static final String AGENTLIB = "agentlib";
+	private static final String AGENTPATH = "agentpath";
+	private static final String BOOTCP = "Xbootclasspath";
+	private static final String BOOTCPAPPEND = "Xbootclasspath/a";
+	private static final String BOOTCPPREPEND = "Xbootclasspath/p";
+	private static final String VERSION = "version";
+	private static final String CLASSPATH = "cp";
+	private static final String CLASSPATH_LONG = "classpath";
+
+	private static final Set<String> switchOptions = new HashSet<String>() {
+	    {
+	    	this.addAll(Arrays.asList(
+	    	SERVER,
+	    	CLIENT,
+	    	ESA,
+	    	ESA_LONG,
+	    	DSA,
+	    	DSA_LONG,
+	    	EA,
+	    	EA_LONG,
+	    	DA,
+	    	DA_LONG,
+	    	SVERSION,
+	    	HELP,
+	    	HELP_LONG,
+	    	X,
+	    	XINT,
+	    	XBATCH,
+	    	XFUTURE,
+	    	XNOCLSGC,
+	    	XINCGC,
+	    	XPROF,
+	    	XRS,
+	    	JRE_SEARCH,
+	    	JRE_NO_SEARCH));
+	    }
+	};
+	
+	private static final Set<String> paramOptions = new HashSet<String>(){
+	    {
+	        addAll(Arrays.asList(
+	        SPLASH,
+	        XLOGGC,
+	        JAVAAGENT,
+	        AGENTLIB,
+	        AGENTPATH,
+	        BOOTCP,
+	        BOOTCPAPPEND,
+	        BOOTCPPREPEND
+	        ));
+	    }
+	};
+	
+	private static final Pattern memOptions = Pattern.compile("X(m[sx]|ss)\\d+[gGmMkK]");
+	
+	private static boolean isParamOption(final String text) {
+		for (String option : paramOptions) {
+		    if (text.startsWith(option+':')) {
+		    	return true;
+		    }
+		}
+		return false;
+	}
+	
+	//xxx: Wrong! Should use TreeGrammer and not to populate customizer with custom nodes
+	//Should be rewritten but I have no time for this
+	public List<JavaVMOption<?>> parse() {
         Set<JavaVMOption<?>> result = new HashSet<JavaVMOption<?>>(); 
         try {
             vmOptions_return options_return = vmOptions();
@@ -100,6 +185,8 @@ import java.util.Queue;
     private static OptionDefinition[] optionsTemplates = {
             new OptionDefinition("client", Kind.SWITCH),
             new OptionDefinition("server", Kind.SWITCH),
+            new OptionDefinition("ea", Kind.SWITCH),
+            new OptionDefinition("da", Kind.SWITCH),
             new OptionDefinition("esa", Kind.SWITCH),
             new OptionDefinition("dsa", Kind.SWITCH),
             new OptionDefinition("verbose", Kind.SWITCH),
@@ -157,52 +244,40 @@ import java.util.Queue;
                 throw new IllegalArgumentException("Invalid definition.");
         }
     }
-
-
-
 }
 
-WS	:	(' '|'\r'|'\t'|'\u000C'|'\n') {$channel=HIDDEN;};
+vmOptions
+	:	(WS?option)*WS? -> option*;
+	
+option	:	'-' switchOption -> switchOption |
+		nonSwitchOption  -> nonSwitchOption;
+		  
+switchOption
+@init {
+	int index = 0;
+	String name = null;
+	String value = null;
+}
+	:	{switchOptions.contains(input.LT(1).getText())}?=> t=TEXT         				   	-> {new SwitchNode($t)} |
+		{VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':')}?=> t=TEXT     	-> {new SwitchNode($t)} |
+		{VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':')}?=> t=TEXT {index = $t.getText().indexOf(':'); if (index > 0) {name=$t.getText().substring(0,index); value = (index+1) == $t.getText().length() ? "" : $t.getText().substring(index+1);} else {name=$t.getText();} } -> { index < 0 ? new SwitchNode($t) : new ParametrizedNode($t, name, ":", value)} |
+		{input.LT(1).getText().startsWith(XSHARE+':')}?=> t=TEXT -> {new SwitchNode($t)} |
+		{input.LT(1).getText().startsWith(XCJNI+':')}?=> t=TEXT	  -> {new SwitchNode($t)} |
+		{input.LT(1).getText().charAt(0) == 'D'}?=> t=TEXT '=' t2=TEXT    -> {new UserPropertyNode($t, $t2, $t.pos)} |
+		{isParamOption(input.LT(1).getText())}?=> t=TEXT {index = $t.getText().indexOf(':'); if (index > 0) {name=$t.getText().substring(0,index); value = (index+1) == $t.getText().length() ? "" : $t.getText().substring(index+1);}} -> {new ParametrizedNode($t, name, ":", value)} |
+		{memOptions.matcher(input.LT(1).getText()).matches()}?=> t=TEXT	  -> {new ParametrizedNode($t, 3)} |
+		{CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())}?=> t=TEXT WS t2=TEXT -> {new ParametrizedNode($t, " ", $t2, false)} |
+		t=TEXT -> {new UnrecognizedOption($t)};
+	
+nonSwitchOption
+	:	t=TEXT -> {new UnknownOption($t)};
+		
+WS	:	(' '|'\r'|'\t'|'\u000C'|'\n')+;
 
-//switches
-SERVER	:	'server';
-CLIENT	:	'client';
-ESA	:	'enablesystemassertions'|'esa';
-DSA	:	'disablesystemassertions' | 'dsa';
-VERBOSE	:	'verbose' (':' ('class'|'gc'|'jni'))?;
-VERSION	:	'version' (':' Text)?;
-SVERION	:	'showversion';
-HELP	:	'help' | '?';
-X	:	'X';
-XINT	:	'Xint';
-XBATCH	:	'Xbatch';
-XCJNI	:	'Xcheck:jni';
-XFUTURE	:	'Xfuture';
-XNOCLSGC:	'Xnoclassgc';
-XINCGC	:	'Xincgc';
-XPROF	:	'Xprof';
-XRS	:	'Xrs';
-XSHARE	:	'Xshare:'('off'|'on'|'auto');
-BOOTCP	:	'Xbootclasspath'('/a'|'/p')? ':' Text;
-MEMS	:	'Xms' MEMSIZE;
-MEMX	:	'Xmx' MEMSIZE;
-SS	:	'Xss' MEMSIZE;
-LOGGC	:	'Xloggc:' Text;
-SPLASH	:	'splash:' Text;
-JAGENT	:	'javaagent:' Text;
-EA	:	'ea'| 'enableassertions';
-DEA	:	'disableassertions'|'da';
-AGENT	:	('agentlib' | 'agentpath') ':' Text;
-JRE_SEARCH
-	:	'jre-restrict-search';
-JRE_NO_SEARCH 
-	:	'jre-no-restrict-search';
-CP	:	'cp' | 'classpath';
-
-CPROP	:	'D' Text;
+TEXT	:	LETTER (LETTER|'-'|';'|':'|'{'|'}')*;
 
 fragment
-Letter
+LETTER
     :  '\u0021' |        
        '\u0023'..'\u0026' |       
        '\u002b' |
@@ -222,112 +297,3 @@ Letter
        '\u4e00'..'\u9fff' |
        '\uf900'..'\ufaff'
     ;
-
-fragment
-MEMSIZE	:	('0'..'9')+('k'|'m'|'K'|'M');
-
-Text	:	Letter (Letter|'-'|':')* ;
-
-    
-
-vmOptions
-	:	 (option)*
-	;
-
-option	:	'-'! (switchDef|splash|continuous|version|loosedParameter|propertyDef|looseTextualNode[true]) | looseTextualNode[false]
-	;
-
-
-
-switchDef
-	:	(SERVER|CLIENT|ESA|DSA|VERBOSE|SVERION|HELP|X|XINT|XBATCH|XCJNI|XFUTURE|XNOCLSGC|XINCGC|XPROF|XRS|XSHARE|JRE_SEARCH|JRE_NO_SEARCH)  
-		-> {new SwitchNode($start)}
-	;
-	
-
-
-propertyDef
-@init {
-	System.out.println("Parsing user property definition");
-}
-	:	CPROP ('=' Text)? -> {new UserPropertyNode($CPROP, $Text, $CPROP.pos)}
-							       //^(CPROP<UserPropertyNode>[$CPROP, $pvalue, $n.pos])
-	;    
-
-/*
-fragment
-propertyValue
-	:	('"' Text '"')| Text
-	;	
-*/
-
-splash	
-scope {
-	String name;
-	String value;
-	int idx;
-}
-@init {
-	$splash::name="";
-	$splash::value="";
-	$splash::idx = -1;
-}
-	:	(SPLASH|BOOTCP|LOGGC|JAGENT|AGENT)
-		{
-		$splash::idx = $start.getText().indexOf(':');
-		$splash::name=$start.getText().substring(0, $splash::idx); 
-		$splash::value=$start.getText().substring($splash::idx + 1);
-		}
-		-> ^({new ParametrizedNode($start, $splash::name, ":", $splash::value)})
-	;
-	
-//columnSeparator	
-//	:	(BOOTCP|LOGGC|JAGENT|AGENT) ':' Text ->  {new ParametrizedNode($start, ":", $Text)}
-//	;
-	
-columnSeparatorOpt
-	:	(EA|DEA) (':' Text)? -> {new ParametrizedNode($start, ":", $Text)}
-	;	
-
-continuous
-	:	(MEMS|MEMX|SS) -> {new ParametrizedNode($start, 3)}
-	;
-	
-version	
-scope {
-	boolean simple;
-	String versionText;
-}
-:	VERSION 
-	{
-	$version::simple = !$VERSION.getText().contains(":");	
-	}
-	-> {$version::simple}? {new SwitchNode($VERSION)}
-	-> {new ParametrizedNode($VERSION, "version", ":", $VERSION.getText().substring(8))} 
-	;	
-
-loosedParameter
-	:	CP Text -> {new ParametrizedNode($CP, " ", $Text, false)}
-	;
-
-	
-classpath 
-	returns [String cls]
-@init { 
-	$cls = "";	
-}
-	: l=Letter {$cls += $l.text;} 
-		(l=Letter {$cls += $l.text;}
-			| '-' {$cls += "-";}
-			| ':' {$cls += ":";}
-		)*	
-	;
-	
-
-looseTextualNode[boolean unresolved]
-	:
-		Text 
-		-> {$unresolved}?  {new UnrecognizedOption($start)}
-		-> {new UnknownOption($start)}
-	;
-	

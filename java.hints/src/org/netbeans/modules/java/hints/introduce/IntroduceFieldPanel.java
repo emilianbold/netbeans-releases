@@ -63,17 +63,22 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     
     private JButton btnOk;
     
-    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, JButton btnOk) {
+    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, boolean variableRewrite, JButton btnOk) {
         this.btnOk = btnOk;
         
         initComponents();
         
         this.name.setText(name);
-        if ( name != null && name.trim().length() > 0 ) {
+        if ( name != null && name.trim().length() > 0 && !variableRewrite) {
             this.name.setCaretPosition(name.length());
             this.name.setSelectionStart(0);
             this.name.setSelectionEnd(name.length());
         }
+
+        if (variableRewrite) {
+            this.name.setEditable(false);
+        }
+        
         this.allowInitMethods = allowInitMethods;
         this.replaceAll.setEnabled(numOccurrences > 1);
         this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;

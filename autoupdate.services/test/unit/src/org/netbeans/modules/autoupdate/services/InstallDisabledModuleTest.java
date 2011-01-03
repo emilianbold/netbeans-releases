@@ -45,13 +45,11 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -59,7 +57,6 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach
  */
 public class InstallDisabledModuleTest extends OperationsTestImpl {
-
     public InstallDisabledModuleTest(String testName) {
         super(testName);
     }
@@ -72,29 +69,27 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        
         super.setUp();        
         System.setProperty("netbeans.dirs", getWorkDirPath());
         
+        LOG.log(Level.INFO, "Setting netbeans.dirs property to {0}", System.getProperty("netbeans.dirs"));
         final String fn = moduleCodeNameBaseForTest().replace('.', '-') + ".xml";
-        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Modules/" + fn);
-                OutputStream os = fo.getOutputStream();
-                String cfg = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                        "<!DOCTYPE module PUBLIC '-//NetBeans//DTD Module Status 1.0//EN' 'http://www.netbeans.org/dtds/module-status-1_0.dtd'>\n" +
-                        "<module name='com.sun.testmodule.cluster'>\n" +
-                        "   <param name='autoload'>false</param>\n" +
-                        "   <param name='eager'>false</param>\n" +
-                        "   <param name='enabled'>false</param>\n" +
-                        "   <param name='jar'>modules/com-sun-testmodule-cluster.jar</param>\n" +
-                        "   <param name='reloadable'>false</param>\n" +
-                        "   <param name='specversion'>1.0</param>\n" +
-                        "</module>\n" +
-                        "\n";
-                os.write(cfg.getBytes("UTF-8"));
-                os.close();
-            }
-        });
+        OutputStream os = FileUtil.getConfigFile("Modules").createAndOpen(fn);
+        String cfg = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE module PUBLIC '-//NetBeans//DTD Module Status 1.0//EN' 'http://www.netbeans.org/dtds/module-status-1_0.dtd'>\n" +
+                "<module name='com.sun.testmodule.cluster'>\n" +
+                "   <param name='autoload'>false</param>\n" +
+                "   <param name='eager'>false</param>\n" +
+                "   <param name='enabled'>false</param>\n" +
+                "   <param name='jar'>modules/com-sun-testmodule-cluster.jar</param>\n" +
+                "   <param name='reloadable'>false</param>\n" +
+                "   <param name='specversion'>1.0</param>\n" +
+                "</module>\n" +
+                "\n";
+        os.write(cfg.getBytes("UTF-8"));
+        os.close();
+        LOG.info("Config file created");
 
         assertNotNull("File exists", FileUtil.getConfigFile("Modules/" + fn));
     }
@@ -109,12 +104,26 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
     }
 
     @RandomlyFails
-    public void testSelf() throws Exception {
+    public void testSelf() throws Throwable {
+        LOG.info("testSelf starting");
         UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull("There is an NBM to install", install);
-        installModule(install, null);//fail("OK");
+        LOG.log(Level.INFO, "module install found: {0}", install);
+        Throwable t = null;
+        try {
+            installModule(install, null);//fail("OK");
+        } catch (Throwable ex) {
+            t = ex;
+        }
+        LOG.log(Level.INFO, "Info installModule over with {0}", t);
         
         File f = new File(new File(new File(new File(System.getProperty("netbeans.user")), "config"), "Modules"), "com-sun-testmodule-cluster.xml");
+        LOG.log(Level.INFO, "Does {0} exists: {1}", new Object[]{f, f.exists()});
+        File m = new File(new File(new File(getWorkDir(), "test"), "modules"), "com-sun-testmodule-cluster.jar");
+        LOG.log(Level.INFO, "Does {0} exists: {1}", new Object[]{m, m.exists()});
+        if (t != null) {
+            throw t;
+        }
         assertTrue("Config file created in userdirectory for install of new module: " + f, f.exists());
     }
 }

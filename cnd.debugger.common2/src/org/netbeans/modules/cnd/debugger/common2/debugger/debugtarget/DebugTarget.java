@@ -467,14 +467,15 @@ public final class DebugTarget implements Record {
     }
 
     /**
-     * Set the flat argument list for this program. 
-     */
+     * Set the flat argument list for this program.
+     * unused
     public void setArgs(String newargs) {
 	getRunProfile().setArgs(newargs);
     }
     public String getArgsFlat() {
 	return getRunProfile().getArgsFlat();
     }
+     */
 
     public String [] getArgs() {
 	return getRunProfile().getArgsArray();

@@ -270,11 +270,27 @@ public final class DatabaseExplorerInternalUIs {
 
     private static final class SimpleDriverComboModel extends AbstractListModel implements ComboBoxModel {
 
-        private final List<JDBCDriver> driverList;
+        private List<JDBCDriver> driverList;
+        private final JDBCDriverManager driverManager;
 
         private Object selectedItem; // can be anything, not just a database driver
 
         public SimpleDriverComboModel(JDBCDriverManager driverManager) {
+            this.driverManager = driverManager;
+            this.driverList = new ArrayList<JDBCDriver>();
+            JDBCDriver[] drivers;
+            drivers = driverManager.getDrivers();
+            for (int i = 0; i < drivers.length; i++) {
+                JDBCDriver driver = drivers[i];
+                if (JDBCDriverSupport.isAvailable(driver)) {
+                    driverList.add(driver);
+                }
+            }
+
+            Collections.sort(driverList, new JDBCDriverComparator());
+        }
+
+        private void updateDriverList() {
             driverList = new ArrayList<JDBCDriver>();
             JDBCDriver[] drivers;
             drivers = driverManager.getDrivers();
@@ -291,6 +307,7 @@ public final class DatabaseExplorerInternalUIs {
         @Override
         public void setSelectedItem(Object anItem) {
             selectedItem = anItem;
+            updateDriverList();
         }
 
         @Override

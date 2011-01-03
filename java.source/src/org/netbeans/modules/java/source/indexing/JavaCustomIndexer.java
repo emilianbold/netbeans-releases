@@ -313,17 +313,15 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            if (context.getRoot() == null) {
-                JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
-                return;
-            }
             ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
-                        final JavaParsingContext javaContext = new JavaParsingContext(context);
+                        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
+                        if (javaContext.uq.isEmpty())
+                            return null; //No java no need to continue
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         for (Indexable i : files) {
@@ -449,7 +447,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void markDirtyFiles(final Context context, final Iterable<? extends Indexable> files) {
-        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI());
+        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
         if (indexImpl != null) {
             for (Indexable i : files) {
                 indexImpl.setDirty(i.getURL());
@@ -642,10 +640,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     break;
                 case ENABLED_WITHIN_PROJECT:
+                    final Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
-                    } else {
-                        Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
+                        if (rootPrj == null) {
+                            depRoots = Collections.singletonList(root);
+                        } else {
+                            depRoots = new ArrayList<URL>();
+                            depRoots.add(root);
+                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
+                            depRoots.addAll(srcRoots);
+                        }
+                    } else {                        
                         if (rootPrj == null) {
                             for (URL url : depRoots) {
                                 JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
@@ -661,18 +666,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             l.add(root);
-                            depRoots = Utilities.topologicalSort(l, inverseDeps);
+                            depRoots = Utilities.topologicalSort(l, inverseDeps);                            
+                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
+                            depRoots.addAll(srcRoots);
                         }
                     }
                     break;
                 case ENABLED:
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
+                        depRoots = new ArrayList<URL>();
+                        depRoots.add(root);
                     } else {
                         List<URL> l = new ArrayList<URL>(depRoots);
                         l.add(root);
                         depRoots = Utilities.topologicalSort(l, inverseDeps);
                     }
+                    final List<? extends URL> srcRoots = getSrcRootPeers(root, null);
+                    depRoots.addAll(srcRoots);
                     break;
             }
         } catch (TopologicalSortException ex) {
@@ -779,11 +789,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     //Already checked
                                     return true;
                                 }
-                                try {
-                                    return uq.isValid();
-                                } finally {
-                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                                }
+                                return uq.isValid();
                             }
                         });
                     }
@@ -824,11 +830,21 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return false;
             }
 
-        }
+        }        
 
         @Override
         public void scanFinished(final Context context) {
-            //Not needed now
+            try {
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
+                if (uq == null) {
+                    //Closing
+                    return;
+                }
+                uq.setState(ClassIndexImpl.State.INITIALIZED);            
+                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         @Override
@@ -937,4 +953,26 @@ public class JavaCustomIndexer extends CustomIndexer {
             return t.getMessage(null);
         }
     };
+    
+    private static List<? extends URL> getSrcRootPeers(final URL rootURL, final Project prj) {
+        final FileObject root = URLMapper.findFileObject(rootURL);
+        if (root == null) {
+            return Collections.<URL>emptyList();
+        }
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.SOURCE);
+        if (cp == null) {
+            return Collections.<URL>emptyList();
+        }
+        final List<? extends ClassPath.Entry> entries = cp.entries();
+        final List<URL> result = new ArrayList<URL>(entries.size());
+        for (ClassPath.Entry entry : entries) {
+            final FileObject cpRoot = entry.getRoot();
+            if (!root.equals(cpRoot) &&
+                    (prj == null || 
+                     (cpRoot != null && prj.equals(FileOwnerQuery.getOwner(cpRoot))))) {
+                result.add(entry.getURL());
+            }
+        }
+        return result;
+    }
 }

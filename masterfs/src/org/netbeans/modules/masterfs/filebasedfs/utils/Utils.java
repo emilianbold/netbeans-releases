@@ -42,17 +42,39 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Stack;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author rmatous
  */
 public class Utils {
+    public static boolean equals(File f1, File f2) {
+        if (f1 == null) {
+            return f2 == null;
+        }
+        if (f2 == null) {
+            return f1 == null;
+        }
+        if (Utilities.isMac()) {
+            return f1.getPath().compareToIgnoreCase(f2.getPath()) == 0;
+        }
+        return f1.equals(f2);
+    }
+    public static int hashCode(final File file) {
+        if (Utilities.isMac()) {
+            // same as in Win32FileSystem
+            return file.getPath().toLowerCase(Locale.ENGLISH).hashCode() ^ 1234321;
+        }
+        return file.hashCode();
+    }
+    
     public static String getRelativePath(final File dir, final File file) {
         Stack stack = new Stack();
         File tempFile = file;
-        while (tempFile != null && !tempFile.equals(dir)) {
+        while (tempFile != null && !equals(tempFile, dir)) {
             stack.push(tempFile.getName());
             tempFile = tempFile.getParentFile();
         }

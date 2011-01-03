@@ -74,7 +74,7 @@ public class ProjectNodeFactory {
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
             includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
-            includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
+            //includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
         }
 
         List<CustomizerNode> uncheckedCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(lookup);
@@ -142,15 +142,15 @@ public class ProjectNodeFactory {
         boolean includeArchiverDescription = true;
         boolean isCompileConfiguration =context.isCompilerConfiguration();
 
-        int compilerSet = -1;
+        CompilerSet compilerSet = null;
         Configuration[] selectedConfigurations = context.getSelectedConfigurations();
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-
-            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
+            CompilerSet compilerSet2 = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet != null && compilerSet2 != compilerSet) {
                 includeCompilerDescription = false;
             }
-            compilerSet = makeConfiguration.getCompilerSet().getValue();
+            compilerSet = compilerSet2;
 
             if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
                 includeCompilerDescription = false;

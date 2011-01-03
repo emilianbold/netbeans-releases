@@ -24,7 +24,9 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
     private static final String EMPTY_TEXT = ""; //NOI18N
     private JComponent currentEditor;
     private int editedRow, editedColumn;
-    private SoftReference<JTable> lastTable;
+    private SoftReference<JTable> lastTable;    
+    private static final String DEFAULT_USER_PROPERTY_NAME_VALUE =
+            NbBundle.getMessage(ValueCellEditor.class, "ValueCellEditor.virtualUserProperty.name"); //NOI18N
     private static final String DEFAULT_USER_PROPERTY_TEXT =
             NbBundle.getMessage(ValueCellEditor.class, "ValueCellEditor.virtualUserProperty.text"); //NOI18N
     private static final ResourceBundle BUNDLE = NbBundle.getBundle(ValueCellEditor.class);
@@ -128,8 +130,15 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
                     OptionValue.StringPair pair = value != null ? (OptionValue.StringPair) value : new OptionValue.StringPair();
                     final Map.Entry<String, String> sse = pair.getValue();
                     if (editedColumn == 0) {
+                        //The D is missing in entries from customizer but is in entries from parser, how it shoud behave?
+                        //Probably it's good to have it there to find out there it's a property.
+                        String text = textEditor.getText();
+                        if (DEFAULT_USER_PROPERTY_TEXT.equals(text)) {
+                            //Don't generate wrong value!
+                            text = DEFAULT_USER_PROPERTY_NAME_VALUE;
+                        }
                         Map.Entry<String, String> replacement
-                                = new AbstractMap.SimpleEntry<java.lang.String,java.lang.String>(textEditor.getText(), sse.getValue());
+                                = new AbstractMap.SimpleEntry<java.lang.String,java.lang.String>( UserPropertyNode.NAME + text, sse.getValue());
                         pair.setValue(replacement);
                         return pair;
                     } else if (editedColumn == 1) {

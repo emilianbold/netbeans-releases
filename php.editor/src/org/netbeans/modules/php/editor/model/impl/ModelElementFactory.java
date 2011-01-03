@@ -85,11 +85,11 @@ class ModelElementFactory {
         return iface;
     }
 
-    static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context) {
+    static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
         String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), 
                 nodeInfo.getOriginalNode().getFunction());
 
-        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo);
+        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo, visitor);
         return method;
     }
 

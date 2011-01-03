@@ -53,15 +53,17 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
     private BaseFileObj preferrable;
     private int size;
     private int index;
+    private boolean ignoreRecursiveListener;
 
     public RefreshSlow() {
         super();
         set(true);
+        ignoreRecursiveListener = true;
     }
 
     @Override
     public void run() {
-        RootObj.invokeRefreshFor(this, File.listRoots());
+        RootObj.invokeRefreshFor(this, File.listRoots(), ignoreRecursiveListener);
     }
 
     boolean refreshFileObject(final BaseFileObj fo, final boolean expected, final int add) {
@@ -137,5 +139,9 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     void estimate(int cnt) {
         this.size = cnt;
+    }
+
+    final void setIgnoreRecursiveListener(boolean b) {
+        ignoreRecursiveListener = b;
     }
 }

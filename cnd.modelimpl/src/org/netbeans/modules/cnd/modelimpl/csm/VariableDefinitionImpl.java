@@ -70,9 +70,9 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -230,7 +230,13 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
+            CsmObject obj = null;
+            Resolver resolver = ResolverFactory.createResolver(this);
+            try {
+                obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
+            } finally {
+                ResolverFactory.releaseResolver(resolver);
+            }
 	    if( obj instanceof CsmClass ) {
                 return (CsmClass) obj;
 	    }
@@ -285,6 +291,11 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
+    }
+
+    @Override
+    public boolean isSpecialization() {
+        return false;
     }
 
     @Override

@@ -48,11 +48,14 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
@@ -70,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -133,8 +138,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         
         executableTextField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
-        initGui();
         runDirectoryTextField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
+        projectNameField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
+        projectLocationField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
+        initGui();
         
         guidanceTextarea.setBackground(getBackground());
         setPreferredSize(new java.awt.Dimension(700, (int)getPreferredSize().getHeight()));
@@ -166,6 +173,14 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectkindLabel = new javax.swing.JLabel();
         projectKind = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
+        projectNameLabel = new javax.swing.JLabel();
+        projectLocationLabel = new javax.swing.JLabel();
+        projectFolderLabel = new javax.swing.JLabel();
+        projectNameField = new javax.swing.JTextField();
+        projectLocationField = new javax.swing.JTextField();
+        projectFolderField = new javax.swing.JTextField();
+        projectLocationButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -190,7 +205,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(executableLabel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(executableBrowseButton, bundle.getString("BROWSE_BUTTON_TXT")); // NOI18N
@@ -204,7 +219,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 12);
         add(executableBrowseButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -212,14 +227,14 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(executableTextField, gridBagConstraints);
 
         projectLabel.setLabelFor(projectComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, bundle.getString("ASSOCIATED_PROJECT_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(projectLabel, gridBagConstraints);
@@ -231,7 +246,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -241,7 +256,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         errorLabel.setText(bundle.getString("ERROR_NOTAEXEFILE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -252,16 +267,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         org.openide.awt.Mnemonics.setLocalizedText(runDirectoryLabel, bundle.getString("RUN_DIRECTORY_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(runDirectoryLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(runDirectoryTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(runDirectoryBrowseButton, bundle.getString("RUN_DIRECTORY_BUTTON_TXT")); // NOI18N
@@ -272,23 +287,23 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 4, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
         add(runDirectoryBrowseButton, gridBagConstraints);
 
         argumentLabel.setLabelFor(argumentTextField);
         org.openide.awt.Mnemonics.setLocalizedText(argumentLabel, bundle.getString("ARGUMENTS_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(argumentLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -299,13 +314,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         org.openide.awt.Mnemonics.setLocalizedText(environmentLabel, bundle.getString("ENVIRONMENT_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(environmentLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -316,14 +331,14 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         org.openide.awt.Mnemonics.setLocalizedText(projectkindLabel, org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "ProjectKindName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(projectkindLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -331,10 +346,80 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         add(projectKind, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
+        add(jSeparator1, gridBagConstraints);
+
+        projectNameLabel.setLabelFor(projectNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "RunDialogPanel.project.name.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(projectNameLabel, gridBagConstraints);
+
+        projectLocationLabel.setLabelFor(projectLocationField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "RunDialogPanel.project.location.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(projectLocationLabel, gridBagConstraints);
+
+        projectFolderLabel.setLabelFor(projectFolderField);
+        projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "RunDialogPanel.project.folder.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(projectFolderLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        add(projectNameField, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        add(projectLocationField, gridBagConstraints);
+
+        projectFolderField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        add(projectFolderField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationButton, org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "RunDialogPanel.project.location.button")); // NOI18N
+        projectLocationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectLocationButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        add(projectLocationButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void runDirectoryBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDirectoryBrowseButtonActionPerformed
@@ -374,9 +459,19 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             argumentTextField.setText(""); // NOI18N
             environmentTextField.setText(""); // NOI18N
             projectKind.setEnabled(true);
+            projectNameField.setEnabled(true);
+            projectLocationField.setEnabled(true);
+            projectLocationButton.setEnabled(true);
+            projectFolderField.setEnabled(true);
+            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder());
+            projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), new File(getExecutablePath()).getName()));
         }
         else {
             projectKind.setEnabled(false);
+            projectNameField.setEnabled(false);
+            projectLocationField.setEnabled(false);
+            projectLocationButton.setEnabled(false);
+            projectFolderField.setEnabled(false);
             Project project = projectChoices[projectComboBox.getSelectedIndex()-1];
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (pdp == null) {
@@ -423,6 +518,17 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         executableTextField.setText(fileChooser.getSelectedFile().getPath());
     }//GEN-LAST:event_executableBrowseButtonActionPerformed
+
+    private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed
+        String path = this.projectLocationField.getText();
+        FileChooser chooser = new FileChooser(
+                getString("RunDialogPanel.Title_SelectProjectLocation"),
+                null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            File projectDir = chooser.getSelectedFile();
+            projectLocationField.setText(projectDir.getAbsolutePath());
+        }
+    }//GEN-LAST:event_projectLocationButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -436,15 +542,33 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private javax.swing.JTextField executableTextField;
     private javax.swing.JTextArea guidanceTextarea;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JComboBox projectComboBox;
+    private javax.swing.JTextField projectFolderField;
+    private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JComboBox projectKind;
     private javax.swing.JLabel projectLabel;
+    private javax.swing.JButton projectLocationButton;
+    private javax.swing.JTextField projectLocationField;
+    private javax.swing.JLabel projectLocationLabel;
+    private javax.swing.JTextField projectNameField;
+    private javax.swing.JLabel projectNameLabel;
     private javax.swing.JLabel projectkindLabel;
     private javax.swing.JButton runDirectoryBrowseButton;
     private javax.swing.JLabel runDirectoryLabel;
     private javax.swing.JTextField runDirectoryTextField;
     // End of variables declaration//GEN-END:variables
     
+    private Project[] getOpenedProjects() {
+        List<Project> res = new ArrayList<Project>();
+        for(Project p :OpenProjects.getDefault().getOpenProjects()) {
+            if (p.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
+                res.add(p);
+            }
+        }
+        return res.toArray(new Project[res.size()]);
+    }
+
     private void initGui() {
         ActionListener projectComboBoxActionListener = projectComboBox.getActionListeners()[0];
         projectComboBox.removeActionListener(projectComboBoxActionListener);
@@ -454,7 +578,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBox.setVisible(isRun);
         projectLabel.setVisible(isRun);
         if (isRun) {
-            projectChoices = OpenProjects.getDefault().getOpenProjects();
+            projectChoices = getOpenedProjects();
             for (int i = 0; i < projectChoices.length; i++) {
                 projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
             }
@@ -510,9 +634,49 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         return true;
     }
+
+    private boolean validateProjectLocation() {
+        if (!PanelProjectLocationVisual.isValidProjectName(projectNameField.getText())) {
+            setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
+            return false;
+        }
+        if (!CndPathUtilitities.isPathAbsolute(projectLocationField.getText())) {
+            setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
+            return false;
+        }
+        File f = CndFileUtils.createLocalFile(projectLocationField.getText()).getAbsoluteFile();
+        if (PanelProjectLocationVisual.getCanonicalFile(f) == null) {
+            setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
+            return false;
+        }
+        final File destFolder = PanelProjectLocationVisual.getCanonicalFile(CndFileUtils.createLocalFile(projectFolderField.getText()).getAbsoluteFile()); // project folder always local
+        if (destFolder == null) {
+            setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
+            return false;
+        }
+        File projLoc = destFolder;
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            setError("RunDialogPanel.MSG_ProjectFolderReadOnly", false); // NOI18N
+            return false;
+        }
+        if (destFolder.exists()) {
+            if (destFolder.isFile()) {
+                setError("RunDialogPanel.MSG_NotAFolder", false); // NOI18N
+                return false;
+            }
+            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
+                setError("RunDialogPanel.MSG_ProjectfolderNotEmpty", false, MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                return false;
+            }
+        }
+        return true;
+    }
     
-    private void setError(String errorMsg, boolean disable) {
-        setErrorMsg(getString(errorMsg));
+    private void setError(String errorMsg, boolean disable, String ... args) {
+        setErrorMsg(getString(errorMsg, args));
         if (disable) {
             runDirectoryBrowseButton.setEnabled(false);
             runDirectoryLabel.setEnabled(false);
@@ -523,6 +687,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             environmentTextField.setEnabled(false);
             projectComboBox.setEnabled(false);
             projectKind.setEnabled(false);
+            projectNameField.setEnabled(false);
+            projectLocationField.setEnabled(false);
+            projectLocationButton.setEnabled(false);
+            projectFolderField.setEnabled(false);
         }
         actionButton.setEnabled(false);
     }
@@ -540,8 +708,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBox.setEnabled(true);
         if (projectComboBox.getSelectedIndex() == 0) {
             projectKind.setEnabled(true);
+            projectNameField.setEnabled(true);
+            projectLocationField.setEnabled(true);
+            projectLocationButton.setEnabled(true);
+            projectFolderField.setEnabled(true);
         } else {
             projectKind.setEnabled(false);
+            projectNameField.setEnabled(false);
+            projectLocationField.setEnabled(false);
+            projectLocationButton.setEnabled(false);
+            projectFolderField.setEnabled(false);
         }
         
         actionButton.setEnabled(true);
@@ -557,15 +733,25 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     return;
                 }
                 runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
+            } else if (documentEvent.getDocument() == projectNameField.getDocument() ||
+                       documentEvent.getDocument() == projectLocationField.getDocument()) {
+                String projectName = projectNameField.getText().trim();
+                String projectFolder = projectLocationField.getText().trim();
+                while (projectFolder.endsWith("/")) { // NOI18N
+                    projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
+                }
+                projectFolderField.setText(projectFolder + File.separatorChar + projectName);
+                if (!validateProjectLocation()) {
+                    return;
+                }
             }
-            validateRunDirectory();
         } finally {
             isValidating = false;
         }
     }
 
     // ModifiedDocumentListener
-    public class ModifiedValidateDocumentListener implements DocumentListener {
+    private final class ModifiedValidateDocumentListener implements DocumentListener {
         @Override
         public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
@@ -597,20 +783,20 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
                 progress.start();
                 try {
-                    String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
-                    String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(getExecutablePath()).getName());
-                    String baseDir = projectParentFolder + File.separator + projectName;
+                    String projectParentFolder = projectLocationField.getText().trim();
+                    String projectName = projectNameField.getText().trim();
+                    String baseDir = projectFolderField.getText().trim();
                     MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
                             ExecutionEnvironmentFactory.getLocal().getHost());
                     // Working dir
                     String wd = new File(getExecutablePath()).getParentFile().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-                    wd = CndPathUtilitities.normalize(wd);
+                    wd = CndPathUtilitities.normalizeSlashes(wd);
                     conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
                     // Executable
                     String exe = getExecutablePath();
                     exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-                    exe = CndPathUtilitities.normalize(exe);
+                    exe = CndPathUtilitities.normalizeSlashes(exe);
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
                     ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
@@ -664,7 +850,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         // Working dir
         String wd = runDirectoryTextField.getText();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalize(wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();
@@ -697,12 +883,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     }
     
     /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(RunDialogPanel.class);
-        }
-        return bundle.getString(s);
+    private String getString(String s, String ... args) {
+        return NbBundle.getMessage(RunDialogPanel.class, s, args);
     }
     
     public boolean asynchronous() {

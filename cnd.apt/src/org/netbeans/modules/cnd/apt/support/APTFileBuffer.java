@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Represents the input stream provider for APTDriver
@@ -57,9 +58,10 @@ public interface APTFileBuffer {
     public File getFile(); // XXX:FileObject conversion: remove
     public FileObject getFileObject();
     public CharSequence getAbsolutePath();
+    public FileSystem getFileSystem();
+    public CharSequence getUrl();
     public Reader getReader() throws IOException;    
     public char[] getCharBuffer() throws IOException;
     public int getLength();
     public boolean isFileBased();
-
 }

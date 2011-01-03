@@ -4,7 +4,7 @@ Description: JAX-WS Reference Implementation
 License: CDDL-1.0
 OSR: 4116
 Origin: https://jax-ws.dev.java.net/
-Files: jaxws-2.2.zip, jaxws-2_2-api-doc.zip
+Files: jaxws-2.2.zip, jaxws-api-doc.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

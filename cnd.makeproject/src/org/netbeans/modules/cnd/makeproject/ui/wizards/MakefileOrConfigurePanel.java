@@ -68,6 +68,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
+        configureRunFolderTextField.setText("build"); // default build subfolder //NOI18N
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
@@ -105,11 +106,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         // Add change listeners
         makefileNameTextField.getDocument().addDocumentListener(documentListener);
         configureNameTextField.getDocument().addDocumentListener(documentListener);
+        configureRunFolderTextField.getDocument().addDocumentListener(documentListener);
     }
 
     private void removeDocumentLiseners(){
         makefileNameTextField.getDocument().removeDocumentListener(documentListener);
         configureNameTextField.getDocument().removeDocumentListener(documentListener);
+        configureRunFolderTextField.getDocument().removeDocumentListener(documentListener);
     }
 
     @Override
@@ -163,12 +166,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makefileNameTextField.getText());
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, ""); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, ""); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, ""); // NOI18N
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, configureMakefileNameTextField.getText());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, configureNameTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, configureArgumentsTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, configureNameTextField.getText()); 
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, configureArgumentsTextField.getText());
+            if (runSubfolderCheckBox.isSelected()) {
+                wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, configureRunFolderTextField.getText());
+            } else {
+                wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, ""); // NOI18N
+            }
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, ""); // NOI18N
         }
@@ -187,6 +196,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             configureArgumentsLabel.setEnabled(false);
             configureBrowseButton.setEnabled(false);
             configureArgumentsTextField.setEnabled(false);
+            runSubfolderCheckBox.setEnabled(false);
+            configureRunFolderTextField.setEnabled(false);
             configureMakefileNameTextField.setEnabled(false);
             configureMakefileNameLabel.setEnabled(false);
             runConfigureCheckBox.setEnabled(false);
@@ -201,6 +212,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             configureArgumentsLabel.setEnabled(true);
             configureBrowseButton.setEnabled(true);
             configureArgumentsTextField.setEnabled(true);
+            runSubfolderCheckBox.setEnabled(true);
+            configureRunFolderTextField.setEnabled(runSubfolderCheckBox.isSelected());
             configureMakefileNameTextField.setEnabled(true);
             configureMakefileNameLabel.setEnabled(true);
             runConfigureCheckBox.setEnabled(true);
@@ -238,9 +251,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
+                if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText())) {
+                    String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    return false;
+                }
                 FileObject file = NewProjectWizardUtils.getFileObject(configureNameTextField.getText(), controller.getWizardDescriptor());
-                if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText()) ||
-                    !file.isValid() || file.isFolder()) {
+                if (!file.isValid() || file.isFolder()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
@@ -252,7 +269,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
 
                 int i = configureNameTextField.getText().replace('\\', '/').lastIndexOf('/');  // NOI18N
                 if (i > 0) {
-                    String mn = configureNameTextField.getText().substring(0, i+1) + "Makefile";  // NOI18N
+                    String mn = configureNameTextField.getText().substring(0, i+1);
+                    if (runSubfolderCheckBox.isSelected()) {
+                        String subfolder = configureRunFolderTextField.getText().trim();
+                        if (!subfolder.isEmpty()) {
+                            mn += subfolder+"/";  // NOI18N
+                        }
+                    }
+                    mn += "Makefile";  // NOI18N
                     configureMakefileNameTextField.setText(mn); // NOI18N
                     if (NewProjectWizardUtils.fileExists(mn, controller.getWizardDescriptor())) {
                         makefileNameTextField.setText(mn);
@@ -288,14 +312,16 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureBrowseButton = new javax.swing.JButton();
         configureArgumentsLabel = new javax.swing.JLabel();
         configureArgumentsTextField = new javax.swing.JTextField();
-        instructionPanel = new javax.swing.JPanel();
-        instructionsTextArea = new javax.swing.JTextArea();
         configureMakefileNameLabel = new javax.swing.JLabel();
         configureMakefileNameTextField = new javax.swing.JTextField();
         runConfigureCheckBox = new javax.swing.JCheckBox();
         makeCheckBox = new javax.swing.JCheckBox();
+        runSubfolderCheckBox = new javax.swing.JCheckBox();
+        configureRunFolderTextField = new javax.swing.JTextField();
+        instructionPanel = new javax.swing.JPanel();
+        instructionsTextArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle"); // NOI18N
@@ -318,7 +344,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(makefileRadioButton, gridBagConstraints);
         makefileRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "MAKEFILE_RADIO_BUTTON_AD")); // NOI18N
 
@@ -363,7 +389,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(configureRadioButton, gridBagConstraints);
         configureRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_RADIO_BUTTON_AD")); // NOI18N
 
@@ -414,38 +440,11 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(configureArgumentsTextField, gridBagConstraints);
 
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
-
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setText(bundle.getString("MakefileOrConfigureInstructions")); // NOI18N
-        instructionsTextArea.setWrapStyleWord(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
-        instructionsTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_HELP")); // NOI18N
-        instructionsTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_HELP_AD")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(instructionPanel, gridBagConstraints);
-
         configureMakefileNameLabel.setLabelFor(configureMakefileNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(configureMakefileNameLabel, bundle.getString("CONFIGURE_MAKEFILE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(configureMakefileNameLabel, gridBagConstraints);
@@ -453,7 +452,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         configureMakefileNameTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -465,10 +464,10 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         runConfigureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(runConfigureCheckBox, gridBagConstraints);
 
         makeCheckBox.setSelected(true);
@@ -479,8 +478,59 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 16, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         add(makeCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(runSubfolderCheckBox, org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "run.configure.subfolder")); // NOI18N
+        runSubfolderCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runSubfolderCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
+        add(runSubfolderCheckBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(configureRunFolderTextField, gridBagConstraints);
+
+        instructionPanel.setLayout(new java.awt.GridBagLayout());
+
+        instructionsTextArea.setEditable(false);
+        instructionsTextArea.setLineWrap(true);
+        instructionsTextArea.setText(bundle.getString("MakefileOrConfigureInstructions")); // NOI18N
+        instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        instructionPanel.add(instructionsTextArea, gridBagConstraints);
+        instructionsTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_HELP")); // NOI18N
+        instructionsTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_HELP_AD")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void configureRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureRadioButtonActionPerformed
@@ -513,7 +563,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         configureNameTextField.setText(path);
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
     
@@ -540,9 +590,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         makefileNameTextField.setText(path);
     }//GEN-LAST:event_makefileBrowseButtonActionPerformed
+
+    private void runSubfolderCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runSubfolderCheckBoxActionPerformed
+        if (runSubfolderCheckBox.isSelected()) {
+            configureRunFolderTextField.setEnabled(true);
+        } else {
+            configureRunFolderTextField.setEnabled(false);
+        }
+        valid(null);
+    }//GEN-LAST:event_runSubfolderCheckBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -555,6 +614,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     private javax.swing.JLabel configureNameLabel;
     private javax.swing.JTextField configureNameTextField;
     private javax.swing.JRadioButton configureRadioButton;
+    private javax.swing.JTextField configureRunFolderTextField;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
@@ -564,6 +624,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     private javax.swing.JTextField makefileNameTextField;
     private javax.swing.JRadioButton makefileRadioButton;
     private javax.swing.JCheckBox runConfigureCheckBox;
+    private javax.swing.JCheckBox runSubfolderCheckBox;
     // End of variables declaration//GEN-END:variables
     
     private static String getString(String s) {

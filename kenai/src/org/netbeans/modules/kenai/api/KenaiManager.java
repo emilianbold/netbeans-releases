@@ -48,12 +48,14 @@ import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -71,7 +73,7 @@ public final class KenaiManager {
     public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
     private static final String INSTANCES_PREF="kenai.instances"; // NOI18N
-    private static final String UDPATED = "updated.";
+    private static final String UPDATED = "updated.";
     public static final String INSTANCES_URL = System.getProperty("kenai.team-servers.url", "http://netbeans.org/team-servers");
 
     /**
@@ -98,7 +100,7 @@ public final class KenaiManager {
      */
     public synchronized Kenai createKenai(String name, String url) throws MalformedURLException {
         return addInstance(Kenai.createInstance(name, url));
-    }
+    }    
     
     private Kenai addInstance(Kenai instance) {
         synchronized (this) {
@@ -164,12 +166,13 @@ public final class KenaiManager {
                 }
             }
         } else {
-            if (instances.isEmpty()) {
-                try {
-                    instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+            try {
+                if (instances.isEmpty()) {                    
+                    instances.put("https://java.net", Kenai.createInstance("java.net", "https://java.net"));            
+                    preserveKenaiComHack(); // check if kenai.com haven't been used previously                    
                 }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         if (Boolean.parseBoolean(System.getProperty("kenai.team-servers.update", "true"))) {
@@ -210,31 +213,66 @@ public final class KenaiManager {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
+                URLConnection conn = null;
+                BufferedReader rd = null;
                 try {
                     URL url = new URL(INSTANCES_URL);
-                    URLConnection conn = url.openConnection();
-
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    try {
-                        String line;
-                        while ((line = rd.readLine()) != null) {
-                            line = line.trim();
-                            if (line.length() != 0) {
-                                if (getKenai(line) == null && !prefs.getBoolean(UDPATED + line, false)) {
-                                    addInstance(Kenai.createInstance(null, line));
-                                    prefs.putBoolean(UDPATED + line, true);
-                                }
+                    conn = url.openConnection();
+                    rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String line;
+                    while ((line = rd.readLine()) != null) {
+                        line = line.trim();
+                        if (line.length() != 0) {
+                            if (getKenai(line) == null && !prefs.getBoolean(UPDATED + line, false)) {
+                                addInstance(Kenai.createInstance(null, line));
+                                prefs.putBoolean(UPDATED + line, true);
                             }
                         }
-                    } finally {
-                        rd.close();
                     }
                 } catch (IOException iOException) {
                     //update not available
+                } finally {
+                    if(rd != null) {
+                        try { rd.close(); } catch (IOException e) {}
+                    }
+                    if(conn instanceof HttpURLConnection) {
+                        ((HttpURLConnection)conn).disconnect(); // just in case
+                    }
                 }
             }
        });
     }
+    
+    private void preserveKenaiComHack() throws MalformedURLException {
+        // HACK to preserve kenai.com server configuration until it goes down.
+        // instances might be empty even if user was using kenai.com as that one was
+        // hardcoded and wasn't stored in preferences => so ensure now it gets stored.
+        // Check if any kenai.com projects were opened in the IDE
+        Preferences uiprefs = NbPreferences.root().node ("org/netbeans/modules/kenai/ui/allProjects-kenai.com");                    
+        String count = uiprefs != null ? uiprefs.get("count", null) : null; //NOI18N
+        if(count != null && !count.isEmpty() && !count.equals("0")) {            
+            instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+            store();
+            return;
+        }
+        
+        // no project stored - lets see if at least logged into dashboard
+        uiprefs = NbPreferences.root().node ("org/netbeans/modules/kenai/ui");                    
+        if(uiprefs == null) {
+            return;
+        }
+        String[] keys;   
+        try {
+            keys = uiprefs.keys();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        for (String key : keys) {
+            if(key.startsWith("kenai.com")) {
+                instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+                store();
+            }
+        }
+    }
 }
-
-

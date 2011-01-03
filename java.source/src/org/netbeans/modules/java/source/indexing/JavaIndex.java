@@ -261,7 +261,7 @@ public final class JavaIndex {
 
     public static boolean isLibrary (final URL root) {
         assert root != null;
-        ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root);
+        ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root, false);
         return uq == null || !uq.isSource();
     }
 
