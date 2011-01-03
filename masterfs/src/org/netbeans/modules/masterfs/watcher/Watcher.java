@@ -247,6 +247,7 @@ public final class Watcher extends AnnotationProvider {
 
     private void enqueueAll(Set<FileObject> fos) {
         assert fos != null;
+        assert !fos.contains(null) : "No nulls";
 
         synchronized(lock) {
             if (pending == null) {
