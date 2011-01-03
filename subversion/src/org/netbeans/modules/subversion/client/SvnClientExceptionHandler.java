@@ -182,7 +182,7 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    public boolean handleKenaiAuthorisation(SvnKenaiAccessor support, String url) {
+    private boolean handleKenaiAuthorization(SvnKenaiAccessor support, String url) {
         PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         if(pa == null) {
             return false;
@@ -220,7 +220,7 @@ public class SvnClientExceptionHandler {
             } else if (!support.canRead(sUrl)) {
                 throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
             }
-            return support.showLogin() && handleKenaiAuthorisation(support, sUrl);
+            return support.showLogin() && handleKenaiAuthorization(support, sUrl);
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
