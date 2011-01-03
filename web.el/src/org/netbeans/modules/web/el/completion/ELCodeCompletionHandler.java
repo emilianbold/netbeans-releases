@@ -246,6 +246,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
+            if(element == null) {
+                continue; //unresolvable bean class name
+            }
             ELJavaCompletionItem item = new ELJavaCompletionItem(element, bean.name, elElement, typeUtilities);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
