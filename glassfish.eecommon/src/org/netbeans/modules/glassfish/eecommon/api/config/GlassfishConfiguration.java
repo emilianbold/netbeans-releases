@@ -599,6 +599,8 @@ public abstract class GlassfishConfiguration implements
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
                     if((contextRoot != null) && (contextRoot.equals("/"))) { //NOI18N
                         contextRoot = ""; //NOI18N
+                    } else if (null == contextRoot) {
+                        contextRoot = cr;
                     }
                 }
             } catch (IOException ex) {
@@ -611,6 +613,7 @@ public abstract class GlassfishConfiguration implements
                     "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
                     module.getType());
         }
+        cr = contextRoot;
         return contextRoot;
     }
 
@@ -625,6 +628,12 @@ public abstract class GlassfishConfiguration implements
                 String suspect = "";
                 if (null != module.getResourceDirectory())
                     suspect = module.getResourceDirectory().getAbsolutePath();
+                if (contextRoot.equals(cr))
+                    return;
+                if (null == cr) {
+                    cr = contextRoot;
+                    return;
+                }
                 cr = contextRoot;
                 final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
                 RP.post(new Runnable() {
