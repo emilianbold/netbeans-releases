@@ -380,12 +380,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             //outer reference to inner class
             //member needn't to be private
             Tree tree = workingCopy.getTrees().getTree(current);
-            if (tree.getKind() == Tree.Kind.METHOD) {
+            if (tree != null && tree.getKind() == Tree.Kind.METHOD) {
                 MethodTree method = (MethodTree) tree;
                 if (method.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
                     workingCopy.rewrite(method.getModifiers(), make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE));
                 }
-            } else if (tree.getKind() == Tree.Kind.VARIABLE) {
+            } else if (tree != null && tree.getKind() == Tree.Kind.VARIABLE) {
                 VariableTree variable = (VariableTree) tree;
                 if (variable.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
                     workingCopy.rewrite(variable.getModifiers(), make.removeModifiersModifier(variable.getModifiers(), Modifier.PRIVATE));
