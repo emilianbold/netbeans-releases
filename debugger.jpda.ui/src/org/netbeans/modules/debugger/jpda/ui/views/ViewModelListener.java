@@ -79,6 +79,7 @@ import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ReorderableTreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -98,11 +99,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private static final Class[] NODE_MODELS = { NodeModel.class, CheckNodeModel.class, DnDNodeModel.class, ExtendedNodeModel.class };
     private static final Class[] NODE_MODEL_FILTERS = { NodeModelFilter.class, CheckNodeModelFilter.class, DnDNodeModelFilter.class, ExtendedNodeModelFilter.class };
 
+    private static final RequestProcessor RP = new RequestProcessor(ViewModelListener.class.getName(), 1);
+
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
 
     private String          viewType;
     private JComponent      view;
+    private boolean isUp;
     
     
     public ViewModelListener (
@@ -135,6 +139,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 Models.EMPTY_MODEL
             );
         }
+        isUp = false;
     }
 
     public void propertyChange (PropertyChangeEvent e) {
@@ -149,7 +154,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         //System.err.println("\ngetMultiModels("+viewPath+") = "+Arrays.asList(models)+"\n");
     }
 
-    private synchronized void updateModel () {
+    private synchronized void updateModel() {
+        isUp = true;
+        RP.post(new Runnable() {
+            public void run() {
+                updateModelLazily();
+            }
+        });
+    }
+
+    private synchronized void updateModelLazily() {
+        if (!isUp) return ;    // Destroyed in between
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
