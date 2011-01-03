@@ -871,6 +871,13 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     }
 
     private void refresh(Document doc, int pos) {
+        AnnotationHolder holder = getAnnotationHolder(doc);
+
+        if (holder == null) {
+            Logger.getLogger(HintsUI.class.getName()).log(Level.FINE, "No AnnotationHolder associated to: {0} (stream description property: {1})", new Object[] {doc, doc.getProperty(Document.StreamDescriptionProperty)});
+            return ;
+        }
+        
         Context context = ContextAccessor.getDefault().newContext(pos, cancel);
         String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(doc);
         Lookup lookup = MimeLookup.getLookup(mimeType);
@@ -878,7 +885,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         //set errors from all available refreshers
         for (PositionRefresher ref : refreshers) {
             Map<String, List<ErrorDescription>> layer2Errs = ref.getErrorDescriptionsAt(context, doc);
-            getAnnotationHolder(doc).setErrorsForLine(pos, layer2Errs);
+            holder.setErrorsForLine(pos, layer2Errs);
         }
     }
 
