@@ -82,6 +82,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
@@ -309,7 +310,8 @@ public final class Source {
                 // but they usually don't and this should be good enough for Snapshots.
                 try {
                     if (fileObject.isValid ()) {
-                        InputStream is = fileObject.getInputStream ();
+                        final InputStream is = fileObject.getInputStream ();
+                        assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
                         try {
                             BufferedReader reader = new BufferedReader (
                                 new InputStreamReader (
