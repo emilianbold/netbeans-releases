@@ -369,7 +369,12 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 }
             }
             Git git = Git.getInstance();
-            Map<File, GitStatusNode> nodes = syncTable.getNodes();
+            Map<File, GitStatusNode> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, GitStatusNode>>() {
+                @Override
+                public Map<File, GitStatusNode> run() {
+                    return syncTable.getNodes();
+                }
+            });
             // sort changes
             final List<GitStatusNode> toRemove = new LinkedList<GitStatusNode>();
             final List<GitStatusNode> toRefresh = new LinkedList<GitStatusNode>();

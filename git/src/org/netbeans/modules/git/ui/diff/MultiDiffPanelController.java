@@ -801,7 +801,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             }
             Git git = Git.getInstance();
-            Map<File, DiffNode> nodes = fileTable.getNodes();
+            Map<File, DiffNode> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, DiffNode>>() {
+                @Override
+                public Map<File, DiffNode> run() {
+                    return fileTable.getNodes();
+                }
+            });
             // sort changes
             final List<DiffNode> toRemove = new LinkedList<DiffNode>();
             final List<DiffNode> toRefresh = new LinkedList<DiffNode>();
