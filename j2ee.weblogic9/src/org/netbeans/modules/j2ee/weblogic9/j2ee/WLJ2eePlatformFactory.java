@@ -94,6 +94,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServe
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -117,10 +118,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
 
     // always prefer JPA 1.0 see #189205
-    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
+    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^.*javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
+    private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile("^.*javax\\.persistence.*_2-\\d+-\\d+\\.jar$");
+    
+    private static final Pattern JPA_2_SUPPORT_PATTERN = Pattern.compile("^.*com.oracle.jpa2support.*$"); // NOI18N
+    
     private static final FilenameFilter DWP_LIBRARY_FILTER = new PrefixesFilter(
             "javax.", "glassfish.jsf", "glassfish.jstl", "org.eclipse.persistence"); // NOI18N
+    
+    private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -147,10 +154,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         private String platformRoot;
         
+        /** <i>GuardedBy("this")</i> */
         private LibraryImplementation[] libraries = null;
 
         /** <i>GuardedBy("this")</i> */
         private String defaultJpaProvider;
+        
+        /** <i>GuardedBy("this")</i> */
+        private boolean jpa2Available;
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
@@ -192,13 +203,21 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
                 return false; // to explicitelly emphasise that JSR 109 is not supported
             }
+
             if ("defaultPersistenceProviderJavaEE5".equals(toolName)) { // NOI18N
                 return true;
             }
-
-            //
-            if("jpaversionverification".equals(toolName))return true;// NOI18N
-            if("jpa1.0".equals(toolName))return true;// NOI18N
+            
+            // this property says whether following two props are taken into account
+            if("jpaversionverification".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa1.0".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa2.0".equals(toolName)) { // NOI18N
+                return isJpa2Available();
+            }
 
             // shortcut
             if (!"openJpaPersistenceProviderIsDefault".equals(toolName) // NOI18N
@@ -303,14 +322,15 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }        
 
         @Override
-        public LibraryImplementation[] getLibraries() {
-            if (libraries == null) {
-                // FIXME DWP
-                if (dm.isWebProfile()) {
-                    initLibrariesForDWP();
-                } else {
-                    initLibrariesForWLS();
-                }
+        public synchronized LibraryImplementation[] getLibraries() {
+            if (libraries != null) {
+                return libraries;
+            }
+            // FIXME DWP
+            if (dm.isWebProfile()) {
+                initLibrariesForDWP();
+            } else {
+                initLibrariesForWLS();
             }
             return libraries;
         }
@@ -387,7 +407,32 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
                     list.add(fileToUrl(apiFile));
-                    list.addAll(getJarClassPath(apiFile));
+                    list.addAll(getApiJarClassPath(apiFile));
+                }
+                
+                // patches
+                // FIXME multiple versions under same middleware
+                File mwHome = getMiddlewareHome();
+                File[] patchDirCandidates = mwHome.listFiles(PATCH_DIR_FILTER);
+                if (patchDirCandidates != null) {
+                    for (File candidate : patchDirCandidates) {
+                        File jarFile = FileUtil.normalizeFile(new File(candidate,
+                                "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
+                        if (jarFile.exists()) {
+                            list.add(fileToUrl(jarFile));
+                            List<URL> deps = getJarClassPath(jarFile);
+                            list.addAll(deps);
+                            for (URL dep : deps) {
+                                List<URL> innerDeps = getJarClassPath(dep);
+                                list.addAll(innerDeps);
+                                for (URL innerDep : innerDeps) {
+                                    if (innerDep.getPath().contains("patch_jars")) { // NOI18N
+                                        list.addAll(getJarClassPath(innerDep));
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 addPersistenceLibrary(list);
@@ -407,8 +452,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 LOGGER.log(Level.WARNING, null, e);
             }
             
-            libraries = new LibraryImplementation[1];
-            libraries[0] = library;
+            synchronized (this) {
+                libraries = new LibraryImplementation[1];
+                libraries[0] = library;
+            }
         }
 
         // TODO if this will became same or quite similar to
@@ -450,8 +497,20 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 LOGGER.log(Level.WARNING, null, e);
             }
 
-            libraries = new LibraryImplementation[1];
-            libraries[0] = library;
+            synchronized (this) {
+                libraries = new LibraryImplementation[1];
+                libraries[0] = library;
+            }
+        }
+        
+        private synchronized boolean isJpa2Available() {
+            if (libraries != null) {
+                return jpa2Available;
+            }
+            
+            // initialize and return value
+            getLibraries();
+            return jpa2Available;
         }
 
         private String getDefaultJpaProvider() {
@@ -515,10 +574,35 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
+        // method checks whether there is already persistence API present in the list
         private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
+            String jpaProvider = getDefaultJpaProvider();
+            
+            for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
+                URL archiveUrl = FileUtil.getArchiveFile(it.next());
+                if (archiveUrl != null) {
+                    if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                        // eclipse link must be default for JPA2
+                        if (!ECLIPSELINK_JPA_PROVIDER.equals(jpaProvider)) {
+                            it.remove();
+                        } else {
+                            synchronized (this) {
+                                jpa2Available = true;
+                            }
+                            return;
+                        }
+                    } else if(JPA_2_SUPPORT_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                        // eclipse link must be default for JPA2
+                        if (!ECLIPSELINK_JPA_PROVIDER.equals(jpaProvider)) {
+                            it.remove();
+                        }
+                    } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                        return;
+                    }
+                }
+            }  
+            
             File middleware = getMiddlewareHome();
-
-            // make guess :(
             if (middleware != null) {
                 File modules = new File(middleware, "modules"); // NOI18N
                 if (modules.exists() && modules.isDirectory()) {
@@ -548,7 +632,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * 
          * @return the resulting URI
          */
-        private URL fileToUrl(File file) throws MalformedURLException {
+        private static URL fileToUrl(File file) throws MalformedURLException {
             URL url = file.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
@@ -556,7 +640,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return url;
         }
 
-        private List<URL> getJarClassPath(File apiFile) {
+        private List<URL> getApiJarClassPath(File apiFile) {
             List<URL> urls = new ArrayList<URL>();
 
             try {
@@ -589,16 +673,72 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         }
                     }
                 } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Could not read Weblogic api.jar", ex);
+                    LOGGER.log(Level.INFO, "Could not read WebLogic API JAR", ex);
                 } finally {
                     file.close();
                 }
             } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Could not open Weblogic api.jar", ex);
+                LOGGER.log(Level.INFO, "Could not open WebLogic API JAR", ex);
             }
 
             return urls;
         }
+        
+        private static List<URL> getJarClassPath(URL url) {
+            URL fileUrl = FileUtil.getArchiveFile(url);
+            if (fileUrl != null) {
+                FileObject fo = URLMapper.findFileObject(fileUrl);
+                if (fo != null) {
+                    File file = FileUtil.toFile(fo);
+                    if (file != null) {
+                        return getJarClassPath(file);
+                    }
+                }
+            }
+            return Collections.emptyList();
+        }
+        
+        private static List<URL> getJarClassPath(File jarFile) {
+            List<URL> urls = new ArrayList<URL>();
+
+            try {
+                JarFile file = new JarFile(jarFile);
+                try {
+                    Manifest manifest = file.getManifest();
+                    Attributes attrs = manifest.getMainAttributes();
+                    String value = attrs.getValue("Class-Path"); //NOI18N
+                    if (value != null) {
+                        String[] values = value.split("\\s+"); // NOI18N
+                        File parent = FileUtil.normalizeFile(jarFile).getParentFile();
+                        if (parent != null) {
+                            FileObject baseDir = FileUtil.toFileObject(parent);
+                            if (baseDir != null) {
+                                for (String cpElement : values) {
+                                    if (!"".equals(cpElement.trim())) { // NOI18N
+                                        FileObject fo = baseDir.getFileObject(cpElement);
+                                        if (fo == null) {
+                                            continue;
+                                        }
+                                        File fileElem = FileUtil.normalizeFile(FileUtil.toFile(fo));
+                                        if (fileElem != null) {
+                                            urls.add(fileToUrl(fileElem));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Could not read WebLogic JAR", ex);
+                } finally {
+                    file.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Could not open WebLogic JAR", ex);
+            }
+
+            return urls;
+        }        
         
         private String getPlatformRoot() {
             if (platformRoot == null) {
@@ -626,8 +766,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            String oldJpaProvider;
             synchronized (platform) {
+                oldJpaProvider = platform.defaultJpaProvider;
                 platform.defaultJpaProvider = null;
+                platform.jpa2Available = false;
             }
 
             Set<WLServerLibrary> tmpNewLibraries =
@@ -638,6 +781,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 oldLibraries = tmpNewLibraries;
             }
 
+            // TODO is there a possible optimization ? slowness possible ?
+            if (oldJpaProvider == null || !oldJpaProvider.equals(platform.getDefaultJpaProvider())) {
+                // there is possible change if we are switching to/from JPA2
+                synchronized (platform) {
+                    platform.libraries = null;
+                }
+                platform.firePropertyChange(J2eePlatformImpl.PROP_LIBRARIES, null, null);
+            }
             if (fireChange(tmpOldLibraries, tmpNewLibraries)) {
                 LOGGER.log(Level.FINE, "Firing server libraries change");
                 platform.firePropertyChange(J2eePlatformImpl.PROP_SERVER_LIBRARIES, null, null);
