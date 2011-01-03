@@ -579,8 +579,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
-            synchronized (applyChangeTask.changes) {
-                applyChangeTask.changes.add(event);
+            synchronized (changes) {
+                changes.put(event.getFile(), event);
             }
             changeTask.schedule(1000);
         }
@@ -780,18 +780,17 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         }
     }
 
+    private final Map<File, FileStatusCache.ChangedEvent> changes = new HashMap<File, FileStatusCache.ChangedEvent>();
     /**
      * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
      */
     private final class ApplyChangesTask extends RefreshViewTask implements Runnable {
 
-        private final Set<FileStatusCache.ChangedEvent> changes = new HashSet<FileStatusCache.ChangedEvent>();
-
         @Override
         public void run() {
             final Set<FileStatusCache.ChangedEvent> events;
             synchronized (changes) {
-                events = new HashSet<FileStatusCache.ChangedEvent>(changes);
+                events = new HashSet<FileStatusCache.ChangedEvent>(changes.values());
                 changes.clear();
             }
             // remove irrelevant changes
