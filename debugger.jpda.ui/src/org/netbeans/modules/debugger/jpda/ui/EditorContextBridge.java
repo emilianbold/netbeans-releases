@@ -166,7 +166,7 @@ public class EditorContextBridge {
                         return CLASS;
                 }
                 FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
-                if ("text/x-java".equals(fo.getMIMEType())) { // NOI18N
+                if (fo != null && "text/x-java".equals(fo.getMIMEType())) { // NOI18N
                     return LINE;
                 }
             }

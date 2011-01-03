@@ -1,5 +1,5 @@
 Name: Java Native Access
-Version: 3.0.9
+Version: 3.2.7
 License: LGPL-2.1
 OSR: 7755
 Origin: https://jna.dev.java.net/source/browse/*checkout*/jna/tags/3.0.9/jnalib/dist/jna.jar?rev=HEAD

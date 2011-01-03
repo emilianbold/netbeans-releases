@@ -528,14 +528,16 @@ public class FileStatusCache {
         if(file == null || fi == null) return;
         FileInformation current;
         synchronized (this) {
-            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi) || fi.getStatus().contains(Status.UPTODATE))
-                    && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
+            file = FileUtil.normalizeFile(file);
+            current = getInfo(file);
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi) || 
+                    // ugly piece of code, call sharability for U2D files only when toggling between ignored and U2D, otherwise SQ is called for EVERY U2D file
+                    (current != null && fi.getStatus().contains(Status.UPTODATE) && current.getStatus().contains(Status.NOTVERSIONED_EXCLUDED))
+                    ) && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
                 // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
             }
-            file = FileUtil.normalizeFile(file);
-            current = getInfo(file);
             if (equivalent(fi, current)) {
                 // no need to fire an event
                 return;
