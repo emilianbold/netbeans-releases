@@ -1264,6 +1264,7 @@ There is a support for test coverage measurement for apisupport projects
 since 6.7. There is a general contract under which alternative 
 implementations may by added (in case of multiple impls present, only 
 one is used). NetBeans 6.7 and 6.8 use Cobertura implementation. 
+(This implementation is only available on the update center for NetBeans 7.0.)
 
 A contract for test coverage implementation for module projects is to 
 create Ant script testcoverage.xml in 'harness' cluster. Script 

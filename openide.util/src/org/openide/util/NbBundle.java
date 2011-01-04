@@ -816,9 +816,9 @@ public class NbBundle extends Object {
      * </pre>
      * <p>and {@code Bundle.properties}:</p>
      * <pre>
-     * title=Bad File
+     * dialog.title=Bad File
      * # {0} - file path
-     * message=The file {0} was invalid.
+     * dialog.message=The file {0} was invalid.
      * </pre>
      * @since org.openide.util 8.10
      */
