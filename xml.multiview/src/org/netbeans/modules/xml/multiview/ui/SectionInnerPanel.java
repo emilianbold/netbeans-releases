@@ -71,6 +71,8 @@ import java.util.LinkedList;
  * @author mkuchtiak
  */
 public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
+    private static final RequestProcessor RP = new RequestProcessor(SectionInnerPanel.class);
+
     private SectionView sectionView;
     private java.util.List refreshableList = new LinkedList();
     
@@ -88,7 +90,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         }
     };
     
-    private RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+    private RequestProcessor.Task refreshTask = RP.create(new Runnable() {
         public void run() {
             refreshView();
         }
