@@ -323,7 +323,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void addRecursiveListener(FileChangeListener listener, File path) {
-        addFileChangeListener(new DeepListener(listener, path, null), path);
+        final DeepListener deep = new DeepListener(listener, path, null);
+        deep.init();
+        addFileChangeListener(deep, path);
     }
 
     /**
@@ -370,7 +372,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.37
      */
     public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
-        addFileChangeListener(new DeepListener(listener, path, stop), path);
+        final DeepListener deep = new DeepListener(listener, path, stop);
+        deep.init();
+        addFileChangeListener(deep, path);
     }
 
     /**
@@ -383,7 +387,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path, null), path);
+        final DeepListener deep = new DeepListener(listener, path, null);
+        // no need to deep.init()
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(deep, path);
         dl.run();
     }
 

@@ -46,7 +46,6 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.logging.Level;
-import org.netbeans.CLIHandler.Status;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
