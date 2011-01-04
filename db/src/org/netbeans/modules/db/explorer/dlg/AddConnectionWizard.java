@@ -98,8 +98,10 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private WizardDescriptor wd;
 
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        assert driverName != null || (driverClass == null && databaseUrl == null && user== null && password == null)
-                : "Inconsistent state when driverName is null but other parameters are not";
+        assert driverName != null || (driverClass == null && databaseUrl == null && user== null)
+                : "Inconsistent state when driverName is null but other parameters "
+                + "(url?" + databaseUrl + ", class?" + driverClass
+                + ", user? " + (user == null) + " are not";
         updateState(driverName, driverClass, databaseUrl, user, password);
     }
 
