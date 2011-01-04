@@ -81,13 +81,24 @@ public class QueryAccessorTest extends NbTestCase {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
-            System.setProperty("kenai.com.url","https://testkenai.com");
-            kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
+            System.setProperty("kenai.com.url","https://testjava.net");
+            kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
+            
+
+            String proxy = br.readLine();
+            String port = br.readLine();
+        
+            if(proxy != null) {
+                System.setProperty("https.proxyHost", proxy);
+                System.setProperty("https.proxyPort", port);
+            }
+            
+            
             br.close();
-            kenai.login(username, password.toCharArray());
+            kenai.login(username, password.toCharArray(), false);
 
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -96,7 +107,7 @@ public class QueryAccessorTest extends NbTestCase {
 
     public void testGetAllUnseenResult() throws MalformedURLException, CoreException, IOException {
         QueryAccessorImpl qa = new QueryAccessorImpl();
-        KenaiProject project = kenai.getProject("koliba");
+        KenaiProject project = kenai.getProject("nb-jnet-test");
 
         QueryHandle h = qa.getAllIssuesQuery(new ProjectHandleImpl(project));
         assertNotNull(h);

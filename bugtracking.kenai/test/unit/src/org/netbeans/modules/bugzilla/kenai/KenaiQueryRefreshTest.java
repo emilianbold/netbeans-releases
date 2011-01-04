@@ -60,6 +60,8 @@ import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
@@ -78,14 +80,27 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     
     @Override
     protected void setUp() throws Exception {
+        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        Kenai kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
 
         System.setProperty("kenai.com.url","https://testkenai.com");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
+        
+        String proxy = br.readLine();
+        String port = br.readLine();
+
+        if(proxy != null) {
+            System.setProperty("https.proxyHost", proxy);
+            System.setProperty("https.proxyPort", port);
+        }
+            
         br.close();
 
+        kenai.login(username, password.toCharArray(), false);
+        
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
@@ -104,7 +119,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         BugzillaConfig.getInstance().setQueryRefreshInterval(0); // would mean refresh imediately
         BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, false);
 
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
+        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH);
 
         // create query
         BugzillaRepository repo = getRepository();
@@ -156,8 +171,8 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     }
 
     private KenaiRepository getKenaiRepository() throws IOException {
-        KenaiProject kp = KenaiUtil.getKenaiProject("https://testkenai.com", "koliba");
-        // using kenai project 'koliba' - even if the actually used repository is different, it should have no effect on the result
+        KenaiProject kp = KenaiUtil.getKenaiProject("https://testjava.net", "nb-jnet-test");
+        // even if the actually used repository is different, it should have no effect on the result
         return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
