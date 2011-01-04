@@ -42,37 +42,28 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import java.util.List;
-import org.netbeans.modules.bugzilla.*;
+import org.netbeans.modules.bugzilla.query.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
  * @author tomas
  */
-public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
+public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryConstants {
 
-    public static final String KENAI_REPO_URL = "https://testkenai.com/bugzilla";
-
-    private TaskRepository taskRepository;
-    private BugzillaRepositoryConnector brc;
-    private TaskRepositoryManager trm;
-
-    public KenaiRepositoryTest(String arg0) {
+    public KenaiQueryTest(String arg0) {
         super(arg0);
     }
 
@@ -85,57 +76,81 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        System.setProperty("kenai.com.url","https://testkenai.com");
+        
+        Kenai kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
+        
+        String proxy = br.readLine();
+        String port = br.readLine();
+
+        if(proxy != null) {
+            System.setProperty("https.proxyHost", proxy);
+            System.setProperty("https.proxyPort", port);
+        }
+            
         br.close();
 
+        kenai.login(username, password.toCharArray(), false);
+        
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        taskRepository = new TaskRepository("bugzilla", KENAI_REPO_URL);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, password);
-        taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
+        cleanupStoredIssues();
+    }
 
-        trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));;
+    // XXX shoud be on the spi
+    public void testLastRefresh() {
+        String parameters = "query_format=advanced&" +
+                "short_desc_type=allwordssubstr&" +
+                "short_desc=whatever112233445566778899&" +
+                "product=TestProduct";
+        String qname = "kq" + System.currentTimeMillis();
+        KenaiQuery q = new KenaiQuery(qname, QueryTestUtil.getRepository(), parameters, "kp", true, false);
+        long lastRefresh = q.getLastRefresh();
+        assertEquals(0, lastRefresh);
 
-        trm.addRepository(taskRepository);
-        trm.addRepositoryConnector(brc);
+        long ts = System.currentTimeMillis();
 
-        WebUtil.init();
+        ts = System.currentTimeMillis();
+        q.refresh();
+        assertTrue(q.getLastRefresh() >= ts);
+
+        ts = System.currentTimeMillis();
+        q.refresh();
+        lastRefresh = q.getLastRefresh();
+        assertTrue(lastRefresh >= ts);
+
+        // emulate restart
+        q = new KenaiQuery(qname, QueryTestUtil.getRepository(), parameters, "kp", true, false);;
+        assertEquals((int)(lastRefresh/1000), (int)(q.getLastRefresh()/1000));
 
     }
 
-    public void testIsKenai() throws Throwable {
-        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn");
-        assertNotNull(prj);
-
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
+    private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
+        QueryTestUtil.getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
+        QueryTestUtil.getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
-    public void testOneProductAfterConfigurationRefresh() throws Throwable {
-        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn");
-        assertNotNull(prj);
+    private class QueryListener implements PropertyChangeListener {
+        int saved = 0;
+        int removed = 0;
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
+                removed++;
+            }
+            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+                saved++;
+            }
+        }
+        void reset() {
+            saved = 0;
+            removed = 0;
+        }
 
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
-        assertNotNull(repo);
-        List<String> products = repo.getConfiguration().getProducts();
-        assertEquals(1, products.size());
-        assertTrue(KenaiUtil.isKenai(repo));
-        
-        repo.refreshConfiguration();
-        products = repo.getConfiguration().getProducts();
-        assertEquals(1, products.size());
-        
     }
-
 }
