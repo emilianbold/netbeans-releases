@@ -44,6 +44,8 @@ package org.netbeans.modules.parsing.spi.indexing;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
@@ -67,7 +69,7 @@ public final class Indexable {
 
     private IndexableImpl delegate;
 
-    Indexable(final IndexableImpl delegate) {
+    Indexable(final @NonNull IndexableImpl delegate) {
         assert delegate != null;
         this.delegate = delegate;
     }
@@ -77,53 +79,29 @@ public final class Indexable {
      * represented file.
      * @return the relative path from root
      */
-    public String getRelativePath () {
+    public @NonNull String getRelativePath () {
         return delegate.getRelativePath();
     }
 
-//    /**
-//     * Returns a name of represented file.
-//     * @return a name
-//     */
-//    public String getName () {
-//        return this.delegate.getName();
-//    }
 
     /**
      * Returns absolute URL of the represented file
-     * @return uri
+     * @return the URL of file or null in case of IO error
      */
-    public URL getURL () {
+    public @CheckForNull URL getURL () {
         return delegate.getURL();
     }
 
     /**
-     * @return
+     * Returns a mime type of the {@link Indexable}
+     * @return the mime type
+     * @throws UnsupportedOperationException if called on deleted {@link Indexable}
      * @since 1.13
      */
-    public String getMimeType() {
+    public @NonNull String getMimeType() {
         return delegate.getMimeType();
     }
     
-//    /**
-//     * Returns a time when the file was last modified
-//     * @return A long value representing the time the file was last modified,
-//     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-//     * or 0L if the file does not exist or if an I/O error occurs
-//     */
-//    public long getLastModified () {
-//        return this.delegate.getLastModified();
-//    }
-
-//    /**
-//     * Returns {@link InputStream} of represented file.
-//     * The caller is responsible to correctly close the stream.
-//     * @return the {@link InputStream} to read the content
-//     * @throws java.io.IOException
-//     */
-//    public InputStream openInputStream () throws IOException {
-//        return this.delegate.openInputStream();
-//    }
 
     @Override
     public boolean equals(Object obj) {
