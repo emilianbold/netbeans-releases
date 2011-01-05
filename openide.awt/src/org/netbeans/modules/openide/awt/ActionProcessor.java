@@ -292,14 +292,25 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             if (e.getKind() != ElementKind.PACKAGE) {
-                throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
-            }
-            ActionReferences refs = e.getAnnotation(ActionReferences.class);
-            for (ActionReference actionReference : refs.value()) {
-                if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
-                    throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                ActionID id = e.getAnnotation(ActionID.class);
+                if (id == null) {
+                    throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
                 }
-                processReferences(e, actionReference, actionReference.id());
+                ActionReferences refs = e.getAnnotation(ActionReferences.class);
+                for (ActionReference actionReference : refs.value()) {
+                    if (!actionReference.id().id().isEmpty() || !actionReference.id().category().isEmpty()) {
+                        throw new LayerGenerationException("Don't specify additional id=@ActionID(...) when using @ActionID on the element", e);
+                    }
+                    processReferences(e, actionReference, id);
+                }
+            } else {
+                ActionReferences refs = e.getAnnotation(ActionReferences.class);
+                for (ActionReference actionReference : refs.value()) {
+                    if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
+                        throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                    }
+                    processReferences(e, actionReference, actionReference.id());
+                }
             }
         }
         return true;
