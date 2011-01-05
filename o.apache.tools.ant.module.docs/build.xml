@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </unzip>
         <mkdir dir="build/antclasses"/>
-        <javac srcdir="antsrc" destdir="build/antclasses" classpath="${ant.cp}" source="1.4"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" classpath="${ant.cp}" source="1.4" debug="true"/>
         <taskdef name="makemanual" classname="MakeManual" classpath="${ant.cp}:build/antclasses"/>
         <makemanual dir="${build.javahelp.dir}/${javahelp.base}" hs="javahelp/org/apache/tools/ant/module/docs/HelpSet.hs"/>
         <antcall target="projectized.javahelp"/>
