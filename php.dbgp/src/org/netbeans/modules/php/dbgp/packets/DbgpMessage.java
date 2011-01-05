@@ -80,6 +80,7 @@ import org.xml.sax.SAXException;
  */
 public abstract class DbgpMessage {
     
+    private static final Logger LOGGER = Logger.getLogger(DbgpMessage.class.getName());
 
     private static final String ERR_PACKET_ERROR 
                                                 = "ERR_PacketError";    // NOI18N
@@ -316,7 +317,8 @@ public abstract class DbgpMessage {
      * @return
      */
     private static String removeNonXMLCharacters(String text) {
-        StringBuilder out = new StringBuilder();                
+        StringBuilder out = new StringBuilder();
+        StringBuilder errorMessage = null;
         int codePoint;           
         int index = 0;
         while (index < text.length()) {
@@ -328,8 +330,20 @@ public abstract class DbgpMessage {
                     || ((codePoint >= 0xE000) && (codePoint <= 0xFFFD))
                     || ((codePoint >= 0x10000) && (codePoint <= 0x10FFFF))) {
                 out.append(Character.toChars(codePoint));
+            } else {
+                if (errorMessage == null) {
+                    errorMessage = new StringBuilder();
+                    errorMessage.append("The message from xdebug contains invalid XML characters: ");  //NOI18N
+                } else {
+                    errorMessage.append(", ");      //NOI18N
+                }
+                errorMessage.append(codePoint);
             }
             index += Character.charCount(codePoint);
+        }
+        if (errorMessage != null) {
+            errorMessage.append("\nPlease mentioned it in http://netbeans.org/bugzilla/show_bug.cgi?id=179309."); //NOI18N
+            LOGGER.warning(errorMessage.toString());
         }
         return out.toString();
     } 
