@@ -30,6 +30,7 @@
 package org.netbeans.paint;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -47,9 +48,13 @@ import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.swing.colorchooser.ColorChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileChooserBuilder;
@@ -62,6 +67,15 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
+@ConvertAsProperties(dtd = "-//org.netbeans.paint//PaintTopComponent//EN", autostore = false)
+@TopComponent.Description(preferredID = "PaintTopComponent", iconBase = "/org/netbeans/paint/new_icon.png", persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@TopComponent.Registration(mode = "editor", openAtStartup = true)
+@ActionID(category = "Window", id = "org.netbeans.paint.PaintTopComponent")
+@ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 0),
+    @ActionReference(path = "Toolbars/File", position = 0)
+})
+@TopComponent.OpenActionRegistration(displayName = "#CTL_NewCanvasAction")
 public final class PaintTopComponent extends TopComponent implements ActionListener, ChangeListener {
     private static int ct = 0; //A counter you use to provide names for new images
     private final PaintCanvas canvas = new PaintCanvas(); //The component the user draws on
@@ -73,8 +87,7 @@ public final class PaintTopComponent extends TopComponent implements ActionListe
     private final JLabel label = new JLabel(
             NbBundle.getMessage(PaintTopComponent.class, "LBL_Foreground")); //A label for the color chooser
     private final JLabel brushSizeLabel = new JLabel(
-                NbBundle.getMessage(PaintTopComponent.class, "LBL_BrushSize")); //A label for the brush size slider
-
+            NbBundle.getMessage(PaintTopComponent.class, "LBL_BrushSize")); //A label for the brush size slider
     private final JSlider brushSizeSlider = new JSlider(1, 24); //A slider to set the brush size
     private InstanceContent content = new InstanceContent(); //The bag of stuff we add/remove the Saver from, and store the last-used file in
     private Saver saver = new Saver();
@@ -90,6 +103,9 @@ public final class PaintTopComponent extends TopComponent implements ActionListe
         //Connect our lookup to the rest of the system, so that
         //SaveAction will pay attention to whether or not the Saver is available
         associateLookup(new AbstractLookup(content));
+        //Enable the Print action for the canvas:
+        putClientProperty("print.printable", true);
+        //Disable the Save action by default:
         enableSaveAction(false);
     }
 
@@ -101,7 +117,7 @@ public final class PaintTopComponent extends TopComponent implements ActionListe
         brushSizeSlider.setValue(canvas.getBrushDiameter());
         brushSizeSlider.addChangeListener(this);
         color.setColor(canvas.getColor());
-        color.setMaximumSize(new Dimension(16,16));
+        color.setMaximumSize(new Dimension(16, 16));
         //Install the toolbar and the painting component:
         add(toolbar, BorderLayout.NORTH);
         add(new JScrollPane(canvas), BorderLayout.CENTER);
@@ -212,14 +228,30 @@ public final class PaintTopComponent extends TopComponent implements ActionListe
         }
     }
 
-    //TopComponent boilerplate code
-    @Override
-    public int getPersistenceType() {
-        return PERSISTENCE_NEVER;
+    void writeProperties(java.util.Properties p) {
+        // better to version settings since initial version as advocated at
+        // http://wiki.apidesign.org/wiki/PropertyFiles
+        p.setProperty("version", "1.0");
+        // now store the color and size
+        p.setProperty("color", "" + color.getColor().getRGB()); 
+        p.setProperty("size", "" + brushSizeSlider.getValue());
     }
 
-    @Override
-    public String preferredID() {
-        return "Image";
+    void readProperties(java.util.Properties p) {
+        String version = p.getProperty("version");
+        assert "1.0".equals(version);
+        final String rgbRef = p.getProperty("color");
+        final String sizeRef = p.getProperty("size");
+        if (rgbRef != null) {
+            int rgb = Integer.parseInt(rgbRef);
+            final Color c = new Color(rgb);
+            color.setColor(c);
+            canvas.setColor(c);
+        }
+        if (sizeRef != null) {
+            int size = Integer.parseInt(sizeRef);
+            brushSizeSlider.setValue(size);
+            canvas.setBrushDiameter(size);
+        }
     }
 }

@@ -364,7 +364,7 @@ public class WindowsNotifier extends Notifier<Void> {
             }
             watcher = null;
             w.interrupt();
-            w.join();
+            w.join(2000);
         } catch (InterruptedException ex) {
             throw (IOException)new InterruptedIOException().initCause(ex);
         }
