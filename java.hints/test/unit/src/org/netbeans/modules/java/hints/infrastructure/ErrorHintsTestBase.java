@@ -136,7 +136,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         }
     }
 
-    private void prepareTest(String fileName, String code) throws Exception {
+    protected final void prepareTest(String fileName, String code) throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
@@ -177,7 +177,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     }
     
     private FileObject sourceRoot;
-    private CompilationInfo info;
+    protected CompilationInfo info;
     private Document doc;
     
     protected abstract List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception;
