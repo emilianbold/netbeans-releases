@@ -311,9 +311,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.var.might.not.have.been.initialized",
             "compiler.err.report.access",
             "compiler.err.does.not.override.abstract",
-            "compiler.err.abstract.cant.be.instantiated"
+            "compiler.err.abstract.cant.be.instantiated",
+            "compiler.warn.missing.SVUID"
     ));
-    
+
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
     
     private int[] handlePossibleMethodInvocation(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
