@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -69,27 +70,34 @@ public class JsfCustomIndexer extends CustomIndexer {
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         for (Indexable i : files) {
-            FileObject file = URLMapper.findFileObject(i.getURL());
-            if (file != null) {
-                if (JsfIndexSupport.isFaceletsLibraryDescriptor(file)) {
-                    LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
+            URL indexableURL = i.getURL();
+            if(indexableURL == null) {
+                continue;
+            }
+            FileObject file = URLMapper.findFileObject(indexableURL);
+            if (file == null) {
+                continue;
+            }
+            
+            if (JsfIndexSupport.isFaceletsLibraryDescriptor(file)) {
+                LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
 
-                    try {
-                        String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
-                        if(namespace != null) {
-                            IndexingSupport sup = IndexingSupport.getInstance(context);
-                            IndexDocument doc = sup.createDocument(file);
-                            doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
-                            doc.addPair(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY, namespace, true, true);
-                            doc.addPair(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                            sup.addDocument(doc);
+                try {
+                    String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+                    if(namespace != null) {
+                        IndexingSupport sup = IndexingSupport.getInstance(context);
+                        IndexDocument doc = sup.createDocument(file);
+                        doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
+                        doc.addPair(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY, namespace, true, true);
+                        doc.addPair(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
+                        sup.addDocument(doc);
 
-                            LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+
             }
         }
     }
