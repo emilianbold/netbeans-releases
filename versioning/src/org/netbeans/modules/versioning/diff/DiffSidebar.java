@@ -92,6 +92,7 @@ import java.nio.charset.CharsetDecoder;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -742,7 +743,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     public void componentResized(ComponentEvent e) {
-        revalidate();
+        Mutex.EVENT.readAccess(new Runnable () {
+            @Override
+            public void run() {
+                revalidate();
+            }
+        });
     }
 
     public void componentMoved(ComponentEvent e) {
@@ -755,7 +761,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        repaint();
+        Mutex.EVENT.readAccess(new Runnable () {
+            @Override
+            public void run() {
+                repaint();
+            }
+        });
     }
 
     /**
