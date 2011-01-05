@@ -122,7 +122,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile("^.*javax\\.persistence.*_2-\\d+-\\d+\\.jar$");
     
-    private static final Pattern JPA_2_SUPPORT_PATTERN = Pattern.compile("^.*com.oracle.jpa2support.*$"); // NOI18N
+    private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
     
     private static final FilenameFilter DWP_LIBRARY_FILTER = new PrefixesFilter(
             "javax.", "glassfish.jsf", "glassfish.jstl", "org.eclipse.persistence"); // NOI18N
@@ -403,7 +403,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List<URL> list = new ArrayList<URL>();
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar"))); // NOI18N
+                File weblogicFile = new File(getPlatformRoot(), "server/lib/weblogic.jar"); // NOI18N
+                if (weblogicFile.exists()) {
+                    list.add(fileToUrl(weblogicFile));
+                }
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
                     list.add(fileToUrl(apiFile));
@@ -437,6 +440,21 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     }
                 }
 
+                // oepe contributions
+                if (weblogicFile.exists()) {
+                    List<URL> cp = getJarClassPath(weblogicFile);
+                    URL oepe = null;
+                    for (URL cpElem : cp) {
+                        if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
+                            oepe = cpElem;
+                            break;
+                        }
+                    }
+                    if (oepe != null) {
+                        list.addAll(getJarClassPath(oepe));
+                    }
+                }
+                
                 addPersistenceLibrary(list);
 
                 // file needed for jsp parsing WL9 and WL10
@@ -578,26 +596,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
         // method checks whether there is already persistence API present in the list
         private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
-            String jpaProvider = getDefaultJpaProvider();
-            
             for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
                 URL archiveUrl = FileUtil.getArchiveFile(it.next());
                 if (archiveUrl != null) {
                     if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        // eclipse link must be default for JPA2
-                        if (!ECLIPSELINK_JPA_PROVIDER.equals(jpaProvider)) {
-                            it.remove();
-                        } else {
-                            synchronized (this) {
-                                jpa2Available = true;
-                            }
-                            return;
+                        synchronized (this) {
+                            jpa2Available = true;
                         }
-                    } else if(JPA_2_SUPPORT_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        // eclipse link must be default for JPA2
-                        if (!ECLIPSELINK_JPA_PROVIDER.equals(jpaProvider)) {
-                            it.remove();
-                        }
+                        return;
                     } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
                         return;
                     }
@@ -724,11 +730,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            String oldJpaProvider;
             synchronized (platform) {
-                oldJpaProvider = platform.defaultJpaProvider;
                 platform.defaultJpaProvider = null;
-                platform.jpa2Available = false;
             }
 
             Set<WLServerLibrary> tmpNewLibraries =
@@ -739,14 +742,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 oldLibraries = tmpNewLibraries;
             }
 
-            // TODO is there a possible optimization ? slowness possible ?
-            if (oldJpaProvider == null || !oldJpaProvider.equals(platform.getDefaultJpaProvider())) {
-                // there is possible change if we are switching to/from JPA2
-                synchronized (platform) {
-                    platform.libraries = null;
-                }
-                platform.firePropertyChange(J2eePlatformImpl.PROP_LIBRARIES, null, null);
-            }
             if (fireChange(tmpOldLibraries, tmpNewLibraries)) {
                 LOGGER.log(Level.FINE, "Firing server libraries change");
                 platform.firePropertyChange(J2eePlatformImpl.PROP_SERVER_LIBRARIES, null, null);
