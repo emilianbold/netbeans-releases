@@ -75,8 +75,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
-        String testName = "testScriptTagInBody";
+    public static Test xsuite() {
+        String testName = "testIssue194037";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -747,6 +747,20 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(130, scriptEnd.endOffset());
 
     }
+
+    //fails
+//     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
+//    public void testIssue194037() throws ParseException {
+//        String code = "<FRAMESET></FRAMESET></HTML><FRAMESET></FRAMESET>";
+//
+//        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+//        HtmlParseResult result = parse(code);
+//        AstNode root = result.root();
+//
+//        assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
+//
+//    }
 
     private static class HtmlTagImpl implements HtmlTag {
 
