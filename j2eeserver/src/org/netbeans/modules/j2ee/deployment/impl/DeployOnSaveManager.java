@@ -379,6 +379,10 @@ public final class DeployOnSaveManager {
             if (inst == null && "DEV-NULL".equals(instanceID)) { // NOI18N
                 LOGGER.log(Level.INFO, "No server set for Maven project - Deploy on Save will not be performed"); // NOI18N
                 return;
+            } else if (null == inst) {
+                // the server is not in the registry... so we should not try to deploy
+                LOGGER.log(Level.INFO, "Project''s server {0} is not registered - Deploy on Save will not be performed", instanceID); // NOI18N
+                return;
             }
 
             DeploymentState lastState;
