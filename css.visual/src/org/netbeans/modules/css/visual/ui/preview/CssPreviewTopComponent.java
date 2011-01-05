@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.css.visual.ui.preview;
 
+import java.util.Collection;
+import org.netbeans.modules.css.visual.api.CssPreviewComponent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -60,10 +62,11 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
+import org.netbeans.modules.css.visual.api.CssPreviewComponentFactory;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -128,37 +131,22 @@ public final class CssPreviewTopComponent extends TopComponent {
     private static final String DEFAULT_TC_NAME = 
             NbBundle.getMessage(CssPreviewTopComponent.class, "CTL_CssPreviewTopComponent"); //NOI18N
     
-    private JPanel NO_PREVIEW_PANEL, PREVIEW_ERROR_PANEL;
+    private JPanel NO_PREVIEW_PANEL, PREVIEW_ERROR_PANEL, NO_PREVIEW_COMPONENT_PANEL;
     private boolean previewing, error;
     
     private SAXParser parserInstance;
+
+    private PropertyChangeListener FACTORY_LISTENER = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            refreshCssPreviewComponent();
+        }
+    };
     
     private CssPreviewTopComponent() {
         initComponents();
         setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent")); //NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-
-        if (EmbeddedBrowserFactory.getDefault().isEnabled()) {
-            previewPanel = new CssWebPreviewPanel();
-        } else {
-            previewPanel = new CssPreviewPanel();
-        }
-
-        EmbeddedBrowserFactory.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                previewPanel.dispose();
-                remove(previewPanel.getComponent());
-                if (EmbeddedBrowserFactory.getDefault().isEnabled()) {
-                    previewPanel = new CssWebPreviewPanel();
-                } else {
-                    previewPanel = new CssPreviewPanel();
-                }
-                add(previewPanel.getComponent(), BorderLayout.CENTER);
-                revalidate();
-                repaint();
-            }
-        });
 
         NO_PREVIEW_PANEL = makeMsgPanel(
                 NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview")); //NOI18N
@@ -169,7 +157,35 @@ public final class CssPreviewTopComponent extends TopComponent {
         PREVIEW_ERROR_PANEL = makeMsgPanel(
                 NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error")); //NOI18N
 
+        NO_PREVIEW_COMPONENT_PANEL = makeMsgPanel(
+                NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("NoCssPreviewComponent")); //NOI18N
+
         setName(DEFAULT_TC_NAME); //set default TC name
+
+        refreshCssPreviewComponent();
+    }
+
+    private void refreshCssPreviewComponent() {
+        if(previewPanel != null) {
+            previewPanel.dispose();
+            remove(previewPanel.getComponent());
+        }
+        Collection<? extends CssPreviewComponentFactory> factories = Lookup.getDefault().lookupAll(CssPreviewComponentFactory.class);
+        for(CssPreviewComponentFactory factory : factories) {
+            factory.addPropertyChangeListener(FACTORY_LISTENER);
+            previewPanel = factory.createCssPreviewComponent();
+            if(previewPanel != null) {
+                break;
+            }
+        }
+        if(previewPanel != null) {
+            add(previewPanel.getComponent(), BorderLayout.CENTER);
+            revalidate();
+            repaint();
+        } else {
+            setNoPreviewComponent(); //no css panel component provided!?!?!
+        }
+
     }
     
     private JPanel makeMsgPanel(String message) {
@@ -196,6 +212,20 @@ public final class CssPreviewTopComponent extends TopComponent {
             repaint();
         }
     }
+
+    //run in AWT!
+    private void setNoPreviewComponent() {
+        setName(DEFAULT_TC_NAME); //set default TC name
+        LOGGER.log(Level.FINE, "No CssPreviewComponent!");//NOI18N
+        removeAll();
+        add(NO_PREVIEW_COMPONENT_PANEL, BorderLayout.CENTER);
+        previewing = false;
+        error = false;
+
+        revalidate();
+        repaint();
+
+    }
     
     //run in AWT!
     void setError() {
@@ -220,7 +250,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         add(previewPanel.getComponent(), BorderLayout.CENTER);
         previewing = true;
         error = false;
-        
+
         revalidate();
         repaint();
     }
@@ -303,6 +333,10 @@ public final class CssPreviewTopComponent extends TopComponent {
     private void preview(File source, String title, CharSequence htmlCode, SAXParser parser) {
         assert SwingUtilities.isEventDispatchThread();
 
+        if(previewPanel == null) {
+            return ; //no preview panel impl
+        }
+
         //parse it first to find potential errors in the code
         if (parser != null) {
             try {
@@ -343,7 +377,9 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     @Override
     public void componentClosed() {
-        previewPanel.dispose();
+        if(previewPanel != null) {
+            previewPanel.dispose();
+        }
     }
     
     /** replaces this in object stream */
