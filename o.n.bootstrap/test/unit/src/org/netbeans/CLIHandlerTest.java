@@ -46,7 +46,6 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.logging.Level;
-import org.netbeans.CLIHandler.Status;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -468,6 +467,7 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
 
+    @RandomlyFails
     public void testServerWaitsBeforeFinishInitializationIsCalledOn () throws Exception {
         // this tests will not execute handlers immediatelly
         CLIHandler.finishInitialization (true);

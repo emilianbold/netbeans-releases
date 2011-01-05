@@ -275,9 +275,6 @@ is divided into following sections:
                         <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                     </and>
                 </condition>
-                <condition property="is.server.glassfish3" value="true">
-                    <equals arg1="${{j2ee.server.type}}" arg2="gfv3ee6"/>
-                </condition>
                 <!-- #189395 - temporary workaround till GlassFish issue #13144 is fixed -->
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
@@ -602,7 +599,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </target>
             
             <target name="-init-macrodef-junit">
-                    <xsl:attribute name="unless">is.server.glassfish3</xsl:attribute>
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
@@ -656,60 +652,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-junit2">
-                    <xsl:attribute name="if">is.server.glassfish3</xsl:attribute>
-                <macrodef>
-                    <xsl:attribute name="name">junit</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">${includes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">excludes</xsl:attribute>
-                        <xsl:attribute name="default">${excludes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testincludes</xsl:attribute>
-                        <xsl:attribute name="default">**</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <junit>
-                            <xsl:attribute name="showoutput">true</xsl:attribute>
-                            <xsl:attribute name="fork">true</xsl:attribute>
-                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
-                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            </xsl:if>
-                            <batchtest todir="${{build.test.results.dir}}">
-                                <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
-                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
-                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
-                                </xsl:call-template>
-                            </batchtest>
-                            <classpath>
-                                <path path="${{run.test.classpath}}"/>
-                                <path path="${{j2ee.platform.embeddableejb.classpath}}"/>
-                            </classpath>
-                            <syspropertyset>
-                                <propertyref prefix="test-sys-prop."/>
-                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                            </syspropertyset>
-                            <formatter type="brief" usefile="false"/>
-                            <formatter type="xml"/>
-                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <jvmarg value="-ea"/>
-                            <jvmarg line="${{runmain.jvmargs}}"/>
-                        </junit>
-                    </sequential>
-                </macrodef>
-            </target>
-
             <target name="-init-macrodef-java">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
@@ -920,7 +862,7 @@ exists or setup the property manually. For example like this:
 
 
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-junit2,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
             </target>
             
             <xsl:comment>
