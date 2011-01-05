@@ -413,21 +413,23 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 // patches
                 // FIXME multiple versions under same middleware
                 File mwHome = getMiddlewareHome();
-                File[] patchDirCandidates = mwHome.listFiles(PATCH_DIR_FILTER);
-                if (patchDirCandidates != null) {
-                    for (File candidate : patchDirCandidates) {
-                        File jarFile = FileUtil.normalizeFile(new File(candidate,
-                                "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
-                        if (jarFile.exists()) {
-                            list.add(fileToUrl(jarFile));
-                            List<URL> deps = getJarClassPath(jarFile);
-                            list.addAll(deps);
-                            for (URL dep : deps) {
-                                List<URL> innerDeps = getJarClassPath(dep);
-                                list.addAll(innerDeps);
-                                for (URL innerDep : innerDeps) {
-                                    if (innerDep.getPath().contains("patch_jars")) { // NOI18N
-                                        list.addAll(getJarClassPath(innerDep));
+                if (mwHome != null) {
+                    File[] patchDirCandidates = mwHome.listFiles(PATCH_DIR_FILTER);
+                    if (patchDirCandidates != null) {
+                        for (File candidate : patchDirCandidates) {
+                            File jarFile = FileUtil.normalizeFile(new File(candidate,
+                                    "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
+                            if (jarFile.exists()) {
+                                list.add(fileToUrl(jarFile));
+                                List<URL> deps = getJarClassPath(jarFile);
+                                list.addAll(deps);
+                                for (URL dep : deps) {
+                                    List<URL> innerDeps = getJarClassPath(dep);
+                                    list.addAll(innerDeps);
+                                    for (URL innerDep : innerDeps) {
+                                        if (innerDep.getPath().contains("patch_jars")) { // NOI18N
+                                            list.addAll(getJarClassPath(innerDep));
+                                        }
                                     }
                                 }
                             }
