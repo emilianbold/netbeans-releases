@@ -333,7 +333,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
+        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.OTHER || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
 
