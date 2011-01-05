@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.StringTokenizer;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
+import javax.swing.border.Border;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
@@ -85,8 +87,14 @@ public class ConditionsPanel extends javax.swing.JPanel {
             preferredHeight = spDim.height;
             tfConditionFieldForUI.setPreferredSize(new java.awt.Dimension(tfConditionFieldForUI.getPreferredSize().width, preferredHeight));
         }
+        Border b = spCondition.getBorder();
+        if (b instanceof WatchPanel.DelegatingBorder) {
+            Insets insets = ((WatchPanel.DelegatingBorder) b).getInsets();
+            insets.right = 1;
+            ((WatchPanel.DelegatingBorder) b).setInsets(insets);
+        }
         spCondition.setPreferredSize(spDim);
-        spCondition.setMinimumSize(spDim);
+        //spCondition.setMinimumSize(spDim);
         tfHitCountFilter.setPreferredSize(
                 new Dimension(8*tfHitCountFilter.getFontMetrics(tfHitCountFilter.getFont()).charWidth('8'),
                               tfHitCountFilter.getPreferredSize().height));

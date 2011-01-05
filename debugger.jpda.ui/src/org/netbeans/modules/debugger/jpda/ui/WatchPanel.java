@@ -53,7 +53,10 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.AWTKeyStroke;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
@@ -71,19 +74,14 @@ import org.netbeans.api.editor.DialogBinding;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -92,6 +90,7 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -101,6 +100,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.swing.border.Border;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Session;
@@ -109,14 +109,11 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -127,6 +124,8 @@ import org.openide.util.RequestProcessor;
  * @author Maros Sandor
  */
 public class WatchPanel {
+
+    private static final Logger logger = Logger.getLogger(WatchPanel.class.getName());
 
     private JPanel panel;
     private JEditorPane editorPane;
@@ -484,7 +483,7 @@ public class WatchPanel {
         return editorPane.getText().trim();
     }
     
-    public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
+    public static JScrollPane createScrollableLineEditor(final JEditorPane editorPane) {
         // Remove control keys:
         KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
         KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
@@ -493,36 +492,54 @@ public class WatchPanel {
         im.put(enterKs, "none");
         im.put(escKs, "none");
         im.put(tabKs, "none");
-        
+
+        final JTextField referenceTextField = new JTextField("M");
+        final Insets margin = referenceTextField.getMargin();
+        final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
+        logger.fine("createScrollableLineEditor(): margin = "+margin+", borderInsets = "+borderInsets);
+        final int[] preferredHeightPtr = new int[1];
         final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                                               JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
+
+            @Override
+            public void setViewportView(Component view) {
+                if (view instanceof JComponent) {
+                    //logger.fine("createScrollableLineEditor() setViewportView(): setting empty border with insets = "+borderInsets);
+                    ((JComponent) view).setBorder(new EmptyBorder(margin)); // borderInsets
+                }
+                super.setViewportView(view);
+            }
+
+        };
                 
         editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder(),
-            new EmptyBorder (0, 0, 0, 0))
+            //new CompoundBorder (editorPane.getBorder(),
+            new EmptyBorder (0, 0, 0, 0)//)
         );
-        
-        JTextField referenceTextField = new JTextField("M");
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(referenceTextField.getBackground());
-        sp.setBorder(referenceTextField.getBorder());
+        logger.fine("createScrollableLineEditor(): reference text field's border = "+referenceTextField.getBorder());
+        //sp.setBorder(referenceTextField.getBorder());
+        //sp.setBorder(new LineBorder(Color.BLACK, 1));
+        //logger.fine("createScrollableLineEditor(): scroll pane's border = "+sp.getBorder());
+        sp.setBorder(new DelegatingBorder(referenceTextField.getBorder(), borderInsets));
         sp.setBackground(referenceTextField.getBackground());
         
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(editorPane, gridBagConstraints);
-        sp.setViewportView(panel);
-        
         int preferredHeight = referenceTextField.getPreferredSize().height;
+        logger.fine("createScrollableLineEditor(): referenceTextField height = "+preferredHeight);
         Dimension spDim = sp.getPreferredSize();
-        if (spDim.height < preferredHeight) {
-            sp.setPreferredSize(referenceTextField.getPreferredSize());
-        } else {
+        logger.fine("createScrollableLineEditor(): scroll pane preferred height = "+spDim.height);
+        //if (spDim.height != preferredHeight) {
+            spDim.height = preferredHeight + 2;// - 2; // 2 for border
+            //Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
+            spDim.height += margin.bottom + margin.top;//borderInsets.top + borderInsets.bottom;
+            //sp.setPreferredSize(referenceTextField.getPreferredSize());
+        //} else {
             sp.setPreferredSize(spDim);
-        }
+        //}
         sp.setMinimumSize(spDim);
+        sp.setMaximumSize(spDim);
+        logger.fine("createScrollableLineEditor(): scroll pane set pref. size = "+sp.getPreferredSize()+", minimum size = "+sp.getMinimumSize());
+        preferredHeightPtr[0] = preferredHeight;
+        sp.setViewportView(editorPane);
         
         setupUI(editorPane);
         
@@ -759,6 +776,46 @@ public class WatchPanel {
         @Override
         public void printMessage(Kind arg0, CharSequence arg1, Tree arg2, CompilationUnitTree arg3) {
             trees.printMessage(arg0, arg1, arg2, arg3);
+        }
+
+    }
+
+    public static final class DelegatingBorder implements Border {
+
+        private Border delegate;
+        private Insets insets;// = new Insets(1, 1, 1, 1);
+
+        public DelegatingBorder(Border delegate, Insets insets) {
+            this.delegate = delegate;
+            this.insets = insets;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            //logger.fine("Delegate paintBorder("+c+", "+g+", "+x+", "+y+", "+width+", "+height+")");
+            delegate.paintBorder(c, g, x, y, width, height);
+        }
+
+        public Insets getInsets() {
+            return insets;
+        }
+
+        public void setInsets(Insets insets) {
+            this.insets = insets;
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            //logger.fine("Delegate getBorderInsets() = "+delegate.getBorderInsets(c));
+            //Insets insets = delegate.getBorderInsets(c);
+            //insets.top = 0;
+            //insets.bottom = 0;
+            return insets;
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return delegate.isBorderOpaque();
         }
 
     }
