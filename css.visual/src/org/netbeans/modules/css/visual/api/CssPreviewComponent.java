@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.visual.ui.preview;
+package org.netbeans.modules.css.visual.api;
 
 import javax.swing.JComponent;
 import org.xml.sax.InputSource;
@@ -49,8 +49,16 @@ import org.xml.sax.InputSource;
  *
  * @author Milan Kubec
  */
-interface CssPreviewComponent {
-    JComponent getComponent();
-    void setDocument(InputSource is, String url) throws Exception;
-    void dispose();
+public interface CssPreviewComponent {
+
+    public JComponent getComponent();
+
+    public void setDocument(InputSource is, String url) throws Exception;
+
+    public void dispose();
+
+    public void addListener(CssPreviewComponentListener listener);
+
+    public void removeListener(CssPreviewComponentListener listener);
+
 }
