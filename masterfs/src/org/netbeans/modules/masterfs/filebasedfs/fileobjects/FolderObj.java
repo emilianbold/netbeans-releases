@@ -311,7 +311,7 @@ public final class FolderObj extends BaseFileObj {
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                retVal.setLastModified(file2Create.lastModified(), file2Create);
+                retVal.setLastModified(file2Create.lastModified(), file2Create, false);
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {
@@ -382,6 +382,7 @@ public final class FolderObj extends BaseFileObj {
         }        
     }
 
+    @Override
     public void refreshImpl(final boolean expected, boolean fire) {
         final ChildrenCache cache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
