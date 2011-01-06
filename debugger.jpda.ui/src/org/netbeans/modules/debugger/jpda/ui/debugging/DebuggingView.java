@@ -561,9 +561,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
 
     private synchronized void createTreeView() {
-        if (treeView != null) {
-            releaseTreeView();
-        }
+        releaseTreeView();
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
         treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -580,6 +578,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
 
     private synchronized void releaseTreeView() {
+        if (treeView == null) return ;
         treeView.getTree().removeMouseWheelListener(this);
         treeView.removeTreeExpansionListener(this);
         TreeModel model = treeView.getTree().getModel();
