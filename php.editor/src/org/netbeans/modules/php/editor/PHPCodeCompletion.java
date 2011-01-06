@@ -1198,7 +1198,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return null;
     }
 
