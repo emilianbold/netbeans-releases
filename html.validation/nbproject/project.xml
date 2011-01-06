@@ -142,6 +142,10 @@
                 <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
                 <binary-origin>external/saxon9B.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/isorelax20041111.jar</runtime-relative-path>
+                <binary-origin>external/isorelax20041111.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
