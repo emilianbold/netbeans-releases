@@ -347,6 +347,16 @@ public class LogTest extends AbstractGitTestCase {
         assertRevisions(revision3, revisions[1]);
         assertRevisions(revision2, revisions[2]);
         assertRevisions(revision1, revisions[3]);
+        
+        crit = new SearchCriteria();
+        crit.setFiles(new File[] { workDir });
+        crit.setRevisionFrom(revision0.getRevision());
+        revisions = client.log(crit, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, revisions.length);
+        assertRevisions(revision4, revisions[0]);
+        assertRevisions(revision3, revisions[1]);
+        assertRevisions(revision2, revisions[2]);
+        assertRevisions(revision1, revisions[3]);
     }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {

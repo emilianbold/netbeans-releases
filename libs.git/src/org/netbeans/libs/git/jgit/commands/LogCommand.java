@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,7 +55,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
-import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
@@ -170,17 +170,20 @@ public class LogCommand extends GitCommand {
     }
 
     private boolean checkFiles (RevCommit commit, File[] files) throws IOException {
-        boolean result = false;
-        TreeWalk walk = new TreeWalk(getRepository());
-        walk.reset();
-        walk.setRecursive(true);
-        walk.addTree(commit.getTree().getId());
-        for (RevCommit parentCommit : commit.getParents()) {
-            walk.addTree(parentCommit.getTree().getId());
+        boolean result = true;
+        Collection<PathFilter> filters = Utils.getPathFilters(getRepository().getWorkTree(), files);
+        if (!filters.isEmpty()) {
+            TreeWalk walk = new TreeWalk(getRepository());
+            walk.reset();
+            walk.setRecursive(true);
+            walk.addTree(commit.getTree().getId());
+            for (RevCommit parentCommit : commit.getParents()) {
+                walk.addTree(parentCommit.getTree().getId());
+            }
+            walk.setFilter(AndTreeFilter.create(PathFilterGroup.create(filters), AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF)));
+            result = walk.next();
+            walk.release();
         }
-        walk.setFilter(AndTreeFilter.create(PathFilterGroup.create(Utils.getPathFilters(getRepository().getWorkTree(), files)), AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF)));
-        result = walk.next();
-        walk.release();
         return result;
     }
 }
