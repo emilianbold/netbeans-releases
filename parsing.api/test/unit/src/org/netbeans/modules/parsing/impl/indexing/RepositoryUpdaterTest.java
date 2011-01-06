@@ -92,6 +92,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -1083,6 +1085,104 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         indexerFactory.indexer.setExpectedFile(new URL[]{f1.getURL()}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+    
+    public void testFileChangedInEditorReparsedOnce191885() throws Exception {
+        //Prepare
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        final Source src = Source.create(f1);
+        assertNotNull(src);
+        assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+        RepositoryUpdater.unitTestActiveSource = src;
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
+                    Collections.singleton(f1.getURL()));
+            assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+            
+        } finally {
+            RepositoryUpdater.unitTestActiveSource=null;
+        }
+        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
+                    Collections.singleton(f1.getURL()));
+        assertTrue("Non active shource should be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+    }
+    
+    public void testFilesScannedAfterRenameOfFolder193243() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final FileObject testFo = FileUtil.createData(this.srcRootWithFiles1, "rename/A.foo");
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());       
+        indexerFactory.indexer.setExpectedFile(new URL[]{new URL(this.srcRootWithFiles1.getURL()+"renamed/A.foo")}, new URL[]{testFo.getURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{testFo.getURL()}, new URL[0]);
+        final FileObject parent = testFo.getParent();
+        final FileLock lock = parent.lock();
+        try {
+            parent.rename(lock, "renamed", null);
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(0, eindexerFactory.indexer.getIndexCount());
+        assertEquals(1, eindexerFactory.indexer.getDeletedCount());
+        assertEquals(0, eindexerFactory.indexer.getDirtyCount());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+        assertEquals(1, indexerFactory.indexer.getDeletedCount());
+        assertEquals(0, indexerFactory.indexer.getDirtyCount());
+    }
+    
+    public void testFilesScannedAferSourceRootCreatedDeleted() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final File srcRoot1File = FileUtil.toFile(srcRoot1);                
+        final ClassPath cp1 = ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(srcRoot1File));
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());       
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);        
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        srcRoot1.delete();
+        
+        final File a = new File(srcRoot1File,"folder/a.foo");
+        final File b = new File(srcRoot1File,"folder/b.emb");
+        indexerFactory.indexer.setExpectedFile(new URL[]{a.toURI().toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{b.toURI().toURL()}, new URL[0], new URL[0]);
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                FileUtil.createFolder(srcRoot1File);
+                FileUtil.createData(a);
+                FileUtil.createData(b);
+            }
+        });
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
         assertTrue(indexerFactory.indexer.awaitIndex());
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }

@@ -79,6 +79,7 @@ import org.openide.util.Utilities;
  */
 public class DiscoveryProjectGenerator {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
+    private static boolean TRUNCATE_BEGINNING_PATH = true;
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -108,6 +109,9 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
+        if (TRUNCATE_BEGINNING_PATH) {
+            packRoot(sourceRoot);
+        }
         if ("file".equals(level)) {// NOI18N
             // move common file configuration to parent
             upConfiguration(sourceRoot, ItemProperties.LanguageKind.CPP);
@@ -117,6 +121,111 @@ public class DiscoveryProjectGenerator {
         }
         projectBridge.save();
         projectBridge.dispose();
+    }
+
+    private void packRoot(Folder root) {
+        for(Object item : root.getElements()) {
+            if (!(item instanceof Folder)) {
+                return;
+            }
+        }
+        Map<Folder,Folder> res = new HashMap<Folder,Folder>();
+        for(Folder folder : root.getFolders()) {
+            if (folder.getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
+                res.put(folder,folder);
+            } else if (folder.isDiskFolder()) {
+                // do not change disk folder.
+                res.put(folder,folder);
+            } else {
+                Folder packFolder = packFolder(folder);
+                res.put(folder,packFolder);
+            }
+        }
+        boolean isFullNames = false;
+        for(int i = 0; i < 3; i++) {
+            isFullNames = false;
+            Map<String, List<Map.Entry<Folder,Folder>>> names = new HashMap<String, List<Map.Entry<Folder,Folder>>>();
+            for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+                String folderName = entry.getValue().getName();
+                List<Map.Entry<Folder,Folder>> list = names.get(folderName);
+                if (list == null) {
+                    list = new ArrayList<Map.Entry<Folder,Folder>>();
+                    names.put(folderName, list);
+                }
+                list.add(entry);
+                if (list.size() > 1) {
+                    isFullNames = true;
+                }
+            }
+            if (!isFullNames) {
+                break;
+            }
+            for (Map.Entry<String, List<Map.Entry<Folder,Folder>>> entry : names.entrySet()) {
+                if (entry.getValue().size() > 1) {
+                    for(Map.Entry<Folder,Folder> e : entry.getValue()) {
+                        Folder beg = e.getKey();
+                        Folder end = e.getValue();
+                        Folder up = end.getParent();
+                        if (up != null && up != beg) {
+                            res.put(beg, up);
+                        } else {
+                            // cannot resolve name conflict
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (isFullNames) {
+            // cannot resolve name conflict
+            return;
+        }
+        root.reset();
+        for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+            if (entry.getKey().getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
+                root.addFolder(entry.getValue(), true);
+                continue;
+            } else if (entry.getValue().isDiskFolder()) {
+                root.addFolder(entry.getValue(), true);
+            } else {
+                if (entry.getValue().getRoot() == null) {
+                    File folderFile = getFolderFile(entry.getValue());
+                    if (folderFile != null) {
+                        entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getAbsolutePath()));
+                    }
+                }
+                root.addFolder(entry.getValue(), true);
+            }
+        }
+    }
+
+    private File getFolderFile(Folder folder) {
+        for(Item item : folder.getItemsAsArray()) {
+            File parent = item.getNormalizedFile().getParentFile();
+            if (parent != null) {
+                return parent;
+            }
+        }
+        for(Folder f : folder.getFolders()) {
+            File parent = getFolderFile(f);
+            if (parent != null) {
+                return parent.getParentFile();
+            }
+        }
+        return null;
+    }
+
+    private Folder packFolder(Folder folder) {
+        while(true) {
+            if (folder.getElements().size() > 1) {
+                return folder;
+            }
+            List<Folder> folders = folder.getFolders();
+            if (folders.isEmpty()) {
+                return folder;
+            }
+            folder = folders.get(0);
+        }
     }
 
     private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang) {
@@ -433,18 +542,13 @@ public class DiscoveryProjectGenerator {
         }
         if (needAdd.size()>0) {
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
-            Folder rootCandidate = null;
-            String root = additional.getFolder();
-            int i = root.lastIndexOf('/');
-            if (i > 0) {
-                Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
-                root = root.substring(0,i);
-                rootCandidate = prefferedFolders.get(root);
+            if (additional.getName().isEmpty()) {
+                for(AbstractRoot aRoot : additional.getChildren()) {
+                    addAdditionalPreferedFolder(folder, aRoot);
+                }
+            } else {
+                addAdditionalPreferedFolder(folder, additional);
             }
-            if (rootCandidate == null) {
-                rootCandidate = folder;
-            }
-            addAdditionalFolder(rootCandidate, additional);
         }
         // remove unused
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -477,6 +581,21 @@ public class DiscoveryProjectGenerator {
         if (needCheck.size()>0) {
             projectBridge.checkForNewExtensions(needCheck);
         }
+    }
+
+    private void addAdditionalPreferedFolder(Folder folder, AbstractRoot additional){
+        Folder rootCandidate = null;
+        String root = additional.getFolder();
+        int i = root.lastIndexOf('/');
+        if (i > 0) {
+            Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
+            root = root.substring(0,i);
+            rootCandidate = prefferedFolders.get(root);
+        }
+        if (rootCandidate == null) {
+            rootCandidate = folder;
+        }
+        addAdditionalFolder(rootCandidate, additional);
     }
 
     private void addAdditionalFolder(Folder folder, AbstractRoot used){
@@ -682,7 +801,13 @@ public class DiscoveryProjectGenerator {
             folders.put(path,pair);
         }
         AbstractRoot additional = UnusedFactory.createRoot(folders.keySet());
-        addFolder(sourceRoot, additional, folders, lang);
+        if (additional.getName().isEmpty()) {
+            for(AbstractRoot aRoot : additional.getChildren()) {
+                addFolder(sourceRoot, aRoot, folders, lang);
+            }
+        } else {
+            addFolder(sourceRoot, additional, folders, lang);
+        }
     }
 
     private void addFolder(Folder folder, AbstractRoot additional, Map<String,Pair> folders, ItemProperties.LanguageKind lang){

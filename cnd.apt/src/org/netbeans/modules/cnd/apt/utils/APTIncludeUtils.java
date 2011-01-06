@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -70,35 +71,35 @@ public class APTIncludeUtils {
      * caller must check that resolved path is not the same as base file
      * to prevent recursive inclusions 
      */
-    public static ResolvedPath resolveFilePath(String inclString, CharSequence baseFile) {
+    public static ResolvedPath resolveFilePath(FileSystem fs, String inclString, CharSequence baseFile) {
         if (baseFile != null) {
             String folder = CndPathUtilitities.getDirName(baseFile.toString());
             String absolutePath = folder + File.separatorChar + inclString; //NOI18N // File - sic!
-            if (isExistingFile(absolutePath)) {
-                return new ResolvedPath(FilePathCache.getManager().getString(folder), normalize(absolutePath), absolutePath, true, 0);
+            if (isExistingFile(fs, absolutePath)) {
+                return new ResolvedPath(FilePathCache.getManager().getString(folder), normalize(fs, absolutePath), absolutePath, true, 0);
             }
         }
         return null;
     }
     
-    public static ResolvedPath resolveAbsFilePath(String absFile) {
+    public static ResolvedPath resolveAbsFilePath(FileSystem fs, String absFile) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
-            if (CndPathUtilitities.isPathAbsolute(absFile) && isExistingFile(absFile) ) {
+            if (CndPathUtilitities.isPathAbsolute(absFile) && isExistingFile(fs, absFile) ) {
                 String parent = CndPathUtilitities.getDirName(absFile);
-                return new ResolvedPath(FilePathCache.getManager().getString(parent), normalize(absFile), absFile, false, 0);
+                return new ResolvedPath(FilePathCache.getManager().getString(parent), normalize(fs, absFile), absFile, false, 0);
             }
         }   
         return null;
     }    
     
-    public static ResolvedPath resolveFilePath(Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
+    public static ResolvedPath resolveFilePath(FileSystem fs, Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
         if (Utilities.isWindows()){
             includedFile = includedFile.replace('/', File.separatorChar); // File - sic!
         }
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
-            if (accessor.isExistingDirectory(dirPrefix)) {
+            if (accessor.isExistingDirectory(fs, dirPrefix)) {
                 String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;
@@ -107,8 +108,8 @@ public class APTIncludeUtils {
                 } else {
                     absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile); // File - sic!
                 }
-                if (isExistingFile(absolutePath)) {
-                    return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
+                if (isExistingFile(fs, absolutePath)) {
+                    return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), absolutePath, false, dirOffset);
                 } else {
                     if (dirPrefix.isFramework()) {
                         int i = includedFile.indexOf('/'); // NOI18N
@@ -119,8 +120,8 @@ public class APTIncludeUtils {
                             // system path is /System/Library/Frameworks
                             // So convert framework path
                             absolutePath = dirPrefix.getPath()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
-                            if (isExistingFile(absolutePath)) {
-                                return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
+                            if (isExistingFile(fs, absolutePath)) {
+                                return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), absolutePath, false, dirOffset);
                             }
                         }
                     }
@@ -131,11 +132,11 @@ public class APTIncludeUtils {
         return null;
     }
 
-    private static String normalize(String path) {
+    private static String normalize(FileSystem fs, String path) {
         return CndFileUtils.normalizeAbsolutePath(path);
     }
 
-    private static boolean isExistingFile(String filePath) {
-        return CndFileUtils.isExistingFile(filePath);
+    private static boolean isExistingFile(FileSystem fs, String filePath) {
+        return CndFileUtils.isExistingFile(fs, filePath);
     }
 }

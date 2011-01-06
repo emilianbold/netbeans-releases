@@ -91,13 +91,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //    }
     protected ClassImpl(NameHolder name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super(name, file, ast);
+        this(name, ast, file, getStartOffset(ast), getEndOffset(ast));
+    }
+
+    protected ClassImpl(NameHolder name, AST ast, CsmFile file, int start, int end) {
+        // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
+        super(name, file, start, end);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         kind = findKind(ast);
     }
-
+    
     private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
         members = new ArrayList<CsmUID<CsmMember>>();
@@ -145,7 +150,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
         new ClassAstRenderer(file, visibility, localClass).render(ast);
-        leftBracketPos = initLeftBracketPos(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
@@ -235,6 +239,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -252,7 +261,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
 
-    private void addMember(CsmMember member, boolean global) {
+    protected void addMember(CsmMember member, boolean global) {
         if (global) {
             RepositoryUtils.put(member);
         }
@@ -473,8 +482,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
                         List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
-                        String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
-                        setTemplateDescriptor(params, name);
+                        final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
+                        String name = "<" + classSpecializationSuffix + ">"; // NOI18N
+                        setTemplateDescriptor(params, name, !classSpecializationSuffix.isEmpty());
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
@@ -720,7 +730,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
-            checkInnerIncludes(ClassImpl.this);
+            checkInnerIncludes(ClassImpl.this, ClassImpl.this.getMembers());
         }
 
         private CsmScope getFriendScope() {
@@ -736,8 +746,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return scope;
         }
 
-        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {
-            templateDescriptor = new TemplateDescriptor(params, name, !isRenderingLocalContext());
+        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization) {
+            templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
         }
 
         private boolean hasFriendPrefix(AST child) {
@@ -842,13 +852,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
             // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
+            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST.getNextSibling(), type, null);
+            return bitFieldAdded;
+        }
 
+        @Override
+        protected boolean renderBitFieldImpl(AST startOffsetAST, AST idAST, CsmType type, ClassEnumBase<?> classifier) {
             boolean cont = true;
             boolean added = false;
-            AST start = token;
-            AST prev = typeAST;
+            AST start = startOffsetAST;
+            AST prev = idAST;
             while (cont) {
-                AST idAST = prev.getNextSibling();
                 if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
                     break;
                 }
@@ -878,11 +892,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 NameHolder nameHolder = NameHolder.createSimpleName(idAST);
                 FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                 ClassImpl.this.addMember(field,!isRenderingLocalContext());
+                if (classifier != null) {
+                    classifier.addEnclosingVariable(field);
+                }
                 added = true;
+                if (cont) {
+                    idAST = prev.getNextSibling();
+                }
             }
             return added;
         }
-
+        
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);

@@ -117,6 +117,7 @@ public class RemoteFileTestCase extends RemoteTestBase {
         assert remoteFile.isDirectory();
         assert remoteFile.canRead();
         File[] list = remoteFile.listFiles();
+        assert list != null;
         assert list.length == 3;
         for(File file : list) {
             assert file instanceof RemoteFile;

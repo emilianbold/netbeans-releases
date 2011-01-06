@@ -44,11 +44,9 @@ package org.netbeans.modules.nativeexecution.api;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -58,9 +56,10 @@ import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
@@ -174,7 +173,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
             throw new IOException("No connection to " + execEnv.getDisplayName()); // NOI18N
         }
 
-        if (info.isPtyMode() && isPtySupportedFor(info.getExecutionEnvironment())) {
+        if (info.isPtyMode() && PtySupport.isSupportedFor(info.getExecutionEnvironment())) {
             process = new PtyNativeProcess(info);
         } else {
             if (info.getExecutionEnvironment().isRemote()) {
@@ -347,37 +346,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
     public NativeProcessBuilder setMacroExpansion(boolean expandMacros) {
         info.setExpandMacros(expandMacros);
         return this;
-    }
-
-    private boolean isPtySupportedFor(final ExecutionEnvironment executionEnvironment) {
-        if (!HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
-            return false;
-        }
-
-        try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-
-            switch (hostInfo.getOSFamily()) {
-                case WINDOWS:
-                    // for now pty mode only supported with Cygwin
-                    Shell shell = WindowsSupport.getInstance().getActiveShell();
-                    return shell.type == Shell.ShellType.CYGWIN;
-                case MACOSX:
-                    return true;
-                case LINUX:
-                    return true;
-                case SUNOS:
-                    return true;
-                default:
-                    return false;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return false;
     }
 
     public NativeProcessBuilder setCharset(Charset charset) {

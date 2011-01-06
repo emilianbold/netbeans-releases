@@ -46,9 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.updateprovider.*;
 import org.netbeans.api.autoupdate.*;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +69,6 @@ public class FeatureNotUpToDateTest extends NbTestCase
 
 {
 
-    private static File catalogFile;
-    private static URL catalogURL;
     protected boolean modulesOnly = true;
     List<UpdateUnit> keepItNotToGC;
 
@@ -95,7 +91,7 @@ public class FeatureNotUpToDateTest extends NbTestCase
         }
 
         public Map<String, UpdateItem> getUpdateItems () throws IOException {
-            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems ();
             assertNotNull ("Installed modules must found.", items);
             int size = items.size ();
             assertTrue ("Count of installed modules are more then once.", size > 1);
@@ -136,7 +132,7 @@ public class FeatureNotUpToDateTest extends NbTestCase
                 }
                 deps.add (dep);
             }
-            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems ();
             ModuleInfo info = pilotModuleItem.getModuleInfo ();
             UpdateItemImpl higherItemImpl = new InstalledModuleItem (
                     info.getCodeNameBase (),

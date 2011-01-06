@@ -275,7 +275,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
             if (compositeLibraryName != null) {
                 //nothing to process inside the library definition AFAIR...
-                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace));
+                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, info.getSourceURL()));
             } else {
                 ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
                 //process the library content

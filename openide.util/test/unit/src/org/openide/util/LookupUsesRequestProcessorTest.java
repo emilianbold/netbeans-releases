@@ -62,7 +62,6 @@ implements LookupListener {
         super(s);
     }
 
-    @RandomlyFails // NB-Core-Build #3891: Count is now 1 expected:<1> but was:<0>
     public void testMetaInfLookupDeliversEventsInRPThread() throws InterruptedException {
         ClassLoader l = new MyCL();
         Lookup lkp = Lookups.metaInfServices(l);
@@ -72,12 +71,20 @@ implements LookupListener {
         assertNull("No runnables found", lkp.lookup(Runnable.class));
         assertNotNull("Thread found", lkp.lookup(Thread.class));
         assertNotNull("Now runnable found", lkp.lookup(Runnable.class));
+        synchronized (this) {
+            int retry = 5;
+            while (cnt == 0 && retry-- > 0) {
+                wait(1000);
+            }
+        }    
         assertEquals("Count is now 1", 1, cnt);
     }
 
-    public void resultChanged(LookupEvent unused) {
+    @Override
+    public synchronized void resultChanged(LookupEvent unused) {
         if (Thread.currentThread().getName().contains("request-processor")) {
             cnt++;
+            notifyAll();
             return;
         }
         fail("Changes shall be delivered in request processor thread. But was: " + Thread.currentThread().getName());

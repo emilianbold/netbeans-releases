@@ -72,6 +72,8 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new FileMacrosKey(presentation);
             case KeyObjectFactory.KEY_FILE_REFERENCES_KEY:
                 return new FileReferencesKey(presentation);
+            case KeyObjectFactory.KEY_FILE_INSTANTIATIONS_KEY:
+                return new FileInstantiationsKey(presentation);
             case KeyObjectFactory.KEY_GRAPH_CONTAINER_KEY:
                 return new GraphContainerKey(presentation);
             case KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY:

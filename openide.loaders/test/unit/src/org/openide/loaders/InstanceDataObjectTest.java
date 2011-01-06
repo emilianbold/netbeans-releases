@@ -252,7 +252,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     }
     
     public static class TestDefinitions implements Runnable {
-        public TestDefinitions() {}
+        TestDefinitions() {}
         
         static TestDefinitions create() {
             return new TestDefinitions();
@@ -749,7 +749,8 @@ public class InstanceDataObjectTest extends NbTestCase {
         // Now the fun part: check that the filesystem can actually store the filenames
         // we are making. For best results, try this on different OS's.
         clearWorkDir();
-        File dir = getWorkDir();
+        File dir = new File(getWorkDir(), "namesdir");
+        dir.mkdirs();
         for (int i = 0; i < names.length; i++) {
             String name = InstanceDataObject.escape(names[i]);
             //System.err.println("testing: " + name);
@@ -798,7 +799,8 @@ public class InstanceDataObjectTest extends NbTestCase {
         // Now the fun part: check that the filesystem can actually store the filenames
         // we are making. For best results, try this on different OS's.
         clearWorkDir();
-        File dir = getWorkDir();
+        File dir = new File(getWorkDir(), "namesdir");
+        dir.mkdirs();
         for (int i = 0; i < names.length; i++) {
             String name = InstanceDataObject.escapeAndCut(names[i]);
             //System.err.println("testing: " + name);

@@ -81,6 +81,9 @@ public class RenameAction extends NodeAction {
     }
 
     protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length == 0) {
+            return;
+        }
         Node n = activatedNodes[0]; // we supposed that one node is activated
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(

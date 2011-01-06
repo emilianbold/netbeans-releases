@@ -62,7 +62,6 @@ import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -119,7 +118,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).exists()) { // NOI18N
+            if (SvnUtils.hasMetadata(file)) {
                 Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();
@@ -172,6 +171,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        @Override
         public boolean areCollocated(File a, File b) {
             File fra = getTopmostManagedAncestor(a);
             File frb = getTopmostManagedAncestor(b);
@@ -189,7 +189,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
                 return ra.equals(rb) && ra.equals(rr);
             } catch (SVNClientException e) {
-                if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                     Subversion.LOG.log(Level.INFO, null, e);
                 }
                 Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b);
@@ -198,12 +198,14 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             }
         }
 
+        @Override
         public File findRoot(File file) {
             // TODO: we should probably return the closest common ancestor
             return getTopmostManagedAncestor(file);
         }
     };
     
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
@@ -211,12 +213,14 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) evt.getNewValue());

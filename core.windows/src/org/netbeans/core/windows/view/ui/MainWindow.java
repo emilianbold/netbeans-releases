@@ -82,9 +82,12 @@ import org.openide.util.*;
  *
  * @author Ian Formanek, Petr Hamernik
  */
-public final class MainWindow extends JFrame {
+public final class MainWindow {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1160791973145645501L;
+
+    private final JFrame frame;
+
     private static JMenuBar mainMenuBar;
 
     /** Desktop. */
@@ -101,43 +104,32 @@ public final class MainWindow extends JFrame {
     private Lookup.Result <SaveCookie> saveResult;
     private Lookup.Result <DataObject> dobResult;
     private LookupListener saveListener;
+
+    private static MainWindow theInstance;
     
 
     /** Constructs main window. */
-    public MainWindow() {
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID())
-                && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
-            getRootPane().putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
+    private MainWindow(JFrame frame) {
+        this.frame = frame;
     }
-    
-    /** Overrides superclass method, adds help context to the new root pane. */
-    @Override
-    protected void setRootPane(JRootPane root) {
-        super.setRootPane(root);
-        if(root != null) {
-            HelpCtx.setHelpIDString(
-                    root, new HelpCtx(MainWindow.class).getHelpID());
+
+    public static MainWindow install( JFrame frame ) {
+        synchronized( MainWindow.class ) {
+            if( null != theInstance ) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Installing MainWindow again, existing frame is: " + theInstance.frame); //NOI18N
+            }
+            theInstance = new MainWindow(frame);
+            return theInstance;
         }
-        //Optimization related to jdk bug 4939857 - on pre 1.5 jdk's an
-        //extra repaint is caused by the search for an opaque component up
-        //to the component root.  Post 1.5, root pane will automatically be
-        //opaque.
-        root.setOpaque(true);
-        if (Utilities.isWindows()) {
-            // use glass pane that will not cause repaint/revalidate of parent when set visible
-            // is called (when setting wait cursor in ModuleActions) #40689
-            JComponent c = new JPanel() {
-                @Override
-                public void setVisible(boolean flag) {
-                    if (flag != isVisible ()) {
-                        super.setVisible(flag);
-                    }
-                }
-            };
-            c.setName(root.getName()+".nbGlassPane");  // NOI18N
-            c.setVisible(false);
-            ((JPanel)c).setOpaque(false);
-            root.setGlassPane(c);
+    }
+
+    public static MainWindow getInstance() {
+        synchronized( MainWindow.class ) {
+            if( null == theInstance ) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Accessing uninitialized MainWindow, using dummy JFrame instead." ); //NOI18N
+                theInstance = new MainWindow(new JFrame());
+            }
+            return theInstance;
         }
     }
 
@@ -155,23 +147,38 @@ public final class MainWindow extends JFrame {
         }
         inited = true;
 
+        JPanel contentPane = new JPanel(new BorderLayout()) {
+            @Override
+            public void paint(Graphics g) {
+                super.paint(g);
+                Logger.getLogger(MainWindow.class.getName()).log(Level.FINE,
+                        "Paint method of main window invoked normally."); //NOI18N
+                // XXX is this only needed by obsolete #24291 hack, or now needed independently?
+                WindowManagerImpl.getInstance().mainWindowPainted();
+            }
+
+        };
+        frame.setContentPane(contentPane);
+
         init();
+
+        initRootPane();
         
         // initialize frame
-        initFrameIcons(this);
+        initFrameIcons(frame);
         
         initListeners();
 
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        getAccessibleContext().setAccessibleDescription(
+        frame.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getBundle(MainWindow.class).getString("ACSD_MainWindow"));
 
-        setJMenuBar(mainMenuBar);
+        frame.setJMenuBar(mainMenuBar);
     
         if (!Constants.NO_TOOLBARS) {
             JComponent tb = getToolbarComponent();
-            getContentPane().add(tb, BorderLayout.NORTH);
+            frame.getContentPane().add(tb, BorderLayout.NORTH);
         }
         
         if(!Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
@@ -201,39 +208,42 @@ public final class MainWindow extends JFrame {
                 statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
                         statusLinePanel.getBorder(),
                         BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
-                
-                statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
+
+                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                    statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
+                }
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
                 decoratePanel (statusLinePanel, false);
                 statusLinePanel.setName("statusLine"); //NOI18N
-                getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
+                frame.getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
             } else { // custom status line provided
                 JComponent status = getCustomStatusLine();
                 if (status != null) {
-                    getContentPane().add(status, BorderLayout.SOUTH);
+                    frame.getContentPane().add(status, BorderLayout.SOUTH);
                 }
             }
         }
 
-        getContentPane().add(getDesktopPanel(), BorderLayout.CENTER);
+        frame.getContentPane().add(getDesktopPanel(), BorderLayout.CENTER);
         
         //#38810 start - focusing the main window in case it's not active and the menu is
         // selected..
         MenuSelectionManager.defaultManager().addChangeListener(new ChangeListener(){
+            @Override
             public void stateChanged(ChangeEvent e) {
                 MenuElement[] elems = MenuSelectionManager.defaultManager().getSelectedPath();
                 if (elems != null && elems.length > 0) {
-                    if (elems[0] == getJMenuBar()) {
-                        if (!isActive()) {
-                            toFront();
+                    if (elems[0] == frame.getJMenuBar()) {
+                        if (!frame.isActive()) {
+                            frame.toFront();
                         }
                     }
                 }
             }
         });
         //#38810 end
-        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
+        frame.setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", System.getProperty("netbeans.buildnumber")));
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             //Show a "save dot" in the close button if a modified file is
             //being edited
@@ -243,10 +253,11 @@ public final class MainWindow extends JFrame {
             dobResult = Utilities.actionsGlobalContext().lookupResult (DataObject.class);
             if( null != saveResult && null != dobResult ) {
                 saveListener = new LookupListener() {
+                    @Override
                     public void resultChanged(LookupEvent ev) {
                         if (ev.getSource() == saveResult) {
                             boolean modified = saveResult.allItems().size() > 0;
-                            getRootPane().putClientProperty ("Window.documentModified", //NOI18N
+                            frame.getRootPane().putClientProperty ("Window.documentModified", //NOI18N
                                     modified ? Boolean.TRUE : Boolean.FALSE);
                         } else if (ev.getSource() == dobResult) {
                             int count = dobResult.allItems().size();
@@ -256,14 +267,14 @@ public final class MainWindow extends JFrame {
                                     FileObject file = dob.getPrimaryFile();
                                     File f = FileUtil.toFile(file);
                                     if (f != null) {
-                                        getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
+                                        frame.getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
                                         break;
                                     }
                                     //Fall through
                                 case 0 :
                                     //Fall through
                                 default :
-                                    getRootPane().putClientProperty("Window.documentFile", null); //NOI18N
+                                    frame.getRootPane().putClientProperty("Window.documentFile", null); //NOI18N
                             }
                         }
                     }
@@ -315,14 +326,66 @@ public final class MainWindow extends JFrame {
         }
         return some ? icons : null;
     }
+
+    protected void initRootPane() {
+        JRootPane root = frame.getRootPane();
+        if( null == root )
+            return;
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID())
+                && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
+            root.putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
+        HelpCtx.setHelpIDString(
+                root, new HelpCtx(MainWindow.class).getHelpID());
+        if (Utilities.isWindows()) {
+            // use glass pane that will not cause repaint/revalidate of parent when set visible
+            // is called (when setting wait cursor in ModuleActions) #40689
+            JComponent c = new JPanel() {
+                @Override
+                public void setVisible(boolean flag) {
+                    if (flag != isVisible ()) {
+                        super.setVisible(flag);
+                    }
+                }
+            };
+            c.setName(root.getName()+".nbGlassPane");  // NOI18N
+            c.setVisible(false);
+            ((JPanel)c).setOpaque(false);
+            root.setGlassPane(c);
+        }
+    }
+
+
+    //delegate some JFrame methods for convenience
+
+    public void setBounds(Rectangle bounds) {
+        frame.setBounds(bounds);
+    }
+
+    public void setExtendedState(int extendedState) {
+        frame.setExtendedState(extendedState);
+    }
+
+    public void setVisible(boolean visible) {
+        frame.setVisible(visible);
+    }
+
+    public int getExtendedState() {
+        return frame.getExtendedState();
+    }
+
+    public JMenuBar getJMenuBar() {
+        return frame.getJMenuBar();
+    }
     
     static private class StatusLineElementsListener implements LookupListener {
         private JPanel decoratingPanel;
         StatusLineElementsListener (JPanel decoratingPanel) {
             this.decoratingPanel = decoratingPanel;
         }
+        @Override
         public void resultChanged (LookupEvent ev) {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     decoratePanel (decoratingPanel, false);
                 }
@@ -352,7 +415,7 @@ public final class MainWindow extends JFrame {
     }
     
     private void initListeners() {
-        addWindowListener (new WindowAdapter() {
+        frame.addWindowListener (new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
                     LifecycleManager.getDefault().exit();
@@ -362,7 +425,7 @@ public final class MainWindow extends JFrame {
                 public void windowActivated (WindowEvent evt) {
                    // #19685. Cancel foreigner popup when
                    // activated main window.
-                   org.netbeans.core.windows.RegistryImpl.cancelMenu(MainWindow.this);
+                   org.netbeans.core.windows.RegistryImpl.cancelMenu(frame);
                 }
             }
         );
@@ -475,12 +538,12 @@ public final class MainWindow extends JFrame {
         }
         if( null != forcedBounds ) {
             bounds = new Rectangle( forcedBounds );
-            setPreferredSize( bounds.getSize() );
+            frame.setPreferredSize( bounds.getSize() );
             forcedBounds = null;
         }
         
         if(!bounds.isEmpty()) {
-            setBounds(bounds);
+            frame.setBounds(bounds);
         }
     }
     
@@ -510,10 +573,10 @@ public final class MainWindow extends JFrame {
         if(desktop != null) {
             getDesktopPanel().add(desktop, BorderLayout.CENTER);
         } 
-        invalidate();
-        validate();
+        frame.invalidate();
+        frame.validate();
 
-        repaint();
+        frame.repaint();
     }
 
     // XXX PENDING used in DnD only.
@@ -539,7 +602,7 @@ public final class MainWindow extends JFrame {
     // XXX
     /** Gets bounds of main window without the dektop component. */
     public Rectangle getPureMainWindowBounds() {
-        Rectangle bounds = getBounds();
+        Rectangle bounds = frame.getBounds();
 
         // XXX Substract the desktop height, we know the pure main window
         // is always at the top, the width is same.
@@ -549,15 +612,6 @@ public final class MainWindow extends JFrame {
         }
         
         return bounds;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, 
-                "Paint method of main window invoked normally."); //NOI18N
-        // XXX is this only needed by obsolete #24291 hack, or now needed independently?
-        WindowManagerImpl.getInstance().mainWindowPainted();
     }
 
     // Full Screen Mode
@@ -575,22 +629,22 @@ public final class MainWindow extends JFrame {
         }
         isSwitchingFullScreenMode = true;
         if( !isFullScreenMode ) {
-            restoreExtendedState = getExtendedState();
-            restoreBounds = getBounds();
-            isUndecorated = isUndecorated();
-            windowDecorationStyle = getRootPane().getWindowDecorationStyle();
+            restoreExtendedState = frame.getExtendedState();
+            restoreBounds = frame.getBounds();
+            isUndecorated = frame.isUndecorated();
+            windowDecorationStyle = frame.getRootPane().getWindowDecorationStyle();
         }
         isFullScreenMode = fullScreenMode;
         if( Utilities.isWindows() )
-            setVisible( false );
+            frame.setVisible( false );
         else 
             WindowManagerImpl.getInstance().setVisible(false);
         
-        dispose();
+        frame.dispose();
         
-        setUndecorated( isFullScreenMode || isUndecorated );
+        frame.setUndecorated( isFullScreenMode || isUndecorated );
         // Added to support Custom Look and Feel with Decorations
-        getRootPane().setWindowDecorationStyle( isFullScreenMode ? JRootPane.NONE : windowDecorationStyle );
+        frame.getRootPane().setWindowDecorationStyle( isFullScreenMode ? JRootPane.NONE : windowDecorationStyle );
 
         final String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
         if( null != toolbarConfigName ) {
@@ -602,16 +656,16 @@ public final class MainWindow extends JFrame {
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
         GraphicsDevice device = null;
-        Graphics gc = getGraphics();
+        Graphics gc = frame.getGraphics();
         if( gc instanceof Graphics2D ) {
             GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
             if( null != conf )
                 device = conf.getDevice();
         }
         if( null != device && device.isFullScreenSupported() ) {
-            device.setFullScreenWindow( isFullScreenMode ? this : null );
+            device.setFullScreenWindow( isFullScreenMode ? frame : null );
         } else {
-            setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
+            frame.setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
         }
         
         if( updateBounds || (isFullScreenMode() && !Utilities.isWindows()) ) {
@@ -623,15 +677,16 @@ public final class MainWindow extends JFrame {
             }
         }
         if( Utilities.isWindows() ) {
-            setVisible( true );
+            frame.setVisible( true );
             SwingUtilities.invokeLater( new Runnable() {
+                @Override
                 public void run() {
-                    invalidate();
-                    validate();
-                    repaint();
+                    frame.invalidate();
+                    frame.validate();
+                    frame.repaint();
                     if( updateBounds ) {
-                        setPreferredSize( restoreBounds.getSize() );
-                        setBounds( restoreBounds );
+                        frame.setPreferredSize( restoreBounds.getSize() );
+                        frame.setBounds( restoreBounds );
                     }
                     ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                     isSwitchingFullScreenMode = false;
@@ -640,10 +695,11 @@ public final class MainWindow extends JFrame {
         } else {
             WindowManagerImpl.getInstance().setVisible(true);
             SwingUtilities.invokeLater( new Runnable() {
+                @Override
                 public void run() {
-                    invalidate();
-                    validate();
-                    repaint();
+                    frame.invalidate();
+                    frame.validate();
+                    frame.repaint();
                     ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                     isSwitchingFullScreenMode = false;
                 }
@@ -653,6 +709,10 @@ public final class MainWindow extends JFrame {
     
     public boolean isFullScreenMode() {
         return isFullScreenMode;
+    }
+
+    public JFrame getFrame() {
+        return frame;
     }
 
     private static class HeavyWeightPopupFactory extends PopupFactory {

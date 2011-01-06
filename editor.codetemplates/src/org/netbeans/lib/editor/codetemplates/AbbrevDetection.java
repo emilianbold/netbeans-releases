@@ -304,13 +304,14 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     }
     
     private boolean isAbbrevDisabled() {
-        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component) || Boolean.TRUE.equals(component.getClientProperty(COMPLETION_VISIBLE));
+        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component);
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {
         if (abbrevEndPosition != null && component != null
             && component.getCaretPosition() == abbrevEndPosition.getOffset()
             && !isAbbrevDisabled()
+            && !Boolean.TRUE.equals(component.getClientProperty(COMPLETION_VISIBLE))
             && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
         ) {
             CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());

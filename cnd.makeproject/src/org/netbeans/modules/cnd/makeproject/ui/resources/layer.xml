@@ -45,13 +45,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    
+
     <folder name="Templates">
         <folder name="Project">
             <folder name="Native">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/desktop.html"/>
-                
+
                 <attr name="position" intvalue="850"/>
                 <file name="makefile.xml">
                     <attr name="position" intvalue="100"/>
@@ -71,6 +71,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/binary.html"/>
                 </file>
 
+                <!--
                 <file name="newFullRemote.xml">
                     <attr name="position" intvalue="150"/>
                     <attr name="template" boolvalue="true"/>
@@ -79,6 +80,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newFullRemote.html"/>
                 </file>
+                -->
 
                 <file name="newApplication.xml">
                     <attr name="position" intvalue="200"/>
@@ -88,7 +90,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newApplication.html"/>
                 </file>
-                
+
                 <file name="newDynamicLibrary.xml">
                     <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
@@ -96,8 +98,8 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newDynamicLibrary.html"/>
-                </file>                
-                
+                </file>
+
                 <file name="newStaticLibrary.xml">
                     <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
@@ -135,18 +137,18 @@ made subject to such option by the copyright holder.
                 </file>
 
             </folder>
-            
+
             <folder name="Samples">
                 <folder name="Native">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                     <attr name="position" intvalue="650"/>
-                    
+
                     <!--
                     <folder name="Applications">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                         <attr name="position" intvalue="100"/>
                     -->
-                        
+
                         <file name="Welcome" url="samples/welcome.zip">
                             <attr name="position" intvalue="100"/>
                             <attr name="template" boolvalue="true"/>
@@ -155,7 +157,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="Arguments" url="samples/args.zip">
                             <attr name="position" intvalue="200"/>
                             <attr name="template" boolvalue="true"/>
@@ -164,8 +166,8 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
-                        
+
+
                         <file name="Freeway" url="samples/freeway.zip">
                             <attr name="position" intvalue="300"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -174,7 +176,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="SubProjects" url="samples/helloapp.zip">
                             <attr name="position" intvalue="400"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -185,7 +187,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="InputOutput" url="samples/io.zip">
                             <attr name="position" intvalue="500"/>
                             <attr name="template" boolvalue="true"/>
@@ -194,7 +196,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="MP" url="samples/mp.zip">
                             <attr name="position" intvalue="600"/>
                             <attr name="template" boolvalue="true"/>
@@ -203,7 +205,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="Quote" url="samples/quote.zip">
                             <attr name="position" intvalue="700"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -212,7 +214,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="LexYacc" url="samples/lexyacc.zip">
                             <attr name="position" intvalue="800"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -221,7 +223,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="Fractal" url="samples/fractal.zip">
                             <attr name="position" intvalue="810"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -230,7 +232,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="Hello" url="samples/hello.zip">
                             <attr name="position" intvalue="820"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -239,7 +241,7 @@ made subject to such option by the copyright holder.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-                        
+
                         <file name="Pi" url="samples/pi.zip">
                             <attr name="position" intvalue="830"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -268,7 +270,7 @@ made subject to such option by the copyright holder.
                         </file>
 
                     </folder>
-                    
+
                     <!--
                     <folder name="Packaging">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -281,14 +283,14 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Services">
         <file name="org-netbeans-modules-cnd-makeproject-MakeOptions.settings" url="MakeOptions.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
         </file>
     </folder>
-    
+
     <folder name="Actions">
         <folder name="Project">
             <!-- Project operations -->
@@ -315,7 +317,14 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-ConfigurationManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
-            </file>            
+            </file>
+            <!-- XXX:fullRemote -->
+            <!--file name="org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.makeproject.actions.OpenRemoteProjectAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.makeproject.actions.Bundle#OpenRemoteProjectAction.title"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file-->
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
@@ -323,16 +332,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    
+
     <folder name="Menu"> <!-- Hacking menus -->
         <folder name="BuildProject">
             <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance"/>
                 <attr name="position" intvalue="210"/>
             </file>
-            
-            
-            
+
+
+
         </folder>
         <!--
         <folder name="File">
@@ -342,8 +351,18 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         -->
+        <!-- XXX:fullRemote -->
+        <!--folder name="File">
+            <folder name="Import">
+                <file name="org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.instance"/>
+                    <attr name="position" intvalue="200"/>
+                    <attr name="ergonomics" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder-->
     </folder>
-    
+
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-executable+elf">

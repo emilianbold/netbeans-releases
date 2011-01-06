@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.openide.filesystems;
 
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -59,10 +61,22 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 public class CleaningAnnotationProcessor extends AbstractProcessor {
 
+    private final Set<String> seenElements = new HashSet<String>();
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        seenElements.clear();
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (roundEnv.processingOver()) {
+            return false;
+        }
+        
         try {
-            Runnable impl = new CleaningAnnotationProcessorImpl(processingEnv, roundEnv);
+            Runnable impl = new CleaningAnnotationProcessorImpl(processingEnv, roundEnv, seenElements);
             impl.run();
         } catch (LinkageError t) {
             // not enough classes on classpath. Happens in core.startup tests.

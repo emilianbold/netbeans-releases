@@ -95,11 +95,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.antlr3.devel</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.libs.antlr3.runtime</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

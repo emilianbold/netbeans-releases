@@ -137,6 +137,11 @@ public class CommitAction extends ContextAction {
         commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
     }
 
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/commit.png"; // NOI18N
+    }
+
     /**
      * Returns true if the given nodes are from the versioning view or the diff view.
      * In such case the deep scan is not required because the files and their statuses should already be known
@@ -742,7 +747,7 @@ public class CommitAction extends ContextAction {
             File[] files = commitFiles.toArray(new File[commitFiles.size()]);
             long revision = client.commit(files, message, recursive);
             if (files.length > 0 && !supp.isCanceled()) {
-                ISVNLogMessage revisionLog = getLogMessage(client, files[0], revision);
+                ISVNLogMessage revisionLog = getLogMessage (files, revision);
                 if (revisionLog != null) {
                     Subversion.getInstance().getLogger(getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",
                             new Object[]{
@@ -763,6 +768,25 @@ public class CommitAction extends ContextAction {
                 repositoryRootUrl = SvnUtils.getRepositoryRootUrl(file);
             }
             return repositoryRootUrl;
+        }
+
+        private ISVNLogMessage getLogMessage (File[] files, long revision) throws SVNClientException {
+            ISVNLogMessage revisionLog = null;
+            for (int i = 0; i < files.length && revisionLog == null; ++i) {
+                try {
+                    File f = files[i];
+                    // an existing file needs to be found, log over a deleted file fails
+                    while (!f.exists()) {
+                        f = f.getParentFile();
+                    }
+                    revisionLog = CommitAction.getLogMessage(client, f, revision);
+                } catch (SVNClientException ex) {
+                    if (!SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
+                        throw ex;
+                    }
+                }
+            }
+            return revisionLog;
         }
     }
 
@@ -804,7 +828,8 @@ public class CommitAction extends ContextAction {
         if (Subversion.LOG.isLoggable(Level.FINER)) {
             Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
-        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
+        // log has to be called directly on the file
+        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryUrl(file), rev, rev);
         if (ls.length > 0) {
             log = ls[0];
         }
@@ -977,10 +1002,7 @@ public class CommitAction extends ContextAction {
             //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
                 ISVNStatus st = null;
-                if(file.isDirectory() &&
-                    ( removeCandidates.contains(file) ||
-                      ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
-                {
+                if(removeCandidates.contains(file) || ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())) {
                     recursiveCommits.add(file);
                 }
             }
@@ -1018,8 +1040,11 @@ public class CommitAction extends ContextAction {
         List<File> unmanaged = new ArrayList<File>();
         File file = node.getFile();
         File parent = file.getParentFile();
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         while (true) {
-            if (new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
+            // added parent does not have metadata in 1.7, now, does it?
+            // in that case we need to check it's status
+            if (SvnUtils.hasMetadata(parent) || (cache.getStatus(parent).getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
                 break;
             }
             unmanaged.add(0, parent);

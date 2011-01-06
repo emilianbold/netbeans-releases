@@ -184,7 +184,7 @@ public final class TomcatFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException
      * @return {@link TomcatManager}
      */
-    public synchronized DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
+    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI:" + uri); // NOI18N
@@ -199,17 +199,19 @@ public final class TomcatFactory implements DeploymentFactory {
                 throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
             }
         }
-        TomcatManager tm = (TomcatManager)managerCache.get(ip);
-        if (tm == null) {
-            try {
-                tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), version);
-                managerCache.put(ip, tm);
-            } catch (IllegalArgumentException iae) {
-                Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
-                throw (DeploymentManagerCreationException)(t.initCause(iae));
+        synchronized (this) {
+            TomcatManager tm = (TomcatManager)managerCache.get(ip);
+            if (tm == null) {
+                try {
+                    tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), version);
+                    managerCache.put(ip, tm);
+                } catch (IllegalArgumentException iae) {
+                    Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
+                    throw (DeploymentManagerCreationException)(t.initCause(iae));
+                }
             }
+            return tm;
         }
-        return tm;
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 

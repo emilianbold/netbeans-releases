@@ -143,21 +143,22 @@ abstract public class XMLDocReader extends XMLDecoder {
 	    }
 
 	    if (versionException != null) {
-		String what = versionException.element();
-		int expectedVersion = versionException.expectedVersion();
-		int actualVersion = versionException.actualVersion();
+                if (versionException.showDetails()) {
+                    String what = versionException.element();
+                    int expectedVersion = versionException.expectedVersion();
+                    int actualVersion = versionException.actualVersion();
 
-		fmt = getString("MSG_versionerror");	// NOI18N
-		String errmsg = whileMsg + MessageFormat.format(fmt,
-		    new Object[] {what,
-				  "" + actualVersion, // NOI18N
-				  "" + expectedVersion}); // NOI18N
+                    fmt = getString("MSG_versionerror");	// NOI18N
+                    String errmsg = whileMsg + MessageFormat.format(fmt,
+                        new Object[] {what,
+                                      "" + actualVersion, // NOI18N
+                                      "" + expectedVersion}); // NOI18N
 
-		NotifyDescriptor.Message msg = new NotifyDescriptor.
-		    Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.
+                        Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
 
-		DialogDisplayer.getDefault().notify(msg);
-
+                    DialogDisplayer.getDefault().notify(msg);
+                }
 	    } else {
 		ErrorManager.getDefault().annotate(ex, whileMsg);
 		ErrorManager.getDefault().notify(ex);

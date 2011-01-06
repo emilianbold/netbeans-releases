@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.navigation.overrides;
 
 import java.util.Collection;
+import java.util.MissingResourceException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -54,14 +55,19 @@ import org.openide.util.NbBundle;
  */
 /*package*/ class OverrideAnnotation extends BaseAnnotation {
 
-    public OverrideAnnotation(StyledDocument document, CsmFunction decl, Collection<? extends CsmOffsetableDeclaration> baseDecls, Collection<? extends CsmOffsetableDeclaration> descDecls) {
-        super(document, decl, baseDecls, descDecls);
+    public OverrideAnnotation(StyledDocument document, CsmFunction decl, 
+            Collection<? extends CsmOffsetableDeclaration> baseDecls, 
+            Collection<? extends CsmOffsetableDeclaration> descDecls,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates, 
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
+        super(document, decl, baseDecls, descDecls, baseTemplates, templateSpecializations);
     }
 
     @Override
     public String getShortDescription() {
+        String out = "";
         if (baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
-            return NbBundle.getMessage(getClass(), "LAB_IsOverriden");
+            out = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
         } else if (!baseUIDs.isEmpty() && descUIDs.isEmpty()) {
             CharSequence text = "..."; //NOI18N
             if (baseUIDs.size() == 1) {
@@ -70,16 +76,18 @@ import org.openide.util.NbBundle;
                     text = obj.getQualifiedName();
                 }
             }
-            return NbBundle.getMessage(getClass(), "LAB_Overrides", text);
+            out = NbBundle.getMessage(getClass(), "LAB_Overrides", text);
         } else if (!baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
-            return NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
-        } else { //both are empty
+            out = NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
+        } else if (baseTemplateUIDs.isEmpty() && specializationUIDs.isEmpty()) { //both are empty
             throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
         }
+        out = addTemplateAnnotation(out);
+        return out;
     }
 
     @Override
-    protected CharSequence debugTypeStirng() {
+    protected CharSequence debugTypeString() {
         switch (type) {
             case OVERRIDES:
                 return "OVERRIDES"; // NOI18N

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,7 +72,7 @@ public final class UIDProviderIml implements UIDProvider {
 
     public static boolean isPersistable(CsmUID<?> uid) {
         // TODO: InstantiationUID is fake class which doesn't persist internal reference => we have to skip it
-        return uid != null && !(uid instanceof SelfUID<?>) && !(uid instanceof Instantiation.InstantiationUID);
+        return uid != null && !(uid instanceof SelfUID<?>) && !(uid instanceof Instantiation.InstantiationSelfUID);
     }
 
     public UIDProviderIml() {
@@ -102,8 +103,15 @@ public final class UIDProviderIml implements UIDProvider {
                         String line = ""; // NOI18N
                         if (obj instanceof CsmOffsetable) {
                             CsmOffsetable offsetable = (CsmOffsetable) obj;
-                            line = " ["+offsetable.getStartPosition().getLine()+":"+offsetable.getStartPosition().getColumn()+"-"+ // NOI18N
-                                    offsetable.getEndPosition().getLine()+":"+offsetable.getEndPosition().getColumn()+"]"; // NOI18N
+                            Position startPosition = offsetable.getStartPosition();
+                            Position endPosition = offsetable.getEndPosition();
+                            if (startPosition.getOffset() >= 0 && startPosition.getOffset() < offsetable.getText().length()
+                                    && endPosition.getOffset() >= 0 && endPosition.getOffset() < offsetable.getText().length()) {
+                                line = " [" + startPosition.getLine() + ":" + startPosition.getColumn() + "-" + // NOI18N
+                                        endPosition.getLine() + ":" + endPosition.getColumn() + "]"; // NOI18N
+                            } else {
+                                line = " bad position! [" + startPosition.getOffset() + "-" + endPosition.getOffset() + "]"; // NOI18N
+                            }
                         }
                         new Exception(prefix + uid + "] of " + obj + line).printStackTrace(System.err); // NOI18N
                     }
@@ -125,7 +133,7 @@ public final class UIDProviderIml implements UIDProvider {
                 final Class<? extends Object> aClass = obj.getClass();
                 if (!aClass.equals(org.netbeans.modules.cnd.modelimpl.csm.deep.LabelImpl.class)) {
                     System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
-                    new Exception().printStackTrace();
+                    new Exception().printStackTrace(System.err);
                 }
             }
             out = createSelfUID(obj);
@@ -159,7 +167,7 @@ public final class UIDProviderIml implements UIDProvider {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final SelfUID other = (SelfUID) obj;
+            final SelfUID<?> other = (SelfUID) obj;
             if (this.element != other.element && !this.element.equals(other.element)) {
                 return false;
             }

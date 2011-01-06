@@ -480,6 +480,7 @@ public class JavacParser extends Parser {
     public void resultFinished (boolean isCancelable) {
         if (isCancelable) {
             ClassIndexImpl.cancel.remove();
+            indexCanceled.set(false);
         }
     }
 

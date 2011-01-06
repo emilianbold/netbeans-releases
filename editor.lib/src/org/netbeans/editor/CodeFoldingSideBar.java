@@ -696,7 +696,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
     }
     
-    private final class Listener extends MouseAdapter implements FoldHierarchyListener, DocumentListener {
+    private final class Listener extends MouseAdapter implements FoldHierarchyListener, DocumentListener, Runnable {
     
         public Listener(){
         }
@@ -774,6 +774,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
 
         private void refresh() {
+            SwingUtilities.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
             repaint();
         }
     } // End of Listener class

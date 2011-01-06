@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.Set;
 import org.openide.text.Line;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
@@ -107,7 +108,7 @@ public interface NativeDebugger {
     public int getLocalsCount();
     public Variable[] getLocals();
 
-    public void requestAutos();
+    public Set<String> requestAutos();
     public void setShowAutos(boolean showAutos);
     public int getAutosCount();
     public Variable[] getAutos();
@@ -132,6 +133,7 @@ public interface NativeDebugger {
     public void moreFrame();
     public void makeFrameCurrent(Frame f);
     public Frame[] getStack();
+    Frame getCurrentFrame();
     
     public boolean isMultiThreading();
     public void registerThreadModel(ThreadModel model);
@@ -155,6 +157,7 @@ public interface NativeDebugger {
     public void pause();
     public void interrupt();
     public void runToCursor(String src, int line);
+    public void contAt(String src, int line);
     public void makeCalleeCurrent();
     public void makeCallerCurrent();
     public void popTopmostCall();

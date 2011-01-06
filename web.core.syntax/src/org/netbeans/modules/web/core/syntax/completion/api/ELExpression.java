@@ -1040,8 +1040,15 @@ public class ELExpression {
         }
 
         private TypeMirror extractTypeParameter(CompilationInfo controller, TypeMirror lastKnownType, Class clazz) {
+            // #178714
+            if (lastKnownType == null) {
+                return null;
+            }
             TypeMirror erasedLastKnownType = controller.getTypes().erasure(lastKnownType);
             TypeMirror clazzTypeMirror = controller.getElements().getTypeElement(clazz.getCanonicalName()).asType();
+            if (clazzTypeMirror == null) {
+                return null;
+            }
             TypeMirror erasedClazzTypeMirror = controller.getTypes().erasure(clazzTypeMirror);
             
             if (controller.getTypes().isAssignable(erasedLastKnownType, erasedClazzTypeMirror)) {
@@ -1297,7 +1304,11 @@ public class ELExpression {
         TypeMirror designedType = null;
         if (iterableType.getKind() == TypeKind.DECLARED) {
             DeclaredType declaredType = (DeclaredType) iterableType;
-            if (!info.getTypes().isSubtype(info.getTypes().erasure(declaredType), info.getTypes().erasure(iterableElement.asType()))) {
+            TypeMirror ieAsType = iterableElement.asType();
+            if (declaredType == null || ieAsType == null) {
+                return null;
+            }
+            if (!info.getTypes().isSubtype(info.getTypes().erasure(declaredType), info.getTypes().erasure(ieAsType))) {
                 return null;
             }
             ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);

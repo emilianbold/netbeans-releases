@@ -41,17 +41,23 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -60,9 +66,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -70,10 +76,11 @@ import org.netbeans.modules.terminal.api.IOVisibility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -82,10 +89,18 @@ import org.openide.windows.InputOutput;
  *
  * @author Vladimir Voskresensky
  */
-abstract class TerminalAction implements ActionListener {
+abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
+
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
+
+    public TerminalAction(String name, String descr, ImageIcon icon) {
+        putValue(Action.NAME, name);
+        putValue(Action.SMALL_ICON, icon);
+        putValue(Action.SHORT_DESCRIPTION, descr);
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
         instance.open();
         instance.requestActive();
@@ -122,26 +137,63 @@ abstract class TerminalAction implements ActionListener {
                             }
                         }
 
-                        InputOutput io = null;
+                        final HostInfo hostInfo;
                         try {
-                            io = term.getIO(env.getDisplayName(), null, ioContainer);
+                            hostInfo = HostInfoUtils.getHostInfo(env);
+                            boolean isSupported = PtySupport.isSupportedFor(env);
+                            if (!isSupported) {
+                                if (!TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand())) {
+                                    String message;
+
+                                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                                        message = NbBundle.getMessage(TerminalAction.class, "LocalTerminalNotSupported.error.nocygwin"); // NOI18N
+                                    } else {
+                                        message = NbBundle.getMessage(TerminalAction.class, "LocalTerminalNotSupported.error"); // NOI18N
+                                    }
+
+                                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+                                    DialogDisplayer.getDefault().notify(nd);
+                                }
+                                return;
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return;
+                        } catch (CancellationException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return;
+                        }
+
+                        final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
+                        try {
+                            ioRef.set(term.getIO(env.getDisplayName(), null, ioContainer));
+
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                            npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
-                            npb.addNativeProcessListener(new NativeProcessListener(io, destroyed));
-
-                            final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                             String shell = hostInfo.getLoginShell();
 //                            npb.setWorkingDirectory("${HOME}");
                             npb.setExecutable(shell);
                             NativeExecutionDescriptor descr;
-                            descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
+                            descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(ioRef.get());
+                            descr.postExecution(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    ioRef.get().closeInputOutput();
+                                }
+                            });
                             NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
                             Future<Integer> result = es.run();
                             // ask terminal to become active
                             SwingUtilities.invokeLater(this);
 
                             try {
-                                result.get();
+                                // if terminal can not be started then ExecutionException should be thrown
+                                // wait one second to see if terminal can not be started. otherwise it's OK to exit by TimeOut
+                                result.get(1, TimeUnit.SECONDS);
+                            } catch (TimeoutException ex) {
+                                // we should be there
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {
@@ -151,12 +203,9 @@ abstract class TerminalAction implements ActionListener {
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                                 }
                             }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                            reportInIO(io, ex);
                         } catch (CancellationException ex) {
                             Exceptions.printStackTrace(ex);
-                            reportInIO(io, ex);
+                            reportInIO(ioRef.get(), ex);
                         }
                     }
 
@@ -171,50 +220,40 @@ abstract class TerminalAction implements ActionListener {
         }
     }
 
-    protected abstract ExecutionEnvironment getEnvironment();
-    private static Action[] actions;
-
-    private synchronized static Action[] getActions() {
-        if (actions == null) {
-            List<? extends Action> termActions = Utilities.actionsForPath("Actions/Terminal");// NOI18N
-            actions = termActions.toArray(new Action[termActions.size()]);
+    @Override
+    public Component getToolbarPresenter() {
+        JButton button = new JButton(this);
+        button.setBorderPainted(false);
+        button.setOpaque(false);
+        button.setText(null);
+        button.putClientProperty("hideActionText", Boolean.TRUE); // NOI18N
+        Object icon = getValue(Action.SMALL_ICON);
+        if (!(icon instanceof Icon)) {
+            throw new IllegalStateException("No icon provided for " + this); // NOI18N
         }
-        return actions;
+        button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
+        return button;
     }
 
+    protected abstract ExecutionEnvironment getEnvironment();
+
     private final static class NativeProcessListener implements ChangeListener, PropertyChangeListener {
-        private final InputOutput io;
-        private NativeProcess process;
+
+        private final AtomicReference<NativeProcess> processRef;
         private final AtomicBoolean destroyed;
 
         public NativeProcessListener(InputOutput io, AtomicBoolean destroyed) {
-            this.io = io;
             assert destroyed != null;
             this.destroyed = destroyed;
-            IONotifier.addPropertyChangeListener(io, WeakListeners.propertyChange(this, io));
+            this.processRef = new AtomicReference<NativeProcess>();
+            IONotifier.addPropertyChangeListener(io, WeakListeners.propertyChange(NativeProcessListener.this, io));
         }
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            if (e instanceof NativeProcessChangeEvent) {
-                NativeProcessChangeEvent npce = (NativeProcessChangeEvent) e;
-                System.err.printf("%s:%d[%s]\n", npce.getSource(), npce.pid,  npce.state);
-                initProcess(npce);
-                if (destroyed.get()) {
-                    return;
-                }
-                switch (npce.state) {
-                    case RUNNING:
-                        break;
-                    case CANCELLED:
-                    case FINISHED:
-                        io.closeInputOutput();
-                        break;
-                    case ERROR:
-                        io.getErr().close();
-                        io.getOut().close();
-                        break;
-                }
+            NativeProcess process = processRef.get();
+            if (process == null && e.getSource() instanceof NativeProcess) {
+                processRef.compareAndSet(null, (NativeProcess) e.getSource());
             }
         }
 
@@ -223,17 +262,11 @@ abstract class TerminalAction implements ActionListener {
             if (IOVisibility.PROP_VISIBILITY.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())) {
                 if (destroyed.compareAndSet(false, true)) {
                     // term is closing => destroy process
-                    NativeProcess proc = this.process;
+                    NativeProcess proc = processRef.get();
                     if (proc != null) {
                         proc.destroy();
                     }
                 }
-            }
-        }
-
-        private void initProcess(NativeProcessChangeEvent npce) {
-            if (this.process == null) {
-                this.process = (NativeProcess) npce.getSource();
             }
         }
     }

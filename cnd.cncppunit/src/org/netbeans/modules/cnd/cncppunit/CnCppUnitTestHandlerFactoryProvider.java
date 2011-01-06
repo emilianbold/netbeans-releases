@@ -11,7 +11,7 @@ import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider;
 /**
  * Sample factory provider.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider.class)
 public class CnCppUnitTestHandlerFactoryProvider implements TestHandlerFactoryProvider {

@@ -39,27 +39,31 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.api;
 
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Maria Tishkova
  */
-abstract public class DataRowNode extends AbstractNode{
+abstract public class DataRowNode extends AbstractNode {
+
     private final DataRow row;
 
     public DataRowNode(DataRow row) {
-        super(Children.LEAF);
+        this(row, null);
+    }
+
+    public DataRowNode(DataRow row, Lookup lookup) {
+        super(Children.LEAF, lookup);
         this.row = row;
     }
-    
-    public final DataRow getDataRow(){
+
+    public final DataRow getDataRow() {
         return row;
     }
-    
 }

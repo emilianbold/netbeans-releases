@@ -131,10 +131,9 @@ public class HtmlElementHandle implements ElementHandle {
         ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
         if (object instanceof HtmlElementHandle) {
             HtmlElementHandle heh = (HtmlElementHandle) object;
-            return new OffsetRange(
-                    result.getSnapshot().getOriginalOffset(heh.from()),
-                    result.getSnapshot().getOriginalOffset(heh.to()));
-
+            int from = result.getSnapshot().getOriginalOffset(heh.from());
+            int to = result.getSnapshot().getOriginalOffset(heh.to());
+            return from != -1 && to != -1 ? new OffsetRange(from, to) : OffsetRange.NONE;
         } else {
             throw new IllegalArgumentException("Foreign element: " + object + " of type " +
                     ((object != null) ? object.getClass().getName() : "null")); //NOI18N

@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -194,7 +195,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         for ( ; tp != null; tp = tp.getParentPath()) {
             Tree leaf = tp.getLeaf();
 
-            if (!ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface()))
+            if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
+                && (leaf.getKind() != Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
                continue;
 
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
@@ -408,8 +410,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             TreePathHandle h = TreePathHandle.create(resolved, info);
             TreePath method   = findMethod(resolved);
             boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT;
-            boolean isConstant = checkConstantExpression(info, resolved) && !expressionStatement;
-            boolean isVariable = findStatement(resolved) != null && method != null;
+            TreePath value = resolved.getLeaf().getKind() != Kind.VARIABLE ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
+            boolean isConstant = checkConstantExpression(info, value) && !expressionStatement;
+            boolean isVariable = findStatement(resolved) != null && method != null && resolved.getLeaf().getKind() != Kind.VARIABLE;
             Set<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel, null).keySet() : null;
             Set<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel, null).keySet();// : null;
             Scope scope = info.getTrees().getScope(resolved);
@@ -437,42 +440,53 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
 
-                //introduce method based on expression:
-                Element methodEl = info.getTrees().getElement(method);
-                Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
-                List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
+                if (resolved.getLeaf().getKind() != Kind.VARIABLE) {
+                    //introduce method based on expression:
+                    Element methodEl = info.getTrees().getElement(method);
+                    Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
+                    List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
 
-                prepareTypeVars(method, info, typeVar2Def, typeVars);
+                    prepareTypeVars(method, info, typeVar2Def, typeVars);
 
-                ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, cancel);
+                    ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, cancel);
 
-                if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
-                    ExecutableElement ee = (ExecutableElement) methodEl;
+                    if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
+                        ExecutableElement ee = (ExecutableElement) methodEl;
 
-                    scanner.localVariables.addAll(ee.getParameters());
+                        scanner.localVariables.addAll(ee.getParameters());
+                    }
+
+                    scanner.scan(method, null);
+
+                    List<TreePathHandle> params = new LinkedList<TreePathHandle>();
+
+                    boolean error186980 = false;
+                    for (VariableElement ve : scanner.usedLocalVariables) {
+                        TreePath path = info.getTrees().getPath(ve);
+                        if (path == null) {
+                            error186980 = true;
+                            Logger.getLogger(IntroduceHint.class.getName()).warning("Cannot get TreePath for local variable " + ve + "\nfile=" + info.getFileObject().getPath());
+                        } else {
+                            params.add(TreePathHandle.create(path, info));
+                        }
+                    }
+
+                    if (!error186980) {
+                        Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
+
+                        Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
+
+                        for (TypeMirror tm : exceptions) {
+                            exceptionHandles.add(TypeMirrorHandle.create(tm));
+                        }
+
+                        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
+
+                        typeVars.retainAll(scanner.usedTypeVariables);
+
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
+                    }
                 }
-
-                scanner.scan(method, null);
-
-                List<TreePathHandle> params = new LinkedList<TreePathHandle>();
-
-                for (VariableElement ve : scanner.usedLocalVariables) {
-                    params.add(TreePathHandle.create(info.getTrees().getPath(ve), info));
-                }
-
-                Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
-
-                Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
-
-                for (TypeMirror tm : exceptions) {
-                    exceptionHandles.add(TypeMirrorHandle.create(tm));
-                }
-
-                int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
-
-                typeVars.retainAll(scanner.usedTypeVariables);
-                
-                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
             }
 
             if (fixesMap != null) {
@@ -533,6 +547,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         TreePath method = findMethod(block);
 
         if (method == null) {
+            errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
+            return null;
+        }
+
+        if (method.getLeaf().getKind() == Kind.METHOD && ((MethodTree) method.getLeaf()).getParameters().contains(block.getLeaf())) {
             errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
             return null;
         }
@@ -1325,6 +1344,27 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
+
+    private static void removeFromParent(WorkingCopy parameter, TreePath what) throws IllegalAccessException {
+        final TreeMaker make = parameter.getTreeMaker();
+        Tree parentTree = what.getParentPath().getLeaf();
+        Tree original = what.getLeaf();
+        Tree newParent;
+
+        switch (parentTree.getKind()) {
+            case BLOCK:
+                newParent = make.removeBlockStatement((BlockTree) parentTree, (StatementTree) original);
+                break;
+            case CASE:
+                newParent = make.removeCaseStatement((CaseTree) parentTree, (StatementTree) original);
+                break;
+            default:
+                throw new IllegalAccessException(parentTree.getKind().toString());
+        }
+
+        parameter.rewrite(parentTree, newParent);
+    }
+
     private static final class IntroduceFix implements Fix {
 
         private String guessedName;
@@ -1364,7 +1404,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws IOException, BadLocationException {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
+            IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName, kind == IntroduceKind.CREATE_CONSTANT, handle.getKind() == Kind.VARIABLE, btnOk);
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_" + getKeyExt()); //NOI18N
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
             if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
@@ -1392,7 +1432,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
 
-                    ExpressionTree expression = (ExpressionTree) resolved.getLeaf();
+                    Tree original = resolved.getLeaf();
+                    boolean variableRewrite = original.getKind() == Kind.VARIABLE;
+                    ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
                     ModifiersTree mods;
                     final TreeMaker make = parameter.getTreeMaker();
                     
@@ -1417,7 +1459,17 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             mods = make.Modifiers(localAccess);
 
-                            VariableTree constant = make.Variable(mods, name, make.Type(tm), expression);
+                            VariableTree constant;
+
+                            if (!variableRewrite) {
+                                constant = make.Variable(mods, name, make.Type(tm), expression);
+                            } else {
+                                VariableTree originalVar = (VariableTree) original;
+                                constant = make.Variable(mods, originalVar.getName(), originalVar.getType(), originalVar.getInitializer());
+                                removeFromParent(parameter, resolved);
+                                expressionStatement = true;
+                            }
+                            
                             ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
 
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
@@ -1525,7 +1577,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             btnOk.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_OK"));
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
             btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_Cancel"));
-            IntroduceFieldPanel panel = new IntroduceFieldPanel(guessedName, initilizeIn, numDuplicates, allowFinalInCurrentMethod, btnOk);
+            IntroduceFieldPanel panel = new IntroduceFieldPanel(guessedName, initilizeIn, numDuplicates, allowFinalInCurrentMethod, handle.getKind() == Kind.VARIABLE, btnOk);
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceField");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
             if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
@@ -1559,7 +1611,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    ExpressionTree expression = (ExpressionTree) resolved.getLeaf();
+                    Tree original = resolved.getLeaf();
+                    boolean variableRewrite = original.getKind() == Kind.VARIABLE;
+                    ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
 
                     Set<Modifier> mods = declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class);
 
@@ -1587,13 +1641,23 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     ModifiersTree modsTree = make.Modifiers(mods);
-
-                    VariableTree field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
-
                     Tree parentTree = resolved.getParentPath().getLeaf();
-                    Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
-                    parameter.rewrite(parentTree, nueParent);
+                    VariableTree field;
+
+                    if (!variableRewrite) {
+                        field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
+
+                        Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
+                        parameter.rewrite(parentTree, nueParent);
+                    } else {
+                        VariableTree originalVar = (VariableTree) original;
+
+                        field = make.Variable(modsTree, originalVar.getName(), originalVar.getType(), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
+
+                        removeFromParent(parameter, resolved);
+                    }
+                    
+                    ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
 
                     TreePath method        = findMethod(resolved);
 

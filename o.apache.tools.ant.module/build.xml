@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.1.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.2.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
@@ -130,7 +130,7 @@ made subject to such option by the copyright holder.
             <mapper type="glob" from="${dir}${file.separator}*" to="*"/>
         </pathconvert>
         <echo file="${jnlp.dest.dir}/org-apache-tools-ant-module.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
 <jnlp spec='1.0+' codebase='${jnlp.codebase}'>
   <information>
    <title>Apache Ant Integration</title>
@@ -209,7 +209,6 @@ made subject to such option by the copyright holder.
     and rename external/ant-*-license.txt (and update the version numbers mentioned in it)
     and fix external/binaries-list
     (last two steps also in ${ant-docs}/external)
-5a. Rebuild junit/external/Ant-*-binary-patch-72080.jar if not yet applied upstream.
 6.  Run: ant -f ${ant-docs}/build.xml preview-javahelp
     You can ignore links to api/org/apache/... which will be broken, as well as a few other things.
     But for real problems in the HTML, commit fixes to docs/manual/ in the ant.apache.org SVN trunk.

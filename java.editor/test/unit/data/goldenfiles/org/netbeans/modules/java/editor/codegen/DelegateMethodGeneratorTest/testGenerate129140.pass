@@ -4,8 +4,8 @@ import java.util.List;
 
 public class MethodProposals {
 
-    public <T> T[] toArray(T[] arg0) {
-        return ll.toArray(arg0);
+    public <T> T[] toArray(T[] ts) {
+        return ll.toArray(ts);
     }
 
     private Auxiliary a;

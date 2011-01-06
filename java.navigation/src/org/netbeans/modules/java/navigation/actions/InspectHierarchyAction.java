@@ -71,8 +71,8 @@ public final class InspectHierarchyAction extends AbstractNavigationAction {
 
             // Is this really a java file
             if (fileObject != null && 
-                    "java".equalsIgnoreCase(fileObject.getExt()) && // NOI18N
-                    "text/x-java".equals(fileObject.getMIMEType())) { // NOI18N
+                    (("java".equalsIgnoreCase(fileObject.getExt()) && "text/x-java".equals(fileObject.getMIMEType()))  || // NOI18N
+                    "application/x-class-file".equals(fileObject.getMIMEType()))) { 
                 // show the hierarchy in pop up window
                 JavaHierarchy.show(fileObject);
                 return;

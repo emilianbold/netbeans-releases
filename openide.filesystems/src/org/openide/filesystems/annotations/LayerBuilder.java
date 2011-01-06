@@ -67,6 +67,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.StandardLocation;
+import org.openide.util.NbBundle.Messages;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -529,37 +530,53 @@ public final class LayerBuilder {
                     }
                     bundle = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle";
                 }
-                if (processingEnv != null) {
-                    String resource = bundle.replace('.', '/') + ".properties";
-                    try {
-                        InputStream is;
-                        try {
-                            is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
-                        } catch (FileNotFoundException x) { // #181355
-                            try {
-                                is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
-                            } catch (IOException x2) {
-                                throw x;
-                            }
-                        }
-                        try {
-                            Properties p = new Properties();
-                            p.load(is);
-                            if (p.getProperty(key) == null) {
-                                throw new LayerGenerationException("No key '" + key + "' found in " + resource, originatingElement);
-                            }
-                        } finally {
-                            is.close();
-                        }
-                    } catch (IOException x) {
-                        throw new LayerGenerationException("Could not open " + resource + ": " + x, originatingElement);
-                    }
-                }
+                verifyBundleKey(bundle, key, m.group(1) == null);
                 bundlevalue(attr, bundle, key);
             } else {
                 stringvalue(attr, label);
             }
             return this;
+        }
+        private void verifyBundleKey(String bundle, String key, boolean samePackage) throws LayerGenerationException {
+            if (processingEnv == null) {
+                return;
+            }
+            if (samePackage) {
+                for (Element e = originatingElement; e != null; e = e.getEnclosingElement()) {
+                    Messages m = e.getAnnotation(Messages.class);
+                    if (m != null) {
+                        for (String kv : m.value()) {
+                            if (kv.startsWith(key + "=")) {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            String resource = bundle.replace('.', '/') + ".properties";
+            try {
+                InputStream is;
+                try {
+                    is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
+                } catch (FileNotFoundException x) { // #181355
+                    try {
+                        is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
+                    } catch (IOException x2) {
+                        throw x;
+                    }
+                }
+                try {
+                    Properties p = new Properties();
+                    p.load(is);
+                    if (p.getProperty(key) == null) {
+                        throw new LayerGenerationException("No key '" + key + "' found in " + resource, originatingElement);
+                    }
+                } finally {
+                    is.close();
+                }
+            } catch (IOException x) {
+                throw new LayerGenerationException("Could not open " + resource + ": " + x, originatingElement);
+            }
         }
 
         /**

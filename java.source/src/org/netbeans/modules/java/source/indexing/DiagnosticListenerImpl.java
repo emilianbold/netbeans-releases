@@ -45,15 +45,20 @@ package org.netbeans.modules.java.source.indexing;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
 
+    private static final Logger ERROR_LOG = Logger.getLogger(DiagnosticListenerImpl.class.getName() + "-errors");
     private final List<Diagnostic<? extends JavaFileObject>> diagnostics = new LinkedList<Diagnostic<? extends JavaFileObject>>();
 
     public void report(Diagnostic<? extends JavaFileObject> d) {
+        assert logDiagnostic(d);
+        
         diagnostics.add(d);
     }
 
@@ -73,4 +78,23 @@ class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
     public void cleanDiagnostics() {
         diagnostics.clear();
     }
+
+    private static boolean logDiagnostic(Diagnostic<? extends JavaFileObject> d) {
+        Level logLevel = findLogLevel(d);
+
+        if (ERROR_LOG.isLoggable(logLevel)) {
+            ERROR_LOG.log(logLevel, d.getSource().toUri().toASCIIString() + ":" + d.getCode() + ":" + d.getLineNumber() + ":" + d.getMessage(null), new Exception());
+        }
+
+        return true;
+    }
+    
+    private static Level findLogLevel(Diagnostic<? extends JavaFileObject> d) {
+        if (d.getKind() == Diagnostic.Kind.ERROR) {
+            return Level.FINE;
+        } else {
+            return Level.FINER;
+        }
+    }
+
 }

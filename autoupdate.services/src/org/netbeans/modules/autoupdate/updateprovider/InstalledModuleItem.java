@@ -58,7 +58,6 @@ public class InstalledModuleItem extends ModuleItem {
     private String codeName;
     private String specificationVersion;
     private ModuleInfo info;
-    private Module m;
     private String author;
     private String source;
     private String installCluster;
@@ -143,9 +142,9 @@ public class InstalledModuleItem extends ModuleItem {
     }
     
     private Module getModule () {
-        if (m == null) {
-            m = Utilities.toModule (info);
+        if (info instanceof Module) {
+            return (Module)info;
         }
-        return m;
+        return null;
     }
 }

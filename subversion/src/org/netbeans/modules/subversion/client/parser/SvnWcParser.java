@@ -356,6 +356,12 @@ public class SvnWcParser {
         }
         return returnValue;
     }
+
+    public ISVNInfo getUnknownInfo (File file) {
+        return new ParserSvnInfo(file, null, null, null,
+                    SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
+                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);
+    }
     
 }
 

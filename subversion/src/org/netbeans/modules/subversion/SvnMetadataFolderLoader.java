@@ -79,16 +79,16 @@ public class SvnMetadataFolderLoader extends DataLoader {
         }
         
         if(SvnUtils.isPartOfSubversionMetadata(f)) {
-            IOException e = new SvnMetadataIOEXception(f);
+            IOException e = new SvnMetadataIOException(f);
             Exceptions.attachSeverity(e, Level.FINE);
             throw e;
         }
         return null;
     }
 
-    private class SvnMetadataIOEXception extends IOException implements Callable<LogRecord[]> {
+    private class SvnMetadataIOException extends IOException implements Callable<LogRecord[]> {
         private final File f;
-        public SvnMetadataIOEXception(File f) {
+        public SvnMetadataIOException(File f) {
             this.f = f;
         }
         @Override

@@ -410,10 +410,20 @@ class OccurenceBuilder {
      *
      * @param offset
      * @return true if ElementInfo was set and even more represents different element than the previous one and
-     * thus makes sense to recompute occurences. If false is returned then makes no sense to recompute occurences
+     * thus makes sense to recompute occurrences. If false is returned then makes no sense to recompute occurences
      */
     private boolean setElementInfo(final int offset) {
         elementInfo = null;
+        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
+            if (entry.getValue() instanceof LazyBuild) {
+                LazyBuild scope = (LazyBuild)entry.getValue();
+                if (!scope.isScanned()) {
+                    scope.scan();
+                }
+            }
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+
         for (Entry<ASTNodeInfo<GotoStatement>, Scope> entry : gotoStatement.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
@@ -506,10 +516,6 @@ class OccurenceBuilder {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
-        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
-        }
-
         for (Entry<MagicMethodDeclarationInfo, MethodScope> entry : magicMethodDeclarations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
@@ -538,7 +544,7 @@ class OccurenceBuilder {
             final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
             final Index index = indexScope.getIndex();
             cachedOccurences.clear();
-
+            scanMethodBodies();
             switch (kind) {
                 case GOTO:
                     buildGotoLabels(elementInfo, fileScope, cachedOccurences);
@@ -1693,6 +1699,22 @@ class OccurenceBuilder {
             build(fileScope);
         }
         return cachedOccurences;
+    }
+    
+    /**
+     * This method ensure that all method bodies are scanned, if there were not
+     * scanned yet.
+     */
+    private void scanMethodBodies() {
+        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
+            if (entry.getValue() instanceof LazyBuild) {
+                LazyBuild scope = (LazyBuild)entry.getValue();
+                if (!scope.isScanned()) {
+                    scope.scan();
+                    System.out.println("Scanned " + scope.toString());
+                }
+            }
+        }
     }
 
     private Occurence findOccurenceByOffset(final int offset) {

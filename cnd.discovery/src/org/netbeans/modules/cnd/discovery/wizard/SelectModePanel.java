@@ -64,7 +64,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         initComponents();
         addListeners();
     }
-    
+
     private void addListeners(){
         simpleMode.addActionListener(new ActionListener(){
             @Override
@@ -100,43 +100,25 @@ public class SelectModePanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        instructionPanel = new javax.swing.JPanel();
-        instructionsTextArea = new javax.swing.JTextArea();
+        modeLabel = new javax.swing.JLabel();
         simpleMode = new javax.swing.JRadioButton();
         advancedMode = new javax.swing.JRadioButton();
-        modeLabel = new javax.swing.JLabel();
+        instructionPanel = new javax.swing.JPanel();
+        instructionsTextArea = new javax.swing.JTextArea();
 
+        setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.GridBagLayout());
 
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
-
-        instructionsTextArea.setBackground(instructionPanel.getBackground());
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setWrapStyleWord(true);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(modeLabel, bundle.getString("SelectModeLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(instructionPanel, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(modeLabel, gridBagConstraints);
 
         buttonGroup1.add(simpleMode);
         simpleMode.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(simpleMode, bundle.getString("SimpleModeButtonText")); // NOI18N
         simpleMode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         simpleMode.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -154,16 +136,28 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
         add(advancedMode, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(modeLabel, bundle.getString("SelectModeLabelText")); // NOI18N
+        instructionPanel.setLayout(new java.awt.BorderLayout());
+
+        instructionsTextArea.setBackground(instructionPanel.getBackground());
+        instructionsTextArea.setEditable(false);
+        instructionsTextArea.setLineWrap(true);
+        instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
+        instructionPanel.add(instructionsTextArea, java.awt.BorderLayout.SOUTH);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(modeLabel, gridBagConstraints);
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     void read(final DiscoveryDescriptor wizardDescriptor) {

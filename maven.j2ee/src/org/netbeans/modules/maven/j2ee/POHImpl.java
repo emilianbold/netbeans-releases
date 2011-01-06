@@ -70,7 +70,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
@@ -204,9 +203,12 @@ public class POHImpl extends ProjectOpenedHook {
             report.addReport(rep);
             
         }
+        if (lastJ2eeProvider != null) {
+            Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
+            lastJ2eeProvider = null;
+        }
         J2eeModuleProvider prv = project.getLookup().lookup(J2eeModuleProvider.class);
         if (prv != null) {
-            lastJ2eeProvider = prv;
             if (!BrokenServerLibrarySupport.getMissingServerLibraries(project).isEmpty()) {
                 ProblemReport libProblem =  new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         NbBundle.getMessage(POHImpl.class, "MSG_LibProblem"),
@@ -217,13 +219,7 @@ public class POHImpl extends ProjectOpenedHook {
             }
             if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(prv);
-            } else {
-                Deployment.getDefault().disableCompileOnSaveSupport(prv);
-            }
-        } else {
-            if (lastJ2eeProvider != null) {
-                Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
-                lastJ2eeProvider = null;
+                lastJ2eeProvider = prv;
             }
         }
     }

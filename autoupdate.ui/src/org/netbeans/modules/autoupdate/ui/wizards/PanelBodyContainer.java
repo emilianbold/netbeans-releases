@@ -62,6 +62,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -192,7 +193,8 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
             handle.progress (progressDisplayName, 0);
 
-            RequestProcessor.getDefault ().post (new Runnable () {
+            Installer.RP.post(new Runnable () {
+                @Override
                 public void run () {
                     int i = 0;
                     while (isWaiting) {

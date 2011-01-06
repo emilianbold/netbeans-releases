@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -69,7 +70,8 @@ public class SubResourceLocatorsNode extends AbstractNode { //implements Propert
     
     public SubResourceLocatorsNode(Project project, RestServicesModel model, 
             String serviceName) {
-        super(new SubResourceLocatorsChildren(project, model, serviceName));
+        super(Children.create(new SubResourceLocatorsChildrenFactory(
+                project, model, serviceName), true));
         this.serviceName = serviceName;
         setDisplayName(NbBundle.getBundle(SubResourceLocatorsNode.class).getString("LBL_SubResourceLocators"));
     }

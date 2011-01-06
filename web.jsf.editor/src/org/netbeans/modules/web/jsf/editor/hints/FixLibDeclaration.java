@@ -46,9 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +74,7 @@ public class FixLibDeclaration implements HintFix{
 
     @Override
     public void implement() throws Exception {
-        JsfUtils.importLibrary(doc, lib, nsPrefix);
+        LibraryUtils.importLibrary(doc, lib, nsPrefix);
     }
 
     @Override
@@ -88,10 +89,10 @@ public class FixLibDeclaration implements HintFix{
 
     public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
         List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
-        JsfSupport sup = JsfSupport.findFor(doc);
+        JsfSupportImpl sup = JsfSupportImpl.findFor(doc);
 
         if (sup != null){
-            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
+            for (FaceletsLibrary lib : sup.getLibraries().values()){
                 if (prefix.equals(lib.getDefaultPrefix())){
                     libs.add(lib);
                 }
