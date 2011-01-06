@@ -73,6 +73,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.openide.util.NbBundle;
 
 /**
@@ -176,7 +177,7 @@ public class RevisionListPanel extends javax.swing.JPanel {
         }
     }
 
-    private class ListHistoryProgressSupport extends GitProgressSupport {
+    private class ListHistoryProgressSupport extends GitProgressSupport.NoOutputLogging {
         @Override
         public void perform () {
             Revision rev;
@@ -194,7 +195,7 @@ public class RevisionListPanel extends javax.swing.JPanel {
                     return;
                 }
                 try {
-                    GitClient client = Git.getInstance().getClient(repository);
+                    GitClient client = getClient();
                     SearchCriteria criteria = new SearchCriteria();
                     criteria.setFiles(roots);
                     if (rev != null) {

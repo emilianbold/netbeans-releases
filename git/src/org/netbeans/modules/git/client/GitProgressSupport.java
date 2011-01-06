@@ -295,4 +295,16 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             return (file.equals(root) || root.equals(file.getParentFile())) ? file : null;
         }
     }
+    
+    public abstract static class NoOutputLogging extends GitProgressSupport {
+        OutputLogger logger;
+                
+        @Override
+        public final OutputLogger getLogger () {
+            if (logger == null) {
+                logger = OutputLogger.getLogger(null);
+            }
+            return logger;
+        }
+    }
 }

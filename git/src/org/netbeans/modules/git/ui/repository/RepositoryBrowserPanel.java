@@ -524,7 +524,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         private void refreshBranches () {
-            new GitProgressSupport() {
+            new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
                     try {
