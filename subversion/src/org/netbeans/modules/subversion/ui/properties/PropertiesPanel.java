@@ -140,7 +140,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     final JCheckBox cbxRecursively = new JCheckBox();
     final JComboBox comboName = new JComboBox();
     final JTextArea txtAreaValue = new JTextArea();
-    final JPanel propsPanel = new DerivedHeightPanel(txtAreaValue, 2.0f);
+    final JPanel propsPanel = new DerivedHeightPanel(txtAreaValue, 1.0f);
     final JLabel labelForTable = new JLabel();
 
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
@@ -349,7 +349,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
                         .addPreferredGap(RELATED)
                         .add(layout.createParallelGroup(LEADING)
                                 .add(lblPropertyValue)
-                                .add(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
+                                .add(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(RELATED)
                         .add(layout.createParallelGroup(BASELINE)
                                 .add(lblErrMessage)
