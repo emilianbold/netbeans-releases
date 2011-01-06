@@ -52,12 +52,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
@@ -83,9 +81,6 @@ import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -112,6 +107,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -438,18 +434,10 @@ public class WatchPanel {
                 }
             }
         }
-        editorPane = new JEditorPane();//expression); // NOI18N
-        editorPane.setText(expression);
+        JComponent [] editorComponents = Utilities.createSingleLineEditor("text/plain");
+        JScrollPane sp = (JScrollPane) editorComponents[0];
+        editorPane = (JEditorPane) editorComponents[1];
 
-        ActionListener editorPaneUpdated = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                editorPane.setText (expression);
-                editorPane.selectAll ();
-            }
-        };
-        setupContext(editorPane, editorPaneUpdated);
-        
-        JScrollPane sp = createScrollableLineEditor(editorPane);
         int h = sp.getPreferredSize().height;
         int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
                          org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
@@ -474,6 +462,15 @@ public class WatchPanel {
         editorPane.setText (expression);
         editorPane.selectAll ();
 
+        ActionListener editorPaneUpdated = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editorPane.setText (expression);
+                editorPane.selectAll ();
+            }
+        };
+        setupContext(editorPane, editorPaneUpdated);
+
         textLabel.setLabelFor (editorPane);
         HelpCtx.setHelpIDString(editorPane, "debug.customize.watch");
         editorPane.requestFocus ();
@@ -484,178 +481,7 @@ public class WatchPanel {
     public String getExpression() {
         return editorPane.getText().trim();
     }
-    
-    public static JScrollPane createScrollableLineEditor(final JEditorPane editorPane) {
-        // Remove control keys:
-        KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-        InputMap im = editorPane.getInputMap();
-        im.put(enterKs, "none");
-        im.put(escKs, "none");
-        im.put(tabKs, "none");
 
-        final JTextField referenceTextField = new JTextField("M");
-        final Insets margin = referenceTextField.getMargin();
-        final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
-        logger.fine("createScrollableLineEditor(): margin = "+margin+", borderInsets = "+borderInsets);
-        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
-
-            @Override
-            public void setViewportView(Component view) {
-                if (view instanceof JComponent) {
-                    //logger.fine("createScrollableLineEditor() setViewportView(): setting empty border with insets = "+borderInsets);
-                    ((JComponent) view).setBorder(new EmptyBorder(margin)); // borderInsets
-                }
-                if (view instanceof JEditorPane) {
-                    adjustScrollPaneSize(this, (JEditorPane) view);
-                }
-                super.setViewportView(view);
-            }
-
-        };
-                
-        editorPane.setBorder (
-            //new CompoundBorder (editorPane.getBorder(),
-            new EmptyBorder (0, 0, 0, 0)//)
-        );
-        editorPane.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorKit".equals(evt.getPropertyName())) { // NOI18N
-                    adjustScrollPaneSize(sp, editorPane);
-                }
-                /*
-                if ("margin".equals(evt.getPropertyName())) { // NOI18N
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            adjustScrollPaneSize(sp, editorPane);
-                        }
-                    });
-                }
-                 */
-            }
-
-        });
-        logger.fine("createScrollableLineEditor(): reference text field's border = "+referenceTextField.getBorder());
-        //sp.setBorder(referenceTextField.getBorder());
-        //sp.setBorder(new LineBorder(Color.BLACK, 1));
-        //logger.fine("createScrollableLineEditor(): scroll pane's border = "+sp.getBorder());
-        sp.setBorder(new DelegatingBorder(referenceTextField.getBorder(), borderInsets));
-        sp.setBackground(referenceTextField.getBackground());
-        
-        int preferredHeight = referenceTextField.getPreferredSize().height;
-        logger.fine("createScrollableLineEditor(): referenceTextField height = "+preferredHeight);
-        Dimension spDim = sp.getPreferredSize();
-        logger.fine("createScrollableLineEditor(): scroll pane preferred height = "+spDim.height);
-        //if (spDim.height != preferredHeight) {
-            spDim.height = preferredHeight;// + 2;// - 2; // 2 for border
-            //Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
-            spDim.height += margin.bottom + margin.top;//borderInsets.top + borderInsets.bottom;
-            //sp.setPreferredSize(referenceTextField.getPreferredSize());
-        //} else {
-            sp.setPreferredSize(spDim);
-        //}
-        sp.setMinimumSize(spDim);
-        sp.setMaximumSize(spDim);
-        logger.fine("createScrollableLineEditor(): scroll pane set pref. size = "+sp.getPreferredSize()+", minimum size = "+sp.getMinimumSize());
-        sp.setViewportView(editorPane);
-        
-        setupUI(editorPane);
-        
-        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
-        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        return sp;
-    }
-
-    private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
-        int height;
-        //logger.fine("createScrollableLineEditor(): editorPane's margin = "+editorPane.getMargin());
-        //logger.fine("createScrollableLineEditor(): editorPane's insets = "+editorPane.getInsets());
-        Dimension prefSize = sp.getPreferredSize();
-        Insets borderInsets = sp.getBorder().getBorderInsets(sp);//sp.getInsets();
-        int vBorder = borderInsets.bottom + borderInsets.top;
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-        logger.fine("createScrollableLineEditor(): editor UI = "+eui);
-        if (eui != null) {
-            logger.fine("createScrollableLineEditor(): editor UI's line height = "+eui.getLineHeight());
-            logger.fine("createScrollableLineEditor(): editor UI's line ascent = "+eui.getLineAscent());
-            height = eui.getLineHeight();
-            if (height < eui.getLineAscent()) {
-                height = (eui.getLineAscent()*4)/3; // Hack for the case when line height = 1
-            }
-            /*
-            Insets textMargin = eui.getTextMargin();
-            if (textMargin == null) {
-                textMargin = new Insets(0, 0, 0, 0);
-            } else {
-                // Make a copy in order not to change the EditorUI property directly.
-                textMargin = new Insets(textMargin.top, textMargin.left, textMargin.bottom, textMargin.right);
-            }
-            if ((prefSize.height - vBorder) > height) {
-                int margin = (prefSize.height - height)/2;
-                int margint = Math.max(margin - borderInsets.top, 0);
-                int marginb = Math.max(margin - borderInsets.bottom, 0);
-                if (textMargin.top != margint || textMargin.bottom != marginb) {
-                    textMargin.top = margint;
-                    textMargin.bottom = marginb;
-                    editorPane.setMargin(textMargin);
-                    //eui.updateTextMargin();
-                    JViewport viewport = sp.getViewport();
-                    viewport.setViewPosition(new Point(0, -textMargin.top));
-                }
-            }
-            logger.fine("createScrollableLineEditor(): editor UI's text margin = "+textMargin);
-            height += textMargin.bottom + textMargin.top;
-            */
-        } else {
-            java.awt.Font font = editorPane.getFont();
-            java.awt.FontMetrics fontMetrics = editorPane.getFontMetrics(font);
-            height = fontMetrics.getHeight();
-            logger.fine("createScrollableLineEditor(): editor's font = "+font+" with metrics = "+fontMetrics+", leading = "+fontMetrics.getLeading());
-            logger.fine("createScrollableLineEditor(): font's height = "+height);
-        }
-        logger.fine("createScrollableLineEditor(): border vertical insets = "+borderInsets.bottom+" + "+borderInsets.top);
-        height += vBorder + getLFHeightAdjustment();
-        //height += 2; // 2 for border
-        if (prefSize.height < height) {
-            prefSize.height = height;
-            sp.setPreferredSize(prefSize);
-            sp.setMinimumSize(prefSize);
-            sp.setMaximumSize(prefSize);
-            java.awt.Container c = sp.getParent();
-            logger.fine("createScrollableLineEditor(): setting a new height of ScrollPane = "+height);
-            if (c instanceof JComponent) {
-                ((JComponent) c).revalidate();
-            }
-        }
-    }
-
-    private static int getLFHeightAdjustment() {
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        String lfID = lf.getID();
-        logger.fine("createScrollableLineEditor(): current L&F = '"+lfID+"'");
-        if ("Metal".equals(lfID)) {
-            return 0;
-        }
-        if ("GTK".equals(lfID)) {
-            return 2;
-        }
-        if ("Motif".equals(lfID)) {
-            return 3;
-        }
-        if ("Nimbus".equals(lfID)) {
-            return 0;
-        }
-        if ("Aqua".equals(lfID)) {
-            return -2;
-        }
-        return 0;
-    }
     
     private static String getSelectedIdentifier (
         StyledDocument doc,

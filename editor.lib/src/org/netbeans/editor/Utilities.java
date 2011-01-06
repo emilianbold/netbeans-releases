@@ -45,10 +45,11 @@
 package org.netbeans.editor;
 
 import java.awt.AWTKeyStroke;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -68,12 +69,13 @@ import javax.swing.Action;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.border.CompoundBorder;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,7 +83,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
@@ -146,7 +147,9 @@ public class Utilities {
     public static final int CASE_SWITCH = 2;
     
     /** Fake TextAction for getting the info of the focused component */
-    private static TextAction focusedComponentAction;    
+    private static TextAction focusedComponentAction;
+
+    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     
     private Utilities() {
         // instantiation has no sense
@@ -1642,8 +1645,7 @@ public class Utilities {
         im.put(tabKs, NO_ACTION);
 
         editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder(),
-            new EmptyBorder (0, 0, 0, 0))
+            new EmptyBorder (0, 0, 0, 0)
         );
 
         JTextField referenceTextField = new JTextField("M"); //NOI18N
@@ -1652,24 +1654,48 @@ public class Utilities {
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
 
-        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        sp.setBorder(referenceTextField.getBorder());
+        final Insets margin = referenceTextField.getMargin();
+        final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
+        //logger.fine("createSingleLineEditor(): margin = "+margin+", borderInsets = "+borderInsets);
+        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                                               JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
+
+            @Override
+            public void setViewportView(Component view) {
+                if (view instanceof JComponent) {
+                    //logger.fine("createSingleLineEditor() setViewportView(): setting empty border with insets = "+borderInsets);
+                    ((JComponent) view).setBorder(new EmptyBorder(margin)); // borderInsets
+                }
+                if (view instanceof JEditorPane) {
+                    adjustScrollPaneSize(this, (JEditorPane) view);
+                }
+                super.setViewportView(view);
+            }
+
+        };
+        editorPane.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("editorKit".equals(evt.getPropertyName())) { // NOI18N
+                    adjustScrollPaneSize(sp, editorPane);
+                }
+            }
+        });
+
+
+        sp.setBorder(new DelegatingBorder(referenceTextField.getBorder(), borderInsets));
         sp.setBackground(referenceTextField.getBackground());
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(referenceTextField.getBackground());
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(editorPane, gridBagConstraints);
-        sp.setViewportView(panel);
-
         int preferredHeight = referenceTextField.getPreferredSize().height;
-        if (sp.getPreferredSize().height < preferredHeight) {
-            sp.setPreferredSize(referenceTextField.getPreferredSize());
-        }
-        sp.setMinimumSize(sp.getPreferredSize());
+        Dimension spDim = sp.getPreferredSize();
+        spDim.height = preferredHeight;
+        spDim.height += margin.bottom + margin.top;//borderInsets.top + borderInsets.bottom;
+        sp.setPreferredSize(spDim);
+        sp.setMinimumSize(spDim);
+        sp.setMaximumSize(spDim);
+        
+        sp.setViewportView(editorPane);
+        
         final DocumentListener manageViewListener = new ManageViewPositionListener(editorPane, sp);
         DocumentUtilities.addDocumentListener(editorPane.getDocument(), manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorPane.addPropertyChangeListener(new PropertyChangeListener() {
@@ -1689,6 +1715,74 @@ public class Utilities {
         });
 
         return new JComponent [] { sp, editorPane };
+    }
+
+    private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
+        int height;
+        //logger.fine("createSingleLineEditor(): editorPane's margin = "+editorPane.getMargin());
+        //logger.fine("createSingleLineEditor(): editorPane's insets = "+editorPane.getInsets());
+        Dimension prefSize = sp.getPreferredSize();
+        Insets borderInsets = sp.getBorder().getBorderInsets(sp);//sp.getInsets();
+        int vBorder = borderInsets.bottom + borderInsets.top;
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createSingleLineEditor(): editor UI = "+eui);
+            if (eui != null) {
+                logger.fine("createSingleLineEditor(): editor UI's line height = "+eui.getLineHeight());
+                logger.fine("createSingleLineEditor(): editor UI's line ascent = "+eui.getLineAscent());
+            }
+        }
+        if (eui != null) {
+            height = eui.getLineHeight();
+            if (height < eui.getLineAscent()) {
+                height = (eui.getLineAscent()*4)/3; // Hack for the case when line height = 1
+            }
+        } else {
+            java.awt.Font font = editorPane.getFont();
+            java.awt.FontMetrics fontMetrics = editorPane.getFontMetrics(font);
+            height = fontMetrics.getHeight();
+            //logger.fine("createSingleLineEditor(): editor's font = "+font+" with metrics = "+fontMetrics+", leading = "+fontMetrics.getLeading());
+            //logger.fine("createSingleLineEditor(): font's height = "+height);
+        }
+        height += vBorder + getLFHeightAdjustment();
+        //height += 2; // 2 for border
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createSingleLineEditor(): border vertical insets = "+borderInsets.bottom+" + "+borderInsets.top);
+            logger.fine("createSingleLineEditor(): computed height = "+height+", prefSize = "+prefSize);
+        }
+        if (prefSize.height < height) {
+            prefSize.height = height;
+            sp.setPreferredSize(prefSize);
+            sp.setMinimumSize(prefSize);
+            sp.setMaximumSize(prefSize);
+            java.awt.Container c = sp.getParent();
+            logger.fine("createSingleLineEditor(): setting a new height of ScrollPane = "+height);
+            if (c instanceof JComponent) {
+                ((JComponent) c).revalidate();
+            }
+        }
+    }
+
+    private static int getLFHeightAdjustment() {
+        LookAndFeel lf = UIManager.getLookAndFeel();
+        String lfID = lf.getID();
+        logger.fine("createSingleLineEditor(): current L&F = '"+lfID+"'");
+        if ("Metal".equals(lfID)) {
+            return 0;
+        }
+        if ("GTK".equals(lfID)) {
+            return 2;
+        }
+        if ("Motif".equals(lfID)) {
+            return 3;
+        }
+        if ("Nimbus".equals(lfID)) {
+            return 0;
+        }
+        if ("Aqua".equals(lfID)) {
+            return -2;
+        }
+        return 0;
     }
 
     private static final class ManageViewPositionListener implements DocumentListener {
@@ -1735,6 +1829,34 @@ public class Utilities {
                 }
             }
         }
+    }
+
+    public static final class DelegatingBorder implements Border {
+
+        private Border delegate;
+        private Insets insets;
+
+        public DelegatingBorder(Border delegate, Insets insets) {
+            this.delegate = delegate;
+            this.insets = insets;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            //logger.fine("Delegate paintBorder("+c+", "+g+", "+x+", "+y+", "+width+", "+height+")");
+            delegate.paintBorder(c, g, x, y, width, height);
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return insets;
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return delegate.isBorderOpaque();
+        }
+
     }
 
     private static final String NO_ACTION = "no-action"; //NOI18N
