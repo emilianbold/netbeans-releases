@@ -165,7 +165,11 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
      * @see #putIfAbsent
      */
     @Override
-    public boolean add(E e) { return m.putIfAbsent(e) == e; }
+    public boolean add(E e) {
+        boolean[] modified = { false };
+        m.putIfAbsent(e, modified);
+        return modified[0]; 
+    }
     @Override
     public Iterator<E> iterator()     { return s.iterator(); }
     @Override
@@ -203,7 +207,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
      *         passed object <tt>e</tt> if there were not entry in set.
      * @since 8.11
      */
-    public E putIfAbsent(E e) { return m.putIfAbsent(e); }
+    public E putIfAbsent(E e) { return m.putIfAbsent(e, null); }
 
     private static final long serialVersionUID = 2454657854757543876L;
 
@@ -218,7 +222,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
         Object[] arr = (Object[]) stream.readObject();
         m = new SharedKeyWeakHashMap<E, Boolean>(arr.length, loadFactor);
         for (Object object : arr) {
-            m.putIfAbsent((E)object);
+            m.putIfAbsent((E)object, null);
         }
         s = m.keySet();
     }
@@ -636,7 +640,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
             }
 
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
-                putIfAbsent(e.getKey());
+                putIfAbsent(e.getKey(), null);
             }
         }
 
@@ -1258,10 +1262,11 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
          * returns previous value in set if key already in set.
          *
          * @param key key to put in set.
+         * @param modified array of size one that shall be set if the map is modified or null
          * @return the previous set entry equals with <tt>key</tt>, or
          *         new <tt>key</tt> if there were not entry in set.
          */
-        private K putIfAbsent(K key) {
+        private K putIfAbsent(K key, boolean[] modified) {
             K k = (K) maskNull(key);
             int h = hash(k.hashCode());
             Entry[] tab = getTable();
@@ -1272,7 +1277,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
                 if (e.hash == h) {
                     K refedKey = e.get();
                     if (eq(k, refedKey)) {
-                        return refedKey;
+                        return (K)unmaskNull(refedKey);
                     }
                 }
                 e = e.next;
@@ -1284,7 +1289,10 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
             if (++size >= threshold) {
                 resize(tab.length * 2);
             }
-            return k;
+            if (modified != null) {
+                modified[0] = true;
+            }
+            return (K)unmaskNull(k);
         }
     }
 }
