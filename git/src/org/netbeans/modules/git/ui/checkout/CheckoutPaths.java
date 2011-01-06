@@ -67,7 +67,7 @@ public class CheckoutPaths implements ActionListener {
     private boolean valid = true;
 
     CheckoutPaths (File repository, File[] roots) {
-        revisionPicker = new RevisionDialogController(repository);
+        revisionPicker = new RevisionDialogController(repository, roots);
         panel = new CheckoutPathsPanel(revisionPicker.getPanel());
     }
 

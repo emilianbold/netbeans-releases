@@ -68,6 +68,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
@@ -88,6 +89,7 @@ public class RevisionListPanel extends javax.swing.JPanel {
     private File lastHWRepository;
     private Revision currRevision;
     private File currRepository;
+    private File[] currRoots;
     
     /** Creates new form RevisionsPanel */
     public RevisionListPanel() {
@@ -153,7 +155,7 @@ public class RevisionListPanel extends javax.swing.JPanel {
     }
     
     
-    void updateHistory (File repository, Revision revision) {
+    void updateHistory (File repository, File[] roots, Revision revision) {
         synchronized (LOCK) {
             if ((repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
                     && (revision == null && lastHWRevision == null || lastHWRevision != null && revision != null && lastHWRevision.equals(revision.getRevision()))) {
@@ -162,6 +164,7 @@ public class RevisionListPanel extends javax.swing.JPanel {
             }
             currRepository = repository;
             currRevision = revision;
+            currRoots = roots;
             if (supp != null) {
                 supp.cancel();
             }
@@ -178,9 +181,11 @@ public class RevisionListPanel extends javax.swing.JPanel {
         public void perform () {
             Revision rev;
             File repository;
+            File[] roots;
             synchronized (LOCK) {
                 rev = currRevision;
                 repository = currRepository;
+                roots = currRoots;
             }
             GitRevisionInfo[] revisions = new GitRevisionInfo[0];
             if (repository != null) {
@@ -190,11 +195,13 @@ public class RevisionListPanel extends javax.swing.JPanel {
                 }
                 try {
                     GitClient client = Git.getInstance().getClient(repository);
-                    if (rev == null) {
-                        revisions = client.log(-1, listHistoryMonitor);
-                    } else {
-                        revisions = client.log(null, rev.getRevision(), -1, listHistoryMonitor);
+                    SearchCriteria criteria = new SearchCriteria();
+                    criteria.setFiles(roots);
+                    if (rev != null) {
+                        criteria.setRevisionTo(rev.getRevision());
                     }
+                    revisions = client.log(criteria, listHistoryMonitor);
+                    
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }

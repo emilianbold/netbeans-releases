@@ -65,9 +65,9 @@ public class RevisionPicker implements PropertyChangeListener {
     private DialogDescriptor dd;
     private final RepositoryBrowserPanel browserPanel;
 
-    public RevisionPicker (File repository) {
+    public RevisionPicker (File repository, File[] roots) {
         infoPanelController = new RevisionInfoPanelController(repository);
-        browserPanel = new RepositoryBrowserPanel(RepositoryBrowserPanel.OPTIONS_INSIDE_PANEL, repository, null);
+        browserPanel = new RepositoryBrowserPanel(RepositoryBrowserPanel.OPTIONS_INSIDE_PANEL, repository, roots, null);
         panel = new RevisionPickerDialog(infoPanelController.getPanel(), browserPanel);
         okButton = new JButton();
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.okButton.title")); //NOI18N

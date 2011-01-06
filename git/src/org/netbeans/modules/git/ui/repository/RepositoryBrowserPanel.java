@@ -84,6 +84,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -103,6 +104,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private Revision currRevision;
     private File currRepository;
     public static final String PROP_REVISION_CHANGED = "RepositoryBrowserPanel.revision"; //NOI18N
+    private final File[] roots;
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
@@ -121,14 +123,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
-        this(EnumSet.complementOf(EnumSet.of(Option.DISPLAY_REVISIONS)), null, null);
+        this(EnumSet.complementOf(EnumSet.of(Option.DISPLAY_REVISIONS)), null, new File[0], null);
     }
 
-    public RepositoryBrowserPanel (EnumSet<Option> options, File repository, RepositoryInfo info) {
+    public RepositoryBrowserPanel (EnumSet<Option> options, File repository, File[] roots, RepositoryInfo info) {
+        Parameters.notNull("roots", roots);
         this.currRepository = repository;
         this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES) ? new AbstractNode(new RepositoriesChildren()) : new RepositoryNode(repository, info);
         this.manager = new ExplorerManager();
         this.options = options;
+        this.roots = roots;
         initComponents();
         if (!options.contains(Option.DISPLAY_TOOLBAR)) {
             toolbar.setVisible(false);
@@ -157,7 +161,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         revisionsPanel1.lstRevisions.addListSelectionListener(this);
         if (options.contains(Option.DISPLAY_REVISIONS)) {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(this);
-            revisionsPanel1.updateHistory(currRepository, currRevision);
+            revisionsPanel1.updateHistory(currRepository, roots, currRevision);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -201,7 +205,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
             if (options.contains(Option.DISPLAY_REVISIONS)) {
-                revisionsPanel1.updateHistory(currRepository, currRevision);
+                revisionsPanel1.updateHistory(currRepository, roots, currRevision);
             }
         } else if (options.contains(Option.DISPLAY_REVISIONS) && "focusOwner".equals(evt.getPropertyName())) {
             Component compNew = (Component) evt.getNewValue();

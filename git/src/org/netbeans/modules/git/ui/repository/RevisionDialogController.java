@@ -65,11 +65,13 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private boolean valid = true;
     private final Timer t;
     private boolean internally;
+    private final File[] roots;
 
-    public RevisionDialogController (File repository) {
+    public RevisionDialogController (File repository, File[] roots) {
         infoPanelController = new RevisionInfoPanelController(repository);
         panel = new RevisionDialog(infoPanelController.getPanel());
         this.repository = repository;
+        this.roots = roots;
         this.support = new PropertyChangeSupport(this);
         this.t = new Timer(500, this);
         t.stop();
@@ -115,7 +117,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
 
     private void openRevisionPicker () {
-        RevisionPicker picker = new RevisionPicker(repository);
+        RevisionPicker picker = new RevisionPicker(repository, roots);
         if (picker.open()) {
             Revision revision = picker.getRevision();
             if (!revision.getRevision().equals(panel.revisionField.getText())) {
