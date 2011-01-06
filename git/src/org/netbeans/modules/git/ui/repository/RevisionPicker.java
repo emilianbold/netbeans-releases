@@ -61,7 +61,7 @@ public class RevisionPicker implements PropertyChangeListener {
     private final RevisionPickerDialog panel;
     private final JButton okButton;
     private final RevisionInfoPanelController infoPanelController;
-    private String revision;
+    private Revision revision;
     private DialogDescriptor dd;
     private final RepositoryBrowserPanel browserPanel;
 
@@ -84,14 +84,14 @@ public class RevisionPicker implements PropertyChangeListener {
         return dd.getValue() == okButton;
     }
 
-    String getRevision () {
+    Revision getRevision () {
         return revision;
     }
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName() == RepositoryBrowserPanel.PROP_REVISION_CHANGED) {
-            revision = (String) evt.getNewValue();
+            revision = (Revision) evt.getNewValue();
             updateDialogState();
         }
     }
@@ -100,6 +100,6 @@ public class RevisionPicker implements PropertyChangeListener {
         boolean enabled = revision != null;
         dd.setValid(enabled);
         okButton.setEnabled(enabled);
-        infoPanelController.loadInfo(revision);
+        infoPanelController.loadInfo(revision == null ? null : revision.getRevision());
     }
 }

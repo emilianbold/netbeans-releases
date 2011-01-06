@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,11 +67,14 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.explorer.ExplorerManager;
@@ -86,14 +93,15 @@ import org.openide.windows.TopComponent;
  *
  * @author ondra
  */
-public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener {
+public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener {
 
     AbstractNode root;
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
     private static final Logger LOG = Logger.getLogger(RepositoryBrowserPanel.class.getName());
     private final ExplorerManager manager;
     private final EnumSet<Option> options;
-    private String currRevision = null;
+    private Revision currRevision;
+    private File currRepository;
     public static final String PROP_REVISION_CHANGED = "RepositoryBrowserPanel.revision"; //NOI18N
 
     public static enum Option {
@@ -101,6 +109,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_BRANCHES_LOCAL,
         DISPLAY_BRANCHES_REMOTE,
         DISPLAY_COMMIT_IDS,
+        DISPLAY_REVISIONS,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
         ENABLE_POPUP
@@ -108,13 +117,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
     public static final EnumSet<Option> OPTIONS_INSIDE_PANEL = EnumSet.of(Option.DISPLAY_BRANCHES_LOCAL,
             Option.DISPLAY_BRANCHES_REMOTE,
+            Option.DISPLAY_REVISIONS,
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
-        this(EnumSet.allOf(Option.class), null, null);
+        this(EnumSet.complementOf(EnumSet.of(Option.DISPLAY_REVISIONS)), null, null);
     }
 
     public RepositoryBrowserPanel (EnumSet<Option> options, File repository, RepositoryInfo info) {
+        this.currRepository = repository;
         this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES) ? new AbstractNode(new RepositoriesChildren()) : new RepositoryNode(repository, info);
         this.manager = new ExplorerManager();
         this.options = options;
@@ -124,6 +135,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
         tree.setRootVisible(false);
         tree.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        if (!options.contains(Option.DISPLAY_REVISIONS)) {
+            remove(jSplitPane1);
+            add(tree, BorderLayout.CENTER);
+        }
     }
 
     @Override
@@ -139,10 +154,25 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         if (toolbar.isVisible()) {
             attachToolbarListeners();
         }
+        revisionsPanel1.lstRevisions.addListSelectionListener(this);
+        if (options.contains(Option.DISPLAY_REVISIONS)) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(this);
+            revisionsPanel1.updateHistory(currRepository, currRevision);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    jSplitPane1.setDividerLocation(0.5);
+                }
+            });
+        }
     }
 
     @Override
     public void removeNotify() {
+        if (options.contains(Option.DISPLAY_REVISIONS)) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener(this);
+        }
+        revisionsPanel1.lstRevisions.removeListSelectionListener(this);
         getExplorerManager().removePropertyChangeListener(this);
         if (toolbar.isVisible()) {
             detachToolbarListeners();
@@ -158,19 +188,44 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
             }
             
-            String oldRevision = currRevision;
+            currRepository = null;
+            Revision oldRevision = currRevision;
             currRevision = null;
             if (getExplorerManager().getSelectedNodes().length == 1) {
                 Node selectedNode = getExplorerManager().getSelectedNodes()[0];
-                Revision rev = selectedNode.getLookup().lookup(Revision.class);
-                if (rev != null) {
-                    currRevision = rev.getRevision();
-                }
+                currRevision = selectedNode.getLookup().lookup(Revision.class);
+                currRepository = lookupRepository(selectedNode);
             }
-            if (currRevision != null || oldRevision != null) {
+            if ((currRevision != null || oldRevision != null) 
+                    && !(currRevision != null && oldRevision != null && currRevision.getRevision().equals(oldRevision.getRevision()))) {
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
+            if (options.contains(Option.DISPLAY_REVISIONS)) {
+                revisionsPanel1.updateHistory(currRepository, currRevision);
+            }
+        } else if (options.contains(Option.DISPLAY_REVISIONS) && "focusOwner".equals(evt.getPropertyName())) {
+            Component compNew = (Component) evt.getNewValue();
+            if (compNew != null) {
+                if (SwingUtilities.getAncestorOfClass(tree.getClass(), compNew) != null) {
+                    if (getExplorerManager().getSelectedNodes().length == 1) {
+                        propertyChange(new PropertyChangeEvent(tree, ExplorerManager.PROP_SELECTED_NODES, getExplorerManager().getSelectedNodes(), getExplorerManager().getSelectedNodes()));
+                    }
+                } else if (revisionsPanel1.lstRevisions == compNew) {
+                    int selection = revisionsPanel1.lstRevisions.getSelectedIndex();
+                    if (selection != -1) {
+                        valueChanged(new ListSelectionEvent(revisionsPanel1.lstRevisions, selection, selection, false));
+                    }
+                }
+            }
         }
+    }
+
+    private File lookupRepository (Node selectedNode) {
+        // there should ALWAYS be a repository node somewhere in the root
+        while (!(selectedNode instanceof RepositoryNode)) {
+            selectedNode = selectedNode.getParentNode();
+        }
+        return ((RepositoryNode) selectedNode).getRepository();
     }
 
     public void selectRepository (File repository) {
@@ -193,6 +248,23 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
     private void detachToolbarListeners () {
 
+    }
+
+    @Override
+    public void valueChanged (ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting() && revisionsPanel1.lstRevisions.isFocusOwner()) {
+            GitRevisionInfo selectedRevision = (GitRevisionInfo) revisionsPanel1.lstRevisions.getSelectedValue();
+            Revision oldRevision = currRevision;
+            if (selectedRevision == null && currRevision != null) {
+                currRevision = null;
+                firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
+            } else if (selectedRevision != null) {
+                currRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
+                if (oldRevision == null || !currRevision.getRevision().equals(oldRevision.getRevision())) {
+                    firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
+                }
+            }
+        }
     }
 
     private abstract class RepositoryBrowserNode extends AbstractNode {
@@ -266,16 +338,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
     private class RepositoryNode extends RepositoryBrowserNode implements PropertyChangeListener {
         private PropertyChangeListener list;
+        private final File repository;
 
-        public RepositoryNode (final File file, RepositoryInfo info) {
-            super(new RepositoryChildren(), Lookups.fixed(file));
-
+        public RepositoryNode (final File repository, RepositoryInfo info) {
+            super(new RepositoryChildren());
+            this.repository = repository;
             if (info == null) {
-                setDisplayName(file.getName());
+                setDisplayName(repository.getName());
                 RP.post(new Runnable () {
                     @Override
                     public void run () {
-                        RepositoryInfo info = RepositoryInfo.getInstance(file);
+                        RepositoryInfo info = RepositoryInfo.getInstance(repository);
                         setName(info);
                         info.addPropertyChangeListener(list = WeakListeners.propertyChange(RepositoryNode.this, info));
                     }
@@ -317,6 +390,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String toString() {
             return getDisplayName();
         }
+
+        public File getRepository() {
+            return repository;
+        }
     }
 
     private class RepositoryChildren extends Children.Keys<AbstractNode> {
@@ -330,10 +407,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 initialized = true;
                 List<AbstractNode> keys = new LinkedList<AbstractNode>();
                 if (options.contains(Option.DISPLAY_BRANCHES_LOCAL) || options.contains(Option.DISPLAY_BRANCHES_REMOTE)) {
-                    keys.add(new BranchesTopNode(getNode().getLookup().lookup(File.class)));
+                    keys.add(new BranchesTopNode(((RepositoryNode) getNode()).getRepository()));
                 }
                 if (options.contains(Option.DISPLAY_TAGS)) {
-                    keys.add(new TagsNode(getNode().getLookup().lookup(File.class)));
+                    keys.add(new TagsNode(((RepositoryNode) getNode()).getRepository()));
                 }
                 setKeys(keys);
             }
@@ -537,7 +614,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final GitBranch branch;
 
         public BranchNode (GitBranch branch) {
-            super(Children.LEAF, Lookups.fixed(new Revision(branch.getId())));
+            super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
             this.branch = branch;
         }
 
@@ -577,30 +654,27 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
     //</editor-fold>
 
-    private static class Revision {
-        final String revision;
-
-        public Revision (String revision) {
-            this.revision = revision;
-        }
-
-        public String getRevision () {
-            return revision;
-        }
-    }
-
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        jSplitPane1 = new javax.swing.JSplitPane();
 
         setLayout(new java.awt.BorderLayout());
         add(toolbar, java.awt.BorderLayout.PAGE_START);
 
+        jSplitPane1.setResizeWeight(0.3);
+
         tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        add(tree, java.awt.BorderLayout.CENTER);
+        jSplitPane1.setLeftComponent(tree);
+        jSplitPane1.setRightComponent(revisionsPanel1);
+
+        add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSplitPane jSplitPane1;
+    final org.netbeans.modules.git.ui.repository.RevisionListPanel revisionsPanel1 = new org.netbeans.modules.git.ui.repository.RevisionListPanel();
     private final org.netbeans.modules.git.ui.repository.ControlToolbar toolbar = new org.netbeans.modules.git.ui.repository.ControlToolbar();
     private final org.openide.explorer.view.BeanTreeView tree = new org.openide.explorer.view.BeanTreeView();
     // End of variables declaration//GEN-END:variables
