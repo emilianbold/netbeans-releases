@@ -138,7 +138,6 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             if (infoholder.isConstructor) {
                 checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
             }
-            err.log("Gonna return problem: " + problem);
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

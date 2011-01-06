@@ -80,7 +80,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
@@ -90,10 +89,6 @@ import org.openide.util.Lookup;
  * @author mkleint
  */
 public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
-    /**
-     * 
-     */
-    protected static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.refactoring");   // NOI18N
     
     /**
      * 
