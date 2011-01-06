@@ -221,10 +221,8 @@ public class RenameWithTimestampChangeTest extends NbTestCase {
         
     } // end of DD
 
-    private static final class MyFS extends AbstractFileSystem 
-    implements AbstractFileSystem.Info, AbstractFileSystem.List, AbstractFileSystem.Change {
+    private static final class MyFS extends TestFileSystem {
         long lastM = 10000;
-        String dir = "dir";
         
         @SuppressWarnings("LeakingThisInConstructor")
         public MyFS() {
@@ -234,81 +232,12 @@ public class RenameWithTimestampChangeTest extends NbTestCase {
             this.attr = new DefaultAttributes(info, change, list);
         }
 
-        @Override
-        public String getDisplayName() {
-            return "Test FS";
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-        }
 
         @Override
         public Date lastModified(String name) {
             return new Date(lastM);
         }
 
-        @Override
-        public boolean folder(String name) {
-            return dir.equals(name);
-        }
-
-        @Override
-        public boolean readOnly(String name) {
-            return false;
-        }
-
-        @Override
-        public String mimeType(String name) {
-            return "text/plain";
-        }
-
-        @Override
-        public long size(String name) {
-            return 0;
-        }
-
-        @Override
-        public InputStream inputStream(String name) throws FileNotFoundException {
-            return new ByteArrayInputStream(new byte[0]);
-        }
-
-        @Override
-        public OutputStream outputStream(String name) throws IOException {
-            return new ByteArrayOutputStream();
-        }
-
-        @Override
-        public void lock(String name) throws IOException {
-        }
-
-        @Override
-        public void unlock(String name) {
-        }
-
-        @Override
-        public void markUnimportant(String name) {
-        }
-
-        @Override
-        public String[] children(String f) {
-            if ("".equals(f)) {
-                return new String[] { dir };
-            } else {
-                return new String[] { "x.txt" };
-            }
-        }
-
-        @Override
-        public void createFolder(String name) throws IOException {
-            throw new IOException();
-        }
-
-        @Override
-        public void createData(String name) throws IOException {
-            throw new IOException();
-        }
 
         @Override
         public void rename(String oldName, String newName) throws IOException {
@@ -320,9 +249,5 @@ public class RenameWithTimestampChangeTest extends NbTestCase {
             }
         }
 
-        @Override
-        public void delete(String name) throws IOException {
-            throw new IOException();
-        }
     }
 }
