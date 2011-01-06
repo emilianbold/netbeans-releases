@@ -309,12 +309,17 @@ public final class Log extends Handler {
                     // prevent circular references
                 }
             }
+            
+            if (messages.length() + sb.length() > 20000) {
+                if (sb.length() > 20000) {
+                    messages.setLength(0);
+                    sb.delete(0, sb.length() - 20000); 
+                } else {
+                    messages.setLength(20000 - sb.length());
+                }
+            }
 
             messages.append(sb.toString());
-
-            if (messages.length() > 40000) {
-                messages.delete(0, 20000);
-            }
         } finally {
             off.run();
         }
