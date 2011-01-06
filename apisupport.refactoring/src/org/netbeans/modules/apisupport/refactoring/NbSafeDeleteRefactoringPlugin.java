@@ -127,7 +127,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             if (infoholder.isConstructor) {
                 checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
             }
-            LOG.log(Level.INFO, "Gonna return problem: " + problem);    // NOI18N
+            LOG.log(Level.FINE, "returning problem: {0}", problem);    // NOI18N
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

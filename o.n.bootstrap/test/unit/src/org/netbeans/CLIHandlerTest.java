@@ -94,6 +94,10 @@ public class CLIHandlerTest extends NbTestCase {
     protected @Override Level logLevel() {
         return Level.FINEST;
     }
+
+    protected @Override int timeOut() {
+        return 500000;
+    }
     
     public void testFileExistsButItCannotBeRead() throws Exception {
         // just creates the file and blocks

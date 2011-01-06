@@ -50,6 +50,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.autoupdate.UpdateItem;
 
 public class UtilitiesTest extends NbTestCase {
@@ -73,7 +74,8 @@ public class UtilitiesTest extends NbTestCase {
         ui.put(disabled.getCodeNameBase(), disabled.toUpdateItem("1.1"));
         MockUpdateProvider.setUpdateItems(ui);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #5746: "Pending items are provided" from MockUpdateProvider.getUpdateItems
     public void testIgnoresDisabledModules() {
         List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits();
         List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, true);

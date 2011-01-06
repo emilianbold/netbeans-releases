@@ -145,7 +145,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 }
             }
             
-            err.log("Gonna return problem: " + problem);
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
