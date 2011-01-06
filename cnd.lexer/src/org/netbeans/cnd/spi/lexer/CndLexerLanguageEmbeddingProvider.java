@@ -49,7 +49,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 /**
  * Provider for language embedding for CndLexer.
  *
- * @author @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CndLexerLanguageEmbeddingProvider {
 

@@ -63,6 +63,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -85,8 +86,9 @@ public class HtmlCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int dotPos = component.getCaret().getDot();
-        boolean openCC = checkOpenCompletion(doc, dotPos, typedText);
-        return openCC ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
+        return HtmlPreferences.autoPopupCompletionWindow() && checkOpenCompletion(doc, dotPos, typedText)
+                ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE
+                : 0;
     }
 
     @Override
@@ -475,7 +477,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
             if(header != null) {
                 sb.append(header);
             }
-            sb.append(getHelpItem().getHelpResolver().getHelpContent(getURL()));
+
+            String helpContent = getHelpItem().getHelpContent() != null
+                    ? getHelpItem().getHelpContent()
+                    : getHelpItem().getHelpResolver().getHelpContent(getURL());
+
+            sb.append(helpContent);
 
             return sb.toString();
         }

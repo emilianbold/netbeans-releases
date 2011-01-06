@@ -53,7 +53,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
  * Filter for Fortran language.
- * @author Nikolay Krasilnikov
+ *
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class APTFortranFilter extends APTBaseLanguageFilter {
 

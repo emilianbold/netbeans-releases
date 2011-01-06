@@ -49,6 +49,7 @@ import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -144,8 +145,11 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             List<String> errorLines = ProcessUtils.readProcessError(hostinfoProcess);
             int result = hostinfoProcess.waitFor();
 
+            for (String errLine : errorLines) {
+                log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+            }
+            
             if (result != 0) {
-                log.log(Level.INFO, "stderr:", errorLines.toArray(new String[0])); // NOI18N
                 throw new IOException(hostinfoScript + " rc == " + result); // NOI18N
             }
 
@@ -168,6 +172,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             long localStartTime = System.currentTimeMillis();
 
             OutputStream out = sh_channels.in;
+            InputStream err = sh_channels.err;
             InputStream in = sh_channels.out;
 
             // echannel.setEnv() didn't work, so writing this directly
@@ -184,6 +189,13 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             }
 
             scriptReader.close();
+            
+            BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
+            String errLine;
+            while ((errLine = errReader.readLine()) != null) {
+                log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+            }
+            
             hostInfo.load(in);
 
             long localEndTime = System.currentTimeMillis();

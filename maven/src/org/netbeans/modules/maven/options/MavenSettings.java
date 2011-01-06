@@ -236,7 +236,7 @@ public class MavenSettings  {
     
 
     public String getLastArchetypeGroupId() {
-        return getPreferences().get(PROP_LAST_ARCHETYPE_GROUPID, "com.mycompany"); //NOI18N
+        return getPreferences().get(PROP_LAST_ARCHETYPE_GROUPID, Boolean.getBoolean("netbeans.full.hack") ? "test" : "com.mycompany"); //NOI18N
     }
 
     public void setLastArchetypeGroupId(String groupId) {

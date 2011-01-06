@@ -114,21 +114,40 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        labelForRoot = new javax.swing.JLabel();
+        rootFolder = new org.netbeans.modules.cnd.utils.ui.EditableComboBox();
         rootFolderButton = new javax.swing.JButton();
+        labelForProviders = new javax.swing.JLabel();
+        prividersComboBox = new javax.swing.JComboBox();
+        restrictSources = new javax.swing.JCheckBox();
+        restrictCompile = new javax.swing.JCheckBox();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
         alertPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        labelForRoot = new javax.swing.JLabel();
-        prividersComboBox = new javax.swing.JComboBox();
-        labelForProviders = new javax.swing.JLabel();
-        restrictSources = new javax.swing.JCheckBox();
-        restrictCompile = new javax.swing.JCheckBox();
-        rootFolder = new EditableComboBox();
 
+        setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.GridBagLayout());
 
+        labelForRoot.setLabelFor(rootFolder);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelForRoot, bundle.getString("ProjectRootFolder")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(labelForRoot, gridBagConstraints);
+
+        rootFolder.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(rootFolder, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(rootFolderButton, bundle.getString("ROOT_DIR_BROWSE_BUTTON_TXT")); // NOI18N
         rootFolderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -142,58 +161,15 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(rootFolderButton, gridBagConstraints);
 
-        instructionPanel.setEnabled(false);
-        instructionPanel.setFocusable(false);
-        instructionPanel.setRequestFocusEnabled(false);
-        instructionPanel.setVerifyInputWhenFocusTarget(false);
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
-
-        instructionsTextArea.setBackground(instructionPanel.getBackground());
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setWrapStyleWord(true);
+        labelForProviders.setLabelFor(prividersComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(labelForProviders, bundle.getString("SelectDiscoveryProviderText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
-
-        alertPanel.setLayout(new java.awt.BorderLayout());
-
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/info.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SelectProviderPanel.class, "selectedAdvancedLabel")); // NOI18N
-        alertPanel.add(jLabel1, java.awt.BorderLayout.SOUTH);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        instructionPanel.add(alertPanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(instructionPanel, gridBagConstraints);
-
-        labelForRoot.setLabelFor(rootFolder);
-        org.openide.awt.Mnemonics.setLocalizedText(labelForRoot, bundle.getString("ProjectRootFolder")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(labelForRoot, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(labelForProviders, gridBagConstraints);
 
         prividersComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -208,15 +184,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(prividersComboBox, gridBagConstraints);
-
-        labelForProviders.setLabelFor(prividersComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(labelForProviders, bundle.getString("SelectDiscoveryProviderText")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(labelForProviders, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(restrictSources, org.openide.util.NbBundle.getMessage(SelectProviderPanel.class, "RestrictSourcesText")); // NOI18N
         restrictSources.setBorder(null);
@@ -240,14 +207,44 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(restrictCompile, gridBagConstraints);
 
-        rootFolder.setEditable(true);
+        instructionPanel.setEnabled(false);
+        instructionPanel.setFocusable(false);
+        instructionPanel.setRequestFocusEnabled(false);
+        instructionPanel.setVerifyInputWhenFocusTarget(false);
+        instructionPanel.setLayout(new java.awt.BorderLayout());
+
+        instructionsTextArea.setBackground(instructionPanel.getBackground());
+        instructionsTextArea.setEditable(false);
+        instructionsTextArea.setLineWrap(true);
+        instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
+        instructionPanel.add(instructionsTextArea, java.awt.BorderLayout.SOUTH);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(rootFolder, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(instructionPanel, gridBagConstraints);
+
+        alertPanel.setLayout(new java.awt.BorderLayout());
+
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/info.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SelectProviderPanel.class, "selectedAdvancedLabel")); // NOI18N
+        alertPanel.add(jLabel1, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        add(alertPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void providersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_providersComboBoxItemStateChanged

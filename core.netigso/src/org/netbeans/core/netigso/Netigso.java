@@ -234,7 +234,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
-                    Object exported = b.getHeaders().get("Export-Package");
+                    Object exported = b.getHeaders("").get("Export-Package");
                     if (exported instanceof String) {
                         for (String p : exported.toString().split(",")) { // NOI18N
                             int semic = p.indexOf(';');
@@ -253,10 +253,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 pkgs.addAll(Arrays.asList(knownPkgs));
             }
             pcl.append(new ClassLoader[]{ l });
-            if (isRealBundle(b)) { 
+            try {
                 LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
                 b.start();
-            } else {
+            } catch (BundleException possible) {
+                if (isRealBundle(b)) {
+                    throw possible;
+                }
                 LOG.log(Level.FINE, "Not starting fragment {0}", m.getCodeNameBase());
             }
             return pkgs;
@@ -266,7 +269,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private static boolean isRealBundle(Bundle b) {
-        return b.getHeaders().get("Fragment-Host") == null; // NOI18N
+        return b.getHeaders("").get("Fragment-Host") == null; // NOI18N
     }
 
     @Override
@@ -275,11 +278,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         Bundle b = nl.bundle;
         try {
             assert b != null;
-            if (isRealBundle(b)) {
-                assert b.getState() == Bundle.ACTIVE : "Wrong state: " + b.getState() + " for " + m.getCodeNameBase();
+            try {
                 LOG.log(Level.FINE, "Stopping bundle {0}", m.getCodeNameBase());
                 b.stop();
-            } else {
+            } catch (BundleException possible) {
+                if (isRealBundle(b)) {
+                    throw possible;
+                }
                 LOG.log(Level.FINE, "Not stopping fragment {0}", m.getCodeNameBase());
             }
         } catch (BundleException ex) {

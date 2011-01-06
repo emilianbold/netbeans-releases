@@ -78,6 +78,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -102,6 +103,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
      */
     private FileObject fileObject;
     private ElementHandle[] elementHandles;
+    private Collection<? extends SourceGroup> sgCache;
 
     /**
      */
@@ -541,6 +543,8 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             return false;
         }
 
+        //XXX: Very Very Evil and deserves rewrite
+        // 1st) holds unlimited number (as much as the depth od class hierarchy) of javac on stack
         @Override
         protected void loadChildren (Element element,
             CompilationInfo compilationInfo) {
@@ -554,83 +558,74 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage (JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName ())); // TODO
                 return;
             }
-
-            // Get open projects
-            Project[] openProjects = OpenProjects.getDefault ().getOpenProjects ();
-            if (openProjects == null) {
-                return;
-            }
+            
             Set<ElementHandle<TypeElement>> processedImplementorElementHandles = new LinkedHashSet<ElementHandle<TypeElement>> ();
 
             ElementHandle<TypeElement> typeElementHandle = ElementHandle.create (typeElement);
 
-            final int[] index = new int[]{0};
-            // Walk through open projects
-            for (Project project : openProjects) {
-                // Get Sources
-                Collection<? extends Sources> sourcess = project.getLookup ().lookupAll (Sources.class);
-                if (sourcess == null) {
+            final int[] index = new int[]{0};            
+            final Collection<? extends SourceGroup> sourceGroups = getSourceGroups();
+            if (sourceGroups == null) {
+                return;
+            }
+
+            // Walk through source groups
+            for (final SourceGroup sourceGroup : sourceGroups) {
+                // Get root file object
+                FileObject rootFileObject = sourceGroup.getRootFolder ();
+                if (rootFileObject == null) {
                     continue;
                 }
 
-                // Walk through sources
-                for (Sources sources : sourcess) {
-                    // Get Source groups of type java
-                    SourceGroup[] sourceGroups = sources.getSourceGroups ("java");
-                    if (sourceGroups == null) {
-                        continue;
-                    }
+                // Find implementors
+                ClassPath classPath = ClassPathSupport.createClassPath (new FileObject[]{rootFileObject});
+                ClassPath bootClassPath = ClassPath.getClassPath (rootFileObject, ClassPath.BOOT);
+                ClassPath compileClassPath = ClassPath.getClassPath (rootFileObject, ClassPath.COMPILE);
+                if (classPath != null) {
+                    ClasspathInfo classpathInfo = ClasspathInfo.create (bootClassPath, compileClassPath, classPath);
+                    if (classpathInfo != null) {
+                        ClassIndex classIndex = classpathInfo.getClassIndex ();
+                        if (classIndex != null) {
+                            Set<ElementHandle<TypeElement>> implementors = classIndex.getElements (typeElementHandle,
+                                EnumSet.of (ClassIndex.SearchKind.IMPLEMENTORS),
+                                EnumSet.of (ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
+                            for (ElementHandle<TypeElement> implementorElementHandle : implementors) {
+                                if (processedImplementorElementHandles.contains (implementorElementHandle)) {
+                                    continue;
+                                }
+                                processedImplementorElementHandles.add (implementorElementHandle);
+                                final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
+                                FileObject implementorfileObject =
+                                    SourceUtils.getFile (implementorElementHandle, classpathInfo);
+                                if (implementorfileObject == null) {
+                                    implementorfileObject = bootClassPath.findResource(
+                                            handleAsResourceName(implementorElementHandle));
+                                }
+                                if (implementorfileObject == null) {                                            
+                                    implementorfileObject = compileClassPath.findResource(
+                                            handleAsResourceName(implementorElementHandle));
+                                }
+                                if (implementorfileObject == null) {
+                                    continue;
+                                }
+                                JavaSource javaSource = JavaSource.forFileObject (implementorfileObject);
+                                if (javaSource != null) {
+                                    try {
+                                        final FileObject implementorfileObjectFin = implementorfileObject;
+                                        javaSource.runUserActionTask (new Task<CompilationController> () {
 
-                    // Walk through source groups
-                    for (SourceGroup sourceGroup : sourceGroups) {
-                        // Get root file object
-                        FileObject rootFileObject = sourceGroup.getRootFolder ();
-                        if (rootFileObject == null) {
-                            continue;
-                        }
-
-                        // Find implementors
-                        ClassPath classPath = ClassPathSupport.createClassPath (new FileObject[]{rootFileObject});
-                        ClassPath bootClassPath = ClassPath.getClassPath (rootFileObject, ClassPath.BOOT);
-                        ClassPath compileClassPath = ClassPath.getClassPath (rootFileObject, ClassPath.COMPILE);
-                        if (classPath != null) {
-                            ClasspathInfo classpathInfo = ClasspathInfo.create (bootClassPath, compileClassPath, classPath);
-                            if (classpathInfo != null) {
-                                ClassIndex classIndex = classpathInfo.getClassIndex ();
-                                if (classIndex != null) {
-                                    Set<ElementHandle<TypeElement>> implementors = classIndex.getElements (typeElementHandle,
-                                        EnumSet.of (ClassIndex.SearchKind.IMPLEMENTORS),
-                                        EnumSet.of (ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
-                                    for (ElementHandle<TypeElement> implementorElementHandle : implementors) {
-                                        if (processedImplementorElementHandles.contains (implementorElementHandle)) {
-                                            continue;
-                                        }
-                                        processedImplementorElementHandles.add (implementorElementHandle);
-                                        final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
-                                        final FileObject implementorfileObject =
-                                            SourceUtils.getFile (implementorElementHandle, classpathInfo);
-                                        if (implementorfileObject == null) {
-                                            continue;
-                                        }
-                                        JavaSource javaSource = JavaSource.forFileObject (implementorfileObject);
-                                        if (javaSource != null) {
-                                            try {
-                                                javaSource.runUserActionTask (new Task<CompilationController> () {
-
-                                                    @Override
-                                                    public void run (CompilationController compilationController)
-                                                        throws Exception {
-                                                        compilationController.toPhase (Phase.ELEMENTS_RESOLVED);
-                                                        Element implementor = finalImplementorElementHandle.resolve (compilationController);
-                                                        if (implementor instanceof TypeElement && ((TypeElement) implementor).getNestingKind () != NestingKind.ANONYMOUS) {
-                                                            insert (new SimpleTypeTreeNode (implementorfileObject, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
-                                                        }
-                                                    }
-                                                }, true);
-                                            } catch (IOException ioe) {
-                                                Exceptions.printStackTrace (ioe);
+                                            @Override
+                                            public void run (CompilationController compilationController)
+                                                throws Exception {
+                                                compilationController.toPhase (Phase.ELEMENTS_RESOLVED);
+                                                Element implementor = finalImplementorElementHandle.resolve (compilationController);
+                                                if (implementor instanceof TypeElement && ((TypeElement) implementor).getNestingKind () != NestingKind.ANONYMOUS) {
+                                                    insert (new SimpleTypeTreeNode (implementorfileObjectFin, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
+                                                }
                                             }
-                                        }
+                                        }, true);
+                                    } catch (IOException ioe) {
+                                        Exceptions.printStackTrace (ioe);
                                     }
                                 }
                             }
@@ -640,4 +635,29 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             }
         }
     }
+    
+    private Collection<? extends SourceGroup> getSourceGroups() {
+        if (sgCache == null) {
+            final List<SourceGroup> result = new ArrayList<SourceGroup>();
+            final Project[] openProjects = OpenProjects.getDefault ().getOpenProjects ();
+            if (openProjects == null) {
+                return null;
+            }
+            for (final Project project : openProjects) {
+                final Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups ("java");
+                assert sourceGroups != null;
+                for (SourceGroup sourceGroup : sourceGroups) {
+                    result.add(sourceGroup);
+                }                
+            }
+            sgCache = result;
+        }
+        return sgCache;
+    }
+    
+    private static String handleAsResourceName(final ElementHandle<TypeElement> handle) {
+        return handle.getBinaryName().replace('.','/')+".class";    //NOI18N
+    }
+    
 }

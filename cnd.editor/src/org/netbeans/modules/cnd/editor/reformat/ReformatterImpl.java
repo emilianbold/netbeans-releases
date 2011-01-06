@@ -1319,7 +1319,7 @@ public class ReformatterImpl {
 
         Token<CppTokenId> next = ts.lookNext();
         if (isClassDeclaration) {
-            if (next != null && !(next.id() == WHITESPACE || next.id() == NEW_LINE)) {
+            if (next != null && !(next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE || next.id() == NEW_LINE)) {
                 ts.addAfterCurrent(current, 0, 1, false);
             }
             return;
@@ -1988,7 +1988,7 @@ public class ReformatterImpl {
         Token<CppTokenId> next = ts.lookNext();
         if (next != null) {
             if (add) {
-                if (!(next.id() == WHITESPACE ||
+                if (!(next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE ||
                       next.id() == NEW_LINE)) {
                     ts.addAfterCurrent(current, 0, 1, false);
                 }

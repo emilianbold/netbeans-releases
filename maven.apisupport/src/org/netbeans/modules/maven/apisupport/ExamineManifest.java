@@ -88,7 +88,7 @@ public class ExamineManifest  {
                 jar = new JarFile(jarFile);
                 mf = jar.getManifest();
             } catch (Exception exc) {
-                throw new MojoExecutionException( exc.getMessage(), exc );
+                throw new MojoExecutionException( "Opening " + jarFile + ": " + exc, exc );
             } finally {
                 if (jar != null) {
                     try {
@@ -104,7 +104,7 @@ public class ExamineManifest  {
                 stream = new FileInputStream(manifestFile);
                 mf = new Manifest(stream);
             } catch (Exception exc) {
-                throw new MojoExecutionException( exc.getMessage(), exc );
+                throw new MojoExecutionException( "Opening " + manifestFile + ": " + exc, exc );
             } finally {
                 if (stream != null) {
                     try {

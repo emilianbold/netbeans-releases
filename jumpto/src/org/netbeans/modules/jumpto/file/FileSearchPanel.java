@@ -533,7 +533,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     }
 
     private int getFontSize () {
-        return this.resultList.getFont().getSize();
+        return this.resultLabel.getFont().getSize();
     }        
     
     public void setSelectedFile() {

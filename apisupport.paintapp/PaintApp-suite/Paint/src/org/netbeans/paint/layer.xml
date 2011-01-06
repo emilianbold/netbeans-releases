@@ -3,13 +3,6 @@
 <filesystem>
     <folder name="Actions">
         <folder name="File">
-            <file name="org-netbeans-paint-NewCanvasAction.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" newvalue="org.netbeans.paint.NewCanvasAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.paint.Bundle#CTL_NewCanvasAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/paint/new_icon.png"/>
-                <attr name="noIconInMenu" boolvalue="false"/>
-            </file>
             <file name="org-openide-actions-SaveAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="delegate" newvalue="org.openide.actions.SaveAction"/>
@@ -33,10 +26,6 @@
     <folder name="Menu">
         <folder name="File">
             <attr name="position" intvalue="0"/>
-            <file name="NewCanvasAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-paint-NewCanvasAction.instance"/>
-                <attr name="position" intvalue="0"/>
-            </file>
             <file name="SaveAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-openide-actions-SaveAction.instance"/>
                 <attr name="position" intvalue="100"/>
@@ -76,10 +65,6 @@
     </folder>
     <folder name="Toolbars">
         <folder name="File">
-            <file name="NewCanvasAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-paint-NewCanvasAction.instance"/>
-                <attr name="position" intvalue="0"/>
-            </file>
             <file name="SaveAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-openide-actions-SaveAction.instance"/>
                 <attr name="position" intvalue="100"/>

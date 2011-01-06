@@ -108,4 +108,9 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
         };
     }
 
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getConfiguration());
+    }
+
 }

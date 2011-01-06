@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.api.ui;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.concurrent.CancellationException;
@@ -90,6 +91,7 @@ import org.openide.util.Exceptions;
 
     @Override
     public File createFileObject(String path) {
+        RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
         FileObject fo = fs.findResource(path);
         if (fo == null || !fo.isValid()) {
             RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", path);
@@ -169,12 +171,22 @@ import org.openide.util.Exceptions;
         changeSupport.firePropertyChange(LOADING_STATUS, null, rdir);
 
         try {
-            result = rdir.listFiles();
+            if (dir.canRead()) {
+                if (useFileHiding) {
+                    result = rdir.listFiles(new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            return ! name.startsWith("."); // NOI18N
+                        }
+                    });
+                } else {
+                    result = rdir.listFiles();
+                }
+            }
         } finally {
             changeSupport.firePropertyChange(LOADING_STATUS, rdir, null);
         }
 
-        return result;
+        return (result == null) ? new File[0] : result;
     }
 
     /**

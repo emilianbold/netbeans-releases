@@ -62,34 +62,34 @@ public class IndentUtilsTest extends NbTestCase {
 
     public void testIndentUtils() throws Exception {
         // Test empty indent
-        assertSame("", IndentUtils.cachedOrCreatedIndentString(0, true, 8));
-        assertSame("", IndentUtils.cachedOrCreatedIndentString(0, false, 4));
+        assertSame("", IndentUtils.createIndentString(0, true, 8));
+        assertSame("", IndentUtils.createIndentString(0, false, 4));
         
         // Test <tabSize
         String s;
-        assertEquals("   ", s = IndentUtils.cachedOrCreatedIndentString(3, false, 4));
+        assertEquals("   ", s = IndentUtils.createIndentString(3, false, 4));
         // Test caching of indent strings
-        assertSame(s, IndentUtils.cachedOrCreatedIndentString(3, false, 4));
+        assertSame(s, IndentUtils.createIndentString(3, false, 4));
         
         // Test ==tabSize
-        assertEquals("\t", s = IndentUtils.cachedOrCreatedIndentString(4, false, 4));
-        assertSame(s, IndentUtils.cachedOrCreatedIndentString(4, false, 4));
+        assertEquals("\t", s = IndentUtils.createIndentString(4, false, 4));
+        assertSame(s, IndentUtils.createIndentString(4, false, 4));
 
         // Test >tabSize
-        assertEquals("\t  ", s = IndentUtils.cachedOrCreatedIndentString(6, false, 4));
-        assertSame(s, IndentUtils.cachedOrCreatedIndentString(6, false, 4));
-        assertEquals("\t\t\t   ", s = IndentUtils.cachedOrCreatedIndentString(15, false, 4));
-        assertSame(s, IndentUtils.cachedOrCreatedIndentString(15, false, 4));
+        assertEquals("\t  ", s = IndentUtils.createIndentString(6, false, 4));
+        assertSame(s, IndentUtils.createIndentString(6, false, 4));
+        assertEquals("\t\t\t   ", s = IndentUtils.createIndentString(15, false, 4));
+        assertSame(s, IndentUtils.createIndentString(15, false, 4));
         
         // Test spaces-only
-        assertEquals("          ", s = IndentUtils.cachedOrCreatedIndentString(10, true, 4));
-        assertEquals(s, IndentUtils.cachedOrCreatedIndentString(10, true, 4));
+        assertEquals("          ", s = IndentUtils.createIndentString(10, true, 4));
+        assertEquals(s, IndentUtils.createIndentString(10, true, 4));
         
         // Test many (non-cached) spaces
         int testUncachedIndent = 90;
         StringBuilder sb = new StringBuilder(testUncachedIndent);
         ArrayUtilities.appendSpaces(sb, testUncachedIndent);
-        assertEquals(sb.toString(), IndentUtils.cachedOrCreatedIndentString(testUncachedIndent, true, 4));
+        assertEquals(sb.toString(), IndentUtils.createIndentString(testUncachedIndent, true, 4));
         
         // Test long (non-cached) tab indent
         int i = testUncachedIndent;
@@ -99,10 +99,10 @@ public class IndentUtilsTest extends NbTestCase {
             i -= 8;
         }
         ArrayUtilities.appendSpaces(sb, i);
-        assertEquals(sb.toString(), IndentUtils.cachedOrCreatedIndentString(testUncachedIndent, false, 8));
+        assertEquals(sb.toString(), IndentUtils.createIndentString(testUncachedIndent, false, 8));
         
         // Test cache limits (#124352)
-        assertEquals("\t   ", IndentUtils.cachedOrCreatedIndentString(11, false, 8));
+        assertEquals("\t   ", IndentUtils.createIndentString(11, false, 8));
     }
 
 }

@@ -465,7 +465,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        return "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/" + outputName; // NOI18N
+        return MakeConfiguration.CND_DISTDIR_MACRO + "/" + MakeConfiguration.CND_CONF_MACRO + "/"+MakeConfiguration.CND_PLATFORM_MACRO+"/" + outputName; // NOI18N
     }
 
     public String getOutputDefault27() {

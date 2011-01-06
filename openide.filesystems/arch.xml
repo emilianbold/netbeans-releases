@@ -454,11 +454,25 @@ Periodic refresh can be set.
         </question>
 -->
 <answer id="exec-reflection">
-Yes, attributes can contain also dynamic values associated with keys (<code>methodvalue</code> and <code>newvalue</code>).
+<api type="export" group="layer" category="stable" name="methodvalue-newvalue" url="@TOP@/org/openide/filesystems/FileObject.html#setAttribute(java.lang.String,%20java.lang.Object)">
+When special form of <code>setAttribute</code> is supported by the filesystem, the 
+<code>getAttribute</code> can behave like 
+<a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>'s
+<code>methodvalue</code> and <code>newvalue</code> attributes:
 <ul>
 <li><a href="http://www.netbeans.org/dtds/attributes-1_0.dtd"><code>"-//NetBeans//DTD DefaultAttributes 1.0//EN"</code></a></li>
 <li><a href="http://www.netbeans.org/dtds/filesystem-1_0.dtd"><code>"-//NetBeans//DTD Filesystem 1.0//EN"</code></a></li>           
 </ul>
+</api>
+
+<api type="export" group="layer" category="private" name="raw-value">
+It is possible to prefix call to <a href="@TOP@/org/openide/filesystems/FileObject.html">FileObject</a>.<code>getAttribute</code>
+with <code>raw:</code> prefix to evaluate the attribute without instantiating it
+(e.g. get <a href="@JDK@/java/lang/reflect/Method.html">Method</a> or
+<a href="@JDK@/java/lang/Class.html">Class</a> values from
+<code>methodvalue</code> and <code>newvalue</code> attributes. This API
+is not intended for public use at present and can change in future.
+</api>
  </answer>
 
 

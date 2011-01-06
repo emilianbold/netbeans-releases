@@ -236,14 +236,14 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             try {
                 FileObject r = RetoucheUtils.getClassPathRoot(target);
                 URL targetUrl = URLMapper.findURL(r, URLMapper.EXTERNAL);
+                Project targetProject = FileOwnerQuery.getOwner(r);
                 Set<URL> deps = SourceUtils.getDependentRoots(targetUrl);
                 for (FileObject sourceRoot : sourceRoots) {
                     URL sourceUrl = URLMapper.findURL(sourceRoot, URLMapper.INTERNAL);
                     if (!deps.contains(sourceUrl)) {
                         Project sourceProject = FileOwnerQuery.getOwner(sourceRoot);
                         for (FileObject affected: a) {
-                            if (FileOwnerQuery.getOwner(affected).equals(sourceProject) && !filesToMove.contains(affected)) {
-                                Project targetProject = FileOwnerQuery.getOwner(r);
+                            if (FileOwnerQuery.getOwner(affected).equals(sourceProject) && !filesToMove.contains(affected) && !sourceProject.equals(targetProject)) {
                                 assert sourceProject!=null;
                                 assert targetProject!=null;
                                 String sourceName = ProjectUtils.getInformation(sourceProject).getDisplayName();

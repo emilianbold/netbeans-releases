@@ -106,7 +106,7 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"Bugzilla Support to version 3.2.3 \" " +
+                          "OpenIDE-Module-Long-Description=\"Support for Bugzilla issue tracker up to version {1} \" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +
@@ -125,7 +125,7 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
                            "OpenIDE-Module-Name=\"Bugzilla\" " +
                            "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
                            "OpenIDE-Module-Short-Description=\"Bugzilla\" " +
-                           "OpenIDE-Module-Specification-Version=\"{1}\"/>" +
+                           "OpenIDE-Module-Specification-Version=\"{2}\"/>" +
             "</module>" +
             "</module_updates>";
 
@@ -134,22 +134,21 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
     }
 
     public void testNewBugzillavailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "9.9.9");
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "999.9.9", "999.9.9");
         populateCatalog(contents);
 
-        assertTrue(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
         assertTrue(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testNewBugzillaNotAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0");
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0", "0.0.0");
         populateCatalog(contents);
 
         assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testBugzillaIsNotAtUCAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0");
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0", "1.0.0");
         populateCatalog(contents);
 
         assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());

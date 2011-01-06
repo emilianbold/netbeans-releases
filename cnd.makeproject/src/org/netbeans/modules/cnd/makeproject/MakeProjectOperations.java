@@ -155,7 +155,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         if (!originalFilePath.equals(newFilePath)) {
             //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
+            fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
@@ -190,7 +190,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         if (!originalFilePath.equals(newFilePath)) {
             //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
+            fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }

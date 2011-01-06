@@ -112,6 +112,10 @@ made subject to such option by the copyright holder.
                 <folder name="BuildCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.customizer.Bundle"/>
                     <attr name="position" intvalue="300"/>
+                    <file name="Compile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.earproject.ui.customizer.EarCompositePanelProvider.createCompile"/>
+                        <attr name="position" intvalue="50"/>
+                    </file>
                     <file name="Ear.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.earproject.ui.customizer.EarCompositePanelProvider.createEar"/>
                         <attr name="position" intvalue="100"/>

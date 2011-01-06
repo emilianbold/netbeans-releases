@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -128,6 +129,10 @@ public final class SourceCache {
             }
             return snapshot;
         }
+    }
+    
+    public @NonNull Source getSource() {
+        return this.source;
     }
 
     Snapshot createSnapshot (long[] idHolder) {
@@ -274,55 +279,61 @@ public final class SourceCache {
         List<Embedding> oldEmbeddings;
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-        }
-        updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
-        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
             embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
             upToDateEmbeddingProviders.add (embeddingProvider);
+            if (this.embeddings != null) {
+                this.embeddings.removeAll(oldEmbeddings);
+                this.embeddings.addAll(_embeddings);
+            }
         }
     }
     
     private void updateEmbeddings (
-            List<Embedding>                 embeddings,
-            List<Embedding>                 oldEmbeddings,
-            boolean                         updateTasks,
-            Class<? extends Scheduler>      schedulerType
-    ) {
-        List<SourceCache> toBeSchedulled = new ArrayList<SourceCache> ();
-        synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
-                for (int i = 0; i < embeddings.size (); i++) {
-                    if (embeddings.get (i) == null)
-                        throw new NullPointerException ();
-                    SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
-                    if (cache != null) {
-                        cache.setEmbedding (embeddings.get (i));
-                        assert embeddings.get (i).getMimeType ().equals (cache.getSnapshot ().getMimeType ());
-                        embeddingToCache.put (embeddings.get (i), cache);
-                    } else {
-                        cache = getCache(embeddings.get(i));
-                    }
-
-                    if (updateTasks)
-                        toBeSchedulled.add (cache);
+            final List<Embedding>                 embeddings,
+            final List<Embedding>                 oldEmbeddings,
+            final boolean                         updateTasks,
+            final Class<? extends Scheduler>      schedulerType) {
+        assert Thread.holdsLock(TaskProcessor.INTERNAL_LOCK);
+        final List<SourceCache> toBeSchedulled = new ArrayList<SourceCache> ();
+            
+        if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
+            for (int i = 0; i < embeddings.size (); i++) {
+                if (embeddings.get (i) == null) {
+                    throw new NullPointerException ();
                 }
-            } else {
-                if (oldEmbeddings != null)
-                    for (Embedding _embedding : oldEmbeddings) {
-                        SourceCache cache = embeddingToCache.remove (_embedding);
-                        if (cache != null) {
-                            cache.removeTasks ();
-                        }
-                    }
-                if (updateTasks)
-                    for (Embedding _embedding : embeddings) {
-                        SourceCache cache = getCache (_embedding);
-                        toBeSchedulled.add (cache);
-                    }
+                SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
+                if (cache != null) {
+                    cache.setEmbedding (embeddings.get (i));
+                    assert embeddings.get (i).getMimeType ().equals (cache.getSnapshot ().getMimeType ());
+                    embeddingToCache.put (embeddings.get (i), cache);
+                } else {
+                    cache = getCache(embeddings.get(i));
+                }
+
+                if (updateTasks) {
+                    toBeSchedulled.add (cache);
+                }
             }
-        }
-        for (SourceCache cache : toBeSchedulled)
+        } else {
+            if (oldEmbeddings != null) {
+                for (Embedding _embedding : oldEmbeddings) {
+                    SourceCache cache = embeddingToCache.remove (_embedding);
+                    if (cache != null) {
+                        cache.removeTasks ();
+                    }
+                }
+            }
+            if (updateTasks) {
+                for (Embedding _embedding : embeddings) {
+                    SourceCache cache = getCache (_embedding);
+                    toBeSchedulled.add (cache);
+                }
+            }
+        }        
+        for (SourceCache cache : toBeSchedulled) {
             cache.scheduleTasks (schedulerType);
+        }
     }
     
     //@GuardedBy(this)

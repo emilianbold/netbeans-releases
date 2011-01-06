@@ -74,70 +74,78 @@ public class MavenProjectPropsImpl {
     private TreeMap<String, String> transPropsPrivate;
     private AuxiliaryConfiguration aux;
     private boolean sharedChanged;
-    private final NbMavenProject nbprj;
+    private final NbMavenProjectImpl nbprji;
 
-    MavenProjectPropsImpl(AuxiliaryConfiguration aux, NbMavenProject pr) {
+    MavenProjectPropsImpl(AuxiliaryConfiguration aux, NbMavenProjectImpl pr) {
         this.aux = aux;
-        nbprj = pr;
+        nbprji = pr;
     }
 
     private AuxiliaryConfiguration getAuxConf() {
         return aux;
     }
 
-    public synchronized String get(String key, boolean shared) {
-        return get(key, shared, true);
+    public String get(String key, boolean shared) {
+        synchronized (nbprji) {
+            return get(key, shared, true);
+        }
     }
 
-    public synchronized String get(String key, boolean shared, boolean usePom) {
-        if (transaction) {
-            if (shared && transPropsShared.containsKey(key)) {
-                return transPropsShared.get(key);
-            }
-            if (!shared && transPropsPrivate.containsKey(key)) {
-                return transPropsPrivate.get(key);
-            }
-        } else {
-            TreeMap<String, String> props = readProperties(getAuxConf(), shared);
-            //TODO optimize
-            String ret =  props.get(key);
-            if (ret != null) {
-                return ret;
-            }
-        }
-        if (shared && usePom) {
-            String val = nbprj.getMavenProject().getProperties().getProperty(key);
-            if (val != null) {
-                return val;
-            }
-        }
-        return null;
-    }
-
-    public synchronized void put(String key, String value, boolean shared) {
-        if (shared) {
-            //TODO put props to project.. shall we actually do it here?
-        }
-        if (transaction) {
-            if (shared) {
-                sharedChanged |= !Utilities.compareObjects(value, transPropsShared.put(key, value));
+    public String get(String key, boolean shared, boolean usePom) {
+        synchronized (nbprji) {
+            if (transaction) {
+                if (shared && transPropsShared.containsKey(key)) {
+                    return transPropsShared.get(key);
+                }
+                if (!shared && transPropsPrivate.containsKey(key)) {
+                    return transPropsPrivate.get(key);
+                }
             } else {
-                transPropsPrivate.put(key, value);
+                TreeMap<String, String> props = readProperties(getAuxConf(), shared);
+                //TODO optimize
+                String ret =  props.get(key);
+                if (ret != null) {
+                    return ret;
+                }
             }
-        } else {
-            writeAuxiliaryData(getAuxConf(), key, value, shared);
+            if (shared && usePom) {
+                String val = nbprji.getOriginalMavenProject().getProperties().getProperty(key);
+                if (val != null) {
+                    return val;
+                }
+            }
+            return null;
         }
     }
 
-    public synchronized Iterable<String> listKeys(boolean shared) {
-        TreeMap<String, String> props = readProperties(getAuxConf(), shared);
-        if (shared) {
-            Properties mvnprops =  nbprj.getMavenProject().getProperties();
-            for (Object prop: mvnprops.keySet()) {
-                props.put((String)prop, "any"); //NOI18N
+    public void put(String key, String value, boolean shared) {
+        synchronized (nbprji) {
+            if (shared) {
+                //TODO put props to project.. shall we actually do it here?
+            }
+            if (transaction) {
+                if (shared) {
+                    sharedChanged |= !Utilities.compareObjects(value, transPropsShared.put(key, value));
+                } else {
+                    transPropsPrivate.put(key, value);
+                }
+            } else {
+                writeAuxiliaryData(getAuxConf(), key, value, shared);
             }
         }
-        return props.keySet();
+    }
+
+    public Iterable<String> listKeys(boolean shared) {
+        synchronized (nbprji) {
+            TreeMap<String, String> props = readProperties(getAuxConf(), shared);
+            if (shared) {
+                Properties mvnprops =  nbprji.getOriginalMavenProject().getProperties();
+                for (Object prop: mvnprops.keySet()) {
+                    props.put((String)prop, "any"); //NOI18N
+                }
+            }
+            return props.keySet();
+        }
     }
 
     private void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value, boolean shared) {
@@ -213,36 +221,43 @@ public class MavenProjectPropsImpl {
         return props;
     }
 
-    public synchronized TreeMap<String, String> getRawProperties(boolean shared) {
-        return readProperties(getAuxConf(), shared);
-    }
-
-    public synchronized void startTransaction() {
-        transaction = true;
-        transPropsShared = getRawProperties(true);
-        transPropsPrivate = getRawProperties(false);
-        sharedChanged = false;
-
-    }
-
-    public synchronized void commitTransaction() {
-        transaction = false;
-        if (transPropsShared == null) {
-            Logger.getLogger(MavenProjectPropsImpl.class.getName()).info("Commiting a transaction that was cancelled.");
-            return;
+    public TreeMap<String, String> getRawProperties(boolean shared) {
+        synchronized (nbprji) {
+            return readProperties(getAuxConf(), shared);
         }
-        if (sharedChanged) {
-            writeAuxiliaryData(getAuxConf(), transPropsShared, true);
-        }
-        writeAuxiliaryData(getAuxConf(), transPropsPrivate, false);
-        transPropsPrivate = null;
-        transPropsShared = null;
     }
 
-    public synchronized void cancelTransaction() {
-        transaction = false;
-        transPropsPrivate = null;
-        transPropsShared = null;
+    public void startTransaction() {
+        synchronized (nbprji) {
+            transaction = true;
+            transPropsShared = getRawProperties(true);
+            transPropsPrivate = getRawProperties(false);
+            sharedChanged = false;
+        }
+    }
+
+    public void commitTransaction() {
+        synchronized (nbprji) {
+            transaction = false;
+            if (transPropsShared == null) {
+                Logger.getLogger(MavenProjectPropsImpl.class.getName()).info("Commiting a transaction that was cancelled.");
+                return;
+            }
+            if (sharedChanged) {
+                writeAuxiliaryData(getAuxConf(), transPropsShared, true);
+            }
+            writeAuxiliaryData(getAuxConf(), transPropsPrivate, false);
+            transPropsPrivate = null;
+            transPropsShared = null;
+        }
+    }
+
+    public void cancelTransaction() {
+        synchronized (nbprji) {
+            transaction = false;
+            transPropsPrivate = null;
+            transPropsShared = null;
+        }
     }
 
     static class Merger implements LookupMerger<AuxiliaryProperties> {

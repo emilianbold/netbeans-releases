@@ -79,7 +79,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -303,12 +304,13 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.primaryView = primaryView;
     }
 
+    @Messages("MSG_Synchronizing=Synchronizing {0}")
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
             handle.set(ProgressHandleFactory.createHandle(
-                    NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Synchronizing", getName()),
+                    MSG_Synchronizing(getName()),
                     new Cancellable() {
                 public boolean cancel() {
                     Thread t = synchThread.get();

@@ -56,7 +56,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 /**
  * Lexical analyzer for Fortran languages.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranLexer implements Lexer<FortranTokenId> {
 

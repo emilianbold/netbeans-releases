@@ -37,671 +37,130 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Image;
-import java.awt.dnd.DnDConstants;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.support.TableDataProvider;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
-import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.DataRowNode;
+import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponentsProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.swing.etable.ETableColumnModel;
-import org.netbeans.swing.outline.Outline;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.OutlineView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.netbeans.modules.dlight.visualizers.ui.AdvancedDataRowTableOutline;
+import org.netbeans.modules.dlight.visualizers.ui.AdvancedTableDataRowNodeChildren;
+import org.netbeans.modules.dlight.visualizers.ui.TableViewNodeChildren;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author mt154047
+ * @author ak119685
  */
-final class AdvancedTableViewVisualizer extends JPanel implements
-    Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
+public final class AdvancedTableViewVisualizer extends TableViewVisualizer<AdvancedTableViewVisualizerConfiguration, DataRow> {
 
-    private static final long MIN_REFRESH_MILLIS = 500;
-
-    private TableDataProvider provider;
-    private final AdvancedTableViewVisualizerConfiguration configuration;
-    private final NodeActionsProvider nodeActionsProvider;
-    private final List<DataRow> data = new ArrayList<DataRow>();
-    private JButton refresh;
-//    private AbstractTableModel tableModel;
-//    private JTable table;
-//    private TableSorter tableSorterModel = new TableSorter();
-    private OnTimerRefreshVisualizerHandler timerHandler;
-    private boolean isEmptyContent;
-    private boolean isLoadingContent;
-    private boolean isShown = true;
-    private final OutlineView outlineView;
+    private final TableDataProvider provider;
+    private final JComponent dualViewPane;
     private final String nodeColumnName;
-    private final String nodeRowColumnID;
-    private final ExplorerManager explorerManager;
-    private Future<Boolean> task;
-    private final Object queryLock = new Object();
-    private final Object uiLock = new Object();
-    private final String iconColumnID;
-    private String resourceID;
-    private final boolean dualPaneMode;
-    private final DualPaneSupport<DataRow> dualPaneSupport;
-    private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
-    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
-    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
-
-    AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
-        super(new BorderLayout());
-        // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
-        this.provider = provider;
-        this.configuration = configuration;        
-        this.explorerManager = new ExplorerManager();
-        addComponentListener(this);
-        AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
-//        tableView = new TableView();
-        this.nodeActionsProvider = accessor.getNodeActionProvider(configuration);        
-        nodeColumnName = accessor.getNodeColumnName(configuration);
-        nodeRowColumnID = accessor.getRowNodeColumnName(configuration);
-        outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
-        outlineView.getOutline().setRootVisible(false);
-        iconColumnID = accessor.getIconColumnID(configuration);
-        if ( iconColumnID== null || configuration.getMetadata().getColumnByName(iconColumnID) == null){
-            outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());//do not display  icon
-        }
-
-        resourceID = iconColumnID == null ? null : accessor.getIconPath(configuration);
-        List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
-        List<Property<?>> result = new ArrayList<Property<?>>();
-        List<Column> columns = new ArrayList<Column>();
-        List<String> columnProperties = new ArrayList<String>();
-        for (String columnName : configuration.getMetadata().getColumnNames()) {
-            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
-                final Column c = configuration.getMetadata().getColumnByName(columnName);
-                columns.add(c);
-                @SuppressWarnings("unchecked")
-                Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                    c.getColumnUName(), c.getColumnUName(), true, false) {
-                    @Override
-                    public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                        return null;
-                    }
-                    @Override
-                    public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                    }
-                };
-                result.add(property);
-                columnProperties.add(c.getColumnName());
-                columnProperties.add(c.getColumnUName());
-            }
-        }
-        outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
-        //outlineView.setProperties(result.toArray(new Property<?>[0]));
-        outlineView.setPropertyColumns(columnProperties.toArray(new String[0]));
-        outlineView.setPopupAllowed(false);
-        outlineView.setDragSource(false);
-        outlineView.setDropTarget(false);
-        outlineView.setAllowedDragActions(DnDConstants.ACTION_NONE);
-        outlineView.setAllowedDropActions(DnDConstants.ACTION_NONE);
-        final Outline outline = outlineView.getOutline();
-        outline.getTableHeader().setReorderingAllowed(false);
-        outline.setRootVisible(false);
-        //add Alt+Column Number for sorting
-        int columnCount = columns.size() + 1;
-        int firstKey = KeyEvent.VK_1;
-        for (int i = 1; i <= columnCount; i++) {
-            final int columnNumber = i - 1;
-            KeyStroke columnKey = KeyStroke.getKeyStroke(firstKey++, KeyEvent.ALT_MASK, true);
-            outlineView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnKey, "ascSortFor" + i);//NOI18N
-            outlineView.getActionMap().put("ascSortFor" + i, new AbstractAction() {// NOI18N
-
-                public void actionPerformed(ActionEvent e) {
-                    // ok, do the sorting
-                    int column = columnNumber;
-                    ETableColumnModel columnModel = null;
-                    if (outline.getColumnModel() instanceof ETableColumnModel) {
-                        columnModel = (ETableColumnModel) outline.getColumnModel();
-                        columnModel.clearSortedColumns();
-                    }
-                    boolean asc = !ascColumnValues.containsKey(column) ? true : ascColumnValues.get(column);
-                    outline.setColumnSorted(column, asc, 1);
-                    ascColumnValues.put(column, !asc);
-                    outline.getTableHeader().resizeAndRepaint();
-                }
-            });
-//            KeyStroke columnDescKey = KeyStroke.getKeyStroke(firstKey++, KeyEvent.ALT_MASK + KeyEvent.SHIFT_MASK, true);
-//            outlineView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnDescKey, "descSortFor" + i);//NOI18N
-//            outlineView.getActionMap().put("descSortFor" + i, new AbstractAction() {// NOI18N
-//                public void actionPerformed(ActionEvent e) {
-//                    // ok, do the sorting
-//                    int column = columnNumber;
-//                    ETableColumnModel columnModel = null;
-//                    if (outline.getColumnModel() instanceof ETableColumnModel){
-//                        columnModel = (ETableColumnModel)outline.getColumnModel();
-//                        columnModel.clearSortedColumns();
-//                    }
-//                   boolean asc = !ascColumnValues.containsKey(column)  ?  false :  ascColumnValues.get(column);
-//                    outline.setColumnSorted(column, !asc  , 1);
-//                    ascColumnValues.put(column,! asc);
-//                    outline.getTableHeader().resizeAndRepaint();
-//                }
-//            });
-        }
-        outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        outlineView.setProperties(result.toArray(new Property[0]));
-        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);        
-
-        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
-        outlineView.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); // NOI18N
-        outlineView.getOutline().getActionMap().put("return", new AbstractAction() {// NOI18N
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refresh.requestFocus(false);
-            }
-        });
-
-        this.dualPaneMode = accessor.isDualPaneMode(configuration);
-        if (dualPaneMode) {
-            this.dualPaneSupport = DualPaneSupport.forExplorerManager(
-                    this, this.explorerManager,
-                    accessor.getDetailsRenderer(configuration),
-                    new DualPaneSupport.DataAdapter<Node, DataRow>() {
-                @Override
-                        public DataRow convert(Node obj) {
-                            if (obj instanceof DataRowNodeImpl) {
-                                return ((DataRowNodeImpl)obj).getDataRow();
-                            } else {
-                                return null;
-                            }
-                        }
-                    });
-        } else {
-            this.dualPaneSupport = null;
-        }
-    }
-
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return explorerManager;
-    }
-
-    @Override
-    public void requestFocus() {
-        if (refresh != null) {
-            refresh.requestFocus();
-        } else {
-            outlineView.requestFocus();
-        }
-    }
-
-    @Override
-    public boolean requestFocusInWindow() {
-        if (refresh != null) {
-            return refresh.requestFocusInWindow();
-        } else {
-            return outlineView.requestFocusInWindow();
-        }
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-//        addComponentListener(this);
-//        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-//        asyncFillModel(false);
-//        if (timerHandler != null && timerHandler.isSessionRunning()) {
-//            timerHandler.startTimer();
-//            return;
-//        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        synchronized (queryLock) {
-            if (task != null) {
-                task.cancel(true);
-            }
-        }
-        if (timerHandler != null) {
-            timerHandler.stopTimer();
-        }
-        removeComponentListener(this);
-        VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
-
-    }
-
-    private void setEmptyContent() {
-        isEmptyContent = true;
-        this.removeAll();
-        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration), JLabel.CENTER);
-        add(label, BorderLayout.CENTER);
-        add(createToolbar(), BorderLayout.WEST);
-        repaint();
-        revalidate();
-    }
-
-    private void setLoadingContent() {
-        isEmptyContent = false;
-        isLoadingContent = true;
-        this.removeAll();
-        JLabel label = new JLabel(getMessage("Loading"), JLabel.CENTER); // NOI18N
-        add(label, BorderLayout.CENTER);
-        repaint();
-        revalidate();
-    }
-
-    private void setContent(boolean isEmpty) {
-        if (isLoadingContent && isEmpty) {
-            isLoadingContent = false;
-            setEmptyContent();
-            return;
-        }
-        if (isLoadingContent && !isEmpty) {
-            isLoadingContent = false;
-            setNonEmptyContent();
-            return;
-        }
-        if (isEmptyContent && !isEmpty) {
-            setNonEmptyContent();
-            return;
-        }
-        if (isEmpty) {
-            setEmptyContent();
-            return;
-        }
-
-    }
-
-    protected void updateList(final List<DataRow> list) {
-        if (Thread.currentThread().isInterrupted()) {
-            return;
-        }
-        final boolean isEmptyConent = list == null || list.isEmpty();
-        UIThread.invoke(new Runnable() {
-
-            public void run() {
-                synchronized (uiLock) {
-                    setContent(isEmptyConent);
-                    if (!isEmptyConent) {
-                        if (!Children.MUTEX.isReadAccess()) {
-                            Children.MUTEX.writeAccess(new Runnable() {
-
-                                public void run() {
-                                    explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
-                                    setNonEmptyContent();
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        });
-
-    }
-
-    private void setNonEmptyContent() {
-        isEmptyContent = false;
-        this.removeAll();
-
-        add(createToolbar(), BorderLayout.WEST);
-//        JComponent treeTableView =
-//            Models.createView(compoundModel);
-//        add(treeTableView, BorderLayout.CENTER);
-//        treeModelImpl.fireTreeModelChanged();
-//        tableView = new TableView();
-        add(outlineView, BorderLayout.CENTER);
-
-
-        repaint();
-        validate();
-        //    this.setFocusTraversalPolicyProvider(true);
-        ArrayList<Component> order = new ArrayList<Component>();
-        order.add(outlineView);
-        order.add(refresh);
-//        FocusTraversalPolicy newPolicy = new MyOwnFocusTraversalPolicy(this, order);
-//        setFocusTraversalPolicy(newPolicy);
-        refresh.requestFocus();        
-
-    }
-
-    private JToolBar createToolbar() {
-        JToolBar buttonsToolbar = new JToolBar();
-        if (isMacLaf) {
-            buttonsToolbar.setBackground(macBackground);
-        }
-        buttonsToolbar.setFloatable(false);
-        buttonsToolbar.setOrientation(1);
-        buttonsToolbar.setRollover(true);
-
-        // Refresh button...
-        refresh = new JButton();
-        refresh.setIcon(ImageLoader.loadIcon("refresh.png")); // NOI18N
-        refresh.setToolTipText(getMessage("Refresh.Tooltip")); // NOI18N
-        refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        refresh.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asyncFillModel(false);
-            }
-        });
-
-        buttonsToolbar.add(refresh);
-
-        return buttonsToolbar;
-    }
-
-    public VisualizerContainer getDefaultContainer() {
-        return VisualizerTopComponentTopComponent.findInstance();
-    }
-
-    public int onTimer() {
-        if (!isShown || !isShowing()) {
-            return 0;
-        }
-//        asyncFillModel();
-        return 0;
-    }
-
-    public void refresh() {
-        asyncFillModel(false);
-    }
-
-
-    private void asyncFillModel(boolean cancelIfNotDone) {
-        synchronized (queryLock) {
-            if (task != null && !task.isDone()) {
-                if (cancelIfNotDone) {
-                    task.cancel(true);
-                } else {
-                    return;
-                }
-            }
-
-            UIThread.invoke(new Runnable() {
-                public void run() {
-                    setLoadingContent();
-                }
-            });
-
-            task = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                public Boolean call() {
-                    syncFillModel(true);
-                    return Boolean.FALSE;
-                }
-            }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
-        }
-    }
-
-    private void syncFillModel(boolean wait) {
-        long startTime = System.currentTimeMillis();
-        Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>() {
-
-            public List<DataRow> call() throws Exception {
-                return provider.queryData(configuration.getMetadata());
-            }
-        }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
-        try {
-            final List<DataRow> list = queryDataTask.get();
-
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-
-            if (wait && duration < MIN_REFRESH_MILLIS) {
-                // ensure that request does not finish too fast -- IZ #172160
-                Thread.sleep(MIN_REFRESH_MILLIS - duration);
-            }
-
-            final boolean isEmptyConent = list == null || list.isEmpty();
-            UIThread.invoke(new Runnable() {
-
-                public void run() {
-                    setContent(isEmptyConent);
-                    if (isEmptyConent) {
-                        return;
-                    }
-
-                    updateList(list);
-                }
-            });
-        } catch (ExecutionException ex) {
-            Thread.currentThread().interrupt();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public AdvancedTableViewVisualizerConfiguration getVisualizerConfiguration() {
-        return configuration;
-    }
-
-    public JComponent getComponent() {
-        return dualPaneMode? dualPaneSupport : this;
-    }
-
-    public void timerStopped() {
-        if (isEmptyContent) {
-            //should set again to chahe Label message
-            setEmptyContent();
-        }
-    }
-
-    public void componentResized(ComponentEvent e) {
-    }
-
-    public void componentMoved(ComponentEvent e) {
-    }
-
-    public void componentShown(ComponentEvent e) {
-        if (isShown) {
-            return;
-        }
-        isShown = isShowing();
-//        if (isShown) {
-//            //we should change explorerManager
-//            onTimer();
-//        }
-    }
-
-    public void componentHidden(ComponentEvent e) {
-        isShown = false;
-    }
-
-    public void updateVisualizerConfiguration(AdvancedTableViewVisualizerConfiguration configuration) {
-    }
-
-    public class DataChildren extends Children.Keys<DataRow> {
-
-        private final List<DataRow> list;
-
-        public DataChildren(List<DataRow> list) {
-            this.list = list;
-        }
-
-        @Override
-        protected Node[] createNodes(DataRow key) {
-            return new Node[]{new DataRowNodeImpl(key)};
-        }
-
-        @Override
-        protected void addNotify() {
-            setKeys(list);
-        }
-    }
-
-    private class DataRowNodeImpl extends DataRowNode {
-
-        private PropertySet propertySet;
-
-
-        DataRowNodeImpl(DataRow row) {
-            super(row);
-            propertySet = new PropertySet() {
-
-                @Override
-                public Property<?>[] getProperties() {
-                    List<Property<?>> result = new ArrayList<Property<?>>();
-                    for (String columnName : getDataRow().getColumnNames()) {
-                        if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
-                            final Column c = configuration.getMetadata().getColumnByName(columnName);
-                            @SuppressWarnings("unchecked")
-                            Property<?> propery = new PropertySupport(columnName, c.getColumnClass(),
-                                c.getColumnUName(), c.getColumnUName(), true, false) {
-                                @Override
-                                public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                    return getDataRow().getData(c.getColumnName());
-                                }
-                                @Override
-                                public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                                    //throw new UnsupportedOperationException("Not supported yet.");
-                                }
-
-                                @Override
-                                public Object getValue(String attributeName) {
-                                    if ("suppressCustomEditor".equals(attributeName)) {//NOI18N
-                                        return true;
-                                    }                                    
-                                    return super.getValue(attributeName);
-                                }
-                            };
-                            result.add(propery);
-                        }
-                    }
-                    return result.toArray(new Property[0]);
-
-
-                }
-            };
-        }
-
-
-        @Override
-        public Action getPreferredAction() {
-            //preffered action 
-            return new AbstractAction() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (nodeActionsProvider == null){
-                        return;
-                    }
-                    try {
-                        nodeActionsProvider.performDefaultAction(DataRowNodeImpl.this);
-                    } catch (UnknownTypeException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            };            
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            if (nodeActionsProvider == null){
-                return null;
-            }
-            try {
-                return nodeActionsProvider.getActions(DataRowNodeImpl.this);
-            } catch (UnknownTypeException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return null;
-        }
-
+    private final String emptyAnalyzeMessage;
+    private final String emptyRunningMessage;
+    private final String nodeColumnUName;
+ 
+    public AdvancedTableViewVisualizer(final TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
+        super(provider, configuration);
         
+        this.provider = provider;
 
-        @Override
-        public Image getIcon(int type) {
-            //if tge icon is turn
-            if (iconColumnID == null){
-                return super.getIcon(type);
-            }
-            return ImageUtilities.loadImage(resourceID + "/" + getDataRow().getStringValue(iconColumnID) +".png"); // NOI18N
-        }
+        final AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 
-        @Override
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
-
-
-
-        @Override
-        public String getDisplayName() {
-            return getDataRow().getData(nodeColumnName) + "";
-        }
-
-        @Override
-        public PropertySet[] getPropertySets() {
-            return new PropertySet[]{propertySet};
-        }
+        this.nodeColumnName = accessor.getRowNodeColumnName(configuration);
+        this.nodeColumnUName = accessor.getNodeColumnName(configuration);
+        emptyAnalyzeMessage = accessor.getEmptyAnalyzeMessage(configuration);
+        emptyRunningMessage = accessor.getEmptyRunningMessage(configuration);
+        boolean dualPaneMode = accessor.isDualPaneMode(configuration);
+        dualViewPane = dualPaneMode ? createDualViewPane() : null;
     }
 
-    private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (column != 0) {//we have
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-
-            PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
-            if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
-                editor.setAsText(value.toString());
-                return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-            }
-
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
+    @Override
+    public JComponent getComponent() {
+        return dualViewPane == null ? this : dualViewPane;
     }
 
-    private static String getMessage(String key) {
-        return NbBundle.getMessage(AdvancedTableViewVisualizer.class, key);
+    @Override
+    protected TableViewNodeChildren<DataRow> initChildren() {
+        return new AdvancedTableDataRowNodeChildren(getVisualizerConfiguration(), getLookup());
+    }
+
+    @Override
+    protected Component initTableView() {
+        return new AdvancedDataRowTableOutline(nodeColumnUName, getVisualizerConfiguration());
+    }
+
+    @Override
+    protected List<DataRow> getUpdatedData() {
+        return provider.queryData(getMetadata());
+    }
+
+    @Override
+    protected boolean matchesFilter(String filter, DataRow data) {
+        return data.getData(nodeColumnName).toString().contains(filter);
+    }
+
+    @Override
+    protected String getEmptyAnalyzeMessage() {
+        return emptyAnalyzeMessage;
+    }
+
+    @Override
+    protected String getEmptyRunningMessage() {
+        return emptyRunningMessage;
+    }
+
+    private JComponent createDualViewPane() {
+        AdvancedTableViewVisualizerConfigurationAccessor accessor =
+                AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
+
+        DualView result = new DualView(this);
+        result.add(DualPaneSupport.forExplorerManager(
+                AdvancedTableViewVisualizer.this, super.getExplorerManager(),
+                accessor.getDetailsRenderer(getVisualizerConfiguration()),
+                new DualPaneSupport.DataAdapter<Node, DataRow>() {
+
+                    @Override
+                    public DataRow convert(Node obj) {
+                        if (obj instanceof DataRowNode) {
+                            return ((DataRowNode) obj).getDataRow();
+                        } else {
+                            return null;
+                        }
+                    }
+                }), BorderLayout.CENTER);
+        return result;
+    }
+
+    private final static class DualView extends JPanel implements VisualizerToolbarComponentsProvider {
+
+        private final AdvancedTableViewVisualizer orig;
+
+        public DualView(AdvancedTableViewVisualizer orig) {
+            this.orig = orig;
+            setLayout(new BorderLayout());
+            setFocusable(false);
+        }
+
+        @Override
+        public List<Component> getToolbarComponents() {
+            return orig.getToolbarComponents();
+        }
+
+        @Override
+        public void requestFocus() {
+            orig.requestFocus();
+        }
     }
 }

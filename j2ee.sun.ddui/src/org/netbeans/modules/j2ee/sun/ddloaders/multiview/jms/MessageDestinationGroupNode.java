@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -81,10 +81,12 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         enableAddAction(NbBundle.getMessage(MessageDestinationGroupNode.class, "LBL_AddMessageDestination")); // NOI18N
     }
 
+    @Override
     protected SectionNode createNode(DDBinding binding) {
         return new MessageDestinationNode(getSectionNodeView(), binding, version);
     }
 
+    @Override
     protected CommonDDBean [] getBeansFromModel() {
         MessageDestination [] destinations = null;
         
@@ -94,18 +96,20 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         } else if(sunEjbJar != null) {
             EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             destinations = (eb != null) ? eb.getMessageDestination() : null;
-        } else if(sunWebApp != null) {
+        } else if(sunAppClient != null) {
             destinations = sunAppClient.getMessageDestination();
         }
         return destinations;
     }
 
+    @Override
     protected CommonDDBean addNewBean() {
         MessageDestination newMsgDest = (MessageDestination) createBean();
         newMsgDest.setMessageDestinationName(getNewBeanId(PFX_DESTINATION)); // NOI18N
         return addBean(newMsgDest);
     }
     
+    @Override
     protected CommonDDBean addBean(CommonDDBean newBean) {
         MessageDestination newMsgDest = (MessageDestination) newBean;
         
@@ -126,6 +130,7 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         return newMsgDest;
     }
     
+    @Override
     protected void removeBean(CommonDDBean bean) {
         MessageDestination msgDest = (MessageDestination) bean;
         
@@ -173,6 +178,7 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     private volatile EnterpriseBeans ejbJarMesgDestFactory = null;
     
+    @Override
     public CommonDDBean createBean() {
         MessageDestination newMsgDest = null;
         
@@ -191,22 +197,27 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         return newMsgDest;
     }
     
+    @Override
     public String getBeanName(CommonDDBean sunBean) {
         return ((MessageDestination) sunBean).getMessageDestinationName();
     }
 
+    @Override
     public void setBeanName(CommonDDBean sunBean, String newName) {
         ((MessageDestination) sunBean).setMessageDestinationName(newName);
     }
 
+    @Override
     public String getSunBeanNameProperty() {
         return MessageDestination.MESSAGE_DESTINATION_NAME;
     }
 
+    @Override
     public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
         return ((org.netbeans.modules.j2ee.dd.api.common.MessageDestination) standardBean).getMessageDestinationName();
     }
 
+    @Override
     public String getStandardBeanNameProperty() {
         return STANDARD_MSGDEST_NAME;
     }

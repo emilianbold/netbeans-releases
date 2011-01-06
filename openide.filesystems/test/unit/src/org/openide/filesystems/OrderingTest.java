@@ -31,6 +31,7 @@
 
 package org.openide.filesystems;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -310,6 +311,18 @@ public class OrderingTest extends NbTestCase {
         Ordering.setOrder(Collections.singletonList(f));
     }
 
+    public void testDontComplainAboutHiddenFiles() throws IOException {
+        FileObject[] old = dir.getChildren();
+        for (int i = 0; i < old.length; i++) {
+            old[i].setAttribute("position", i);
+        }
+        FileObject fo = dir.createData("huk.buk_hidden");
+        final List<FileObject> arr = Arrays.asList(dir.getChildren());
+        assertTrue("Fo is there", arr.contains(fo));
+        Ordering.getOrder(arr, true);
+        assertEmptyLog();
+    }
+    
     // XXX test IAE, ...
 
 }

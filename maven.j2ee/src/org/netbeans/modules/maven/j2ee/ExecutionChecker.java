@@ -194,6 +194,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address);//NOI18N - no localization in maven build now.
                 }
             }
+        } catch (Deployment.DeploymentException ex) {
+            ex.printStackTrace(err);
+            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         } catch (Exception ex) {
             Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }

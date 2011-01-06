@@ -47,38 +47,40 @@
  */
 package org.netbeans.modules.css.visual.ui.preview;
 
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.css.visual.api.CssPreviewComponent;
 import java.awt.BorderLayout;
-import java.io.BufferedReader;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import javax.swing.filechooser.FileFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.css.visual.api.CssPreviewComponentFactory;
+import org.netbeans.modules.css.visual.api.CssPreviewComponentListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.xml.sax.InputSource;
 
 /**
  *
- * @author Milan Kubec
+ * @author Milan Kubec, mfukala@netbeans.org
  */
 public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreviewComponent {
 
     private WebBrowser browser;
-
     private FileFilter filter = new HTMLFileFilter();
-
-    private Map<String,File> urlToFile = new HashMap<String,File>();
-
+    private Map<String, File> urlToFile = new HashMap<String, File>();
     private String currentUrl;
-
     private boolean browserDisposed = false;
 
     /** Creates new form CssWebPreviewPanel */
@@ -139,12 +141,12 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser ();
+        JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setDialogTitle(NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewChooserTitle"));
-        chooser.setFileSelectionMode (JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setDialogTitle(NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewChooserTitle")); //NOI18N
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(filter);
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File previewFile = chooser.getSelectedFile();
             try {
                 if (previewFile.exists() && previewFile.isFile()) {
@@ -160,7 +162,8 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    public void setDocument(InputStream is, String url) throws Exception {
+    @Override
+    public void setDocument(InputSource is, String url) throws Exception {
         currentUrl = url;
         if (browser == null) {
             return;
@@ -173,12 +176,13 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
                 filenameLabel.setToolTipText(urlString);
                 return;
             }
-            browser.setContent(getContentFromReader(new BufferedReader(new InputStreamReader(is))));
-            filenameLabel.setText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelText"));
-            filenameLabel.setToolTipText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelTooltip"));
+            browser.setContent(getContentFromReader(is.getCharacterStream()));
+            filenameLabel.setText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelText")); //NOI18N
+            filenameLabel.setToolTipText(NbBundle.getMessage(CssWebPreviewPanel.class, "FileNameLabelTooltip")); //NOI18N
         }
     }
 
+    @Override
     public JComponent getComponent() {
         if ((browserDisposed || browser == null) && EmbeddedBrowserFactory.getDefault().isEnabled()) {
             browser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
@@ -190,44 +194,82 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
         return this;
     }
 
+    @Override
     public void dispose() {
         browserDisposed = true;
         browser.dispose();
     }
 
-    private String getContentFromReader(BufferedReader reader) {
-        StringBuffer strBuff = new StringBuffer();
-        String line = null;
-        try {
-            line = reader.readLine();
-            while (line != null) {
-                strBuff.append(line);
-                line = reader.readLine();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    private String getContentFromReader(Reader reader) throws IOException {
+        StringBuilder strBuff = new StringBuilder();
+        char[] buffer = new char[2048];
+        int read = 0;
+        while ((read = reader.read(buffer)) != -1) {
+            strBuff.append(buffer, 0, read);
         }
         return strBuff.toString();
     }
-    
+
+    @Override
+    public void addListener(CssPreviewComponentListener listener) {
+        //no-op
+    }
+
+    @Override
+    public void removeListener(CssPreviewComponentListener listener) {
+        //no-op
+    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel filenameLabel;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
-    class HTMLFileFilter extends FileFilter {
+    @ServiceProvider(service = CssPreviewComponentFactory.class, position = 50) //before the default css preview panel (100)
+    public static class Factory implements CssPreviewComponentFactory {
 
-        public boolean accept(File pathname) {
-            return pathname.isDirectory() ||
-                   pathname.toString().endsWith("html") ||
-                   pathname.toString().endsWith("xhtml");
+        PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+        public Factory() {
+            EmbeddedBrowserFactory.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    support.firePropertyChange(EmbeddedBrowserFactory.getDefault().isEnabled() ? ENABLED : DISABLED, null, null);
+                }
+            });
         }
 
-        public String getDescription() {
-            return NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewFileFilterDesc");
+        @Override
+        public CssPreviewComponent createCssPreviewComponent() {
+            return EmbeddedBrowserFactory.getDefault().isEnabled() ? new CssWebPreviewPanel() : null;
         }
 
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            support.removePropertyChangeListener(l); //do not allow to duplicate listeners
+            support.addPropertyChangeListener(l);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            support.removePropertyChangeListener(l);
+        }
     }
 
+    class HTMLFileFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.isDirectory()
+                    || pathname.toString().endsWith("html") || //NOI18N
+                    pathname.toString().endsWith("xhtml"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewFileFilterDesc"); //NOI18N
+        }
+    }
 }

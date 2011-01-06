@@ -49,7 +49,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -99,12 +99,12 @@ public abstract class APTMacroCache  {
     }
     
     private static final class APTSingleMacroManager extends APTMacroCache {
-        private final WeakSharedSet<APTMacro> storage;
+        private final WeakSet<APTMacro> storage;
         private final int initialCapacity;
 
         /** Creates a new instance of APTMacroCache */
         private APTSingleMacroManager(int initialCapacity) {
-            storage = new WeakSharedSet<APTMacro>(initialCapacity);
+            storage = new WeakSet<APTMacro>(initialCapacity);
             this.initialCapacity = initialCapacity;
         }
 

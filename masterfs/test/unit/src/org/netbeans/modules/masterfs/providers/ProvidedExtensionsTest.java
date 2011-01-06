@@ -62,7 +62,9 @@ import junit.framework.AssertionFailedError;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -721,7 +723,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         @Override
         public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
-            if (dir.equals(refreshCallForDir)) {
+            if (Utils.equals(dir, refreshCallForDir)) {
                 children.addAll(refreshCallToAdd);
                 long r = refreshCallRetValue;
                 refreshCallForDir = null;
