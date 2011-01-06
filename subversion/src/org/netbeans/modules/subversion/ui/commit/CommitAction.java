@@ -747,7 +747,7 @@ public class CommitAction extends ContextAction {
             File[] files = commitFiles.toArray(new File[commitFiles.size()]);
             long revision = client.commit(files, message, recursive);
             if (files.length > 0 && !supp.isCanceled()) {
-                ISVNLogMessage revisionLog = getLogMessage(client, files[0], revision);
+                ISVNLogMessage revisionLog = getLogMessage (files, revision);
                 if (revisionLog != null) {
                     Subversion.getInstance().getLogger(getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",
                             new Object[]{
@@ -768,6 +768,25 @@ public class CommitAction extends ContextAction {
                 repositoryRootUrl = SvnUtils.getRepositoryRootUrl(file);
             }
             return repositoryRootUrl;
+        }
+
+        private ISVNLogMessage getLogMessage (File[] files, long revision) throws SVNClientException {
+            ISVNLogMessage revisionLog = null;
+            for (int i = 0; i < files.length && revisionLog == null; ++i) {
+                try {
+                    File f = files[i];
+                    // an existing file needs to be found, log over a deleted file fails
+                    while (!f.exists()) {
+                        f = f.getParentFile();
+                    }
+                    revisionLog = CommitAction.getLogMessage(client, f, revision);
+                } catch (SVNClientException ex) {
+                    if (!SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
+                        throw ex;
+                    }
+                }
+            }
+            return revisionLog;
         }
     }
 
@@ -809,7 +828,8 @@ public class CommitAction extends ContextAction {
         if (Subversion.LOG.isLoggable(Level.FINER)) {
             Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
-        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
+        // log has to be called directly on the file
+        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryUrl(file), rev, rev);
         if (ls.length > 0) {
             log = ls[0];
         }
