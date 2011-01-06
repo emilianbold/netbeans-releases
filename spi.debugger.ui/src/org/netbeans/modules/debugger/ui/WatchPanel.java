@@ -51,6 +51,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -96,22 +97,18 @@ public class WatchPanel {
 
         //Add JEditorPane and context
         JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
+        JScrollPane sp = (JScrollPane) editorComponents[0];
         editorPane = (JTextComponent) editorComponents[1];
+        int h = sp.getPreferredSize().height;
+        int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
+                         org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
+        sp.setPreferredSize(new Dimension(w, h));
         line = adjustLine(file, line);
         if (file != null && line >= 0) {
             DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         }
-        editorPane.setText(expression);
-
-        editorPane.setText (expression);
-        editorPane.selectAll ();
-
-        panel.add (BorderLayout.CENTER, editorComponents[0]);
+        panel.add (BorderLayout.CENTER, sp);
         editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
-        editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder (),
-            new EmptyBorder (2, 0, 2, 0))
-        );
         String t = Utils.getIdentifier ();
         if (t != null) {
             editorPane.setText (t);
