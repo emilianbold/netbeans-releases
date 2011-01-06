@@ -761,7 +761,7 @@ class WebActionProvider extends BaseActionProvider {
                 return false;
             }
         }
-        return true;
+        return false;
     }
 
     // Private methods -----------------------------------------------------
