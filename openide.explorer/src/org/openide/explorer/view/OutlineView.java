@@ -1641,7 +1641,19 @@ public class OutlineView extends JScrollPane {
                 if (!(component instanceof TranslatedTableCellRenderer)) {
                     g.translate(-outline.getTreePositionX(), 0);
                 }
-                component.paint(g);
+                try {
+                    component.paint(g);
+                } catch (NullPointerException npe) {
+                    // http://netbeans.org/bugzilla/show_bug.cgi?id=194055
+                    javax.swing.border.Border border = null;
+                    Exceptions.printStackTrace(Exceptions.attachMessage(npe,
+                            "Failed painting of component "+component+
+                            " with border "+((component instanceof JComponent) ? (border = ((JComponent) component).getBorder()) : null)+
+                            ((border instanceof javax.swing.border.CompoundBorder) ?
+                                ", with outsideBorder = "+((javax.swing.border.CompoundBorder) border).getOutsideBorder()+
+                                " and insideBorder = "+((javax.swing.border.CompoundBorder) border).getInsideBorder() : "")
+                    ));
+                }
             }
 
         }
