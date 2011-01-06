@@ -53,10 +53,13 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -368,7 +371,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         cbWhenHitCount = new javax.swing.JCheckBox();
         conditionComboBox = new javax.swing.JComboBox();
 
-        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
+        spCondition = createScrollableLineEditor();
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
 
         tfCondition.setContentType("text/x-java");
@@ -541,6 +544,13 @@ private void classFilterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) 
     classExcludeFilterTextField.setEnabled(classFilterEnabled);
 }//GEN-LAST:event_classFilterCheckBoxActionPerformed
 
+    private JScrollPane createScrollableLineEditor() {
+        JComponent [] editorComponents = Utilities.createSingleLineEditor("text/x-java");
+        JScrollPane sp = (JScrollPane) editorComponents[0];
+        tfCondition = (JEditorPane) editorComponents[1];
+        return sp;
+    }
+    
     private final class ConditionComboBoxEditor implements ComboBoxEditor {
 
         @Override
