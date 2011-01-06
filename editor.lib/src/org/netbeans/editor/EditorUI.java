@@ -768,7 +768,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
 
         if (HighlightingManager.LINEWRAP_ENABLED) {
-            maxHeight = -1;
+            int wrapMaxHeight = -1;
             View rootView = Utilities.getDocumentView(component);
             if (rootView != null) {
                 for(int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
@@ -791,10 +791,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     }
 
                     if (LOG.isLoggable(Level.FINE)) {
-                        if (maxHeight < r.getHeight()) {
+                        if (wrapMaxHeight < r.getHeight()) {
                             try {
                                 LOG.fine("Updating maxHeight from " //NOI18N
-                                    + maxHeight + " to " + r.getHeight() // NOI18N
+                                    + wrapMaxHeight + " to " + r.getHeight() // NOI18N
                                     + ", line=" + i // NOI18N
                                     + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
                                 );
@@ -804,8 +804,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                         }
                     }
 
-                    maxHeight = Math.max(maxHeight, (int) r.getHeight());
+                    wrapMaxHeight = Math.max(wrapMaxHeight, (int) r.getHeight());
                 }
+            }
+            if (wrapMaxHeight > 0) {
+                maxHeight = wrapMaxHeight;
             }
         }
         
