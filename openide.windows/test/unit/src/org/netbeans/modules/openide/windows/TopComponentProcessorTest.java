@@ -52,6 +52,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.TopComponent;
@@ -115,6 +116,21 @@ public class TopComponentProcessorTest extends  NbTestCase {
         assertNotNull("Reference found: " + Arrays.toString(dir.getChildren()), ref);
         assertEquals(fo.getPath(), ref.getAttribute("originalFile"));
     }
+    public void testMultipleUsageInEQ() throws Exception {
+        FileObject pukMuk = FileUtil.getConfigFile("Puk/Muk/multi-use.shadow");
+        assertNotNull("One reference found", pukMuk);
+
+        FileObject jukLuk = FileUtil.getConfigFile("Juk/Luk/multi-use.shadow");
+        assertNotNull("2nd reference found", jukLuk);
+        
+        FileObject fo = FileUtil.getConfigFile("Actions/Windows/multi-use.instance");
+        assertNotNull("Action generated", fo);
+        Action a = (Action)fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", a);
+        assertEquals("No call to withReferences factory yet", 0, TC.cnt2);
+        a.actionPerformed(new ActionEvent(this, 0, null));
+        assertEquals("One call to factory", 1, TC.cnt2);
+    }
     
     private static void assertValidate(String xml) throws Exception {
         DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
@@ -143,12 +159,24 @@ public class TopComponentProcessorTest extends  NbTestCase {
     )
     public static class TC extends TopComponent {
         static int cnt;
+        static int cnt2;
         
         @ActionID(category="Windows", id="open.factory.tc")
         @TopComponent.OpenActionRegistration(displayName="#TEST_ACTION",preferredID="factory.tc")
         @ActionReference(path="Kuk/Huk")
         public static TC create() {
             cnt++;
+            return new TC();
+        }
+        
+        @ActionID(category="Windows", id="multi.use")
+        @TopComponent.OpenActionRegistration(displayName="#TEST_ACTION",preferredID="multi.use")
+        @ActionReferences({
+            @ActionReference(path="Puk/Muk"),
+            @ActionReference(path="Juk/Luk")
+        })
+        public static TC withReferences() {
+            cnt2++;
             return new TC();
         }
     }

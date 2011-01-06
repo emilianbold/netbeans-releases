@@ -30,16 +30,6 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <filesystem>
-    <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-feedreader-FeedAction.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-                <attr name="component" methodvalue="org.netbeans.feedreader.FeedTopComponent.getDefault"/>
-                <attr name="displayName" bundlevalue="org.netbeans.feedreader.Bundle#CTL_FeedAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/feedreader/rss16.gif"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Menu">
         <folder name="File">
             <file name="org-openide-actions-SaveAction.shadow_hidden"/>
@@ -50,13 +40,6 @@
             <file name="org-netbeans-core-actions-HTMLViewAction.shadow_hidden"/>
             <file name="org-netbeans-core-actions-LogAction.shadow_hidden"/>
         </folder>
-        <folder name="Window">
-            <file name="FeedAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-feedreader-FeedAction.instance"/>
-                <attr name="position" intvalue="777"/>
-            </file>
-            <file name="org-netbeans-core-windows-actions-GlobalPropertiesAction.shadow_hidden"/>
-        </folder>
     </folder>
     <folder name="RssFeeds">
         <file name="sample.instance">
@@ -66,15 +49,5 @@
     <folder name="Toolbars">
         <file name="Memory_hidden"/>
         <file name="UndoRedo_hidden"/>
-    </folder>
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="FeedTopComponent.settings" url="FeedTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="explorer">
-                <file name="FeedTopComponent.wstcref" url="FeedTopComponentWstcref.xml"/>
-            </folder>
-        </folder>
     </folder>
 </filesystem>
