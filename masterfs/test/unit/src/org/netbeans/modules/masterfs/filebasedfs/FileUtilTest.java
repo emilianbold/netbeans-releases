@@ -73,6 +73,9 @@ import org.openide.util.test.TestFileUtils;
  * @author Jiri Skrivanek
  */
 public class FileUtilTest extends NbTestCase {
+    static {
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
+    }
 
     public FileUtilTest(String name) {
         super(name);
@@ -219,7 +222,7 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
         // 1 if FileObject for dirF is already collected, 2 otherwise
         int eventCount = fcl.check(EventType.ATTRIBUTE_CHANGED);
-        assertTrue("Attribute change event not fired (see #129178).", eventCount > 0 && eventCount < 3);
+        assertEquals("Attribute change event shall not be fired", 0, eventCount);
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();
@@ -356,7 +359,7 @@ public class FileUtilTest extends NbTestCase {
         TestFileUtils.touch(newfile, null);
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
-        assertEquals("Attribute change event not fired (see #129178).", 3, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("No other events", 0, fcl.checkAll());
         newfile.delete();
         FileUtil.refreshAll();
         assertEquals("Event not fired when file deleted.", 1, fcl.check(EventType.DELETED));
@@ -556,9 +559,7 @@ public class FileUtilTest extends NbTestCase {
         TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 1, fcl.check(EventType.CHANGED));
-        // 1 if FileObject for dirF is already collected, 2 otherwise
-        int eventCount = fcl.check(EventType.ATTRIBUTE_CHANGED);
-        assertTrue("Attribute change event not fired (see #129178).", eventCount > 0 && eventCount < 3);
+        assertEquals("No other events", 0, fcl.checkAll());
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();

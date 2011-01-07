@@ -335,6 +335,7 @@ public abstract class CLIHandler extends Object {
         try {
             return raf.getChannel().tryLock();
         } catch (OverlappingFileLockException ex) {
+            OUTPUT.log(Level.INFO, "tryLock fails in the same VM", ex);
             // happens in CLIHandlerTest as it simulates running multiple
             // instances of the application in the same VM
             return null;
@@ -526,9 +527,14 @@ public abstract class CLIHandler extends Object {
                         return new Status(Status.CANNOT_WRITE);
                     }
                     raf = new RandomAccessFile(lockFile, "rw");
+                    enterState(2, block);
                     lock = tryLock(raf);
+                    if (OUTPUT.isLoggable(Level.FINER)) {
+                        OUTPUT.log(Level.FINER, "tryLock on {0} result: {1}", new Object[] { lockFile, lock });
+                    }
                     if (lock != null && lock.isValid()) {
                         // not locked by anyone,
+                        enterState(4, block);
                         break NO_LOCK;
                     }
                     enterState(5, block);

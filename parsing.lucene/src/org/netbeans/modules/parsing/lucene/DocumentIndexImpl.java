@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -77,6 +79,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
     private final List<IndexDocumentImpl> toAdd = new LinkedList<IndexDocumentImpl>();
     private final List<String> toRemove = new LinkedList<String>();
     private final Set<String> dirtyKeys = new HashSet<String>();
+    private Reference<List[]> dataRef;
 
     public DocumentIndexImpl (final Index index) {
         assert index != null;
@@ -93,9 +96,11 @@ public final class DocumentIndexImpl implements DocumentIndex {
 
         synchronized (this) {
             assert document instanceof IndexDocumentImpl;
+            final Reference<List[]> ref = getDataRef();
+            assert ref != null;
+            forceFlush = ref.get() == null;
             toAdd.add((IndexDocumentImpl)document);
             toRemove.add(document.getPrimaryKey());
-            forceFlush = LowMemoryWatcher.getInstance().isLowMemory();
         }
 
         if (forceFlush) {
@@ -118,8 +123,10 @@ public final class DocumentIndexImpl implements DocumentIndex {
         final boolean forceFlush;
 
         synchronized (this) {
+            final Reference<List[]> ref = getDataRef();
+            assert ref != null;
+            forceFlush = ref.get() == null;
             toRemove.add(primaryKey);
-            forceFlush = LowMemoryWatcher.getInstance().isLowMemory();
         }
 
         if (forceFlush) {
@@ -159,6 +166,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
 
             this.toAdd.clear();
             this.toRemove.clear();
+            this.dataRef = null;
 
             if (!dirtyKeys.isEmpty()) {                
                 for(IndexDocument ldoc : _toAdd) {
@@ -248,6 +256,15 @@ public final class DocumentIndexImpl implements DocumentIndex {
         }
     }
     
+    private Reference getDataRef() {
+        assert Thread.holdsLock(this);
+        if (toAdd.isEmpty() && toRemove.isEmpty()) {
+            assert dataRef == null;
+            dataRef = new SoftReference<List[]>(new List[] {toAdd, toRemove});
+        }
+        return dataRef;
+    }
+    
     private static final class RemoveConvertor implements Convertor<String,Query> {
         @Override
         public Query convert(String p) {
@@ -260,5 +277,5 @@ public final class DocumentIndexImpl implements DocumentIndex {
         public IndexDocumentImpl convert(Document p) {
             return new IndexDocumentImpl(p);
         }
-    }
+    }    
 }
