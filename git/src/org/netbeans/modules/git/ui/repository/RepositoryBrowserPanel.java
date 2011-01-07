@@ -666,7 +666,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         setLayout(new java.awt.BorderLayout());
         add(toolbar, java.awt.BorderLayout.PAGE_START);
 
-        jSplitPane1.setResizeWeight(0.3);
+        jSplitPane1.setResizeWeight(0.5);
 
         tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         jSplitPane1.setLeftComponent(tree);

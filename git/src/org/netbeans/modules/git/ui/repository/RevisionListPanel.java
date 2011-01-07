@@ -55,9 +55,11 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JTextPane;
@@ -80,6 +82,7 @@ import org.netbeans.libs.git.progress.RevisionInfoListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,6 +100,9 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     private Revision currRevision;
     private File currRepository;
     private File[] currRoots;
+    private int currLimit;
+    private boolean addition;
+    private final int DEFAULT_LIMIT = 10;
     
     /** Creates new form RevisionsPanel */
     public RevisionListPanel() {
@@ -121,17 +127,26 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        if (btnRefresh == e.getSource()) {
-            File repo;
-            File[] roots;
-            Revision revision;
-            synchronized (LOCK) {
-                repo = currRepository;
-                roots = currRoots;
-                revision = currRevision;
-            }
-            updateHistory(repo, roots, revision, true);
+        File repo;
+        File[] roots;
+        Revision revision;
+        int limit;
+        boolean add = true;
+        synchronized (LOCK) {
+            repo = currRepository;
+            roots = currRoots;
+            revision = currRevision;
+            limit = currLimit;
         }
+        if (btnAll == e.getSource()) {
+            limit = -1;
+        } else if (btnNext10 == e.getSource()) {
+            limit += 10;
+        } else if (btnRefresh == e.getSource()) {
+            add = false;
+            limit = DEFAULT_LIMIT;
+        }
+        updateHistory(repo, roots, revision, limit, add);
     }
 
     private static class RevisionRenderer extends JTextPane implements ListCellRenderer {
@@ -189,6 +204,16 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         
     }
     
+    private void enableButtons (final boolean enabled) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                btnAll.setEnabled(enabled);
+                btnNext10.setEnabled(enabled);
+                btnRefresh.setEnabled(enabled);
+            }
+        });
+    }
     
     private void cancelBackgroundTasks () {
         synchronized (LOCK) {
@@ -202,43 +227,49 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     }
     
     void updateHistory (File repository, File[] roots, Revision revision) {
-        updateHistory(repository, roots, revision, false);
+        updateHistory(repository, roots, revision, DEFAULT_LIMIT, null);
     }
     
-    private void updateHistory (File repository, File[] roots, Revision revision, boolean forceRefresh) {
+    private void updateHistory (File repository, File[] roots, Revision revision, int limit, Boolean addition) {
         synchronized (LOCK) {
-            if (!forceRefresh && (repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
+            if (addition == null && (repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
                     && (revision == null && lastHWRevision == null || lastHWRevision != null && revision != null && lastHWRevision.equals(revision.getRevision()))) {
                 // no change made (selected repository i the same and selected revision is the same)
                 return;
             }
+            this.addition = Boolean.TRUE.equals(addition);
             lastHWRepository = repository;
             lastHWRevision = revision == null ? null : revision.getRevision();
             currRepository = repository;
             currRevision = revision;
             currRoots = roots;
+            currLimit = limit;
             cancelBackgroundTasks();
             supp = new ListHistoryProgressSupport();
             supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RevisionListPanel.class, "LBL_RevisionList.LoadingRevisions")); //NOI18N
         }
     }
-
+    
     private class ListHistoryProgressSupport extends GitProgressSupport.NoOutputLogging implements RevisionInfoListener, ListSelectionListener {
         
         private final List<GitRevisionInfo> revisions = new LinkedList<GitRevisionInfo>();
-        private boolean started;
+        private final Set<String> displayedRevisions = new HashSet<String>(10);
         private boolean reselected;
         private GitRevisionInfo selectedRevision;
+        private int limit;
         
         @Override
         public void perform () {
             Revision rev;
             File repository;
             File[] roots;
+            final boolean add;
             synchronized (LOCK) {
                 rev = currRevision;
                 repository = currRepository;
                 roots = currRoots;
+                limit = currLimit;
+                add = addition;
             }
             synchronized (revisions) {
                 revisions.clear();
@@ -248,30 +279,60 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                 if (isCanceled()) {
                     return;
                 }
+                boolean finished = false;
                 try {
                     GitClient client = getClient();
-                    lstRevisions.addListSelectionListener(this);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            started = true;
+                            selectedRevision = (GitRevisionInfo) lstRevisions.getSelectedValue();
+                            displayedRevisions.clear();
+                            if (add) {
+                                for (Object o : revisionListModel.toArray()) {
+                                    displayedRevisions.add(((GitRevisionInfo) o).getRevision());
+                                }
+                            } else {
+                                revisionListModel.clear();
+                            }
                             reselected = false;
+                            enableButtons(false);
                         }
                     });
+                    lstRevisions.addListSelectionListener(this);
                     client.addNotificationListener(this);
                     SearchCriteria criteria = new SearchCriteria();
                     criteria.setFiles(roots);
+                    if (limit > 0) {
+                        criteria.setLimit(limit + 1); // get one extra revision to be able to enable/disable buttons
+                    }
                     if (rev != null) {
                         criteria.setRevisionTo(rev.getRevision());
                     }
-                    client.log(criteria, listHistoryMonitor);
+                    final GitRevisionInfo[] revs = client.log(criteria, listHistoryMonitor);
+                    if (!isCanceled()) {
+                        finished = true;
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                btnRefresh.setEnabled(true);
+                                if (limit > 0 && revs.length > limit) {
+                                    btnAll.setEnabled(true);
+                                    btnNext10.setEnabled(true);
+                                }
+                            }
+                        });
+                    }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {
+                    final boolean isFinished = finished;
                     lstRevisions.removeListSelectionListener(this);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
+                            if (!isFinished) {
+                                enableButtons(true);
+                            }
                             // do not keep the reference forever
                             selectedRevision = null;
                         }
@@ -288,20 +349,17 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run () {
-                    if (started) {
-                        selectedRevision = (GitRevisionInfo) lstRevisions.getSelectedValue();
-                        revisionListModel.clear();
-                        started = false;
-                    }
                     synchronized (revisions) {
                         while (!revisions.isEmpty()) {
                             GitRevisionInfo info = new GitRevisionInfoDelegate(revisions.remove(0));// override toString, so one can Ctrl+C the revision string
-                            revisionListModel.addElement(info);
-                            if (!reselected && selectedRevision != null && info.getRevision().equals(selectedRevision.getRevision())) {
-                                // has not yet been reselected or manually selected by user
-                                lstRevisions.setSelectedValue(info, false);
-                                reselected = true;
-                                selectedRevision = null;
+                            if ((limit < 0 || limit > revisionListModel.getSize()) && !displayedRevisions.contains(info.getRevision())) {
+                                revisionListModel.addElement(info);
+                                if (!reselected && selectedRevision != null && info.getRevision().equals(selectedRevision.getRevision())) {
+                                    // has not yet been reselected or manually selected by user
+                                    lstRevisions.setSelectedValue(info, false);
+                                    reselected = true;
+                                    selectedRevision = null;
+                                }
                             }
                         }
                     }
