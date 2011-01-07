@@ -689,13 +689,13 @@ public final class RemoteClient implements Cancellable {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     try {
                         FileUtil.toFileObject(tmpLocalFile).delete();
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
+                        }
                     } catch (IOException e) {
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: FALSE", tmpLocalFile));
                         }
-                    }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
                     }
                 }
             }
@@ -1095,13 +1095,13 @@ public final class RemoteClient implements Cancellable {
         }
         try {
             FileUtil.toFileObject(file).delete();
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", file.getName()));
+            }
         } catch (IOException e) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", file.getName()));
             }
-        }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", file.getName()));
         }
     }
 
