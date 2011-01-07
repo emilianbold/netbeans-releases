@@ -120,7 +120,9 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             return false;
         }
         if (task != null) {
-            task.cancel();
+            if (task.cancel()) {
+                finnishProgress();
+            }
         }
         return canceled = true;
     }
