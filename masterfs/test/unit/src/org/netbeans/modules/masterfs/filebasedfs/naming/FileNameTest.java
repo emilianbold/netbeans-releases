@@ -51,6 +51,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 
 /**
  *
@@ -178,7 +179,7 @@ public class FileNameTest extends NbTestCase {
         if (!fa.exists()) {
             assertTrue(fa.createNewFile());
         }        
-        boolean isCaseSensitive = !fa.equals(fA);                
+        boolean isCaseSensitive = !Utils.equals(fa, fA);                
         FileNaming na = NamingFactory.fromFile(fa);        
         assertEquals(fa.getName(),NamingFactory.fromFile(fa).getName());        
         if (isCaseSensitive) {

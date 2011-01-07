@@ -72,7 +72,7 @@ import org.xml.sax.SAXException;
  * @author Petr Kuzel, Jesse Glick
  */
 public final class XMLUtil extends Object {
-    static final Logger LOG = Logger.getLogger(XMLUtil.class.getName());
+    static final Logger LOG = Logger.getLogger(XMLUtil.class.getPackage().getName());
 
     public static Document parse (
             InputSource input, 
