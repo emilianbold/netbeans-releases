@@ -116,7 +116,10 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 MethodTree method = (MethodTree) t;
                                 Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
-                                mod.remove(Modifier.PRIVATE);
+                                if(mod.contains(Modifier.PRIVATE)) {
+                                    mod.remove(Modifier.PRIVATE);
+                                    mod.add(Modifier.PROTECTED);
+                                }
                                 MethodTree nju = make.Method(
                                         make.Modifiers(mod),
                                         method.getName(),
@@ -183,7 +186,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
                             MethodTree m = make.Method(
-                                    make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE),
+                                    make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
                                     oldOne.getName(),
                                     oldOne.getReturnType(),
                                     oldOne.getTypeParameters(),
