@@ -47,10 +47,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  *
@@ -118,11 +120,22 @@ public final class UpdaterInternal {
             }
 
             @Override
-            public OutputStream createOS(File file) throws FileNotFoundException {
+            public OutputStream createOS(final File file) throws FileNotFoundException {
                 if (modified.get(file) == null) {
                     modified.put(file, file.lastModified());
                 }
-                return new FileOutputStream(file);
+                XMLUtil.LOG.log(Level.FINE, "Creating output stream for {0}", file);
+                return new FileOutputStream(file) {
+                    @Override
+                    public void close() throws IOException {
+                        XMLUtil.LOG.log(Level.FINE, "Closing output stream for {0}", file);
+                        super.close();
+                        XMLUtil.LOG.log(
+                            Level.INFO, "File installed {0}@{1}", 
+                            new Object[] { file, modified.get(file) }
+                        );
+                    }
+                };
             }
         }
 
