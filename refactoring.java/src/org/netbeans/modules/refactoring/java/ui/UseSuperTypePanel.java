@@ -123,7 +123,7 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         return this;
     }
     /**
-     * Returns the targer super type to be used
+     * Returns the target super type to be used
      * @return The target super type Object
      */
     public ElementHandle getSuperType(){
