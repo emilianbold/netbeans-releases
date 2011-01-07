@@ -111,6 +111,10 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         superTypeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         superTypeList.setSelectedIndex(0);
     }
+
+    public void requestFocus() {
+        superTypeList.requestFocus();
+    }
     
     public void initialize() {
     }
