@@ -190,6 +190,7 @@ public interface GitClient {
      * @param limit max number of returned revisions, -1 denotes no limit.
      * @param monitor
      * @return revision
+     * @deprecated
      */
     public GitRevisionInfo[] log (int limit, ProgressMonitor monitor) throws GitException;
 
@@ -208,8 +209,17 @@ public interface GitClient {
      * @param limit max number of returned revisions, -1 denotes no limit.
      * @param monitor 
      * @return revisions that fall between the given boundaries
+     * @deprecated
      */
     public GitRevisionInfo[] log (String fromRevision, String toRevision, int limit, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Digs through the repository's history and returns revisions according to the given search criteria.
+     * @param searchCriteria
+     * @param monitor 
+     * @return revisions that fall between the given boundaries
+     */
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree

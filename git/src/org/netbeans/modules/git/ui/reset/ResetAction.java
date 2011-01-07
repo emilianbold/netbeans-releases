@@ -74,7 +74,7 @@ public class ResetAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
-        final Reset reset = new Reset(repository);
+        final Reset reset = new Reset(repository, roots);
         if (reset.show() && (reset.getType() != GitClient.ResetType.SOFT || !reset.getRevision().equals(GitUtils.HEAD))) {
             GitProgressSupport supp = new GitProgressSupport() {
 

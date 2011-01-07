@@ -172,8 +172,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
-        attachListeners();
         initPanelMode();
+        attachListeners();
         refreshComponents();
     }
 
@@ -186,8 +186,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
         initNextPrevActions();
-        attachListeners();
         initPanelMode();
+        attachListeners();
         refreshComponents();
     }
 

@@ -54,7 +54,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -65,9 +64,8 @@ class RevisionInfoPanelController {
     private final RevisionInfoPanel panel;
     private static final String MSG_LOADING = NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionInfoPanel.loading"); //NOI18N
     private static final String MSG_UNKNOWN = NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionInfoPanel.unknown"); //NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("Revision Dialog Controller", 1, true); //NOI18N
     private final LoadInfoWorker loadInfoWorker = new LoadInfoWorker();
-    private final Task loadInfoTask = RP.create(loadInfoWorker);
+    private final Task loadInfoTask;
     private String currentCommit;
     private final File repository;
     private boolean valid;
@@ -76,6 +74,7 @@ class RevisionInfoPanelController {
 
     public RevisionInfoPanelController (File repository) {
         this.repository = repository;
+        this.loadInfoTask = Git.getInstance().getRequestProcessor(null).create(loadInfoWorker);
         this.panel = new RevisionInfoPanel();
         this.support = new PropertyChangeSupport(this);
         resetInfoFields();

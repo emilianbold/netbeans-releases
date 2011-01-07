@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.libs.git;
 
-import org.netbeans.libs.git.GitRevisionInfo;
+import java.io.File;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author ondra
  */
-public interface RevisionInfoListener extends NotificationListener {
-    public void notifyRevisionInfo (GitRevisionInfo revisionInfo);
+public final class SearchCriteria {
+
+    private int limit;
+    private String revisionFrom;
+    private String revisionTo;
+    private File[] files;
+
+    public SearchCriteria () {
+        this.limit = -1;
+        this.files = new File[0];
+    }
+    
+    public File[] getFiles () {
+        return files;
+    }
+
+    /**
+     * files cannot be set to <code>null</code>
+     * @param files 
+     */
+    public void setFiles (File[] files) {
+        Parameters.notNull("files", files);
+        this.files = files;
+    }
+
+    public int getLimit () {
+        return limit;
+    }
+
+    public void setLimit (int limit) {
+        this.limit = limit;
+    }
+
+    public String getRevisionFrom () {
+        return revisionFrom;
+    }
+
+    public void setRevisionFrom (String revisionFrom) {
+        this.revisionFrom = revisionFrom;
+    }
+
+    public String getRevisionTo () {
+        return revisionTo;
+    }
+
+    public void setRevisionTo (String revisionTo) {
+        this.revisionTo = revisionTo;
+    }
 }

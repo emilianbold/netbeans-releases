@@ -42,6 +42,9 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,10 +53,16 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -67,33 +76,25 @@ public class LogCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final RevisionInfoListener listener;
     private final List<GitRevisionInfo> revisions;
-    private String revision;
-    private String revisionFrom;
-    private String revisionTo;
-    private int limit;
+    private final String revision;
+    private final SearchCriteria criteria;
 
-    public LogCommand (Repository repository, ProgressMonitor monitor, RevisionInfoListener listener) {
+    public LogCommand (Repository repository, SearchCriteria criteria, ProgressMonitor monitor, RevisionInfoListener listener) {
         super(repository, monitor);
         this.monitor = monitor;
         this.listener = listener;
-        this.limit = -1;
+        this.criteria = criteria;
+        this.revision = null;
         this.revisions = new LinkedList<GitRevisionInfo>();
     }
-
-    public void setRevision (String revision) {
+    
+    public LogCommand (Repository repository, String revision, ProgressMonitor monitor, RevisionInfoListener listener) {
+        super(repository, monitor);
+        this.monitor = monitor;
+        this.listener = listener;
+        this.criteria = null;
         this.revision = revision;
-    }
-
-    public void setRevisionFrom (String revisionFrom) {
-        this.revisionFrom = revisionFrom;
-    }
-
-    public void setRevisionTo (String revisionTo) {
-        this.revisionTo = revisionTo;
-    }
-
-    public void setLimit (int limit) {
-        this.limit = limit;
+        this.revisions = new LinkedList<GitRevisionInfo>();
     }
 
     @Override
@@ -105,6 +106,8 @@ public class LogCommand extends GitCommand {
         } else {
             org.eclipse.jgit.api.LogCommand cmd = new Git(repository).log();
             try {
+                String revisionFrom = criteria.getRevisionFrom();
+                String revisionTo = criteria.getRevisionTo();
                 if (revisionTo != null && revisionFrom != null) {
                     cmd.addRange(Utils.findCommit(repository, revisionFrom), Utils.findCommit(repository, revisionTo));
                 } else if (revisionTo != null) {
@@ -118,10 +121,13 @@ public class LogCommand extends GitCommand {
                         cmd.add(Utils.findCommit(repository, e.getValue().getId()));
                     }
                 }
-                int remaining = limit;
-                for (Iterator<RevCommit> it = cmd.call().iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0; --remaining) {
+                int remaining = criteria.getLimit();
+                for (Iterator<RevCommit> it = cmd.call().iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
                     RevCommit commit = it.next();
-                    addRevision(new JGitRevisionInfo(commit, repository));
+                    if (applyCriteria(commit)) {
+                        addRevision(new JGitRevisionInfo(commit, repository));
+                        --remaining;
+                    }
                 }
             } catch (MissingObjectException ex) {
                 throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
@@ -136,12 +142,12 @@ public class LogCommand extends GitCommand {
         StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
         if (revision != null) {
             sb.append("--no-walk ").append(revision);
-        } else if (revisionTo != null && revisionFrom != null) {
-            sb.append(revisionFrom).append("..").append(revisionTo); //NOI18N
-        } else if (revisionTo != null) {
-            sb.append(revisionTo);
-        } else if (revisionFrom != null) {
-            sb.append(revisionFrom).append(".."); //NOI18N
+        } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
+            sb.append(criteria.getRevisionFrom()).append("..").append(criteria.getRevisionTo()); //NOI18N
+        } else if (criteria.getRevisionTo() != null) {
+            sb.append(criteria.getRevisionTo());
+        } else if (criteria.getRevisionFrom() != null) {
+            sb.append(criteria.getRevisionFrom()).append(".."); //NOI18N
         }
         return sb.toString();
     }
@@ -155,4 +161,29 @@ public class LogCommand extends GitCommand {
         listener.notifyRevisionInfo(info);
     }
 
+    private boolean applyCriteria (RevCommit commit) throws IOException {
+        boolean passed = true;
+        if (criteria.getFiles().length > 0 && !checkFiles(commit, criteria.getFiles())) {
+            passed = false;
+        }
+        return passed;
+    }
+
+    private boolean checkFiles (RevCommit commit, File[] files) throws IOException {
+        boolean result = true;
+        Collection<PathFilter> filters = Utils.getPathFilters(getRepository().getWorkTree(), files);
+        if (!filters.isEmpty()) {
+            TreeWalk walk = new TreeWalk(getRepository());
+            walk.reset();
+            walk.setRecursive(true);
+            walk.addTree(commit.getTree().getId());
+            for (RevCommit parentCommit : commit.getParents()) {
+                walk.addTree(parentCommit.getTree().getId());
+            }
+            walk.setFilter(AndTreeFilter.create(PathFilterGroup.create(filters), AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF)));
+            result = walk.next();
+            walk.release();
+        }
+        return result;
+    }
 }

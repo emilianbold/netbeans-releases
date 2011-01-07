@@ -66,6 +66,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
@@ -259,18 +260,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
 
     @Override
     public GitRevisionInfo[] log (int limit, ProgressMonitor monitor) throws GitException {
-        Repository repository = gitRepository.getRepository();
-        LogCommand cmd = new LogCommand(repository, monitor, this);
-        cmd.setLimit(limit);
-        cmd.execute();
-        return cmd.getRevisions();
+        return log(null, null, limit, monitor);
     }
 
     @Override
     public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        LogCommand cmd = new LogCommand(repository, monitor, this);
-        cmd.setRevision(revision);
+        LogCommand cmd = new LogCommand(repository, revision, monitor, this);
         cmd.execute();
         GitRevisionInfo[] revisions = cmd.getRevisions();
         return revisions.length == 0 ? null : revisions[0];
@@ -278,11 +274,17 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
 
     @Override
     public GitRevisionInfo[] log (String revisionFrom, String revisionTo, int limit, ProgressMonitor monitor) throws GitException {
+        SearchCriteria criteria = new SearchCriteria();
+        criteria.setRevisionFrom(revisionFrom);
+        criteria.setRevisionTo(revisionTo);
+        criteria.setLimit(limit);
+        return log(criteria, monitor);
+    }
+
+    @Override
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        LogCommand cmd = new LogCommand(repository, monitor, this);
-        cmd.setRevisionFrom(revisionFrom);
-        cmd.setRevisionTo(revisionTo);
-        cmd.setLimit(limit);
+        LogCommand cmd = new LogCommand(repository, searchCriteria, monitor, this);
         cmd.execute();
         return cmd.getRevisions();
     }

@@ -40,14 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
-
-import org.netbeans.libs.git.GitRevisionInfo;
+package org.netbeans.modules.git.ui.repository;
 
 /**
  *
  * @author ondra
  */
-public interface RevisionInfoListener extends NotificationListener {
-    public void notifyRevisionInfo (GitRevisionInfo revisionInfo);
+public class Revision {
+    private final String revision;
+    private final String name;
+
+    public Revision (String revision, String name) {
+        this.revision = revision;
+        this.name = name;
+    }
+
+    public String getRevision () {
+        return revision;
+    }
+
+    @Override
+    public String toString () {
+        StringBuilder sb = new StringBuilder();
+        if (name != null && !name.equals(revision)) {
+            sb.append(name).append(" (").append(revision).append(")"); //NOI18N
+        } else {
+            sb.append(revision);
+        }
+        return sb.toString();
+    }
 }
