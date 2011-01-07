@@ -532,6 +532,13 @@ public final class IOWindow implements IOContainer.Provider {
                     throw new IllegalStateException ("No icon provided for " + actions[i]); //NOI18N
                 }
                 buttons[i].setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
+                String name = (String) actions[i].getValue(Action.NAME);
+                String shortDescription = (String) actions[i].getValue(Action.SHORT_DESCRIPTION);
+                String longDescription = (String) actions[i].getValue(Action.LONG_DESCRIPTION);
+                if (name == null) name = shortDescription;
+                if (longDescription == null) longDescription = shortDescription;
+                buttons[i].getAccessibleContext().setAccessibleName(name);
+                buttons[i].getAccessibleContext().setAccessibleDescription(longDescription);
             }
             return buttons;
         }
