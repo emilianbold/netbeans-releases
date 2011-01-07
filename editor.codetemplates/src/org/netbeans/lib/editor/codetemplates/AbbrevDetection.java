@@ -316,7 +316,6 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
         if (abbrevEndPosition != null && component != null
             && component.getCaretPosition() == abbrevEndPosition.getOffset()
             && !isAbbrevDisabled()
-            && !Boolean.TRUE.equals(component.getClientProperty(COMPLETION_VISIBLE))
             && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
         ) {
             CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());

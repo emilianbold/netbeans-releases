@@ -37,41 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.lucene.support;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
 /**
- *
+ * A service providing information about
+ * low memory condition.
+ * @since 1.2
  * @author Tomas Zezula
  */
-public class LMListener {
+public class LowMemoryWatcher {
 
+    private static float heapLimit = 0.8f;
+    private static LowMemoryWatcher instance;
     private final MemoryMXBean memBean;
 
-    private static final float DEFAULT_HEAP_LIMIT = 0.8f;
-
-    private final float heapLimit;
-
-    public LMListener () {
-        this (DEFAULT_HEAP_LIMIT);
-    }
-
-    public LMListener (final float heapLimit) {
-        this.heapLimit = heapLimit;
+    private LowMemoryWatcher () {
         this.memBean = ManagementFactory.getMemoryMXBean();
         assert this.memBean != null;
     }
-
-    public float getHeapLimit () {
-        return this.heapLimit;
-    }
     
+    /**
+     * Returns true if the application is in low memory condition.
+     * This information can be used by batch file processing.
+     * @return true if nearly whole memory is used
+     */
     public boolean isLowMemory () {
         if (this.memBean != null) {
             final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
@@ -83,5 +79,16 @@ public class LMListener {
         }
         return false;
     }
-   
+    
+    /**
+     * Returns an instance of {@link LowMemoryWatcher}
+     * @return the {@link LowMemoryWatcher}
+     */
+    public static synchronized LowMemoryWatcher getInstance() {
+        if (instance == null) {
+            instance = new LowMemoryWatcher();
+        }
+        return instance;
+    }
+    
 }
