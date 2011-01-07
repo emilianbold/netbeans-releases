@@ -204,7 +204,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     && !(currRevision != null && oldRevision != null && currRevision.getRevision().equals(oldRevision.getRevision()))) {
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
-            if (options.contains(Option.DISPLAY_REVISIONS)) {
+            if (options.contains(Option.DISPLAY_REVISIONS) && currRevision != null) {
                 revisionsPanel1.updateHistory(currRepository, roots, currRevision);
             }
         } else if (options.contains(Option.DISPLAY_REVISIONS) && "focusOwner".equals(evt.getPropertyName())) {
