@@ -49,7 +49,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +61,25 @@ public class WeakSetTest extends NbTestCase {
 
     public WeakSetTest(String testName) {
         super(testName);
+    }
+    
+    public void testPutTwice() {
+        Object obj = new Object();
+        
+        WeakSet<Object> ws = new WeakSet<Object>();
+        assertTrue("Object added", ws.add(obj));
+        assertFalse("No change", ws.add(obj));
+        assertEquals("size", 1, ws.size());
+        assertSame("First is obj", obj, ws.iterator().next());
+    }
+
+    public void testPutNullTwice() {
+        WeakSet<Object> ws = new WeakSet<Object>();
+        assertEquals("Returns null on first try", null, ws.putIfAbsent(null));
+        assertFalse("No change", ws.add(null));
+        assertEquals("size", 1, ws.size());
+        assertNull("First is obj", ws.iterator().next());
+        assertNull("Returns null on 3rd try", ws.putIfAbsent(null));
     }
 
     public void testToArrayMayContainNullsIssue42271 () {
