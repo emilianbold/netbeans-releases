@@ -74,7 +74,7 @@ class RevisionInfoPanelController {
 
     public RevisionInfoPanelController (File repository) {
         this.repository = repository;
-        this.loadInfoTask = Git.getInstance().getRequestProcessor(repository).create(loadInfoWorker);
+        this.loadInfoTask = Git.getInstance().getRequestProcessor(null).create(loadInfoWorker);
         this.panel = new RevisionInfoPanel();
         this.support = new PropertyChangeSupport(this);
         resetInfoFields();
