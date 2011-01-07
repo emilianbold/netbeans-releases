@@ -342,5 +342,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             return super.getDisplayName();
         }
     }
+
+    public @Override String getHtmlDisplayName() { // #193262
+        if (specialDisplayName) {
+            return null;
+        } else {
+            return getOriginal().getHtmlDisplayName();
+        }
+    }
     
 }
