@@ -40,48 +40,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.lucene.support;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LMListener {
+public class LMListenerTest extends NbTestCase {
 
-    private final MemoryMXBean memBean;
+    private static final int _10K = 10 * 1024;
 
-    private static final float DEFAULT_HEAP_LIMIT = 0.8f;
 
-    private final float heapLimit;
+    private List<byte []> refs = new LinkedList<byte []>();
 
-    public LMListener () {
-        this (DEFAULT_HEAP_LIMIT);
+    public LMListenerTest (final String name) {
+        super (name);
     }
 
-    public LMListener (final float heapLimit) {
-        this.heapLimit = heapLimit;
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        assert this.memBean != null;
-    }
 
-    public float getHeapLimit () {
-        return this.heapLimit;
-    }
-    
-    public boolean isLowMemory () {
-        if (this.memBean != null) {
-            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
-            if (usage != null) {
-                long used = usage.getUsed();
-                long max = usage.getMax();
-                return used > max * heapLimit;
+    /**
+     * Checks if the LMListener detects low memory
+     * and if it is not expensive to intensively call it.
+     */
+    public void testListnener () {
+        final LowMemoryWatcher l = LowMemoryWatcher.getInstance();
+        long ct = 0;
+        for (int i=0; i<100000; i++) {
+            long st = System.currentTimeMillis();
+            boolean isLM = l.isLowMemory();
+            long et = System.currentTimeMillis();
+            ct+=et-st;
+            if (isLM) {
+                refs.clear();
             }
+            byte[] data = new byte[_10K];
+            refs.add(data);
         }
-        return false;
+        assertTrue(ct<1000);
+        
     }
-   
+
 }

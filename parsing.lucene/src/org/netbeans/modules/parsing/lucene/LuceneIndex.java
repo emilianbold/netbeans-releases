@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

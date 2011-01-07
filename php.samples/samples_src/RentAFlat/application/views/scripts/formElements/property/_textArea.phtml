@@ -1,0 +1,14 @@
+<div class="clearfix">
+    <div class="lab">
+    	<label for="input-one"><?php echo $this->element->getLabel() ?>:</label>
+    </div>
+    <?php if ($this->element->hasErrors()): ?>
+        <div class="error-message">
+            <?= $this->formErrors($this->element->getMessages()) ?>
+        </div>
+    <?php endif; ?>
+    
+		<?php
+        echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs()) ?>
+
+</div>

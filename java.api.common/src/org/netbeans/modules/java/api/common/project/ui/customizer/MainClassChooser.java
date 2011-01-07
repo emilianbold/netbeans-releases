@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
@@ -64,6 +65,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -77,6 +80,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 
 /** Browses and allows to choose a project's main class.
@@ -91,15 +95,25 @@ public class MainClassChooser extends JPanel {
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject[] sourcesRoots) {
-        this (sourcesRoots, null);
+        this (sourcesRoots, null, null);
+    }
+    
+    public MainClassChooser (
+            final @NonNull FileObject[] sourcesRoots,
+            final @NullAllowed String subtitle) {
+        this (sourcesRoots, subtitle, null);
     }
 
-    public MainClassChooser (FileObject[] sourcesRoots, String subtitle) {
+    public MainClassChooser (
+            final @NonNull FileObject[] sourcesRoots,
+            final @NullAllowed String subtitle,
+            final @NullAllowed String mainClass) {
+        Parameters.notNull("sourceRoots", sourcesRoots);    //NOI18N
         dialogSubtitle = subtitle;
         initComponents();
         jMainClassList.setCellRenderer(new MainClassRenderer());
         initClassesView();
-        initClassesModel(sourcesRoots);
+        initClassesModel(sourcesRoots, mainClass);
     }
     
     public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile) {
@@ -124,6 +138,7 @@ public class MainClassChooser extends JPanel {
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jMainClassList.setListData (getWarmupList ());
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
+            @Override
             public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
                     changeListener.stateChanged (new ChangeEvent (evt));
@@ -132,6 +147,7 @@ public class MainClassChooser extends JPanel {
         });
         // support for double click to finish dialog with selected class
         jMainClassList.addMouseListener (new MouseListener () {
+            @Override
             public void mouseClicked (MouseEvent e) {
                 if (MouseUtils.isDoubleClick (e)) {
                     if (getSelectedMainClass () != null) {
@@ -141,9 +157,13 @@ public class MainClassChooser extends JPanel {
                     }
                 }
             }
+            @Override
             public void mousePressed (MouseEvent e) {}
+            @Override
             public void mouseReleased (MouseEvent e) {}
+            @Override
             public void mouseEntered (MouseEvent e) {}
+            @Override
             public void mouseExited (MouseEvent e) {}
         });
         if (dialogSubtitle != null) {
@@ -151,17 +171,21 @@ public class MainClassChooser extends JPanel {
         }
     }
     
-    private void initClassesModel (final FileObject[] sourcesRoots) {
+    private void initClassesModel (
+            final FileObject[] sourcesRoots,
+            final String mainClass) {
         final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
                                                           ClassPathSupport.createClassPath(new URL[0]),
                                                           ClassPathSupport.createClassPath(new URL[0]));
         final JavaSource dummyJs = JavaSource.create(cpInfo);
         try {
             dummyJs.runWhenScanFinished(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController parameter) throws Exception {
                     possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
                     if (possibleMainClasses.isEmpty()) {
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 jMainClassList.setListData(new String[]{NbBundle.getMessage(MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")}); // NOI18N
                             }
@@ -171,9 +195,11 @@ public class MainClassChooser extends JPanel {
                         // #46861, sort name of classes
                         Collections.sort(sortedMainClasses, new MainClassComparator());
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 jMainClassList.setListData(sortedMainClasses.toArray());
-                                jMainClassList.setSelectedIndex(0);
+                                int index = getMainClassIndex(sortedMainClasses, mainClass);
+                                jMainClassList.setSelectedIndex(index);                                
                             }
                         });
                     }
@@ -199,6 +225,7 @@ public class MainClassChooser extends JPanel {
           return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")};
     }
     
+    @SuppressWarnings("element-type-mismatch")
     private boolean isValidMainClassName (Object value) {
         return (possibleMainClasses != null) && (possibleMainClasses.contains (value));
     }
@@ -293,8 +320,20 @@ public class MainClassChooser extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
+    private static int getMainClassIndex(final List<? extends ElementHandle<TypeElement>> handles, final String mainClass) {
+        if (mainClass != null) {
+            final Iterator<? extends ElementHandle<TypeElement>> it = handles.iterator();
+            for (int index=0; it.hasNext() ;index++) {
+                if (mainClass.equals(it.next().getQualifiedName())) {
+                    return index;
+                }
+            }
+        }
+        return 0;
+    }
 
     private static final class MainClassRenderer extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName;
             if (value instanceof String) {
