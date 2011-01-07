@@ -137,7 +137,8 @@ public class WebProjectUtils {
         Collection<Document> documents = new ArrayList<Document>();
 
         for (FileObject ddFile : getDeploymentDescriptorFileObjects(project, subprojects)) {
-            documents.add(getDeploymentDescriptorDocument(ddFile));
+            Document d = getDeploymentDescriptorDocument(ddFile);
+            if (d != null) documents.add(d);
         }
 
         return documents;
@@ -147,7 +148,8 @@ public class WebProjectUtils {
         Collection<FileObject> descriptors = new ArrayList<FileObject>();
 
         for (WebModule wm : getWebModules(project, subprojects)) {
-            descriptors.add(wm.getDeploymentDescriptor());
+            FileObject d = wm.getDeploymentDescriptor();
+            if (d != null) descriptors.add(d);
         }
 
         return descriptors;
@@ -157,7 +159,8 @@ public class WebProjectUtils {
         Collection<FileObject> basefos = new ArrayList<FileObject>();
 
         for (WebModule wm : getWebModules(project, subprojects)) {
-            basefos.add(wm.getDocumentBase());
+            FileObject d = wm.getDocumentBase();
+            if (d != null) basefos.add(d);
         }
 
         return basefos;
