@@ -52,6 +52,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -84,7 +86,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class RevisionListPanel extends javax.swing.JPanel {
+public class RevisionListPanel extends javax.swing.JPanel implements ActionListener {
 
     private ProgressMonitor.DefaultProgressMonitor listHistoryMonitor;
     private final DefaultListModel revisionListModel;
@@ -102,12 +104,34 @@ public class RevisionListPanel extends javax.swing.JPanel {
         lstRevisions.setFixedCellHeight(-1);
         lstRevisions.setCellRenderer(new RevisionRenderer());
         initComponents();
+        attachListeners();
     }
 
     @Override
     public void removeNotify () {
         cancelBackgroundTasks();
         super.removeNotify();
+    }
+
+    private void attachListeners () {
+        btnAll.addActionListener(this);
+        btnNext10.addActionListener(this);
+        btnRefresh.addActionListener(this);
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (btnRefresh == e.getSource()) {
+            File repo;
+            File[] roots;
+            Revision revision;
+            synchronized (LOCK) {
+                repo = currRepository;
+                roots = currRoots;
+                revision = currRevision;
+            }
+            updateHistory(repo, roots, revision, true);
+        }
     }
 
     private static class RevisionRenderer extends JTextPane implements ListCellRenderer {
@@ -178,8 +202,12 @@ public class RevisionListPanel extends javax.swing.JPanel {
     }
     
     void updateHistory (File repository, File[] roots, Revision revision) {
+        updateHistory(repository, roots, revision, false);
+    }
+    
+    private void updateHistory (File repository, File[] roots, Revision revision, boolean forceRefresh) {
         synchronized (LOCK) {
-            if ((repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
+            if (!forceRefresh && (repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
                     && (revision == null && lastHWRevision == null || lastHWRevision != null && revision != null && lastHWRevision.equals(revision.getRevision()))) {
                 // no change made (selected repository i the same and selected revision is the same)
                 return;
@@ -348,20 +376,32 @@ public class RevisionListPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        lblMore10 = new javax.swing.JLabel();
-        lblAll = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        btnNext10 = new org.netbeans.modules.versioning.history.LinkButton();
+        jLabel2 = new javax.swing.JLabel();
+        btnAll = new org.netbeans.modules.versioning.history.LinkButton();
+        jLabel3 = new javax.swing.JLabel();
+        btnRefresh = new org.netbeans.modules.versioning.history.LinkButton();
 
         lstRevisions.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(lstRevisions);
 
-        lblMore10.setText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.lblMore10.text")); // NOI18N
-        lblMore10.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel1.text")); // NOI18N
 
-        lblAll.setText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.lblAll.text")); // NOI18N
-        lblAll.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(btnNext10, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnNext10.text")); // NOI18N
+        btnNext10.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnNext10.TTtext")); // NOI18N
+        btnNext10.setEnabled(false);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnAll, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnAll.text")); // NOI18N
+        btnAll.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnAll.TTtext")); // NOI18N
+        btnAll.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnRefresh, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnRefresh.text")); // NOI18N
+        btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnRefresh.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -370,35 +410,46 @@ public class RevisionListPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblMore10)
-                        .addGap(6, 6, 6)
-                        .addComponent(lblAll)))
+                        .addComponent(btnNext10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jLabel2)
+                        .addGap(5, 5, 5)
+                        .addComponent(btnAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jLabel3)
+                        .addGap(5, 5, 5)
+                        .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(lblMore10, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblAll))
-                .addContainerGap())
+                    .addComponent(btnNext10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
+                    .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.versioning.history.LinkButton btnAll;
+    private org.netbeans.modules.versioning.history.LinkButton btnNext10;
+    private org.netbeans.modules.versioning.history.LinkButton btnRefresh;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblAll;
-    private javax.swing.JLabel lblMore10;
     final javax.swing.JList lstRevisions = new javax.swing.JList();
     // End of variables declaration//GEN-END:variables
 
