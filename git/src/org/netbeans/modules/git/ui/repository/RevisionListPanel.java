@@ -53,12 +53,16 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -70,10 +74,10 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,7 +103,13 @@ public class RevisionListPanel extends javax.swing.JPanel {
         lstRevisions.setCellRenderer(new RevisionRenderer());
         initComponents();
     }
-    
+
+    @Override
+    public void removeNotify () {
+        cancelBackgroundTasks();
+        super.removeNotify();
+    }
+
     private static class RevisionRenderer extends JTextPane implements ListCellRenderer {
 
         private Style selectedStyle;
@@ -156,6 +166,17 @@ public class RevisionListPanel extends javax.swing.JPanel {
     }
     
     
+    private void cancelBackgroundTasks () {
+        synchronized (LOCK) {
+            if (supp != null) {
+                supp.cancel();
+            }
+            if (listHistoryMonitor != null) {
+                listHistoryMonitor.cancel();
+            }
+        }
+    }
+    
     void updateHistory (File repository, File[] roots, Revision revision) {
         synchronized (LOCK) {
             if ((repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
@@ -163,21 +184,24 @@ public class RevisionListPanel extends javax.swing.JPanel {
                 // no change made (selected repository i the same and selected revision is the same)
                 return;
             }
+            lastHWRepository = repository;
+            lastHWRevision = revision == null ? null : revision.getRevision();
             currRepository = repository;
             currRevision = revision;
             currRoots = roots;
-            if (supp != null) {
-                supp.cancel();
-            }
-            if (listHistoryMonitor != null) {
-                listHistoryMonitor.cancel();
-            }
+            cancelBackgroundTasks();
             supp = new ListHistoryProgressSupport();
             supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RevisionListPanel.class, "LBL_RevisionList.LoadingRevisions")); //NOI18N
         }
     }
 
-    private class ListHistoryProgressSupport extends GitProgressSupport.NoOutputLogging {
+    private class ListHistoryProgressSupport extends GitProgressSupport.NoOutputLogging implements RevisionInfoListener, ListSelectionListener {
+        
+        private final List<GitRevisionInfo> revisions = new LinkedList<GitRevisionInfo>();
+        private boolean started;
+        private boolean reselected;
+        private GitRevisionInfo selectedRevision;
+        
         @Override
         public void perform () {
             Revision rev;
@@ -188,7 +212,9 @@ public class RevisionListPanel extends javax.swing.JPanel {
                 repository = currRepository;
                 roots = currRoots;
             }
-            GitRevisionInfo[] revisions = new GitRevisionInfo[0];
+            synchronized (revisions) {
+                revisions.clear();
+            }
             if (repository != null) {
                 listHistoryMonitor = new ProgressMonitor.DefaultProgressMonitor();
                 if (isCanceled()) {
@@ -196,40 +222,70 @@ public class RevisionListPanel extends javax.swing.JPanel {
                 }
                 try {
                     GitClient client = getClient();
+                    lstRevisions.addListSelectionListener(this);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            started = true;
+                            reselected = false;
+                        }
+                    });
+                    client.addNotificationListener(this);
                     SearchCriteria criteria = new SearchCriteria();
                     criteria.setFiles(roots);
                     if (rev != null) {
                         criteria.setRevisionTo(rev.getRevision());
                     }
-                    revisions = client.log(criteria, listHistoryMonitor);
-                    
+                    client.log(criteria, listHistoryMonitor);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
-                }
-                if (!isCanceled()) {
-                    final GitRevisionInfo[] toModel = revisions;
-                    synchronized (LOCK) {
-                        lastHWRepository = repository;
-                        lastHWRevision = rev == null ? null : rev.getRevision();
-                    }
+                } finally {
+                    lstRevisions.removeListSelectionListener(this);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            GitRevisionInfo oldSelection = (GitRevisionInfo) lstRevisions.getSelectedValue();
-                            GitRevisionInfo selection = null;
-                            revisionListModel.clear();
-                            for (GitRevisionInfo info : toModel) {
-                                revisionListModel.addElement(new GitRevisionInfoDelegate(info)); // overrde toString, so one can Ctrl+C the revision string
-                                if (oldSelection != null && oldSelection.getRevision().equals(info.getRevision())) {
-                                    selection = info;
-                                }
-                            }
-                            if (selection != null) {
-                                lstRevisions.setSelectedValue(selection, false);
-                            }
+                            // do not keep the reference forever
+                            selectedRevision = null;
                         }
                     });
                 }
+            }
+        }
+
+        @Override
+        public void notifyRevisionInfo (GitRevisionInfo revisionInfo) {
+            synchronized (revisions) {
+                revisions.add(revisionInfo);
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    if (started) {
+                        selectedRevision = (GitRevisionInfo) lstRevisions.getSelectedValue();
+                        revisionListModel.clear();
+                        started = false;
+                    }
+                    synchronized (revisions) {
+                        while (!revisions.isEmpty()) {
+                            GitRevisionInfo info = new GitRevisionInfoDelegate(revisions.remove(0));// override toString, so one can Ctrl+C the revision string
+                            revisionListModel.addElement(info);
+                            if (!reselected && selectedRevision != null && info.getRevision().equals(selectedRevision.getRevision())) {
+                                // has not yet been reselected or manually selected by user
+                                lstRevisions.setSelectedValue(info, false);
+                                reselected = true;
+                                selectedRevision = null;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e) {
+            if (!e.getValueIsAdjusting() && e.getLastIndex() > -1 && e.getFirstIndex() > -1) {
+                reselected = true;
+                selectedRevision = null;
             }
         }
     }

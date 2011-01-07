@@ -48,6 +48,6 @@ import org.netbeans.libs.git.GitRevisionInfo;
  *
  * @author ondra
  */
-public interface RevisionInfoListener {
+public interface RevisionInfoListener extends NotificationListener {
     public void notifyRevisionInfo (GitRevisionInfo revisionInfo);
 }
