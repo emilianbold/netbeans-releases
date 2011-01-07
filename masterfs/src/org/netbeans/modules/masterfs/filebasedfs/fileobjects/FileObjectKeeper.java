@@ -65,10 +65,12 @@ import org.openide.filesystems.FileRenameEvent;
  */
 final class FileObjectKeeper implements FileChangeListener {
     private static final Logger LOG = Logger.getLogger(FileObjectKeeper.class.getName());
+    private static final Object TIME_STAMP_LOCK = new Object();
 
     private Set<FolderObj> kept;
     private Collection<FileChangeListener> listeners;
     private final FolderObj root;
+    //@GuardedBy("TIME_STAMP_LOCK")
     private long timeStamp;
 
     public FileObjectKeeper(FolderObj root) {
@@ -101,6 +103,14 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
      public List<File> init(long previous, FileObjectFactory factory, boolean expected) {
+         boolean recursive;
+         synchronized (TIME_STAMP_LOCK) {
+             recursive = timeStamp < -1;
+             if (timeStamp > 0) {
+                 timeStamp = -timeStamp;
+             }
+         }
+         
          File file = Watcher.wrap(root.getFileName().getFile(), root);
          LinkedList<File> arr = new LinkedList<File>();
          long ts = root.getProvidedExtensions().refreshRecursively(file, previous, arr);
@@ -113,7 +123,7 @@ final class FileObjectKeeper implements FileChangeListener {
              if (lm > ts) {
                  ts = lm;
              }
-             if (lm > previous && factory != null) {
+             if (lm > previous && factory != null && !recursive) {
                  final BaseFileObj prevFO = factory.getCachedOnly(f);
                  if (prevFO == null) {
                      BaseFileObj who = factory.getValidFileObject(f, Caller.GetChildern);
@@ -128,11 +138,17 @@ final class FileObjectKeeper implements FileChangeListener {
                      prevFO.refresh(expected, true);
                   }
               }
-          }
-          timeStamp = ts;
-          LOG.log(Level.FINE, "Testing {0}, time {1}", new Object[] { file, timeStamp });
+         }
+         synchronized (TIME_STAMP_LOCK) {
+             if (!recursive) {
+                 timeStamp = ts;
+             }
+         }
+         LOG.log(Level.FINE, "Testing {0}, time {1}", new Object[]{file, timeStamp});
          return arr;
-      }
+    }
+                
+     
 
     private void listenTo(FileObject fo, boolean add, Collection<? super File> children) {
         Set<FolderObj> k;
@@ -313,7 +329,7 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     long childrenLastModified() {
-        return timeStamp;
+        return Math.abs(timeStamp);
     }
 
     boolean isOn() {
