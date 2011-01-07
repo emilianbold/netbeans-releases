@@ -116,6 +116,10 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 MethodTree method = (MethodTree) t;
                                 Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
+                                if(mod.contains(Modifier.PRIVATE)) {
+                                    mod.remove(Modifier.PRIVATE);
+                                    mod.add(Modifier.PROTECTED);
+                                }
                                 MethodTree nju = make.Method(
                                         make.Modifiers(mod),
                                         method.getName(),
@@ -179,7 +183,22 @@ public class PushDownTransformer extends RefactoringVisitor {
                         Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(memberTree);
                         RetoucheUtils.copyJavadoc(member, memberTree, workingCopy);
-                        njuClass = genUtils.insertClassMember(njuClass, memberTree);
+                        if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
+                            MethodTree oldOne = (MethodTree) memberTree;
+                            MethodTree m = make.Method(
+                                    make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                    oldOne.getName(),
+                                    oldOne.getReturnType(),
+                                    oldOne.getTypeParameters(),
+                                    oldOne.getParameters(),
+                                    oldOne.getThrows(),
+                                    oldOne.getBody(),
+                                    (ExpressionTree) oldOne.getDefaultValue());
+                            RetoucheUtils.copyJavadoc(member, m, workingCopy);
+                            njuClass = genUtils.insertClassMember(njuClass, m);
+                        } else {
+                            njuClass = genUtils.insertClassMember(njuClass, memberTree);
+                        }
                         makeClassAbstract |= member.getModifiers().contains(Modifier.ABSTRACT);
                     }
                 }

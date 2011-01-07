@@ -40,52 +40,25 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.lucene;
+package org.netbeans.modules.html.validation;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import org.netbeans.junit.NbTestCase;
+import org.xml.sax.SAXException;
 
 /**
  *
- * @author Tomas Zezula
+ * @author marekfukala
  */
-class LowMemoryWatcher {
+public class LibrariesTest extends NbTestCase{
 
-    private static float heapLimit = 0.8f;
-    private static LowMemoryWatcher instance;
-    private final MemoryMXBean memBean;
-
-    private LowMemoryWatcher () {
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        assert this.memBean != null;
-    }
-    
-    public boolean isLowMemory () {
-        if (this.memBean != null) {
-            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
-            if (usage != null) {
-                long used = usage.getUsed();
-                long max = usage.getMax();
-                return used > max * heapLimit;
-            }
-        }
-        return false;
-    }
-    
-    static synchronized LowMemoryWatcher getInstance() {
-        if (instance == null) {
-            instance = new LowMemoryWatcher();
-        }
-        return instance;
+    public LibrariesTest(String name) {
+        super(name);
     }
 
-    static float getHeapLimit () {
-        return heapLimit;
+    public void testISO_RELAX() throws SAXException, ClassNotFoundException {
+        //test we can load classes from ISO-RELAX library
+        this.getClass().getClassLoader().loadClass("org.iso_relax.verifier.VerifierConfigurationException");
     }
 
-    static void setHeapLimit(final float limit) {
-        heapLimit = limit;
-    }    
-    
+
 }
