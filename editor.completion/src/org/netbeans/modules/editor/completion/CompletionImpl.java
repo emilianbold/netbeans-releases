@@ -64,8 +64,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
+import javax.swing.undo.UndoableEdit;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -80,6 +83,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -597,7 +601,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         JTextComponent comp = getActiveComponent();
         boolean compEditable = (comp != null && comp.isEditable());
-        boolean guardedPos = comp.getDocument() instanceof GuardedDocument && ((GuardedDocument)comp.getDocument()).isPosGuarded(comp.getSelectionEnd());
+        Document doc = comp.getDocument();
+        boolean guardedPos = doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(comp.getSelectionEnd());
         Object obj = inputMap.get(ks);
         if (obj != null) {
             Action action = actionMap.get(obj);
@@ -611,38 +616,43 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (layout.isCompletionVisible()) {
             CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
-                if (compEditable && !guardedPos) {
-                    LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
-                    r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                    item.processKeyEvent(e);
-                    if (e.isConsumed()) {
-                        uilog(r);
+                sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
+                try {
+                    if (compEditable && !guardedPos) {
+                        LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
+                        r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                        item.processKeyEvent(e);
+                        if (e.isConsumed()) {
+                            uilog(r);
+                            return;
+                        }
+                    }
+                    // Call default action if ENTER was pressed
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
+                        e.consume();
+                        if (guardedPos) {
+                            Toolkit.getDefaultToolkit().beep();
+                        } else if (compEditable) {
+                            // Consuming completion
+                            if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
+                                consumeIdentifier();
+                            }
+                            LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
+                            r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                            item.defaultAction(getActiveComponent());
+                            uilog(r);
+                        }
                         return;
                     }
-                }
-                // Call default action if ENTER was pressed
-                if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
-                    e.consume();
-                    if (guardedPos) {
-                        Toolkit.getDefaultToolkit().beep();
-                    } else if (compEditable) {
-                        // Consuming completion
-                        if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
-                            consumeIdentifier();
-                        }
-                        LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
-                        r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                        item.defaultAction(getActiveComponent());
-                        uilog(r);
-                    }
-                    return;
+                } finally {
+                    sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                     || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
                     || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
                 hideCompletion(false);                
             }
-            if (e.getKeyCode() == KeyEvent.VK_TAB && comp.getDocument().getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
+            if (e.getKeyCode() == KeyEvent.VK_TAB && doc.getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
                 e.consume();
                 if (guardedPos) {
                     Toolkit.getDefaultToolkit().beep();
@@ -652,6 +662,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         }
         layout.processKeyEvent(e);
+    }
+
+    static void sendUndoableEdit(Document d, UndoableEdit ue) {
+        if(d instanceof AbstractDocument) {
+            UndoableEditListener[] uels = ((AbstractDocument)d).getUndoableEditListeners();
+            UndoableEditEvent ev = new UndoableEditEvent(d, ue);
+            for(UndoableEditListener uel : uels) {
+                uel.undoableEditHappened(ev);
+            }
+        }
     }
     
     private void completionQuery(boolean refreshedQuery, boolean delayQuery, int queryType) {
@@ -955,18 +975,23 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                         return;
                 }
                 JTextComponent c = getActiveComponent();
+                Document doc = c.getDocument();
                 CompletionSettings cs = CompletionSettings.getInstance(c);
                 int caretOffset = c.getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
                         && cs.completionInstantSubstitution()
-                        && c.isEditable() && !(c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(caretOffset))) {
+                        && c.isEditable() && !(doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(caretOffset))) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(c, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
                             CompletionItem item = sortedResultItems.get(0);
-                            if (item.instantSubstitution(c)) {
-                                return;
+                            sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
+                            try {
+                                if (item.instantSubstitution(c))
+                                    return;
+                            } finally {
+                                sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
                             }
                         }
                     } catch (BadLocationException ex) {

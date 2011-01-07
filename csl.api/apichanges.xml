@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="CslTemplateExpansion">
+        <api name="csl.api"/>
+        <summary>Template expansion no longer requires parsing of the source</summary>
+        <version major="2" minor="11"/>
+        <date day="6" month="1" year="2011"/>
+        <author login="dstrupl"/>
+        <compatibility addition="no" deletion="no" modification="yes" binary="incompatible" source="incompatible" deprecation="no"/>
+        <description>
+            <p>
+                Performance fix requires that parsing is not done on template expansion.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="CodeCompletionHandler"/>
+        <issue number="193935"/>
+    </change>
     <change id="CslActions">
         <api name="csl.api"/>
         <summary>Added CslActions, deprecated currently exposed Actions</summary>

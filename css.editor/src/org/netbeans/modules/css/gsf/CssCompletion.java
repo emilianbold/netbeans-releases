@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenId;
@@ -891,7 +892,7 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
