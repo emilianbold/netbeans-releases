@@ -639,7 +639,9 @@ is divided into following sections:
                         <delete>
                             <files includesfile="${{javac.includesfile.binary}}"/>
                         </delete>
-                        <delete file="${{javac.includesfile.binary}}"/> <!-- deleteonexit keeps the file during IDE run -->
+                        <delete>
+                            <fileset file="${{javac.includesfile.binary}}"/>  <!-- deleteonexit keeps the file during IDE run -->
+                        </delete>
                     </sequential>
                 </macrodef>
             </target>
