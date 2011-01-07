@@ -102,7 +102,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             }
         } finally {
             LOG.log(Level.FINE, "End - {0}", originalDisplayName); //NOI18N
-            finnishProgress();
+            finishProgress();
             getLogger().closeLog();
         }
     }
@@ -121,7 +121,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         }
         if (task != null) {
             if (task.cancel()) {
-                finnishProgress();
+                finishProgress();
             }
         }
         return canceled = true;
@@ -169,7 +169,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
     }
 
-    protected void finnishProgress () {
+    protected void finishProgress () {
         getProgressHandle().finish();
         if (isCanceled() == false) {
             getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
