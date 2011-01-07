@@ -37,55 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.lucene;
+package org.netbeans.modules.parsing.lucene.support;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Tomas Zezula
  */
-class LowMemoryWatcher {
+public class LMListenerTest extends NbTestCase {
 
-    private static float heapLimit = 0.8f;
-    private static LowMemoryWatcher instance;
-    private final MemoryMXBean memBean;
+    private static final int _10K = 10 * 1024;
 
-    private LowMemoryWatcher () {
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        assert this.memBean != null;
+
+    private List<byte []> refs = new LinkedList<byte []>();
+
+    public LMListenerTest (final String name) {
+        super (name);
     }
-    
-    public boolean isLowMemory () {
-        if (this.memBean != null) {
-            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
-            if (usage != null) {
-                long used = usage.getUsed();
-                long max = usage.getMax();
-                return used > max * heapLimit;
+
+
+    /**
+     * Checks if the LMListener detects low memory
+     * and if it is not expensive to intensively call it.
+     */
+    public void testListnener () {
+        final LowMemoryWatcher l = LowMemoryWatcher.getInstance();
+        long ct = 0;
+        for (int i=0; i<100000; i++) {
+            long st = System.currentTimeMillis();
+            boolean isLM = l.isLowMemory();
+            long et = System.currentTimeMillis();
+            ct+=et-st;
+            if (isLM) {
+                refs.clear();
             }
+            byte[] data = new byte[_10K];
+            refs.add(data);
         }
-        return false;
-    }
-    
-    static synchronized LowMemoryWatcher getInstance() {
-        if (instance == null) {
-            instance = new LowMemoryWatcher();
-        }
-        return instance;
+        assertTrue(ct<1000);
+        
     }
 
-    static float getHeapLimit () {
-        return heapLimit;
-    }
-
-    static void setHeapLimit(final float limit) {
-        heapLimit = limit;
-    }    
-    
 }
