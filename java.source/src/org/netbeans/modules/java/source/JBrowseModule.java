@@ -45,19 +45,7 @@
 package org.netbeans.modules.java.source;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
-import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
@@ -68,20 +56,13 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public class JBrowseModule extends ModuleInstall {
-    
-    private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
-    private static final Logger log = Logger.getLogger(JBrowseModule.class.getName());
-    
+        
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
     }
 
     public @Override void restored() {
-        super.restored();
-        if (ENABLE_MBEANS) {
-            registerMBeans();
-        }
-
+        super.restored();        
         //XXX:
         //#143234: javac caches content of all jar files in a static map, which leads to memory leaks affecting the IDE
         //when "internal" execution of javac is used
@@ -106,48 +87,5 @@ public class JBrowseModule extends ModuleInstall {
         catch (InterruptedException e) {
             Exceptions.printStackTrace(e);
         }
-        if (ENABLE_MBEANS) {
-            unregisterMBeans();
-        }
-    }
-    
-    private static void registerMBeans() {
-        try {
-            MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
-            mgs.registerMBean (new LowMemoryNotifierMBeanImpl(), new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
-        } catch (NotCompliantMBeanException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-        catch (MalformedObjectNameException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-        catch (InstanceAlreadyExistsException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-        catch (MBeanRegistrationException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-    }
-    
-    private static void unregisterMBeans() {
-        try {
-            MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
-            mgs.unregisterMBean (new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
-        } catch (MalformedObjectNameException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-        catch (InstanceNotFoundException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-        catch (MBeanRegistrationException e) {
-            if (log.isLoggable(Level.SEVERE))
-                log.log(Level.SEVERE, e.getMessage(), e);
-        }
-    }
+    }        
 }
