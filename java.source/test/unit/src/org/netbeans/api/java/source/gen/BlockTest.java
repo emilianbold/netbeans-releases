@@ -45,6 +45,7 @@ package org.netbeans.api.java.source.gen;
 
 import java.io.File;
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -144,6 +145,64 @@ public class BlockTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(block, make.Block(block.getStatements(), false));
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testBlockDoesNotStripFollowingStatements() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    private void a(int i) {\n" +
+            "        switch (i) {\n" +
+            "            case 1: {\n" +
+            "                 a(i);\n" +
+            "            }\n" +
+            "            break;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    private void b(int i) {\n" +
+            "        switch (i) {\n" +
+            "            case 1: {\n" +
+            "                 b(i);\n" +
+            "            }\n" +
+            "            break;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (node.getName().contentEquals("a")) {
+                            workingCopy.rewrite(node, workingCopy.getTreeMaker().Identifier("b"));
+                        }
+                        return super.visitIdentifier(node, p);
+                    }
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("a")) {
+                            workingCopy.rewrite(node, workingCopy.getTreeMaker().setLabel(node, "b"));
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

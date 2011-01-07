@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -56,6 +57,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,6 +71,7 @@ public class CatCommand extends GitCommand {
     private String relativePath;
     private boolean found;
     private final boolean fromRevision;
+    private final int stage;
 
     public CatCommand (Repository repository, File file, String revision, OutputStream out, ProgressMonitor monitor) {
         super(repository, monitor);
@@ -77,15 +80,17 @@ public class CatCommand extends GitCommand {
         this.os = out;
         this.monitor = monitor;
         this.fromRevision = true;
+        this.stage = 0;
     }
 
-    public CatCommand (Repository repository, File file, OutputStream out, ProgressMonitor monitor) {
+    public CatCommand (Repository repository, File file, int stage, OutputStream out, ProgressMonitor monitor) {
         super(repository, monitor);
         this.file = file;
         this.revision = null;
         this.os = out;
         this.monitor = monitor;
         this.fromRevision = false;
+        this.stage = stage;
     }
 
     @Override
@@ -94,8 +99,9 @@ public class CatCommand extends GitCommand {
         if (retval) {
             relativePath = Utils.getRelativePath(getRepository().getWorkTree(), file);
             if (relativePath.isEmpty()) {
-                monitor.preparationsFailed("Cannot cat root: " + file);
-                throw new GitException("Cannot cat root: " + file);
+                String message = NbBundle.getMessage(CatCommand.class, "MSG_Error_CannotCatRoot", file); //NOI18N
+                monitor.preparationsFailed(message);
+                throw new GitException(message);
             }
         }
         return retval;
@@ -138,7 +144,17 @@ public class CatCommand extends GitCommand {
     private void catIndexEntry () throws GitException {
         Repository repository = getRepository();
         try {
-            DirCacheEntry entry = repository.readDirCache().getEntry(relativePath);
+            DirCache cache = repository.readDirCache();
+            int pos = cache.findEntry(relativePath);
+            DirCacheEntry entry = null;
+            if (pos >= 0) {
+                DirCacheEntry e = cache.getEntry(pos);
+                do {
+                    if (stage == e.getStage()) {
+                        entry = e;
+                    }
+                } while (entry == null && ++pos < cache.getEntryCount() && relativePath.equals((e = cache.getEntry(pos)).getPathString()));
+            }
             found = false;
             if (entry != null) {
                 found = true;

@@ -84,7 +84,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
  * @author Tomas Stupka
  */
 abstract class CollapsiblePanel extends JPanel {
-    protected final CategoryButton sectionButton;
+    protected final SectionButton sectionButton;
     protected final JPanel sectionPanel;
     protected final VCSCommitPanel master;
 
@@ -101,7 +101,7 @@ abstract class CollapsiblePanel extends JPanel {
            }
         };
 
-        this.sectionButton = new CategoryButton(al);
+        this.sectionButton = new SectionButton(al);
         this.sectionPanel = new JPanel();
 
         this.sectionButton.setSelected(defaultSectionDisplayed);
@@ -147,7 +147,7 @@ abstract class CollapsiblePanel extends JPanel {
     }
     
     // inspired by org.netbeans.modules.palette.ui.CategoryButton
-    class CategoryButton extends JCheckBox {
+    private class SectionButton extends JCheckBox {
 
         final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
         final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
@@ -157,20 +157,13 @@ abstract class CollapsiblePanel extends JPanel {
 
         @Override
         public String getUIClassID() {
-            String classID = super.getUIClassID();
-            if (isGTK) {
-                classID = "MetalCheckBoxUI_4_GTK";
-            }
-            return classID;
+            return super.getUIClassID();            
         }
 
-        CategoryButton(ActionListener al) {
+        private SectionButton(ActionListener al) {
             this.al = al;
-            if (isGTK) {
-                UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
-            }
 
-            //force initialization of PropSheet look'n'feel values 
+            // force initialization of PropSheet look'n'feel values 
             UIManager.get( "nb.propertysheet" );
 
             setFont( getFont().deriveFont( Font.BOLD ) );
@@ -310,10 +303,10 @@ abstract class CollapsiblePanel extends JPanel {
             this.filters = filters;
             
             Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
-                        
+            master.getCommitTable().labelFor(filesLabel);
+            
             JComponent table = master.getCommitTable().getComponent();
             
-            filesLabel.setLabelFor(table);
             filesLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesLabel.getMaximumSize().height));
             
             Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
@@ -386,14 +379,10 @@ abstract class CollapsiblePanel extends JPanel {
             this.hooks = hooks;
             this.hookContext = hookContext;
             
-            sectionButton.setText((hooks.size() == 1)
+            Mnemonics.setLocalizedText(sectionButton, (hooks.size() == 1)
                                            ? hooks.iterator().next().getDisplayName()
-                                           : getMessage("LBL_Advanced"));   //NOI18N                        
-        }
+                                           : getMessage("LBL_Advanced")); // NOI18N                 
 
-        @Override
-        public void addNotify() {
-            super.addNotify();
             // need this to happen in addNotify() - depends on how 
             // repositoryComboSupport in hook.createComponents works for bugzilla|jira
             if (hooks.size() == 1) {                
@@ -401,10 +390,14 @@ abstract class CollapsiblePanel extends JPanel {
             } else {
                 JTabbedPane hooksTabbedPane = new JTabbedPane();
                 for (VCSHook hook : hooks) {
-                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName());
+                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName().replaceAll("\\&", ""));
                 }
                 sectionPanel.add(hooksTabbedPane);
-            }                
+            }
+        }
+            
+        int getPreferedWidth() {
+            return sectionPanel.getPreferredSize().width;
         }
     }    
     

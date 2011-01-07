@@ -772,14 +772,16 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        List<String> l = map.get(ff[i].getName());
-                        if (l==null){
-                            l = new ArrayList<String>();
-                            map.put(ff[i].getName(),l);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            List<String> l = map.get(ff[i].getName());
+                            if (l==null){
+                                l = new ArrayList<String>();
+                                map.put(ff[i].getName(),l);
+                            }
+                            l.add(ff[i].getAbsolutePath());
                         }
-                        l.add(ff[i].getAbsolutePath());
                     }
                 }
             }
@@ -796,17 +798,19 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             if (!set.contains(path)){
                 set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        gatherSubFolders(ff[i], set);
                     }
-                    gatherSubFolders(ff[i], set);
                 }
             }
         }

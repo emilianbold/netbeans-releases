@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
@@ -406,9 +407,9 @@ public final class EarProject implements Project, AntProjectListener {
                 Exceptions.printStackTrace(e);
             }
             
-            String deployOnSave = EarProject.this.getUpdateHelper().
-                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String compileOnSave = EarProject.this.getUpdateHelper().
+                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE);
+            if (Boolean.parseBoolean(compileOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             
@@ -486,6 +487,16 @@ public final class EarProject implements Project, AntProjectListener {
             J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
             J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
+            if (props.getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                String server = evaluator().getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
+                props.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                    server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
+            }
+            
+            if (props.getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
+                props.setProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                        props.getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            }
             
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             

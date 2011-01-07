@@ -374,8 +374,19 @@ public abstract class OperationWizardModel {
         final JButton b = getOriginalFinish (wd);
         Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
         SwingUtilities.invokeLater (new Runnable () {
+            int cnt;
+            @Override
             public void run () {
-                wd.setOptions (canCancel ? new JButton [] { b, getOriginalCancel (wd) } : new JButton [] { b });
+                b.requestFocus();
+                if (cnt++ > 0) {
+                    return;
+                }
+                
+                b.setDefaultCapable(true);
+                final JButton[] arr = canCancel ? new JButton [] { b, getOriginalCancel (wd) } : new JButton [] { b };
+                wd.setOptions (arr);
+                wd.setClosingOptions(arr);
+                SwingUtilities.invokeLater(this);
             }
         });
     }

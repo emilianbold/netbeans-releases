@@ -459,6 +459,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 new EjbJarJPASupport(this),
                 Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
+                new EjbJarJPATargetInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
@@ -870,8 +871,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String compileOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE);
+            if (Boolean.parseBoolean(compileOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
@@ -900,6 +901,16 @@ public class EjbJarProject implements Project, FileChangeListener {
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                String server = evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                props.setProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                    server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
+            }
+            
+            if (props.getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
+                props.setProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                        props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            }
             J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
             J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             

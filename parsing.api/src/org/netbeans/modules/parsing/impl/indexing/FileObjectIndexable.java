@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -73,18 +74,24 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
         this.relativePath = relativePath;
     }
 
+    @Override
     public String getRelativePath() {
         return relativePath;
     }
 
+    @Override
     public URL getURL() {
         if (url == null) {
             try {
                 FileObject f = getFileObject();
                 if (f != null) {
                     url = f.getURL();
+                } else {
+                    url = Util.resolveUrl(root.getURL(), relativePath);
                 }
             } catch (FileStateInvalidException ex) {
+                url = ex;
+            } catch (MalformedURLException ex) {
                 url = ex;
             }
         }
@@ -92,10 +99,12 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
         return url instanceof URL ? (URL) url : null;
     }
 
+    @Override
     public String getMimeType() {
         return mimeType == null ? "content/unknown" : mimeType;
     }
 
+    @Override
     public boolean isTypeOf(String mimeType) {
         Parameters.notNull("mimeType", mimeType); //NOI18N
         if (this.mimeType == null) {
@@ -138,6 +147,7 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
         return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + toURL(root) + "/" + getRelativePath() + "]"; //NOI18N
     }
 
+    @Override
     public FileObject getFileObject() {
         if (file == null) {
             file = root.getFileObject(relativePath);

@@ -52,8 +52,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.JCheckBox;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -87,7 +90,8 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
             jRadioButton3.setSelected(true);
         }
         jTextField1.setText(resourcesPath);
-        useServerLibrary.setVisible( hasServerJerseyLibrary );
+        jLabel3.setVisible(hasServerJerseyLibrary);
+        jComboBox1.setVisible(hasServerJerseyLibrary);
         addListeners();
     }
 
@@ -99,7 +103,8 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
             jRadioButton1.setVisible(false);
             jRadioButton3.setSelected(true);
         }
-        useServerLibrary.setVisible( hasServerJerseyLibrary );
+        jLabel3.setVisible(hasServerJerseyLibrary);
+        jComboBox1.setVisible(hasServerJerseyLibrary);
         addListeners();
     }
 
@@ -113,17 +118,23 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                Object source = e.getSource();
-                if ( source == jCheckBox1 ){
-                    useServerLibrary.setSelected( false);
-                }
-                else {
-                    jCheckBox1.setSelected( false );
-                }
+                boolean enable = jCheckBox1.isSelected();
+                jLabel3.setEnabled(enable);
+                jComboBox1.setEnabled(enable);
             }
         };
-        jCheckBox1.addActionListener(listener);
-        useServerLibrary.addActionListener(listener);
+        if ( jComboBox1.isVisible() ){
+            jCheckBox1.addActionListener(listener);
+        }
+    }
+    
+    private ComboBoxModel getSourceModel(){
+        String serverLibrary = NbBundle.getMessage(ApplicationConfigPanel.class, 
+                "TXT_UseServerLibrary");                    // NO18N
+        String nbLibrary = NbBundle.getMessage(ApplicationConfigPanel.class, 
+                "TXT_UseNbLibrary");                        // NO18N
+        Object items[] = new Object[]{serverLibrary,nbLibrary };
+        return new DefaultComboBoxModel(items);
     }
 
     private class MyItemListener implements ItemListener {
@@ -155,11 +166,21 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
     }
 
     public boolean isJerseyLibSelected() {
-        return jCheckBox1.isSelected();
+        if ( !jCheckBox1.isSelected() ){
+            return false;
+        }
+        if ( !jComboBox1.isVisible() ){
+            return true;
+        }
+        return jComboBox1.getSelectedIndex() ==1;
     }
     
     public boolean isServerJerseyLibSelected(){
-        return useServerLibrary.isVisible() && useServerLibrary.isSelected();
+        boolean visible = jComboBox1.isVisible();
+        if ( !visible || !jCheckBox1.isSelected() ){
+            return false;
+        }
+        return jComboBox1.getSelectedIndex() ==0;
     }
 
     public String getApplicationPath() {
@@ -184,7 +205,8 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jRadioButton1 = new javax.swing.JRadioButton();
         jCheckBox1 = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
-        useServerLibrary = new javax.swing.JCheckBox();
+        jComboBox1 = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(jTextField1);
@@ -212,7 +234,10 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jCheckBox1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jCheckBox1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(useServerLibrary, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "TXT_UseServerLibrary")); // NOI18N
+        jComboBox1.setModel(getSourceModel());
+
+        jLabel3.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "LBL_Source")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -221,9 +246,14 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(useServerLibrary)
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
-                    .add(jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
+                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1Layout.createSequentialGroup()
+                            .add(134, 134, 134)
+                            .add(jLabel3)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 202, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
             .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel1Layout.createSequentialGroup()
@@ -242,7 +272,9 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(useServerLibrary)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
                 .addContainerGap())
             .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel1Layout.createSequentialGroup()
@@ -252,11 +284,13 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                     .add(jRadioButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(jRadioButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(88, Short.MAX_VALUE)))
+                    .addContainerGap(91, Short.MAX_VALUE)))
         );
 
-        useServerLibrary.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ACSN_UseServerLibrary")); // NOI18N
-        useServerLibrary.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ACSD_UseServerLibrary")); // NOI18N
+        jComboBox1.getAccessibleContext().setAccessibleName(jLabel3.getAccessibleContext().getAccessibleName());
+        jComboBox1.getAccessibleContext().setAccessibleDescription(jLabel3.getAccessibleContext().getAccessibleDescription());
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ACSN_Source")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ACSD_Source")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel2.text")); // NOI18N
 
@@ -297,15 +331,16 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JCheckBox useServerLibrary;
     // End of variables declaration//GEN-END:variables
 
 }

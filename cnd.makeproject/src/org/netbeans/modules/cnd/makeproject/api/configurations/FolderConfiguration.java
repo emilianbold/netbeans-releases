@@ -66,8 +66,8 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         this.configuration = configuration;
         setFolder(folder);
         // Compilers
-        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration);
-        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration);
+        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration, null);
+        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration, null);
         if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
             linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
             if (folder.isTest()) {

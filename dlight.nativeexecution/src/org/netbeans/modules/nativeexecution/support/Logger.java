@@ -41,25 +41,37 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.SwingUtilities;
 
 public class Logger {
 
     private static boolean assertionsEnabled = false;
+    private static Level nonUIThreadAssertionLevel;
+    private static final long startTimeMillis = System.currentTimeMillis();
+    private static final java.util.logging.Logger instance =
+            java.util.logging.Logger.getLogger(
+            "nativeexecution.support.logger"); // NOI18N
 
     static {
         assert (assertionsEnabled = true);
+        String level = System.getProperty("Execution.nonUIThreadAsservionLevel", "INFO").toUpperCase(); // NOI18N
+        try {
+            nonUIThreadAssertionLevel = Level.parse(level);
+        } catch (IllegalArgumentException ex) {
+            nonUIThreadAssertionLevel = Level.INFO;
+        }
+        instance.addHandler(new LoggerHandler());
     }
 
     private Logger() {
     }
-    private static java.util.logging.Logger instance =
-            java.util.logging.Logger.getLogger(
-            "nativeexecution.support.logger"); // NOI18N
 
     public static java.util.logging.Logger getInstance() {
         return instance;
@@ -71,7 +83,7 @@ public class Logger {
 
     public static void assertTrue(boolean value) {
         if (assertionsEnabled && !value) {
-            String message = "Assertion error"; //NOI18N
+            String message = "Assertion error"; // NOI18N
             instance.log(Level.SEVERE, message, new Exception(message));
         }
     }
@@ -84,7 +96,7 @@ public class Logger {
 
     public static void assertFalse(boolean value) {
         if (assertionsEnabled && value) {
-            String message = "Assertion error"; //NOI18N
+            String message = "Assertion error"; // NOI18N
             instance.log(Level.SEVERE, message, new Exception(message));
         }
     }
@@ -95,27 +107,42 @@ public class Logger {
         }
     }
 
-    public static final void assertNonUiThread(String message) {
+    public static void assertNonUiThread(String message) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, new Exception(message));
+            instance.log(nonUIThreadAssertionLevel, message, new Exception(message));
         }
     }
 
-    public static final void assertNonUiThread() {
-        assertNonUiThread("Should not be called from UI thread"); //NOI18N
+    public static void assertNonUiThread() {
+        assertNonUiThread("Should not be called from UI thread"); // NOI18N
     }
 
-    public static void fullThreadDump(String title){
+    public static void fullThreadDump(String title) {
         final Set<Entry<Thread, StackTraceElement[]>> stack = Thread.getAllStackTraces().entrySet();
-        System.err.printf("----- %s Start Thread Dump-----\n", title == null ? "" : title);
+        System.err.printf("----- %s Start Thread Dump-----\n", title == null ? "" : title); // NOI18N
         for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
             System.err.println(entry.getKey().getName());
             for (StackTraceElement element : entry.getValue()) {
-                System.err.println("\tat " + element.toString());
+                System.err.println("\tat " + element.toString()); // NOI18N
             }
             System.err.println();
         }
-        System.err.println("----- End Thread Dump-----");
+        System.err.println("----- End Thread Dump-----"); // NOI18N
     }
 
+    private static class LoggerHandler extends Handler {
+
+        @Override
+        public void publish(LogRecord record) {
+            record.setMessage("[" + (System.currentTimeMillis() - startTimeMillis) + " ms.] " + record.getMessage()); // NOI18N
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 }

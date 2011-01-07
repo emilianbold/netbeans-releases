@@ -54,11 +54,10 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 
 /**
@@ -66,15 +65,18 @@ import org.netbeans.modules.cnd.modelutil.AntiLoop;
  * @author Alexander Simon
  */
 public final class MemberResolverImpl {
-    private final Resolver resolver;
 
-    public MemberResolverImpl(Resolver resolver){
-        this.resolver = resolver;
+    public MemberResolverImpl(){
     }
     
     public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
         if (CsmKindUtilities.isOffsetable(cls)) {
-            cls = ResolverFactory.createResolver((CsmOffsetable) cls, resolver).getOriginalClassifier(cls);
+            Resolver aResolver = ResolverFactory.createResolver((CsmOffsetable) cls);
+            try {
+                cls = aResolver.getOriginalClassifier(cls);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
+            }
             if (CsmKindUtilities.isClass(cls)){
                 List<CsmMember> res = new ArrayList<CsmMember>();
                 getClassMembers((CsmClass)cls, name, res);
@@ -107,16 +109,7 @@ public final class MemberResolverImpl {
                 case PRIVATE:
                     break;
                 default:
-                    CsmClass base = null;
-                    if(inh instanceof Resolver.SafeClassifierProvider) {
-                        CsmClassifier classifier = ((Resolver.SafeClassifierProvider)inh).getClassifier(resolver);
-                        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
-                        if (CsmKindUtilities.isClass(classifier)) {
-                            base = (CsmClass) classifier;
-                        }
-                    } else {
-                        base = CsmInheritanceUtilities.getCsmClass(inh);
-                    }
+                    CsmClass base = CsmInheritanceUtilities.getCsmClass(inh);
                     if (base != null) {
                         getClassMembers(base, name, res);
                         getSuperClasses(base, name, res, antiLoop);

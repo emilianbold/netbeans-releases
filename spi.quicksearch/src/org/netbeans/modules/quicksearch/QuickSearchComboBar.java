@@ -75,6 +75,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
                     icons[i] = ImageUtilities.loadImageIcon("org/netbeans/modules/quicksearch/resources/progress_" + i + ".png", false);  //NOI18N
                 }
             }
+            jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 6));
             jLabel2.setIcon(icons[index]);
             //mac os x
             jLabel2.repaint();
@@ -100,7 +101,6 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBackground(getTextBackground());
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -119,7 +119,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 2, 1, 1);
+        gridBagConstraints.insets = new java.awt.Insets(1, 2, 1, 2);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
@@ -140,16 +140,6 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel1.add(jScrollPane1, gridBagConstraints);
 
-        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        jSeparator1.setName("jSeparator1"); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
-        jPanel1.add(jSeparator1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -169,7 +159,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
     protected JTextComponent createCommandField() {
         JTextArea res = new DynamicWidthTA();
         res.setRows(1);
-        res.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        res.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 1));
         // disable default Swing's Ctrl+Shift+O binding to enable our global action
         InputMap curIm = res.getInputMap(JComponent.WHEN_FOCUSED);
         while (curIm != null) {
@@ -195,6 +185,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         if (animationTimer != null && animationTimer.isRunning()) {
             animationTimer.stop();
             jLabel2.setIcon(findIcon);
+            jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         }
     }
 

@@ -442,7 +442,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                dialog.setVisible(visible);
+                if (dialog!=null)
+                    dialog.setVisible(visible);
             }
         });
     }
@@ -599,6 +600,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     private ProblemDetails currentProblemAction;
     private void placeErrorPanel(Problem problem) {
+        if (dialog==null) {
+            //refactoring cancelled
+            return;
+        }
         containerPanel.removeAll();
         errorPanel = new ErrorPanel(problem, rui);
         errorPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
@@ -635,6 +640,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     private void placeCustomPanel() {
+        if (dialog == null)
+            return;
         if (customPanel == null) return;
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
         Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll"));

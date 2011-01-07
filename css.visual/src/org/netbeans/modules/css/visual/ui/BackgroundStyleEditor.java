@@ -74,8 +74,8 @@ import org.openide.util.NbBundle;
  */
 public class BackgroundStyleEditor extends StyleEditor {
 
-    ColorSelectionField colorField =  new ColorSelectionField();
-    BackgroundPositionData bgPositionData = new BackgroundPositionData();
+    ColorSelectionField colorField;
+    BackgroundPositionData bgPositionData;
 
     /** Creates new form FontStyleEditor */
     public BackgroundStyleEditor() {
@@ -84,6 +84,8 @@ public class BackgroundStyleEditor extends StyleEditor {
 
     @Override
     protected void lazyInitializePanel() {
+        colorField = new ColorSelectionField();
+        bgPositionData = new BackgroundPositionData();
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
         colorField.addPropertyChangeListener("color", new PropertyChangeListener() {

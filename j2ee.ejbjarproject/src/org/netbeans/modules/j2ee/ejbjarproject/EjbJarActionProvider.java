@@ -196,7 +196,7 @@ class EjbJarActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean isCompileOnSaveEnabled() {
-        return Boolean.parseBoolean(getEvaluator().getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+        return Boolean.parseBoolean(getEvaluator().getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE));
     }
 
     @Override

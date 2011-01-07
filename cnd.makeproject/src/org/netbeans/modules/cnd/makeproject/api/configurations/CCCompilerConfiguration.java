@@ -56,8 +56,8 @@ import org.openide.util.NbBundle;
 
 public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     // Constructors
-    public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master) {
-        super(baseDir, master);
+    public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master, MakeConfiguration owner) {
+        super(baseDir, master, owner);
     }
     
     // Clone and assign
@@ -69,7 +69,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     // Cloning
     @Override
     public CCCompilerConfiguration clone() {
-        CCCompilerConfiguration clone = new CCCompilerConfiguration(getBaseDir(), (CCCompilerConfiguration)getMaster());
+        CCCompilerConfiguration clone = new CCCompilerConfiguration(getBaseDir(), (CCCompilerConfiguration)getMaster(),  getOwner());
         // BasicCompilerConfiguration
         clone.setDevelopmentMode(getDevelopmentMode().clone());
         clone.setWarningLevel(getWarningLevel().clone());
@@ -88,6 +88,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         clone.setInheritIncludes(getInheritIncludes().clone());
         clone.setPreprocessorConfiguration(getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor(getInheritPreprocessor().clone());
+        clone.setUseLinkerLibraries(getUseLinkerLibraries().clone());
         return clone;
     }
     
@@ -152,6 +153,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
+        options += getLibrariesFlags();
         return CppUtils.reformatWhitespaces(options);
     }
 

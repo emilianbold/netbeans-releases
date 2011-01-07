@@ -411,21 +411,27 @@ public class OpenSolaris extends KnownProject {
         String logfolder = root + "/log"; // NOI18N
         File log = new File(logfolder);
         if (log.exists() && log.isDirectory() && log.canRead()) {
-            for (File when : log.listFiles()) {
-                if (when.exists() && when.isDirectory() && when.canRead()) {
-                    for (File l : when.listFiles()) {
-                        String current = l.getAbsolutePath();
-                        if (current.endsWith("/nightly.log")) { // NOI18N
-                            if (latest == null) {
-                                latest = current;
-                            } else {
-                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
-                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
-                                if (folder1.compareTo(folder2) < 0) {
-                                    latest = current;
+            File[] ff = log.listFiles();
+            if (ff != null) {
+                for (File when : ff) {
+                    if (when.exists() && when.isDirectory() && when.canRead()) {
+                        File[] ww = when.listFiles();
+                        if (ww != null) {
+                            for (File l : ww) {
+                                String current = l.getAbsolutePath();
+                                if (current.endsWith("/nightly.log")) { // NOI18N
+                                    if (latest == null) {
+                                        latest = current;
+                                    } else {
+                                        String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                        String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                        if (folder1.compareTo(folder2) < 0) {
+                                            latest = current;
+                                        }
+                                    }
+                                    break;
                                 }
                             }
-                            break;
                         }
                     }
                 }
@@ -621,6 +627,16 @@ public class OpenSolaris extends KnownProject {
 
         @Override
         public void setErrors(List<String> errors) {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public List<String> getSearchPaths() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public void setSearchPaths(List<String> dependencies) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }

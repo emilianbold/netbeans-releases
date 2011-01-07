@@ -108,29 +108,6 @@ implements Callable<Boolean>, FileChangeListener {
         assertEquals("One event delivered: " + events, 1, events.size());
     }
 
-    /** This test fails randomly in cases the folders get ordered in a way that
-     the "7" folder (used in the test) is the first folder in the list of known
-     file objects. */
-    @RandomlyFails // NB-Core-Build #5300: No events delivered
-    public void testAddListenerCanStop() throws IOException {
-        cnt = 2;
-        CharSequence log = Log.enable("org.netbeans.modules.masterfs", Level.INFO);
-        LOG.info("about to addRecursiveListener");
-        FileUtil.addRecursiveListener(this, getWorkDir(), this);
-        LOG.info("recursive listener added");
-        assertEquals("Counter is zero", 0, cnt);
-        if (!log.toString().contains("addRecursiveListener")) {
-            fail("There shall be info about interruption:\n" + log);
-        }
-
-        FileObject fourth = root.getFileObject("7");
-        assertNotNull("Folder found", fourth);
-        LOG.info("About to create a file");
-        FileObject res = fourth.createData("Ahoj");
-        LOG.log(Level.INFO, "File created: {0}", res);
-        assertTrue("No events delivered: " + events, events.isEmpty());
-    }
-
     @Override
     public Boolean call() throws Exception {
         LOG.log(Level.INFO, "callback {0}", cnt);

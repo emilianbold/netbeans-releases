@@ -84,6 +84,9 @@ public class ProcedureNode extends BaseNode {
     private static final String DELIMITER = "@@"; // NOI18N
     private static final String SPACE = " "; // NOI18N
     private static final String NEW_LINE = "\n"; // NOI18N
+    private static String TRIGGER = "TRIGGER"; // NOI18N
+    private static String FUNCTION = "FUNCTION"; // NOI18N
+    private static String PROCEDURE = "PROCEDURE"; // NOI18N
 
     /**
      * Create an instance of ProcedureNode.
@@ -109,6 +112,8 @@ public class ProcedureNode extends BaseNode {
     private final MetadataElementHandle<Procedure> procedureHandle;
     private final DatabaseConnection connection;
     private Type type;
+    private String schemaName;
+    private String catalogName;
 
     @SuppressWarnings("unchecked")
     private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
@@ -132,6 +137,8 @@ public class ProcedureNode extends BaseNode {
                             type = proc.getReturnValue() == null ? Type.Procedure : Type.Function;
 
                             updateProperties(proc);
+                            schemaName = proc.getParent().getName();
+                            catalogName = proc.getParent().getParent().getName();
                         }
                     }
                 );
@@ -206,15 +213,45 @@ public class ProcedureNode extends BaseNode {
         Specification spec = connector.getDatabaseSpecification();
 
         try {
-            AbstractCommand command = spec.createCommandDropProcedure(getName());
+            AbstractCommand command = null;
+            switch (getType()) {
+                case Function:
+                    command = spec.createCommandDropFunction(getName());
+                    break;
+                case Procedure:
+                    command = spec.createCommandDropProcedure(getName());
+                    break;
+                case Trigger:
+                    command = spec.createCommandDropTrigger(getName());
+                    break;
+                default:
+                    assert false : "Unknown type " + getType();
+            }
+            if (command == null) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, "No command found for droping " + getName());
+                return ;
+            }
+            if (getOwner() != null) {
+                command.setObjectOwner(getOwner());
+            }
             command.execute();
             remove();
         } catch (DDLException e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
         }
+    }
+    
+    private String getOwner() {
+        String owner = null;
+        if (schemaName == null) {
+            owner = catalogName;
+        } else {
+            owner = schemaName;
+        }
+        return owner;
     }
     
     public boolean isViewSourceSupported() {
@@ -255,14 +292,74 @@ public class ProcedureNode extends BaseNode {
     public static class MySQL extends ProcedureNode {
         private final DatabaseConnection connection;
         private final ProcedureNodeProvider provider;
-        private final String schema;
         
         @SuppressWarnings("unchecked")
         private MySQL(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
             this.connection = getLookup().lookup(DatabaseConnection.class);
             this.provider = provider;
-            this.schema = schema;
+        }
+
+        @Override
+        protected void initialize() {
+            super.initialize();
+            updateProcedureProperties();
+        }
+        
+        private void updateProcedureProperties() {
+            PropertySupport.Name ps = new PropertySupport.Name(this);
+            addProperty(ps);
+            
+            switch (provider.getType(getName())) {
+                case Function:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
+                    break;
+                case Procedure:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredProcedure")); // NOI18N
+                    break;
+                case Trigger:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
+                    break;
+                default:
+                    assert false : "Unknown type " + provider.getType(getName());
+            }
+        }
+
+        @Override
+        public Type getType() {
+            return provider.getType(getName());
+        }
+
+        @Override
+        public String getShortDescription() {
+            switch (provider.getType(getName())) {
+                case Function:
+                    return provider.getStatus(getName()) ? NbBundle.getMessage (ProcedureNode.class, "ND_Function") : NbBundle.getMessage (ProcedureNode.class, "ND_Function_Invalid"); //NOI18N
+                case Procedure:
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Procedure") : NbBundle.getMessage (ProcedureNode.class, "ND_Procedure_Invalid"); //NOI18N
+                case Trigger:
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Trigger") : NbBundle.getMessage (ProcedureNode.class, "ND_Trigger_Invalid"); //NOI18N;
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public String getIconBase() {
+            Type type = getType();
+            if (type == null) {
+                return null;
+            }
+            switch (type) {
+                case Function:
+                    return provider.getStatus(getName()) ? ICON_VALID_F : ICON_INVALID_F;
+                case Procedure:
+                    return provider.getStatus(getName()) ? ICON_VALID_P : ICON_INVALID_P;
+                case Trigger:
+                    return provider.getStatus(getName()) ? ICON_VALID_T : ICON_INVALID_T;
+                default:
+                    return null;
+            }
         }
 
         @Override
@@ -274,17 +371,60 @@ public class ProcedureNode extends BaseNode {
         public String getSource() {
             String source = "";
             try {
-                Statement stat = connection.getConnection().createStatement();
-                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                while(rs.next()) {
-                    String params = rs.getString("param_list"); // NOI18N
-                    String body = rs.getString("body"); // NOI18N
-                    source = "PROCEDURE " + getName() + '\n' + // NOI18N
-                            '(' + params + ")" + '\n' + // NOI18N
-                            body;
+                switch (getType()) {
+                    case Function:
+                    case Procedure:
+                        Statement stat = connection.getConnection().createStatement();
+                        ResultSet rs = stat.executeQuery("SELECT param_list, body, db FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                        while(rs.next()) {
+                            String parent = rs.getString("db"); // NOI18N
+                            if (parent != null && parent.trim().length() > 0) {
+                                parent = parent + '.'; //  NOI18N
+                            } else {
+                                parent = "";
+                            }
+                            String params = rs.getString("param_list"); // NOI18N
+                            String body = rs.getString("body"); // NOI18N
+                            source = getTypeName(getType()) + " " + parent + getName() + '\n' + // NOI18N
+                                    '(' + params + ")" + '\n' + // NOI18N
+                                    body;
+                        }
+                        break;
+                    case Trigger:
+                        /*
+                        CREATE
+                            [DEFINER = { user | CURRENT_USER }]
+                            TRIGGER trigger_name trigger_time trigger_event
+                            ON tbl_name FOR EACH ROW trigger_body
+                         */
+                        Statement stat2 = connection.getConnection().createStatement();
+                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
+                                + " ACTION_TIMING, EVENT_MANIPULATION, TRIGGER_SCHEMA"
+                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
+                        while(rs2.next()) {
+                            String parent = rs2.getString("TRIGGER_SCHEMA"); // NOI18N
+                            if (parent != null && parent.trim().length() > 0) {
+                                parent = parent + '.'; //  NOI18N
+                            } else {
+                                parent = "";
+                            }
+                            String trigger_body = rs2.getString("ACTION_STATEMENT"); // NOI18N
+                            String trigger_time = rs2.getString("ACTION_TIMING"); // NOI18N
+                            String trigger_event = rs2.getString("EVENT_MANIPULATION"); // NOI18N
+                            String tbl_schema = rs2.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
+                            String tbl_table_name = rs2.getString("EVENT_OBJECT_TABLE"); // NOI18N
+                            String tbl_name = tbl_schema == null || tbl_schema.length() == 0 ? tbl_table_name : tbl_schema + '.' + tbl_table_name; // NOI18N
+                            source = TRIGGER + " " + parent + getName() + '\n' + // NOI18N
+                                    trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
+                                    "FOR EACH ROW" + '\n' + // NOI18N
+                                    trigger_body;
+                        }
+                        break;
+                    default:
+                        assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
             }
             return source;
         }
@@ -293,13 +433,35 @@ public class ProcedureNode extends BaseNode {
         public String getParams() {
             String params = "";
             try {
-                Statement stat = connection.getConnection().createStatement();
-                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                while(rs.next()) {
-                    params = rs.getString("param_list"); // NOI18N
+                switch (getType()) {
+                    case Function:
+                    case Procedure:
+                        Statement stat = connection.getConnection().createStatement();
+                        ResultSet rs = stat.executeQuery("SELECT param_list FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                        while(rs.next()) {
+                            params = rs.getString("param_list"); // NOI18N
+                        }
+                        break;
+                    case Trigger:
+                        Statement stat2 = connection.getConnection().createStatement();
+                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
+                                + " ACTION_TIMING, EVENT_MANIPULATION"
+                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
+                        while(rs2.next()) {
+                            String trigger_time = rs2.getString("ACTION_TIMING"); // NOI18N
+                            String trigger_event = rs2.getString("EVENT_MANIPULATION"); // NOI18N
+                            String tbl_schema = rs2.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
+                            String tbl_table_name = rs2.getString("EVENT_OBJECT_TABLE"); // NOI18N
+                            String tbl_name = tbl_schema == null || tbl_schema.length() == 0 ? tbl_table_name : tbl_schema + '.' + tbl_table_name; // NOI18N
+                            params = trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
+                                    "FOR EACH ROW" + '\n'; // NOI18N
+                        }
+                        break;
+                    default:
+                        assert false : "Unknown type " + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of " + getTypeName(getType()) + " " + getName());
             }
             return params;
         }
@@ -308,13 +470,27 @@ public class ProcedureNode extends BaseNode {
         public String getBody() {
             String body = "";
             try {
-                Statement stat = connection.getConnection().createStatement();
-                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                while(rs.next()) {
-                    body = rs.getString("body"); // NOI18N
+                switch (getType()) {
+                    case Function:
+                    case Procedure:
+                        Statement stat = connection.getConnection().createStatement();
+                        ResultSet rs = stat.executeQuery("SELECT body FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                        while(rs.next()) {
+                            body = rs.getString("body"); // NOI18N
+                        }
+                        break;
+                    case Trigger:
+                        Statement stat2 = connection.getConnection().createStatement();
+                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
+                        while(rs2.next()) {
+                            body = rs2.getString("ACTION_STATEMENT"); // NOI18N
+                        }
+                        break;
+                    default:
+                        assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get body of " + getTypeName(getType()) + " " + getName());
             }
             return body;
         }
@@ -332,7 +508,7 @@ public class ProcedureNode extends BaseNode {
             // set delimiter
             expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
             // DDL
-            expression.append("DROP PROCEDURE ").append(getName()).append(SPACE).append(DELIMITER).append(NEW_LINE);
+            expression.append("DROP ").append(getTypeName(getType())).append(" ").append(getName()).append(SPACE).append(DELIMITER).append(NEW_LINE);
             expression.append("CREATE ").append(getSource());
             expression.append(SPACE).append(DELIMITER).append(SPACE).append(NEW_LINE); // NOI18N
             // unset delimiter
@@ -344,7 +520,6 @@ public class ProcedureNode extends BaseNode {
     
     public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
-        private final MetadataElementHandle<Procedure> procedureHandle;
         private final ProcedureNodeProvider provider;
         private final String schema;
 
@@ -352,7 +527,6 @@ public class ProcedureNode extends BaseNode {
         private Oracle(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
-            procedureHandle = getLookup().lookup(MetadataElementHandle.class);
             this.provider = provider;
             this.schema = schema;
         }
@@ -401,19 +575,23 @@ public class ProcedureNode extends BaseNode {
             }
         }
 
-    @Override
-    public String getIconBase() {
-        switch (getType()) {
-            case Function:
-                return provider.getStatus(getName())  ? ICON_VALID_F : ICON_INVALID_F;
-            case Procedure:
-                return provider.getStatus(getName())  ? ICON_VALID_P : ICON_INVALID_P;
-            case Trigger:
-                return provider.getStatus(getName())  ? ICON_VALID_T : ICON_INVALID_T;
-            default:
+        @Override
+        public String getIconBase() {
+            Type type = getType();
+            if (type == null) {
                 return null;
+            }
+            switch (type) {
+                case Function:
+                    return provider.getStatus(getName()) ? ICON_VALID_F : ICON_INVALID_F;
+                case Procedure:
+                    return provider.getStatus(getName()) ? ICON_VALID_P : ICON_INVALID_P;
+                case Trigger:
+                    return provider.getStatus(getName()) ? ICON_VALID_T : ICON_INVALID_T;
+                default:
+                    return null;
+            }
         }
-    }
 
         @Override
         public boolean isViewSourceSupported() {
@@ -459,13 +637,9 @@ public class ProcedureNode extends BaseNode {
                     owner = rs.getString("owner"); // NOI18N
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
             }
-            if (schema.equalsIgnoreCase(owner)) {
-                return sb.toString();
-            } else {
-                return fqn(sb.toString(), owner);
-            }
+            return fqn(sb.toString(), owner);
         }
 
         @Override
@@ -487,17 +661,40 @@ public class ProcedureNode extends BaseNode {
         }
 
         private String fqn(String source, String owner) {
-            String fqSource = source;
-            String toFind = "PROCEDURE "; // NOI18N
-            int nameIdx = source.indexOf(toFind);
+            String upperSource = source.toUpperCase();
+            String toFind = getTypeName(getType()) + " "; // NOI18N
+            String res = source;
+            int nameIdx = upperSource.indexOf(toFind);
             if (nameIdx != -1) {
-                fqSource = source.substring(0, nameIdx + toFind.length()) +
+                // don't duplicate owner
+                if (upperSource.substring(nameIdx + toFind.length()).trim().startsWith(owner.toUpperCase() + '.')) { // NOI18N
+                    return source;
+                }
+                res = source.substring(0, nameIdx + toFind.length()) +
                         owner +
                         '.' + // NOI18N
                         source.substring(nameIdx + toFind.length()).trim();
             }
-            return fqSource;
+            return res;
         }
 
+    }
+    
+    private static String getTypeName(Type t) {
+        String name = "";
+        switch (t) {
+            case Function:
+                name = FUNCTION;
+                break;
+            case Procedure:
+                name = PROCEDURE;
+                break;
+            case Trigger:
+                name = TRIGGER;
+                break;
+            default:
+                assert false : "Unknown type " + t;
+        }
+        return name;
     }
 }

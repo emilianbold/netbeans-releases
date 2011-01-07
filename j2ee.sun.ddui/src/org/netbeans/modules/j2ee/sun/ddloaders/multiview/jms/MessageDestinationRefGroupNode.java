@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,7 +68,7 @@ public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
     public MessageDestinationRefGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
         super(sectionNodeView, commonDD, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, MessageDestinationRef.class, 
                 NbBundle.getMessage(MessageDestinationRefGroupNode.class, "LBL_MessageDestinationRefGroupHeader"), // NOI18N
-                ICON_BASE_MESSAGE_DESTINATION_NODE, version);
+                ICON_BASE_MESSAGE_DESTINATION_REF_NODE, version);
         
         enableAddAction(NbBundle.getMessage(MessageDestinationRefGroupNode.class, "LBL_AddMessageDestinationRef")); // NOI18N
     }

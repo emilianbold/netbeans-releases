@@ -274,6 +274,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <friend>org.netbeans.modules.web.jsfapi</friend>
                 <package>org.netbeans.editor.ext.html.dtd</package>
                 <package>org.netbeans.editor.ext.html.dtd.spi</package>
                 <package>org.netbeans.editor.ext.html.parser</package>

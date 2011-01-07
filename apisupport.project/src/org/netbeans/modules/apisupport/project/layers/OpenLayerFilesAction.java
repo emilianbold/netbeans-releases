@@ -45,6 +45,7 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -80,6 +81,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
+import org.openide.xml.EntityCatalog;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -154,6 +156,9 @@ public class OpenLayerFilesAction extends CookieAction {
                     if (originatingElement.get().isEmpty() && originalF.getPath().equals(path)) {
                         originatingElement.set(new String(ch, start, length));
                     }
+                }
+                public @Override InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+                    return EntityCatalog.getDefault().resolveEntity(publicId, systemId);
                 }
             }
             DefaultHandler2 handler = new Handler();

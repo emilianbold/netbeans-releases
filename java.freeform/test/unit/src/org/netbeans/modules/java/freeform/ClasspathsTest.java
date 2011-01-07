@@ -64,14 +64,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.TestBase;
+import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.java.freeform.jdkselection.JdkConfiguration;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -169,17 +174,36 @@ public class ClasspathsTest extends TestBase {
     public void testBootClasspath() throws Exception {
         ClassPath cp = ClassPath.getClassPath(myAppJava, ClassPath.BOOT);
         assertNotNull("have some BOOT classpath for src/", cp);
-        /* XXX failing: #137767
-        assertEquals("and it is JDK 1.4", "1.4", specOfBootClasspath(cp));
+        /* The default paltform returned by DymmyJavaPlatformProvider is 1.5.
+         The freeform poject did not set explicit platform => platform should be 1.5 */
+        assertEquals("and it is JDK 1.5", "1.5", specOfBootClasspath(cp));
         ClassPath cp2 = ClassPath.getClassPath(specialTaskJava, ClassPath.BOOT);
         assertNotNull("have some BOOT classpath for antsrc/", cp2);
-        assertEquals("and it is JDK 1.4", "1.4", specOfBootClasspath(cp2));
-         */
+        assertEquals("and it is JDK 1.5", "1.5", specOfBootClasspath(cp2));
+         /**/
         /* Not actually required:
         assertEquals("same BOOT classpath for all files (since use same spec level)", cp, cp2);
          */
         cp = ClassPath.getClassPath(buildProperties, ClassPath.BOOT);
         assertNull("have no BOOT classpath for build.properties", cp);
+        
+        /**  The test of explicit platform, commented out as it modifies
+         *  unit/data and causes hg modification. The TestBase should be fixed
+         *  before enabling it.
+        // Now set explicit platform to 1.4 and expect it
+        final Project owner = FileOwnerQuery.getOwner(myAppJava);
+        final ProjectAccessor prjAccessor = owner.getLookup().lookup(ProjectAccessor.class);
+        final JdkConfiguration cfg = new JdkConfiguration(owner, prjAccessor.getHelper(), prjAccessor.getEvaluator());
+        final JavaPlatform[] jdk14 = JavaPlatformManager.getDefault().getPlatforms("JDK 1.4", null);    //NOI18N
+        cfg.setSelectedPlatform(jdk14[0]);
+        cp = ClassPath.getClassPath(myAppJava, ClassPath.BOOT);
+        assertNotNull("have some BOOT classpath for src/", cp);       
+        assertEquals("and it is JDK 1.4", "1.4", specOfBootClasspath(cp));
+        cp2 = ClassPath.getClassPath(specialTaskJava, ClassPath.BOOT);
+        assertNotNull("have some BOOT classpath for antsrc/", cp2);
+        assertEquals("and it is JDK 1.4", "1.4", specOfBootClasspath(cp2));
+        */
+        
     }
     
     private static String specOfBootClasspath(ClassPath cp) {

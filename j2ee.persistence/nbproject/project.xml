@@ -469,8 +469,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.common</package>
-                <package>org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0</package>
-                <package>org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.entitygenerator</package>
                 <package>org.netbeans.modules.j2ee.persistence.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
@@ -478,6 +476,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.targetinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
                 <package>org.netbeans.modules.j2ee.persistence.util</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>

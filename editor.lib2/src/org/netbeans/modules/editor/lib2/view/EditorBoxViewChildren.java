@@ -306,7 +306,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                         // visualOffset was just shifted by tabVisualDelta (but view[i+1] not yet).
                         double viewVisualOffset = view.getRawVisualOffset() - gapStorage.visualGapLength;
                         // add tabVisualDelta to next-view-VisualOffset since visualOffset already includes tabVisualDelta
-                        double origMajorSpan = (getViewVisualOffset(i + 1) + tabVisualDelta) - viewVisualOffset;
+                        double origMajorSpan = (boxView.getViewVisualOffset(i + 1) + tabVisualDelta) - viewVisualOffset;
                         double majorSpan = ((TabableView) view).getTabbedSpan((float) viewVisualOffset, tabExpander);
                         double majorSpanDelta = majorSpan - origMajorSpan;
                         if (majorSpanDelta != 0d) {

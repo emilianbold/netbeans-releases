@@ -78,7 +78,7 @@ public class ChangeParametersAction extends CsmRefactoringGlobalAction {
         return false;
     }
 
-    protected boolean enable(Lookup context) {
+    protected boolean applicable(Lookup context) {
         return CsmActionsImplementationFactory.canChangeParameters(context);
     }
 }

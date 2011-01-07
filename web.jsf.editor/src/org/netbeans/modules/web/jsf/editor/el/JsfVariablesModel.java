@@ -48,12 +48,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 
 /**
  *
@@ -67,7 +66,7 @@ public class JsfVariablesModel {
     private static final String VALUE_NAME = "value";  //NOI18N
     private static WeakReference<JsfVariablesModel> lastModelCache;
 
-    public static JsfVariablesModel getModel(HtmlParserResult result) {
+    public static JsfVariablesModel getModel(HtmlParserResult result, Snapshot topLevelSnapshot) {
         //first try to find out if the cached model can be used for given result
         if (lastModelCache != null) {
             JsfVariablesModel cachedModel = lastModelCache.get();
@@ -77,18 +76,20 @@ public class JsfVariablesModel {
         }
 
         //create a new model and cache it
-        JsfVariablesModel model = new JsfVariablesModel(result);
+        JsfVariablesModel model = new JsfVariablesModel(result, topLevelSnapshot);
         lastModelCache = new WeakReference<JsfVariablesModel>(model);
 
         return model;
-
-    }
     
+    }
+
     private HtmlParserResult result;
     private SortedSet<JsfVariableContext> contextsList;
+    private Snapshot topLevelSnapshot;
 
-    private JsfVariablesModel(HtmlParserResult result) {
+    private JsfVariablesModel(HtmlParserResult result, Snapshot topLevelSnapshot) {
         this.result = result;
+        this.topLevelSnapshot = topLevelSnapshot;
         initModel();
     }
 
@@ -102,8 +103,8 @@ public class JsfVariablesModel {
         // contexts and sort it by contexts startoffsets.
         // The access is slower however
 
-        JsfSupport sup = JsfSupport.findFor(result.getSnapshot().getSource());
-        Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getFaceletsLibraries().keySet();
+        JsfSupportImpl sup = JsfSupportImpl.findFor(result.getSnapshot().getSource());
+        Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getLibraries().keySet();
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
 
         contextsList = new TreeSet<JsfVariableContext>();
@@ -115,6 +116,7 @@ public class JsfVariablesModel {
                 //find all nodes with var and value attributes
                 List<AstNode> matches = AstNodeUtils.getChildrenRecursivelly(root, new AstNode.NodeFilter() {
 
+                    @Override
                     public boolean accepts(AstNode node) {
                         return node.getAttribute(VALUE_NAME) != null &&
                                 node.getAttribute(VARIABLE_NAME) != null;
@@ -135,19 +137,15 @@ public class JsfVariablesModel {
                         continue; //the offsets cannot be mapped to the document
                     }
 
-                    try {
-                        String documentValueContent = result.getSnapshot().getSource().getDocument(true).getText(doc_from, doc_to - doc_from);
-                        
-                        JsfVariableContext context = new JsfVariableContext(
-                                node.logicalStartOffset(),
-                                node.logicalEndOffset(),
-                                node.getAttribute(VARIABLE_NAME).unquotedValue(),
-                                unquotedValue(documentValueContent));
+                    String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
 
-                        contextsList.add(context);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    JsfVariableContext context = new JsfVariableContext(
+                            node.logicalStartOffset(),
+                            node.logicalEndOffset(),
+                            node.getAttribute(VARIABLE_NAME).unquotedValue(),
+                            unquotedValue(documentValueContent));
+
+                    contextsList.add(context);
 
                 }
             }

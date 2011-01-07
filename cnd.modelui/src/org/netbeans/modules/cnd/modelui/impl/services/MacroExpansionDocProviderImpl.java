@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -97,7 +98,7 @@ import org.openide.util.Exceptions;
 /**
  * Service that provides macro expansions implementation.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider.class)
 public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvider {
@@ -414,7 +415,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         APTFile aptLight = null;
         try {
-            aptLight = APTDriver.getInstance().findAPTLight((fileImpl).getBuffer());
+            aptLight = APTDriver.findAPTLight(fileImpl.getBuffer());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

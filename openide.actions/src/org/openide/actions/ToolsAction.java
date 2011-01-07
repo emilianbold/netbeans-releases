@@ -50,6 +50,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -59,12 +63,14 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
@@ -89,9 +95,30 @@ import org.openide.util.lookup.Lookups;
 public class ToolsAction extends SystemAction implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     static final long serialVersionUID = 4906417339959070129L;
 
+    private static ScheduledFuture<G> taskGl;
     // Global ActionManager listener monitoring all available actions
     // and their state
-    static final G gl = new G();
+    static final G gl() {
+        initGl();
+        try {
+            return taskGl.get();
+        } catch (Exception ex) {
+            taskGl = null;
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    private static synchronized void initGl() {
+        if (taskGl == null) {
+            taskGl = RequestProcessor.getDefault().schedule(new G(), 0, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        
+    }
 
     /* @return name
     */
@@ -145,7 +172,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         arr.addAll(Arrays.<Action>asList(am.getContextActions()));
 
         String pref = arr.isEmpty() ? null : "";
-        for (Lookup.Item<Action> item : gl.result.allItems()) {
+        for (Lookup.Item<Action> item : gl().result.allItems()) {
             final Action action = item.getInstance();
             if (action == null) {
                 continue;
@@ -269,12 +296,12 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         
         @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            if (timestamp == gl.getTimestamp()) {
+            if (timestamp == gl().getTimestamp()) {
                 return items;
             }
             // generate directly list of menu items
             List<JMenuItem> l = generate(toolsAction, true);
-            timestamp = gl.getTimestamp();
+            timestamp = gl().getTimestamp();
             return l.toArray(new JMenuItem[l.size()]);
         }
         
@@ -307,7 +334,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         
         @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return gl.isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
+            return gl().isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
         }
         
         
@@ -381,19 +408,25 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     //------------------------------------------------
     //----------------------------------------------------------
-    private static class G implements PropertyChangeListener, LookupListener {
+    private static class G implements PropertyChangeListener, LookupListener, Callable<G> {
         public static final String PROP_STATE = "actionsState"; // NOI18N
         private int timestamp = 1;
         private Action[] actions = null;
         private PropertyChangeSupport supp = new PropertyChangeSupport(this);
-        final Lookup.Result<Action> result;
+        Lookup.Result<Action> result;
 
         public G() {
+            // init is done in run
+        }
+        
+        @Override
+        public G call() {
             ActionManager am = ActionManager.getDefault();
             am.addPropertyChangeListener(this);
             result = Lookups.forPath("UI/ToolActions").lookupResult(Action.class); // NOI18N
             result.addLookupListener(this);
             actionsListChanged();
+            return this;
         }
 
         public final void addPropertyChangeListener(PropertyChangeListener listener) {

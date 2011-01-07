@@ -270,6 +270,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz175782_2.cpp");
     }
 
+    public void testBug186638() throws Exception {
+        // Bug 186638 - Wrong error highlighting for template based object in case cast
+        performStaticTest("bug186638.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -47,6 +47,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
@@ -65,16 +69,15 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -87,14 +90,15 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private JTextComponent component;
     private volatile AttributeSet attribs;
     private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
-    private final FileObject fileObject;
     private final Document doc;
     private final LookupListener fcsTracker = new LookupListener() {
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             attribs = null;
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     NavigationSideBar.this.repaint();
                 }
@@ -102,11 +106,10 @@ public class NavigationSideBar extends JPanel implements Accessible {
         }
     };
     private boolean enabled = true;
-    private List<AstNode> nesting = new ArrayList<AstNode>(5);
+    List<AstNode> nesting = new ArrayList<AstNode>(5);
 
     public NavigationSideBar() {
         doc = null;
-        fileObject = null;
     }
 
     public NavigationSideBar(JTextComponent component) {
@@ -115,46 +118,64 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         this.component = component;
         this.doc = component.getDocument();
-        this.fileObject = DataLoadersBridge.getDefault().getFileObject(doc);
 
         Source source = HtmlCaretAwareSourceTask.forDocument(doc);
         source.addChangeListener(new HtmlCaretAwareSourceTask.SourceListener() {
+            @Override
             public void parsed(Result info, SchedulerEvent event) {
                 NavigationSideBar.this.change(info, event);
             }
         });
 
         updatePreferredSize();
+
+        setPleaseWaitUI();
     }
 
     private void change(Result info, SchedulerEvent event) {
-
-
         int caretPosition = ((CursorMovedSchedulerEvent)event).getCaretOffset();
+        HtmlParserResult result = (HtmlParserResult)info;
+        Collection<AstNode> allRoots = new LinkedList<AstNode>();
+        allRoots.addAll(result.roots().values());
+        allRoots.add(result.rootOfUndeclaredTagsParseTree());
 
-        AstNode root = ((HtmlParserResult)info).root();
-
-        AstNode current = AstNodeUtils.findDescendant(root, info.getSnapshot().getEmbeddedOffset(caretPosition));
-        if (current == null) {
-            return;
+        List<AstNode> nodesInPath = new ArrayList<AstNode>();
+        int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
+        for(AstNode root : allRoots) {
+            AstNode leaf = AstNodeUtils.findNode(root, astOffset, false, false);
+            if(leaf != null) {
+                //add all nodes in the leaf's path to the root
+                for(AstNode node : leaf.path().path()) { //really brilliant wording!!!!
+                    if(node.type() == AstNode.NodeType.OPEN_TAG) {
+                        nodesInPath.add(node);
+                    }
+                }
+            }
         }
+        //sort by start offsets
+        Collections.sort(nodesInPath, new Comparator<AstNode>() {
 
-        updateNestingInfo(info, root, current);
+            @Override
+            public int compare(AstNode o1, AstNode o2) {
+                return o1.startOffset() - o2.startOffset();
+            }
+
+        });
+
+        updateNestingInfo(info, nodesInPath);
+
+        if(testAccess != null) {
+            testAccess.updated(nodesInPath);
+        }
 
     }
 
-    private void updateNestingInfo(final Result tsource, AstNode root, AstNode node) {
-        List<AstNode> newNesting = new ArrayList<AstNode>();
-        do {
-            if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                newNesting.add(0, node);
-            }
-            node = node.parent();
-        } while (node != null && node != root);
-        nesting = newNesting;
+    private void updateNestingInfo(final Result tsource, List<AstNode> sortedPath) {
+        nesting = sortedPath;
 
         //update UI
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updatePanelUI(tsource);
             }
@@ -189,6 +210,22 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
             add(label);
         }
+
+        revalidate();
+        repaint();
+    }
+
+    //shows please wait text until the document is parsed
+    private void setPleaseWaitUI() {
+        removeAll();
+
+        JLabel label = new javax.swing.JLabel();
+        label.setForeground(Color.DARK_GRAY);
+        label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.setText(getDrawText(NbBundle.getMessage(NavigationSideBar.class, "MSG_NAVIGATION_BAR_PLEASE_WAIT")));
+
+        add(label);
 
         revalidate();
         repaint();
@@ -230,8 +267,21 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     public static final class NavigationSideBarFactory implements SideBarFactory {
 
+        @Override
         public JComponent createSideBar(JTextComponent target) {
             return new NavigationSideBar(target);
         }
     }
+
+    //for unit tests only!!!
+    void regicterTestAccess(TestAccess ta) {
+        this.testAccess = ta;
+    }
+
+    static interface TestAccess {
+        public void updated(List<AstNode> path);
+    }
+
+    private TestAccess testAccess;
+
 }

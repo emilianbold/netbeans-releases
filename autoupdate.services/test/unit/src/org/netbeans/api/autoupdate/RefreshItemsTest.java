@@ -46,7 +46,6 @@ package org.netbeans.api.autoupdate;
 
 import java.io.IOException;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 
 /**

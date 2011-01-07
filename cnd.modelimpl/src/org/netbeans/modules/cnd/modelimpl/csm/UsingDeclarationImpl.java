@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
@@ -108,7 +111,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         return startOffset;
     }
     
-    private CsmDeclaration renderReferencedDeclaration(Resolver resolver) {
+    private CsmDeclaration renderReferencedDeclaration() {
         CsmDeclaration referencedDeclaration = null;
         if (rawName != null) {
             ProjectBase prjBase = (ProjectBase)getProject();
@@ -118,7 +121,13 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             } else if (rawName.length > 1) {
                 CharSequence[] partial = new CharSequence[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                CsmObject result = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), resolver).resolve(partial, Resolver.NAMESPACE);
+                CsmObject result = null;
+                Resolver aResolver = ResolverFactory.createResolver(this);
+                try {
+                    result = aResolver.resolve(partial, Resolver.NAMESPACE);
+                } finally {
+                    ResolverFactory.releaseResolver(aResolver);
+                }
                 if (CsmKindUtilities.isNamespace(result)) {
                     namespace = (CsmNamespace)result;
                 }
@@ -135,11 +144,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 namespacesToSearch.add(namespace);
                 CharSequence nspQName = namespace.getQualifiedName();
                 final Collection<CsmProject> libraries;
-                if (resolver != null) {
-                    libraries = resolver.getLibraries();
-                } else {
-                    libraries = Resolver3.getSearchLibraries(prjBase);
-                }
+                libraries = Resolver3.getSearchLibraries(prjBase);
                 for (CsmProject lib : libraries) {
                     CsmNamespace libNs = lib.findNamespace(nspQName);
                     if (libNs != null) {
@@ -190,7 +195,13 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             if(namespace == null && rawName.length > 1) {
                 CharSequence[] partial = new CharSequence[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                CsmObject result = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), resolver).resolve(partial, Resolver.CLASSIFIER);
+                CsmObject result = null;
+                Resolver aResolver = ResolverFactory.createResolver(this);
+                try {
+                    result = aResolver.resolve(partial, Resolver.CLASSIFIER);
+                } finally {
+                    ResolverFactory.releaseResolver(aResolver);
+                }
                 if (CsmKindUtilities.isClass(result)) {
                     cls = (CsmClass)result;
                 }
@@ -211,10 +222,6 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
 
     @Override
     public CsmDeclaration getReferencedDeclaration() {
-        return getReferencedDeclaration(null);
-    }
-
-    public CsmDeclaration getReferencedDeclaration(Resolver resolver) {
         // TODO: process preceding aliases
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
@@ -223,7 +230,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             int newParseCount = FileImpl.getParseCount();
             if (lastParseCount != newParseCount) {
                 _setReferencedDeclaration(null);
-                referencedDeclaration = renderReferencedDeclaration(resolver);
+                referencedDeclaration = renderReferencedDeclaration();
                 synchronized (this) {
                     lastParseCount = newParseCount;
                     _setReferencedDeclaration(referencedDeclaration);

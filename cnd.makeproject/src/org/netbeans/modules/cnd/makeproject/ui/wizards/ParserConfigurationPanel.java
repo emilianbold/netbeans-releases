@@ -171,7 +171,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         jPanel1 = new javax.swing.JPanel();
 
         setMinimumSize(new java.awt.Dimension(300, 158));
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         codeModelPanel.setLayout(new java.awt.GridBagLayout());
@@ -258,6 +258,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(bundle.getString("SourceFoldersInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -345,7 +346,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Macro Definitions"); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            List newList = panel.getListData();
+            List<String> newList = panel.getListData();
             StringBuilder macros = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
@@ -367,7 +368,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            List newList = panel.getListData();
+            List<String> newList = panel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
@@ -419,7 +420,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             return itemPath;
         }
 
@@ -469,15 +470,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            List<String> vector = getListData();
-            Object[] arr = vector.toArray();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == o) {
-                    vector.remove(i);
-                    vector.add(i, newS);
-                    break;
-                }
-            }
+            replaceElement(o, newS);
         }
     }
 
@@ -545,37 +538,10 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            List<String> vector = getListData();
-            Object[] arr = vector.toArray();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == o) {
-                    vector.remove(i);
-                    vector.add(i, newS);
-                    break;
-                }
-            }
+            replaceElement(o, newS);
         }
     }
 
-    private static class ConfigutationItem {
-
-        private String ID;
-        private String name;
-
-        private ConfigutationItem(String ID, String name) {
-            this.ID = ID;
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        public String getID() {
-            return ID;
-        }
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton automaticButton;
     private javax.swing.ButtonGroup buttonGroup1;
