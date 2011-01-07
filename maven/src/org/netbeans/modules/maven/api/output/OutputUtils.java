@@ -125,7 +125,11 @@ public final class OutputUtils {
          * @param ev the event describing the line
          */
         public void outputLineAction(OutputEvent ev) {
-            cookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            try {
+                cookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            } catch (IndexOutOfBoundsException x) { // #155880
+                cookie.open();
+            }
         }
         
         /** Called when a line is cleared from the buffer of known lines.
