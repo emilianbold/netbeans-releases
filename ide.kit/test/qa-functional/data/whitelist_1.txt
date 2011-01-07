@@ -5620,3 +5620,21 @@ org.openide.util.CharSequences
 # OK on Jun 30, 2010:
 org.openide.actions.UndoRedoAction
 org.openide.awt.UndoRedo$Provider
+
+# OK on Jan 7, 2011:
+org.netbeans.NbClipboard
+org.netbeans.modules.masterfs.Installer
+org.netbeans.modules.masterfs.filebasedfs.naming.FileName$Creation
+org.netbeans.modules.masterfs.filebasedfs.naming.NameRef
+org.netbeans.modules.masterfs.filebasedfs.utils.Utils
+org.netbeans.modules.masterfs.watcher.LinuxNotifier
+org.netbeans.modules.masterfs.watcher.LinuxNotifier$InotifyImpl
+org.netbeans.modules.masterfs.watcher.Notifier
+org.netbeans.modules.masterfs.watcher.Watcher
+org.netbeans.modules.masterfs.watcher.Watcher$Ext
+org.netbeans.modules.projectapi.GenericProjectFactory
+org.netbeans.modules.subversion.SvnMetadataFolderLoader
+org.openide.awt.HtmlRendererImpl$Type
+org.openide.filesystems.FileSystem$AsyncAtomicAction
+org.openide.filesystems.MemoryFileSystem$Mapper
+org.openide.modules.Modules
