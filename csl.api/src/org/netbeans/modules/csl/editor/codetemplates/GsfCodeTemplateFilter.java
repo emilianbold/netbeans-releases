@@ -44,25 +44,13 @@
 
 package org.netbeans.modules.csl.editor.codetemplates;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.Future;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.Exceptions;
 
 /**
  * Code template filter for GSF: Delegates to the plugin to determine which
@@ -71,27 +59,20 @@ import org.openide.util.Exceptions;
  * @author Dusan Balek
  * @author Tor Norbye
  */
-public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
+public class GsfCodeTemplateFilter implements CodeTemplateFilter {
     
     private int startOffset;
     private int endOffset;
     private Set<String> templates;
-    private boolean cancelled;
     
     private GsfCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
-        this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-        Source js = Source.create (component.getDocument());
-        if (js != null) {
-            try {
-                @SuppressWarnings("LeakingThisInConstructor")
-                Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
-                if (!f.isDone()) {
-                    f.cancel(true);
-                }
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;
+        Document doc = component.getDocument();
+        CodeCompletionHandler completer = doc == null ? null : GsfCompletionProvider.getCompletable(doc, startOffset);
+            
+        if (completer != null) {
+            templates = completer.getApplicableTemplates(doc, startOffset, endOffset);
         }
     }
 
@@ -108,33 +89,6 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         return true;
     }
     
-    public synchronized void cancel() {
-        cancelled = true;
-    }
-
-    private synchronized boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void run (ResultIterator resultIterator) throws IOException, ParseException {
-        if (isCancelled()) {
-            return;
-        }
-        Parser.Result result = resultIterator.getParserResult (startOffset);
-        if(!(result instanceof ParserResult)) {
-            return ;
-        }
-        ParserResult parserResult = (ParserResult) result;
-        Snapshot snapshot = parserResult.getSnapshot ();
-        Document doc = snapshot.getSource().getDocument(true);
-        CodeCompletionHandler completer = doc == null ? null : GsfCompletionProvider.getCompletable(doc, startOffset);
-            
-        if (completer != null && !isCancelled()) {
-            templates = completer.getApplicableTemplates(parserResult, startOffset, endOffset);
-        }
-    }
-
     public static final class Factory implements CodeTemplateFilter.Factory {
         
         @Override
