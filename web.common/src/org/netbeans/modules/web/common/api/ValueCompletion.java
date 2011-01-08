@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface ValueCompletion<T> {
 
+    /** @param offset is the anchor offset - beginning of the attribute value */
     public List<T> getItems(FileObject file, int offset, String valuePart);
 
 }

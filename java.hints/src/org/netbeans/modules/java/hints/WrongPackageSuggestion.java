@@ -268,10 +268,10 @@ public class WrongPackageSuggestion extends AbstractHint {
                     CompilationUnitTree cut = copy.getCompilationUnit();
 
                     if (packageName.length() == 0) {
-                        copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(null, cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                        copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(cut.getPackageAnnotations(), null, cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
                     } else {
                         if (cut.getPackageName() == null) {
-                            copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(createForFQN(copy, packageName), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                            copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(cut.getPackageAnnotations(), createForFQN(copy, packageName), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
                         } else {
                             copy.rewrite(cut.getPackageName(), createForFQN(copy, packageName));
                         }

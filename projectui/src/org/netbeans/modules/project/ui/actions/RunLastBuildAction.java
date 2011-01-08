@@ -53,8 +53,10 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -67,6 +69,9 @@ import org.openide.util.actions.Presenter;
  * An action to run the last build execution.
  * @see "#47925"
  */
+@ActionID(id = "org.netbeans.modules.project.ui.Rerun", category = "Project")
+@ActionRegistration(displayName = "#LBL_RunLastBuildAction_general")
+@ActionReference(path = "Menu/BuildProject", position = 1000)
 public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     
     public RunLastBuildAction() {
@@ -94,9 +99,9 @@ public final class RunLastBuildAction extends AbstractAction implements ChangeLi
         }
     }
     
-    public void actionPerformed(ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 BuildExecutionSupport.Item item = BuildExecutionSupportImpl.getInstance().getLastItem();
                 if (item != null) {
                     item.repeatExecution();
@@ -105,17 +110,17 @@ public final class RunLastBuildAction extends AbstractAction implements ChangeLi
         });
     }
 
-    public void stateChanged(ChangeEvent e) {
+    public @Override void stateChanged(ChangeEvent e) {
         firePropertyChange("enabled", null, Boolean.valueOf(isEnabled())); // NOI18N
         firePropertyChange(Action.SHORT_DESCRIPTION, null, null);
     }
 
-    public JMenuItem getMenuPresenter() {
+    public @Override JMenuItem getMenuPresenter() {
         class SpecialMenuItem extends JMenuItem implements DynamicMenuContent {
             public SpecialMenuItem() {
                 super(RunLastBuildAction.this);
             }
-            public JComponent[] getMenuPresenters() {
+            public @Override JComponent[] getMenuPresenters() {
                 String label;
                 BuildExecutionSupport.Item item = BuildExecutionSupportImpl.getInstance().getLastItem();
                 if (item != null) {
@@ -127,14 +132,14 @@ public final class RunLastBuildAction extends AbstractAction implements ChangeLi
                 Mnemonics.setLocalizedText(this, label);
                 return new JComponent[] {this};
             }
-            public JComponent[] synchMenuPresenters(JComponent[] items) {
+            public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
                 return getMenuPresenters();
             }
         }
         return new SpecialMenuItem();
     }
 
-    public Component getToolbarPresenter() {
+    public @Override Component getToolbarPresenter() {
         JButton button = new JButton();
         Actions.connect(button, this);
         return button;

@@ -152,11 +152,17 @@ public class POMDataObject extends MultiDataObject {
                     }
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
+                } catch (IllegalArgumentException x) { // #193630
+                    LOG.log(Level.FINE, null, x);
                 } catch (SAXException x) {
                     LOG.log(Level.FINE, null, x);
                 }
             }
             return name;
+        }
+
+        protected @Override boolean asynchronousOpen() {
+            return true;
         }
 
         // XXX override initializeCloneableEditor if needed; see AntProjectDataEditor

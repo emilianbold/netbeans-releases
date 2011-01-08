@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,12 +58,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 
 /**
@@ -72,6 +76,9 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                                          implements CsmClassForwardDeclaration, CsmTemplate {
     private final CharSequence name;
     private CharSequence[] nameParts;
+    private int lastParseCount = -1;    
+    private int lastFileID = -1;
+    private CsmObject lastResult;
 
     private final TemplateDescriptor templateDescriptor;
     
@@ -152,11 +159,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     @Override
     public CsmClass getCsmClass() {
-        return  getCsmClass(null);
-    }
-    
-    public CsmClass getCsmClass(Resolver resolver) {
-        CsmObject o = resolve(resolver);
+        CsmObject o = resolve();
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
 
@@ -165,6 +168,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return templateDescriptor != null;
     }
 
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
@@ -182,10 +190,55 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return new CharSequence[0];
     }
     
-    private CsmObject resolve(Resolver resolver) {
-        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASS);
-        if (result == null) {
-            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+    private boolean needRecount(int newParseCount, Resolver currentResolver) {
+        if (lastParseCount != newParseCount) {
+            return true;
+        }
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        if (lastFileID != fileID) {
+            return true;
+        }
+        return false;
+    }
+
+    private void updateCache(int newParseCount, Resolver currentResolver) {
+        lastParseCount = newParseCount;
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        lastFileID = fileID;
+    }
+
+    private CsmObject resolve() {
+        int newParseCount = FileImpl.getParseCount();
+        Resolver currentResolver = ResolverFactory.getCurrentResolver();
+        CsmObject result = lastResult;
+        if (needRecount(newParseCount, currentResolver)) {
+            Resolver aResolver = ResolverFactory.createResolver(this);
+            try {
+                result = aResolver.resolve(nameParts, Resolver.CLASS);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
+            }
+            if (result == null) {
+                result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+            }
+            lastResult = result;
+            updateCache(newParseCount, currentResolver);
+        //} else {
+        //    System.err.println("cache hit ClassForwardDeclarationImpl");
         }
         // NOTE: result shouldn't be cached. 
         // class forward could mean different things depending on other includes
@@ -226,7 +279,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
      * Creates a fake class this forward declaration refers to
      */
     protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
+        return ForwardClass.create(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
     }
 
     @Override

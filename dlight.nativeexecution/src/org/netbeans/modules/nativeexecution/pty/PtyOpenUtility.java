@@ -43,7 +43,7 @@ package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.netbeans.modules.nativeexecution.support.HelperUtility;
+import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import org.openide.util.Exceptions;
 
 /**

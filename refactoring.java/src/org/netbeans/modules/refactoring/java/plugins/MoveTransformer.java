@@ -293,12 +293,13 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (importToRemove.isEmpty()) {
                     rewrite(node.getPackageName(), make.Identifier(newPckg));
                 } else {
-                    cut = make.CompilationUnit(make.Identifier(newPckg), imports, node.getTypeDecls(), node.getSourceFile());
+                    cut = make.CompilationUnit(node.getPackageAnnotations(), make.Identifier(newPckg), imports, node.getTypeDecls(), node.getSourceFile());
                 }
             } else {
                 // in order to handle default package, we have to rewrite whole
                 // compilation unit:
                 cut = make.CompilationUnit(
+                        node.getPackageAnnotations(),
                         "".equals(newPckg) ? null : make.Identifier(newPckg),
                         imports,
                         node.getTypeDecls(),

@@ -119,6 +119,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
         tmpDir = FileUtil.normalizeFile(tmpDir.getAbsoluteFile());
         System.setProperty("java.io.tmpdir", tmpDir.getAbsolutePath());
+        
+        Logger fsLogger = Logger.getLogger("org.netbeans.modules.masterfs.watcher.Watcher");
+        fsLogger.setLevel(Level.WARNING);
     }
 
     private final ExecutionEnvironment testExecutionEnvironment;

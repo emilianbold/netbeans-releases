@@ -68,10 +68,9 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  */
 class XMLResultItem implements CompletionItem {
     
-    private static final int XML_ITEMS_SORT_PRIORITY = 20;
     // text to be diplayed to user
-    public String displayText;
-    private String replacementText;
+    public final String displayText;
+    private final String replacementText;
     // icon to be diplayed
     public javax.swing.Icon icon;
     public Color foreground = Color.black;
@@ -79,8 +78,8 @@ class XMLResultItem implements CompletionItem {
     public Color selectionForeground = Color.black;
     public Color selectionBackground = new Color(204, 204, 255);
     private static JLabel rubberStamp = new JLabel();
-    private XMLCompletionResultItemPaintComponent component;
     private boolean shift = false;
+    private final int position;
     
     static {
         rubberStamp.setOpaque( true );
@@ -90,34 +89,17 @@ class XMLResultItem implements CompletionItem {
      *
      * @param replacementText replacement text that is used as display name too
      */
-    public XMLResultItem(String replacementText){
-        this(replacementText, null);
+    public XMLResultItem(int position, String replacementText){
+        this(position, replacementText, null);
     }
     
     /**
      * @param displayText text to display or null if replacementText is OK
      */
-    public XMLResultItem(String replacementText, String displayText) {
+    public XMLResultItem(int position, String replacementText, String displayText) {
         this.replacementText = replacementText;
         this.displayText = displayText != null ? displayText : replacementText;
-    }
-    
-    /** Creates new XMLResultItem
-     * @param displayText The string value that will be displayed in the completion window and will hence
-     * be the replacement text if selected.
-     * @param icon The icon that will be displayed for this element.
-     * @param foreground The foreground color of the text
-     * @param background The background color of the text
-     * @param selectionForeground The foreground color of the selected text
-     * @param selectionBackground The background color of the selected text
-     */
-    public XMLResultItem(String displayText, javax.swing.Icon icon, Color foreground, Color background, Color selectionForeground, Color selectionBackground) {
-        this.displayText = displayText;
-        this.icon = icon;
-        this.foreground = foreground;
-        this.background = background;
-        this.selectionForeground = selectionForeground;
-        this.selectionBackground = selectionBackground;
+        this.position = position;
     }
     
     /**
@@ -347,7 +329,7 @@ class XMLResultItem implements CompletionItem {
     }
     
     public int getSortPriority() {
-        return XML_ITEMS_SORT_PRIORITY;
+        return position;
     }
     
     public CharSequence getSortText() {

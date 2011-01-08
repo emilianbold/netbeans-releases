@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
  *
@@ -63,6 +64,7 @@ public class LogHandler extends Handler {
         this.msg = msg;
         this.compare = compare;
         Support.LOG.addHandler(this);
+        BugtrackingManager.LOG.addHandler(this);
     }
 
     @Override
@@ -107,5 +109,6 @@ public class LogHandler extends Handler {
                 throw new IllegalStateException("LogHandler timeout > " + TIMEOUT);
             }
         }
+        done = false;
     }
 }

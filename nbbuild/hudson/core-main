@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ANT_OPTS="-Xmx512m"
+ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export ANT_OPTS
 
 ant build-nozip || exit

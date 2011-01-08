@@ -93,18 +93,21 @@ public final class AddCast implements ErrorRule<Void> {
             "compiler.err.cant.apply.symbol", // NOI18N
             "compiler.err.cant.resolve.location.args")); // NOI18N
     
-    static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, Tree[] leaf) {
+    static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, Tree[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
         
         //TODO: this does not seem nice:
         while (path != null) {
             Tree scope = path.getLeaf();
             TypeMirror expected = null;
+            Tree expectedTree = null;
             TypeMirror resolved = null;
             ExpressionTree found = null;
             
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
                 expected = info.getTrees().getTypeMirror(path);
+                expectedTree = ((VariableTree) scope).getType();
                 found = ((VariableTree) scope).getInitializer();
                 resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
             }
@@ -153,7 +156,10 @@ public final class AddCast implements ErrorRule<Void> {
                     resolved = info.getTrees().getOriginalType((ErrorType) resolved);
                 }
 
-                if (foundTM.getKind() == TypeKind.EXECUTABLE || foundTM.getKind() == TypeKind.NONE) {
+                if (   foundTM.getKind() == TypeKind.EXECUTABLE
+                    || foundTM.getKind() == TypeKind.PACKAGE
+                    || foundTM.getKind() == TypeKind.NONE
+                    || foundTM.getKind() == TypeKind.OTHER) {
                     //XXX: ignoring executable, see AddCast9 for more information when this happens.
                     //XXX: ignoring NONE, see test161450
                 } else {
@@ -163,6 +169,7 @@ public final class AddCast implements ErrorRule<Void> {
                                 && foundTM.getKind() != TypeKind.ERROR
                                 && expected.getKind() != TypeKind.ERROR) {
                             tm[0] = expected;
+                            typeTree[0] = expectedTree;
                             expression[0] = found;
                             leaf[0] = scope;
                         }
@@ -172,6 +179,10 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
+            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start) {
+                break;
+            }
+
             path = path.getParentPath();
         }
         
@@ -187,10 +198,11 @@ public final class AddCast implements ErrorRule<Void> {
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
         TypeMirror[] tm = new TypeMirror[1];
+        Tree[] tmTree = new Tree[1];
         ExpressionTree[] expression = new ExpressionTree[1];
         Tree[] leaf = new Tree[1];
         
-        computeType(info, offset, tm, expression, leaf);
+        computeType(info, offset, tm, tmTree, expression, leaf);
         
         if (tm[0] != null && tm[0].getKind() != TypeKind.NULL) {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);

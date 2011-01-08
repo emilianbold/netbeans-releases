@@ -150,12 +150,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.antlr3.runtime</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.options.editor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>

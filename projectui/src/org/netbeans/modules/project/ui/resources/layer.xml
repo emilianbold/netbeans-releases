@@ -85,7 +85,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-project-ui-RecentProjects.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.RecentProjects"/>
             </file>
-            <file name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance"/>
             
             <!-- Main project -->
             <file name="org-netbeans-modules-project-ui-BuildMainProject.instance">
@@ -142,10 +141,6 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testSingle"/>
             </file>
 
-            <file name="org-netbeans-modules-project-ui-Rerun.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.rebuildProjectAction"/>
-            </file>
-            <file name="org-netbeans-modules-project-ui-actions-StopBuildingAction.instance"/>
             <file name="org-netbeans-modules-project-ui-SetMainProjectPopupWithoutContext.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SetMainProject$PopupWithoutContext"/>
             </file>
@@ -178,20 +173,11 @@ made subject to such option by the copyright holder.
             </file>
             
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"/>
-            <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
-
-            <file name="org-netbeans-modules-project-ui-SyncEditorWithViewsAction.instance"/>
         </folder>
         
         <folder name="Window">
             <folder name="SelectDocumentNode">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
-                <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
-                </file>
-                <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
-                </file>
             </folder>
         </folder>
         
@@ -332,11 +318,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1000"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
-                <attr name="position" intvalue="1100"/>
-            </file>
-            
             <!-- SetMain and customize -->
             
             <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
@@ -346,29 +327,6 @@ made subject to such option by the copyright holder.
 
         </folder>
 
-        <folder name="View">
-            <file name="org-netbeans-modules-project-ui-SyncEditorWithViewsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SyncEditorWithViewsAction.instance"/>
-                <attr name="position" intvalue="1050"/>
-            </file>
-        </folder>
-
-        <folder name="GoTo">
-            <file name="SeparatorBeforeSelectIn.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2500"/>
-            </file>            
-            
-            <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
-                <attr name="position" intvalue="2600"/>
-            </file>            
-            
-            <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
-                <attr name="position" intvalue="2700"/>
-            </file>
-        </folder>
         <folder name="BuildProject">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
         
@@ -415,15 +373,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="900"/>
             </file>
-            <file name="org-netbeans-modules-project-ui-Rerun.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-Rerun.instance"/>
-                <attr name="position" intvalue="1000"/>
-            </file>
-            <file name="org-netbeans-modules-project-ui-actions-StopBuildingAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-StopBuildingAction.instance"/>
-                <attr name="position" intvalue="1100"/>
-            </file>
-        </folder>
+            </folder>
 
         <folder name="RunProject">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
@@ -524,14 +474,6 @@ made subject to such option by the copyright holder.
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
 	</file>
 
-        <file name="DS-1.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
-	</file>
-        
-        <file name="DS-2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
-	</file>
-        
         <file name="F9.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
 	</file>
@@ -570,14 +512,8 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
                         <attr name="position" intvalue="1780"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
-        </folder>
-        <folder name="TabActions">
-            <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
-                <attr name="position" intvalue="100"/>
-            </file>
         </folder>
     </folder>
     
@@ -585,10 +521,6 @@ made subject to such option by the copyright holder.
         <folder name="folder">
             <folder name="any">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.shadow">
-                        <attr name="position" intvalue="100"/>
-                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance"/>
-                    </file>
                     <file name="NewTemplateAction.shadow_hidden"/>
                     <file name="NewProjectFile.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
@@ -620,14 +552,6 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
             <attr name="position" intvalue="500"/>
-        </file>
-        <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
-            <attr name="position" intvalue="600"/>
-        </file>
-        <file name="sep-2.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            <attr name="position" intvalue="700"/>
         </file>
         <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
@@ -663,16 +587,4 @@ made subject to such option by the copyright holder.
             <file name="1.xsd" url="projectui-open-files.xsd"/>
         </folder>
     </folder>
-
-    <folder name="OptionsDialog">
- 
-        <folder name="Actions"> <!-- XXX #71280: should not be necessary but currently is -->
-            <folder name="Build">
-                <file name="org-netbeans-modules-project-ui-Rerun.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-Rerun.instance"/>
-                </file>
-            </folder>
-        </folder>
-   </folder>
-
 </filesystem>

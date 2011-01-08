@@ -57,10 +57,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Panel permitting user to create a new project group.
@@ -217,6 +219,11 @@ public class NewGroupPanel extends JPanel {
 
         useOpenCheckbox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(useOpenCheckbox, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.useOpenCheckbox.text")); // NOI18N
+        useOpenCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useOpenCheckboxActionPerformed(evt);
+            }
+        });
 
         autoSynchCheckbox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(autoSynchCheckbox, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.autoSynchCheckbox.text")); // NOI18N
@@ -427,6 +434,7 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(true);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
+        updateExistingProjectListWarning();
     }//GEN-LAST:event_directoryKindRadioActionPerformed
 
     private void subprojectsKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subprojectsKindRadioActionPerformed
@@ -443,6 +451,7 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(false);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
+        updateExistingProjectListWarning();
     }//GEN-LAST:event_subprojectsKindRadioActionPerformed
 
     private void adHocKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adHocKindRadioActionPerformed
@@ -459,8 +468,24 @@ public class NewGroupPanel extends JPanel {
         directoryButton.setEnabled(false);
         updateNameField();
         firePropertyChange(PROP_READY, null, null);
+        updateExistingProjectListWarning();
     }//GEN-LAST:event_adHocKindRadioActionPerformed
-    
+
+    private void useOpenCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useOpenCheckboxActionPerformed
+        updateExistingProjectListWarning();
+    }//GEN-LAST:event_useOpenCheckboxActionPerformed
+
+    private NotificationLineSupport notificationLineSupport;
+    void setNotificationLineSupport(NotificationLineSupport notificationLineSupport) {
+        this.notificationLineSupport = notificationLineSupport;
+    }
+    private void updateExistingProjectListWarning() { // #192899
+        if (adHocKindRadio.isSelected() && useOpenCheckbox.isSelected() || OpenProjects.getDefault().getOpenProjects().length == 0) {
+            notificationLineSupport.clearMessages();
+        } else {
+            notificationLineSupport.setWarningMessage(NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.open_project_warning"));
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adHocKindLabel;

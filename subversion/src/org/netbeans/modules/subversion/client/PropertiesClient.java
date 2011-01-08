@@ -45,13 +45,17 @@
 package org.netbeans.modules.subversion.client;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.parser.ParserSvnInfo;
 import org.netbeans.modules.subversion.client.parser.SvnWcUtils;
 import org.netbeans.modules.subversion.config.KVFile;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Implements properties access that is not supported
@@ -75,6 +79,10 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * <b>The implemetation should be moved into svnClientAdpater
  * library!</b>
  *
+ * <strong>Works also with 1.7+ working copies, however does not access metadata but calls methods on 
+ * {@link org.tigris.subversion.svnclientadapter.ISVNClientAdapter} instead. 
+ * Performance comes into question here - that's because svn props are not displayed in Local_changes mode.</strong>
+ *
  * @author Petr Kuzel
  */
 public final class PropertiesClient {
@@ -91,18 +99,46 @@ public final class PropertiesClient {
      * Loads BASE properties for given file.
      * @return property map&lt;String, byte[]> never null
      */
-    public Map<String, byte[]> getBaseProperties() throws IOException {
-        File store;
-        try {
-            store = getPropertyFile(true);
-        } catch (SVNClientException ex) {
-            throw new IOException(ex.getMessage());
-        }
-        if (store != null && store.isFile()) {
-            KVFile kv = new KVFile(store);
-            return kv.getNormalizedMap();
+    public Map<String, byte[]> getBaseProperties (boolean contactServer) throws IOException {
+        // XXX: refactor code, join with getProperties()
+        if (hasOldMetadata(file)) {
+            File store;
+            try {
+                store = getPropertyFile(true);
+            } catch (SVNClientException ex) {
+                throw new IOException(ex.getMessage());
+            }
+            if (store != null && store.isFile()) {
+                KVFile kv = new KVFile(store);
+                return kv.getNormalizedMap();
+            } else {
+                return new HashMap<String, byte[]>();
+            }
         } else {
-            return new HashMap<String, byte[]>();
+            Map<String, byte[]> map = new HashMap<String, byte[]>();
+            try {
+                if (contactServer) {
+                    SvnClient client = Subversion.getInstance().getClient(file);
+                    if (client != null) {
+                        ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                        if (info != null && (info.getUrl() != null || info.getCopyUrl() != null)) {
+                            ISVNProperty[] props = client.getProperties(info.getCopyUrl() == null ? info.getUrl() : info.getCopyUrl(),
+                                    SVNRevision.getRevision(info.getRevision().toString()),
+                                    SVNRevision.getRevision(info.getRevision().toString()));
+                            for (ISVNProperty prop : props) {
+                                map.put(prop.getName(), prop.getData());
+                            }
+                        }
+                    }
+                } else {
+                    return getProperties();
+                }
+                return map;
+            } catch (SVNClientException ex) {
+                return map;
+            } catch (ParseException ex) {
+                return map;
+            }
         }
     }
 
@@ -111,22 +147,38 @@ public final class PropertiesClient {
      * @return property map&lt;String, byte[]> never null
      */
     public Map<String, byte[]> getProperties() throws IOException {
-        File store;
-        try {
-            store = getPropertyFile(false);
-            if (store == null) {
-                // if no changes are made, the props.work does not exist
-                // so return the base prop-file - see #
-                store = getPropertyFile(true);
+        if (hasOldMetadata(file)) {
+            File store;
+            try {
+                store = getPropertyFile(false);
+                if (store == null) {
+                    // if no changes are made, the props.work does not exist
+                    // so return the base prop-file - see #
+                    store = getPropertyFile(true);
+                }
+            } catch (SVNClientException ex) {
+                throw new IOException(ex.getMessage());
             }
-        } catch (SVNClientException ex) {
-            throw new IOException(ex.getMessage());
-        }
-        if (store != null && store.isFile()) {
-            KVFile kv = new KVFile(store);
-            return kv.getNormalizedMap();
+            if (store != null && store.isFile()) {
+                KVFile kv = new KVFile(store);
+                return kv.getNormalizedMap();
+            } else {
+                return new HashMap<String, byte[]>();
+            }
         } else {
-            return new HashMap<String, byte[]>();
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                Map<String, byte[]> map = new HashMap<String, byte[]>();
+                if (client != null) {
+                    ISVNProperty[] props = client.getProperties(file);
+                    for (ISVNProperty prop : props) {
+                        map.put(prop.getName(), prop.getData());
+                    }
+                }
+                return map;
+            } catch (SVNClientException ex) {
+                return new HashMap<String, byte[]>();
+            }
         }
     }
 
@@ -152,5 +204,11 @@ public final class PropertiesClient {
     /** Not implemented. */
     public Map getProperties(int revision) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    public static boolean hasOldMetadata (File file) {
+        File parent;
+        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()
+                || (parent = file.getParentFile()) != null && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead();
     }
 }

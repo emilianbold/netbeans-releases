@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 
 /**
  *
@@ -83,7 +84,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 97;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 103;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -303,6 +304,9 @@ public final class RepositoryUtils {
     public static void closeUnit(Key key, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         assert key != null;
         _closeUnit(key.getUnit(), requiredUnits, cleanRepository);
+        if (cleanRepository) {
+            UIDManager.instance().clearProjectCache(key);
+        }
     }
 
     private static void _closeUnit(CharSequence unit, Set<CharSequence> requiredUnits, boolean cleanRepository) {

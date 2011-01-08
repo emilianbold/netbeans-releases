@@ -72,6 +72,18 @@ public interface NativeFileItem {
      */
     // XXX:FileObject conversion: remove
     public File getFile();
+    
+    /**
+     * The absolute file path
+     * @return absolute path
+     */
+    public String getAbsolutePath();
+    
+    /**
+     * File name (with extension)
+     * @return 
+     */
+    public String getName();
 
     /**
      * Returns the file object associated with this file item.

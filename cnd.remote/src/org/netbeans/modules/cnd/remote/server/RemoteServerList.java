@@ -126,8 +126,19 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 }
             }
         }
-        for (RemoteServerRecord rec : recordsToNotify) {
-            rec.checkHostInfo();
+        // previously, it was done by RemoteFileSupport, but it is moved to dlight.remote
+        if (recordsToNotify.isEmpty()) {
+            // inlined RemoteServerListUI.revalidate
+            ServerRecord record = get(env);
+            if (record.isDeleted()) {
+                addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+            } else if (!record.isOnline()) {
+                record.validate(true);
+            }
+        } else {
+            for (RemoteServerRecord rec : recordsToNotify) {
+                rec.checkHostInfo();
+            }
         }
     }
 

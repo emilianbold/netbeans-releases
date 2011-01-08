@@ -87,12 +87,16 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     private final List<CsmUID<CsmOffsetableDeclaration>> enclosingElements;
 
     protected ClassEnumBase(NameHolder name, CsmFile file, AST ast) {
-        super(file, getStartOffset(ast), getEndOffset(ast));
+        this(name, file, getStartOffset(ast), getEndOffset(ast));
+    }
+
+    protected ClassEnumBase(NameHolder name, CsmFile file, int start, int end) {
+        super(file, start, end);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         assert name != null;
         this.name = NameCache.getManager().getString(name.getName());
     }
-
+    
     protected ClassEnumBase(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
@@ -303,7 +307,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     public boolean isValid() {
-        return isValid && getContainingFile().isValid();
+        return isValid && super.isValid();
     }
 
     @Override

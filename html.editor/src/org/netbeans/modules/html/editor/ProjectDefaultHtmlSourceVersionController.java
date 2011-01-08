@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlSourceVersionController;
@@ -63,7 +60,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = HtmlSourceVersionController.class)
 public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVersionController {
 
-    public static final String HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME = "default-public-id"; //NOI18N
+    public static final String HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME = "default-html-public-id"; //NOI18N
+    public static final String XHTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME = "default-xhtml-public-id"; //NOI18N
 
     @Override
     public HtmlVersion getSourceCodeVersion(SyntaxAnalyzerResult analyzerResult, HtmlVersion detectedVersion) {
@@ -82,46 +80,46 @@ public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVers
         return findHtmlVersion(project, analyzerResult);
     }
 
-    public static HtmlVersion getDefaultHtmlVersion(Project project) {
-        return findHtmlVersion(project, null);
+    public static HtmlVersion getDefaultHtmlVersion(Project project, boolean xhtml) {
+        return findHtmlVersion(project, null, xhtml);
     }
 
     private static HtmlVersion findHtmlVersion(Project project, SyntaxAnalyzerResult analyzerResult) {
+        return findHtmlVersion(project, analyzerResult.getHtmlTagDefaultNamespace(), analyzerResult.mayBeXhtml());
+    }
+
+    private static HtmlVersion findHtmlVersion(Project project, String namespace, boolean xhtml) {
         Preferences prefs = ProjectUtils.getPreferences(project, HtmlSourceVersionController.class, true);
-        String publicId = prefs.get(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, null);
+        String publicId = prefs.get(getPropertyKey(xhtml), null);
         if (publicId == null) {
             return null;
         }
         
-        String namespace = analyzerResult != null ? analyzerResult.getHtmlTagDefaultNamespace() : null;
-
         //no-public id versions
-        if(publicId.equals(HtmlVersion.HTML5.name())) {
-            //TODO there should be a check if the file typically represents xhtml content,
-            //if so return XHTML5 instead. Test by file mimetype and some predefined types.
-            if(HtmlVersion.XHTML5.getDefaultNamespace().equals(namespace)) {
-                //if default is html5 but the fragment seems to be xhtml, return xhtml5
-                return HtmlVersion.XHTML5;
-            }
-            return HtmlVersion.HTML5;
-        } else if(publicId.equals(HtmlVersion.XHTML5.name())) {
+        if(xhtml && publicId.equals(HtmlVersion.XHTML5.name())) {
             return HtmlVersion.XHTML5;
+        } else if(!xhtml && publicId.equals(HtmlVersion.HTML5.name())) {
+            return HtmlVersion.HTML5;
         }
-
+         
         try {
-            return HtmlVersion.find(publicId, analyzerResult != null ? analyzerResult.getHtmlTagDefaultNamespace() : null);
+            return HtmlVersion.find(publicId, namespace);
         } catch (IllegalArgumentException e) {
             //no-op
         }
         return null;
     }
 
-    public static void setDefaultHtmlVersion(Project project, HtmlVersion version) {
+    public static void setDefaultHtmlVersion(Project project, HtmlVersion version, boolean xhtml) {
         Preferences prefs = ProjectUtils.getPreferences(project, HtmlSourceVersionController.class, true);
         String publicId = version.getPublicID();
         if(publicId == null) {
-            publicId = version.name(); //html5 has no public id
+            publicId = version.name(); //x/html5 has no public id
         }
-        prefs.put(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, publicId);
+        prefs.put(getPropertyKey(xhtml), publicId);
+    }
+
+    private static String getPropertyKey(boolean xhtml) {
+        return xhtml ? XHTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME : HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME;
     }
 }

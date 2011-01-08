@@ -21,6 +21,13 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Jobeet.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="RentAFlat" url="RentAFlat.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Rent-a-Flat.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -48,6 +48,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -572,7 +573,20 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             members2Remove.addAll(getFields2Remove(wc, refactoring.getFields()));
             members2Remove.addAll(getMethods2Remove(wc, refactoring.getMethods(), clazz));
             interfaces2Remove.addAll(getImplements2Remove(wc, refactoring.getImplements(), clazz));
-            
+           
+            for (ElementHandle el : refactoring.getMethods()) {
+                ExecutableElement e = (ExecutableElement) el.resolve(wc);
+                Tree tree = wc.getTrees().getTree(e);
+                MethodTree mt = (MethodTree) tree;
+                if (e.getAnnotation(Override.class)==null) {
+                    TreeMaker make = wc.getTreeMaker();
+                    AnnotationTree ann = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
+                    ModifiersTree modifiers = wc.getTreeMaker().addModifiersAnnotation(mt.getModifiers(), ann);
+                    wc.rewrite(mt.getModifiers(), modifiers);
+                }
+
+            }
+
             // filter out obsolete members
             List<Tree> members2Add = new ArrayList<Tree>();
             for (Tree tree : classTree.getMembers()) {
@@ -611,7 +625,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             
             wc.rewrite(classTree, nc);
         }
-        
+
         private List<Tree> getFields2Remove(CompilationInfo javac, List<ElementHandle<VariableElement>> members) {
             if (members.isEmpty()) {
                 return Collections.<Tree>emptyList();

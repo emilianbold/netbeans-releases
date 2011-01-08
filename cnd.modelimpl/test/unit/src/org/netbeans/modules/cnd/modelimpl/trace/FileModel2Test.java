@@ -73,6 +73,16 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test191446() throws Exception {
+        // #191446 - no code assistance for elementes #include'ed in namespace body
+        performTest("iz191446.cc");
+    }
+    
+    public void test191799() throws Exception {
+        // #191799: testSelectModelGetFunctions is failing
+        performTest("iz191799.cc");
+    }
+    
     public void test191598() throws Exception {
         // #191598 -  parser errors in /usr/include/tr1_impl/type_traits
         performTest("iz191598.cc");
@@ -363,4 +373,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz190710.cc");
     }
 
+    public void testExplicitSpecialization() throws Exception {
+        //  improving specialisations - skip explicit template function specialisation
+        performTest("explicit_specialization.cc");
+    }
+    
 }

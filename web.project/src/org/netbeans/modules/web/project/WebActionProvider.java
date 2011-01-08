@@ -239,7 +239,7 @@ class WebActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean isCompileOnSaveEnabled() {
-        return Boolean.parseBoolean(getEvaluator().getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+        return Boolean.parseBoolean(getEvaluator().getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE));
     }
 
     @Override
@@ -264,8 +264,8 @@ class WebActionProvider extends BaseActionProvider {
     }
 
     @Override
-    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command) {
-        return runServlet(p, javaFile, "LBL_RunAction", false);
+    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command, List<String> targetNames) {
+        return runServlet(p, javaFile, "LBL_RunAction", false, targetNames);
     }
 
     @Override
@@ -294,11 +294,15 @@ class WebActionProvider extends BaseActionProvider {
             if (!isSelectedServer()) {
                 return null;
             }
+            String targetNames[];
             if (command.equals(COMMAND_DEBUG_SINGLE)) {
+                targetNames = new String[]{"debug"};
                 boolean keepDebugging = setJavaScriptDebuggerProperties(p);
                 if (!keepDebugging) {
                     return null;
                 }
+            } else {
+                targetNames = new String[]{"run"};
             }
             // run a JSP
             FileObject files[] = findJsps(context);
@@ -314,7 +318,7 @@ class WebActionProvider extends BaseActionProvider {
                 if (requestParams != null) {
                     p.setProperty("client.urlPart", requestParams); //NOI18N
                     p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                    return commands.get(command);
+                    return targetNames;
                 } else {
                     return null;
                 }
@@ -327,7 +331,7 @@ class WebActionProvider extends BaseActionProvider {
                         url = url.replace(" ", "%20");
                         p.setProperty("client.urlPart", url); //NOI18N
                         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                        return commands.get(command);
+                        return targetNames;
                     } else {
                         return null;
                     }
@@ -452,7 +456,7 @@ class WebActionProvider extends BaseActionProvider {
 
     // Fix for IZ#170419 - Invoking Run took 29110 ms.
     private boolean runServlet( Properties p, FileObject javaFile, String
-            actionName , boolean debug ) 
+            actionName , boolean debug, List<String> targetNames) 
     {
         // run servlet
         // PENDING - what about servlets with main method? servlet should take
@@ -542,7 +546,7 @@ class WebActionProvider extends BaseActionProvider {
             return runEmptyMapping(javaFile);
         }
         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-        commands.put(COMMAND_RUN_SINGLE, new String[]{"run"}); // NOI18N
+        targetNames.add("run"); // NOI18N
         return true;
     }
 
@@ -757,7 +761,7 @@ class WebActionProvider extends BaseActionProvider {
                 return false;
             }
         }
-        return true;
+        return false;
     }
 
     // Private methods -----------------------------------------------------

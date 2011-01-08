@@ -309,12 +309,17 @@ public final class Log extends Handler {
                     // prevent circular references
                 }
             }
+            
+            if (messages.length() + sb.length() > 20000) {
+                if (sb.length() > 20000) {
+                    messages.setLength(0);
+                    sb.delete(0, sb.length() - 20000); 
+                } else {
+                    messages.setLength(20000 - sb.length());
+                }
+            }
 
             messages.append(sb.toString());
-
-            if (messages.length() > 40000) {
-                messages.delete(0, 20000);
-            }
         } finally {
             off.run();
         }
@@ -337,12 +342,12 @@ public final class Log extends Handler {
             // no wrapping
             return ex;
         }
-        return wrapWithAddendum(ex, "Log:\n" + messages);
+        return wrapWithAddendum(ex, "Log:\n" + messages, true);
     }
 
-    static Throwable wrapWithAddendum(Throwable ex, String addendum) {
+    static Throwable wrapWithAddendum(Throwable ex, String addendum, boolean after) {
         if (ex instanceof AssertionFailedError) {
-            AssertionFailedError ne = new AssertionFailedError(combineMessages(ex, addendum));
+            AssertionFailedError ne = new AssertionFailedError(combineMessages(ex, addendum, after));
             if (ex.getCause() != null) {
                 ne.initCause(ex.getCause());
             }
@@ -350,7 +355,7 @@ public final class Log extends Handler {
             return ne;
         }
         if (ex instanceof AssertionError) { // preferred in JUnit 4
-            AssertionError ne = new AssertionError(combineMessages(ex, addendum));
+            AssertionError ne = new AssertionError(combineMessages(ex, addendum, after));
             if (ex.getCause() != null) {
                 ne.initCause(ex.getCause());
             }
@@ -358,7 +363,7 @@ public final class Log extends Handler {
             return ne;
         }
         if (ex instanceof IOException) {//#66208
-            IOException ne = new IOException(combineMessages(ex, addendum));
+            IOException ne = new IOException(combineMessages(ex, addendum, after));
             if (ex.getCause() != null) {
                 ne.initCause(ex.getCause());
             }
@@ -366,13 +371,13 @@ public final class Log extends Handler {
             return ne;
         }
         if (ex instanceof Exception) {
-            return new InvocationTargetException(ex, combineMessages(ex, addendum));
+            return new InvocationTargetException(ex, combineMessages(ex, addendum, after));
         }
         return ex;
     }
-    private static String combineMessages(Throwable ex, String addendum) {
+    private static String combineMessages(Throwable ex, String addendum, boolean after) {
         String baseMessage = ex.getMessage();
-        return (baseMessage == null || baseMessage.equals("null")) ? addendum : baseMessage + " " + addendum;
+        return (baseMessage == null || baseMessage.equals("null")) ? addendum : after ? baseMessage + " " + addendum : addendum + " " + baseMessage;
     }
 
         

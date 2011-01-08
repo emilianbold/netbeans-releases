@@ -61,6 +61,7 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
@@ -78,6 +79,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -144,13 +146,35 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
     private static final class ToolbarPresenter extends JPanel {
 
-       private final Lookup actionContext;
+        private final Lookup actionContext;
         private JComboBox combo;
         private JLabel comboLabel;
         private DatabaseConnectionModel model;
+        private boolean waiting;
+        private SQLExecution waitingSQLExecution = null;
+        private static final RequestProcessor RP = new RequestProcessor(ToolbarPresenter.class);
 
         public ToolbarPresenter(final Lookup actionContext) {
             initComponents();
+            waiting = true;
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    model = new DatabaseConnectionModel();
+                    if (waitingSQLExecution != null) {
+                        model.setSQLExecution(waitingSQLExecution);
+                        waitingSQLExecution = null;
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            waiting = false;
+                            combo.setModel(model);
+                            setEnabled(true);
+                        }
+                    });
+                }
+            });
             this.actionContext = actionContext;
         }
 
@@ -162,7 +186,11 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         }
 
         public void setSQLExecution(SQLExecution sqlExecution) {
-            model.setSQLExecution(sqlExecution);
+            if (model != null) {
+                model.setSQLExecution(sqlExecution);
+            } else {
+                waitingSQLExecution = sqlExecution;
+            }
         }
 
         private void initComponents() {
@@ -202,13 +230,14 @@ public class ConnectionAction extends SQLExecutionBaseAction {
                 }
             });
             combo.setOpaque(false);
-            model = new DatabaseConnectionModel();
-            combo.setModel(model);
+            combo.setModel(new DefaultComboBoxModel(
+                    new String[] { NbBundle.getMessage(ToolbarPresenter.class, "ConnectionAction.ToolbarPresenter.LoadingConnections") }));
+            setEnabled(false);
             combo.setRenderer(new DatabaseConnectionRenderer());
             String accessibleName = NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
             combo.getAccessibleContext().setAccessibleName(accessibleName);
             combo.getAccessibleContext().setAccessibleDescription(accessibleName);
-            combo.setPreferredSize (new Dimension (Math.min (combo.getPreferredSize ().width, 400), combo.getPreferredSize ().height));
+            combo.setPreferredSize (new Dimension (400, combo.getPreferredSize ().height));
 
             add(combo, BorderLayout.CENTER);
 
@@ -221,8 +250,8 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
         @Override
         public void setEnabled(boolean enabled) {
-            combo.setEnabled(enabled);
-            super.setEnabled(enabled);
+            combo.setEnabled(enabled && ! waiting);
+            super.setEnabled(enabled && ! waiting);
         }
     }
 

@@ -159,7 +159,7 @@ public class PostFlowAnalysis extends TreeScanner {
              e.sym != null;
              e = e.next()) {
             if (e.sym != tree.sym &&
-                types.isSameType(types.erasure(e.sym.type), type)) {
+                types.isSameType(types.erasure(e.sym.type), type) && !e.sym.type.isErroneous() && !type.isErroneous()) {
                 log.error(tree.pos(), "name.clash.same.erasure", tree.sym, e.sym); //NOI18N
                 return;
             }

@@ -152,6 +152,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
 
+    private boolean lazyScan = true;
 
     public ModelVisitor(final PHPParseResult info) {
         this.fileScope = new FileScopeImpl(info);
@@ -162,7 +163,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         this.info = info;
         this.baseElements = new ArrayList<PhpBaseElement>();
     }
-
+   
     public ParserResult getCompilationInfo() {
         return this.info;
     }
@@ -352,6 +353,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Program program) {
+        lazyScan = true;
         modelBuilder.setProgram(program);
         fileScope.setBlockRange(program);
         this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
@@ -420,16 +422,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodDeclaration node) {
-        modelBuilder.build(node, occurencesBuilder);
-        markerBuilder.prepare(node, modelBuilder.getCurrentScope());
-        checkComments(node);
-
+        if (lazyScan) {
+            modelBuilder.build(node, occurencesBuilder, this);
+            markerBuilder.prepare(node, modelBuilder.getCurrentScope());
+            checkComments(node);
+        }
         try {
-            //super.visit(node);
-            scan(node.getFunction().getFormalParameters());
-            scan(node.getFunction().getBody());
+            if (!lazyScan) {
+                scan(node.getFunction().getFormalParameters());
+                scan(node.getFunction().getBody());
+            }
         } finally {
-            modelBuilder.reset();
+            if (lazyScan) {
+                modelBuilder.reset();
+            }
         }
     }
 
@@ -1089,7 +1095,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (map == null) {
             map = new HashMap<String, VariableNameImpl>();
             vars.put(varContainer, map);
-        }
+        } 
         String name = VariableNameImpl.toName(node);
         VariableNameImpl retval = map.get(name);
         if (retval == null) {
@@ -1320,4 +1326,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
     }
+    
+    void scanNoLazy(ASTNode node, Scope inScope) {
+        modelBuilder.prepareForLazy(inScope);
+        lazyScan = false;
+        scan(node);
+    }
+
 }

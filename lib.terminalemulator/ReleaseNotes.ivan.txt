@@ -1,3 +1,86 @@
+nobugid - fix op_ce (clear to end of line) so there are no "boxes" when
+          running nethack.
+	This in response to Jesse's comment that nethack doesn't work
+	under term.
+	See bug #192779 Comment #1.
+	After fixing this, and maybe thebelow bugs, I haven't had problems
+	running nethack on linux.
+
+nobugid - ensure ${cluster} is initialized before clean
+
+nobugid - Term debugging switch from UI
+	The "Start Terminal" dialog which pops up on Terminals->
+	TestTerminalwithRich/NativeExecution now has a debug checkbox.
+	Entries in the ControlWindow now have a "debug: on off" control.
+	These allow enabling and disabling of Term debug flags.
+	
+nobugid - don't NPE when creating a Terminal and ControlWindow is closed.
+
+187345 - wrong characters in Terminals
+	Partial fix ...
+	A program renders alternative characters as follows. It first needs to
+	select the desired font via "ESC [ <n> m". Where <n> ranges from
+	10 to 19, 10 meaning "default" font. About the only
+	interesting font in widespread use is 11, the so-called DEC graphics
+	character set. See the right two columns in
+		http://vt100.net/docs/vt220-rm/table2-4.html
+	Then the program needs to emit the right character codes. These vary
+	from terminal type to terminal type and are described by the 'acsc'
+	entry in the terminfo DB:
+		cd /usr/share/terminfo/a
+		infocmp ansi
+	The mapping described by 'acsc' is for _output_. E.g. to render
+	the DEC graphic character '~', i.e. ACS_BULLET, the program
+	has to emit 0304 for an ANSI terminals and '~' for xterm.
+
+	To that end ...
+	... introduced support for alternative font character attributes.
+	These are set by codes 10-19 of the ANSI "ESC [ ... m" escape
+	sequence, 10 being the default font.
+
+	These codes are normalized to a 0-9 range and stored in a new 
+	4-bit-wide FONT field in Attr using Attr.setAttribute() and setFont()
+	and subsequently accessed via Attr.font().
+
+	How are various fonts rendered?
+	We work on the assumption that unicode will contain a glyph
+	for any desired graphic. This reduces the problem to
+	mapping a character coming into op_char() to the appropriate unicode
+	"glyph". This is done by Term.mapChar().
+	mapChar() only handles additional font attribute 1 (aka ANSI character
+	attribute code 11). It does so in two steps. First it maps the
+	incoming character to the Alternative Character Set (ACS) based on
+		http://vt100.net/docs/vt220-rm/table2-4.html
+	These are canonical VT-100 characters.
+	It then maps the canonical VT-100 character to an explicit unicode
+	character representing the desired graphic.
+
+	Still to do ...
+	- Term.mapACS() needs to be an abstract method of Interp.
+	- Not all VT-100 graphic characters have high fidelity representations
+	  in unicode. A more sophisticated system would create it's own
+	  scaled glyphs.
+
+	And all of this hasn't solved the original problem of the fancy
+	zsh prompt. I can get almost everything right except that there
+	are too many spaces on the second line of the prompt causing 
+	the "date" portion to wrap.
+	But I think this has to do with the terminfo entry for 'ansi'
+	or a curses bug on my FC12. Will have to check on some other 
+	platforms after pushing.
+
+188024 - single last character with different attributes not rendered
+	An off-by-one error in the main loop termination test in
+	Term.paint_line_new().
+
+187345 - wrong characters in Terminals
+	Introduced a version of StreamTerm.connect() that takes a charset
+	like "ISO-8859-1" or "UTF-8". This allows for overriding the default
+	system encoding. Sort of analogous to Project source encodings.
+
+================================================================================
+May have missed some entries here ...
+================================================================================
 nobugid (Towards more InputOutput functionality)
 	Introduced IOResizable and IOEmulation to support Term-related
 	functionality.

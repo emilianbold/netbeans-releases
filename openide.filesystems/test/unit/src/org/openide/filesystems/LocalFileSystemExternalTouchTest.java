@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 public class LocalFileSystemExternalTouchTest extends NbTestCase {
     private Logger LOG;
@@ -114,11 +115,10 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         L listener = new L();
         testFolder.addRecursiveListener(listener);
 
-        Thread.sleep(1000);
-
         FileOutputStream os = new FileOutputStream(file);
         os.write(10);
         os.close();
+        TestFileUtils.touch(file, null);
 
         if (lm > file.lastModified() - 50) {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
@@ -143,8 +143,6 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         Reference<FileObject> ref = new WeakReference<FileObject>(fileObject1);
         assertGC("File Object can disappear", ref);
 
-        Thread.sleep(100);
-
         class L extends FileChangeAdapter {
             int cnt;
             FileEvent event;
@@ -161,6 +159,7 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
 
         File nfile = new File(file.getParentFile(), "new.txt");
         nfile.createNewFile();
+        TestFileUtils.touch(nfile, null);
 
         testFolder.refresh();
 
@@ -180,8 +179,6 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         Reference<FileObject> ref = new WeakReference<FileObject>(fileObject1);
         assertGC("File Object can disappear", ref);
 
-        Thread.sleep(100);
-
         class L extends FileChangeAdapter {
             int cnt;
             FileEvent event;
@@ -195,7 +192,7 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         }
         L listener = new L();
         testFolder.addRecursiveListener(listener);
-
+        TestFileUtils.touch(file, null);
         file.delete();
 
         testFolder.refresh();
@@ -249,9 +246,6 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
             }
 
             public void fileAttributeChanged(FileAttributeEvent fe) {
-                if (fe.getName().startsWith("DataEditorSupport.read-only.refresh")) {
-                    return;
-                }
                 LOG.info("AttributeChanged: " + fe.getFile());
                 sb.append("AttributeChanged");
             }
@@ -269,10 +263,9 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         sub.addRecursiveListener(recursive);
         LOG.info("Adding listener finished");
 
-        Thread.sleep(1000);
-
         File fo = new File(fobj.getParentFile(), "sibling.java");
         fo.createNewFile();
+        TestFileUtils.touch(fo, null);
         LOG.info("sibling created, now refresh");
         lfs.refresh(true);
         LOG.info("sibling refresh finished");
@@ -280,11 +273,10 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
         recursive.assertMessages("Creation", "DataCreated");
         flat.assertMessages("No messages in flat mode", "");
 
-        Thread.sleep(1000);
-
         final OutputStream os = new FileOutputStream(fo);
         os.write(10);
         os.close();
+        TestFileUtils.touch(fo, fobj);
         LOG.info("Before refresh");
         lfs.refresh(true);
         LOG.info("After refresh");

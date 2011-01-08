@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
@@ -72,6 +73,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -93,8 +95,10 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     private final UpdateHelper helper;
     private final ClassPath sourcePath;
     private final String mainClassPropName;
-    private FileObject current;
-    private FileChangeListener listener;
+    private FileObject currentFo;
+    private DataObject currentDo;
+    private FileChangeListener foListener;
+    private PropertyChangeListener doListener;
     
     /** Creates a new instance of MainClassUpdater */
     public MainClassUpdater(final Project project, final PropertyEvaluator eval,
@@ -114,15 +118,25 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     }
     
     public synchronized void unregister () {
-        if (current != null && listener != null) {
-            current.removeFileChangeListener(listener);
-        }
+        if (currentFo != null && foListener != null) {            
+            currentFo.removeFileChangeListener(foListener);
+        }            
+        if (currentDo != null && doListener != null) {
+            currentDo.removePropertyChangeListener(doListener);
+        }                            
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (this.mainClassPropName.equals(evt.getPropertyName())) {
+        if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+            final FileObject newFile = (FileObject) evt.getNewValue();
+            final FileObject oldFile = (FileObject) evt.getOldValue();
+            handleMainClassMoved(oldFile, newFile);
+            
+        } else if (this.mainClassPropName.equals(evt.getPropertyName())) {
             //Go out of the ProjectManager.MUTEX, see #118722
             RP.post(new Runnable () {
+                @Override
                 public void run() {
                     MainClassUpdater.this.addFileChangeListener ();
                 }
@@ -132,24 +146,30 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     
     @Override
     public void fileRenamed (final FileRenameEvent evt) {
+        handleMainClassMoved(evt.getFile(), evt.getFile());
+    }
+    
+    private void handleMainClassMoved(final FileObject oldFile, final FileObject newFile) {
         if (!project.getProjectDirectory().isValid()) {
             return;
         }
         final FileObject _current;
         synchronized (this) {
-            _current = this.current;
+            _current = this.currentFo;
         }
-        if (evt.getFile() == _current) {
+        if (oldFile == _current) {
             Runnable r = new Runnable () {
+                @Override
                 public void run () {  
                     try {
                         final String oldMainClass = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+                            @Override
                             public String run() throws Exception {
                                 return eval.getProperty(mainClassPropName);
                             }
                         });
 
-                        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(_current);
+                        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(newFile);
                         String newMainClass = null;
                         if (!main.isEmpty()) {
                             ElementHandle<TypeElement> mainHandle = main.iterator().next();
@@ -160,6 +180,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                             eval.getProperty(J2SEConfigurationProvider.PROP_CONFIG) == null) {
                             final String newMainClassFinal = newMainClass;
                             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                                @Override
                                 public Void run() throws Exception {                                                                                    
                                     EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                     props.put (mainClassPropName, newMainClassFinal);
@@ -183,15 +204,20 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
             else {
                 SwingUtilities.invokeLater(r);
             }
-        }
+        }    
     }
     
     private void addFileChangeListener () {
         synchronized (MainClassUpdater.this) {
-            if (current != null && listener != null) {
-                current.removeFileChangeListener(listener);
-                current = null;
-                listener = null;
+            if (currentFo != null && foListener != null) {
+                currentFo.removeFileChangeListener(foListener);
+                foListener = null;
+                currentFo = null;
+            }
+            if (currentDo != null && doListener != null) {
+                currentDo.removePropertyChangeListener(doListener);
+                doListener = null;
+                currentDo = null;
             }            
         }
         final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
@@ -201,27 +227,30 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                 if (roots.length>0) {
                     ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
                     if (bootCp == null) {
-                        LOG.warning("No bootpath for: " + FileUtil.getFileDisplayName(roots[0]));   //NOI18N
+                        LOG.log(Level.WARNING, "No bootpath for: {0}", FileUtil.getFileDisplayName(roots[0]));   //NOI18N
                         bootCp = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
                     }
                     ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
                     if (compileCp == null) {
-                        LOG.warning("No classpath for: " + FileUtil.getFileDisplayName(roots[0]));  //NOI18N
+                        LOG.log(Level.WARNING, "No classpath for: {0}", FileUtil.getFileDisplayName(roots[0]));  //NOI18N
                         compileCp = ClassPathSupport.createClassPath(new URL[0]);
                     }
                     final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
                     JavaSource js = JavaSource.create(cpInfo);
                     js.runWhenScanFinished(new Task<CompilationController>() {
-
+                        @Override
                         public void run(CompilationController c) throws Exception {
                             TypeElement te = c.getElements().getTypeElement(mainClassName);
                              if (te != null) {
                                 synchronized (MainClassUpdater.this) {
-                                    current = SourceUtils.getFile(te, cpInfo);
-                                    listener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, current);
-                                    if (current != null && sourcePath.contains(current)) {
-                                        current.addFileChangeListener(listener);
-                                    }
+                                    currentFo = SourceUtils.getFile(te, cpInfo);
+                                    if (currentFo != null && sourcePath.contains(currentFo)) {
+                                        foListener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, currentFo);
+                                        currentFo.addFileChangeListener(foListener);                                        
+                                        currentDo = DataObject.find(currentFo);
+                                        doListener = WeakListeners.propertyChange(MainClassUpdater.this, currentDo);
+                                        currentDo.addPropertyChangeListener(doListener);
+                                    }                                    
                                 }
                             }                            
                         }

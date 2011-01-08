@@ -105,12 +105,6 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 t, true);
     }
     
-    public static Hk2OptionalFactory createEe6WC() {
-        ServerUtilities t = ServerUtilities.getEe6WCUtilities();
-        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6WC(),
-                t, true);
-    }
-
     @Override
     public StartServer getStartServer(DeploymentManager dm) {
         return new Hk2StartServer(dm);
@@ -201,7 +195,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         if(dm instanceof Hk2DeploymentManager) {
             result = new Hk2ServerInstanceDescriptor((Hk2DeploymentManager) dm);
         } else {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Invalid deployment manager: " + dm); // NOI18N
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Invalid deployment manager: {0}", dm); // NOI18N
         }
         return result;
     }
@@ -274,12 +268,10 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                         if(module != null) {
                             return Collections.singleton(module.getInstanceProperties());
                         } else {
-                            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                                    "No JavaEE facade found for " + instance.getDisplayName());
+                            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"No JavaEE facade found for {0}", instance.getDisplayName()); // NOI18N
                         }
                     } else {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                                "No lookup found for " + instance.getDisplayName());
+                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, "No lookup found for {0}", instance.getDisplayName()); // NOI18N
                     }
                 } else {
                     Logger.getLogger("glassfish-javaee").log(Level.WARNING,

@@ -639,7 +639,9 @@ is divided into following sections:
                         <delete>
                             <files includesfile="${{javac.includesfile.binary}}"/>
                         </delete>
-                        <delete file="${{javac.includesfile.binary}}"/> <!-- deleteonexit keeps the file during IDE run -->
+                        <delete>
+                            <fileset file="${{javac.includesfile.binary}}"/>  <!-- deleteonexit keeps the file during IDE run -->
+                        </delete>
                     </sequential>
                 </macrodef>
             </target>
@@ -1230,14 +1232,14 @@ is divided into following sections:
                         <j2seproject1:attribute name="Main-Class" value="${{main.class}}"/>
                     </j2seproject1:manifest>
                 </j2seproject1:jar>
-                <echo>To run this application from the command line without Ant, try:</echo>
+                <echo level="info">To run this application from the command line without Ant, try:</echo>
                 <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
                 <pathconvert property="run.classpath.with.dist.jar">
                     <path path="${{run.classpath}}"/>
                     <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
                 </pathconvert>
-                <echo><xsl:choose>
+                <echo level="info"><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
@@ -1256,9 +1258,9 @@ is divided into following sections:
                         <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
                     </customize>
                 </j2seproject3:copylibs>
-                <echo>To run this application from the command line without Ant, try:</echo>
+                <echo level="info">To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
-                <echo><xsl:choose>
+                <echo level="info"><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>
@@ -1273,9 +1275,9 @@ is divided into following sections:
                         <attribute name="Main-Class" value="${{main.class}}"/>
                     </customize>
                 </j2seproject3:copylibs>
-                <echo>To run this application from the command line without Ant, try:</echo>
+                <echo level="info">To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
-                <echo><xsl:choose>
+                <echo level="info"><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>
@@ -1605,7 +1607,7 @@ is divided into following sections:
             </target>
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
@@ -1642,7 +1644,7 @@ is divided into following sections:
             
             <target name="-do-compile-test-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <xsl:element name="j2seproject3:force-recompile">
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>

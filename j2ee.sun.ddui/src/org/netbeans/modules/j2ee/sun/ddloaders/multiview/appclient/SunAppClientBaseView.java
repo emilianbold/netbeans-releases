@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,7 +44,6 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient;
 
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.*;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 
@@ -60,7 +59,7 @@ public abstract class SunAppClientBaseView extends DDSectionNodeView {
         super(dataObject);
         
         if(!(rootDD instanceof SunApplicationClient)) {
-            throw new IllegalArgumentException("Data object does not contain a sun-web.xml graph.");
+            throw new IllegalArgumentException("Data object does not contain a sun-application-client.xml graph.");
         }
         
         sunAppClient = (SunApplicationClient) rootDD;

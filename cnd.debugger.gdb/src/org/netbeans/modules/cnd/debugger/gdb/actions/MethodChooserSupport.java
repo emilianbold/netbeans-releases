@@ -54,13 +54,13 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.spi.model.services.FunctionCallsProvider;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 import org.openide.util.NbBundle;
 import org.openide.text.Annotation;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 public class MethodChooserSupport implements PropertyChangeListener {
     private final GdbDebugger debugger;
@@ -169,9 +169,16 @@ public class MethodChooserSupport implements PropertyChangeListener {
             debugger.stepInto();
             return true;
         }
+        GdbCallStackFrame currentCallStackFrame = debugger.getCurrentCallStackFrame();
+        
+        if (currentCallStackFrame == null) {
+            debugger.stepInto();
+            return true;
+        }
+        
         List<CsmReference> functionCallsList = fcProvider.getFunctionCalls(
-                debugger.getCurrentCallStackFrame().getDocument(),
-                debugger.getCurrentCallStackFrame().getLineNumber()-1);
+                currentCallStackFrame.getDocument(),
+                currentCallStackFrame.getLineNumber()-1);
 
         refs = functionCallsList.toArray(new CsmReference[functionCallsList.size()]);
         selectedIndex = 0;

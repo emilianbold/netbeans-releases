@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -181,30 +182,34 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
         return new File(path, "configure");
     }
+    
+    protected ExecutionEnvironment getEE(){
+        return ExecutionEnvironmentFactory.getLocal();
+    }
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         if (useSunCompilers) {
             if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                     if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                        CompilerSetManager.get(getEE()).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
             if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                     if (set.getCompilerFlavor().isGnuCompiler()) {
-                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                        CompilerSetManager.get(getEE()).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
@@ -243,6 +248,10 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                         return CndFileUtils.toFileObject(path);
                     } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
                         return new File(path);
+                    } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
+                        return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
+                    } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {
+                        return ExecutionEnvironmentFactory.toUniqueID(getEE());
                     } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
@@ -279,9 +288,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                                                 if (set.getCompilerFlavor().isMinGWCompiler()) {
-                                                    CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                                                    CompilerSetManager.get(getEE()).setDefault(set);
                                                     break;
                                                 }
                                             }
@@ -355,14 +364,17 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private boolean findObjectFiles(File file){
         if (file.isDirectory()) {
-            for(File f : file.listFiles()){
-                if (f.isDirectory()) {
-                    boolean b = findObjectFiles(f);
-                    if (b) {
+            File[] ff = file.listFiles();
+            if (ff != null) {
+                for(File f : ff){
+                    if (f.isDirectory()) {
+                        boolean b = findObjectFiles(f);
+                        if (b) {
+                            return true;
+                        }
+                    } else if (f.isFile() && f.getName().endsWith(".o")) {
                         return true;
                     }
-                } else if (f.isFile() && f.getName().endsWith(".o")) {
-                    return true;
                 }
             }
         }

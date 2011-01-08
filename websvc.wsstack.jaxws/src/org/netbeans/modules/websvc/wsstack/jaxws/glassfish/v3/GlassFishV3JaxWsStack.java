@@ -115,11 +115,21 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     private JaxWs.UriDescriptor getUriDescriptor() {
         return new JaxWs.UriDescriptor() {
 
-            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
+            public String getServiceUri(String applicationRoot, String serviceName, 
+                    String portName, boolean isEjb) 
+            {
                 if (isEjb) {
                     return serviceName+"/"+portName; //NOI18N
                 } else {
-                    return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
+                    if ( applicationRoot == null || applicationRoot.length() ==0 ){
+                        return serviceName;
+                    }
+                    else {
+                        StringBuilder builder = new StringBuilder( applicationRoot);
+                        builder.append('/');
+                        builder.append(serviceName);
+                        return builder.toString();
+                    }
                 }
             }
 

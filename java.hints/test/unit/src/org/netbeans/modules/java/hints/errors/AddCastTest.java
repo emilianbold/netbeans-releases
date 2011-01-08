@@ -108,7 +108,19 @@ public class AddCastTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                             "package test; import java.io.File; public class Test {void foo() { File f = new |File() }}");
     }
+
+    public void test193668() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import java.util.List; public class Test { public List t(List l) { return t(c|()); } }");
+    }
     
+    public void test193625a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private void t(Object o) { java.util.List l = |o; } }",
+                       "[AddCastFix:...o:List]",
+                       "package test; public class Test { private void t(Object o) { java.util.List l = (java.util.List) o; } }");
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new AddCast().run(info, null, pos, path, null);

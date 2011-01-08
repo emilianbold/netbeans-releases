@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Component;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -105,6 +104,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     class AddButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             addObjectAction(new PackagerInfoElement(packagingConfiguration.getType().getValue(), "", "")); // NOI18N
         }
@@ -112,6 +112,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     class AddEntryButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel(packagingConfiguration);
             DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
@@ -158,7 +159,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
     @Override
     public int getSelectedIndex() {
         int index = getTargetList().getSelectedRow();
-        if (index >= 0 && index < listData.size()) {
+        if (index >= 0 && index < getListDataSize()) {
             return index;
         } else {
             return 0;
@@ -171,7 +172,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
     }
 
     @Override
-    protected void setData(Vector data) {
+    protected void setData(List<PackagerInfoElement> data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
         getTargetList().getColumnModel().getColumn(0).setPreferredWidth(100);
@@ -185,6 +186,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -192,8 +194,8 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
             checkSelection();
             // Disable Remove button for mandatory entries
             int i = getSelectedIndex();
-            if (listData.size() >= 0 && i >= 0 && i < listData.size()) {
-                PackagerInfoElement infoElement = listData.get(i);
+            if (getListDataSize() >= 0 && i >= 0 && i < getListDataSize()) {
+                PackagerInfoElement infoElement = getElementAt(i);
                 if (infoElement.isMandatory()) {
                     getRemoveButton().setEnabled(false);
                 }
@@ -292,6 +294,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     class MyListSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent arg0) {
             updateDoc();
         }
@@ -304,11 +307,11 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
         docArea.setText("");
 
         int i = targetList.getSelectedRow();
-        if (listData.size() == 0 || i < 0 || i >= listData.size()) {
+        if (getListDataSize() == 0 || i < 0 || i >= getListDataSize()) {
             return;
         }
 
-        PackagerInfoElement elem = listData.get(i);
+        PackagerInfoElement elem = getElementAt(i);
         if (elem.getName().equals("ARCH")) { //NOI18N
             docArea.setText(getString("PACKAGING_ARCH_DOC"));
         } else if (elem.getName().equals("CATEGORY")) { //NOI18N
@@ -377,7 +380,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            PackagerInfoElement elem = listData.elementAt(row);
+            PackagerInfoElement elem = getElementAt(row);
             if (col == 0) {
             } else if (col == 1) {
                 String val = elem.getValue();
@@ -406,13 +409,13 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
         @Override
         public int getRowCount() {
-            return listData.size();
+            return getListDataSize();
         }
 
         @Override
         public Object getValueAt(int row, int col) {
 //            return listData.elementAt(row);
-            PackagerInfoElement elem = listData.elementAt(row);
+            PackagerInfoElement elem = getElementAt(row);
             if (col == 0) {
                 return elem.getName();
             }
@@ -430,7 +433,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
         @Override
         public void setValueAt(Object value, int row, int col) {
-            PackagerInfoElement elem = listData.elementAt(row);
+            PackagerInfoElement elem = getElementAt(row);
             if (col == 0) {
                 elem.setName((String) value);
             } else if (col == 1) {

@@ -48,7 +48,6 @@ import java.beans.PropertyEditor;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.api.debugger.Properties;
 
-import org.netbeans.modules.cnd.debugger.common2.values.StringEditor;
 
 /**
  * Viewmodel.ColumnModel seems to have less-than-useful default
@@ -91,22 +90,26 @@ abstract public class AbstractColumnModel extends ColumnModel {
     }
 
     // interface ColumnModel
+    @Override
     public void setCurrentOrderNumber(int newOrderNumber) {
 	// 6688737
 	properties.setInt (getID () + ".currentOrderNumber",newOrderNumber); // NOI18N
     }
 
     // interface ColumnModel
+    @Override
     public int getCurrentOrderNumber () {
 	return properties.getInt (getID () + ".currentOrderNumber",-1); // NOI18N
     }
 
     // interface ColumnModel
+    @Override
     public boolean isVisible() {
         return properties.getBoolean (getID () + ".visible", defaultVisible);
     }
 
     // interface ColumnModel
+    @Override
     public void setVisible(boolean visible) {
         properties.setBoolean (getID () + ".visible", visible); // NOI18N
     } 
@@ -123,6 +126,7 @@ abstract public class AbstractColumnModel extends ColumnModel {
     }
 
     // interface ColumnModel
+    @Override
     public String getShortDescription() {
         return shortDescription; // NOI18N
     }
@@ -134,6 +138,7 @@ abstract public class AbstractColumnModel extends ColumnModel {
     }
 
     // interface ColumnModel
+    @Override
     public java.beans.PropertyEditor getPropertyEditor() {
 	return propertyEditor;
     }
@@ -141,21 +146,25 @@ abstract public class AbstractColumnModel extends ColumnModel {
 
 
     // interface ColumnModel
+    @Override
     public boolean isSortable() {
 	return false;
     }
 
     // interface ColumnModel
+    @Override
     public void setSorted(boolean sorted) {
 	properties.setBoolean (getID () + ".sorted", sorted); // NOI18N
     }
 
     // interface ColumnModel
+    @Override
     public boolean isSorted() {
 	return properties.getBoolean (getID () + ".sorted", false);
     }
 
     // interface ColumnModel
+    @Override
     public void setSortedDescending(boolean sortedDescending) {
 	properties.setBoolean (
             getID () + ".sortedDescending", // NOI18N
@@ -164,6 +173,7 @@ abstract public class AbstractColumnModel extends ColumnModel {
     }
 
     // interface ColumnModel
+    @Override
     public boolean isSortedDescending() {
         return properties.getBoolean (
             getID () + ".sortedDescending", // NOI18N
@@ -172,11 +182,13 @@ abstract public class AbstractColumnModel extends ColumnModel {
     }
 
     // interface ColumnModel
+    @Override
     public void setColumnWidth(int columnWidth) {
 	properties.setInt (getID () + ".columnWidth", columnWidth); // NOI18N
     }
 
     // interface ColumnModel
+    @Override
     public int getColumnWidth() {
 	int width = properties.getInt (getID () + ".columnWidth", 150); // NOI18N
 	return width;

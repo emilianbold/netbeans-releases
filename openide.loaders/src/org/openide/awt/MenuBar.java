@@ -366,6 +366,16 @@ public class MenuBar extends JMenuBar implements Externalizable {
             return MenuBar.class;
         }
 
+        private Map<Object,DataObject> cookiesToObjects = new HashMap<Object,DataObject>();
+
+        @Override
+        protected Object instanceForCookie (DataObject obj, InstanceCookie cookie)
+            throws IOException, ClassNotFoundException {
+            Object result = super.instanceForCookie(obj, cookie);
+            cookiesToObjects.put (result, obj);
+            return result;
+        }
+
         /** Accepts only cookies that can provide a <code>Component</code>
          * or a <code>Presenter.Toolbar</code>.
          * @param cookie the instance cookie to test
@@ -408,12 +418,16 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }
             
             cleanUp(); //remove the stuff we've added last time
-            // fill with new content
-            for (Object o: ll) {
-                Component component = convertToComponent(o);
-                if (component != null) {
-                    addComponent(component);
+            try {
+                // fill with new content
+                for (Object o: ll) {
+                    Component component = convertToComponent(o);
+                    if (component != null) {
+                        addComponent(component);
+                    }
                 }
+            } finally {
+                cookiesToObjects.clear();
             }
             mb.validate();
             mb.repaint();
@@ -426,6 +440,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 retVal = (Component)obj;                
             } else {
                 if (obj instanceof Presenter.Toolbar) {
+                    DataObject file = cookiesToObjects.get(obj);
+                    if (obj instanceof Action && file != null) {
+                        AcceleratorBinding.setAccelerator((Action)obj, file.getPrimaryFile());
+                    }
                     retVal = ((Presenter.Toolbar)obj).getToolbarPresenter();
                 } else if (obj instanceof Action) {
                     Action a = (Action) obj;

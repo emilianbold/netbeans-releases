@@ -504,10 +504,16 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         private Dictionary empty = new Hashtable();
         @Override
-        public Dictionary getHeaders() {
+        public Dictionary getHeaders(String locale) {
             return empty;
         }
-
+        
+        @Override
+        public Dictionary getHeaders() {
+            fail("Don't ever call me, call getHeaders(\"\")");
+            return null;
+        }
+        
         @Override
         public long getBundleId() {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -535,11 +541,6 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         @Override
         public URL getResource(String string) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Dictionary getHeaders(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

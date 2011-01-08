@@ -206,15 +206,24 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (isCanceled())
             return null;
 
+        Set<Severity> disabled = Utilities.disableErrors(info.getFileObject());
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>(descs.size());
+
+        for (ErrorDescription ed : descs) {
+            if (!disabled.contains(ed.getSeverity())) {
+                result.add(ed);
+            }
+        }
+
         if (isJava) {
             LazyHintComputationFactory.getAndClearToCompute(info.getFileObject());
         } else {
-            for (ErrorDescription d : descs) {
+            for (ErrorDescription d : result) {
                 d.getFixes().getFixes();
             }
         }
         
-        return descs;
+        return result;
     }
     
     public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
@@ -238,16 +247,13 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     t = ts.token();
                 } else {
                     if (t.id() == JavaTokenId.NEW || t.id() == JavaTokenId.WHITESPACE) {
-                        boolean cont = ts.moveNext();
-                        
-                        while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {
-                            cont = ts.moveNext();
-                        }
-                        
-                        if (!cont)
-                            return null;
-                        
-                        t = ts.token();
+                        t = skipWhitespaces(ts);
+
+                        if (t == null) return null;
+                    } else if (t.id() == JavaTokenId.IMPORT) {
+                        t = skipWhitespaces(ts);
+
+                        if (t == null) return null;
                     }
                 }
             }
@@ -257,6 +263,20 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             }
         }
         return null;
+    }
+
+    private static Token skipWhitespaces(TokenSequence<JavaTokenId> ts) {
+        boolean cont = ts.moveNext();
+
+        while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {
+            cont = ts.moveNext();
+        }
+
+        if (!cont) {
+            return null;
+        }
+
+        return ts.token();
     }
     
     private static int[] findUnresolvedElementSpan(CompilationInfo info, int offset) throws IOException {
@@ -285,6 +305,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     private static final Set<String> INVALID_METHOD_INVOCATION = new HashSet<String>(Arrays.asList(
         "compiler.err.prob.found.req",
         "compiler.err.cant.apply.symbol",
+        "compiler.err.cant.apply.symbol.1",
 //        "compiler.err.cant.resolve.location",
         "compiler.err.cant.resolve.location.args"
     ));
@@ -301,9 +322,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.var.might.not.have.been.initialized",
             "compiler.err.report.access",
             "compiler.err.does.not.override.abstract",
-            "compiler.err.abstract.cant.be.instantiated"
+            "compiler.err.abstract.cant.be.instantiated",
+            "compiler.warn.missing.SVUID"
     ));
-    
+
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
     
     private int[] handlePossibleMethodInvocation(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
@@ -425,7 +447,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (!rangePrepared && d.getCode().endsWith("proc.messager")) {
             int originalEndOffset = info.getSnapshot().getOriginalOffset(endOffset);
 
-            if (originalEndOffset <= lineOffset + text.length()) {
+            if (originalEndOffset <= lineOffset + text.length() && originalStartOffset != (-1) && originalEndOffset != (-1)) {
                 startOffset = originalStartOffset;
                 endOffset = originalEndOffset;
                 rangePrepared = true;

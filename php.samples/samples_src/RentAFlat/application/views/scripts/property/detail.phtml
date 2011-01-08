@@ -1,0 +1,89 @@
+<div id="conbox">
+    <div id="skip" class="none"><a name="skip"></a></div>
+    <div id="con">
+        <h1></h1>
+        <div id="detailbox">
+            <div class="detail">
+                <?php foreach ($this->property as $property): ?>
+
+
+                    <h2><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', $property->getTitle_en()); ?><?php foreach ($property->getLocation() as $location): ?><?php //echo $location->getNazcobce();   ?><?php endforeach; ?>, <?php echo $property->getDisposition(); ?>, <?php echo $property->getAreaFormatted() ?> m&sup2;</h2>
+                    <div class="info">
+                        <dl>
+                            <dd>Ref. No:</dd>
+                            <dt><?php echo $property->getReference_no(); ?></dt>
+                            <dd>Disposition:</dd>
+                            <dt><?php echo $property->getDisposition(); ?></dt>
+                            <dd>Area:</dd>
+                            <dt><?php echo $property->getAreaFormatted(); ?> m&sup2;</dt>
+
+                            <dd>Floor:</dd>
+                            <dt><?php echo $property->getFloor(); ?></dt>
+
+                            
+                                <dd>Lift:</dd>
+                                <dt><?php echo ($property->getLift())?"Yes":"No"; ?></dt>
+                            
+                            <?php if ($property->getCellar() > 0) { ?>
+                                <dd>Cellar:</dd>
+                                <dt><?php echo $property->getCellar(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            <?php if ($property->getBalcony() > 0) { ?>
+                                <dd>Balcony:</dd>
+                                <dt><?php echo $property->getBalcony(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            <?php if ($property->getTerace() > 0) { ?>
+                                <dd>Terrace:</dd>
+                                <dt><?php echo $property->getTerace(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            <?php if ($property->getLoggia() > 0) { ?>
+                                <dd>Loggia:</dd>
+                                <dt><?php echo $property->getLoggia(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            <?php if ($property->getGarden() > 0) { ?>
+                                <dd>Garden:</dd>
+                                <dt><?php echo $property->getGarden(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            <?php if ($property->getGarage() > 0) { ?>
+                                <dd>Garage:</dd>
+                                <dt><?php echo $property->getGarage(); ?> m&sup2;</dt>
+                            <?php } ?>
+                            
+                                <dd>Parking place:</dd>
+                                <dt><?php echo ($property->getParking_place())?"Yes":"No";?></dt>
+                            
+
+                            <dd>Building type:</dd>
+                            <dt>
+                            <?php $t = $property->getProperty_build_type(); echo $t->getText_en();?>
+                            </dt>
+
+                            <dd>Location:</dd>
+                            <dt><?php $l = $property->getTextLocation(); echo $l->getCity() . ", " .$l->getCityPart(); ?></dt>
+                            <dd><span>Price:</span></dd>
+                            <dt><span class="price"><?php echo $property->getFormattedPrice(); ?></span>
+                            <span class="kc">
+                                EUR
+                            </span>
+                            </dt>
+
+                            <?php if (!General::isInFavorites($property->getId())): ?>
+                                <dt id="p<?= $property->getId() ?>"> <a class="ic3 fav" href="#" onclick="addToFavoritesDetail(<?= $property->getId() ?>)" title="Add to favorites">Add to favorites</a>
+                            <?php else: ?>
+                                <dt id="p<?= $property->getId() ?>"> <a class="ic33" href="#" onclick="removeFromFavoritesDetail(<?= $property->getId() ?>)" title="Remove from favorites">Remove from favorites</a>
+                            <?php endif; ?>
+                            </dt>
+                        </dl>
+
+
+                        </p>
+                    </div>
+                </div>
+                <div class="cleaner"></div>
+                <h3 class="popis">Description</h3>
+                <p class="popis"><?php echo str_replace(array('m2', 'M2'), 'm&sup2;', nl2br($property->getText_en())); ?></p>
+            </div>
+            <div class="hr"></div>
+        <?php endforeach; ?>
+    </div>
+</div>

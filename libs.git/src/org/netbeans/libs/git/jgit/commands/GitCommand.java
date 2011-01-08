@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,7 +54,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public abstract class GitCommand {
     private final Repository repository;
     private final ProgressMonitor monitor;
-    protected static final String EMPTY_ROOTS = "No files passed";
+    protected static final String EMPTY_ROOTS = NbBundle.getMessage(GitCommand.class, "MSG_Error_NoFiles"); //NOI18N
 
     protected GitCommand (Repository repository, ProgressMonitor monitor) {
         this.repository = repository;
@@ -76,8 +77,9 @@ public abstract class GitCommand {
     protected boolean prepareCommand () throws GitException {
         boolean repositoryExists = repository.getDirectory().exists();
         if (!repositoryExists) {
-            monitor.preparationsFailed("Git repository does not exist at " + repository.getWorkTree());
-            throw new GitException("Git repository does not exist at " + repository.getWorkTree());
+            String message = NbBundle.getMessage(GitCommand.class, "MSG_Error_RepositoryDoesNotExist", repository.getWorkTree()); //NOI18N
+            monitor.preparationsFailed(message);
+            throw new GitException(message);
         }
         return repositoryExists;
     }

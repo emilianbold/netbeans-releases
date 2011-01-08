@@ -52,6 +52,4 @@ public interface CommandFactory {
 
     public SetPropertyCommand getSetPropertyCommand(String name, String value);
 
-    public String getRestartQuery(int debugPort);
-
 }

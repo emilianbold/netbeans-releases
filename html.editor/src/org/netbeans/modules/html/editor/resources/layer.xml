@@ -229,6 +229,18 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
+                <folder name="text">
+                    <folder name="html">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/xhtml"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
+                
             </folder>
 
             <folder name="html">

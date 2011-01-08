@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -242,7 +242,11 @@ public class StartTask extends BasicTask<OperationState> {
                         Logger.getLogger("glassfish").log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
                     }
                 }
-                mgr.restartServer(debugPort);
+                String restartQ = "";
+                if (support.supportsRestartInDebug()) {
+                    restartQ = -1 == debugPort ? "debug=false" : "debug=true";
+                }
+                mgr.restartServer(debugPort,restartQ);
                 return fireOperationStateChanged(OperationState.RUNNING,
                         "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
 
@@ -678,6 +682,14 @@ public class StartTask extends BasicTask<OperationState> {
             }
             try {
                 TreeParser.readXml(domainXml, pathList);
+                if (Utilities.isMac() &&
+                    System.getProperty("java.vm.vendor").equals("Apple Inc.")) {
+                    // on Mac OS, unless the property is specified in the domain.xml, we add
+                    // the -d32 flag to start the JVM in 32 bits mode
+                    if (!optList.contains("-d64") && !optList.contains("-d32")) {
+                        optList.add("-d32");
+                    }
+                }
                 return true;
             } catch(IllegalStateException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N

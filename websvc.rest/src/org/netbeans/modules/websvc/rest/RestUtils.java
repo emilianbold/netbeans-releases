@@ -434,18 +434,25 @@ public class RestUtils {
     }
 
     public static boolean isJSR_311OnClasspath(Project project) throws IOException {
+        return hasClass( project , "javax/ws/rs/Path.class");   // NOI18N
+    }
+
+
+    public static boolean hasClass(Project project, String fqn ) throws IOException {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
             if (sourceGroups.length>0) {
-                ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-                if (cp.findResource("javax/ws/rs/Path.class") != null) { //NOI18M
+                ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), 
+                        ClassPath.COMPILE);
+                if (cp.findResource(fqn) != null) { 
                     return true;
                 }
             }
         }
         return false;
     }
+    
 
     public static boolean isJavaEE6(Project project) {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
@@ -457,4 +464,27 @@ public class RestUtils {
         }
         return false;
     }
+    
+    public static boolean hasProfile(Project project, Profile... profiles) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile projectProfile = webModule.getJ2eeProfile();
+            for ( Profile profile: profiles ){
+                if ( projectProfile == profile ){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasAopAlliance(Project project) {
+        try {
+            return hasClass( project , "org/aopalliance/aop/Advice.class");   // NOI18N
+	}
+	catch(IOException e){
+	    return false;
+	}
+    }
+    
 }

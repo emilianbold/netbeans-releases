@@ -43,7 +43,9 @@
  */
 package org.netbeans.modules.refactoring.spi;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -130,7 +132,7 @@ public interface RefactoringElementImplementation {
     /** Returns file that the element affects (relates to)
      * @return File
      */
-    FileObject getParentFile();
+    @NonNull FileObject getParentFile();
     
     /** Returns position bounds of the text to be affected by this refactoring element.
      * @return position bounds

@@ -595,10 +595,6 @@ public final class RemoteClient implements Cancellable {
             }
         } finally {
             operationMonitor.operationFinish(Operation.DOWNLOAD, filesToDownload);
-
-            // refresh filesystem
-            FileUtil.refreshFor(baseLocalDir);
-
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -678,6 +674,8 @@ public final class RemoteClient implements Cancellable {
                 }
             } finally {
                 os.close();
+                FileObject FO = FileUtil.toFileObject(tmpLocalFile);
+                if (FO != null) FO.refresh();
                 if (success) {
                     // move the file
                     success = moveLocalFile(tmpLocalFile, localFile);
@@ -689,9 +687,15 @@ public final class RemoteClient implements Cancellable {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
-                    boolean deleted = tmpLocalFile.delete();
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: %s", tmpLocalFile, deleted));
+                    try {
+                        FileUtil.toFileObject(tmpLocalFile).delete();
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
+                        }
+                    } catch (IOException e) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: FALSE", tmpLocalFile));
+                        }
                     }
                 }
             }
@@ -729,9 +733,11 @@ public final class RemoteClient implements Cancellable {
                 // intentional usage of java.io.File!!
                 //  (if the file is opened in the editor, it's not closed, just refreshed)
                 moved[0] = target.renameTo(oldPath);
+                FileObject FO = FileUtil.toFileObject(target);
+                if (FO != null) FO.refresh();
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
-                }
+                    }
                 if (!moved[0]) {
                     return;
                 }
@@ -747,8 +753,8 @@ public final class RemoteClient implements Cancellable {
                     }
                     return;
                 }
-                deleteLocalFile(oldPath, "(3) "); // NOI18N
-            }
+                    deleteLocalFile(oldPath, "(3) "); // NOI18N
+                }
         });
         assert moved[0] || !moved[0];
         return moved[0];
@@ -758,12 +764,18 @@ public final class RemoteClient implements Cancellable {
         if (transferFile.getRelativePath() == TransferFile.CWD) {
             return localFile;
         }
-        return new File(localFile, transferFile.getRelativePath(true));
+        File newFile = new File(localFile, transferFile.getRelativePath(true));
+        FileObject FO = FileUtil.toFileObject(newFile);
+        if (FO != null) FO.refresh();
+        return newFile;
     }
 
     // #169778
     private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
-        return new File(getLocalFile(localFile, parent), file.getName());
+        File newFile = new File(getLocalFile(localFile, parent), file.getName());
+        FileObject FO = FileUtil.toFileObject(newFile);
+        if (FO != null) FO.refresh();
+        return newFile;
     }
 
 
@@ -1081,9 +1093,15 @@ public final class RemoteClient implements Cancellable {
         if (!file.exists()) {
             return;
         }
-        boolean deleted = file.delete();
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: %s", file.getName(), deleted));
+        try {
+            FileUtil.toFileObject(file).delete();
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", file.getName()));
+            }
+        } catch (IOException e) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", file.getName()));
+            }
         }
     }
 
