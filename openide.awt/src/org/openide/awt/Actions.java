@@ -1346,6 +1346,7 @@ public class Actions {
 
     /** Sub menu bridge 2.
     */
+    @Deprecated
     private static final class SubMenuBridge extends MenuBridge implements ChangeListener, DynamicMenuContent {
         /** model to obtain subitems from */
         private SubMenuModel model;
@@ -1598,7 +1599,7 @@ public class Actions {
 
     /** SubMenu provides easy way of displaying submenu items based on
     * SubMenuModel.
-     * @deprecated extends deprecated {@link JMenuPlus}
+     * @deprecated Extends deprecated {@link JMenuPlus}. Instead create a regular {@link JMenu} and add items to it (or use {@link DynamicMenuContent}).
      */
     @Deprecated
     public static class SubMenu extends JMenuPlus implements DynamicMenuContent {

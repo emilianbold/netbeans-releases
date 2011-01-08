@@ -379,6 +379,7 @@ public class DependenciesNode extends AbstractNode {
     }
     
  
+    private static final RequestProcessor RP = new RequestProcessor(DependenciesNode.class);
     @SuppressWarnings("serial")
     private class DownloadJavadocSrcAction extends AbstractAction {
         private boolean javadoc;
@@ -388,7 +389,7 @@ public class DependenciesNode extends AbstractNode {
         }
         
         public void actionPerformed(ActionEvent evnt) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                     Node[] nds = getChildren().getNodes();
