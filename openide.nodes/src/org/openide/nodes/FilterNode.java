@@ -1781,7 +1781,7 @@ public class FilterNode extends Node {
 
             public void filterChildrenAdded(NodeMemberEvent ev) {
                 if (ev.sourceEntry == null) {
-                    updateEntries();
+                    update();
                 } else {
                     doRefreshEntry(ev.sourceEntry);
                 }
@@ -1789,48 +1789,58 @@ public class FilterNode extends Node {
 
             public void filterChildrenRemoved(NodeMemberEvent ev) {
                 if (ev.sourceEntry == null) {
-                    updateEntries();
+                    update();
                 } else {
                     doRefreshEntry(ev.sourceEntry);
                 }
             }
 
             public void filterChildrenReordered(NodeReorderEvent ev) {
-                updateEntries();
+                update();
             }
 
+            @Override
             public void update() {
-                updateEntries();
-            }
-
-            private void updateEntries() {
                 final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
                 if (LOG_ENABLED) {
                     LOGGER.finer("updateEntries() " + this); // NOI18N
                 }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
-                    int count = origSupport.getNodesCount(false);
-                    if (LOG_ENABLED) {
-                        LOGGER.finer("    origSupport.getNodesCount(): " + count); // NOI18N
-                    }
+                    final int count = origSupport.getNodesCount(false);
+                    Children.MUTEX.postWriteRequest(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateEntries(count);
+                        }
+                    });
+                }
+            }
 
-                    List<Entry> origEntries = origSupport.getEntries();
-                    if (LOG_ENABLED) {
-                        LOGGER.finer("    origSupport.getEntries() - size: " + origEntries.size() + " data: " + origEntries); // NOI18N
-                    }
+            private void updateEntries(int count) {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateEntries() " + this); // NOI18N
+                }
+                if (LOG_ENABLED) {
+                    LOGGER.finer("    origSupport.getNodesCount(): " + count); // NOI18N
+                }
 
-                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
-                    for (Entry e : origEntries) {
-                        filtEntries.add(new FilterNodeEntry(e));
-                    }
+                List<Entry> origEntries = origSupport.getEntries();
+                if (LOG_ENABLED) {
+                    LOGGER.finer("    origSupport.getEntries() - size: " + origEntries.size() + " data: " + origEntries); // NOI18N
+                }
 
-                    setEntries(filtEntries);
+                ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
+                for (Entry e : origEntries) {
+                    filtEntries.add(new FilterNodeEntry(e));
+                }
 
-                    if (!origSupport.isInitialized()) {
-                        origSupport.notifySetEntries();
-                        return;
-                    }
+                setEntries(filtEntries);
+
+                if (!origSupport.isInitialized()) {
+                    origSupport.notifySetEntries();
+                    return;
                 }
             }
 

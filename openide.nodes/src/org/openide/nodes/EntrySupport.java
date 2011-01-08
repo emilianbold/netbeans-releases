@@ -98,7 +98,10 @@ abstract class EntrySupport {
 
     abstract void notifySetEntries();
 
-    abstract void setEntries(Collection<? extends Entry> entries);
+    final void setEntries(Collection<? extends Entry> entries) {
+        setEntries(entries, false);
+    }
+    abstract void setEntries(Collection<? extends Entry> entries, boolean noCheck);
 
     /** Access to copy of current entries.
      * @return copy of entries in the objects
@@ -309,7 +312,9 @@ abstract class EntrySupport {
                     + " entries.size()=" + this.entries.size();
         }
 
-        protected void setEntries(Collection<? extends Entry> entries) {
+        @Override
+        protected void setEntries(Collection<? extends Entry> entries, boolean noCheck) {
+            assert noCheck || Children.MUTEX.isWriteAccess();
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             // current list of nodes
             ChildrenArray holder = array.get();
@@ -376,6 +381,7 @@ abstract class EntrySupport {
         /** Removes the objects from the children.
          */
         private void updateRemove(Node[] current, Set<Entry> toRemove) {
+            assert Children.MUTEX.isWriteAccess();
             List<Node> nodes = new LinkedList<Node>();
 
             ChildrenArray cha = array.get();
@@ -408,6 +414,7 @@ abstract class EntrySupport {
          * @return list of infos that should be added
          */
         private List<Info> updateOrder(Node[] current, Collection<? extends Entry> newEntries) {
+            assert Children.MUTEX.isWriteAccess();
             List<Info> toAdd = new LinkedList<Info>();
 
             // that assignes entries their begining position in the array
@@ -517,6 +524,7 @@ abstract class EntrySupport {
          * @param entries the final state of entries that should occur
          */
         private void updateAdd(Collection<Info> infos, List<Entry> entries) {
+            assert Children.MUTEX.isWriteAccess();
             List<Node> nodes = new LinkedList<Node>();
             for (Info info : infos) {
                 nodes.addAll(info.nodes(false));
@@ -1263,6 +1271,7 @@ abstract class EntrySupport {
 
         @Override
         void refreshEntry(Entry entry) {
+            assert Children.MUTEX.isWriteAccess();
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             if (LOG_ENABLED) {
                 LOGGER.finer("refreshEntry() " + this);
@@ -1340,7 +1349,8 @@ abstract class EntrySupport {
         }
 
         @Override
-        void setEntries(Collection<? extends Entry> newEntries) {
+        void setEntries(Collection<? extends Entry> newEntries, boolean noCheck) {
+            assert Children.MUTEX.isWriteAccess();
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             if (LOG_ENABLED) {
                 LOGGER.finer("setEntries(): " + this); // NOI18N
@@ -1434,6 +1444,7 @@ abstract class EntrySupport {
          * @return list of infos that should be added
          */
         private List<Entry> updateOrder(Collection<? extends Entry> newEntries) {
+            assert Children.MUTEX.isWriteAccess();
             List<Entry> toAdd = new LinkedList<Entry>();
             int[] perm = new int[visibleEntries.size()];
             int currentPos = 0;
@@ -1691,6 +1702,7 @@ abstract class EntrySupport {
         }
 
         private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, EntryInfo newEntryInfo, boolean justHide, boolean delayed) {
+            assert Children.MUTEX.isWriteAccess();
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             if (LOG_ENABLED) {
                 LOGGER.finer("removeEntries(): " + this); // NOI18N
