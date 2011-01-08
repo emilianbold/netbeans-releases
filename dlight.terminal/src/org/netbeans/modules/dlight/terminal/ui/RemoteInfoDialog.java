@@ -273,6 +273,7 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
         } else {
             btnNewHost.setSelected(true);
         }
+        selectMode(hasKnown);
     }
 
     private void selectMode(boolean knownHosts) {
