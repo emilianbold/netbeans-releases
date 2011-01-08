@@ -76,7 +76,7 @@ public abstract class Unit {
     private boolean isVisible;
     private String filter;
     private String categoryName;
-    private static Logger log = Logger.getLogger (Unit.class.getName ());
+    static final Logger log = Logger.getLogger (Unit.class.getName ());
     private String displayDate = null;
     
     protected abstract UpdateElement getRelevantElement ();
