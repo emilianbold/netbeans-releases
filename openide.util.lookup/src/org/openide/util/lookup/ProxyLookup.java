@@ -589,6 +589,7 @@ public class ProxyLookup extends Lookup {
         protected void collectFires(Collection<Object> evAndListeners) {
             boolean modified = true;
 
+            final Object[] ll;
             try {
                 // clear cached instances
                 Collection oldItems;
@@ -608,6 +609,9 @@ public class ProxyLookup extends Lookup {
                         setCache(new Collection[3]);
                         return;
                     }
+                    ll = listeners.getListenerList();
+                    assert ll != null;
+                    
 
                     // ignore events if they arrive as a result of call to allItems
                     // or allInstances, bellow...
@@ -645,7 +649,7 @@ public class ProxyLookup extends Lookup {
             
             if (modified) {
                 LookupEvent ev = new LookupEvent(this);
-                AbstractLookup.notifyListeners(listeners.getListenerList(), ev, evAndListeners);
+                AbstractLookup.notifyListeners(ll, ev, evAndListeners);
             }
         }
 
