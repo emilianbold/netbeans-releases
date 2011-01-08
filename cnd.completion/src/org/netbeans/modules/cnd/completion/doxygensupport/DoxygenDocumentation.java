@@ -258,8 +258,26 @@ public class DoxygenDocumentation {
         TokenHierarchy<?> h = TokenHierarchy.create(containingFile.getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
+        // check right after declaration on the same line
+        ts.move(csmOffsetable.getEndOffset());
+        OUTER:
+        while (ts.moveNext()) {
+            switch (ts.token().id()) {
+                case LINE_COMMENT:
+                case NEW_LINE:
+                    break OUTER;
+                case BLOCK_COMMENT:
+                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                    continue;
+                case DOXYGEN_COMMENT:
+                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                    break OUTER;
+                default:
+                    continue;
+            }
+        }
+        
         ts.move(csmOffsetable.getStartOffset());
-
         OUTER:
         while (ts.movePrevious()) {
             switch (ts.token().id()) {
@@ -275,6 +293,7 @@ public class DoxygenDocumentation {
                     break OUTER;
                 case SEMICOLON:
                 case RBRACE:
+                case LBRACE:
                 case PREPROCESSOR_DIRECTIVE:
                     break OUTER;
                 default:

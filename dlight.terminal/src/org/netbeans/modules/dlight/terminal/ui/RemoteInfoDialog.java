@@ -47,19 +47,24 @@
  */
 package org.netbeans.modules.dlight.terminal.ui;
 
+import java.awt.Component;
 import java.awt.Toolkit;
+import java.util.prefs.Preferences;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class RemoteInfoDialog extends javax.swing.JPanel {
+    private static final String LAST_SELECTED_HOST = "lastSelectedHost"; // NOI18N
 
     /** Creates new form RemoteInfoDialog */
     public RemoteInfoDialog(String user) {
@@ -76,12 +81,36 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        cbKnownHosts = new javax.swing.JComboBox();
+        btnKnownHosts = new javax.swing.JRadioButton();
+        btnNewHost = new javax.swing.JRadioButton();
+        pnlConnectionInfo = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         userField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         hostField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
+
+        buttonGroup1.add(btnKnownHosts);
+        btnKnownHosts.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(btnKnownHosts, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.btnKnownHosts.text")); // NOI18N
+        btnKnownHosts.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                btnKnownHostsItemStateChanged(evt);
+            }
+        });
+
+        buttonGroup1.add(btnNewHost);
+        org.openide.awt.Mnemonics.setLocalizedText(btnNewHost, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.btnNewHost.text")); // NOI18N
+        btnNewHost.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                btnNewHostItemStateChanged(evt);
+            }
+        });
+
+        pnlConnectionInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "NewHostInfoTitle"))); // NOI18N
 
         jLabel1.setLabelFor(userField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.jLabel1.text")); // NOI18N
@@ -105,6 +134,49 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
         portField.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.toolTipText")); // NOI18N
         portField.setInputVerifier(new IntVerifier(portField));
 
+        javax.swing.GroupLayout pnlConnectionInfoLayout = new javax.swing.GroupLayout(pnlConnectionInfo);
+        pnlConnectionInfo.setLayout(pnlConnectionInfoLayout);
+        pnlConnectionInfoLayout.setHorizontalGroup(
+            pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 324, Short.MAX_VALUE)
+            .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlConnectionInfoLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel2)
+                        .addComponent(jLabel3))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(userField, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                        .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                        .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap()))
+        );
+        pnlConnectionInfoLayout.setVerticalGroup(
+            pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 117, Short.MAX_VALUE)
+            .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlConnectionInfoLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(pnlConnectionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel3)
+                        .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+
+        userField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.userField.AccessibleContext.accessibleName")); // NOI18N
+        hostField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.hostField.AccessibleContext.accessibleName")); // NOI18N
+        portField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.AccessibleContext.accessibleName")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -112,14 +184,12 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3))
-                .addGap(19, 19, 19)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(userField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                    .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(pnlConnectionInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnKnownHosts)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbKnownHosts, 0, 224, Short.MAX_VALUE))
+                    .addComponent(btnNewHost))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -127,47 +197,102 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbKnownHosts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnKnownHosts))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                .addComponent(btnNewHost)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(pnlConnectionInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
-
-        userField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.userField.AccessibleContext.accessibleName")); // NOI18N
-        hostField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.hostField.AccessibleContext.accessibleName")); // NOI18N
-        portField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnKnownHostsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_btnKnownHostsItemStateChanged
+        if (java.awt.event.ItemEvent.SELECTED == evt.getStateChange()) {
+            selectMode(true);
+        }
+    }//GEN-LAST:event_btnKnownHostsItemStateChanged
+
+    private void btnNewHostItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_btnNewHostItemStateChanged
+        if (java.awt.event.ItemEvent.SELECTED == evt.getStateChange()) {
+            selectMode(false);
+        }
+    }//GEN-LAST:event_btnNewHostItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton btnKnownHosts;
+    private javax.swing.JRadioButton btnNewHost;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox cbKnownHosts;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel pnlConnectionInfo;
     private javax.swing.JTextField portField;
     private javax.swing.JTextField userField;
     // End of variables declaration//GEN-END:variables
 
+    private ExecutionEnvironment last;
     public ExecutionEnvironment getExecutionEnvironment() {
-        if (userField.getText().isEmpty() || hostField.getText().isEmpty()) {
-            return null;
+        if (btnKnownHosts.isSelected()) {
+            last = (ExecutionEnvironment) cbKnownHosts.getSelectedItem();
+        } else {
+            if (userField.getText().isEmpty() || hostField.getText().isEmpty()) {
+                return null;
+            }
+
+            int port = 22;
+
+            if (!portField.getText().isEmpty()) {
+                try {
+                    port = Integer.valueOf(portField.getText());
+                } catch (NumberFormatException ex) {
+                }
+            }
+
+            last = ExecutionEnvironmentFactory.createNew(userField.getText(), hostField.getText(), port);
         }
+        Preferences prefs = NbPreferences.forModule(RemoteInfoDialog.class);
+        prefs.put(LAST_SELECTED_HOST, ExecutionEnvironmentFactory.toUniqueID(last));
+        return last;
+    }
 
-        int port = 22;
+    private void fillHosts() {
+        cbKnownHosts.removeAllItems();
+        for (ExecutionEnvironment ee : ConnectionManager.getInstance().getRecentConnections()) {
+            cbKnownHosts.addItem(ee);
+        }
+        boolean hasKnown = cbKnownHosts.getItemCount() > 0;
+        btnKnownHosts.setEnabled(hasKnown);
+        if (hasKnown) {
+            if (last != null) {
+                cbKnownHosts.setSelectedItem(last);
+            }
+            btnKnownHosts.setSelected(true);
+        } else {
+            btnNewHost.setSelected(true);
+        }
+        selectMode(hasKnown);
+    }
 
-        if (!portField.getText().isEmpty()) {
-            try {
-                port = Integer.valueOf(portField.getText());
-            } catch (NumberFormatException ex) {
+    private void selectMode(boolean knownHosts) {
+        cbKnownHosts.setEnabled(knownHosts);
+        Component[] components = pnlConnectionInfo.getComponents();
+        for (Component component : components) {
+            component.setEnabled(!knownHosts);
+        }
+    }
+
+    public void init() {
+        if (last == null) {
+            Preferences prefs = NbPreferences.forModule(RemoteInfoDialog.class);
+            String eeID = prefs.get(LAST_SELECTED_HOST, "");
+            if (!eeID.isEmpty()) {
+                last = ExecutionEnvironmentFactory.fromUniqueID(eeID);
             }
         }
-
-        return ExecutionEnvironmentFactory.createNew(userField.getText(), hostField.getText(), port);
+        fillHosts();
     }
 
     private static final class IntVerifier extends InputVerifier {
