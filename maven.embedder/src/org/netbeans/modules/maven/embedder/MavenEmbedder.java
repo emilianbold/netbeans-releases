@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
@@ -237,12 +239,12 @@ public final class MavenEmbedder {
 
         LifecycleMapping lifecycleMapping = lookupComponent(LifecycleMapping.class);
         if (lifecycleMapping != null) {
-            List<String> phases = new ArrayList<String>();
+            Set<String> phases = new TreeSet<String>();
             Map<String, Lifecycle> lifecycles = lifecycleMapping.getLifecycles();
             for (Lifecycle lifecycle : lifecycles.values()) {
-                phases.addAll(lifecycle.getPhases().values());
+                phases.addAll(lifecycle.getPhases().keySet());
             }
-            return phases;
+            return new ArrayList<String>(phases);
         }
 
         return Collections.<String>emptyList();
