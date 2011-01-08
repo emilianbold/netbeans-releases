@@ -650,7 +650,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RP.post(saveRunnable);
-        if (SwingUtilities.isEventDispatchThread()){
+        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()){
             ModalMessageDlg.runLongTask(
             WindowManager.getDefault().getMainWindow(),
             task, null, null,

@@ -1199,6 +1199,18 @@ public class TaskProcessor {
             if (RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread())) {
                 throw new IllegalStateException("ScanSync.get called by protected mode owner.");    //NOI18N
             }
+            //In dev build check also that blocking get is not called from OpenProjectHook -> deadlock
+            boolean ae = false;
+            assert ae = true;
+            if (ae) {
+                for (StackTraceElement stElement : Thread.currentThread().getStackTrace()) {
+                    if ("org.netbeans.spi.project.ui.ProjectOpenedHook$1".equals(stElement.getClassName()) &&   //NOI18N
+                        ("projectOpened".equals(stElement.getMethodName()) || "projectClosed".equals(stElement.getMethodName()))) {    //NOI18N
+                        throw new AssertionError("Calling ParserManager.parseWhenScanFinished().get() from ProjectOpenedHook"); //NOI18N
+                    }
+                }
+                
+            }
         }
 
     }
