@@ -44,9 +44,11 @@
 
 package org.netbeans.api.autoupdate;
 
+import java.awt.Image;
 import java.util.List;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 
 /** Instances provided by the <code>UpdateUnit</code> which represents specific version
  * of update (e.g. module or feature). The <code>UpdateElement</code> can be installed,
@@ -132,10 +134,32 @@ public final class UpdateElement {
     /**
      * @return <code>UpdateUnitProvider.CATEGORY</code> for a quality classification 
      * for update represented by this instance
+     * @deprecated Use {@link #getSourceIcon()} and {@link #getSourceDescription()}.
      */
+    @Deprecated
     public CATEGORY getSourceCategory () {
         UpdateUnitProvider provider = getUpdateUnitProvider();
         return (provider != null) ? provider.getCategory() : CATEGORY.COMMUNITY;
+    }
+    
+    /** Provides an icon associated with the provider of this update element. 
+     * @return icon representing the provider of this element
+     * @since 1.23
+     * @see UpdateUnitProvider#getSourceIcon() 
+     */
+    public Image getSourceIcon() {
+        UpdateUnitProvider provider = getUpdateUnitProvider();
+        return provider != null ? provider.getSourceIcon() : ProviderCategory.forValue(CATEGORY.COMMUNITY).getIcon();
+    }
+    
+    /** Description of the provider of this element. 
+     * @return textual description of the provider of this element
+     * @since 1.23
+     * @see UpdateUnitProvider#getSourceDescription()
+     */
+    public String getSourceDescription() {
+        UpdateUnitProvider provider = getUpdateUnitProvider();
+        return provider != null ? provider.getSourceDescription() : ProviderCategory.forValue(CATEGORY.COMMUNITY).getDisplayName();
     }
     
     private UpdateUnitProvider getUpdateUnitProvider() {

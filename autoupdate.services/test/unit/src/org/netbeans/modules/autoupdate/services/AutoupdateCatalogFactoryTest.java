@@ -40,13 +40,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.updateprovider;
+package org.netbeans.modules.autoupdate.services;
 
+import java.awt.Image;
 import java.net.URL;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 public class AutoupdateCatalogFactoryTest extends NbTestCase {
 
@@ -54,15 +59,29 @@ public class AutoupdateCatalogFactoryTest extends NbTestCase {
         super(n);
     }
 
-    public void testCreateUpdateProvider() throws Exception {
+    public void testCreateUpdateProviderWithOwnIcon() throws Exception {
         FileObject f = FileUtil.getConfigRoot().createData("whatever.instance");
         f.setAttribute("url", "file:/wherever.xml");
         f.setAttribute("displayName", "Whatever");
+        f.setAttribute("category", "Jarda's Updates");
+        f.setAttribute("iconBase", "org/netbeans/modules/autoupdate/services/resources/icon-standard.png");
         UpdateProvider up = AutoupdateCatalogFactory.createUpdateProvider(f);
-        assertEquals("whatever", up.getName());
-        assertEquals("Whatever", up.getDisplayName());
-        assertEquals(AutoupdateCatalogProvider.class, up.getClass());
-        assertEquals(new URL("file:/wherever.xml"), ((AutoupdateCatalogProvider) up).getUpdateCenterURL());
+        UpdateUnitProvider uup = Trampoline.API.createUpdateUnitProvider (new UpdateUnitProviderImpl (up));
+        assertEquals("whatever", uup.getName());
+        assertEquals("Whatever", uup.getDisplayName());
+        assertEquals(new URL("file:/wherever.xml"), uup.getProviderURL());
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/autoupdate/services/resources/icon-standard.png");
+        assertEquals("Icons are the same", img, uup.getSourceIcon());
     }
 
+    public void testFactoryMethodsAndIcons() throws Exception {
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/autoupdate/services/resources/icon-standard.png");
+        UpdateUnitProvider res = UpdateUnitProviderFactory.getDefault().create(
+           "code-name", "Whatever", new URL("file:/whereever.xml"), 
+           "org/netbeans/modules/autoupdate/services/resources/icon-standard.png", "my category"
+        );
+        assertEquals("code-name", res.getName());
+        assertEquals("Whatever", res.getDisplayName());
+        assertEquals("Good image", img, res.getSourceIcon());
+    }
 }

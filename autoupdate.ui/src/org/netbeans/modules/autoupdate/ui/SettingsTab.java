@@ -48,6 +48,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -63,13 +64,13 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -80,7 +81,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.openide.DialogDescriptor;
@@ -717,14 +717,9 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 
             if (value instanceof UpdateUnitProvider) {
                 UpdateUnitProvider u = (UpdateUnitProvider) value;
-                CATEGORY state = u.getCategory();
-                if (CATEGORY.BETA.equals(state)) {
-                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-beta.png", false)); // NOI18N
-                } else if (CATEGORY.COMMUNITY.equals(state)) {
-                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-community.png", false)); // NOI18N
-                } else if (CATEGORY.STANDARD.equals(state)) {
-                    renderComponent.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/icon-standard.png", false)); // NOI18N
-                }
+                Image img = u.getSourceIcon();
+                final Icon icon = ImageUtilities.image2Icon(img);
+                renderComponent.setIcon(icon);
                 renderComponent.setText (u.getDisplayName());
                 renderComponent.setHorizontalAlignment(SwingConstants.LEFT);
             }

@@ -44,13 +44,9 @@
 
 package org.netbeans.api.autoupdate;
 
-import java.net.URL;
 import java.util.List;
-import junit.framework.TestCase;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
 
 /**
  *
