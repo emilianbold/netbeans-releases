@@ -1136,6 +1136,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n                \n        }\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeEmptyBlockAfterSwitchCase() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:|{\n            }\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n            {\n            }\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeEmptyBlockAfterSwitchCase() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n|{\n            }\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n            {\n            }\n        }\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideCase() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:|\n                break;\n        }\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n                \n                break;\n        }\n    }\n}\n");
