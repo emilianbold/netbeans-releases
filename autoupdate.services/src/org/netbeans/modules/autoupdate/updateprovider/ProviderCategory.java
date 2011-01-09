@@ -76,6 +76,13 @@ public final class ProviderCategory {
         }
         return name;
     }
+    public String getName() {
+        if (category != null) {
+            return category.name();
+        }
+        assert displayName != null;
+        return displayName;
+    }
     public Image getIcon() {
         Image img = ImageUtilities.loadImage(getIconBase(), true);
         if (img == null) {

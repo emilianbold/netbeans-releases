@@ -76,7 +76,6 @@ import org.openide.util.LookupListener;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
 
 
 /** <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items

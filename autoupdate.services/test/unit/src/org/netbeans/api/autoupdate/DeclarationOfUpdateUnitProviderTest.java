@@ -67,8 +67,8 @@ public class DeclarationOfUpdateUnitProviderTest extends NbTestCase {
         super(testName);                
     }
 
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
         for (UpdateUnitProvider updateUnitProvider : providers) {
             String name = updateUnitProvider.getName();

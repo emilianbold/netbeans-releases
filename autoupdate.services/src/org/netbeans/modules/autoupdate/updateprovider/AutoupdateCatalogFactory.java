@@ -154,7 +154,7 @@ public class AutoupdateCatalogFactory {
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider(name, displayName(fo), url, pc);
         providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
         providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
-        providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getProviderCategory().getDisplayName());
+        providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getProviderCategory().getName());
         providerPreferences.put (ORIGINAL_CATEGORY_ICON_BASE, au_catalog.getProviderCategory().getIconBase());
         
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N        
