@@ -106,12 +106,13 @@ public class AdditionalProjectFactoryTest extends NbTestCase {
         FoDFileSystem.getInstance().waitFinished();
         LOG.info("Refresh finished");
         
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             fo = FileUtil.getConfigFile("Menu/Edit");
             if (fo != null) {
                 break;
             }
             LOG.log(Level.INFO, "No Menu/Edit found, in round {0}", i);
+            Thread.sleep(500);
         }
         assertNotNull("Default layer is off and Edit is visible", fo);
     }
