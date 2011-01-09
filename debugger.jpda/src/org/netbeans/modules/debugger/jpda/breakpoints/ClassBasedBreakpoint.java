@@ -368,9 +368,15 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     
     private class SourceRootsChangedListener implements PropertyChangeListener {
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (SourcePathProvider.PROP_SOURCE_ROOTS.equals(evt.getPropertyName())) {
-                update();
+                getDebugger().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        update();
+                    }
+                });
             }
         }
         
