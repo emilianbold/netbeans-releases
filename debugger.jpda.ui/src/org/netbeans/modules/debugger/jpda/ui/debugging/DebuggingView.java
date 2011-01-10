@@ -166,6 +166,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private IconsPanel rightPanel;
     
     private ThreadsListener threadsListener = null;
+
+    private final Object lock = new Object();
     
     /**
      * instance/singleton of this class
@@ -328,7 +330,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     threadsListener.setDebuggingView(this);
                 }
             }
-            synchronized (this) {
+            synchronized (lock) {
                 if (previousDebugger != null) {
                     previousDebugger.removePropertyChangeListener(this);
                 }
@@ -347,7 +349,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
             });
         } else {
-            synchronized (this) {
+            synchronized (lock) {
                 if (previousDebugger != null) {
                     previousDebugger.removePropertyChangeListener(this);
                 }
@@ -364,7 +366,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             root = Node.EMPTY;
             releaseTreeView();
         } else {
-            synchronized(this) {
+            synchronized(lock) {
                 if (treeView == null) {
                     createTreeView();
                 }
@@ -509,7 +511,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             refreshView();
         } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
             JPDAThread currentThread;
-            synchronized (this) {
+            synchronized (lock) {
                 currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
             }
             if (currentThread != null) {
@@ -560,33 +562,37 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         thread.makeCurrent();
     }
 
-    private synchronized void createTreeView() {
-        releaseTreeView();
-        treeView = new DebugTreeView();
-        treeView.setRootVisible(false);
-        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleName")); // NOI18N
-        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
-        treeView.getTree().addMouseWheelListener(this);
-        treeView.addTreeExpansionListener(this);
-        TreeModel model = treeView.getTree().getModel();
-        model.addTreeModelListener(this);
-        treeView.getViewport().addChangeListener(this);
-        treeView.getTree().addTreeSelectionListener(this);
-        mainPanel.add(treeView, BorderLayout.CENTER);
+    private void createTreeView() {
+        synchronized (lock) {
+            releaseTreeView();
+            treeView = new DebugTreeView();
+            treeView.setRootVisible(false);
+            treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+            treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleName")); // NOI18N
+            treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
+            treeView.getTree().addMouseWheelListener(this);
+            treeView.addTreeExpansionListener(this);
+            TreeModel model = treeView.getTree().getModel();
+            model.addTreeModelListener(this);
+            treeView.getViewport().addChangeListener(this);
+            treeView.getTree().addTreeSelectionListener(this);
+            mainPanel.add(treeView, BorderLayout.CENTER);
+        }
     }
 
-    private synchronized void releaseTreeView() {
-        if (treeView == null) return ;
-        treeView.getTree().removeMouseWheelListener(this);
-        treeView.removeTreeExpansionListener(this);
-        TreeModel model = treeView.getTree().getModel();
-        model.removeTreeModelListener(this);
-        treeView.getViewport().removeChangeListener(this);
-        treeView.getTree().removeTreeSelectionListener(this);
-        mainPanel.remove(treeView);
-        treeView = null;
+    private void releaseTreeView() {
+        synchronized (lock) {
+            if (treeView == null) return ;
+            treeView.getTree().removeMouseWheelListener(this);
+            treeView.removeTreeExpansionListener(this);
+            TreeModel model = treeView.getTree().getModel();
+            model.removeTreeModelListener(this);
+            treeView.getViewport().removeChangeListener(this);
+            treeView.getTree().removeTreeSelectionListener(this);
+            mainPanel.remove(treeView);
+            treeView = null;
+        }
     }
 
     private DebugTreeView getTreeView() {
@@ -759,7 +765,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
             JPDAThread currentThread;
             ThreadsCollector tc;
-            synchronized (DebuggingView.this) {
+            synchronized (DebuggingView.this.lock) {
                 currentThread = debugger != null ? debugger.getCurrentThread() : null;
                 tc = debugger != null ? debugger.getThreadsCollector() : null;
             }
