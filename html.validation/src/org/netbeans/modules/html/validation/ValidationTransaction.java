@@ -886,9 +886,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         factory.setNamespaceAware(true);
         factory.setValidating(false);
         xmlParser = factory.newSAXParser();
-        xmlParser.getXMLReader().setFeature(
-                "http://apache.org/xml/features/continue-after-fatal-error",
-                true);
+//        xmlParser.getXMLReader().setFeature(
+//                "http://apache.org/xml/features/continue-after-fatal-error",
+//                true);
         sourceReader.addCharacterHandler(sourceCode);
         reader = new IdFilter(xmlParser.getXMLReader());
         if (lexicalHandler != null) {
