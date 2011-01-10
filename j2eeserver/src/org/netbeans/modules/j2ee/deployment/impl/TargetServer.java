@@ -882,19 +882,21 @@ public class TargetServer {
         }
 
         Set<TargetModule> ret = new HashSet<TargetModule>();
-        for (TargetModule module : modules) {
-            // not my module
-            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
-                    || ! targetNames.contains(module.getTargetName())) {
-                continue;
-            }
+        if (null != modules) {
+            for (TargetModule module : modules) {
+                // not my module
+                if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                        || ! targetNames.contains(module.getTargetName())) {
+                    continue;
+                }
 
-            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
+                TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
 
-            // no longer a deployed module on server
-            if (tmID != null) {
-                module.initDelegate(tmID);
-                ret.add(module);
+                // no longer a deployed module on server
+                if (tmID != null) {
+                    module.initDelegate(tmID);
+                    ret.add(module);
+                }
             }
         }
         return ret.toArray(new TargetModule[ret.size()]);
