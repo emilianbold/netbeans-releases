@@ -535,7 +535,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 BranchesTopChildren.this.branches.clear();
                             } else {
                                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
-                                branches.keySet().removeAll(BranchesTopChildren.this.branches.keySet());
+                                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
+                                    GitBranch newBranchInfo = branches.get(e.getKey());
+                                    // refresh also branches that changed head or active state
+                                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
+                                        branches.remove(e.getKey());
+                                    }
+                                }
                                 BranchesTopChildren.this.branches.putAll(branches);
                             }
                             if (local != null) {
@@ -599,7 +605,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Node[] createNodes (GitBranch key) {
-            return new Node[] { new BranchNode(key) };
+            Node node = getNode();
+            while (!(node instanceof RepositoryNode)) {
+                node = node.getParentNode();
+            }
+            File repository = ((RepositoryNode) node).getRepository();
+            return new Node[] { new BranchNode(repository, key) };
         }
 
         private void refreshKeys () {
@@ -615,25 +626,67 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private class BranchNode extends RepositoryBrowserNode {
-        private final GitBranch branch;
+        private PropertyChangeListener list;
+        private boolean active;
+        private final String branchName;
+        private String branchId;
 
-        public BranchNode (GitBranch branch) {
+        public BranchNode (File repository, GitBranch branch) {
             super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
-            this.branch = branch;
+            branchName = branch.getName();
+            branchId = branch.getId();
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                @Override
+                public void propertyChange (PropertyChangeEvent evt) {
+                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                        refreshActiveBranch((GitBranch) evt.getNewValue());
+                    }
+                }
+            }, info));
+            refreshActiveBranch(info.getActiveBranch());
         }
 
         @Override
         public String getDisplayName () {
-            return getName();
+            return getName(false);
         }
 
         @Override
-        public String getName () {
-            StringBuilder sb = new StringBuilder(branch.getName());
+        public String getHtmlDisplayName() {
+            return getName(true);
+        }
+
+        @Override
+        public String getName() {
+            return getName(false);
+        }
+        
+        public String getName (boolean html) {
+            StringBuilder sb = new StringBuilder();
+            if (active && html) {
+                sb.append("<html><strong>").append(branchName).append("</strong>"); //NOI18N
+            } else {
+                sb.append(branchName);
+            }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
-                sb.append(" - ").append(branch.getId()); //NOI18N
+                sb.append(" - ").append(branchId); //NOI18N
             }
             return sb.toString();
+        }
+
+        private void refreshActiveBranch (GitBranch activeBranch) {
+            String oldHtmlName = getHtmlDisplayName();
+            if (activeBranch.getName().equals(branchName)) {
+                active = true;
+                this.branchId = activeBranch.getId();
+            } else {
+                active = false;
+            }
+            String newHtmlName = getHtmlDisplayName();
+            if (!oldHtmlName.equals(newHtmlName)) {
+                fireDisplayNameChange(null, null);
+            }
         }
     }
     //</editor-fold>

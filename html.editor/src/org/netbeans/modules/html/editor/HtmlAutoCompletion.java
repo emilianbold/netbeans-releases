@@ -115,7 +115,7 @@ public class HtmlAutoCompletion {
      * A hook method called after a character was inserted into the
      * document. The function checks for special characters for
      * completion ()[]'"{} and other conditions and optionally performs
-     * changes to the doc and or caret (complets braces, moves caret,
+     * changes to the doc and or caret (completes braces, moves caret,
      * etc.)
      *
      * <b>Runs under document atomic lock.</b>
@@ -135,6 +135,11 @@ public class HtmlAutoCompletion {
         if (ch == '=') { //NOI18N
             if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
                 completeQuotes(doc, dotPos, caret);
+            }
+        } else if (ch == '\'') { //NOI18N
+            // #189561
+            if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
+                transformQuotesToApostrophes(doc, dotPos, caret);
             }
         } else if (ch == '{') { //NOI18N
             //user has pressed quotation mark
@@ -239,10 +244,10 @@ public class HtmlAutoCompletion {
                     ts.token().id() == HTMLTokenId.WS ||
                     isHtmlValueToken(ts.token()))) {
                 // slash typed just after open tag name => autocomplete the > symbol
-                doc.insertString(dotPos + 1, ">", null);
+                doc.insertString(dotPos + 1, ">", null); // NOI18N
 
                 //ignore next &gt; char if typed
-                insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>', -1);
+                insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>', -1); // NOI18N
             }
         }
     }
@@ -273,14 +278,14 @@ public class HtmlAutoCompletion {
                 //the text looks following in such a situation:
                 //
                 //  atrname="abcd|"", where offset of the | == dotPos
-                if (token.text().charAt(diff) == '"') {
+                if (token.text().charAt(diff) == '"') { // NOI18N
                     caret.setDot(dotPos + 1);
                     return true;
                 }
                 
             } else if (token.id() == HTMLTokenId.OPERATOR) {
                 //user typed quation just after equal sign after tag attribute name => complete the second quote
-                doc.insertString(dotPos, "\"\"", null);
+                doc.insertString(dotPos, "\"\"", null); // NOI18N
                 caret.setDot(dotPos + 1);
 
                 return true;
@@ -315,11 +320,37 @@ public class HtmlAutoCompletion {
         int dotPosAfterTypedChar = dotPos + 1;
         if (token != null && token.id() == HTMLTokenId.OPERATOR) {
             try {
-                doc.insertString(dotPosAfterTypedChar, "\"\"", null);
+                doc.insertString(dotPosAfterTypedChar, "\"\"", null); // NOI18N
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             caret.setDot(dotPosAfterTypedChar + 1);
+        }
+    }
+
+    private static void transformQuotesToApostrophes(final BaseDocument doc, final int dotPos, final Caret caret) {
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+        if (ts == null) {
+            return; //no html ts at the caret position
+        }
+        ts.move(dotPos);
+        if (!ts.moveNext()) {
+            return; //no token
+        }
+
+        Token<HTMLTokenId> token = ts.token();
+
+        int dotPosBeforeTypedChar = dotPos - 1;
+        final String text = token.text().toString();
+        if (text.contentEquals("\"'\"")) { // NOI18N
+            try {
+                doc.remove(dotPosBeforeTypedChar, 1);
+                doc.insertString(dotPosBeforeTypedChar, "\'", null); // NOI18N
+                doc.remove(dotPosBeforeTypedChar + 2, 1);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            caret.setDot(dotPosBeforeTypedChar + 1);
         }
     }
 
@@ -343,15 +374,15 @@ public class HtmlAutoCompletion {
         int dotPosAfterTypedChar = dotPos + 1;
         if (token.id() == XhtmlElTokenId.EL) {
             char charBefore = token.text().charAt(diff - 1);
-            if (charBefore == '$' || charBefore == '#') {
+            if (charBefore == '$' || charBefore == '#') { // NOI18N
                 try {
-                    doc.insertString(dotPosAfterTypedChar, "}", null);
+                    doc.insertString(dotPosAfterTypedChar, "}", null); // NOI18N
                     caret.setDot(dotPosAfterTypedChar);
                     //open completion
                     Completion.get().showCompletion();
 
                     //ignore '}' char
-                    insertIgnore = new DocumentInsertIgnore(dotPosAfterTypedChar, '}', dotPosAfterTypedChar + 1);
+                    insertIgnore = new DocumentInsertIgnore(dotPosAfterTypedChar, '}', dotPosAfterTypedChar + 1); // NOI18N
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }

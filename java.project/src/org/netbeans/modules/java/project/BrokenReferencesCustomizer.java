@@ -48,7 +48,6 @@ import java.awt.Component;
 import java.io.File;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 
@@ -56,10 +55,8 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -178,22 +175,21 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             return;
         }
         BrokenReferencesModel.OneReference or = model.getOneReference(index);
-        if (or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY ||
-            or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY_CONTENT) {
+        if (or.getType() == BrokenReferencesModel.RefType.LIBRARY ||
+            or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
             LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
-        } else if (or.getType() == BrokenReferencesModel.REF_TYPE_PLATFORM) {
+        } else if (or.getType() == BrokenReferencesModel.RefType.PLATFORM) {
             PlatformsCustomizer.showCustomizer(null);
-        } else if (or.getType() == BrokenReferencesModel.REF_TYPE_VARIABLE || or.getType() == BrokenReferencesModel.REF_TYPE_VARIABLE_CONTENT) {
+        } else if (or.getType() == BrokenReferencesModel.RefType.VARIABLE || or.getType() == BrokenReferencesModel.RefType.VARIABLE_CONTENT) {
             VariablesSupport.showVariablesCustomizer();
         } else {
             JFileChooser chooser;
-            if (or.getType() == BrokenReferencesModel.REF_TYPE_PROJECT) {
+            if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
                 chooser = ProjectChooser.projectChooser();
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
                     "LBL_BrokenLinksCustomizer_Resolve_Project", or.getDisplayID()));
             } else {
                 chooser = new JFileChooser();
-                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
                     "LBL_BrokenLinksCustomizer_Resolve_File", or.getDisplayID()));
@@ -252,7 +248,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             this.model = model;
         }
         
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public @Override Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );            
             if (model.isBroken(index)) {
                 setIcon(brokenRef);
