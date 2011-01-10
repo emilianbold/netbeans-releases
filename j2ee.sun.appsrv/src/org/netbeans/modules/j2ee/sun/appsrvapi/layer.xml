@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ConnPoolWizard.create"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/share/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/ConnectionPoolWizardInfo.html"/>
         <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
      </file>
@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.DataSourceWizard.create"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/share/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/DataSourceWizardInfo.html"/>
         <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
       </file>
@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.MailWizard.create"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/share/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMailWizardInfo.html"/>
         <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
      </file>
@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.JMSWizard.create"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/share/resources/ResNodeNodeIcon.gif"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/JavaMessageWizardInfo.html"/>
         <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
      </file>
