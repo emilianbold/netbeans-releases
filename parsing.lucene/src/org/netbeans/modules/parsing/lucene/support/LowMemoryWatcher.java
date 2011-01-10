@@ -37,51 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.lucene.support;
 
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 
 /**
- *
+ * A service providing information about
+ * low memory condition.
+ * @since 1.2
  * @author Tomas Zezula
  */
-public class LMListenerTest extends NbTestCase {
+public class LowMemoryWatcher {
 
-    private static final int _10K = 10 * 1024;
+    private static float heapLimit = 0.8f;
+    private static LowMemoryWatcher instance;
+    private final MemoryMXBean memBean;
 
-
-    private List<byte []> refs = new LinkedList<byte []>();
-
-    public LMListenerTest (final String name) {
-        super (name);
+    private LowMemoryWatcher () {
+        this.memBean = ManagementFactory.getMemoryMXBean();
+        assert this.memBean != null;
     }
-
-
+    
     /**
-     * Checks if the LMListener detects low memory
-     * and if it is not expensive to intensively call it.
+     * Returns true if the application is in low memory condition.
+     * This information can be used by batch file processing.
+     * @return true if nearly whole memory is used
      */
-    public void testListnener () {
-        final LMListener l = new LMListener();
-        long ct = 0;
-        for (int i=0; i<100000; i++) {
-            long st = System.currentTimeMillis();
-            boolean isLM = l.isLowMemory();
-            long et = System.currentTimeMillis();
-            ct+=et-st;
-            if (isLM) {
-                refs.clear();
+    public boolean isLowMemory () {
+        if (this.memBean != null) {
+            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
             }
-            byte[] data = new byte[_10K];
-            refs.add(data);
         }
-        assertTrue(ct<1000);
-        
+        return false;
     }
-
+    
+    /**
+     * Returns an instance of {@link LowMemoryWatcher}
+     * @return the {@link LowMemoryWatcher}
+     */
+    public static synchronized LowMemoryWatcher getInstance() {
+        if (instance == null) {
+            instance = new LowMemoryWatcher();
+        }
+        return instance;
+    }
+    
 }

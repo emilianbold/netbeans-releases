@@ -286,6 +286,9 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 
 	@Override
 	public void perform() {
+	    if (!terminal().isVisibleInContainer()) {
+		return ;
+	    }
 	    String newTitle = terminal().getTitle();
 	    if (terminal().isConnected() && newTitle != null) {
 		String escaped;

@@ -68,8 +68,8 @@ public class Reset implements ActionListener {
     private DialogDescriptor dd;
     private boolean valid = true;
 
-    Reset (File repository) {
-        revisionPicker = new RevisionDialogController(repository);
+    Reset (File repository, File[] roots) {
+        revisionPicker = new RevisionDialogController(repository, roots);
         panel = new ResetPanel(revisionPicker.getPanel());
     }
 

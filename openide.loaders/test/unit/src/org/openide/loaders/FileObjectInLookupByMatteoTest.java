@@ -96,7 +96,7 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.INFO;
     }
     
     @Override

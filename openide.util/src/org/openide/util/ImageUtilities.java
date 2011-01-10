@@ -61,6 +61,7 @@ import java.awt.image.RGBImageFilter;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -139,6 +140,9 @@ public final class ImageUtilities {
      * or <samp>org/netbeans/modules/foo/resources/foo_mybranding.gif</samp>.
      * 
      * <p>Caching of loaded images can be used internally to improve performance.
+     * <p> Since version 8.12 the returned image object responds to call
+     * <code>image.getProperty("url", null)</code> by returning the internal
+     * {@link URL} of the found and loaded <code>resource</code>.
      * 
      * @param resource resource path of the image (no initial slash)
      * @param localized true for localized search
@@ -245,7 +249,7 @@ public final class ImageUtilities {
                     return cached;
                 }
             }
-            cached = ToolTipImage.createNew(text, image);
+            cached = ToolTipImage.createNew(text, image, null);
             imageToolTipCache.put(key, new ActiveRef<ToolTipImageKey>(cached, imageToolTipCache, key));
             return cached;
         }
@@ -527,7 +531,7 @@ public final class ImageUtilities {
 
                 ERR.log(Level.FINE, "loading icon {0} = {1}", new Object[] {n, result});
                 name = new String(name).intern(); // NOPMD
-                result = ToolTipImage.createNew("", result);
+                result = ToolTipImage.createNew("", result, url);
                 cache.put(name, new ActiveRef<String>(result, cache, name));
                 return result;
             } else { // no icon found
@@ -601,7 +605,7 @@ public final class ImageUtilities {
         
         ColorModel model = colorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
         ToolTipImage buffImage = new ToolTipImage(str.toString(), 
-                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null
+                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null, null
             );
 
         java.awt.Graphics g = buffImage.createGraphics();
@@ -738,14 +742,20 @@ public final class ImageUtilities {
     private static class ToolTipImage extends BufferedImage implements Icon {
         final String toolTipText;
         ImageIcon imageIcon;
+        final URL url;
 
-        public static ToolTipImage createNew(String toolTipText, Image image) {
+        public static ToolTipImage createNew(String toolTipText, Image image, URL url) {
             ImageUtilities.ensureLoaded(image);
             boolean bitmask = (image instanceof Transparency) && ((Transparency) image).getTransparency() != Transparency.TRANSLUCENT;
             ColorModel model = colorModel(bitmask ? Transparency.BITMASK : Transparency.TRANSLUCENT);
             int w = image.getWidth(null);
             int h = image.getHeight(null);
-            ToolTipImage newImage = new ToolTipImage(toolTipText, model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null);
+            ToolTipImage newImage = new ToolTipImage(
+                toolTipText,
+                model,
+                model.createCompatibleWritableRaster(w, h),
+                model.isAlphaPremultiplied(), null, url
+            );
 
             java.awt.Graphics g = newImage.createGraphics();
             g.drawImage(image, 0, 0, null);
@@ -753,26 +763,21 @@ public final class ImageUtilities {
             return newImage;
         }
         
-        public ToolTipImage(String toolTipText, ColorModel cm, WritableRaster raster, boolean isRasterPremultiplied, Hashtable<?, ?> properties) {
+        public ToolTipImage(
+            String toolTipText, ColorModel cm, WritableRaster raster,
+            boolean isRasterPremultiplied, Hashtable<?, ?> properties, URL url
+        ) {
             super(cm, raster, isRasterPremultiplied, properties);
             this.toolTipText = toolTipText;
-        }
-
-        public ToolTipImage(String toolTipText, int width, int height, int imageType, IndexColorModel cm) {
-            super(width, height, imageType, cm);
-            this.toolTipText = toolTipText;
+            this.url = url;
         }
 
         public ToolTipImage(String toolTipText, int width, int height, int imageType) {
             super(width, height, imageType);
             this.toolTipText = toolTipText;
+            this.url = null;
         }
         
-        public ToolTipImage(String toolTipText, BufferedImage image) {
-            super(image.getWidth(), image.getHeight(), image.getType());
-            this.toolTipText = toolTipText;
-        }
-
         synchronized ImageIcon getIcon() {
             if (imageIcon == null) {
                 imageIcon = new ImageIcon(this);
@@ -790,6 +795,18 @@ public final class ImageUtilities {
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.drawImage(this, x, y, null);
+        }
+
+        @Override
+        public Object getProperty(String name, ImageObserver observer) {
+            if ("url".equals(name)) { // NOI18N
+                if (url != null) {
+                    return url;
+                } else {
+                    return imageIcon.getImage().getProperty("url", observer);
+                }
+            }
+            return super.getProperty(name, observer);
         }
     }
 

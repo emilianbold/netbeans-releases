@@ -247,16 +247,13 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     t = ts.token();
                 } else {
                     if (t.id() == JavaTokenId.NEW || t.id() == JavaTokenId.WHITESPACE) {
-                        boolean cont = ts.moveNext();
-                        
-                        while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {
-                            cont = ts.moveNext();
-                        }
-                        
-                        if (!cont)
-                            return null;
-                        
-                        t = ts.token();
+                        t = skipWhitespaces(ts);
+
+                        if (t == null) return null;
+                    } else if (t.id() == JavaTokenId.IMPORT) {
+                        t = skipWhitespaces(ts);
+
+                        if (t == null) return null;
                     }
                 }
             }
@@ -266,6 +263,20 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             }
         }
         return null;
+    }
+
+    private static Token skipWhitespaces(TokenSequence<JavaTokenId> ts) {
+        boolean cont = ts.moveNext();
+
+        while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {
+            cont = ts.moveNext();
+        }
+
+        if (!cont) {
+            return null;
+        }
+
+        return ts.token();
     }
     
     private static int[] findUnresolvedElementSpan(CompilationInfo info, int offset) throws IOException {
@@ -311,9 +322,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.var.might.not.have.been.initialized",
             "compiler.err.report.access",
             "compiler.err.does.not.override.abstract",
-            "compiler.err.abstract.cant.be.instantiated"
+            "compiler.err.abstract.cant.be.instantiated",
+            "compiler.warn.missing.SVUID"
     ));
-    
+
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
     
     private int[] handlePossibleMethodInvocation(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {

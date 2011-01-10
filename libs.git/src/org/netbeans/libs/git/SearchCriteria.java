@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.util;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+package org.netbeans.libs.git;
+
+import java.io.File;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Tomas Zezula
+ * @author ondra
  */
-public final class LMListener {
+public final class SearchCriteria {
 
-    private final MemoryMXBean memBean;
+    private int limit;
+    private String revisionFrom;
+    private String revisionTo;
+    private File[] files;
 
-
-    static float heapLimit = 0.8f;
-
-    public LMListener () {
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        assert this.memBean != null;
+    public SearchCriteria () {
+        this.limit = -1;
+        this.files = new File[0];
+    }
+    
+    public File[] getFiles () {
+        return files;
     }
 
-    public static float getHeapLimit () {
-        return heapLimit;
+    /**
+     * files cannot be set to <code>null</code>
+     * @param files 
+     */
+    public void setFiles (File[] files) {
+        Parameters.notNull("files", files);
+        this.files = files;
     }
 
-    static void setHeapLimit(final float limit) {
-        heapLimit = limit;
+    public int getLimit () {
+        return limit;
     }
 
-    public boolean isLowMemory () {
-        if (this.memBean != null) {
-            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
-            if (usage != null) {
-                long used = usage.getUsed();
-                long max = usage.getMax();
-                return used > max * heapLimit;
-            }
-        }
-        return false;
+    public void setLimit (int limit) {
+        this.limit = limit;
+    }
+
+    public String getRevisionFrom () {
+        return revisionFrom;
+    }
+
+    public void setRevisionFrom (String revisionFrom) {
+        this.revisionFrom = revisionFrom;
+    }
+
+    public String getRevisionTo () {
+        return revisionTo;
+    }
+
+    public void setRevisionTo (String revisionTo) {
+        this.revisionTo = revisionTo;
     }
 }

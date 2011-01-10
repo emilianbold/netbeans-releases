@@ -101,10 +101,14 @@ public class MakeConfiguration extends Configuration {
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
     };
+
     private static String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),
+    };
+
+    private static String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
@@ -155,8 +159,13 @@ public class MakeConfiguration extends Configuration {
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
-        } else {
-            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
+        } else if (configurationTypeValue == TYPE_APPLICATION || configurationTypeValue == TYPE_DYNAMIC_LIB || configurationTypeValue == TYPE_STATIC_LIB) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null, TYPE_APPLICATION);
+        } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
+        }
+        else {
+            assert false;
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
         if (defaultToolCollection) {
@@ -328,6 +337,17 @@ public class MakeConfiguration extends Configuration {
             case TYPE_QT_APPLICATION:
             case TYPE_QT_DYNAMIC_LIB:
             case TYPE_QT_STATIC_LIB:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public final boolean isStandardManagedConfiguration() {
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
                 return true;
             default:
                 return false;
@@ -935,12 +955,14 @@ public class MakeConfiguration extends Configuration {
 
     /*
      * Special version of IntConfiguration
-     * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
+     * Names are shifted by offset to match value and limit choice
      */
     private final static class ManagedIntConfiguration extends IntConfiguration {
+        private int offset;
 
-        public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
+        public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options, int offset) {
             super(master, def, names, options);
+            this.offset = offset;
         }
 
         @Override
@@ -949,7 +971,7 @@ public class MakeConfiguration extends Configuration {
             if (s != null) {
                 for (int i = 0; i < names.length; i++) {
                     if (s.equals(names[i])) {
-                        setValue(i + 1);
+                        setValue(i + offset);
                         break;
                     }
                 }
@@ -958,37 +980,9 @@ public class MakeConfiguration extends Configuration {
 
         @Override
         public String getName() {
-            return getNames()[getValue() - 1];
+            return getNames()[getValue() - offset];
         }
     }
-//
-//    private String[] getCompilerSetDisplayNames() {
-//        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
-//            names.add(cs.getDisplayName());
-//        }
-//        return names.toArray(new String[0]);
-//    }
-//
-//    private String[] getCompilerSetNames() {
-//        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
-//            names.add(cs.getName());
-//        }
-//        return names.toArray(new String[0]);
-//    }
-//
-//    private int getDefaultCompilerSetIndex() {
-//        String name = CppSettings.getDefault().getCompilerSetName();
-//        int i = 0;
-//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
-//            if (name.equals(cs.getName())) {
-//                return i;
-//            }
-//            i++;
-//        }
-//        return 0; // shouldn't happen
-//    }
 
     /** Look up i18n strings here */
     private static String getString(String s) {

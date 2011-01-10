@@ -491,7 +491,7 @@ public class Reindenter implements IndentTask {
                 if (t != null) {
                     currentIndent = getCurrentIndent(t);
                 } else {
-                    currentIndent += cs.getIndentSize();
+                    currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ((CaseTree)last).getExpression()), currentIndent);
                 }
                 break;
             case NEW_ARRAY:

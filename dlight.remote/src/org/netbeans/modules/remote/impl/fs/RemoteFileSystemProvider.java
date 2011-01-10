@@ -178,7 +178,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             // path is like "rfs:,hostname:22/tmp/filename.ext"
             int port = 0;
             StringBuilder hostName = new StringBuilder();
-            CharSequence remotePath = null;
+            CharSequence remotePath = "";
             boolean insideHost = true;
             for (int i = RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length(); i < path.length(); i++) {
                 char c = path.charAt(i);
@@ -198,7 +198,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
                     }
                 }
             }
-            if (remotePath == null || hostName.length() == 0) {
+            if (hostName.length() == 0) {
                 throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
             }
             FileObject fo = null;

@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.ui.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -155,7 +156,11 @@ public class AutoupdateCheckScheduler {
                     }
                     Utilities.showProviderNotification(p);
                 } catch (IOException ioe) {
-                    err.log (Level.INFO, ioe.getMessage (), ioe);
+                    if (ioe instanceof UnknownHostException || ioe.getCause() instanceof UnknownHostException) {
+                        // Most likely just offline. Do not print a stack trace. DownloadListener.notifyException already issuing warning.
+                    } else {
+                        err.log(Level.INFO, null, ioe);
+                    }
                     if (problems != null) {
                         problems.add (ioe.getLocalizedMessage ());
                     }

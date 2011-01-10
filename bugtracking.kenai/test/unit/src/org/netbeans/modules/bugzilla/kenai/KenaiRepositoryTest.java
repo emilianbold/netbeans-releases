@@ -42,39 +42,39 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.util.List;
 import org.netbeans.modules.bugzilla.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
  * @author tomas
  */
-public class KenaiTest extends NbTestCase implements TestConstants {
+public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
 
-    public static final String KENAI_REPO_URL = "https://testkenai.com/bugzilla";
+    public static final String KENAI_REPO_URL = "https://testjava.net/bugzilla";
 
-    private TaskRepository repository;
+    private TaskRepository taskRepository;
     private BugzillaRepositoryConnector brc;
     private TaskRepositoryManager trm;
 
-    public KenaiTest(String arg0) {
+    public KenaiRepositoryTest(String arg0) {
         super(arg0);
     }
 
@@ -87,59 +87,69 @@ public class KenaiTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        System.setProperty("kenai.com.url","https://testkenai.com");
+        System.setProperty("kenai.com.url","https://testjava.net");
+        Kenai kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
+        
+        String proxy = br.readLine();
+        String port = br.readLine();
+
+        if(proxy != null) {
+            System.setProperty("https.proxyHost", proxy);
+            System.setProperty("https.proxyPort", port);
+        }
+            
         br.close();
 
+        kenai.login(username, password.toCharArray(), false);
+        
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        repository = new TaskRepository("bugzilla", KENAI_REPO_URL);
+        taskRepository = new TaskRepository("bugzilla", KENAI_REPO_URL);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, password);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
+        taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
         trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
+        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));;
 
-        trm.addRepository(repository);
+        trm.addRepository(taskRepository);
         trm.addRepositoryConnector(brc);
 
         WebUtil.init();
 
     }
 
-    public void testValidate () throws Throwable {
-        TestUtil.validate(brc, repository);
+    public void testIsKenai() throws Throwable {
+        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        assertNotNull(prj);
+
+        KenaiSupportImpl support = new KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        assertNotNull(repo);
+        assertTrue(KenaiUtil.isKenai(repo));
     }
 
-    public void testQuery() throws Throwable {
-        try {
+    public void testOneProductAfterConfigurationRefresh() throws Throwable {
+        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        assertNotNull(prj);
 
-            String dateString = repository.getSynchronizationTimeStamp();
-            if (dateString == null) {
-                dateString = "";
-            }
-
-            String url = "/buglist.cgi?query_format=advanced&product=koliba";
-            IRepositoryQuery query = new RepositoryQuery(repository.getConnectorKind(), "");
-            query.setUrl(url);
-            final List<TaskData> collectedData = new ArrayList<TaskData>();
-            TaskDataCollector collector = new TaskDataCollector() {
-                public void accept(TaskData taskData) {
-                    collectedData.add(taskData);
-                }
-            };
-            brc.performQuery(repository, query, collector, null, NULL_PROGRESS_MONITOR);
-            assertTrue(collectedData.size() > 0);
-
-        } catch (Exception e) {
-            TestUtil.handleException(e);
-        }
+        KenaiSupportImpl support = new KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        assertNotNull(repo);
+        List<String> products = repo.getConfiguration().getProducts();
+        assertEquals(1, products.size());
+        assertTrue(KenaiUtil.isKenai(repo));
+        
+        repo.refreshConfiguration();
+        products = repo.getConfiguration().getProducts();
+        assertEquals(1, products.size());
+        
     }
 
 }

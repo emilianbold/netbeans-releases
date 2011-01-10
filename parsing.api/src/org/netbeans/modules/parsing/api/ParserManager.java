@@ -57,7 +57,7 @@ import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LMListener;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -172,7 +172,7 @@ public final class ParserManager {
         }
 
         public Void run () throws Exception {
-            LMListener lMListener = new LMListener ();
+            final LowMemoryWatcher lMListener = LowMemoryWatcher.getInstance();
             Parser parser = null;
             final Collection<Snapshot> snapShots = new LazySnapshots(sources);
             for (Source source : sources) {

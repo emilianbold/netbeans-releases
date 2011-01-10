@@ -246,9 +246,6 @@ public class LocalFileSystemExternalTouchTest extends NbTestCase {
             }
 
             public void fileAttributeChanged(FileAttributeEvent fe) {
-                if (fe.getName().startsWith("DataEditorSupport.read-only.refresh")) {
-                    return;
-                }
                 LOG.info("AttributeChanged: " + fe.getFile());
                 sb.append("AttributeChanged");
             }

@@ -90,6 +90,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
@@ -103,6 +104,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -813,7 +815,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
             fileObject = newFile;
             ERR.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
-            fileObject.addFileChangeListener (new EnvListener (this));
+            new EnvListener(fileObject, this);
 
             if (lockAgain) { // refresh lock
                 try {
@@ -1073,8 +1075,24 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         /** @param env environment to use
         */
-        public EnvListener (Env env) {
+        public EnvListener (FileObject listen, Env env) {
             this.env = new java.lang.ref.WeakReference<Env> (env);
+            addFileChangeListener(listen);
+        }
+        
+        private void addFileChangeListener(FileObject fo) {
+            try {
+                fo.getFileSystem().addFileChangeListener(this);
+            } catch (FileStateInvalidException ex) {
+                ERR.log(Level.INFO, "cannot add listener to " + fo, ex);
+            }
+        }
+        private void removeFileChangeListener(FileObject fo) {
+            try {
+                fo.getFileSystem().removeFileChangeListener(this);
+            } catch (FileStateInvalidException ex) {
+                ERR.log(Level.INFO, "cannot remove listener from " + fo, ex);
+            }
         }
 
 
@@ -1086,17 +1104,18 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (myEnv != null) {
                 myEnv.updateDocumentProperty();
             }
-            if(myEnv == null || myEnv.getFileImpl() != fo) {
+            if(myEnv == null || myEnv.getFileImpl() == null) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
-                fo.removeFileChangeListener(this);
+                removeFileChangeListener(fo);
                 return;
             }
+            if (myEnv.getFileImpl() == fo) {
+                removeFileChangeListener(fo);
             
-            fo.removeFileChangeListener(this);
-            
-            myEnv.fileRemoved(true);
-            fo.addFileChangeListener(this);
+                myEnv.fileRemoved(true);
+                addFileChangeListener(fo);
+            }
         }
         
         /** Fired when a file is changed.
@@ -1109,10 +1128,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
 
             Env myEnv = this.env.get ();
-            if (myEnv == null || myEnv.getFileImpl () != fe.getFile ()) {
+            if (myEnv == null || myEnv.getFileImpl () == null) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
-                fe.getFile ().removeFileChangeListener (this);
+                removeFileChangeListener (fe.getFile ());
+                return;
+            }
+            
+            if (myEnv.getFileImpl() != fe.getFile()) {
                 return;
             }
 
@@ -1140,12 +1163,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         @Override
         public void fileAttributeChanged(FileAttributeEvent fae) {
+            Env myEnv = this.env.get ();
+            if (myEnv == null || myEnv.getFileImpl () != fae.getFile()) {
+                return;
+            }
+            
             // wait only for event from org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj.refreshImpl()
             if ("DataEditorSupport.read-only.refresh".equals(fae.getName())) {  //NOI18N
-                Env myEnv = this.env.get();
-                if (myEnv != null) {
-                    myEnv.readOnlyRefresh();
-                }
+                myEnv.readOnlyRefresh();
             }
         }
     }

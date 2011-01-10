@@ -65,23 +65,26 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private String displayName;
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private static final Logger LOG = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
-    private String description = null;
-    private boolean descriptionInitialized = false;
-    private CATEGORY category = null;
+    private String description;
+    private boolean descriptionInitialized;
+    private ProviderCategory category;
 
     public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter) {
-        this(name, displayName, updateCenter, CATEGORY.COMMUNITY);
+        this(name, displayName, updateCenter, ProviderCategory.forValue(CATEGORY.COMMUNITY));
     }
     
     /**
      * Creates a new instance of AutoupdateCatalog
      */
-    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, CATEGORY category) {
+    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, ProviderCategory category) {
         Parameters.notNull("name", name);
         this.codeName = name;
         this.displayName = displayName;
         this.updateCenter = updateCenter;
-        this.category = (category != null) ? category : CATEGORY.COMMUNITY;
+        this.category = category;
+    }
+    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, CATEGORY category) {
+        this(name, displayName, updateCenter, ProviderCategory.forValue(category));
     }
     
     @Override
@@ -157,6 +160,10 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
 
     @Override
     public CATEGORY getCategory() {
-        return category;
+        return category.toEnum();
     }    
+    
+    public ProviderCategory getProviderCategory() {
+        return category;
+    }
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Image;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -61,7 +62,6 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -76,7 +76,7 @@ public abstract class Unit {
     private boolean isVisible;
     private String filter;
     private String categoryName;
-    private static Logger log = Logger.getLogger (Unit.class.getName ());
+    static final Logger log = Logger.getLogger (Unit.class.getName ());
     private String displayDate = null;
     
     protected abstract UpdateElement getRelevantElement ();
@@ -658,7 +658,7 @@ public abstract class Unit {
             if (u1 instanceof Unit.Available && u2 instanceof Unit.Available) {
                 Unit.Available unit1 = (Unit.Available)u1;
                 Unit.Available unit2 = (Unit.Available)u2;
-                return Collator.getInstance().compare(unit1.getSourceCategory().name(), unit2.getSourceCategory().name());
+                return Collator.getInstance().compare(unit1.getSourceDescription(), unit2.getSourceDescription());
             }
             
             throw new IllegalStateException();
@@ -699,8 +699,11 @@ public abstract class Unit {
             return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.AVAILABLE;
         }        
         
-        public CATEGORY getSourceCategory() {
-            return updateEl.getSourceCategory();
+        public Image getSourceIcon() {
+            return updateEl.getSourceIcon();
+        }
+        public String getSourceDescription() {
+            return updateEl.getSourceDescription();
         }
     }
 

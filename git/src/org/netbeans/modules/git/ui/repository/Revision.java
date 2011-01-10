@@ -40,52 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.lucene;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+package org.netbeans.modules.git.ui.repository;
 
 /**
  *
- * @author Tomas Zezula
+ * @author ondra
  */
-class LowMemoryWatcher {
+public class Revision {
+    private final String revision;
+    private final String name;
 
-    private static float heapLimit = 0.8f;
-    private static LowMemoryWatcher instance;
-    private final MemoryMXBean memBean;
-
-    private LowMemoryWatcher () {
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        assert this.memBean != null;
+    public Revision (String revision, String name) {
+        this.revision = revision;
+        this.name = name;
     }
-    
-    public boolean isLowMemory () {
-        if (this.memBean != null) {
-            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
-            if (usage != null) {
-                long used = usage.getUsed();
-                long max = usage.getMax();
-                return used > max * heapLimit;
-            }
+
+    public String getRevision () {
+        return revision;
+    }
+
+    @Override
+    public String toString () {
+        StringBuilder sb = new StringBuilder();
+        if (name != null && !name.equals(revision)) {
+            sb.append(name).append(" (").append(revision).append(")"); //NOI18N
+        } else {
+            sb.append(revision);
         }
-        return false;
+        return sb.toString();
     }
-    
-    static synchronized LowMemoryWatcher getInstance() {
-        if (instance == null) {
-            instance = new LowMemoryWatcher();
-        }
-        return instance;
-    }
-
-    static float getHeapLimit () {
-        return heapLimit;
-    }
-
-    static void setHeapLimit(final float limit) {
-        heapLimit = limit;
-    }    
-    
 }

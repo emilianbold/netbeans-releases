@@ -67,10 +67,12 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
         this.relativePath = relativePath;
     }
 
+    @Override
     public String getRelativePath() {
         return relativePath;
     }
 
+    @Override
     public URL getURL() {
         try {
             return Util.resolveUrl(root, relativePath);
@@ -80,14 +82,17 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
         }
     }
 
+    @Override
     public String getMimeType() {
         throw new UnsupportedOperationException("Mimetype related operations are not supported by DeletedIndexable"); //NOI18N
     }
 
+    @Override
     public boolean isTypeOf(String mimeType) {
         throw new UnsupportedOperationException("Mimetype related operations are not supported by DeletedIndexable"); //NOI18N
     }
 
+    @Override
     public FileObject getFileObject() {
         return null;
     }

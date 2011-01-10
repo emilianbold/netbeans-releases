@@ -83,7 +83,7 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.util.LMListener;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
@@ -113,7 +113,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
-        final LMListener mem = new LMListener();
+        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
 
         final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();

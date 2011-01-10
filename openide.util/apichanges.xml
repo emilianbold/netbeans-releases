@@ -51,6 +51,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ImageUtilities.URL">
+        <api name="util"/>
+        <summary>ImageUtilities support "url" attribute</summary>
+        <version major="8" minor="12"/>
+        <date day="10" month="1" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+            Images loaded by <a href="@TOP@/org/openide/util/ImageUtilities.html#loadImage(java.lang.String,%20boolean)">
+            ImageUtilities.loadImage</a> now
+            respond to <code>getProperty("url", null)</code> calls.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="193944"/>
+    </change>
     <change id="WeakSet.putIfAbsent">
         <api name="util"/>
         <summary>New implementation of WeakSet with two new methods <code>putIfAbsent</code> and <code>resize</code>

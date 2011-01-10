@@ -167,11 +167,16 @@ public class Subversion {
         cleanupTask = getRequestProcessor().create(new Runnable() {
             @Override
             public void run() {
+                
+                if(!fileStatusCache.ready()) {
+                    fileStatusCache.computeIndex();                    
+                }
+                
                 if (DelayScanRegistry.getInstance().isDelayed(cleanupTask, LOG, "Subversion.cleanupTask")) { //NOI18N
                     return;
                 }
+                
                 try {
-                    fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {

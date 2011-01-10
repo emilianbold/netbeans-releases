@@ -325,7 +325,7 @@ public class WrappedTextView extends View {
                             }
                         }
                     }
-                    if (charpos % charsPerLine != 0) {
+                    if (charsPerLine == 0 || charpos % charsPerLine != 0) {
                         y += charHeight;
                     }
                 }

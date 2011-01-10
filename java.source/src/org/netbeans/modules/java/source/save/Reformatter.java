@@ -504,7 +504,8 @@ public class Reformatter implements ReformatTask {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
                 }
                 if (tree.getKind() != Tree.Kind.ERRONEOUS && tree.getKind() != Tree.Kind.BLOCK
-                        && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)) {
+                        && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)
+                        && (tree.getKind() != Tree.Kind.NEW_ARRAY || getCurrentPath().getLeaf().getKind() != Tree.Kind.ASSIGNMENT)) {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
@@ -2089,7 +2090,7 @@ public class Reformatter implements ReformatTask {
                 switch (parent.getKind()) {
                     case ASSIGNMENT:
                         Tree grandParent = getCurrentPath().getParentPath().getParentPath().getLeaf();
-                        if (grandParent.getKind() != Tree.Kind.BLOCK && !org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()))
+                        if (grandParent.getKind() == Tree.Kind.ANNOTATION)
                             break;
                     case VARIABLE:
                     case METHOD:

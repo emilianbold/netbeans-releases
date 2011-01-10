@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -312,8 +313,45 @@ public class LuceneIndex implements Index {
                 for (S td : toDelete) {
                     out.deleteDocuments(queryConvertor.convert(td));
                 }
+            }            
+            if (debugIndexMerging) {
+                out.setInfoStream (System.err);
+            }                
+            final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
+            Directory memDir = null;
+            IndexWriter activeOut = null;
+            if (lmListener.isLowMemory()) {
+                activeOut = out;
             }
-            storeData(out, data, docConvertor, optimize);
+            else {
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+            }
+            for (Iterator<T> it = data.iterator(); it.hasNext();) {
+                T entry = it.next();
+                it.remove();
+                final Document doc = docConvertor.convert(entry);
+                activeOut.addDocument(doc);
+                if (memDir != null && lmListener.isLowMemory()) {
+                    activeOut.close();
+                    out.addIndexesNoOptimize(new Directory[] {memDir});
+                    memDir = new RAMDirectory ();
+                    activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                }
+            }
+            if (memDir != null) {
+                activeOut.close();
+                out.addIndexesNoOptimize(new Directory[] {memDir});
+                activeOut = null;
+                memDir = null;
+            }
+            if (optimize) {
+                out.optimize(false);
+            }
+        } catch (RuntimeException e) {
+            throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
+        } catch (IOException e) {
+            throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
         } finally {
             try {
                 out.close();
@@ -323,47 +361,6 @@ public class LuceneIndex implements Index {
         }
     }
         
-    private <T> void storeData (
-            final IndexWriter out,
-            final @NonNull Collection<T> data,
-            final @NonNull Convertor<? super T, ? extends Document> convertor,
-            final boolean optimize) throws IOException {
-        if (debugIndexMerging) {
-            out.setInfoStream (System.err);
-        }                
-        final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
-        Directory memDir = null;
-        IndexWriter activeOut = null;
-        if (lmListener.isLowMemory()) {
-            activeOut = out;
-        }
-        else {
-            memDir = new RAMDirectory ();
-            activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
-        }
-        for (Iterator<T> it = data.iterator(); it.hasNext();) {
-            T entry = it.next();
-            it.remove();
-            final Document doc = convertor.convert(entry);
-            activeOut.addDocument(doc);
-            if (memDir != null && lmListener.isLowMemory()) {
-                activeOut.close();
-                out.addIndexesNoOptimize(new Directory[] {memDir});
-                memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
-            }
-        }
-        if (memDir != null) {
-            activeOut.close();
-            out.addIndexesNoOptimize(new Directory[] {memDir});
-            activeOut = null;
-            memDir = null;
-        }
-        if (optimize) {
-            out.optimize(false);
-        }
-    }
-
     @Override
     public boolean isValid (boolean force) throws IOException {
         return dirCache.isValid(force);

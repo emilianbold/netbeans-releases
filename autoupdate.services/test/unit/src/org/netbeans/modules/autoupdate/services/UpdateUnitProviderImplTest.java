@@ -170,7 +170,10 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         String displayName = "2nd Update Provider";
         URL url = URL_TO_TEST_CATALOG;
         
-        UpdateUnitProvider newProvider = UpdateUnitProviderImpl.createUpdateUnitProvider(codeName, displayName, url, CATEGORY.COMMUNITY);
+        UpdateUnitProvider newProvider = UpdateUnitProviderImpl.createUpdateUnitProvider(
+            codeName, displayName, url, 
+            ProviderCategory.forValue(CATEGORY.COMMUNITY)
+        );
         assertNotNull(codeName + " provider found.", newProvider);
         
         result = UpdateUnitProviderImpl.getUpdateUnitProviders(false);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Image;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +54,6 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -125,7 +125,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = u.getCategoryName();
             break;
         case 3 :
-            res = u.getSourceCategory();
+            res = u.getSourceIcon();
             break;
         }
         
@@ -150,7 +150,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;
         case 3 :
-            res = CATEGORY.class;
+            res = Image.class;
             break;
         }
         
@@ -189,12 +189,13 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     @Override
     public String getToolTipText(int row, int col) {
         if (col == 3) {
-            CATEGORY category = (CATEGORY) getValueAt (row, 3);
-            return Utilities.getCategoryName(category);
+            Unit.Available u = (Unit.Available) getUnitAtRow(row);
+            return u.getSourceDescription();
         }
         return super.getToolTipText(row, col);
     }
 
+    @Override
     public int getPreferredWidth(JTableHeader header, int col) {
         final int minWidth = super.getMinWidth(header, col);
         switch (col) {

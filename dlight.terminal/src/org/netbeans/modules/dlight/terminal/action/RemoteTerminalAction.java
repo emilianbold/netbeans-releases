@@ -72,6 +72,7 @@ public final class RemoteTerminalAction extends TerminalAction {
     @Override
     protected ExecutionEnvironment getEnvironment() {
         String title = NbBundle.getMessage(RemoteTerminalAction.class, "RemoteConnectionTitle");
+        cfgPanel.init();
         DialogDescriptor dd = new DialogDescriptor(cfgPanel, title, // NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION, null);

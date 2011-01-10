@@ -102,7 +102,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             }
         } finally {
             LOG.log(Level.FINE, "End - {0}", originalDisplayName); //NOI18N
-            finnishProgress();
+            finishProgress();
             getLogger().closeLog();
         }
     }
@@ -120,7 +120,9 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             return false;
         }
         if (task != null) {
-            task.cancel();
+            if (task.cancel()) {
+                finishProgress();
+            }
         }
         return canceled = true;
     }
@@ -167,7 +169,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
     }
 
-    protected void finnishProgress () {
+    protected void finishProgress () {
         getProgressHandle().finish();
         if (isCanceled() == false) {
             getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
@@ -293,6 +295,18 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
 
         private File getDirectChild (File file, File root) {
             return (file.equals(root) || root.equals(file.getParentFile())) ? file : null;
+        }
+    }
+    
+    public abstract static class NoOutputLogging extends GitProgressSupport {
+        OutputLogger logger;
+                
+        @Override
+        public final OutputLogger getLogger () {
+            if (logger == null) {
+                logger = OutputLogger.getLogger(null);
+            }
+            return logger;
         }
     }
 }

@@ -94,6 +94,8 @@ public class ActionRegistrationHinter implements Hinter {
                     return null;
                 }
             });
+        } else if ("method:org.openide.awt.Actions.checkbox".equals(instanceCreate)) {
+            // #193279: no associated annotation available
         } else if ("method:org.openide.awt.Actions.callback".equals(instanceCreate) || "method:org.openide.awt.Actions.context".equals(instanceCreate)) {
             ctx.addHint(Severity.WARNING, ctx.standardDescription()/* XXX no fixes yet */);
         } else if ("method:org.openide.windows.TopComponent.openAction".equals(instanceCreate)) {

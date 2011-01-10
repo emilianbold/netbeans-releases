@@ -46,14 +46,10 @@ package org.openide.windows;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
@@ -62,9 +58,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /** Tests behaviour of GlobalContextProviderImpl
  * and its cooperation with activated and current nodes.
@@ -74,7 +67,7 @@ import org.openide.util.lookup.InstanceContent;
 public class ContextAwareActionInTopComponentTest extends NbTestCase {
 
     private TopComponent tc;
-    private MyContextAwareAction myGlobalAction = new MyContextAwareAction();
+    private MyContextAwareAction myGlobalAction = new MyContextAwareAction(true);
     private KeyStroke KEY_STROKE = KeyStroke.getKeyStroke( KeyEvent.VK_W, KeyEvent.ALT_DOWN_MASK+KeyEvent.CTRL_DOWN_MASK+KeyEvent.SHIFT_DOWN_MASK );
 
     public ContextAwareActionInTopComponentTest(java.lang.String testName) {
@@ -88,6 +81,9 @@ public class ContextAwareActionInTopComponentTest extends NbTestCase {
         MockServices.setServices( MyKeymap.class );
         Keymap km = Lookup.getDefault().lookup(Keymap.class);
         km.addActionForKeyStroke( KEY_STROKE, myGlobalAction );
+
+        MyContextAwareAction.globalActionWasPerformed = false;
+        MyContextAwareAction.contextActionWasPerformed = false;
     }
     
     public void testGlobalActionDisabled () throws Exception {
@@ -98,7 +94,8 @@ public class ContextAwareActionInTopComponentTest extends NbTestCase {
         
         KeyEvent e = new KeyEvent( tc, KeyEvent.KEY_TYPED, 0, 0, 0 );
         assertTrue( tc.processKeyBinding( KEY_STROKE, e, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true ) );
-        assertTrue( myGlobalAction.actionWasPerformed );
+        assertFalse( MyContextAwareAction.globalActionWasPerformed );
+        assertTrue( MyContextAwareAction.contextActionWasPerformed );
     }
     
     public void testGlobalActionSurvivedFocusChange() throws Exception {
@@ -109,7 +106,8 @@ public class ContextAwareActionInTopComponentTest extends NbTestCase {
         
         KeyEvent e = new KeyEvent( tc, KeyEvent.KEY_TYPED, 0, 0, 0 );
         assertTrue( tc.processKeyBinding( KEY_STROKE, e, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true ) );
-        assertTrue( myGlobalAction.actionWasPerformed );
+        assertTrue( MyContextAwareAction.globalActionWasPerformed );
+        assertFalse( MyContextAwareAction.contextActionWasPerformed );
     }
     
     public void testGlobalActionDoesNotSurviveFocusChange() throws Exception {
@@ -120,7 +118,8 @@ public class ContextAwareActionInTopComponentTest extends NbTestCase {
         
         KeyEvent e = new KeyEvent( tc, KeyEvent.KEY_TYPED, 0, 0, 0 );
         assertTrue( tc.processKeyBinding( KEY_STROKE, e, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true ) );
-        assertFalse( myGlobalAction.actionWasPerformed );
+        assertTrue( MyContextAwareAction.globalActionWasPerformed );
+        assertFalse( MyContextAwareAction.contextActionWasPerformed );
     }
     
     /**
@@ -129,18 +128,24 @@ public class ContextAwareActionInTopComponentTest extends NbTestCase {
      */
     private static class MyContextAwareAction extends AbstractAction implements ContextAwareAction {
         
-        private static boolean actionWasPerformed = false;
+        private static boolean globalActionWasPerformed = false;
+        private static boolean contextActionWasPerformed = false;
+        private final boolean isGlobal;
         
-        public MyContextAwareAction() {
-            actionWasPerformed = false;
+        public MyContextAwareAction(boolean isGlobal) {
+            globalActionWasPerformed = false;
+            this.isGlobal = isGlobal;
         }
     
         public void actionPerformed(ActionEvent arg0) {
-            actionWasPerformed = true;
+            if( isGlobal )
+                globalActionWasPerformed = true;
+            else
+                contextActionWasPerformed = true;
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {
-            MyContextAwareAction action = new MyContextAwareAction();
+            MyContextAwareAction action = new MyContextAwareAction(false);
             action.setEnabled( null != actionContext.lookup( Node.class ) );
             return action;
         }
