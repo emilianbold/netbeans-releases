@@ -1115,7 +1115,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             if (action instanceof ContextAwareAction) {
                 Action delegate = ((ContextAwareAction) action).createContextAwareInstance(getLookup());
                 assert delegate != null : "ContextAwareAction cannot return null: " + action;
-                if( delegate.isEnabled() || getActivatedNodes() != null )
+                if( delegate.isEnabled() && getActivatedNodes() != null )
                     action = delegate;
                 //else 
                 //  use the global instance which might be enabled if it can survive focus changes
