@@ -262,7 +262,7 @@ public class CheckoutTest extends AbstractGitTestCase {
         cfg.setStreamFileThreshold((int) large.length() - 1);
         WindowCache.reconfigure(cfg);
         try {
-            DirCacheCheckout.checkoutEntry(repository, large, e, true);
+            DirCacheCheckout.checkoutEntry(repository, large, e);
             fail("Remove our own implementation of large files checkout in CheckoutIndex.java");
         } catch (LargeObjectException ex) {
             // OK

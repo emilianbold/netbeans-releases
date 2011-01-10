@@ -116,7 +116,7 @@ public class CheckoutIndex {
             }
             DirCacheIterator dit = treeWalk.getTree(0, DirCacheIterator.class);
             FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
-            if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent, true, FS.DETECTED))) {
+            if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
                 checkoutEntry(repository, path, dit.getDirCacheEntry(), fit);
@@ -143,11 +143,11 @@ public class CheckoutIndex {
         file.createNewFile();
         if (file.isFile()) {
             try {
-                DirCacheCheckout.checkoutEntry(repository, file, e, getFileMode(repository));
+                DirCacheCheckout.checkoutEntry(repository, file, e);
             } catch (LargeObjectException ex) {
                 LOG.log(Level.FINE, "checking out a large file: " + file, ex); //NOI18N
                 // Should be removed when jgit is able to checkout large files
-                if (fit.isModified(e, true, true, FS.DETECTED)) {
+                if (fit.isModified(e, true)) {
                     // do not checkout large if not modified
                     checkoutLargeEntry(file, e);
                 }

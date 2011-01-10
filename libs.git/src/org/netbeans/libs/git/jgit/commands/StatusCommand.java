@@ -183,7 +183,7 @@ public class StatusCommand extends GitCommand {
                             } else {
                                 statusIndexWC = GitStatus.Status.STATUS_ADDED;
                             }
-                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), repository.getFS()))) {
+                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
