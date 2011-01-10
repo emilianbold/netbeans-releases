@@ -505,7 +505,8 @@ public class Reformatter implements ReformatTask {
                 }
                 if (tree.getKind() != Tree.Kind.ERRONEOUS && tree.getKind() != Tree.Kind.BLOCK
                         && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)
-                        && (tree.getKind() != Tree.Kind.NEW_ARRAY || getCurrentPath().getLeaf().getKind() != Tree.Kind.ASSIGNMENT)) {
+                        && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                        || getCurrentPath().getLeaf().getKind() != Tree.Kind.ASSIGNMENT && getCurrentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)) {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
