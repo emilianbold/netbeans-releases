@@ -106,7 +106,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         BugzillaConnector bc = getConnector();
         BugzillaRepository repo = (BugzillaRepository) bc.createRepository();       
         RepositoryController c = getController(repo);
-
+        
         // populate
         // only name
         populate(c, REPO_NAME, "", "", "");
@@ -177,7 +177,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         assertFalse(lhAutoupdate.isDone());
         lhAutoupdate.reset();
         String msg = lh.getInterceptedMessage();
-        boolean worked = msg.indexOf("worked") > -1;
+        boolean worked = msg.indexOf("ok.") > -1;
         if(assertWorked) {
             assertTrue(worked);
         } else {
@@ -286,13 +286,14 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         return (RepositoryPanel) f.get(c);
     }
 
-    private void populate(BugtrackingController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private void populate(RepositoryController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         RepositoryPanel panel = getRepositoryPanel(c);
-        resetPanel(panel);
+        resetPanel(panel);        
         panel.nameField.setText(name);
         panel.urlField.setText(url);
         panel.userField.setText(user);
         panel.psswdField.setText(psswd);
+        setPopulated(c);
     }
 
     private void resetPanel(RepositoryPanel panel) {
@@ -306,5 +307,11 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         Method m = c.getClass().getDeclaredMethod("onValidate");
         m.setAccessible(true);
         m.invoke(c);
+    }
+    
+    private void setPopulated(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+        Field f = c.getClass().getDeclaredField("populated");
+        f.setAccessible(true);
+        f.set(c, true);
     }
 }
