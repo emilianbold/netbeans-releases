@@ -74,6 +74,7 @@ public class IssueTableTestCase extends NbTestCase {
         NodeTableModel model = getModel(q);       
         assertEquals(factory.getColumnsCountBeforeSave(), model.getColumnCount());
         new QueryAccessor(q).setSaved(true);
+        IssuetableTestFactory.getInstance(this).getTable(q).initColumns();
         assertEquals(factory.getColumnsCountAfterSave(), model.getColumnCount());
 
     }
