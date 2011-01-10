@@ -46,6 +46,7 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -63,6 +64,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -240,4 +242,16 @@ public class ErrorHintsProviderTest extends NbTestCase {
 //        performTest("TestShortErrorsPrivateAccess");
 //    }
     
+    public void testTestShortErrorsSVUIDWarning() throws Exception {
+        Preferences p = CompilerSettings.getNode();
+        boolean old = CompilerSettings.get(p, CompilerSettings.ENABLE_LINT_SERIAL);
+
+        try {
+            p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
+
+            performTest("TestShortErrorsSVUIDWarning", true);
+        } finally {
+            p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, old);
+        }
+    }
 }

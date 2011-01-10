@@ -145,7 +145,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 }
             }
             
-            err.log("Gonna return problem: " + problem);
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -177,14 +176,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerClassRefactoringElement(fqname, handle, layerFileObject,layerAttribute);
+        return handle.getLayerFile() != null ? new LayerClassRefactoringElement(fqname, handle, layerFileObject,layerAttribute) : null;
     }
     
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
+        return handle.getLayerFile() != null ? new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute) : null;
     }
     
     public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement {
@@ -200,8 +199,8 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
+            super(handle.getLayerFile());
             this.layerFile = layerFile;
-            this.parentFile = handle.getLayerFile();
             this.handle = handle;
             
             oldFileName = layerFile.getName();
@@ -397,8 +396,8 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         private String oldContent;
         private String newName;
         public ManifestRenameRefactoringElement(String fqname, FileObject parentFile, String attributeValue, String attributeName) {
+            super(parentFile);
             this.name = attributeValue;
-            this.parentFile = parentFile;
             attrName = attributeName;
             oldName = fqname;
         }

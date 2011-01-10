@@ -218,7 +218,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         ApplicableImpl applicable = sizeComilationUnit(set, dlls);
         if (applicable.isApplicable()) {
             return new ApplicableImpl(true, null, applicable.getCompilerName(), 70, applicable.isSunStudio(),
-                    applicable.getDependencies(), applicable.getSourceRoot(), applicable.getMainFunction());
+                    applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());
         }
         if (applicable.getErrors().size() > 0) {
             return ApplicableImpl.getNotApplicable(applicable.getErrors());

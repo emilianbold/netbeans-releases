@@ -149,17 +149,8 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
                 Node rootNode = logicalProvider.createLogicalView();
                 Node restResourcesNode = RESTResourcesView.createRESTResourcesView(prj);
                 if (restResourcesNode != null) {
-                    Children restResources = restResourcesNode.getChildren();
-                    if (restResources.getNodesCount() > 0) {
-                        Children children = new Children.Array();
-                        Node[] resourceNodes = new Node[restResources.getNodes().length];
-                        int i=0;
-                        for (Node restResourceNode : restResources.getNodes()) {
-                            resourceNodes[i++] = new ResourceNode(restResourceNode);
-                        }
-                        children.add(resourceNodes);
-                        projectNodeList.add(new ProjectNode(children, rootNode));
-                    }
+                    projectNodeList.add(new ProjectNode(
+                            new FilterNode.Children(restResourcesNode), rootNode));
                 }
             }
         }
@@ -227,14 +218,4 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         }
     }
 
-    private class ResourceNode extends FilterNode {
-
-        private Node resourceNode;
-
-        ResourceNode(Node resourceNode) {
-            super(resourceNode);
-            this.resourceNode=resourceNode;
-        }
-
-    }
 }

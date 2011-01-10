@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration implements PropertyChangeListener {
-
+    public static final String DEFAULT_CS = "default"; // NOI18N
     private DevelopmentHostConfiguration dhconf;
     private StringConfiguration compilerSetName;
     private CompilerSetNodeProp compilerSetNodeProp;
@@ -75,7 +75,15 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         this.compilerSetNodeProp = null;        
     }
     
-    // Constructors
+    // Constructor for default tool collection
+    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
+        this.dhconf = dhconf;
+        compilerSetName = new StringConfiguration(null, DEFAULT_CS);
+        flavor = null;
+        compilerSetNodeProp = null;
+    }
+
+    // Constructor for tool collection
     public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf, CompilerSet cs) {
         this.dhconf = dhconf;
         String csName = (cs == null) ? null : cs.getName();
@@ -100,15 +108,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         return CompilerSetManager.get(dhconf.getExecutionEnvironment());
     }
 
-//
-//    // MakeConfiguration
-//    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
-//        this.makeConfiguration = makeConfiguration;
-//    }
-//    public MakeConfiguration getMakeConfiguration() {
-//        return makeConfiguration;
-//    }
-
     // compilerSetName
     public StringConfiguration getCompilerSetName() {
         return compilerSetName;
@@ -130,114 +129,84 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         }
     }
 
-    public void setNameAndFlavor(String name, int version) {
+    public void restore(String name, int version) {
         String nm;
         String fl;
         int index = name.indexOf('|'); // NOI18N
         if (index > 0) {
             nm = name.substring(0, index);
             fl = name.substring(index+1);
-        }
-        else {
+        } else {
             nm = name;
-            fl = name;
+            if (DEFAULT_CS.equals(nm)) {
+                fl = null;
+            } else {
+                fl = name;
+            }
         }
         setValue(CompilerSet2Configuration.mapOldToNew(nm, version), CompilerSet2Configuration.mapOldToNew(fl, version));
     }
 
-    public void setValue(String name, String flavor) {
+    private void setValue(String name, String flavor) {
+        if (name == null || name.startsWith(CompilerSetNodeProp.DEFAULT_CS+" (")) { // NOI18N
+            name = DEFAULT_CS;
+        }
         getCompilerSetName().setValue(name);
         setFlavor(flavor);
     }
-
-    /*
-     * Keep backward compatibility with CompilerSetConfiguration (for now)
-     */
-    public int getValue() {
-        // TODO: only usage of getValue is next:
-        // CompilerSetManager.getDefault(dhconf.getName()).getCompilerSet(conf.getCompilerSet().getValue());
-
-        String s = getCompilerSetName().getValue();
-        if (s != null) {
-            int i = 0;
-            for(CompilerSet cs : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSets()) {
-                if (s.equals(cs.getName())) {
-                    return i;
-                }
-                i++;
-            }
-        }
-        return 0; // Default
-    }
-
-//    private CompilerSet getCompilerSet(int platform, String name) {
-//        List<CompilerFlavor> list =  CompilerSet.CompilerFlavor.getFlavors(platform);
-//        for (CompilerFlavor flavor : list) {
-//            CompilerSet cs = CompilerSet.getCustomCompilerSet("", flavor, flavor.toString());
-//            if (name.equals(cs.getName())) {
-//                ToolchainDescriptor d = flavor.getToolchainDescriptor();
-//
-//                CompilerDescriptor compiler = d.getC();
-//                cs.addTool(SunCCompiler.create(null, flavor, Tool.CCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
-//                compiler = d.getCpp();
-//                cs.addTool(SunCCCompiler.create(null, flavor, Tool.CCCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
-//                compiler = d.getFortran();
-//                cs.addTool(SunFortranCompiler.create(null, flavor, Tool.FortranCompiler, compiler.getNames()[0], compiler.getNames()[0], ""));
-//                compiler = d.getAssembler();
-//                cs.addTool(Assembler.create(null, flavor, Tool.Assembler, compiler.getNames()[0], compiler.getNames()[0], ""));
-//
-//                return cs;
-//            }
-//        }
-//        return null;
-//    }
 
     /*
      * TODO: spread it out (Sergey)
      * Should this return csm.getCurrentCompilerSet()? (GRP)
      */
     public CompilerSet getCompilerSet() {
-//        if (dhconf.isLocalhost()) {
-//            int hostPlatform = CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getPlatform();
-//            int buildPlatform = dhconf.getBuildPlatformConfiguration().getValue();
-//            if (hostPlatform != buildPlatform) {
-//                return getCompilerSet(buildPlatform, getCompilerSetName().getValue());
-//            }
-//        }
-        return getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
+        String value = getCompilerSetName().getValue();
+        if (DEFAULT_CS.equals(value)) {
+            return getCompilerSetManager().getDefaultCompilerSet();
+        }
+        return getCompilerSetManager().getCompilerSet(value);
     }
 
-    public int getPlatform() {
-        return getCompilerSetManager().getPlatform();
+    public boolean isDefaultCompilerSet() {
+        return DEFAULT_CS.equals(getCompilerSetName().getValue());
     }
 
     public String getName() {
-        return getDisplayName();
-    }
-
-    public String getDisplayName() {
         return getDisplayName(false);
     }
 
-    public String getDisplayName(boolean displayIfNotFound) {
-        CompilerSet compilerSet = getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
+    public String getDisplayName(boolean createIfNotFound) {
+        CompilerSet compilerSet;
+        String value = getCompilerSetName().getValue();
+        boolean isDefault;
+        if (DEFAULT_CS.equals(value)) {
+            isDefault = true;
+            compilerSet = getCompilerSetManager().getDefaultCompilerSet();
+        } else {
+            isDefault = false;
+            compilerSet = getCompilerSetManager().getCompilerSet(value);
+        }
         String displayName = null;
 
         if (compilerSet != null) {
-            displayName = compilerSet.getName();
+            if (isDefault) {
+                displayName = CompilerSetNodeProp.DEFAULT_CS+" ("+compilerSet.getName()+")"; //NOI18N
+            } else {
+                displayName = compilerSet.getName();
+            }
         }
         if (displayName != null && dhconf.isConfigured()) {
             return displayName;
         } else {
-            if (displayIfNotFound) {
-                return createNotFoundName(getCompilerSetName().getValue());
+            if (createIfNotFound) {
+                return createNotFoundName(value);
             } else {
                 return ""; // NOI18N
             }
         }
     }
 
-    public String createNotFoundName(String name) {
+    private String createNotFoundName(String name) {
         if (!dhconf.isConfigured()) {
             return "";
         } else {
@@ -283,14 +252,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         return getCompilerSet() != null;
     }
 
-    public void setValid() {
-        // Nothing
-    }
-
-    public String getOldName() {
-        return getCompilerSetName().getValue();
-    }
-
     public String getOption() {
         return getCompilerSetName().getValue();
     }
@@ -298,9 +259,11 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public String getNameAndFlavor() {
         StringBuilder ret = new StringBuilder();
         ret.append(getOption());
-        if (getFlavor() != null) {
-            ret.append("|"); // NOI18N
-            ret.append(getFlavor());
+        if (!DEFAULT_CS.equals(getOption())) {
+            if (getFlavor() != null) {
+                ret.append("|"); // NOI18N
+                ret.append(getFlavor());
+            }
         }
         return ret.toString();
     }
@@ -362,25 +325,25 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     private static String mapOldToNew(String flavor, int version) {
         if (version <= 43) {
-            if (flavor.equals("Sun")) { // NOI18N
+            if ("Sun".equals(flavor)) { // NOI18N
                 return "SunStudio"; // NOI18N
-            } else if (flavor.equals("SunExpress")) { // NOI18N
+            } else if ("SunExpress".equals(flavor)) { // NOI18N
                 return "SunStudioExpress"; // NOI18N
-            } else if (flavor.equals("Sun12")) { // NOI18N
+            } else if ("Sun12".equals(flavor)) { // NOI18N
                 return "SunStudio_12"; // NOI18N
-            } else if (flavor.equals("Sun11")) { // NOI18N
+            } else if ("Sun11".equals(flavor)) { // NOI18N
                 return "SunStudio_11"; // NOI18N
-            } else if (flavor.equals("Sun10")) { // NOI18N
+            } else if ("Sun10".equals(flavor)) { // NOI18N
                 return "SunStudio_10"; // NOI18N
-            } else if (flavor.equals("Sun9")) { // NOI18N
+            } else if ("Sun9".equals(flavor)) { // NOI18N
                 return "SunStudio_9"; // NOI18N
-            } else if (flavor.equals("Sun8")) { // NOI18N
+            } else if ("Sun8".equals(flavor)) { // NOI18N
                 return "SunStudio_8"; // NOI18N
-            } else if (flavor.equals("DJGPP")) { // NOI18N
+            } else if ("DJGPP".equals(flavor)) { // NOI18N
                 return "GNU"; // NOI18N
-            } else if (flavor.equals("Interix")) { // NOI18N
+            } else if ("Interix".equals(flavor)) { // NOI18N
                 return "GNU"; // NOI18N
-            } else if (flavor.equals(CompilerSet.UNKNOWN)) {
+            } else if (CompilerSet.UNKNOWN.equals(flavor)) {
                 return "GNU"; // NOI18N
             }
         }

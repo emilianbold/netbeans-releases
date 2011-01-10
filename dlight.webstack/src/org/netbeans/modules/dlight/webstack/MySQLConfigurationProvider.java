@@ -52,7 +52,7 @@ import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,31 +61,32 @@ import org.openide.util.NbBundle;
  */
 public final class MySQLConfigurationProvider implements DLightToolConfigurationProvider {
 
-  public MySQLConfigurationProvider() {
-  }
+    public MySQLConfigurationProvider() {
+    }
 
-  public DLightToolConfiguration create() {
-    final String toolName = getMessage("MysqlTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("mysql.id", toolName); // NOI18N
-    List<Column> mysqlColumns = Arrays.asList(
-            new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
-            new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
-            new Column("time", Double.class, getMessage("Column.ExecutionTime"), null)); // NOI18N
-    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns, null); // NOI18N
-    final URL scriptUrl = getClass().getResource("resources/script_1.d"); // NOI18N
-    DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(mysqlDatatableMetadata)); // NOI18N
-    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
-    dcConfiguration.setScriptArgs("`pgrep -x mysqld`"); // NOI18N
-    toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
-    toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
-    IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
-    ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
-    clockIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
-    toolConfiguration.addIndicatorConfiguration(clockIndicator);
-    return toolConfiguration;
-  }
+    @Override
+    public DLightToolConfiguration create() {
+        final String toolName = getMessage("MysqlTool.Name"); // NOI18N
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("mysql.id", toolName); // NOI18N
+        List<Column> mysqlColumns = Arrays.asList(
+                new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+                new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
+                new Column("time", Double.class, getMessage("Column.ExecutionTime"), null)); // NOI18N
+        final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns, null); // NOI18N
+        final URL scriptUrl = getClass().getResource("resources/script_1.d"); // NOI18N
+        DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(mysqlDatatableMetadata)); // NOI18N
+        dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
+        dcConfiguration.setScriptArgs("`pgrep -x mysqld`"); // NOI18N
+        toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
+        toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
+        IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+        ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
+        clockIndicator.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(mysqlDatatableMetadata, "query", "query")); // NOI18N
+        toolConfiguration.addIndicatorConfiguration(clockIndicator);
+        return toolConfiguration;
+    }
 
-  private static String getMessage(String name) {
-      return NbBundle.getMessage(MySQLConfigurationProvider.class, name);
-  }
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(MySQLConfigurationProvider.class, name);
+    }
 }

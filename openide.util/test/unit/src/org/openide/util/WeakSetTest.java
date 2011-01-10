@@ -47,6 +47,8 @@ package org.openide.util;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +61,25 @@ public class WeakSetTest extends NbTestCase {
 
     public WeakSetTest(String testName) {
         super(testName);
+    }
+    
+    public void testPutTwice() {
+        Object obj = new Object();
+        
+        WeakSet<Object> ws = new WeakSet<Object>();
+        assertTrue("Object added", ws.add(obj));
+        assertFalse("No change", ws.add(obj));
+        assertEquals("size", 1, ws.size());
+        assertSame("First is obj", obj, ws.iterator().next());
+    }
+
+    public void testPutNullTwice() {
+        WeakSet<Object> ws = new WeakSet<Object>();
+        assertEquals("Returns null on first try", null, ws.putIfAbsent(null));
+        assertFalse("No change", ws.add(null));
+        assertEquals("size", 1, ws.size());
+        assertNull("First is obj", ws.iterator().next());
+        assertNull("Returns null on 3rd try", ws.putIfAbsent(null));
     }
 
     public void testToArrayMayContainNullsIssue42271 () {
@@ -231,4 +252,63 @@ public class WeakSetTest extends NbTestCase {
         }
         exec.shutdownNow();
     }    
+    
+    public void testAddRemove() {
+        Set<Object> set = new WeakSet<Object>();
+        Object obj = new Integer(1);
+        assertTrue("have to be new object", set.add(obj));
+        Object obj2 = new Integer(1);
+        assertFalse("object have to be already in set", set.add(obj2));
+        assertTrue("object have to be removed correctly", set.remove(obj2));
+        assertFalse("set have to be empty", set.remove(obj));
+        assertTrue("set have to be empty", set.isEmpty());
+
+    }
+
+    public void testConcurrentExceptions() {
+        Object[] arr = new Object[]{new Integer(1), new Long(2), new Double(3)};
+        Set<Object> set = new WeakSet<Object>();
+        set.addAll(Arrays.asList(arr));
+
+        for (Object object : set) {
+            set.remove(new Boolean(true));
+        }
+
+        boolean gotException = false;
+        try {
+            for (Object object : set) {
+                set.remove(new Long(2));
+            }
+            fail("concurrent exception is expected");
+        } catch (ConcurrentModificationException ex) {
+            gotException = true;
+        }
+        assertTrue("ConcurrentModificationException is expected", gotException);
+    }
+    
+    public void testClone() {
+        Object[] arr = new Object[]{new Integer(1), new Long(2), new Double(3)};
+        WeakSet<Object> set = new WeakSet<Object>();
+        set.addAll(Arrays.asList(arr));
+        Set<Object> second = (Set<Object>) set.clone();
+        assertEquals(second, set);
+        assertTrue(second.size() == 3);
+        set.remove(arr[0]);
+        assertFalse(second.equals(set));
+        String s = "GCing " + arr[0];
+        Reference<Object> r = new WeakReference(arr[0]);
+        arr[0] = null;
+        NbTestCase.assertGC(s, r);
+        assertEquals(second, set);
+        assertTrue(second.size() == 2);
+        
+        class MySet extends WeakSet {
+            
+        }
+        WeakSet<Object> cloningSet = new MySet();
+        cloningSet.addAll(set);
+        Object clone = cloningSet.clone();
+        assertTrue(clone instanceof MySet);
+        assertEquals(clone, set);
+    }
 }

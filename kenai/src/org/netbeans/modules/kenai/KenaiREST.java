@@ -164,9 +164,6 @@ public class KenaiREST extends KenaiImpl {
             start = System.currentTimeMillis();
             System.err.println("Loading page " + url);
         }
-        if (url==null) {
-            System.out.println("");
-        }
         RestConnection conn = new RestConnection(url, pa);
         RestResponse resp = null;
         try {

@@ -92,7 +92,7 @@ public final class
     public static final TaskIO systemIO = new TaskIO();
 
     /** maps ThreadGroups to TaskIO */
-    private static IOTable taskIOs;
+    private static final IOTable taskIOs = new IOTable(base, systemIO);
 
     /* table of window:threadgrp */
     static private WindowTable wtable = new WindowTable();
@@ -249,9 +249,6 @@ public final class
     * @return IOTable with couples ThreadGroup:TaskIO
     */
     static IOTable getTaskIOs() {
-        if (taskIOs == null) {
-            taskIOs = new IOTable(base, systemIO);
-        }
         return taskIOs;
     }
 

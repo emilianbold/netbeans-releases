@@ -44,9 +44,7 @@ package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,23 +77,10 @@ public class SvnMetadataFolderLoader extends DataLoader {
         }
         
         if(SvnUtils.isPartOfSubversionMetadata(f)) {
-            IOException e = new SvnMetadataIOEXception(f);
+            IOException e = new IOException("Do not create DO for .svn metadata: " + f); //NOI18N
             Exceptions.attachSeverity(e, Level.FINE);
             throw e;
         }
         return null;
-    }
-
-    private class SvnMetadataIOEXception extends IOException implements Callable<LogRecord[]> {
-        private final File f;
-        public SvnMetadataIOEXception(File f) {
-            this.f = f;
-        }
-        @Override
-        public LogRecord[] call() throws Exception {
-            return  new LogRecord[] {
-                new LogRecord(Level.FINE, "do not create DO for .svn metadata: " + f)   // NOI18N
-            };
-        }
     }
 }

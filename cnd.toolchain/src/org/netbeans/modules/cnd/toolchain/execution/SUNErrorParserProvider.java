@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.toolchain.execution;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -55,8 +56,8 @@ import org.openide.filesystems.FileObject;
 public class SUNErrorParserProvider extends ErrorParserProvider {
 
     @Override
-    public ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	return new SUNErrorParser(flavor, execEnv, relativeTo);
+    public ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+	return new SUNErrorParser(project, flavor, execEnv, relativeTo);
     }
 
     @Override

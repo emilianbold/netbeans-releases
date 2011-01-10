@@ -118,7 +118,9 @@ public class IpeUtils {
 	
     /** Same as the C library basename function: given a path, return
 	its filename.
+     * @deprecated use CndPathUtilitities.getBaseName
     */
+    @Deprecated
     public static String getBaseName(String path) {
 	if (path != null) {
 	    int sep = path.lastIndexOf(File.separatorChar);

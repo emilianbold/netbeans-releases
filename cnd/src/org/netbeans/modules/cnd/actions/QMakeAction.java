@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -58,13 +57,14 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -132,22 +132,29 @@ public class QMakeAction extends AbstractExecutorRunAction {
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File proFile = CndFileUtils.toFile(fileObject);
+        FileObject buildDirFileObject = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
+        if (buildDirFileObject == null) {
+            trace("Run folder folder is null"); //NOI18N
+            return null;
+        }
         // Build directory
-        String buildDir = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
+        String buildDir = buildDirFileObject.getPath();
         // Executable
         String executable = getCommand(node, project, PredefinedToolKind.QMakeTool, "qmake"); // NOI18N
         // Arguments
-        String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
+        String arguments = CndPathUtilitities.toRelativePath(buildDir, fileObject);
+
         String[] args = getArguments(node, PredefinedToolKind.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
+            buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        }
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, null);
+        Map<String, String> envMap = getEnv(execEnv, node, project, null);
         StringBuilder argsFlat = new StringBuilder(arguments);
         for (int i = 0; i < args.length; i++) {
             argsFlat.append(" "); // NOI18N
@@ -172,7 +179,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, argsFlat, envMap);
+        traceExecutable(executable, buildDir, argsFlat, execEnv.toString(), envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).

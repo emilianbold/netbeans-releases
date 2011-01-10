@@ -72,18 +72,18 @@ public class WebRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
         return null;
     }
     
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
         ModelHandle handle = context.lookup(ModelHandle.class);
         final Project prj = context.lookup(Project.class);
         final WebRunCustomizerPanel panel = new WebRunCustomizerPanel(handle, prj);
         ActionListener listener = new ActionListener() {
-            private String contextPath;
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 if (SwingUtilities.isEventDispatchThread()) {
-                    contextPath = panel.applyChangesInAWT();
+                    panel.applyChangesInAWT();
                 } else {
-                    assert contextPath != null;
-                    panel.applyChanges(contextPath);
+                    panel.applyChanges();
                 }
             }
         };

@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 /**
  * Test suite for services
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class ServicesTest extends CndBaseTestSuite {
 

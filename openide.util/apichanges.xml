@@ -51,6 +51,54 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ImageUtilities.URL">
+        <api name="util"/>
+        <summary>ImageUtilities support "url" attribute</summary>
+        <version major="8" minor="12"/>
+        <date day="10" month="1" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+            Images loaded by <a href="@TOP@/org/openide/util/ImageUtilities.html#loadImage(java.lang.String,%20boolean)">
+            ImageUtilities.loadImage</a> now
+            respond to <code>getProperty("url", null)</code> calls.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="193944"/>
+    </change>
+    <change id="WeakSet.putIfAbsent">
+        <api name="util"/>
+        <summary>New implementation of WeakSet with two new methods <code>putIfAbsent</code> and <code>resize</code>
+        </summary>
+        <version major="8" minor="11"/>
+        <date day="22" month="12" year="2010"/>
+        <author login="vv159170"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+            New method putIfAbsent gives access to key already stored in Set. Method resize allows to change capacity of internal hash map.
+            </p>
+        </description>
+        <class package="org.openide.util" name="WeakSet"/>
+        <issue number="192759"/>
+    </change>
+    <change id="NbBundle.Messages">
+        <api name="util"/>
+        <summary>Added <code>@NbBundle.Messages</code></summary>
+        <version major="8" minor="10"/>
+        <date day="8" month="12" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                A new annotation makes it easier to produce localizable strings.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbBundle"/>
+        <issue number="192750"/>
+    </change>
     <change id="Exceptions.attachSeverity">
         <api name="util"/>
         <summary>Supress logging of not important exceptions</summary>
@@ -60,8 +108,8 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>
-                New method <code>Exceptions.attachSeverity</code> allows 
-                everyone to thrown an exception, which later will not be 
+                New method <code>Exceptions.attachSeverity</code> allows
+                everyone to thrown an exception, which later will not be
                 logged.
             </p>
         </description>

@@ -50,6 +50,39 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="topcomponent.registration">
+    <api name="winsys"/>
+    <summary>Register default TopComponent location via annotations</summary>
+    <version major="6" minor="37"/>
+    <date day="30" month="11" year="2010"/>
+    <author login="jtulach"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Use <a href="@TOP@/org/openide/windows/TopComponent.Registration.html">TopComponent.Registration</a>,
+        <a href="@TOP@/org/openide/windows/TopComponent.Description.html">TopComponent.Description</a> and
+        <a href="@TOP@/org/openide/windows/TopComponent.OpenActionRegistration.html">TopComponent.OpenActionRegistration</a>
+        to register default location of a 
+        <a href="@TOP@/org/openide/windows/TopComponent.html">TopComponent</a>,
+        some of its properties and action to open it.
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="191407"/>
+</change>
+<change id="reuse.existing.frame.as.the.main.window">
+    <api name="winsys"/>
+    <summary>Reuse existing JFrame instance (if any) as IDE's main window.</summary>
+    <version major="6" minor="36"/>
+    <date day="23" month="11" year="2010"/>
+    <author login="saubrecht"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        When window system loads it checks for existing Frames (java.awt.Frame.getFrames()) and
+        if there is a JFrame whose name is "NbMainWindow" then it is reused as the main window.
+        Main menu, toolbars and content pane will be put into this existing JFrame.
+        If there isn't such a JFrame instance then a new empty JFrame is created
+        and used for the main window - the same way as before this change.
+    </description>
+</change>
 
 <change id="retain.non.persistent.topcomponent.locations">
     <api name="winsys"/>

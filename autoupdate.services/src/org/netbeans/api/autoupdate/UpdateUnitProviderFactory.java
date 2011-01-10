@@ -44,12 +44,14 @@
 
 package org.netbeans.api.autoupdate;
 
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
+import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 
 /** The factory handles <code>UpdateUnitProvider</code>, allow to create or removed them,
  * browse the providers or refresh its content.
@@ -95,8 +97,20 @@ public final class UpdateUnitProviderFactory {
      * comming from returned <code>UpdateUnitProvider</code>
      * @return URL-based UpdateUnitProvider
      */        
-    public UpdateUnitProvider create (String name, String displayName, URL url, UpdateUnitProvider.CATEGORY  category) {
-        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, category);
+    public UpdateUnitProvider create(
+        String name, String displayName, URL url, UpdateUnitProvider.CATEGORY category
+    ) {
+        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, ProviderCategory.forValue(category));
+    }
+
+    /** 
+     * @since 1.23
+     */
+    public UpdateUnitProvider create(
+        String name, String displayName, URL url,
+        String categoryIconBase, String categoryDisplayName
+    ) {
+        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, ProviderCategory.create(categoryIconBase, categoryDisplayName));
     }
 
     /** Creates new <code>UpdateUnitProvider</code> and store its preferences. The new provider 
@@ -109,7 +123,7 @@ public final class UpdateUnitProviderFactory {
      * @return URL-based UpdateUnitProvider
      */    
     public UpdateUnitProvider create (String name, String displayName, URL url) {
-        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, UpdateUnitProvider.CATEGORY.COMMUNITY);
+        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, ProviderCategory.forValue(UpdateUnitProvider.CATEGORY.COMMUNITY));
     }
     
     /** Creates new <code>UpdateUnitProvider</code> for temporary usage. This provider contains

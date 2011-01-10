@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenId;
@@ -197,88 +198,92 @@ public class CssCompletion implements CodeCompletionHandler {
         if(node.kind() == CssParserTreeConstants.JJT_CLASS || 
                 (unmappableClassOrId || originalNodeKind == CssParserTreeConstants.JJTREPORTERROR) && prefix.length() == 1 && prefix.charAt(0) == '.') {
             //complete class selectors
-            CssProjectSupport sup = CssProjectSupport.findFor(file);
-            if(sup != null) {
-                CssIndex index = sup.getIndex();
-                DependenciesGraph deps = index.getDependencies(file);
-                Collection<FileObject> refered = deps.getAllReferedFiles();
+            if(file != null) {
+                CssProjectSupport sup = CssProjectSupport.findFor(file);
+                if(sup != null) {
+                    CssIndex index = sup.getIndex();
+                    DependenciesGraph deps = index.getDependencies(file);
+                    Collection<FileObject> refered = deps.getAllReferedFiles();
 
-                //adjust prefix - if there's just . before the caret, it is returned
-                //as a prefix. If there are another characters, the dot is ommited
-                if(prefix.length() == 1 && prefix.charAt(0) == '.') {
-                    prefix = "";
-                    offset++; //offset point to the dot position, we need to skip it
-                }
-                //get map of all fileobject declaring classes with the prefix
-                Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix); 
-                Collection<String> refclasses = new HashSet<String>();
-                Collection<String> allclasses = new HashSet<String>();
-                for(FileObject fo : search.keySet()) {
-                    allclasses.addAll(search.get(fo));
-                    //is the file refered by the current file?
-                    if(refered.contains(fo)) {
-                        //yes - add its classes
-                        refclasses.addAll(search.get(fo));
+                    //adjust prefix - if there's just . before the caret, it is returned
+                    //as a prefix. If there are another characters, the dot is ommited
+                    if(prefix.length() == 1 && prefix.charAt(0) == '.') {
+                        prefix = "";
+                        offset++; //offset point to the dot position, we need to skip it
                     }
-                }
- 
-                //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
-                for(String clazz : allclasses) {
-                   proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
-                        clazz,
-                        CssCompletionItem.Kind.VALUE,
-                        offset,
-                        refclasses.contains(clazz)));
-                }
-                if (proposals.size() > 0) {
-                    return new DefaultCompletionResult(proposals, false);
-                }
+                    //get map of all fileobject declaring classes with the prefix
+                    Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix);
+                    Collection<String> refclasses = new HashSet<String>();
+                    Collection<String> allclasses = new HashSet<String>();
+                    for(FileObject fo : search.keySet()) {
+                        allclasses.addAll(search.get(fo));
+                        //is the file refered by the current file?
+                        if(refered.contains(fo)) {
+                            //yes - add its classes
+                            refclasses.addAll(search.get(fo));
+                        }
+                    }
 
+                    //lets create the completion items
+                    List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+                    for(String clazz : allclasses) {
+                       proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
+                            clazz,
+                            CssCompletionItem.Kind.VALUE,
+                            offset,
+                            refclasses.contains(clazz)));
+                    }
+                    if (proposals.size() > 0) {
+                        return new DefaultCompletionResult(proposals, false);
+                    }
+
+                }
             }
         } else if (prefix.length() > 0 && (node.kind() == CssParserTreeConstants.JJTHASH
                 || (unmappableClassOrId || originalNodeKind == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE ||
                 originalNodeKind == CssParserTreeConstants.JJTERROR_SKIPBLOCK) && prefix.charAt(0) == '#')) {
             //complete class selectors
-            CssProjectSupport sup = CssProjectSupport.findFor(file);
-            if (sup != null) {
-                CssIndex index = sup.getIndex();
-                DependenciesGraph deps = index.getDependencies(file);
-                Collection<FileObject> refered = deps.getAllReferedFiles();
+            if(file != null) {
+                CssProjectSupport sup = CssProjectSupport.findFor(file);
+                if (sup != null) {
+                    CssIndex index = sup.getIndex();
+                    DependenciesGraph deps = index.getDependencies(file);
+                    Collection<FileObject> refered = deps.getAllReferedFiles();
 
-                //adjust prefix - if there's just # before the caret, it is returned as a prefix
-                //if there is some text behind the prefix the hash is part of the prefix
-                if (prefix.length() == 1 && prefix.charAt(0) == '#') {
-                    prefix = "";
-                } else {
-                    prefix = prefix.substring(1); //cut off the #
-                }
-                offset++; //offset point to the hash position, we need to skip it
-                
-                //get map of all fileobject declaring classes with the prefix
-                Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
-                Collection<String> allids = new HashSet<String>();
-                Collection<String> refids = new HashSet<String>();
-                for (FileObject fo : search.keySet()) {
-                    allids.addAll(search.get(fo));
-                    //is the file refered by the current file?
-                    if (refered.contains(fo)) {
-                        //yes - add its classes
-                        refids.addAll(search.get(fo));
+                    //adjust prefix - if there's just # before the caret, it is returned as a prefix
+                    //if there is some text behind the prefix the hash is part of the prefix
+                    if (prefix.length() == 1 && prefix.charAt(0) == '#') {
+                        prefix = "";
+                    } else {
+                        prefix = prefix.substring(1); //cut off the #
                     }
-                }
+                    offset++; //offset point to the hash position, we need to skip it
 
-                //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
-                for (String id : allids) {
-                    proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
-                            id,
-                            CssCompletionItem.Kind.VALUE,
-                            offset,
-                            refids.contains(id)));
-                }
-                if (proposals.size() > 0) {
-                    return new DefaultCompletionResult(proposals, false);
+                    //get map of all fileobject declaring classes with the prefix
+                    Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
+                    Collection<String> allids = new HashSet<String>();
+                    Collection<String> refids = new HashSet<String>();
+                    for (FileObject fo : search.keySet()) {
+                        allids.addAll(search.get(fo));
+                        //is the file refered by the current file?
+                        if (refered.contains(fo)) {
+                            //yes - add its classes
+                            refids.addAll(search.get(fo));
+                        }
+                    }
+
+                    //lets create the completion items
+                    List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
+                    for (String id : allids) {
+                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
+                                id,
+                                CssCompletionItem.Kind.VALUE,
+                                offset,
+                                refids.contains(id)));
+                    }
+                    if (proposals.size() > 0) {
+                        return new DefaultCompletionResult(proposals, false);
+                    }
                 }
             }
         } else if (node.kind() == CssParserTreeConstants.JJTSTYLESHEETRULELIST) {
@@ -540,7 +545,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private List<? extends CompletionProposal> completeImport(FileObject base, int offset, String prefix, boolean addQuotes, boolean addSemicolon) {
         FileReferenceCompletion<CssCompletionItem> fileCompletion = new CssLinkCompletion(addQuotes, addSemicolon);
-        return fileCompletion.getItems(base, offset, prefix);
+        return fileCompletion.getItems(base, offset - prefix.length(), prefix);
     }
 
     private List<CompletionProposal> completeHtmlSelectors(String prefix, int offset) {
@@ -883,11 +888,11 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
-        return ""; //NOI18N
+        return null;
     }
 
     @Override
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 

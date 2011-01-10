@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
  */
 
 public abstract class FileMapper {
-    private enum Type {NULL, CYGWIN, MSYS}
+    public enum Type {NULL, CYGWIN, MSYS}
 
     public static FileMapper getDefault() {
 	if (Utilities.isWindows())
@@ -71,7 +71,7 @@ public abstract class FileMapper {
 	    return new NullFileMapper();
     }
 
-    private static FileMapper getDefault(Type kind) {
+    public static FileMapper getDefault(Type kind) {
 	switch (kind) {
 	    case NULL:	return new NullFileMapper();
 	    case CYGWIN:return new CygwinFileMapper();
@@ -112,12 +112,28 @@ public abstract class FileMapper {
     private static class CygwinFileMapper extends FileMapper {
         @Override
         public String engineToWorld(String path) {
-            return WindowsSupport.getInstance().convertFromCygwinPath(path);
+            if (path == null) {
+                return null;
+            }
+            String res = WindowsSupport.getInstance().convertFromCygwinPath(path);
+            if (res != null) {
+                return res;
+            } else {
+                return path;
+            }
         }
 
         @Override
         public String worldToEngine(String path) {
-            return WindowsSupport.getInstance().convertToCygwinPath(path);
+            if (path == null) {
+                return null;
+            }
+            String res = WindowsSupport.getInstance().convertToCygwinPath(path);
+            if (res != null) {
+                return res;
+            } else {
+                return path;
+            }
         }
 
     }

@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -67,7 +68,7 @@ public abstract class ErrorParserProvider {
 	return DEFAULT;
     }
 
-    public abstract ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo);
+    public abstract ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo);
     public abstract String getID();
 
     public interface ErrorParser {
@@ -136,10 +137,10 @@ public abstract class ErrorParserProvider {
         }
 
 	@Override
-	public ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+	public ErrorParser getErorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
 	    ErrorParserProvider provider = getService(flavor.getToolchainDescriptor().getScanner().getID());
 	    if (provider != null) {
-		return provider.getErorParser(flavor, execEnv, relativeTo);
+		return provider.getErorParser(project, flavor, execEnv, relativeTo);
 	    }
 	    return null;
 	}

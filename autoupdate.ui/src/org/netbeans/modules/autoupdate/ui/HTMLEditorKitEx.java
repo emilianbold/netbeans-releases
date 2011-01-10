@@ -44,29 +44,13 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Image;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.ImageIcon;
 import javax.swing.text.html.*;
 import javax.swing.text.*;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 
 /**
  * @author Radek Matous
  */
 public class HTMLEditorKitEx extends HTMLEditorKit {
-    private static final Map<URL,ImageIcon> ICONS = new HashMap<URL,ImageIcon>();
-    static {
-        URL u_standard = Utilities.getCategoryIcon(CATEGORY.STANDARD);
-        ICONS.put(u_standard, new ImageIcon(u_standard));
-
-        URL u_beta = Utilities.getCategoryIcon(CATEGORY.BETA);
-        ICONS.put(u_beta, new ImageIcon(u_beta));
-
-        URL u_community = Utilities.getCategoryIcon(CATEGORY.COMMUNITY);
-        ICONS.put(u_community, new ImageIcon(u_community));
-    }
 
     public ViewFactory getViewFactory() {
         return new HTMLFactory() {
@@ -85,8 +69,7 @@ public class HTMLEditorKitEx extends HTMLEditorKit {
 
         @Override
         public Image getImage() {
-            ImageIcon img = ICONS.get(getImageURL());
-            return (img != null) ? img.getImage() : super.getImage();
+            return super.getImage();
         }
     }
 }

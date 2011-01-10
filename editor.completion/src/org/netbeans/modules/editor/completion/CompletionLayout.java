@@ -69,10 +69,12 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -331,13 +333,19 @@ public final class CompletionLayout {
                                     CompletionItem selectedItem
                                             = completionScrollPane.getSelectedCompletionItem();
                                     if (selectedItem != null) {
-                                        if (c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(c.getSelectionEnd())) {
+                                        Document doc = c.getDocument();
+                                        if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(c.getSelectionEnd())) {
                                             Toolkit.getDefaultToolkit().beep();
                                         } else {
                                             LogRecord r = new LogRecord(Level.FINE, "COMPL_MOUSE_SELECT"); // NOI18N
                                             r.setParameters(new Object[] { null, completionScrollPane.getSelectedIndex(), selectedItem.getClass().getSimpleName()});
                                             CompletionImpl.uilog(r);
-                                            selectedItem.defaultAction(c);
+                                            CompletionImpl.sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
+                                            try {
+                                                selectedItem.defaultAction(c);
+                                            } finally {
+                                                CompletionImpl.sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
+                                            }
                                         }
                                     }
                                 }

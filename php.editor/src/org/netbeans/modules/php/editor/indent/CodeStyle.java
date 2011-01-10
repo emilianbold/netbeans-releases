@@ -57,6 +57,7 @@ import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
  *      use the getters and to be able to write to it.
  * 
  * @author Dusan Balek
+ * @author Petr Pisl
  */
 public final class CodeStyle {
 
@@ -81,6 +82,10 @@ public final class CodeStyle {
     
     // General tabs and indents ------------------------------------------------
 
+    public boolean expandTabToSpaces () {
+        return preferences.getBoolean(expandTabToSpaces,  getDefaultAsBoolean(expandTabToSpaces));
+    }
+    
     public int getTabSize() {
         return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
     }

@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.ui;
@@ -58,28 +58,38 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
     MySQLOptions options = MySQLOptions.getDefault();
     DialogDescriptor descriptor;
     private Color nbErrorForeground;
+    private String initMessage;
 
-    
     private DocumentListener docListener = new DocumentListener() {
         
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
 
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
 
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
 
     };
-
-
-    public void validatePanel() {
+    
+    private void validatePanel() {
         if (descriptor == null) {
             return;
+        }
+
+        if (initMessage != null && ! initMessage.isEmpty()) {
+            messageLabel.setText(initMessage);
+            messageLabel.setToolTipText(initMessage);
+            descriptor.setValid(false);
+            initMessage = null;
+            return ;
         }
         
         String error = null;
@@ -111,7 +121,9 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         }
     }
     
-    /** Creates new form BasePropertiesPanel */
+    /** Creates new form BasePropertiesPanel
+     * @param server database server
+     */
     public BasePropertiesPanel(DatabaseServer server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
@@ -126,6 +138,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         txtUser.getDocument().addDocumentListener(docListener);
         txtHost.getDocument().addDocumentListener(docListener);
         txtPort.getDocument().addDocumentListener(docListener);
+        txtPassword.getDocument().addDocumentListener(docListener);
         
         String user = server.getUser();
         if ( user == null || user.equals("") ) {
@@ -242,23 +255,26 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(labelHost, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelPort, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelPassword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 174, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(txtPort, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .addComponent(txtUser, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                            .addComponent(txtHost, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(labelHost, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(labelPort, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(labelPassword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(labelUser))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtUser, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                                    .addComponent(txtPort, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                                    .addComponent(txtPassword, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                                    .addComponent(txtHost, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(chkSavePassword, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE))))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(50, 50, 50)
-                        .addComponent(chkSavePassword, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)))
+                        .addComponent(messageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 696, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -278,13 +294,13 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
                     .addComponent(txtUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(labelPassword))
+                    .addComponent(labelPassword)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chkSavePassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(12, 12, 12)
                 .addComponent(messageLabel)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         chkSavePassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.AccessibleContext.accessibleDescription")); // NOI18N
@@ -308,5 +324,9 @@ private void chkSavePasswordActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField txtPort;
     private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables
+
+    void setErrorMessage(String msg) {
+        initMessage = msg;
+    }
 
 }

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;

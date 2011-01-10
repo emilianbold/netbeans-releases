@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
@@ -82,6 +84,8 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
     private static final String EL_PROCESSOR = "processor"; //NOI18N
     private static final String EL_PROCESSOR_OPTION = "processor-option";  //NOI18N
     private static final String EL_SOURCE_OUTPUT ="source-output"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(AnnotationProcessingQueryImpl.class.getName());
 
     private final Object LCK = new Object();
 
@@ -200,6 +204,15 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
                         result.add(Trigger.IN_EDITOR);
                     }
                 }
+            }
+            if (result.size() == 1 && result.contains(Trigger.IN_EDITOR)) {
+                //Contains only editor-trigger
+                //Add required scan-trigger and log
+                result.add(Trigger.ON_SCAN);
+                LOG.log(
+                    Level.WARNING, 
+                    "Project {0} project.xml contains annotation processing editor-trigger only. The scan-trigger is required as well, adding it into the APQ.Result.", //NOI18N
+                    FileUtil.getFileDisplayName(helper.getProjectDirectory()));
             }
             synchronized (LCK) {
                 if (triggerCache == null) {

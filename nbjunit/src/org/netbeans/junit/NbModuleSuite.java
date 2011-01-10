@@ -1209,7 +1209,9 @@ public class NbModuleSuite {
         public void runTest(Test test, TestResult result) {
             int e = result.errorCount();
             int f = result.failureCount();
+            LOG.log(Level.FINE, "Running test {0}", test);
             super.runTest(test, result);
+            LOG.log(Level.FINE, "Finished: {0}", test);
             if (e == result.errorCount() && f == result.failureCount()) {
                 NbModuleLogHandler.checkFailures((TestCase) test, result);
             }

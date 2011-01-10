@@ -85,7 +85,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -166,7 +166,7 @@ public class Utilities {
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
-            if (! u.isPending() && el != null) {
+            if (! u.isPending() && el != null && el.isEnabled()) {
                 List<UpdateElement> updates = u.getAvailableUpdates ();
                 if (updates.isEmpty()) {
                     continue;
@@ -230,6 +230,9 @@ public class Utilities {
             for(UpdateUnit uu : otherUnits) {
                 UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
                 if (u != null) {
+                    if (u.getInstalled() != null && !u.getInstalled().isEnabled()) {
+                        continue;
+                    }
                     boolean exist = false;
                     for(Unit.InternalUpdate internal : internals) {
                         if(internal.getVisibleUnit() == u) {
@@ -262,6 +265,9 @@ public class Utilities {
         for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
             boolean add = true;
             UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
+            if (invisibleUnit.getInstalled() != null && !invisibleUnit.getInstalled().isEnabled()) {
+                continue;
+            }
             for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
                 if(key.equals(invisibleUnit)) {
                     continue;
@@ -625,26 +631,27 @@ public class Utilities {
                         final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
                         handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
                         handle.progress (progressDisplayName, 0);
-                        final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
-                        RequestProcessor.getDefault ().post (new Runnable () {
-                            public void run () {
-                                int i = 0;
-                                while (! runnableTask.isFinished ()) {
-                                    try {
-                                        if (friendlyEstimatedTime * 10 > i++) {
-                                            handle.progress (progressDisplayName, i);
-                                        } else {
-                                            handle.switchToIndeterminate ();
-                                            handle.progress (progressDisplayName);
-                                            return ;
-                                        }
-                                        Thread.sleep (100);
-                                    } catch (InterruptedException ex) {
-                                        // no worries
-                                    }
-                                }
-                            }
-                        });
+                        final RequestProcessor.Task runnableTask = Installer.RP.post (runnableCode);
+                        RequestProcessor.Task post = Installer.RP.post (new Runnable () {
+                            @Override
+                             public void run () {
+                                 int i = 0;
+                                 while (! runnableTask.isFinished ()) {
+                                     try {
+                                         if (friendlyEstimatedTime * 10 > i++) {
+                                             handle.progress (progressDisplayName, i);
+                                         } else {
+                                             handle.switchToIndeterminate ();
+                                             handle.progress (progressDisplayName);
+                                             return ;
+                                         }
+                                         Thread.sleep (100);
+                                     } catch (InterruptedException ex) {
+                                         // no worries
+                                     }
+                                 }
+                             }
+                         });
                         runnableTask.addTaskListener (new TaskListener () {
                             public void taskFinished (Task task) {
                                 task.removeTaskListener (this);
@@ -906,31 +913,4 @@ public class Utilities {
         return NbPreferences.forModule (Utilities.class);
     }
     
-    static String getCategoryName(CATEGORY category) {
-        String key = null;
-        switch (category) {
-            case STANDARD:
-                key = "AvailableTab_SourceCategory_Tooltip_STANDARD"; //NOI18N
-                break;
-            case BETA:
-                key = "AvailableTab_SourceCategory_Tooltip_BETA"; //NOI18N
-                break;
-            case COMMUNITY:
-                key = "AvailableTab_SourceCategory_Tooltip_COMMUNITY"; //NOI18N
-                break;
-        }
-        return (key != null) ? getBundle(key) : null;
-    }
-    
-    static URL getCategoryIcon(CATEGORY state) {
-        URL retval = null;
-        if (CATEGORY.BETA.equals(state)) {
-            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"); // NOI18N
-        } else if (CATEGORY.COMMUNITY.equals(state)) {
-            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"); // NOI18N
-        } else if (CATEGORY.STANDARD.equals(state)) {
-            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"); // NOI18N
-        }
-        return retval;
-    }    
 }

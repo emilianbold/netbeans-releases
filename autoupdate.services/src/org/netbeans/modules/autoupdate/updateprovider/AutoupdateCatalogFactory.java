@@ -86,6 +86,7 @@ public class AutoupdateCatalogFactory {
     public static final String ORIGINAL_DISPLAY_NAME = "originalDisplayName"; // NOI18N
     public static final String ORIGINAL_ENABLED = "originalEnabled"; // NOI18N
     public static final String ORIGINAL_CATEGORY_NAME = "originalCategoryName"; // NOI18N
+    public static final String ORIGINAL_CATEGORY_ICON_BASE = "originalCategoryIconBase"; // NOI18N
     
     public static UpdateProvider createUpdateProvider (FileObject fo) {
         String sKey = (String) fo.getAttribute ("url_key"); // NOI18N
@@ -126,14 +127,36 @@ public class AutoupdateCatalogFactory {
             return null;
         }
         url = modifyURL (url);
-        String categoryName = (String) fo.getAttribute ("category"); // NOI18N    
-        CATEGORY category = (categoryName != null) ? CATEGORY.valueOf(categoryName) : CATEGORY.COMMUNITY;
-        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider(name, displayName(fo), url, category);
-        
+        String categoryName = (String) fo.getAttribute ("category"); // NOI18N
+        CATEGORY category;
+        try {
+            if (categoryName == null) {
+                category = CATEGORY.COMMUNITY;
+            } else {
+                category = CATEGORY.valueOf(categoryName);
+            }
+        } catch (IllegalArgumentException ex) {
+            // OK, not a valid name
+            category = null;
+        }
+        String categoryIconBase = (String) fo.getAttribute ("iconBase"); // NOI18N
         Preferences providerPreferences = getPreferences().node(name);
+        ProviderCategory pc;
+        if (category == null) {
+            if (categoryName == null || categoryIconBase == null) {
+                throw new IllegalStateException("Provide category and iconBase for " + fo); // NOI18N
+            }
+            pc = ProviderCategory.create(categoryIconBase, categoryName);
+            providerPreferences.put (ORIGINAL_CATEGORY_ICON_BASE, categoryIconBase);
+        } else {
+            pc = ProviderCategory.forValue(category);
+        }
+        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider(name, displayName(fo), url, pc);
         providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
         providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
-        providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getCategory().name());        
+        providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getProviderCategory().getName());
+        providerPreferences.put (ORIGINAL_CATEGORY_ICON_BASE, au_catalog.getProviderCategory().getIconBase());
+        
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N        
         if (en != null) {
             providerPreferences.putBoolean (ORIGINAL_ENABLED, en);

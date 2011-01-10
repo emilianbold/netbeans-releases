@@ -69,6 +69,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Scope.ImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
@@ -115,6 +116,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -363,7 +365,11 @@ public class SourceUtils {
         TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {
             JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-            unit.namedImportScope = unit.namedImportScope.dupUnshared();
+            ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+            for (Symbol symbol : unit.namedImportScope.getElements()) {
+                importScope.enter(symbol);
+            }
+            unit.namedImportScope = importScope;
             unit.namedImportScope.enterIfAbsent((Symbol) te);
         }        
         return sName;
@@ -402,7 +408,7 @@ public class SourceUtils {
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
 
     /**
@@ -516,7 +522,7 @@ public class SourceUtils {
 
                 public FileObject run() throws IOException, InterruptedException {
                     for (FileObject fo : fos) {
-                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL());
+                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
                         if (ci != null) {
                             String sourceName = ci.getSourceName(binaryName);
                             if (sourceName != null) {
@@ -600,14 +606,50 @@ public class SourceUtils {
      */
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     public static Set<URL> getDependentRoots (final URL root) {
-        final Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
-        return getDependentRootsImpl (root, deps);
+        final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
+        final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
+        return getDependentRootsImpl (root, sourceDeps, binaryDeps);
     }
     
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
-    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> deps) {
-        //Create inverse dependencies        
+    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps) {
+        Set<URL> urls;
+
+        if (sourceDeps.containsKey(root)) {
+            urls = findReverseSourceRoots(root, sourceDeps);
+        } else {
+            FileObject rootFO = URLMapper.findFileObject(root);
+
+            if (rootFO != null) {
+                urls = new HashSet<URL>();
+
+                for (URL binary : findBinaryRootsForSourceRoot(rootFO, binaryDeps)) {
+                    List<URL> deps = binaryDeps.get(binary);
+
+                    if (deps != null) {
+                        urls.addAll(deps);
+                    }
+                }
+            } else {
+                urls = new HashSet<URL>();
+            }
+        }
+
+        //Filter non opened projects
+        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+        Set<URL> toRetain = new HashSet<URL>();
+        for (ClassPath cp : cps) {
+            for (ClassPath.Entry e : cp.entries()) {
+                toRetain.add(e.getURL());
+            }
+        }
+        urls.retainAll(toRetain);
+        return urls;
+    }    
+    
+    private static Set<URL> findReverseSourceRoots(final URL thisSourceRoot, Map<URL, List<URL>> deps) {
+        //Create inverse dependencies
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
             final URL u1 = entry.getKey();
@@ -624,7 +666,7 @@ public class SourceUtils {
         //Collect dependencies
         final Set<URL> result = new HashSet<URL>();
         final LinkedList<URL> todo = new LinkedList<URL> ();
-        todo.add (root);
+        todo.add (thisSourceRoot);
         while (!todo.isEmpty()) {
             final URL u = todo.removeFirst();
             if (!result.contains(u)) {
@@ -635,19 +677,25 @@ public class SourceUtils {
                 }
             }
         }
-        //Filter non opened projects
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
-        Set<URL> toRetain = new HashSet<URL>();
-        for (ClassPath cp : cps) {
-            for (ClassPath.Entry e : cp.entries()) {
-                toRetain.add(e.getURL());
+
+        return result;
+    }
+
+    private static Set<URL> findBinaryRootsForSourceRoot(FileObject sourceRoot, Map<URL, List<URL>> binaryDeps) {
+        Set<URL> result = new HashSet<URL>();
+
+        for (URL bin : binaryDeps.keySet()) {
+            for (FileObject s : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
+                if (s == sourceRoot) {
+                    result.add(bin);
+                }
             }
         }
-        result.retainAll(toRetain);
+
         return result;
-    }    
-    
-    //Helper methods    
+    }
+
+    //Helper methods
     
     /**
      * Returns classes declared in the given source file which have the main method.
@@ -712,6 +760,20 @@ public class SourceUtils {
      * @return true when the class contains a main method
      */
     public static boolean isMainClass (final String qualifiedName, ClasspathInfo cpInfo) {
+        return isMainClass(qualifiedName, cpInfo, false);
+    }
+    
+    /**
+     * Returns true when the class contains main method.
+     * @param qualifiedName the fully qualified name of class
+     * @param cpInfo the classpath used to resolve the class
+     * @param optimistic when true does only index check without parsing the file.
+     * The optimistic check is faster but it works only for source file not for binaries
+     * for which index does not exist. It also does not handle inheritance of the main method.
+     * @return true when the class contains a main method
+     * @since 0.71
+     */
+    public static boolean isMainClass (final String qualifiedName, ClasspathInfo cpInfo, boolean optimistic) {
         if (qualifiedName == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
@@ -742,30 +804,33 @@ public class SourceUtils {
                 LOG.info("Ignoring fast check for root: " + entry.getURL().toString() + " due to: " + e.getMessage()); //NOI18N
             }
         }
-        //Slow path fallback - for main in libraries
+        
         final boolean[] result = new boolean[]{false};
-        JavaSource js = JavaSource.create(cpInfo);
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
+        if (!optimistic) {
+            //Slow path fallback - for main in libraries
+            JavaSource js = JavaSource.create(cpInfo);
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController control) throws Exception {
-                    final JavacElements elms = (JavacElements)control.getElements();
-                    TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
-                    if (type == null) {
-                        return;
-                    }
-                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
-                    for (ExecutableElement method : methods) {
-                        if (SourceUtils.isMainMethod(method)) {
-                            result[0] = true;
-                            break;
+                    public void run(CompilationController control) throws Exception {
+                        final JavacElements elms = (JavacElements)control.getElements();
+                        TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
+                        if (type == null) {
+                            return;
+                        }
+                        List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
+                        for (ExecutableElement method : methods) {
+                            if (SourceUtils.isMainMethod(method)) {
+                                result[0] = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-            }, true);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
         return result[0];
     }

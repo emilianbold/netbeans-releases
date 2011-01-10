@@ -51,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -372,12 +373,26 @@ final class BinaryFS extends FileSystem {
         // Attributes implementation:
 
         /** Get the file attribute with the specified name. */
+        @Override
         public Object getAttribute(String attrName) {
             initialize();
             AttrImpl attr = attrs.get(attrName);
             if (attr == null && attrName.startsWith("class:")) { // NOI18N
                 attr = attrs.get(attrName.substring(6));
                 return attr == null ? null : attr.getType(this);
+            }
+            if (attr == null && attrName.startsWith("raw:")) { // NOI18N
+                attr = attrs.get(attrName.substring(4));
+                try {
+                    if (attr != null && attr.index == 10) {
+                        return attr.methodValue(attr.value, this, attrName).getMethod();
+                    }
+                    if (attr != null && attr.index == 11) {
+                        return attr.getType(this);
+                    }
+                } catch (Exception ex) {
+                }
+                return null;
             }
             if (attr == null && attrName.equals("layers")) { // NOI18N
                 return getLayersAttr();
@@ -544,7 +559,9 @@ final class BinaryFS extends FileSystem {
                         if (SharedClassObject.class.isAssignableFrom(cls)) {
                             return SharedClassObject.findObject(cls.asSubclass(SharedClassObject.class), true);
                         } else {
-                            return cls.newInstance();
+                            Constructor<?> init = cls.getDeclaredConstructor();
+                            init.setAccessible(true);
+                            return init.newInstance((Object[]) null);
                         }
 
                     case 12: // serialvalue

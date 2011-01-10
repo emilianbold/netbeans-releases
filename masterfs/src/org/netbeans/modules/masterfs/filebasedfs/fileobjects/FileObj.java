@@ -59,6 +59,7 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -77,7 +78,7 @@ public class FileObj extends BaseFileObj {
 
     FileObj(final File file, final FileNaming name) {
         super(file, name);
-        setLastModified(System.currentTimeMillis(), null);
+        setLastModified(System.currentTimeMillis(), null, false);
     }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
@@ -115,7 +116,7 @@ public class FileObj extends BaseFileObj {
                     if (!closable.isClosed()) {
                         super.close();
                         LOGGER.log(Level.FINEST, "getOutputStream-close");
-                        setLastModified(f.lastModified(), f);
+                        setLastModified(f.lastModified(), f, false);
                         closable.close();
                         fireFileChangedEvent(false);
                     }
@@ -201,10 +202,14 @@ public class FileObj extends BaseFileObj {
     @Override
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
+        boolean res;
         if (!Utilities.isWindows() && !f.isFile()) {
-            return true;
-        }        
-        return super.isReadOnly();
+            res = true;
+        } else {
+            res = super.isReadOnly();
+        }
+        markReadOnly(res);
+        return res;
     }
 
     @Override
@@ -216,16 +221,16 @@ public class FileObj extends BaseFileObj {
         return super.canWrite();
     }
         
-    final void setLastModified(long lastModified, File forFile) {
-        if (this.lastModified != 0) { // #130998 - don't set when already invalidated
-            if (this.lastModified != -1 && !realLastModifiedCached) {
+    final void setLastModified(long lastModified, File forFile, boolean readOnly) {
+        if (this.getLastModified() != 0) { // #130998 - don't set when already invalidated
+            if (this.getLastModified() != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
             if (LOGGER.isLoggable(Level.FINER)) {
                 Exception trace = LOGGER.isLoggable(Level.FINEST) ? new Exception("StackTrace") : null; // NOI18N
-                LOGGER.log(Level.FINER, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ") on " + forFile, trace);  //NOI18N
+                LOGGER.log(Level.FINER, "setLastModified: " + this.getLastModified() + " -> " + lastModified + " (" + this + ") on " + forFile, trace);  //NOI18N
             }
-            this.lastModified = lastModified;
+            this.setLastModified(lastModified, readOnly);
         }
     }
     
@@ -249,7 +254,7 @@ public class FileObj extends BaseFileObj {
 
     public boolean isValid() {
         //0 - because java.io.File.lastModififed returns 0 for not existing files        
-        boolean retval = lastModified != 0;
+        boolean retval = getLastModified() != 0;
         //assert checkCacheState(retval, getFileName().getFile());
         return retval;
     }
@@ -263,7 +268,7 @@ public class FileObj extends BaseFileObj {
             assert isValid() : this.toString();
         } else {
             //0 - because java.io.File.lastModififed returns 0 for not existing files
-            lastModified = 0;
+            setLastModified(0, true);
         }        
     }
 
@@ -273,26 +278,26 @@ public class FileObj extends BaseFileObj {
 
     @Override
     public void refreshImpl(final boolean expected, boolean fire) {
-        final long oldLastModified = lastModified;
+        final long oldLastModified = getLastModified();
+        final boolean isReadOnly = thinksReadOnly();
         boolean isReal = realLastModifiedCached;
         final File file = getFileName().getFile();
-        setLastModified(file.lastModified(), file);
-        boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
+        setLastModified(file.lastModified(), file, !file.canWrite());
+        boolean isModified = (isReal) ? (oldLastModified != getLastModified()) : (oldLastModified < getLastModified());
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(
                 Level.FINER,
                 "refreshImpl for {0} isReal: {1} isModified: {2} oldLastModified: {3} lastModified: {4}",
                 new Object[]{
-                    this, isReal, isModified, oldLastModified, lastModified
-                 }
+                    this, isReal, isModified, oldLastModified, getLastModified()}
             );
         }
-        if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
+        if (fire && oldLastModified != -1 && getLastModified() != -1 && getLastModified() != 0 && isModified) {
             if (!MutualExclusionSupport.getDefault().isBeingWritten(this)) {
                 fireFileChangedEvent(expected);
             }
         }
-        if (fire && lastModified != 0) {
+        if (fire && isReal && isReadOnly != thinksReadOnly() && getLastModified() != 0) {
             // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
             fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
         }
@@ -352,13 +357,39 @@ public class FileObj extends BaseFileObj {
 
     final boolean checkLock(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
-        return ((lock instanceof LockForFile) && (((LockForFile) lock).getFile().equals(f)));
+        return ((lock instanceof LockForFile) && Utils.equals(((LockForFile) lock).getFile(), f));
     }
 
     @Override
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
         final File rename = getFileName().getFile();
-        setLastModified(rename.lastModified(), rename);
-    }    
+        setLastModified(rename.lastModified(), rename, !rename.canWrite());
+    }
+
+    private long getLastModified() {
+        long l = lastModified;
+        if (l < -10) {
+            return -l;
+        }
+        return l;
+    }
+
+    private void setLastModified(long lastModified, boolean readOnly) {
+        if (lastModified >= -10 && lastModified < 10) {
+            this.lastModified = lastModified;
+            return;
+        }
+        this.lastModified = readOnly ? -lastModified : lastModified;
+    }
+    
+    private boolean thinksReadOnly() {
+        return lastModified < -10;
+    }
+    
+    private void markReadOnly(boolean readOnly) {
+        if (thinksReadOnly() != readOnly) {
+            setLastModified(getLastModified(), readOnly);
+        }
+    }
 }

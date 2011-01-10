@@ -41,6 +41,7 @@ package org.netbeans.modules.junit.actions;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -101,12 +102,12 @@ public abstract class TestMethodAction extends NodeAction {
                     JavaSource js = JavaSource.forDocument(panes[0].getDocument());
                     TestClassInfoTask task = new TestClassInfoTask(cursor);
                     try {
-                        js.runUserActionTask(task, true);
+                        Future<Void> f = js.runWhenScanFinished(task, true);
+                        if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
+                            sm = new SingleMethod(task.getFileObject(), task.getMethodName());
+                        }
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, null, ex);
-                    }
-                    if (task.getFileObject() != null && task.getMethodName() != null){
-                        sm = new SingleMethod(task.getFileObject(), task.getMethodName());
                     }
                 }
             }

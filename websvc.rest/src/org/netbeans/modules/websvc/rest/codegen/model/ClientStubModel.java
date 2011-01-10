@@ -103,6 +103,9 @@ public class ClientStubModel {
     }
 
     private static String toValidJavaName(String name) {
+        if ( name == null || name.length() ==0 ){
+            return name;
+        }
         StringBuilder sb = new StringBuilder(name.length());
         if (Character.isJavaIdentifierStart(name.charAt(0))) {
             sb.append(name.charAt(0));
@@ -755,13 +758,17 @@ public class ClientStubModel {
                 if (isContainerItem(n)) {
                     Node p = n.getParentNode();
                     String pName = findResourceNameFromPath(getAttributeValue(p, "path"));
-                    pName = pName.substring(0, pName.length()-1);
-                    if(name.startsWith(pName)) {
-                        name = pName;
-                        path = "/"+name+"/";
+                    if ( pName != null && pName.length() >0 ){
+                        pName = pName.substring(0, pName.length() - 1);
+                        if (name.startsWith(pName)) {
+                            name = pName;
+                            path = "/" + name + "/";
+                        }
                     }
                 }
-                name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                if ( name!=null && name.length() >0 ){
+                    name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                }
                 Resource r = new Resource(name, path);
                 buildResource(r, doc, n);
                 return r;

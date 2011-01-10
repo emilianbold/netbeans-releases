@@ -59,12 +59,15 @@ public final class ModuleDeactivator extends Object {
     
     public static final String CONFIG = "config"; // NOI18N
     public static final String MODULES = "Modules"; // NOI18N
+    private final UpdatingContext context;
     
-    private ModuleDeactivator () {}
+    ModuleDeactivator (UpdatingContext context) {
+        this.context = context;
+    }
     
-    public static void delete () {
+    public void delete () {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ";
-        UpdaterFrame.setLabel (Localization.getBrandedString ("CTL_DeletingFiles"));
+        context.setLabel (Localization.getBrandedString ("CTL_DeletingFiles"));
         Collection<File> allFiles = new HashSet<File> ();
         for (File cluster : UpdateTracking.clusters (true)) {
             boolean modified = allFiles.addAll (readFilesMarkedForDeleteInCluster (cluster));
@@ -74,28 +77,28 @@ public final class ModuleDeactivator extends Object {
                 UpdaterDispatcher.touchLastModified (cluster);
             }
         }
-        UpdaterFrame.setProgressRange (0, allFiles.size ());
+        context.setProgressRange (0, allFiles.size ());
         int i = 0;
         for (File f : allFiles) {
             doDelete (f);
-            UpdaterFrame.setProgressValue (i ++);
+            context.setProgressValue (i ++);
         }
     }
     
-    public static void disable () {
+    public void disable () {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ";
-        UpdaterFrame.setLabel (Localization.getBrandedString ("CTL_DisablingFiles"));
+        context.setLabel (Localization.getBrandedString ("CTL_DisablingFiles"));
         Collection<File> allControlFiles = new HashSet<File> ();
         for (File cluster : UpdateTracking.clusters (true)) {
             allControlFiles.addAll (readFilesMarkedForDisableInCluster (cluster));
             doDelete (getControlFileForMarkedForDisable (cluster));
             doDelete (getDeactivateLater (cluster));
         }
-        UpdaterFrame.setProgressRange (0, allControlFiles.size ());
+        context.setProgressRange (0, allControlFiles.size ());
         int i = 0;
         for (File f : allControlFiles) {
             doDisable (f);
-            UpdaterFrame.setProgressValue (i ++);
+            context.setProgressValue (i ++);
         }
     }
 

@@ -67,20 +67,27 @@ public class ListPropertiesCommand extends SvnCommand {
     private final File file;
     private final boolean rec;
     private final SVNUrl url;
+    private final String rev;
     private final ListType type;
     
     public ListPropertiesCommand(File file, boolean rec) {
         this.file = file;
         this.rec = rec;
         url = null;
+        rev = null;
         type = ListType.file;
     }
     
     public ListPropertiesCommand(SVNUrl url, boolean rec) {
-        this.url = url;        
+        this(url, null, rec);
+    }
+
+    public ListPropertiesCommand(SVNUrl url, String revision, boolean rec) {
+        this.url = url;
         this.rec = rec;
         file = null;
-        type = ListType.url;        
+        rev = revision;
+        type = ListType.url;
     }
     
     @Override
@@ -105,6 +112,10 @@ public class ListPropertiesCommand extends SvnCommand {
                 break;
             case url:
                 arguments.add(url);
+                if (rev != null) {
+                    arguments.add("-r"); //NOI18N
+                    arguments.add(rev); //NOI18N
+                }
                 break;
             default:
                 throw new IllegalStateException("Illegal gettype: " + type);                             

@@ -31,11 +31,11 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/jvmlauncher.o \
 	${OBJECTDIR}/platformlauncher.o \
-	${OBJECTDIR}/utilsfuncs.o \
 	${OBJECTDIR}/nbexec.o \
-	${OBJECTDIR}/nbexecexe.o
+	${OBJECTDIR}/nbexecexe.o \
+	${OBJECTDIR}/jvmlauncher.o \
+	${OBJECTDIR}/utilsfuncs.o
 
 # C Compiler Flags
 CFLAGS=-m32
@@ -51,47 +51,60 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=${OBJECTDIR}/nbexec.res
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	${MAKE}  -f nbproject/Makefile-nbexec.mk nbexec.dll
 
-nbexec.dll: ${OBJECTFILES}
-	${LINK.cc} -mno-cygwin -shared -o nbexec.dll ${OBJECTFILES} ${LDLIBSOPTIONS} 
+nbexec.dll: ${OBJECTDIR}/nbexec.res
 
-${OBJECTDIR}/jvmlauncher.o: nbproject/Makefile-${CND_CONF}.mk jvmlauncher.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include/win32  -MMD -MP -MF $@.d -o ${OBJECTDIR}/jvmlauncher.o jvmlauncher.cpp
+nbexec.dll: ${OBJECTFILES}
+	${LINK.cc} -mno-cygwin -shared -o nbexec.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/platformlauncher.o: nbproject/Makefile-${CND_CONF}.mk platformlauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include/win32  -MMD -MP -MF $@.d -o ${OBJECTDIR}/platformlauncher.o platformlauncher.cpp
-
-${OBJECTDIR}/utilsfuncs.o: nbproject/Makefile-${CND_CONF}.mk utilsfuncs.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include/win32  -MMD -MP -MF $@.d -o ${OBJECTDIR}/utilsfuncs.o utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include/win32 -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/platformlauncher.o platformlauncher.cpp
 
 ${OBJECTDIR}/nbexec.o: nbproject/Makefile-${CND_CONF}.mk nbexec.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include/win32  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nbexec.o nbexec.cpp
+	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include/win32 -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nbexec.o nbexec.cpp
+
+${OBJECTDIR}/nbexec.res: nbproject/Makefile-${CND_CONF}.mk nbexec.rc version.h
+	${MKDIR} -p ${OBJECTDIR}
+	@echo Compiling Resource files...
+	windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res
 
 ${OBJECTDIR}/nbexecexe.o: nbproject/Makefile-${CND_CONF}.mk nbexecexe.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include -I/cygdrive/C/Program\ Files/Java/jdk1.6.0_18/include/win32  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nbexecexe.o nbexecexe.cpp
+	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include/win32 -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nbexecexe.o nbexecexe.cpp
+
+: nbproject/Makefile-${CND_CONF}.mk nbexec_exe.rc 
+	@echo 
+	
+
+${OBJECTDIR}/jvmlauncher.o: nbproject/Makefile-${CND_CONF}.mk jvmlauncher.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include/win32 -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/jvmlauncher.o jvmlauncher.cpp
+
+${OBJECTDIR}/utilsfuncs.o: nbproject/Makefile-${CND_CONF}.mk utilsfuncs.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -Wall -s -I/cygdrive/c/cygwin/usr/include/mingw -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include/win32 -I/cygdrive/D/Program\ Files/Java/jdk1.6.0_22/include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/utilsfuncs.o utilsfuncs.cpp
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
-.clean-conf: ${CLEAN_SUBPROJECTS}
+.clean-conf:
 	${RM} -r build/nbexec
 	${RM} nbexec.dll
+	${RM} ${OBJECTDIR}/nbexec.res
+	${RM} 
 
 # Subprojects
 .clean-subprojects:

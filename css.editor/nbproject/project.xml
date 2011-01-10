@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <specification-version>2.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -264,6 +264,9 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.parser</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -306,12 +309,13 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.editor.kit</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.css.editor.model</package>
-                <package>org.netbeans.modules.css.gsf.api</package>
                 <package>org.netbeans.modules.css.formatting.api</package>
                 <package>org.netbeans.modules.css.formatting.api.embedding</package>
                 <package>org.netbeans.modules.css.formatting.api.support</package>
+                <package>org.netbeans.modules.css.gsf.api</package>
                 <package>org.netbeans.modules.css.lexer.api</package>
                 <package>org.netbeans.modules.css.parser</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>

@@ -44,6 +44,7 @@
 
 package org.openide.text;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
@@ -56,8 +57,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -145,6 +148,11 @@ implements CloneableEditorSupport.Env {
         
         assertNull("No document is opened", support.getDocument());
         assertFalse("Open is still running", running.running);
+        
+        Pane ed = support.getAnyEditor();
+        assertNotNull("Editor found", ed);
+        Thread.sleep(1000); // helps to simulate 190409 on next close()
+        assertTrue("Can be closed", ed.getComponent().close());
     }
     
     //

@@ -50,6 +50,7 @@ import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -100,7 +101,6 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -376,6 +376,28 @@ public class UnitTab extends javax.swing.JPanel {
                 }
             }, 150);
         }
+    }
+
+    final void updateTab(final Map<String, Boolean> state) {
+        final Runnable addUpdates = new Runnable() {
+            @Override
+            public void run() {
+                final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
+                List<UpdateUnit> empty = Collections.emptyList();
+                downloadedTableModel.setUnits(empty);
+                SwingUtilities.invokeLater(new Runnable()  {
+
+                    public void run() {
+                        fireUpdataUnitChange();
+                        UnitCategoryTableModel.restoreState(model.getUnits(), state, model.isMarkedAsDefault());
+                        refreshState();
+                        setWaitingState(false);
+                    }
+                });
+            }
+        };
+        setWaitingState(true);
+        Utilities.startAsWorkerThread(addUpdates, 250);
     }
     
     private TabAction getDefaultAction () {
@@ -1848,28 +1870,10 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             if (getLocalDownloadSupport ().chooseNbmFiles ()) {
-                
-                final Runnable addUpdates = new Runnable (){
-                    public void run () {
-                        final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
-                        List<UpdateUnit> empty = Collections.emptyList();
-                        downloadedTableModel.setUnits(empty);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run () {
-                                fireUpdataUnitChange();
-                                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());                                
-                                refreshState ();
-                                setWaitingState (false);
-                            }
-                        });
-                    }
-                    
-                };
-                setWaitingState (true);
-                Utilities.startAsWorkerThread (addUpdates, 250);
+                updateTab (state);
             }
         }
-        
+
         @Override
         public void setEnabled (boolean enabled) {
             super.setEnabled (enabled);
@@ -1971,13 +1975,11 @@ public class UnitTab extends javax.swing.JPanel {
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel renderComponent = (JLabel)super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
             
-            if (value instanceof CATEGORY) {
+            if (value instanceof Image) {
                 Unit u = model.getUnitAtRow (row);
                 if (u instanceof Unit.Available) {
                     Unit.Available a = (Unit.Available)u;
-                    CATEGORY state = a.getSourceCategory();
-                    URL icon = Utilities.getCategoryIcon(state);
-                    renderComponent.setIcon(new ImageIcon(icon));
+                    renderComponent.setIcon(ImageUtilities.image2Icon(a.getSourceIcon()));
                     renderComponent.setText ("");
                     renderComponent.setHorizontalAlignment (SwingConstants.CENTER);
                 }

@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.CookieSet;
@@ -94,6 +95,7 @@ implements DataLoader.RecognizedFiles {
         return Level.INFO;
     }
 
+    @RandomlyFails // NB-Core-Build #5753: No longer valid
     public void testDelete() throws Exception {
         DataObject obj1 = DataObject.find(f1);
         assertEquals(DataLoader.getLoader(FXKitDataLoader.class), obj1.getLoader());

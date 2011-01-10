@@ -127,14 +127,14 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         jTextFieldContextPath.setVisible(showContextPath);
         mainClassLabel.setVisible(mainAppClientClass);
         mainClassTextField.setVisible(mainAppClientClass);
-        createCarCheckBox.setVisible(createProjects);
+        createCarCheckBox.setVisible(false);
         createEjbCheckBox.setVisible(createProjects);
         createWARCheckBox.setVisible(createProjects);
-        jTextFieldCarName.setVisible(createProjects);
+        jTextFieldCarName.setVisible(false);
         jTextFieldEjbModuleName.setVisible(createProjects);
         jTextFieldWebAppName.setVisible(createProjects);
-        mainClassLabel1.setVisible(createProjects);
-        mainClassTextFieldWithinEar.setVisible(createProjects);
+        mainClassLabel1.setVisible(false);
+        mainClassTextFieldWithinEar.setVisible(false);
         
         jTextFieldCarName.getDocument().addDocumentListener( this );
         jTextFieldEjbModuleName.getDocument().addDocumentListener( this );

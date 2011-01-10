@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.editor.folding;
 
 import java.io.File;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,7 +54,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.openide.text.NbDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 public class CppFile {
@@ -180,7 +180,8 @@ public class CppFile {
             }
 
             String name = (String) doc.getProperty(Document.TitleProperty);
-            folds = p.parse(name, (char[])res[0]);
+            FileObject fo = NbEditorUtilities.getFileObject(doc);
+            folds = p.parse(fo, (char[])res[0]);
             if (folds == null) {
                 return false;
             }

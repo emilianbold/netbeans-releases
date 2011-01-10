@@ -44,19 +44,16 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.BitSet;
 import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
-import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 
 /**
  *
@@ -66,7 +63,7 @@ public class LuceneIndexTest extends NbTestCase {
 
     private static File wd;
     private File indexFolder;
-    private DocumentBasedIndex index;
+    private DocumentIndex index;
     
     public LuceneIndexTest(final String name) {
         super(name);
@@ -79,7 +76,7 @@ public class LuceneIndexTest extends NbTestCase {
         wd = getWorkDir();
         indexFolder = new File (wd, "index");   //NOI18N
         indexFolder.mkdirs();
-        index = new DocumentBasedIndex(indexFolder.toURI().toURL());
+        index = IndexManager.createDocumentIndex(indexFolder);
     }
 
     @After
@@ -91,12 +88,12 @@ public class LuceneIndexTest extends NbTestCase {
     @Test
     public void testIndexAddDelete() throws Exception {
         for (int i=0; i< 1000; i++) {
-            LuceneDocument docwrap = new LuceneDocument(SPIAccessor.getInstance().create(new FakeIndexableImpl(i)));
+            IndexDocument docwrap = IndexManager.createDocument(Integer.toString(i));
             docwrap.addPair("bin", Integer.toBinaryString(i), true, true);
             docwrap.addPair("oct", Integer.toOctalString(i), true, true);
             index.addDocument(docwrap);
         }
-        index.store(true, null);
+        index.store(true);
         BitSet expected = new BitSet(1000);
         expected.set(0, 1000);
         assertIndex(expected);
@@ -104,7 +101,7 @@ public class LuceneIndexTest extends NbTestCase {
             index.removeDocument(Integer.toString(i));
             expected.clear(i);
         }
-        index.store(true, null);
+        index.store(true);
         assertIndex(expected);
     }
 
@@ -139,7 +136,7 @@ public class LuceneIndexTest extends NbTestCase {
 
     private void assertIndex(final BitSet expected) throws IOException, InterruptedException {
         for (int i=0; i < expected.length(); i++) {
-            final Collection<? extends IndexDocumentImpl> res = index.query("bin", Integer.toBinaryString(i), Kind.EXACT, "bin","oct");
+            final Collection<? extends IndexDocument> res = index.query("bin", Integer.toBinaryString(i), Queries.QueryKind.EXACT, "bin","oct");
             boolean should = expected.get(i);
             assertEquals(should, res.size()==1);
             if (should) {
@@ -147,42 +144,6 @@ public class LuceneIndexTest extends NbTestCase {
                 assertEquals(res.iterator().next().getValue("oct"), Integer.toOctalString(i));
             }
         }
-    }
-
-
-    private static class FakeIndexableImpl implements IndexableImpl {
-
-        private final int id;
-
-        public FakeIndexableImpl (final int id) {
-            this.id = id;
-        }
-
-        @Override
-        public String getRelativePath() {
-            return Integer.toString(id);
-        }
-
-        @Override
-        public URL getURL() {
-            try {
-                return new File(wd, getRelativePath()).toURI().toURL();
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        @Override
-        public String getMimeType() {
-            return "text/test";
-        }
-
-        @Override
-        public boolean isTypeOf(String mimeType) {
-            return true;
-        }
-
-    }
+    }    
 
 }

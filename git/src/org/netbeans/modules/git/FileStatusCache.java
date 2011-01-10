@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
@@ -98,6 +99,8 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), false);
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), false);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
+
+    private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<File, File>(5);
 
     public FileStatusCache() {
         cachedFiles = new HashMap<File, FileInformation>();
@@ -195,66 +198,69 @@ public class FileStatusCache {
             if (repository == null) {
                 continue;
             }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
-            }
-            Map<File, GitStatus> interestingFiles;
-            try {
-                // find all files with not up-to-date or ignored status
-                interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
-                if (pm.isCanceled()) {
-                    return;
+            File syncRepo = getSyncRepository(repository);
+            // Synchronize on the repository, refresh should not run concurrently
+            synchronized (syncRepo) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
                 }
-                for (File root : refreshEntry.getValue()) {
-                    // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
-                    for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.UPTODATE)))) {
-                        FileInformation fi = getInfo(file);
-                        if (fi == null || fi.containsStatus(Status.UPTODATE)) {
-                            // XXX debug section
-                            LOG.log(Level.WARNING, "refreshAllRoots(): possibly concurrent refresh: {0}:{1}", new Object[] { file, fi });
-                            boolean ea = false;
-                            assert ea = true;
-                            if (ea) {
-                                try {
-                                    Thread.sleep(100);
-                                } catch (InterruptedException ex) { }
-                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.UPTODATE))))).contains(file)) {
-                                    LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
-                                    assert false : "index seems to be broken " + file.getAbsolutePath();
+                Map<File, GitStatus> interestingFiles;
+                try {
+                    // find all files with not up-to-date or ignored status
+                    interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    for (File root : refreshEntry.getValue()) {
+                        // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
+                        for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.UPTODATE)))) {
+                            FileInformation fi = getInfo(file);
+                            if (fi == null || fi.containsStatus(Status.UPTODATE)) {
+                                LOG.log(Level.WARNING, "refreshAllRoots(): possibly concurrent refresh: {0}:{1}", new Object[] { file, fi });
+                                fi = new FileInformation(EnumSet.of(Status.UPTODATE), file.isDirectory());
+                                boolean ea = false;
+                                assert ea = true;
+                                if (ea) {
+                                    try {
+                                        Thread.sleep(100);
+                                    } catch (InterruptedException ex) { }
+                                    if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.UPTODATE))))).contains(file)) {
+                                        LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
+                                    }
                                 }
+                                continue;
                             }
-                            continue;
-                        }
-                        boolean exists = file.exists();
-                        File filesOwner = null;
-                        boolean correctRepository = true;
-                        if (!interestingFiles.containsKey(file) // file no longer has an interesting status
-                                && (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
-                                fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
-                                !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
-                                && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
-                            LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
-                            refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
-                        }
-                        if (!correctRepository) {
-                            if (nestedRepositories.add(filesOwner)) {
-                                LOG.log(Level.INFO, "refreshAllRoots: nested repository found: {0} contains {1}", new File[] {repository, filesOwner}); //NOI18N
+                            boolean exists = file.exists();
+                            File filesOwner = null;
+                            boolean correctRepository = true;
+                            if (!interestingFiles.containsKey(file) // file no longer has an interesting status
+                                    && (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
+                                    fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
+                                    !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
+                                    && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
+                                LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
+                                refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
+                            }
+                            if (!correctRepository) {
+                                if (nestedRepositories.add(filesOwner)) {
+                                    LOG.log(Level.INFO, "refreshAllRoots: nested repository found: {0} contains {1}", new File[] {repository, filesOwner}); //NOI18N
+                                }
                             }
                         }
                     }
-                }
-                for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
-                    // put the file's FI into the cache
-                    File file = interestingEntry.getKey();
-                    FileInformation fi = new FileInformation(interestingEntry.getValue());
-                    LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi);
-                }
-            } catch (GitException ex) {
-                LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
-            } finally {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
+                    for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
+                        // put the file's FI into the cache
+                        File file = interestingEntry.getKey();
+                        FileInformation fi = new FileInformation(interestingEntry.getValue());
+                        LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
+                        refreshFileStatus(file, fi);
+                    }
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
+                } finally {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
+                    }
                 }
             }
         }
@@ -522,14 +528,16 @@ public class FileStatusCache {
         if(file == null || fi == null) return;
         FileInformation current;
         synchronized (this) {
-            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && (GitUtils.isIgnored(file, true)
-                    || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
+            file = FileUtil.normalizeFile(file);
+            current = getInfo(file);
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi) || 
+                    // ugly piece of code, call sharability for U2D files only when toggling between ignored and U2D, otherwise SQ is called for EVERY U2D file
+                    (current != null && fi.getStatus().contains(Status.UPTODATE) && current.getStatus().contains(Status.NOTVERSIONED_EXCLUDED))
+                    ) && (GitUtils.isIgnored(file, true) || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
                 // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
             }
-            file = FileUtil.normalizeFile(file);
-            current = getInfo(file);
             if (equivalent(fi, current)) {
                 // no need to fire an event
                 return;
@@ -706,6 +714,22 @@ public class FileStatusCache {
         } else {
             outOfAWT.run();
         }
+    }
+
+    private static File getSyncRepository (File repository) {
+        File cachedRepository = Git.getInstance().getRepositoryRoot(repository);
+        if (repository.equals(cachedRepository)) {
+            repository = cachedRepository;
+        }
+        synchronized (SYNC_REPOSITORIES) {
+            cachedRepository = SYNC_REPOSITORIES.get(repository);
+            if (cachedRepository == null) {
+                // create a NEW instance, otherwise we'll lock also git commands that sync on repository root, too
+                cachedRepository = new File(repository.getParentFile(), repository.getName());
+                SYNC_REPOSITORIES.put(cachedRepository, cachedRepository);
+            }
+        }
+        return cachedRepository;
     }
 
     public static class ChangedEvent {

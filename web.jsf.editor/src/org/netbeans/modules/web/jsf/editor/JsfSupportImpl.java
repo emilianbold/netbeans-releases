@@ -1,0 +1,187 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.web.jsf.editor;
+
+import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
+import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
+import org.openide.filesystems.FileObject;
+
+/**
+ * per web-module instance
+ *
+ * @author marekfukala
+ */
+public class JsfSupportImpl implements JsfSupport {
+
+    public static JsfSupportImpl findFor(Source source) {
+        return getOwnImplementation(JsfSupportProvider.get(source));
+    }
+
+    public static JsfSupportImpl findFor(FileObject file) {
+        return getOwnImplementation(JsfSupportProvider.get(file));
+    }
+    
+    public static JsfSupportImpl findFor(Document document) {
+        return getOwnImplementation(JsfSupportProvider.get(document));
+    }
+
+    private static JsfSupportImpl getOwnImplementation(JsfSupport instance) {
+        if(instance instanceof JsfSupportImpl) {
+            return (JsfSupportImpl)instance;
+        } else {
+            //the jsf editor requires its own implementation of the JsfSupport for the time being
+            return null;
+        }
+    }
+
+    static JsfSupportImpl findForProject(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm == null) {
+            return null;
+        }
+	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+	if(classPath == null) {
+	    return null;
+	}
+
+        return new JsfSupportImpl(project, wm, classPath);
+
+    }
+    private FaceletsLibrarySupport faceletsLibrarySupport;
+    private Project project;
+    private WebModule wm;
+    private ClassPath classpath;
+    private JsfIndex index;
+    private MetadataModel<WebBeansModel> webBeansModel;
+
+    private JsfSupportImpl(Project project, WebModule wm, ClassPath classPath) {
+        this.project = project;
+        this.wm = wm;
+        this.classpath = classPath;
+        this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
+
+        //adds a classpath listener which invalidates the index instance after classpath change
+        //and also invalidates the facelets library descriptors and tld caches
+        this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (JsfSupportImpl.this) {
+                    index = null;
+                }
+            }
+        });
+        //register html extension
+        //TODO this should be done declaratively via layer
+        JsfHtmlExtension.activate();
+
+    }
+
+    @Override
+    public Project getProject() {
+        return project;
+    }
+
+    @Override
+    public ClassPath getClassPath() {
+        return classpath;
+    }
+
+    @Override
+    public WebModule getWebModule() {
+        return wm;
+    }
+
+
+    @Override
+    public Library getLibrary(String namespace) {
+        return faceletsLibrarySupport.getLibraries().get(namespace);
+    }
+
+    /** Library's uri to library map */
+    @Override
+    public Map<String, FaceletsLibrary> getLibraries() {
+        return faceletsLibrarySupport.getLibraries();
+    }
+
+    //garbage methods below, needs cleanup!
+    public synchronized JsfIndex getIndex() {
+        if(index == null) {
+	    this.index = JsfIndex.create(wm);
+        }
+        return this.index;
+    }
+
+    public FaceletsLibrarySupport getFaceletsLibrarySupport() {
+	return faceletsLibrarySupport;
+    }
+
+    public synchronized MetadataModel<WebBeansModel> getWebBeansModel() {
+	if(webBeansModel == null) {
+	    ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(getWebModule());
+	    webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+	}
+	return webBeansModel;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
+    }
+    
+}

@@ -227,9 +227,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
-                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), null);
                 } else {
-                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, null);
                 }
             }
             assert lastConfiguration instanceof CCompilerConfiguration;
@@ -248,9 +248,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
-                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration(), null);
                 } else {
-                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, null);
                 }
             }
             assert lastConfiguration instanceof CCCompilerConfiguration;

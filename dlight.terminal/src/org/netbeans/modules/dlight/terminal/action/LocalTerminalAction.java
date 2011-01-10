@@ -41,14 +41,28 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
+import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
+@ActionID(id = "LocalTerminalAction", category = "Window")
+@ActionRegistration(iconInMenu = true, displayName = "#CTL_LocalTerminal", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")
+@ActionReference(path = "Actions/Terminal", name = "org-netbeans-modules-dlight-terminal-action-LocalTerminalAction", position = 100)
 public final class LocalTerminalAction extends TerminalAction {
+
+    public LocalTerminalAction() {
+        super(TerminalContainerTopComponent.LOCAL_TERMINAL_PREFIX + "Action", NbBundle.getMessage(LocalTerminalAction.class, "LocalTerminalShortDescr"), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
+    }
 
     @Override
     protected ExecutionEnvironment getEnvironment() {

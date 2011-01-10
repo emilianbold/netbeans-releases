@@ -139,6 +139,10 @@ public abstract class WindowManager extends Object implements Serializable {
     *   <LI>using the Main Window as the parent for dialogs</LI>
     *   <LI>using the Main Window's position for preplacement of windows</LI>
     * </UL>
+     * Since version 6.36 the default implementation in org.netbeans.core.windows
+     * module first checks already opened Frames (see Frame.getFrames()) and if
+     * there is a Frame named 'NbMainWindow' then it is reused as NetBeans main
+     * window. Otherwise a new Frame is created instead.
     * @return the Main Window
     */
     public abstract Frame getMainWindow();

@@ -44,6 +44,7 @@
 
 package org.netbeans.api.autoupdate;
 
+import java.awt.Image;
 import org.netbeans.spi.autoupdate.*;
 import java.io.IOException;
 import java.net.URL;
@@ -106,9 +107,33 @@ public final class UpdateUnitProvider {
         return impl.getDescription ();
     }
 
-    
+
+    /** @deprecated Use {@link #getSourceIcon()} and {@link #getSourceDescription()}.
+     */
+    @Deprecated
     public CATEGORY getCategory() {
         return impl.getCategory();
+    }
+    
+    /** The icon associated with this provider. In case no specific icon is 
+     * associated, a general one is returned.
+     * 
+     * @since 1.23
+     * @see UpdateElement#getSourceIcon() 
+     */
+    public Image getSourceIcon() {
+        return impl.getSourceIcon();
+    }
+
+    /** The description of this provider. Usually associated with {@link #getSourceIcon()}.
+     * In case no special description is found, a general one is returned.
+     * 
+     * @since 1.23
+     * @return textual description of the provider
+     * @see UpdateElement#getSourceDescription() 
+     */
+    public String getSourceDescription() {
+        return impl.getSourceDescription();
     }
 
     /** It's special support for <code>UpdateProvider</code> based on Autoupdate Catalog.
@@ -178,5 +203,9 @@ public final class UpdateUnitProvider {
     public void setEnable (boolean state) {
         impl.setEnable (state);
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + impl + "]";
+    }
 }

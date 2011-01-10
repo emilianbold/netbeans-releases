@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
@@ -71,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -229,47 +231,60 @@ public class CodeUtils {
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
     }
-    @CheckForNull // null for RelectionVariable
-    public static String extractVariableName(Variable var) {
-        if (var instanceof ReflectionVariable) {
-            Expression name = ((ReflectionVariable) var).getName();
-            if (name instanceof Scalar) {
-                Scalar scalar = (Scalar) name;
-                return scalar.getStringValue();
-            } else if (name instanceof Variable) {
-                var = (Variable)name;
-                return extractVariableName(var);
-            } else if (name instanceof FieldAccess) {
-                var = ((FieldAccess)name).getField();
-                return extractVariableName(var);
-            } else if (name instanceof InfixExpression) {
-                //#157750
-                return null;
-            }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Cannot extract variable name of ReflectionVariable: " + name.getClass().toString());
-            }
-        }
-        if (var.getName() instanceof Identifier) {
-            Identifier id = (Identifier) var.getName();
-            StringBuilder varName = new StringBuilder();
-
-            if (var.isDollared()) {
-                varName.append("$");
-            }
-
-            varName.append(id.getName());
-            return varName.toString();
-        } else if (var.getName() instanceof Variable) {
-            Variable name = (Variable) var.getName();
-            return extractVariableName(name);
-        } else if (var.getName() instanceof MethodInvocation){
-            // no variable name
-            return null; 
+    
+    private static class VariableNameVisitor extends DefaultVisitor {
+        
+        private String name = null;
+        private boolean isDollared = false;
+        
+        private VariableNameVisitor () {
+            
         }
         
-        LOGGER.fine("Cannot extract variable name of type: " + var.getName().getClass().toString());
-        return null;
+        private static class SingletonHolder { 
+            public static final VariableNameVisitor INSTANCE = new VariableNameVisitor();
+        }
+
+        public static VariableNameVisitor getInstance() {
+            return SingletonHolder.INSTANCE;
+        }
+        
+        public String findName(Variable var) {
+            name = null;
+            scan(var);
+            return name;
+        }
+
+        @Override
+        public void visit(Scalar node) {
+            name = node.getStringValue();
+        }
+
+        @Override
+        public void visit(Variable node) {
+            isDollared = node.isDollared();
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(InfixExpression node) {
+        }
+
+        @Override
+        public void visit(Identifier identifier) {
+            name = isDollared ? "$" + identifier.getName() : identifier.getName();
+        }
+
+        @Override
+        public void visit(ArrayAccess node) {
+            scan(node.getName());
+        }  
+    }
+        
+    
+    @CheckForNull // null for RelectionVariable
+    public static String extractVariableName(Variable var) {
+        return VariableNameVisitor.getInstance().findName(var);
     }
 
 

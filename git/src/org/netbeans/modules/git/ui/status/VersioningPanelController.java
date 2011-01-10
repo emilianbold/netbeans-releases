@@ -54,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -224,7 +225,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     if (e.getSource() == panel.btnCheckout) {
                         SystemAction.get(CheckoutPathsAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnCommit) {
-                        SystemAction.get(CommitAction.class).performAction(context);
+                        SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
                         refreshStatusSupport = SystemAction.get(StatusAction.class).scanStatus(context);
                         refreshStatusSupport.getTask().waitFinished();
@@ -239,8 +240,8 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
-            synchronized (applyChangeTask.changes) {
-                applyChangeTask.changes.add(event);
+            synchronized (changes) {
+                changes.put(event.getFile(), event);
             }
             changeTask.schedule(1000);
         }
@@ -347,17 +348,17 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         }
     }
 
+    private final Map<File, FileStatusCache.ChangedEvent> changes = new HashMap<File, FileStatusCache.ChangedEvent>();
     /**
      * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
      */
     private class ApplyChangesTask implements Runnable {
-        private final Set<FileStatusCache.ChangedEvent> changes = new HashSet<FileStatusCache.ChangedEvent>();
 
         @Override
         public void run() {
             final Set<FileStatusCache.ChangedEvent> events;
             synchronized (changes) {
-                events = new HashSet<FileStatusCache.ChangedEvent>(changes);
+                events = new HashSet<FileStatusCache.ChangedEvent>(changes.values());
                 changes.clear();
             }
             // remove irrelevant changes
@@ -368,7 +369,12 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 }
             }
             Git git = Git.getInstance();
-            Map<File, GitStatusNode> nodes = syncTable.getNodes();
+            Map<File, GitStatusNode> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, GitStatusNode>>() {
+                @Override
+                public Map<File, GitStatusNode> run() {
+                    return syncTable.getNodes();
+                }
+            });
             // sort changes
             final List<GitStatusNode> toRemove = new LinkedList<GitStatusNode>();
             final List<GitStatusNode> toRefresh = new LinkedList<GitStatusNode>();

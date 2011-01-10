@@ -63,8 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
@@ -85,6 +83,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.awt.event.ItemEvent;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -104,12 +103,10 @@ import org.openide.util.RequestProcessor;
 final class DebugCorePanel extends javax.swing.JPanel {
     private DocumentListener corefileValidateListener = null;
     private DocumentListener executableValidateListener = null;
-    private Project[] projectChoices = null;
     private JButton actionButton = null;
     private String autoString = null;
     private boolean readonly;
     private boolean noproject;
-    private String[] projectNames = null;
 
     private static Project lastSelectedProject = null;
 
@@ -747,28 +744,12 @@ final class DebugCorePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void initGui() {
-	projectChoices = OpenProjects.getDefault().getOpenProjects();
 	projectComboBox.removeAllItems();
+        // fake items
 	projectComboBox.addItem(getString("NO_PROJECT")); // always first
 	projectComboBox.addItem(getString("NEW_PROJECT")); // always first
-	projectNames = new String[projectChoices.length];
-	for (int i = 0; i < projectChoices.length; i++) {
-	    String projectName = ProjectUtils.getInformation(projectChoices[i]).getName();
-	    projectComboBox.addItem(projectName);
-	    projectNames[i] = projectName;
-	}
-
-	int index = 0;
-	// preselect project ???
-	if (lastSelectedProject != null) {
-	    for (int i = 0; i < projectChoices.length; i++) {
-		if (projectChoices[i] == lastSelectedProject) {
-		    index = i+2;
-		    break;
-		}
-	    }
-	}
-	projectComboBox.setSelectedIndex(index);
+        
+        ExecutableProjectPanel.fillProjectsCombo(projectComboBox, lastSelectedProject);
     }
 
     private boolean validateCorefilePath() {
@@ -903,8 +884,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	}
         projectComboBox.setEnabled(true);
 	// match opened Project first
-	for (int i = 0; i < projectChoices.length; i++) {
-	    if (executable.equals(projectNames[i])) {
+	for (int i = 0; i < projectComboBox.getItemCount(); i++) {
+	    if (executable.equals(projectComboBox.getItemAt(i))) {
 	        projectComboBox.setSelectedIndex(i+2);
 		return true;
 	    }
@@ -913,18 +894,18 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
 
     private void setProject() {
-        int index = projectComboBox.getSelectedIndex();
-
-	//int index = 0; // default is < no project>
-	if (lastSelectedProject != null) {
-	    for (int i = 0; i < projectChoices.length; i++) {
-		if (projectChoices[i] == lastSelectedProject) {
-		    index = i+2;
-		    break;
-		}
-	    }
-            projectComboBox.setSelectedIndex(index);
-	} 
+//        int index = projectComboBox.getSelectedIndex();
+//
+//	//int index = 0; // default is < no project>
+//	if (lastSelectedProject != null) {
+//	    for (int i = 0; i < projectChoices.length; i++) {
+//		if (projectChoices[i] == lastSelectedProject) {
+//		    index = i+2;
+//		    break;
+//		}
+//	    }
+//            projectComboBox.setSelectedIndex(index);
+//	} 
     }
 
     private void setError(String errorMsg, boolean disable) {
@@ -986,23 +967,14 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
 
     public Project getSelectedProject() {
-	int index = projectComboBox.getSelectedIndex();
-	if (index == 0) {
-	    // no_project was selected
-	    noproject = true;
-	    return null;
-	}
-	noproject = false;
-
-	Project project;
-	if (projectComboBox.getSelectedIndex() > 1) {
-	    lastSelectedProject = projectChoices[index-2];
-	    project = lastSelectedProject;
-	}
-	else {
-	    project = null; 
-	}
-	return project;
+        Object selectedItem = projectComboBox.getSelectedItem();
+        if (selectedItem instanceof ProjectCBItem) {
+            noproject = false;
+            return ((ProjectCBItem)selectedItem).getProject();
+        }
+        // set noproject if NO_PROJECT is selected
+        noproject = (projectComboBox.getSelectedIndex() == 0);
+        return null;
     }
 
     /** Look up i18n strings here */
