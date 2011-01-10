@@ -57,13 +57,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -91,7 +88,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -103,7 +99,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -385,12 +380,7 @@ public class RetoucheUtils {
     
     public static String getPackageName(URL url) {
         File f = null;
-        try {
-            String path = URLDecoder.decode(url.getPath(), "utf-8"); // NOI18N
-            f = FileUtil.normalizeFile(new File(path));
-        } catch (UnsupportedEncodingException u) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
-        }
+        f = FileUtil.normalizeFile(new File(url.getPath()));
         String suffix = "";
         
         do {
@@ -404,11 +394,7 @@ public class RetoucheUtils {
             if (!"".equals(suffix)) {
                 suffix = "." + suffix; // NOI18N
             }
-            try {
-                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "utf-8") + suffix; // NOI18N
-            } catch (UnsupportedEncodingException u) {
-                throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
-            }
+            suffix = f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1) + suffix; // NOI18N
             f = f.getParentFile();
         } while (f!=null);
         throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
@@ -435,7 +421,7 @@ public class RetoucheUtils {
     
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
-        File f = result != null ? null : FileUtil.normalizeFile(new File(URLDecoder.decode(url.getPath(), "UTF-8"))); //NOI18N
+        File f = result != null ? null : FileUtil.normalizeFile(new File(url.getPath())); //NOI18N
         while (result==null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();
