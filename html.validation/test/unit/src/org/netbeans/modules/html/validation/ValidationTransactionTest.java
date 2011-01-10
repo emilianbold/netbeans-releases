@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.Collection;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -87,7 +86,7 @@ public class ValidationTransactionTest extends TestBase {
     public static Test Xsuite() {
         ValidationTransaction.enableDebug();
 
-        String testName = "testNamespacesFiltering";
+        String testName = "testXhtmlErrorsPositions";
         System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidationTransactionTest(testName));
@@ -224,6 +223,108 @@ public class ValidationTransactionTest extends TestBase {
 
     }
 
+    public void testXhtmlFailOnXmlParsing() throws SAXException {
+        validate("<?xml version='1.0' encoding='UTF-8' ?>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<head><title>title</title></head>"
+                + "<bodyyyyyy>"
+                + "</body>"
+                + "</html>    ", false, HtmlVersion.XHTML5);
+    }
+
+    public void testXhtmlFailOnSchamatron() throws SAXException {
+        validate("<?xml version='1.0' encoding='UTF-8' ?>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<head><title>title</title></head>"
+                + "<body unknown=\"attribute\">"
+                + "</body>"
+                + "</html>    ", false, HtmlVersion.XHTML5);
+    }
+
+    //Aelfred replacement by Xerces and CharacterHandlerReader caused the error locations
+    //to be weirdly shifted
+    public void testXhtmlErrorsPositions() throws SAXException {
+        String code = "<?xml version='1.0' encoding='UTF-8' ?>"   //1
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">" //1
+                //012345678901 23456789012345678901234567890 123456789
+                // 0         1          2         3         4
+                + "<head><title>title</title></head>\n"             //1
+                //01234567890123456789012345678901234567890 123456789
+                // 0        1         2         3         4
+                + "<body>\n"                                        //2
+                //0123456789
+                + "ABCD<a>\n"                                       //3
+                //012345678
+                + "1234</xxx>\n"                                  //4
+                //0123456789
+                
+                + "</body>\n"
+                + "</html>\n";
+
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(code)).analyze();
+        assertNotNull(result);
+        assertNull(result.getDetectedHtmlVersion());
+
+        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        validate(code, false, result.getHtmlVersion(), vt);
+
+        Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
+        assertSame(1, problems.size());
+
+        ProblemDescription pd = problems.iterator().next();
+        assertNotNull(pd);
+        assertEquals(135, pd.getFrom());
+        assertEquals(138, pd.getTo());
+            
+    }
+
+    public void testFindBackwardDiff() {
+        String pattern = "XXX\n1234XXX";
+        //                0123
+
+        String suffix = "234!";
+        String text = "\n1234" + suffix;
+        int diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        suffix = "4!";
+        text = "\n1234" + suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        suffix = "";
+        text = "\n1234" + suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        suffix = "!34";
+        text = "\n1234" + suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        suffix = "";
+        text = suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        //does not match, but is suffix, lets return 0 diff in this case
+        suffix = "34";
+        text = suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(0, diff);
+
+        suffix = "\n1234";
+        text = "abcdXXXXX\n1234" + suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(0, diff);
+
+        suffix = "\n1234";
+        text = "abcd\n1234" + suffix;
+        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        assertSame(0, diff);
+
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
         validate(code, expectedPass, HtmlVersion.HTML5);
     }
@@ -239,7 +340,7 @@ public class ValidationTransactionTest extends TestBase {
 
     private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt, Set<String> filteredNamespaces) throws SAXException {
         System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
-        vt.validateCode(code, null, filteredNamespaces);
+        vt.validateCode(code, null, filteredNamespaces, "UTF-8");
 
         Collection<ProblemDescription> problems = vt.getFoundProblems(
                 new ProblemDescriptionFilter.CombinedFilter(new ProblemDescriptionFilter.SeverityFilter(ProblemDescription.WARNING),
