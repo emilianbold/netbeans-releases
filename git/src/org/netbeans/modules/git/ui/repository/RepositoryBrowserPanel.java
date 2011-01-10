@@ -535,7 +535,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 BranchesTopChildren.this.branches.clear();
                             } else {
                                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
-                                branches.keySet().removeAll(BranchesTopChildren.this.branches.keySet());
+                                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
+                                    GitBranch newBranchInfo = branches.get(e.getKey());
+                                    // refresh also branches that changed head or active state
+                                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
+                                        branches.remove(e.getKey());
+                                    }
+                                }
                                 BranchesTopChildren.this.branches.putAll(branches);
                             }
                             if (local != null) {
