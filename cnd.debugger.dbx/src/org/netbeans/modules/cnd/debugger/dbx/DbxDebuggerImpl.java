@@ -3737,8 +3737,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 cmd = "listi"; // NOI18N
 
             } else {
-                start = "-a " + disStateModel().getFunction(); // NOI18N
-                cmd = "dis "; // NOI18N
+		String function = disStateModel().getFunction();
+		if (function != null) {
+		    start = "-a " + function; // NOI18N
+		    cmd = "dis "; // NOI18N
+		} else {
+		    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
+		    return;
+		}
             }
             requestDisHelp(cmd, start);
         }
