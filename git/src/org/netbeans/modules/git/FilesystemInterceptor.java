@@ -151,6 +151,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             } else if (file.exists()) {
                 file.delete();
             }
+            if (file.equals(root)) {
+                // the whole repository was deleted -> release references to the repository folder
+                refreshMetadataTimestamp(root);
+            }
         } catch (GitException e) {
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_DeleteFailed", new Object[] { file, e.getLocalizedMessage() })); //NOI18N
