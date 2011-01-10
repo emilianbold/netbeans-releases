@@ -93,6 +93,9 @@ public class ParserTest {
         performTest("    httpss://some.where:1234/some-thing.html#section?cow=moo's\n", null);
         performTest("    httpps://some.where:1234/some-thing.html#section?cow=moo's\n", null);
         performTest("    https//some.where:1234/some-thing.html#section?cow=moo's\n", null);
+        performTest("    http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 75);
+        performTest("    https://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 76);
+        performTest("    ht+tp://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", null);
     }
 
     @Test
