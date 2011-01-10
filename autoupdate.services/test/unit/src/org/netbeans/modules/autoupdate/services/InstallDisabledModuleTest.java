@@ -47,9 +47,9 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -68,14 +68,21 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
 
     @Override
     protected void setUp() throws Exception {
-        clearWorkDir();
+        File test = new File(getWorkDir(), "test");
         
-        super.setUp();        
-        System.setProperty("netbeans.dirs", getWorkDirPath());
-        
+        System.setProperty("netbeans.dirs", test.getPath());
         LOG.log(Level.INFO, "Setting netbeans.dirs property to {0}", System.getProperty("netbeans.dirs"));
+        clearWorkDir();
+        super.setUp();        
+        assertEquals(test.getPath(), System.getProperty("netbeans.dirs"));
+        
+        File jar = new File(new File(test, "modules"), "com-sun-testmodule-cluster.jar");
+        jar.getParentFile().mkdirs();
+        jar.createNewFile();
+        
         final String fn = moduleCodeNameBaseForTest().replace('.', '-') + ".xml";
-        OutputStream os = FileUtil.getConfigFile("Modules").createAndOpen(fn);
+        FileObject fo = FileUtil.getConfigFile("Modules").createData(fn);
+        OutputStream os = fo.getOutputStream();
         String cfg = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE module PUBLIC '-//NetBeans//DTD Module Status 1.0//EN' 'http://www.netbeans.org/dtds/module-status-1_0.dtd'>\n" +
                 "<module name='com.sun.testmodule.cluster'>\n" +
@@ -103,7 +110,7 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
         return "com.sun.testmodule.cluster"; //NOI18N
     }
 
-    @RandomlyFails
+    @RandomlyFails @Override
     public void testSelf() throws Throwable {
         LOG.info("testSelf starting");
         UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
