@@ -73,11 +73,11 @@ public class RepositoryInfo {
      */
     public static final String PROPERTY_ACTIVE_BRANCH = "prop.activeBranch"; //NOI18N
     /**
-     * fired when the HEAD changes, old and new values are instances of {@link java.lang.String}.
+     * fired when the HEAD changes, old and new values are instances of {@link GitBranch}.
      */
     public static final String PROPERTY_HEAD = "prop.head"; //NOI18N
     /**
-     * fired when repository state changes, old and new values are instances of {@link GitReposi}.
+     * fired when repository state changes, old and new values are instances of {@link GitRepositoryState}.
      */
     public static final String PROPERTY_STATE = "prop.state"; //NOI18N
 
@@ -157,7 +157,7 @@ public class RepositoryInfo {
                 }
                 if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
                     LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
-                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch == null ? null : oldActiveBranch.getId(), activeBranch.getId());
+                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch, activeBranch);
                 }
             }
         }
