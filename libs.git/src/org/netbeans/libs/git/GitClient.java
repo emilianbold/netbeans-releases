@@ -186,15 +186,6 @@ public interface GitClient {
     public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
-     * Digs through the repository's history and returns all revisions on all branches.
-     * @param limit max number of returned revisions, -1 denotes no limit.
-     * @param monitor
-     * @return revision
-     * @deprecated
-     */
-    public GitRevisionInfo[] log (int limit, ProgressMonitor monitor) throws GitException;
-
-    /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
      * @param revision
      * @param monitor
@@ -202,17 +193,6 @@ public interface GitClient {
      */
     public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
 
-    /**
-     * Digs through the repository's history and returns revisions between the given boundaries.
-     * @param fromRevision
-     * @param toRevision
-     * @param limit max number of returned revisions, -1 denotes no limit.
-     * @param monitor 
-     * @return revisions that fall between the given boundaries
-     * @deprecated
-     */
-    public GitRevisionInfo[] log (String fromRevision, String toRevision, int limit, ProgressMonitor monitor) throws GitException;
-    
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
      * @param searchCriteria
