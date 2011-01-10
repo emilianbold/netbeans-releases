@@ -57,7 +57,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.errors.LargeObjectException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -91,7 +90,6 @@ public class CheckoutTest extends AbstractGitTestCase {
     public void testJGitCheckout () throws Exception {
         File file1 = new File(workDir, "file1");
         write(file1, "blablablabla");
-        File file2 = new File(workDir, "file2");
         Git git = new Git(repository);
         org.eclipse.jgit.api.AddCommand cmd = git.add();
         cmd.addFilepattern("file1");
@@ -107,19 +105,6 @@ public class CheckoutTest extends AbstractGitTestCase {
         try {
             DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
             checkout.checkout();
-        } finally {
-            cache.unlock();
-        }
-        cache = repository.lockDirCache();
-        try {
-            write(file2, "blablablabla in file2");
-            DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
-            try {
-                checkout.checkout();
-                fail("If stops failing, implement checkout with DirCacheCheckout");
-            } catch (NullPointerException ex) {
-                // sadly fails
-            }
         } finally {
             cache.unlock();
         }
@@ -261,12 +246,7 @@ public class CheckoutTest extends AbstractGitTestCase {
         WindowCacheConfig cfg = new WindowCacheConfig();
         cfg.setStreamFileThreshold((int) large.length() - 1);
         WindowCache.reconfigure(cfg);
-        try {
-            DirCacheCheckout.checkoutEntry(repository, large, e);
-            fail("Remove our own implementation of large files checkout in CheckoutIndex.java");
-        } catch (LargeObjectException ex) {
-            // OK
-        }
+        DirCacheCheckout.checkoutEntry(repository, large, e);
     }
 
     private void unpack (String filename) throws IOException {
