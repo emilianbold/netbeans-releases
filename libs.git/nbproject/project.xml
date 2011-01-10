@@ -96,8 +96,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.libs.git.progress</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.jgit-0.9.3.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.jgit-0.9.3.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.jgit-0.10.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.jgit-0.10.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

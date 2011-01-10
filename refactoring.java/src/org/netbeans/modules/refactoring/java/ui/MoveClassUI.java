@@ -44,10 +44,8 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -141,9 +139,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + URLEncoder.encode(panel.getPackageName().replace('.','/'), "utf-8")))); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.','/')))); // NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
