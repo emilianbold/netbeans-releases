@@ -72,11 +72,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 public final class OptionsFilter {
 
     private final Document doc;
-    private final AtomicBoolean used;
+    private final Runnable usedCallback;
 
-    private OptionsFilter(Document doc, AtomicBoolean used) {
+    private OptionsFilter(Document doc, Runnable usedCallback) {
         this.doc = doc;
-        this.used = used;
+        this.usedCallback = usedCallback;
     }
 
     /**Install a filtering model to the given tree, using given model as the source
@@ -92,7 +92,7 @@ public final class OptionsFilter {
             throw new IllegalStateException("Not in AWT Event Dispatch Thread");
         }
         
-        used.set(true);
+        usedCallback.run();
         tree.setModel(new FilteringTreeModel(source, doc, acceptor));
     }
 
@@ -290,8 +290,8 @@ public final class OptionsFilter {
     static {
         FolderBasedController.setFilterAccessor(new OptionsFilterAccessor() {
             @Override
-            public OptionsFilter create(Document doc, AtomicBoolean used) {
-                return new OptionsFilter(doc, used);
+            public OptionsFilter create(Document doc, Runnable usedCallback) {
+                return new OptionsFilter(doc, usedCallback);
             }
         });
     }
