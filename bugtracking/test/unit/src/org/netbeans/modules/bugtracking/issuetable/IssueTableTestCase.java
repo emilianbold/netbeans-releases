@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.lang.reflect.Field;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryAccessor;
@@ -71,11 +72,19 @@ public class IssueTableTestCase extends NbTestCase {
         Query q = factory.createQuery();
         assertEquals(0,q.getIssues().length);
 
-        NodeTableModel model = getModel(q);       
+        final NodeTableModel model = getModel(q);       
         assertEquals(factory.getColumnsCountBeforeSave(), model.getColumnCount());
         new QueryAccessor(q).setSaved(true);
-        assertEquals(factory.getColumnsCountAfterSave(), model.getColumnCount());
-
+        IssuetableTestFactory.getInstance(this).getTable(q).initColumns();
+        final int[] columnCount = new int[1];
+        // awt things happening in .setSaved and .initColumns so wait until done
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                columnCount[0] = model.getColumnCount();
+            }
+        });
+        assertEquals(factory.getColumnsCountAfterSave(), columnCount[0]);
     }
 
     private NodeTableModel getModel(Query q) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
