@@ -91,6 +91,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -409,17 +410,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         boolean existingPathsChanged = false;
         boolean containsRelevantChanges = false;
+        List<URL> includesChanged = new ArrayList<URL>();
         for(PathRegistryEvent.Change c : event.getChanges()) {            
 
-            containsRelevantChanges = true;
-            if (c.getEventKind() == EventKind.PATHS_CHANGED) {
-                existingPathsChanged = true;
-                break;
+            if (c.getEventKind() == EventKind.INCLUDES_CHANGED) {
+                for (ClassPath cp : c.getAffectedPaths()) {
+                    for (Entry e : cp.entries()) {
+                        includesChanged.add(e.getURL());
+                    }
+                }
+            } else {
+                containsRelevantChanges = true;
+                if (c.getEventKind() == EventKind.PATHS_CHANGED) {
+                    existingPathsChanged = true;
+                }
             }
         }
 
         if (containsRelevantChanges) {
             scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, !existingPathsChanged), false);
+        }
+        for (URL rootUrl : includesChanged) {
+            scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, true, false, sourcesForBinaryRoots.contains(rootUrl)), false);
         }
     }
 
@@ -2061,6 +2073,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final SourceIndexers indexers = SourceIndexers.load(false);
                         invalidateSources(resources);
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
+                        delete(crawler.getDeletedResources(), root);
                         boolean indexResult=true;
                         try {
                             indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);

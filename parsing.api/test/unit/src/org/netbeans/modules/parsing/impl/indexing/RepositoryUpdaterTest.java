@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,6 +62,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -113,6 +115,7 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -192,7 +195,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
+        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class, ClassPathProviderImpl.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1187,6 +1190,40 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }
     
+    public void testIncludesChanges() throws Exception {
+        //Prepare
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        MutableFilteringResourceImpl r = new MutableFilteringResourceImpl(srcRootWithFiles1.getURL());
+        ClassPath cp1 = ClassPathSupport.createClassPath(Collections.singletonList(r));
+        ClassPathProviderImpl.register(srcRootWithFiles1, SOURCES, cp1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        //exclude a file:
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[] {f1.getURL()}, new URL[0]);
+        r.setExcludes(".*/a\\.foo");
+
+        indexerFactory.indexer.awaitDeleted();
+        indexerFactory.indexer.awaitIndex();
+
+        assertEquals(1, indexerFactory.indexer.deletedCounter);
+        assertEquals(Collections.emptySet(), indexerFactory.indexer.expectedDeleted);
+        assertEquals(0, indexerFactory.indexer.indexCounter);
+
+        //include the file back:
+        indexerFactory.indexer.setExpectedFile(new URL[] {f1.getURL()}, new URL[0], new URL[0]);
+        r.setExcludes();
+
+        indexerFactory.indexer.awaitDeleted();
+        indexerFactory.indexer.awaitIndex();
+
+        assertEquals(0, indexerFactory.indexer.deletedCounter);
+        assertEquals(1, indexerFactory.indexer.indexCounter);
+        assertEquals(Collections.emptySet(), indexerFactory.indexer.expectedIndex);
+    }
 
     public static class TestHandler extends Handler {
 
@@ -1432,6 +1469,72 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private static final class MutableFilteringResourceImpl extends PathResourceBase implements FilteringPathResourceImplementation {
+
+        private final URL[] url;
+        private final List<Pattern> excludes;
+
+        public MutableFilteringResourceImpl(URL root) {
+            this.url = new URL[] {root};
+            this.excludes = new ArrayList<Pattern>();
+        }
+
+        public synchronized void setExcludes(String... patterns) {
+            excludes.clear();
+
+            for (String p : patterns) {
+                excludes.add(Pattern.compile(p));
+            }
+
+            firePropertyChange(PROP_INCLUDES, null, null);
+        }
+        
+        public URL[] getRoots() {
+            return this.url;
+        }
+
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        public synchronized boolean includes(URL root, String resource) {
+            for(Pattern e : excludes) {
+                if (e.matcher(resource).matches()) {
+                    System.out.println("'" + resource + "' matches exclude pattern " + e.pattern());
+                    return false;
+                }
+            }
+            System.out.println("'" + resource + "' matches no exclude pattern");
+            return true;
+        }
+
+        @Override
+        public String toString () {
+            return "FilteringResourceImpl{" + this.getRoots()[0] + "}";   //NOI18N
+        }
+
+        @Override
+        public int hashCode () {
+            int hash = this.url[0].hashCode();
+            for(Pattern e : excludes) {
+                hash += 7 * e.pattern().hashCode();
+            }
+            return hash;
+        }
+
+        @Override
+        public boolean equals (Object other) {
+            if (other instanceof MutableFilteringResourceImpl) {
+                MutableFilteringResourceImpl opr = (MutableFilteringResourceImpl) other;
+                if (!this.url[0].equals(opr.url[0]) || !excludes.equals(opr.excludes)) {
+                    return false;
                 }
             }
 
@@ -2035,4 +2138,31 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     }
 
+    public static final class ClassPathProviderImpl implements ClassPathProvider {
+
+        private static final Map<Entry<FileObject, String>, ClassPath> classPathSpec = new HashMap<Entry<FileObject, String>, ClassPath>();
+
+        public static void register(FileObject root, String type, ClassPath cp) {
+            classPathSpec.put(new SimpleEntry<FileObject, String>(root, type), cp);
+        }
+
+        public static void unregister(FileObject root, String type) {
+            classPathSpec.remove(new SimpleEntry<FileObject, String>(root, type));
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            while (!file.isRoot()) {
+                for (Entry<Entry<FileObject, String>, ClassPath> e : classPathSpec.entrySet()) {
+                    if (e.getKey().getKey() == file && e.getKey().getValue().equals(type)) {
+                        return e.getValue();
+                    }
+                }
+                file = file.getParent();
+            }
+
+            return null;
+        }
+
+    }
 }

@@ -72,6 +72,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -1264,7 +1266,36 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             this.op = op;
         }
 
+        @Override
         public Transferable paste() throws IOException {
+            if (SwingUtilities.isEventDispatchThread()) {
+                PackageRootNode.PKG_VIEW_RP.post(new java.lang.Runnable() {
+                    @Override
+                    public void run() {
+                        final ProgressHandle h = ProgressHandleFactory.createHandle(getName());
+                        h.start();
+                        h.switchToIndeterminate();
+                        try {
+                            doPaste();
+                        } catch (java.io.IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        } finally {
+                            h.finish();
+                        }
+                    }
+                });
+            } else {
+                doPaste();
+            }
+            return ExTransferable.EMPTY;
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(PackageViewChildren.class,"TXT_PastePackage");
+        }
+        
+        private void doPaste() throws IOException {
             assert this.op != DnDConstants.ACTION_NONE;
             for (int ni=0; ni< nodes.length; ni++) {
                 FileObject fo = srcRoot;
@@ -1318,12 +1349,6 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     }
                 }
             }
-            return ExTransferable.EMPTY;
-        }
-
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(PackageViewChildren.class,"TXT_PastePackage");
         }
     }
 
