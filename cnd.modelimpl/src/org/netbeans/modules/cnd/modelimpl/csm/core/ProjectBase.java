@@ -1853,15 +1853,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return findFile(file, false, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
-    protected final FileImpl findFile(File file, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
-            boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
-        FileImpl impl = getFile(file, treatSymlinkAsSeparateFile);
-        if (impl == null){
-            impl = findFileImpl(file, treatSymlinkAsSeparateFile, fileType, preprocHandler, scheduleParseIfNeed, initial, nativeFileItem);
-        }
-        return impl;
-    }
-
     protected final FileImpl findFile(CharSequence absPath, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = getFile(absPath, treatSymlinkAsSeparateFile);
@@ -1906,35 +1897,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return impl;
     }
     
-    @Deprecated
-    private FileImpl findFileImpl(File file, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
-            boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
-        FileImpl impl = null;
-        synchronized (fileContainerLock) {
-            impl = getFile(file, treatSymlinkAsSeparateFile);
-            if (impl == null) {
-                preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-//                initial = (initial == null) ? preprocHandler.getState() : initial;
-                impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
-                if (nativeFileItem != null) {
-                    putNativeFileItem(impl.getUID(), nativeFileItem);
-                }
-                putFile(impl, initial);
-                // NB: parse only after putting into a map
-                if (scheduleParseIfNeed) {
-                    APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
-                    ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
-                }
-            }
-        }
-        if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
-            impl.setSourceFile();
-        } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
-            impl.setHeaderFile();
-        }
-        return impl;
-    }
-
     protected final FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
         return createOrFindFileImpl(buf, nativeFile, Utils.getFileType(nativeFile)).fileImpl;
     }
