@@ -72,6 +72,7 @@ import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
+import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
@@ -180,6 +181,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         cmd.execute();
     }
 
+    @Override
+    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException {
+        CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), branchName, revision, monitor);
+        cmd.execute();
+        return cmd.getBranch();
+    }
+    
     @Override
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
         ListBranchCommand cmd = new ListBranchCommand(gitRepository.getRepository(), all, monitor);

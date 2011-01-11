@@ -47,10 +47,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -61,6 +65,9 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class BranchTest extends AbstractGitTestCase {
     private Repository repository;
     private File workDir;
+    private static final String BRANCH_NAME = "new_branch";
+    private static final String BRANCH_NAME_2 = "new_branch2";
+    private static final String BRANCH_NAME_3 = "new_branch3";
 
     public BranchTest (String testName) throws IOException {
         super(testName);
@@ -123,5 +130,68 @@ public class BranchTest extends AbstractGitTestCase {
         assertEquals("nova", branches.get("nova").getName());
         assertFalse(branches.get("nova").isRemote());
         assertFalse(branches.get("nova").isActive());
+    }
+    
+    public void testCreateBranch () throws Exception {
+        File f = new File(workDir, "file");
+        write(f, "hello");
+        File[] files = new File[] { f };
+        add(files);
+        commit(files);
+        write(f, "hello again");
+        add(files);
+        commit(files);
+
+        GitClient client = getClient(workDir);
+        GitRevisionInfo[] logs = client.log(new SearchCriteria(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String lastCommitId = logs[0].getRevision();
+        String commitId = logs[1].getRevision();
+
+        GitBranch branch = client.createBranch(BRANCH_NAME, commitId, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, branches.size());
+        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(BRANCH_NAME));
+        assertEquals(BRANCH_NAME, branch.getName());
+        assertEquals(commitId, branch.getId());
+        assertFalse(branch.isActive());
+        assertFalse(branch.isRemote());
+        branch = branches.get(BRANCH_NAME);
+        assertEquals(BRANCH_NAME, branch.getName());
+        assertEquals(commitId, branch.getId());
+        assertFalse(branch.isActive());
+        assertFalse(branch.isRemote());
+        assertTrue(branches.get("master").isActive());
+        assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
+
+        client.createBranch(BRANCH_NAME_2, Constants.HEAD, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(3, branches.size());
+        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(BRANCH_NAME));
+        assertTrue(branches.containsKey(BRANCH_NAME_2));
+        assertTrue(branches.get("master").isActive());
+        assertEquals(lastCommitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME_2)));
+        client.createBranch(BRANCH_NAME_3, "refs/heads/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, branches.size());
+        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(BRANCH_NAME));
+        assertTrue(branches.containsKey(BRANCH_NAME_2));
+        assertTrue(branches.containsKey(BRANCH_NAME_3));
+        assertTrue(branches.get("master").isActive());
+        assertEquals(lastCommitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME_3)));
+
+        try {
+            client.createBranch(BRANCH_NAME, commitId, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Branch should not have been created, it already existed");
+        } catch (GitException ex) {
+            // OK
+            assertEquals("Ref " + BRANCH_NAME + " already exists", ex.getCause().getMessage());
+        }
+        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, branches.size());
+        assertTrue(branches.get("master").isActive());
+        assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
     }
 }

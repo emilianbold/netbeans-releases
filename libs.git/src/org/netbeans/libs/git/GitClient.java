@@ -141,6 +141,16 @@ public interface GitClient {
     public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Creates a new branch with a given name, starting at revision
+     * @param branchName
+     * @param revision
+     * @param monitor
+     * @return created branch
+     * @throws GitException  an error occurs
+     */
+    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Returns all branches
      * @param all if false then only local branches will be returned
      * @return
