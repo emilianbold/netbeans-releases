@@ -60,6 +60,18 @@ public class CharSequenceUtils {
     }
 
     /**
+     * Implementation of {@link String#indexOf(char)} for character sequences.
+     */
+    public static int indexOf(CharSequence text, char c) {
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Implementation of {@link String#indexOf(String,int)} for character sequences.
      */
     public static int indexOf(CharSequence text, CharSequence seq, int fromIndex) {
