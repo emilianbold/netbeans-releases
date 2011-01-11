@@ -832,7 +832,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
 
-        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
+        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.createFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
 
         if (fileAndHandler.preprocHandler == null) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1872,7 +1872,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (impl == null) {
                 assert preprocHandler != null : "null preprocHandler for " + absPath;
                 FileObject fo = fileSystem.findResource(absPath.toString());
-                impl = new FileImpl(ModelSupport.getFileBuffer(fo), this, fileType, nativeFileItem);
+                impl = new FileImpl(ModelSupport.createFileBuffer(fo), this, fileType, nativeFileItem);
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);
                 }

@@ -401,29 +401,23 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }
 
-    public static FileBuffer getFileBuffer(File file) {
-        File normalizeFile = CndFileUtils.normalizeFile(file);
-        FileObject fo = CndFileUtils.toFileObject(normalizeFile);
-        if (fo != null && fo.isValid()) {
-            try {
-                DataObject dao = DataObject.find(fo);
-                if (dao.isModified()) {
-                    EditorCookie editor = dao.getCookie(EditorCookie.class);
-                    if (editor != null) {
-                        Document doc = editor.getDocument();
-                        if (doc != null) {
-                            return new FileBufferDoc(normalizeFile.getAbsolutePath(), doc);
-                        }
+    private static FileBuffer createFileBuffer(DataObject dao) {
+        FileObject fo = dao.getPrimaryFile();
+        if (fo.isValid()) {
+            if (dao.isModified()) {
+                EditorCookie editor = dao.getCookie(EditorCookie.class);
+                if (editor != null) {
+                    Document doc = editor.getDocument();
+                    if (doc != null) {
+                        return new FileBufferDoc(fo, doc);
                     }
                 }
-            } catch (DataObjectNotFoundException e) {
-                // nothing
             }
         }
-        return new FileBufferFile(normalizeFile.getAbsolutePath());
+        return new FileBufferFile(fo);
     }
 
-    public static FileBuffer getFileBuffer(FileObject fo) {
+    public static FileBuffer createFileBuffer(FileObject fo) {
         if (fo != null && fo.isValid()) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -593,7 +587,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (!contains(objs, dao)) {
                         for (BufAndProj bufNP : getBufNP(dao)) {
                             if (bufNP != null) {
-                                final FileBuffer fileBuffer = getFileBuffer(bufNP.buffer.getFile());
+                                final FileBuffer fileBuffer = createFileBuffer(dao);
                                 long lastModified = fileBuffer.lastModified();
                                 // removing old doc buffer and creating new one
                                 bufNP.project.onFileEditEnd(fileBuffer, bufNP.nativeFile, bufNP.lastModified == lastModified);

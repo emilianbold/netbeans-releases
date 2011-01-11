@@ -70,7 +70,7 @@ public class APTSelfWalker extends APTAbstractWalker {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             try {
                 FileObject fo = this.getRootFile().getFileSystem().findResource(resolvedPath.getPath().toString());
-                APTFile apt = APTDriver.findAPTLight(ModelSupport.getFileBuffer(fo));
+                APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fo));
                 APTPreprocHandler preprocHandler = getPreprocHandler();
                 APTFileCacheEntry cache = APTFileCacheManager.getInstance(apt.getFileSystem()).getEntry(resolvedPath.getPath(), preprocHandler, null);
                 createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
