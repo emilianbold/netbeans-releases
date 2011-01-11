@@ -126,8 +126,14 @@ public final class UpdaterInternal {
                 }
                 XMLUtil.LOG.log(Level.FINE, "Creating output stream for {0}", file);
                 return new FileOutputStream(file) {
+                    boolean closed;
+                    
                     @Override
                     public void close() throws IOException {
+                        if (closed) {
+                            return;
+                        }
+                        closed = true;
                         XMLUtil.LOG.log(Level.FINE, "Closing output stream for {0}", file);
                         super.close();
                         XMLUtil.LOG.log(
