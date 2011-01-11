@@ -832,12 +832,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
 
-        FileAndHandler fileAndHandler;
-        if (CndTraceFlags.USE_FILE_OBJECTS) {
-            fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
-        } else {
-            fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFile()), nativeFile, fileType);
-        }
+        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
 
         if (fileAndHandler.preprocHandler == null) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
