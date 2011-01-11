@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
+import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorage;
@@ -143,6 +144,13 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
      * @return auto increment expression, in not supported return <code>null</code>
      */
     abstract public String getAutoIncrementExpresion();
+
+    /**
+     * Returns String which should be executed to create Foreign Key constraint
+     * @param fKey the foreign key constraint
+     * @return the SQL query to execute
+     */
+    abstract public String createForeignKeyConstraint(ForeignKeyConstraint fKey);
 
     public synchronized final void connect() throws SQLException {
         connection.connect(doConnect());
@@ -235,7 +243,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
 
         final String tableName = metadata.getName();
-        StringBuilder sb = new StringBuilder("create table " + tableName + "("); // NOI18N
+        StringBuilder sb = new StringBuilder("CREATE TABLE " + tableName + "("); // NOI18N
         sb.append(new EnumStringConstructor<DataTableMetadata.Column>().constructEnumString(metadata.getColumns(),
                 new Convertor<DataTableMetadata.Column>() {
 
@@ -246,6 +254,18 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                                 + " " + (metadata.isPrimaryKey(item) && getPrimaryKeyExpression() != null ? getPrimaryKeyExpression() : ""); // NOI18N
                     }
                 }));
+        //now append foreign key constraints (if any)
+        List<ForeignKeyConstraint> fKeys = metadata.getForeignKeyConstraints();
+        if (!fKeys.isEmpty()){
+            //first check if table exists if not call createTable
+            for (ForeignKeyConstraint fKey : fKeys){
+                DataTableMetadata referenceTable = fKey.getReferenceTable();
+                if (!tables.containsKey(metadata.getName())) {
+                    createTable(referenceTable);
+                }
+                sb.append(createForeignKeyConstraint(fKey)).append(", ");//NOI18N
+            }
+        }
         sb.append(")").append(getSQLQueriesDelimeter()); // NOI18N
 
         if (logger.isLoggable(Level.FINE)) {
