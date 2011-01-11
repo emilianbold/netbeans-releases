@@ -100,8 +100,8 @@ public class VariablesViewButtons {
         // ensure small size, just for the icon
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         button.setPreferredSize(size);
-        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
         button.setMargin(new Insets(1, 1, 1, 1));
+        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         return button;
@@ -114,8 +114,8 @@ public class VariablesViewButtons {
         // ensure small size, just for the icon
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         toggleButton.setPreferredSize(size);
-        toggleButton.setBorder(new EmptyBorder(toggleButton.getBorder().getBorderInsets(toggleButton)));
         toggleButton.setMargin(new Insets(1, 1, 1, 1));
+        toggleButton.setBorder(new EmptyBorder(toggleButton.getBorder().getBorderInsets(toggleButton)));
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
         return toggleButton;
