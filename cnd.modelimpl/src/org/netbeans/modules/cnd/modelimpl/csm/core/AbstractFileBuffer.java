@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -167,7 +166,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return reader;
     }
     
-    public abstract InputStream getInputStream() throws IOException;
+        public abstract InputStream getInputStream() throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

@@ -307,7 +307,7 @@ public final class CndFileUtils {
     private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
         assert fs != null;
         assert absolutePath != null;
-        if (isWindows) {
+        if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
@@ -354,19 +354,19 @@ public final class CndFileUtils {
         return exists;
     }
 
-    private static boolean isLocalFS(FileSystem fs) {
+    public static boolean isLocalFileSystem(FileSystem fs) {
         return fs == getLocalFileSystem();
     }
     
     private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {
-        if (isLocalFS(fs)) {
+        if (isLocalFileSystem(fs)) {
             File file = new File(path);
             if (CndFileSystemProvider.canRead(path)) {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (int i = 0; i < listFiles.length; i++) {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
-                    if (isWindows) {
+                    if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
                     }
                     if (curFile.directory) {
@@ -395,7 +395,7 @@ public final class CndFileUtils {
     }
 
     private static String changeStringCaseIfNeeded(FileSystem fs, String path) {
-        if (isLocalFS(fs)) {
+        if (isLocalFileSystem(fs)) {
             if (CndFileUtils.isSystemCaseSensitive()) {
                 return path;
             } else {
@@ -458,6 +458,14 @@ public final class CndFileUtils {
         }
         return fileFileSystem;
     }
+    
+    public static char getFileSeparatorChar(FileSystem fs) {
+        if (isLocalFileSystem(fs)) {
+            return File.separatorChar;
+        } else {
+            return '/'; //NOI18N
+        }
+    }
 
     private static final Lock maRefLock = new ReentrantLock();
     private static FileSystem fileFileSystem;
@@ -481,7 +489,7 @@ public final class CndFileUtils {
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
-            if (isLocalFS(fs)) {
+            if (isLocalFileSystem(fs)) {
                 absPath = FileUtil.normalizePath(absPath);
                 fo = CndFileSystemProvider.toFileObject(absPath);                
             } else {
