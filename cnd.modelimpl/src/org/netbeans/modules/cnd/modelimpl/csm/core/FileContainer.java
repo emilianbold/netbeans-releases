@@ -152,7 +152,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     public void putFile(FileImpl impl, APTPreprocHandler.State state) {
         File file = impl.getFile();
-        CndUtils.assertFileMode(file);
+        //CndUtils.assertFileMode(file);
         CharSequence path = getFileKey(file, true);
         CharSequence canonicalPath = getCanonicalKey(file, path);
         FileEntry newEntry;
@@ -256,14 +256,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-//    public Collection<APTPreprocHandler.State> getPreprocStates(CharSequence absPath) {
-//        FileEntry f = getFileEntry(absPath, false, false);
-//        if (f == null){
-//            return Collections.<APTPreprocHandler.State>emptyList();
-//        }
-//        return f.getPrerocStates();
-//    }
-//
+    public Collection<APTPreprocHandler.State> getPreprocStates(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
+        if (f == null){
+            return Collections.<APTPreprocHandler.State>emptyList();
+        }
+        return f.getPrerocStates();
+    }
+
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
         FileEntry f = getFileEntry(file, false, false);
         if (f == null){
@@ -283,10 +283,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public FileEntry getEntry(CharSequence absPath) {
         CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: " + absPath); //NOI18N
         return getFileEntry(absPath, false, false);
-    }
-
-    public FileEntry getEntry(File file) {
-        return getFileEntry(file, false, false);
     }
 
     public Object getLock(File file) {
