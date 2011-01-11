@@ -216,7 +216,7 @@ public class LogViewMgr {
         }
     }
 
-    private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
+    //private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
 
     /**
      * Reads a newly included InputSreams
@@ -231,7 +231,9 @@ public class LogViewMgr {
                 // LoggerRunnable will close the stream if necessary.
                 LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
-                RP.post(logger);
+                Thread t = new Thread(logger);
+                t.setDaemon(true);
+                t.start();
             }
         }
     }
@@ -1063,13 +1065,15 @@ public class LogViewMgr {
 
     static public void displayOutput(Map<String,String> properties, Lookup lookup) {
         String uri = properties.get(GlassfishModule.URL_ATTR);
-        LogViewMgr mgr = LogViewMgr.getInstance(uri);
-        List<Recognizer> recognizers = new ArrayList<Recognizer>();
-        if (null != lookup) {
-            recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+        if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
+            LogViewMgr mgr = LogViewMgr.getInstance(uri);
+            List<Recognizer> recognizers = new ArrayList<Recognizer>();
+            if (null != lookup) {
+                recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+            }
+            mgr.ensureActiveReader(recognizers, getServerLogStream(properties));
+            mgr.selectIO(true);
         }
-        mgr.ensureActiveReader(recognizers, getServerLogStream(properties));
-        mgr.selectIO(true);
     }
 
     static private List<Recognizer> getRecognizers(Collection<? extends RecognizerCookie> cookies) {

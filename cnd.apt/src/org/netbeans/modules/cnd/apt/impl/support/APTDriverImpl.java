@@ -69,18 +69,18 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static final ConcurrentHashMap<CharSequence, APTSyncCreator> file2creator = new ConcurrentHashMap<CharSequence, APTSyncCreator>();
+    private final ConcurrentHashMap<CharSequence, APTSyncCreator> file2creator = new ConcurrentHashMap<CharSequence, APTSyncCreator>();
     /** static shared sync map */
-    private static Map<CharSequence, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<CharSequence, Reference<APTFile>>();
-    private static Map<CharSequence, APTFile> file2apt = new ConcurrentHashMap<CharSequence, APTFile>();
+    private Map<CharSequence, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<CharSequence, Reference<APTFile>>();
+    private Map<CharSequence, APTFile> file2apt = new ConcurrentHashMap<CharSequence, APTFile>();
     
     /** instance fields */
     
     /** Creates a new instance of APTCreator */
-    private APTDriverImpl() {
+    public APTDriverImpl() {
     }
     
-    public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
+    public APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
         CharSequence path = buffer.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
@@ -102,7 +102,7 @@ public class APTDriverImpl {
         return apt;        
     }
 
-    public static void invalidateAPT(APTFileBuffer buffer) {
+    public void invalidateAPT(APTFileBuffer buffer) {
         CharSequence path = buffer.getAbsolutePath();
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             file2ref2apt.remove(path);
@@ -111,7 +111,7 @@ public class APTDriverImpl {
         }
     }
     
-    public static void invalidateAll() {
+    public void invalidateAll() {
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             file2ref2apt.clear();
         } else {
@@ -119,7 +119,7 @@ public class APTDriverImpl {
         }
     }
     
-    private static class APTSyncCreator {  
+    private class APTSyncCreator {
         private APTFile fullAPT = null;
         private APTFile lightAPT = null;
         public APTSyncCreator() {
@@ -168,7 +168,7 @@ public class APTDriverImpl {
                 // ok, create new apt
                 TokenStream ts = getTokenStream(buffer, lang, !withTokens);
                 // build apt from light token stream
-                apt = APTBuilder.buildAPT(path, ts);
+                apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
                 if (!withTokens) {
                     fullAPT = null;
                     if (apt != null) {
@@ -204,7 +204,7 @@ public class APTDriverImpl {
         }       
     } 
     
-    private static APTFile _getAPTFile(CharSequence path, boolean withTokens) {
+    private APTFile _getAPTFile(CharSequence path, boolean withTokens) {
         if (withTokens) {
             // we do not cache full apt
             return null;
@@ -219,7 +219,7 @@ public class APTDriverImpl {
         return apt;
     }
     
-    private static void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens) {
+    private void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens) {
         if (withTokens) {
             // we do not cache full apt
             return;
@@ -231,7 +231,7 @@ public class APTDriverImpl {
         }        
     }
 
-    public static void close() {
+    public void close() {
         invalidateAll();
     }
 }

@@ -199,4 +199,8 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     public void commentsMapped() {
         commentsMapped = true;
     }
+
+    public void clearComments(RelativePosition forPosition) {
+        commentsMap.remove(forPosition);
+    }
 }

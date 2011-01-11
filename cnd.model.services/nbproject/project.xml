@@ -159,6 +159,7 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.cnd.api.model.services</package>
                 <package>org.netbeans.modules.cnd.api.model.syntaxerr</package>
                 <package>org.netbeans.modules.cnd.api.model.xref</package>

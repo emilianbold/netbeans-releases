@@ -105,7 +105,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args")); // NOI18N
     }
 
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -280,8 +280,16 @@ public final class CreateElement implements ErrorRule<Void> {
             result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types));
         }
 
+        Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
+        TypeMirror[] superType = new TypeMirror[1];
+        int[] numTypeParameters = new int[1];
+        List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
+        ElementKind classType = getClassType(fixTypes);
+
+        //XXX: should reasonably consider all the found type candidates, not only the one:
+        final TypeMirror type = types != null && !types.isEmpty() && types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
+
         if (newClass != null) {
-            //create method:
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
             Element clazz = info.getTrees().getElement(new TreePath(newClass, nct.getIdentifier()));
 
@@ -295,12 +303,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 }
 
                 if (wasMemberSelect) {
-                    return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
+                    return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments);
                 } else {
 		    List<Fix> currentResult = new LinkedList<Fix>();
 
-		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
-		    currentResult.addAll(prepareCreateInnerClassFix(info, newClass, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
+		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
+		    currentResult.addAll(prepareCreateInnerClassFix(info, newClass, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
 		    
                     return currentResult;
                 }
@@ -316,12 +324,6 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //field like or class (type):
-        Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
-        TypeMirror[] superType = new TypeMirror[1];
-        int[] numTypeParameters = new int[1];
-        List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
-        ElementKind classType = getClassType(fixTypes);
-
         if (classType != null) {
             if (wasMemberSelect) {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
@@ -331,14 +333,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (types == null || types.isEmpty()) {
-            return result;
-        }
-
-        //XXX: should reasonably consider all the found type candidates, not only the one:
-        final TypeMirror type = types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
-
-        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
+        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.OTHER || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
 

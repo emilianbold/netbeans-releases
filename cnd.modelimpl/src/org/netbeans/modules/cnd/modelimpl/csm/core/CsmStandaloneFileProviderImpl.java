@@ -77,9 +77,12 @@ import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -305,7 +308,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<String> sysMacros;
         private final List<String> usrMacros;
         private final List<NativeFileItemImpl> files = new ArrayList<NativeFileItemImpl>();
-        private final String projectRoot;
+        private final FileObject projectRoot;
         private boolean pathsRelCurFile;
         private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
         private static final class Lock {}
@@ -361,21 +364,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, false);
             impl.addFile(file);
             set.add(impl.findFileItem(file));
             return impl;
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<String> sysIncludes, List<String> usrIncludes,
-                List<String> sysMacros, List<String> usrMacros) {
-
-            this(projectRoot.getPath(), sysIncludes,
-                    usrIncludes, sysMacros, usrMacros, false);
-        }
-
-        private NativeProjectImpl(String projectRoot,
                 List<String> sysIncludes, List<String> usrIncludes,
                 List<String> sysMacros, List<String> usrMacros,
                 boolean pathsRelCurFile) {
@@ -423,8 +418,18 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public String getProjectRoot() {
-            return this.projectRoot;
+            return this.projectRoot.getPath();
         }
+
+        @Override
+        public FileSystem getFileSystem() {
+            try {
+                return projectRoot.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return CndFileUtils.getLocalFileSystem();
+            }
+        }        
 
         @Override
         public String getProjectDisplayName() {
@@ -559,6 +564,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public FileObject getFileObject() {
             return file;
         }
+        
+        @Override
+        public String getAbsolutePath() {
+            return file.getPath();
+        }
+
+        @Override
+        public String getName() {
+            return file.getNameExt();
+        }       
 
         @Override
         public List<String> getSystemIncludePaths() {

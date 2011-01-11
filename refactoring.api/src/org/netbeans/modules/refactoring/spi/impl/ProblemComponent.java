@@ -105,7 +105,7 @@ public class ProblemComponent extends javax.swing.JPanel {
     }
     
     public void setLightBackground() {
-        Color bgColor = SystemColor.text;
+        Color bgColor = SystemColor.control.brighter();
         setBackground(bgColor);
         problemDescription.setBackground(bgColor);
         icon.setBackground(bgColor);
@@ -114,7 +114,7 @@ public class ProblemComponent extends javax.swing.JPanel {
     
     public void setDarkBackground() {
         //Color bgColor =  new Color(240, 240, 240);
-        Color bgColor = SystemColor.textInactiveText;
+        Color bgColor = SystemColor.control;
         setBackground(bgColor);
         problemDescription.setBackground(bgColor);
         icon.setBackground(bgColor);

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.openide.filesystems.FileSystem;
 
 /**
  *

@@ -43,14 +43,19 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
@@ -101,15 +106,29 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
 
     protected void _testGetFunctions(CsmNamespace nsp) throws Exception {
         CsmProject project = nsp.getProject();
+        boolean dumpProjectContainer = true;
         for (CsmDeclaration decl : nsp.getDeclarations()) {
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction func = (CsmFunction) decl;
                 CharSequence qName = decl.getQualifiedName();
                 if (TRACE) { System.err.printf("Seearching for funcion %s\n", func); }
                 Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qName);
+                final CsmFile containingFile = func.getContainingFile();
+                boolean ok = iter.hasNext();
+                if (!ok) {
+                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+qName + "\n\tNS="+nsp);
+                    // more trace
+                    if (dumpProjectContainer && project instanceof ProjectBase) {
+                        dumpProjectContainer = false;
+                        ModelImplTest.dumpProjectContainers((ProjectBase) project);
+                    }
+                    if (containingFile instanceof FileImpl) {
+                        ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
+                    }
+                }
                 assertTrue("Function " + qName.toString() + 
-                        " from " + func.getContainingFile().getAbsolutePath() + ":" + func.getStartPosition() + 
-                        " not found in project " + project.getName(), iter.hasNext());
+                        " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
+                        " not found in project " + project.getName(), ok);
             }
         }
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {

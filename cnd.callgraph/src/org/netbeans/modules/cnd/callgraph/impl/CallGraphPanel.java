@@ -218,6 +218,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             case 2:
                 scene.setLayout(LayoutKind.hierarchical_inverted);
                 break;
+            case 3:
+                scene.setLayout(LayoutKind.horizontal);
+                break;
         }
         graphView.setFocusable(false);
     }

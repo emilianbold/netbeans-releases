@@ -79,7 +79,7 @@ public class ReportNBIssueAction extends SystemAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 final BugzillaRepository repo = NBRepositorySupport.findNbRepository();

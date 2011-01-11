@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * CsmInheritance implementation
  * @author Vladimir Kvashin
  */
-public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance, Resolver.SafeClassifierProvider {
+public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance {
 
     private CsmVisibility visibility;
     private boolean virtual;
@@ -138,17 +138,8 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
 
     @Override
     public CsmClassifier getClassifier() {
-        return getClassifier(null);
-    }
-
-    @Override
-    public CsmClassifier getClassifier(Resolver parent) {
         if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
-            if (getAncestorType() instanceof Resolver.SafeClassifierProvider) {
-                resolvedClassifier = ((Resolver.SafeClassifierProvider)getAncestorType()).getClassifier(parent);
-            } else {
-                resolvedClassifier = getAncestorType().getClassifier();
-            }
+            resolvedClassifier = getAncestorType().getClassifier();
         }
         return resolvedClassifier;
     }

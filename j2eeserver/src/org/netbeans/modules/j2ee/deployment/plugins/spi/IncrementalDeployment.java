@@ -169,7 +169,7 @@ public abstract class IncrementalDeployment {
      *
      * @param module TargetModuleID of the child module
      * @return its relative path within application archive, returns null by 
-     * default (for standalone module)
+     * default (for standalone module). The value should match {@link J2eeModule#getUrl()}
      */
     public String getModuleUrl(TargetModuleID module) {
         return null;

@@ -134,7 +134,9 @@ public class ClipboardConvertor implements Convertor {
             }
             
             public boolean canHandle() {
-                return refactor != null;
+                if (refactor==null)
+                    return false;
+                return (Boolean) refactor.getValue("applicable"); //NOI18N
             }
             public Transferable paste() throws IOException {
                 SwingUtilities.invokeLater(new Runnable() {

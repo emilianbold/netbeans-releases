@@ -54,7 +54,9 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
+import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +69,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
@@ -76,24 +80,27 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
-import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.CasualDiff;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
+import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
@@ -346,7 +353,7 @@ public class WorkingCopy extends CompilationController {
             
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
     
-    private List<Difference> processCurrentCompilationUnit(Map<?, int[]> tag2Span) throws IOException, BadLocationException {
+    private List<Difference> processCurrentCompilationUnit(DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
         boolean fillImports = true;
@@ -361,7 +368,7 @@ public class WorkingCopy extends CompilationController {
                     oldTrees.add(node);
                     return super.scan(node, p);
                 }
-            }.scan(getCompilationUnit(), null);
+            }.scan(diffContext.origUnit, null);
         }
         
         if (!REWRITE_WHOLE_FILE) {
@@ -429,9 +436,9 @@ public class WorkingCopy extends CompilationController {
                     return null;
                 }
 
-            }.scan(getCompilationUnit(), null);
+            }.scan(diffContext.origUnit, null);
         } else {
-            TreePath topLevel = new TreePath(getCompilationUnit());
+            TreePath topLevel = new TreePath(diffContext.origUnit);
             
             pathsToRewrite.add(topLevel);
             parent2Rewrites.put(topLevel, changes);
@@ -449,9 +456,9 @@ public class WorkingCopy extends CompilationController {
             if (path.getParentPath() != null) {
                 for (Tree t : path.getParentPath()) {
                     if (t.getKind() == Kind.COMPILATION_UNIT && !importsFilled) {
-                        CompilationUnitTree cut = (CompilationUnitTree) t;
-                        ia.setPackage(cut.getPackageName());
-                        ia.setImports(cut.getImports());
+                        CompilationUnitTree cutt = (CompilationUnitTree) t;
+                        ia.setPackage(cutt.getPackageName());
+                        ia.setImports(cutt.getImports());
                         importsFilled = true;
                     }
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
@@ -479,14 +486,14 @@ public class WorkingCopy extends CompilationController {
                 fillImports = false;
             }
 
-            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span, oldTrees));
+            diffs.addAll(CasualDiff.diff(getContext(), diffContext, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span, oldTrees));
         }
 
         if (fillImports) {
             List<? extends ImportTree> nueImports = ia.getImports();
 
             if (nueImports != null) { //may happen if no changes, etc.
-                diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span, oldTrees));
+                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), nueImports, userInfo, tree2Tag, tag2Span, oldTrees));
             }
         }
         
@@ -499,14 +506,14 @@ public class WorkingCopy extends CompilationController {
                 return o1.getPos() - o2.getPos();
             }
         });
-        
+
         Rewriter r = new Rewriter(getFileObject(), getPositionConverter(), userInfo);
         commit(getCompilationUnit(), diffs, r);
-        
+
         return r.diffs;
     }
     
-    private List<Difference> processExternalCUs() {
+    private List<Difference> processExternalCUs(Map<?, int[]> tag2Span) {
         if (externalChanges == null) {
             return Collections.<Difference>emptyList();
         }
@@ -514,14 +521,70 @@ public class WorkingCopy extends CompilationController {
         List<Difference> result = new LinkedList<Difference>();
         
         for (CompilationUnitTree t : externalChanges.values()) {
-            CompilationUnitTree nue = (CompilationUnitTree) getTreeUtilities().translate(t, changes, new ImportAnalysis2(this), tree2Tag);
-            
-            VeryPretty printer = new VeryPretty(this, VeryPretty.getCodeStyle(this));
-            printer.print((JCTree.JCCompilationUnit) nue);
-            result.add(new CreateChange(nue.getSourceFile(), printer.toString()));
+            try {
+                FileObject targetFile = doCreateFromTemplate(t);
+                CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+
+                changes.put(templateCUT, t);
+
+                StringWriter target = new StringWriter();
+
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText()), tag2Span), target);
+                result.add(new CreateChange(t.getSourceFile(), target.toString()));
+                target.close();
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         return result;
+    }
+
+    private static String template(CompilationUnitTree cut) {
+        if (cut.getTypeDecls().isEmpty()) return "Templates/Classes/Empty.java";
+
+        switch (cut.getTypeDecls().get(0).getKind()) {
+            case CLASS: return "Templates/Classes/Class.java"; // NOI18N
+            case INTERFACE: return "Templates/Classes/Interface.java"; // NOI18N
+            case ANNOTATION_TYPE: return "Templates/Classes/AnnotationType.java"; // NOI18N
+            case ENUM: return "Templates/Classes/Enum.java"; // NOI18N
+            default:
+                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", cut.getTypeDecls().get(0).getKind());
+                return "Templates/Classes/Empty.java";
+        }
+    }
+
+    private static FileObject doCreateFromTemplate(CompilationUnitTree t) throws IOException {
+        FileObject scratchFolder = FileUtil.createMemoryFileSystem().getRoot();
+
+        FileObject template = FileUtil.getConfigFile(template(t));
+
+        if (template == null) {
+            return scratchFolder.createData("out", "java");
+        }
+
+        DataObject templateDO = DataObject.find(template);
+
+        if (!templateDO.isTemplate()) {
+            return scratchFolder.createData("out", "java");
+        }
+
+        File pack = new File(t.getSourceFile().toUri()).getParentFile();
+
+        while (FileUtil.toFileObject(pack) == null) {
+            pack = pack.getParentFile();
+        }
+
+        FileObject targetFolder = FileUtil.toFileObject(pack);
+        DataObject targetDataFolder = DataFolder.findFolder(targetFolder);
+
+        scratchFolder.setAttribute(OverlayTemplateAttributesProvider.ATTR_ORIG_FILE, targetDataFolder);
+
+        DataObject newFile = templateDO.createFromTemplate(DataFolder.findFolder(scratchFolder));
+
+        return newFile.getPrimaryFile();
     }
 
     List<Difference> getChanges(Map<?, int[]> tag2Span) throws IOException, BadLocationException {
@@ -556,8 +619,8 @@ public class WorkingCopy extends CompilationController {
         }
         List<Difference> result = new LinkedList<Difference>();
         
-        result.addAll(processCurrentCompilationUnit(tag2Span));
-        result.addAll(processExternalCUs());
+        result.addAll(processCurrentCompilationUnit(new DiffContext(this), tag2Span));
+        result.addAll(processExternalCUs(tag2Span));
 
         overlay.clearElementsCache();
         

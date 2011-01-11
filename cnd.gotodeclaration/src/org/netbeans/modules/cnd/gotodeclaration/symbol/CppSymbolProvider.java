@@ -120,8 +120,8 @@ public class CppSymbolProvider implements SymbolProvider {
         cache = null;
     }
 
-    private CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
-        final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+    public static CsmSelect.NameAcceptor createNameAcceptor(final String text, final SearchType searchType) {
+        final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(text, searchType);
         return new CsmSelect.NameAcceptor() {
             @Override
             public boolean accept(CharSequence name) {
@@ -135,7 +135,7 @@ public class CppSymbolProvider implements SymbolProvider {
     public synchronized void computeSymbolNames(Context context, Result result) {
         if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
-        CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
+        CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context.getText(), context.getSearchType());
         if (nameAcceptor == null) {
             if (CndUtils.isDebugMode()) {
                 Logger log = Logger.getLogger("org.netbeans.modules.cnd.gotodeclaration"); // NOI18N

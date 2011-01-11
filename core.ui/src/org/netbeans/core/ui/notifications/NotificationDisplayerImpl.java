@@ -42,14 +42,6 @@
 
 package org.netbeans.core.ui.notifications;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -58,13 +50,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -90,7 +77,10 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     static NotificationDisplayerImpl getInstance() {
-        return (NotificationDisplayerImpl) Lookup.getDefault().lookup(NotificationDisplayer.class);
+        NotificationDisplayer nd = Lookup.getDefault().lookup(NotificationDisplayer.class);
+        if( nd instanceof NotificationDisplayerImpl )
+            return (NotificationDisplayerImpl) nd;
+        return null;
     }
 
     @Override

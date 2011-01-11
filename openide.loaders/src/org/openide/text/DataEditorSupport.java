@@ -47,6 +47,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.CharConversionException;
 import java.io.FilterOutputStream;
@@ -61,7 +62,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.Reference;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -86,6 +90,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
@@ -99,10 +104,13 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
@@ -170,6 +178,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Message to display when an object is being opened.
     * @return the message or null if nothing should be displayed
     */
+    @Override
     protected String messageOpening () {
         return NbBundle.getMessage (DataObject.class , "CTL_ObjectOpen", // NOI18N
             obj.getPrimaryFile().getNameExt(),
@@ -181,6 +190,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Message to display when an object has been opened.
     * @return the message or null if nothing should be displayed
     */
+    @Override
     protected String messageOpened () {
         return null;
     }
@@ -190,6 +200,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     *
     * @return text to show to the user
     */
+    @Override
     protected String messageSave () {
         return NbBundle.getMessage (
             DataObject.class,
@@ -244,6 +255,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     *
     * @return name of the editor
     */
+    @Override
     protected String messageName () {
         if (! obj.isValid()) {
             return ""; // NOI18N
@@ -416,9 +428,49 @@ public class DataEditorSupport extends CloneableEditorSupport {
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
+        final FileObject fo = this.getDataObject().getPrimaryFile();
+        if (!warnedEncodingFiles.contains(fo)) {
+            if (!checkIfCharsetCanDecodeFile(fo, c)) {
+                throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", c)) {
+                    @Override
+                    public void confirmed() throws IOException {
+                        warnedEncodingFiles.add(fo);
+                    }
+                };
+            }
+        }
         final Reader r = new InputStreamReader (stream, c);
         kit.read(r, doc, 0);
     }
+
+    private static boolean checkIfCharsetCanDecodeFile(FileObject fo, Charset charset) {
+        try {
+            int BUF_SIZE = 1024;
+
+            BufferedInputStream input = new BufferedInputStream(fo.getInputStream(), BUF_SIZE);
+            try {
+                CharsetDecoder decoder = charset.newDecoder();
+                decoder.reset();
+                byte[] buffer = new byte[BUF_SIZE];
+                int len = input.read(buffer);
+                if (len > 0) {
+                    try {
+                        decoder.decode(ByteBuffer.wrap(buffer, 0, len));
+                    } catch (CharacterCodingException e) {
+                        ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                        return false;
+                    }
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException ex) {
+            ERR.log(Level.FINE, "Encoding problem using " + charset, ex); // NOI18N
+        }
+        return true;
+    }
+
+    private static Set<FileObject> warnedEncodingFiles = new WeakSet<FileObject>();
 
     /** can hold the right charset to be used during save, needed for communication
      * between saveFromKitToStream and saveDocument
@@ -620,6 +672,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         class SaveAsWriter implements Runnable {
             private IOException ex;
 
+            @Override
             public void run() {
                 try {
                     OutputStream os = null;
@@ -762,7 +815,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
             fileObject = newFile;
             ERR.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
-            fileObject.addFileChangeListener (new EnvListener (this));
+            new EnvListener(fileObject, this);
 
             if (lockAgain) { // refresh lock
                 try {
@@ -1022,8 +1075,24 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         /** @param env environment to use
         */
-        public EnvListener (Env env) {
+        public EnvListener (FileObject listen, Env env) {
             this.env = new java.lang.ref.WeakReference<Env> (env);
+            addFileChangeListener(listen);
+        }
+        
+        private void addFileChangeListener(FileObject fo) {
+            try {
+                fo.getFileSystem().addFileChangeListener(this);
+            } catch (FileStateInvalidException ex) {
+                ERR.log(Level.INFO, "cannot add listener to " + fo, ex);
+            }
+        }
+        private void removeFileChangeListener(FileObject fo) {
+            try {
+                fo.getFileSystem().removeFileChangeListener(this);
+            } catch (FileStateInvalidException ex) {
+                ERR.log(Level.INFO, "cannot remove listener from " + fo, ex);
+            }
         }
 
 
@@ -1035,17 +1104,18 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (myEnv != null) {
                 myEnv.updateDocumentProperty();
             }
-            if(myEnv == null || myEnv.getFileImpl() != fo) {
+            if(myEnv == null || myEnv.getFileImpl() == null) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
-                fo.removeFileChangeListener(this);
+                removeFileChangeListener(fo);
                 return;
             }
+            if (myEnv.getFileImpl() == fo) {
+                removeFileChangeListener(fo);
             
-            fo.removeFileChangeListener(this);
-            
-            myEnv.fileRemoved(true);
-            fo.addFileChangeListener(this);
+                myEnv.fileRemoved(true);
+                addFileChangeListener(fo);
+            }
         }
         
         /** Fired when a file is changed.
@@ -1058,10 +1128,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
 
             Env myEnv = this.env.get ();
-            if (myEnv == null || myEnv.getFileImpl () != fe.getFile ()) {
+            if (myEnv == null || myEnv.getFileImpl () == null) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
-                fe.getFile ().removeFileChangeListener (this);
+                removeFileChangeListener (fe.getFile ());
+                return;
+            }
+            
+            if (myEnv.getFileImpl() != fe.getFile()) {
                 return;
             }
 
@@ -1089,12 +1163,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         @Override
         public void fileAttributeChanged(FileAttributeEvent fae) {
+            Env myEnv = this.env.get ();
+            if (myEnv == null || myEnv.getFileImpl () != fae.getFile()) {
+                return;
+            }
+            
             // wait only for event from org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj.refreshImpl()
             if ("DataEditorSupport.read-only.refresh".equals(fae.getName())) {  //NOI18N
-                Env myEnv = this.env.get();
-                if (myEnv != null) {
-                    myEnv.readOnlyRefresh();
-                }
+                myEnv.readOnlyRefresh();
             }
         }
     }

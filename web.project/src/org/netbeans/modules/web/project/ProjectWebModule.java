@@ -392,6 +392,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return project.getDeployOnSaveSupport();
     }
+
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE)) &&
+            !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    }
+    
     
     public File getDeploymentConfigurationFile(String name) {
         assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N

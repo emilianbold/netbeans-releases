@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.openide.util.RequestProcessor;
@@ -72,21 +73,29 @@ public class RepositoryInfo {
      */
     public static final String PROPERTY_ACTIVE_BRANCH = "prop.activeBranch"; //NOI18N
     /**
-     * fired when the HEAD changes, old and new values are instances of {@link java.lang.String}.
+     * fired when the HEAD changes, old and new values are instances of {@link GitBranch}.
      */
     public static final String PROPERTY_HEAD = "prop.head"; //NOI18N
+    /**
+     * fired when repository state changes, old and new values are instances of {@link GitRepositoryState}.
+     */
+    public static final String PROPERTY_STATE = "prop.state"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
     private static final Logger LOG = Logger.getLogger(RepositoryInfo.class.getName());
-    private GitBranch activeBranch;
     private static final RequestProcessor rp = new RequestProcessor("RepositoryInfo", 1, true); //NOI18N
     private static final RequestProcessor.Task refreshTask = rp.create(new RepositoryRefreshTask());
     private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
     private final PropertyChangeSupport propertyChangeSupport;
 
+    private GitBranch activeBranch;
+    private GitRepositoryState repositoryState;
+    private final String name;
+
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
+        this.name = root.getName();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -125,15 +134,19 @@ public class RepositoryInfo {
             } else {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
                 GitClient client = Git.getInstance().getClient(root);
-                setActiveBranch(client);
+                // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
+                Map<String, GitBranch> newBranches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                // now set new values and fire events when needed
+                setActiveBranch(newBranches);
+                setRepositoryState(newState);
             }
         } catch (GitException ex) {
             LOG.log(Level.INFO, null, ex);
         }
     }
 
-    private void setActiveBranch (GitClient client) throws GitException {
-        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+    private void setActiveBranch (Map<String, GitBranch> branches) throws GitException {
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             if (e.getValue().isActive()) {
                 GitBranch oldActiveBranch = activeBranch;
@@ -144,9 +157,18 @@ public class RepositoryInfo {
                 }
                 if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
                     LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
-                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch == null ? null : oldActiveBranch.getId(), activeBranch.getId());
+                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch, activeBranch);
                 }
             }
+        }
+    }
+
+    private void setRepositoryState (GitRepositoryState repositoryState) {
+        GitRepositoryState oldState = this.repositoryState;
+        this.repositoryState = repositoryState;
+        if (!repositoryState.equals(oldState)) {
+            LOG.log(Level.FINE, "repository state changed: {0} --- {1}", new Object[] { oldState, repositoryState }); //NOI18N
+            propertyChangeSupport.firePropertyChange(PROPERTY_STATE, oldState, repositoryState);
         }
     }
 
@@ -160,6 +182,14 @@ public class RepositoryInfo {
 
     public GitBranch getActiveBranch () {
         return activeBranch;
+    }
+
+    public GitRepositoryState getRepositoryState () {
+        return repositoryState;
+    }
+
+    public String getName () {
+        return name;
     }
 
     public static void refreshAsync (File repositoryRoot) {

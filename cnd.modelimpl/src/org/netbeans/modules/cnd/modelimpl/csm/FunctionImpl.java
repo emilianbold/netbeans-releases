@@ -89,7 +89,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence[] rawName;
 
-    private TemplateDescriptor templateDescriptor = null;
+    private final TemplateDescriptor templateDescriptor;
 
     protected final CharSequence classTemplateSuffix;
 
@@ -393,7 +393,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequences.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(scopeQName.toString() + (!CsmKindUtilities.isSpecialization(scope) ? getScopeSuffix() : "") + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();
@@ -429,6 +429,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     @Override
     public CsmFunctionDefinition getDefinition() {
+        return getDefinition(null);
+    }
+
+    public CsmFunctionDefinition getDefinition(CsmClass baseClass) {
         if( isCStyleStatic() ) {
             CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
                                getName(), true, true, false);
@@ -446,7 +450,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
             return null;
         }
-        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        String uname;
+        if(baseClass == null) {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        } else {
+            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) +
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
+                baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
+        }
         CsmProject prj = getContainingFile().getProject();
         CsmFunctionDefinition def = findDefinition(prj, uname);
         if (def == null) {
@@ -466,7 +477,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         if (def == null) {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            if(baseClass == null) {
+                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            } else {
+                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) +
+                        OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
+                        baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
+            }
             def = findDefinition(prj, uname);
             if (def == null) {
                 for (CsmProject lib : prj.getLibraries()) {
@@ -570,6 +587,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
+    }
+
+    @Override
+    public boolean isSpecialization() {
+        return templateDescriptor != null && templateDescriptor.isSpecialization();
     }
 
     /**

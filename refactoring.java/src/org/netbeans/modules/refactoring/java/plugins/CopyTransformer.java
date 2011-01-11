@@ -89,6 +89,7 @@ public class CopyTransformer extends RefactoringVisitor {
                 // in order to handle default package, we have to rewrite whole
                 // compilation unit:
                 cut = make.CompilationUnit(
+                        cut.getPackageAnnotations(),
                         "".equals(newPackage) ? null : make.Identifier(newPackage), // NOI18N
                         cut.getImports(),
                         cut.getTypeDecls(),

@@ -92,18 +92,7 @@ public final class CreateMethodFix implements Fix {
     
     public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
         this.name = name;
-        final Name qualifiedName = target.getQualifiedName(); //#130759
-        if (qualifiedName == null) {
-            this.inFQN = ""; //NOI18N
-            Logger.getLogger(CreateMethodFix.class.getName()).warning("Target qualified name could not be resolved."); //NOI18N
-        } else {
-            String qnString = qualifiedName.toString();
-            if (qnString.length() == 0) {
-                //probably an anonymous class
-                qnString = target.asType().toString();
-            }
-            this.inFQN = qnString;
-        }
+        this.inFQN = Utilities.target2String(target);
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
         this.targetFile = targetFile;

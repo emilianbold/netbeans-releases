@@ -51,7 +51,7 @@
 
 package org.netbeans.lib.terminalemulator;
 
-class Line {
+final class Line {
     public int glyph_glyph;
     public int glyph_rendition;	// Background color for the whole line
     				// This is independent of per-character
@@ -163,6 +163,7 @@ class Line {
         buf[col] = c;
     }
     
+    @Override
     public String toString() {
         assert false;
         return new String(buf);
@@ -258,6 +259,14 @@ class Line {
         
         capacity = new_capacity;
     }
+
+    private void fillGap(int col) {
+        // fill any newly opened gap (between length and col) with SP
+        // Don't need to do anything for 'attr' because it's naturally
+        // initialized to 0
+        for (int cx = length; cx < col; cx++)
+            charAtPut(cx, ' ');
+    }
     
     /**
      * Insert character and attribute at 'column' and shift everything
@@ -269,9 +278,7 @@ class Line {
         if (column >= length) {
             new_length = column+1;
             ensureCapacity(term, new_length);
-            // fill any newly opened gap (between length and column) with SP
-            for (int fx = length; fx < column; fx++)
-                charAtPut(fx, ' ');
+            fillGap(column);
         } else {
             ensureCapacity(term, new_length);
             System.arraycopy(buf, column, buf, column + 1, length - column);
@@ -295,9 +302,7 @@ class Line {
     public void setCharAt(Term term, char c, int column, int a) {
         if (column >= length) {
             ensureCapacity(term, column+1);
-            // fill any newly opened gap (between length and column) with SP
-            for (int fx = length; fx < column; fx++)
-                charAtPut(fx, ' ');
+            fillGap(column);
             length = column+1;
         }
         term.checkForMultiCell(c);
@@ -322,13 +327,14 @@ class Line {
     
     public void clearToEndFrom(Term term, int col) {
         ensureCapacity(term, col+1);
-        
+        fillGap(col);
+
         // Grrr, why is there a System.arrayCopy() but no System.arrayClear()?
         for (int cx = col; cx < length; cx++)
             charAtPut(cx, ' ');
         if (attr != null) {
             for (int cx = col; cx < length; cx++)
-                attr[cx] = ' ';
+                attr[cx] = 0;
         }
         length = col;
     }

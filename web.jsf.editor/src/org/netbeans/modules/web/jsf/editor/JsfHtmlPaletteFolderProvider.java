@@ -54,7 +54,7 @@ public class JsfHtmlPaletteFolderProvider implements HtmlPaletteFolderProvider {
 
     public String getPaletteFolderName(FileObject fileObject) {
         return (fileObject.getMIMEType().equals("text/xhtml") && 
-                JsfSupport.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
+                JsfSupportImpl.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
     }
 
 }

@@ -74,27 +74,43 @@ public abstract class CsmReferenceStorage {
      */
     private static final class Default extends CsmReferenceStorage {
         private final Lookup.Result<CsmReferenceStorage> res;
+        private static final boolean FIX_SERVICE = true;
+        private CsmReferenceStorage fixedStorage;
         Default() {
             res = Lookup.getDefault().lookupResult(CsmReferenceStorage.class);
         }
 
+        private CsmReferenceStorage getService(){
+            CsmReferenceStorage service = fixedStorage;
+            if (service == null) {
+                for (CsmReferenceStorage selector : res.allInstances()) {
+                    service = selector;
+                    break;
+                }
+                if (FIX_SERVICE && service != null) {
+                    // I see that it is ugly solution, but NB core cannot fix performance of FolderInstance.waitFinished()
+                    // Fixed service gives about 3% performance improvement.
+                    // I assume that exactly one service implementor exists.
+                    fixedStorage = service;
+                }
+            }
+            return service;
+        }
+
         @Override
         public boolean put(CsmReference ref, CsmObject referencedObject) {
-            for (CsmReferenceStorage selector : res.allInstances()) {
-                if (selector.put(ref, referencedObject)) {
-                    return true;
-                }
+            CsmReferenceStorage storage = getService();
+            if (storage != null) {
+                return storage.put(ref, referencedObject);
             }
             return false;
         }
 
         @Override
         public CsmReference get(CsmOffsetable ref) {
-            for (CsmReferenceStorage selector : res.allInstances()) {
-                CsmReference reference = selector.get(ref);
-                if (reference != null) {
-                    return reference;
-                }
+            CsmReferenceStorage storage = getService();
+            if (storage != null) {
+                return storage.get(ref);
             }
             return null;
         }

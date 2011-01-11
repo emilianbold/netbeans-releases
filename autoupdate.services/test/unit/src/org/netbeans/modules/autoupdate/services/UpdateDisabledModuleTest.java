@@ -67,7 +67,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
-import org.netbeans.updater.UpdaterFrame;
+import org.netbeans.updater.UpdaterInternal;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -124,6 +125,8 @@ public class UpdateDisabledModuleTest extends NbTestCase {
         real.getParentFile().mkdirs();
         writeConfXML(real, true);
         
+        FileUtil.getConfigRoot().getFileSystem().refresh(true);
+        
         File ut = new File(new File(last, "update_tracking"), fn);
         ut.getParentFile().mkdirs();
         OutputStream utos = new FileOutputStream(ut);
@@ -145,7 +148,7 @@ public class UpdateDisabledModuleTest extends NbTestCase {
                 return;
             }
         }
-        fail("No module found:\n" + msg);
+        fail("No com.sun.testmodule.cluster module found:\n" + msg);
     }
 
     private void writeConfXML(File conf, boolean enabled) throws FileNotFoundException, IOException {
@@ -187,7 +190,7 @@ public class UpdateDisabledModuleTest extends NbTestCase {
         Restarter res = support.doInstall(inst, null);
         System.setProperty("netbeans.close.no.exit", "true");
         support.doRestart(res, null);
-        UpdaterFrame.main("--noexit", "--nosplash");
+        UpdaterInternal.update(null, null, null);
 
         assertFalse("No Config file created in for upgrade: " + f, f.exists());
     }

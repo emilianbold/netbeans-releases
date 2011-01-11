@@ -51,6 +51,7 @@ public class ProjectHudsonProviderTest extends NbTestCase {
         super(n);
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testAssociation() throws Exception {
         assertEquals("http://nowhere.net/", new Association("http://nowhere.net/", null).toString());
         assertEquals("http://nowhere.net/job/foo%20bar/", new Association("http://nowhere.net/", "foo bar").toString());
@@ -70,6 +71,9 @@ public class ProjectHudsonProviderTest extends NbTestCase {
         assertNull("http://nowhere.net/", Association.fromString("http://nowhere.net/").getJobName());
         assertEquals("http://nowhere.net/", Association.fromString("http://nowhere.net/job/foo%20bar/").getServerUrl());
         assertEquals("foo bar", Association.fromString("http://nowhere.net/job/foo%20bar/").getJobName());
+        assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/site/")); // #189254
+        assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/"));
+        assertEquals("Some Job", Association.fromString("http://nowhere.net/hudson/view/someview/job/Some%20Job/").getJobName());
     }
 
 }

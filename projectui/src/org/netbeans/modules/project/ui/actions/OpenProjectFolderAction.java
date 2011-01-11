@@ -56,6 +56,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ContextAwareAction;
@@ -71,6 +74,9 @@ import org.openide.util.RequestProcessor;
  * @see "#54122"
  * @author Jesse Glick
  */
+@ActionID(id = "org.netbeans.modules.project.ui.actions.OpenProjectFolderAction", category = "Project")
+@ActionRegistration(displayName = "#OpenProjectFolderAction.LBL_action")
+@ActionReference(path = "Loaders/folder/any/Actions", position = 100)
 public final class OpenProjectFolderAction extends AbstractAction implements ContextAwareAction {
     
     public OpenProjectFolderAction() {

@@ -347,6 +347,36 @@ public final class TimeSeriesIndicator
             return Collections.emptyList();
         }
     }
+    
+    // TODO: perhaps need to redesign this... 
+    public boolean initFromStorage(SQLDataStorage storage, String query) {
+        if (1 < data.size()) {
+            throw new IllegalStateException("Indicator must contain no data when loading"); // NOI18N
+        }
+
+        if (timeSeriesTable != null) {
+            try {
+                ResultSet rs = storage.select(null, null, query);
+                try {
+                    while (rs.next()) {
+                        long timestamp = rs.getLong(1);
+                        float[] dataArray = new float[timeSeriesCount];
+                        for (int i = 0; i < timeSeriesList.size(); ++i) {
+                            dataArray[i] = rs.getFloat(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeriesList.get(i)));
+                        }
+                        data.put(timestamp, dataArray);
+                    }
+                } finally {
+                    rs.close();
+                }
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
     @Override
     public boolean loadState(DataStorage storage) {

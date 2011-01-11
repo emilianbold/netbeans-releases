@@ -760,7 +760,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
                 return uri;
             }
             String bDir = resolveBundleDir();
-            return bDir + resolveBundleName(fileNameMapping);
+            return "/" + bDir + resolveBundleName(fileNameMapping);
         }
 
         String resolveBundleDir() {

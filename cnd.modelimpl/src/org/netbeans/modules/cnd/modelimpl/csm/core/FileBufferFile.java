@@ -49,11 +49,12 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -66,6 +67,10 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     public FileBufferFile(CharSequence absPath) {
         super(absPath);
+    }
+
+    public FileBufferFile(FileObject fileObject) {
+        super(fileObject);
     }
     
     @Override
@@ -181,7 +186,19 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     @Override
     public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(CndFileUtils.getInputStream(getAbsolutePath()), TraceFlags.BUF_SIZE);
+        InputStream is;
+        if (CndTraceFlags.USE_FILE_OBJECTS) {
+            FileObject fo = getFileObject();
+            CndUtils.assertNotNull(fo, "Null file object for " + getUrl()); // NOI18N
+            if (fo != null) {
+                is = fo.getInputStream();
+            } else {
+                throw new FileNotFoundException("Null file object for " + getUrl()); // NOI18N
+            }
+        } else {
+            is = CndFileUtils.getInputStream(getAbsolutePath());
+        }
+        return new BufferedInputStream(is, TraceFlags.BUF_SIZE);
     }
     
     @Override
@@ -201,11 +218,6 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
     
     public FileBufferFile(DataInput input) throws IOException {
         super(input);

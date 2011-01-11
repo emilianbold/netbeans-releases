@@ -75,23 +75,14 @@ public class AquaSeparatorUI extends SeparatorUI {
     }
     
     public void paint( Graphics g, JComponent c ) {
-        if (c.getParent() instanceof JPopupMenu) {
-            Dimension s = c.getSize();
-            
-            g.setColor(lineColor);
-            g.drawLine(1, 5, s.width - 2, 5);
-        }
+        Dimension s = c.getSize();
+
+        g.setColor(lineColor);
+        g.drawLine(1, 5, s.width - 2, 5);
     }
     
     public Dimension getPreferredSize(JComponent c) {
-        Dimension s;
-        if (c.getParent() instanceof JPopupMenu) {
-            return new Dimension( 0, 12 );
-        } else {
-            s = new Dimension(0, 0);
-        }
-        
-        return s;
+        return new Dimension( 0, 12 );
     }
     
     public Dimension getMinimumSize( JComponent c ) { return null; }

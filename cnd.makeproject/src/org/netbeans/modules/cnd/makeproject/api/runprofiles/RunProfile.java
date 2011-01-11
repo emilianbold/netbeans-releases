@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -64,7 +65,6 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -84,6 +84,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_RUNARGS_CHANGED = "runargs-ch"; // NOI18N
     public static final String PROP_RUNDIR_CHANGED = "rundir-ch"; // NOI18N
     public static final String PROP_ENVVARS_CHANGED = "envvars-ch"; // NOI18N
+    public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch"; // NOI18N
+    public static final String DEFAULT_RUN_COMMAND = "\"${OUTPUT_PATH}\""; // NOI18N
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
@@ -105,13 +107,15 @@ public final class RunProfile implements ConfigurationAuxObject {
     private boolean buildFirst;
     // Environment
     private Env environment;
+    // Run Command
+    private String runCommand = DEFAULT_RUN_COMMAND;
     private String dorun;
     public static final int CONSOLE_TYPE_DEFAULT = 0;
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
     public static final int CONSOLE_TYPE_INTERNAL = 3;
     private static final String[] consoleTypeNames = {
-        getString("ConsoleType_Default"), // NOI18N
+        //getString("ConsoleType_Default"), // NOI18N // Carefull: names no longer match CONSOLE_TYPE. Cleanup when debugger works again.
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
         getString("ConsoleType_Internal"), // NOI18N
@@ -145,12 +149,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         platform = PlatformTypes.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
-        initializeImpl(CONSOLE_TYPE_DEFAULT);
+        initializeImpl(getDefaultConsoleType());
     }
 
     @Override
     public final void initialize() {
-       initializeImpl(CONSOLE_TYPE_DEFAULT);
+       initializeImpl(getDefaultConsoleType());
     }
 
     private void initializeImpl(int initialConsoleType) {
@@ -161,6 +165,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         argsFlatValid = true;
         argsArrayValid = false;
         runDir = ""; // NOI18N
+        runCommand = DEFAULT_RUN_COMMAND; // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
@@ -535,6 +540,31 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
     }
 
+    // Run Command
+
+    public boolean isSimpleRunCommand() {
+        return !runCommand.contains(" "); // NOI18N
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public void setRunCommand(String command) {
+        command = command.trim();
+        if (command == null || command.length() == 0) {
+            command = DEFAULT_RUN_COMMAND;
+        }
+        if (this.runCommand.equals(command)) {
+            return;
+        }
+        this.runCommand = command;
+        if (pcs != null) {
+            pcs.firePropertyChange(PROP_RUNCOMMAND_CHANGED, null, this);
+        }
+        needSave = true;   
+    }
+
     public IntConfiguration getConsoleType() {
         return consoleType;
     }
@@ -666,6 +696,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setArgs(p.getArgsFlat());
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
+        setRunCommand(p.getRunCommand());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -686,6 +717,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setArgs(getArgsFlat());
         p.setRunDir(getRunDir());
+        p.setRunCommand(getRunCommand());
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
@@ -710,11 +742,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.setShortDescription(getString("GeneralTT"));
+        set.put(new RunCommandNodeProp());
         set.put(new ArgumentsNodeProp());
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
-        ListenableIntNodeProp consoleTypeNP = new ListenableIntNodeProp(getConsoleType(), true, null,
+        ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, null,
                 getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
         set.put(consoleTypeNP);
         final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
@@ -734,7 +767,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 }
             });
             // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
-            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
+            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[((Integer) consoleTypeNP.getValue())-1]);
         }
 
         // TODO: this is a quick and durty "hack".
@@ -752,8 +785,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
-        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL].equals(value) ||
-                consoleTypeNames[CONSOLE_TYPE_DEFAULT].equals(value) && getDefaultConsoleType() == CONSOLE_TYPE_EXTERNAL);
+        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL-1].equals(value));
     }
 
     private static String getString(String s) {
@@ -773,6 +805,50 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
 
         return hasTHAModule.booleanValue();
+    }
+
+    private class RunCommandNodeProp extends PropertySupport<String> {
+
+        public RunCommandNodeProp() {
+            super("Run Command", String.class, getString("RunCommandName"), getString("RunCommandHint"), true, true); // NOI18N
+        }
+
+        @Override
+        public String getValue() {
+            return getRunCommand();
+        }
+
+        @Override
+        public void setValue(String v) {
+            setRunCommand(v);
+            if (!isSimpleRunCommand()) {
+                JOptionPane.showMessageDialog(null, getString("ComplexCommandText"), getString("ComplexCommandTitle"), JOptionPane.INFORMATION_MESSAGE); //NOI18N
+                setShortDescription(getString("ComplexRunCommandHint"));
+            } else {
+                setShortDescription(getString("RunCommandHint"));
+            }
+        }
+
+        @Override
+        public void restoreDefaultValue() {
+            setValue(""); // Sets the default value // NOI18N
+        }
+
+        @Override
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (!DEFAULT_RUN_COMMAND.equals(getValue())) {
+                return "<b>" + getDisplayName(); // NOI18N
+            }
+            else {
+                return null;
+            }
+        }
+
     }
 
     private class ArgumentsNodeProp extends PropertySupport<String> {
@@ -806,7 +882,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         @Override
         public void setValue(String v) {
             String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = CndPathUtilitities.normalize(path);
+            path = CndPathUtilitities.normalizeSlashes(path);
             setRunDir(path);
         }
 

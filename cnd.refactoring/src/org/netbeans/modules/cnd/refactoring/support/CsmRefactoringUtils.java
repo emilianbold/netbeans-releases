@@ -215,6 +215,10 @@ public final class CsmRefactoringUtils {
             } else if (CsmKindUtilities.isOffsetable(element) ) {
                 text = ((CsmOffsetable)element).getText().toString();
             }
+            // cut off destructor prefix
+            if (text.startsWith("~")) { // NOI18N
+                text = text.substring(1);
+            }
         }
         return text;
     }
@@ -243,7 +247,7 @@ public final class CsmRefactoringUtils {
            }
         }
         if (out == null) {
-            CsmUID uid = lookup.lookup(CsmUID.class);
+            CsmUID<?> uid = lookup.lookup(CsmUID.class);
             if (uid != null) {
                 out = (CsmObject) uid.getObject();
             }
@@ -295,8 +299,7 @@ public final class CsmRefactoringUtils {
         Collection<CsmFunction> out = new ArrayList<CsmFunction>();
         CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
         CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
-                filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
-                CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION),
+                CsmSelect.FUNCTION_KIND_FILTER,
                 filterBuilder.createNameFilter(cls.getName(), true, true, false));
         Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
         while (classMembers.hasNext()) {

@@ -76,7 +76,9 @@ public class VectorConfiguration<E> {
     }
 
     public void setValue(List<E> l) {
-        assert l != null;
+        if (l == null) {
+            return; // See evaluation in IZ 193164
+        }
         this.value = l;
     }
 
@@ -101,6 +103,9 @@ public class VectorConfiguration<E> {
 
     // Clone and Assign
     public void assign(VectorConfiguration<E> conf) {
+        if (conf == null) {
+            return;
+        }
         setDirty(!this.equals(conf));
         reset();
         getValue().addAll(conf.getValue());

@@ -53,46 +53,35 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  */
 public class GlassfishWizardProvider implements ServerWizardProvider {
 
-    private GlassfishInstanceProvider gip;
-
-    public static ServerWizardProvider createPrelude() {
-        return get(GlassfishInstanceProvider.getPrelude());
+    public static GlassfishWizardProvider createEe6() {
+        return new GlassfishWizardProvider(
+                org.openide.util.NbBundle.getMessage(GlassfishWizardProvider.class,
+                "STR_V3_FAMILY_NAME", new Object[]{}) // NOI18N
+                );
     }
     
-    public static ServerWizardProvider createEe6() {
-        return get(GlassfishInstanceProvider.getEe6());
-    }
+    private final String displayName;
 
-    public static ServerWizardProvider createEe6WC() {
-        return get(GlassfishInstanceProvider.getEe6WC());
+    private GlassfishWizardProvider(
+            String displayName
+            ) {
+        this.displayName = displayName;
     }
-
-    private static ServerWizardProvider get(GlassfishInstanceProvider gip) {
-        ServerWizardProvider retVal = null;
-        if (null != gip)
-            retVal = new GlassfishWizardProvider(gip);
-        return retVal;
-    }
-
-    private GlassfishWizardProvider(GlassfishInstanceProvider gip) {
-        assert null != gip;
-        this.gip = gip;
-    }
-
-    private GlassfishWizardProvider() { }
 
     // ------------------------------------------------------------------------
     // ServerWizardProvider interface implementation
     // ------------------------------------------------------------------------
     @Override
     public String getDisplayName() {
-        return gip.getDisplayName();
+        return displayName;
     }
 
     @Override
     public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator(gip);
+        return new ServerWizardIterator(new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3_1,
+            ServerDetails.GLASSFISH_SERVER_3, 
+        });
     }
-    
-    
+
 }

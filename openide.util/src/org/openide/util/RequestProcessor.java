@@ -705,10 +705,11 @@ public final class RequestProcessor implements ScheduledExecutorService {
         //XXX more aggressive shutdown?
         stop();
         synchronized (processorLock) {
-            List<Runnable> result = new ArrayList<Runnable>(processors.size());
-            for (Processor p : processors) {
-                if (p != null && p.todo != null && p.todo.run != null) {
-                    Runnable r = p.todo.run;
+            List<Runnable> result = new ArrayList<Runnable>(queue.size());
+            for (Item item : queue) {
+                Task task = item.getTask();
+                if (task != null && task.run != null) {
+                    Runnable r = task.run;
                     if (r instanceof RunnableWrapper) {
                         Runnable other = ((RunnableWrapper) r).getRunnable();
                         r = other == null ? r : other;
@@ -753,7 +754,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         Parameters.notNull("unit", unit); //NOI18N
-        long timeoutMillis = unit.convert(timeout, TimeUnit.MILLISECONDS);
+        long timeoutMillis = TimeUnit.MILLISECONDS.convert(timeout, unit);
         boolean result = stopped;
         long doneTime = System.currentTimeMillis() + timeoutMillis;
         Set<Processor> procs = new HashSet<Processor>();
@@ -986,7 +987,7 @@ outer:  do {
         if (stopped) {
             throw new RejectedExecutionException("Request Processor already stopped"); //NOI18N
         }
-        long delayMillis = unit.convert(delay, TimeUnit.MILLISECONDS);
+        long delayMillis = TimeUnit.MILLISECONDS.convert(delay, unit);
         ScheduledRPFutureTask<Void> result = new ScheduledRPFutureTask<Void>(command, null, delayMillis);
         Task t = create(result);
         result.setTask(t);
@@ -1008,7 +1009,7 @@ outer:  do {
             throw new RejectedExecutionException("Request Processor already " + //NOI18N
                     "stopped"); //NOI18N
         }
-        long delayMillis = unit.convert(delay, TimeUnit.MILLISECONDS);
+        long delayMillis = TimeUnit.MILLISECONDS.convert(delay, unit);
         ScheduledRPFutureTask<T> result = new ScheduledRPFutureTask<T>(callable, delayMillis);
         Task t = create(result);
         result.setTask(t);
@@ -1136,7 +1137,7 @@ outer:  do {
             if (cancelled.get()) {
                 throw new CancellationException();
             }
-            long millis = unit.convert(timeout, TimeUnit.MILLISECONDS);
+            long millis = TimeUnit.MILLISECONDS.convert(timeout, unit);
             t.waitFinished(millis);
             if (cancelled.get()) {
                 throw new CancellationException();
@@ -1345,7 +1346,7 @@ outer:  do {
         
         @Override
         public long getDelay(TimeUnit unit) {
-            return TimeUnit.MILLISECONDS.convert(delayMillis, unit);
+            return unit.convert(delayMillis, TimeUnit.MILLISECONDS);
         }
 
         @Override

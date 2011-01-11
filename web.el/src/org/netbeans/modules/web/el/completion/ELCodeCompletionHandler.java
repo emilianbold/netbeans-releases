@@ -58,6 +58,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -246,7 +247,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            if(element == null) {
+                continue; //unresolvable bean class name
+            }
+            ELJavaCompletionItem item = new ELJavaCompletionItem(element, bean.name, elElement, typeUtilities);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
@@ -393,7 +397,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 

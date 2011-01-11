@@ -133,6 +133,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
+                <friend>org.netbeans.modules.maven.coverage</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
@@ -185,6 +186,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.wagon.authentication</package>
                 <package>org.apache.maven.wagon.authorization</package>
                 <package>org.apache.maven.wagon.events</package>
+                <package>org.apache.maven.wagon.providers.file</package>
                 <package>org.apache.maven.wagon.providers.http</package>
                 <package>org.apache.maven.wagon.proxy</package>
                 <package>org.apache.maven.wagon.repository</package>
@@ -214,6 +216,7 @@ made subject to such option by the copyright holder.
                 <package>org.sonatype.aether.repository</package>
                 <package>org.sonatype.aether.transfer</package>
                 <package>org.sonatype.aether.util</package>
+                <package>org.sonatype.aether.util.repository</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>
@@ -225,58 +228,58 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <!-- zipinfo -1 .../apache-maven-*-bin.zip | sort | perl -n -e 'if (m!^apache-maven-.+/((lib|boot)/.+.jar)$!) {print "            <class-path-extension>\n                <runtime-relative-path>../maven/$1</runtime-relative-path>\n            </class-path-extension>\n"}' -->
             <class-path-extension>
-                <runtime-relative-path>../maven/boot/plexus-classworlds-2.2.3.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/boot/plexus-classworlds-2.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/aether-api-1.7.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/aether-api-1.9.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/aether-connector-wagon-1.7.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/aether-connector-wagon-1.9.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/aether-impl-1.7.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/aether-impl-1.9.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/aether-spi-1.7.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/aether-spi-1.9.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/aether-util-1.7.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/aether-util-1.9.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/commons-cli-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-aether-provider-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-aether-provider-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-artifact-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-artifact-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-compat-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-compat-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-core-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-core-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-embedder-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-embedder-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-builder-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-builder-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-settings-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0.2-RC1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/nekohtml-1.9.6.2.jar</runtime-relative-path>
@@ -297,25 +300,25 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../maven/lib/plexus-utils-2.0.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/sisu-guice-2.1.7-noaop.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/sisu-guice-2.9.1-noaop.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/sisu-inject-bean-1.4.2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/sisu-inject-bean-1.4.3.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/sisu-inject-plexus-1.4.2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/sisu-inject-plexus-1.4.3.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-file-1.0-beta-6.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-file-1.0-beta-7.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-http-lightweight-1.0-beta-6.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-http-lightweight-1.0-beta-7.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-http-shared-1.0-beta-6.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-http-shared-1.0-beta-7.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-provider-api-1.0-beta-6.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-provider-api-1.0-beta-7.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/xercesMinimal-1.9.6.2.jar</runtime-relative-path>

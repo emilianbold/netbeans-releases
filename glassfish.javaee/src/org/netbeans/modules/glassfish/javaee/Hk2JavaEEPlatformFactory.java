@@ -98,20 +98,6 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
 
     }
 
-    public static Hk2JavaEEPlatformFactory createEe6WC() {
-        String dn = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "MSG_My31ServerPlatform");
-        JavaPlatform jp = null; // JavaPlatformManager.getDefault().getDefaultPlatform();
-        String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3WC_LIBRARY");
-        String lk = "J2EE/DeploymentPlugins/gfv3ee6wc/Lookup";
-        Set sjp = new HashSet<String>(Arrays.asList(new String[] {"1.6"}));
-        Set<J2eeModule.Type> smt = new HashSet<J2eeModule.Type>(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR,
-            J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
-        return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,
-                new HashSet<Profile>(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
-                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB })));
-
-    }
-
     private String displayName;
     private JavaPlatform javaPlatform;
     private String libraryName;

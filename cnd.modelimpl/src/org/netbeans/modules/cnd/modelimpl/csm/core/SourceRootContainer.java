@@ -61,8 +61,10 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public class SourceRootContainer {
     private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
+    private final boolean isFixedRoots;
     
-    public SourceRootContainer() {
+    public SourceRootContainer(boolean isFixedRoots) {
+        this.isFixedRoots = isFixedRoots;
     }
     
     public boolean isMySource(String includePath){
@@ -80,8 +82,14 @@ public class SourceRootContainer {
             includePath = includePath.substring(0,i);
             Integer val = projectRoots.get(DefaultCache.getManager().getString(includePath));
             if (val != null) {
-                if (val > Integer.MAX_VALUE/4) {
-                    return true;
+                if (isFixedRoots) {
+                    if (val > Integer.MAX_VALUE/4) {
+                        return true;
+                    }
+                } else {
+                    if (val > 0) {
+                        return true;
+                    }
                 }
             }
         }

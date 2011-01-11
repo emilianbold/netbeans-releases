@@ -1,9 +1,9 @@
 Name: RSpec
-Version: 1.2.7
-Description: RSpec 1.2.7
+Version: 1.2.9
+Description: RSpec 1.2.9
 License: MIT
 OSR: 6063
-Files: rspec-1.2.7.gem
+Files: rspec-1.2.9.gem
 Origin: http://rspec.rubyforge.org/
 
 The MIT License

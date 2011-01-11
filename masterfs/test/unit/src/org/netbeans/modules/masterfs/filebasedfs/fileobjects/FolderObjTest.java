@@ -101,7 +101,8 @@ public class FolderObjTest extends NbTestCase {
     protected Level logLevel() {
         String[] testsWithEnabledLogger = new String[] {
             "testCreateFolder72617",
-            "testCreateData72617"
+            "testCreateData72617",
+            ".testBug127256"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
             Level.FINEST : Level.OFF;
@@ -126,8 +127,14 @@ public class FolderObjTest extends NbTestCase {
 
     public void testBug127256() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
-        workDirFo.createFolder("a").delete();
-        assertNotNull(workDirFo.createData("a"));
+        FileObject folder = workDirFo.createFolder("a");
+        assertTrue("Is folder", folder.isFolder());
+        folder.delete();
+        FileObject data = workDirFo.createData("a");
+        assertNotNull(data);
+        assertTrue("Is data", data.isData());
+        assertTrue("Data is valid", data.isValid());
+        assertFalse("Folder is invalid", folder.isValid());
     }
     
     public void testAsyncCall() throws Exception {

@@ -63,7 +63,7 @@ public abstract class VCSCommitFilter {
         return selected;
     }
     
-    void setSelected(boolean selected) {
+    protected void setSelected(boolean selected) {
         this.selected = selected;        
     }
 }

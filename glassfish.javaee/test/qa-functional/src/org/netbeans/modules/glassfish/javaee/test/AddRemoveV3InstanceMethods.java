@@ -50,7 +50,9 @@ import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
+import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
+import org.netbeans.modules.glassfish.common.wizards.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -70,16 +72,16 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
     public AddRemoveV3InstanceMethods(String testName) {
         super(testName);
     }
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishWizardProvider gip = GlassfishWizardProvider.createEe6();
     
     public void addV3Instance() throws IOException {
             File f = new File(Util._V3_LOCATION);
 
             if (!f.exists() || f.list().length < 1) {
                 // time to retrieve
-                Retriever r = new Retriever(f.getParentFile(),gip.getIndirectDownloadUrl(),
+                Retriever r = new Retriever(f.getParentFile(),ServerDetails.GLASSFISH_SERVER_3.indirectUrl,
                         AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
-                        gip.getDirectDownloadUrl(), new Retriever.Updater() {
+                        ServerDetails.GLASSFISH_SERVER_3.directUrl, new Retriever.Updater() {
 
                     public void updateMessageText(String msg) {
                         //System.out.println(msg);
@@ -94,7 +96,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                 }, "glassfishv3");
                 r.run();
             }
-            ServerWizardIterator inst = new ServerWizardIterator(gip);
+            ServerWizardIterator inst = new ServerWizardIterator(new ServerDetails[] { ServerDetails.GLASSFISH_SERVER_3 });
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
 
             inst.setInstallRoot(Util._V3_LOCATION);
@@ -112,7 +114,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
             inst.initialize(wizard);
             inst.instantiate();
             
-            ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._V3_LOCATION, "localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
+            ServerRegistry.getInstance().checkInstanceExists(inst.formatUri("localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
             
             Util.sleep(SLEEP);
     }
@@ -121,7 +123,8 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
         try {
             Util.sleep(SLEEP);
 
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(
+                    "["+Util._V3_LOCATION+"]deployer:gfv3ee6:localhost:4848"); //inst.formatUri( "localhost", 4848));
             boolean wasRunning = inst.isRunning();
 
             inst.remove();
@@ -131,7 +134,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
             }
 
             try {
-                ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
+                ServerRegistry.getInstance().checkInstanceExists("["+Util._V3_LOCATION+"]deployer:gfv3ee6:localhost:4848"); //gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
             } catch (Exception e) {
                 if (wasRunning && inst.isRunning()) {
                     fail("remove did not stop the instance");

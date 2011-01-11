@@ -496,7 +496,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private TopComponentDroppable findMainWindowDroppable(
     Point location, int kind, TopComponent transfer) {
         
-        MainWindow mainWindow = (MainWindow)WindowManagerImpl.getInstance().getMainWindow();
+        JFrame mainWindow = (JFrame)WindowManagerImpl.getInstance().getMainWindow();
 
         if (!ZOrderManager.getInstance().isOnTop(mainWindow, location)) {
             return null;
@@ -635,7 +635,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Indicates whether the cursor is around center panel of main window.
      * In that case is needed also to provide a drop. */
     static boolean isAroundCenterPanel(Point location) {
-        Component desktop = ((MainWindow)WindowManagerImpl.getInstance().getMainWindow()).getDesktop();
+        Component desktop = MainWindow.getInstance().getDesktop();
         if(desktop == null) {
             return false;
         }
@@ -683,7 +683,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Indicates whether the cursor is around center panel of main window.
      * In that case is needed also to provide a drop. */
     static boolean isNearEdge(Point location, ViewAccessor viewAccessor) {
-        Component desktop = ((MainWindow)WindowManagerImpl.getInstance().getMainWindow()).getDesktop();
+        Component desktop = MainWindow.getInstance().getDesktop();
         if(desktop == null) {
             return false;
         }
@@ -1155,7 +1155,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         /** Implements <code>TopComponentDroppable</code>. */
         public Component getDropComponent() {
-            return ((MainWindow)WindowManagerImpl.getInstance().getMainWindow()).getDesktop();
+            return MainWindow.getInstance().getDesktop();
         }
         
         /** Implements <code>TopComponentDroppable</code>. */

@@ -43,52 +43,33 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.WeakListeners;
 
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-    private final FileObject libraryDescriptorFile;
     private FaceletsLibraryDescriptor libraryDescriptor;
-
-    private FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            support.libraryChanged(ClassBasedFaceletsLibrary.this);
-        }
-    };
+    private final String defaultPrefix;
+    private final URL libraryDescriptorSource;
 
     public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, final FaceletsLibrarySupport support, String namespace) {
         super(support, namespace);
-        if (libraryDescriptorSourceURL == null) {
-            throw new NullPointerException("libraryDescriptorSourceURL cannot be null!"); //NOI18N
-        }
-        libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
-        if (libraryDescriptorFile == null) {
-            Logger.getAnonymousLogger().info(
-                    String.format("Cannot convert facelets library descriptor's URL %s into a FileObject?!?!",
-                    libraryDescriptorSourceURL.toString())); //NOI18N
-        } else {
-            //listen on the library descriptor for changes and possibly reset libraries cache
-            libraryDescriptorFile.addFileChangeListener(
-                    WeakListeners.create(FileChangeListener.class, FILE_CHANGE_LISTENER, libraryDescriptorFile));
+        assert libraryDescriptorSourceURL != null;
+        
+        this.defaultPrefix = generateDefaultPrefix();
+        this.libraryDescriptorSource = libraryDescriptorSourceURL;
 
-            //parse the descriptor
-            try {
-                libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
-            } catch (LibraryDescriptorException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        FileObject libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
+        try {
+            libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
+        } catch (LibraryDescriptorException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -97,13 +78,36 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
         this.components.addAll(components);
     }
 
+    @Override
+    public URL getLibraryDescriptorSource() {
+        return libraryDescriptorSource;
+    }
+
+    @Override
+    public LibraryType getType() {
+        return LibraryType.CLASS;
+    }
+
+    @Override
+    public String getDefaultNamespace() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultPrefix() {
+        //non standard library will use a prefix generated from the library namespace
+        String superdefaultPrefix = super.getDefaultPrefix();
+        return superdefaultPrefix != null ? superdefaultPrefix : defaultPrefix;
+    }
+    
+    @Override
     public Collection<NamedComponent> getComponents() {
         return Collections.unmodifiableCollection(components);
     }
 
-    public LibraryDescriptor getLibraryDescriptor() {
-        LibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
-        return ld == null ? libraryDescriptor : ld;
+    @Override
+    public FaceletsLibraryDescriptor getLibraryDescriptor() {
+        return libraryDescriptor;
     }
 
     public void putConverter(String name, String id) {
@@ -158,6 +162,37 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     public Function createFunction(String name, Method method) {
         return new Function(name, method);
+    }
+
+    private String generateDefaultPrefix() {
+        //generate a default prefix from the namespace
+        String ns = getNamespace();
+        final String HTTP_PREFIX = "http://"; //NOI18N
+        if(ns.startsWith(HTTP_PREFIX)) {
+            ns = ns.substring(HTTP_PREFIX.length());
+        }
+        StringTokenizer st = new StringTokenizer(ns, "/.");
+        List<String> tokens = new LinkedList<String>();
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if(token.length() > 0) {
+                tokens.add(token);
+            }
+        }
+        if(tokens.isEmpty()) {
+            //shoult not happen for normal URLs
+            return "lib"; //NOI18N
+        }
+
+        if(tokens.size() == 1) {
+            return tokens.iterator().next();
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for(String token : tokens) {
+                buf.append(token.charAt(0));
+            }
+            return buf.toString();
+        }
     }
 
    

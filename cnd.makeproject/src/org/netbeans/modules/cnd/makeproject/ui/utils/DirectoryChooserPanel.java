@@ -106,11 +106,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         //instructionsTextArea.setText(txt);
     }
 
-    public void setListData(List<String> data) {
-        myListEditorPanel.setListData(data);
-    }
-
-    public List<String> getListData() {
+    private List<String> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -251,12 +247,12 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            String itemPath = CndPathUtilitities.naturalize(fileChooser.getSelectedFile().getPath());
+            String itemPath = CndPathUtilitities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
             itemPath = ProjectSupport.toProperPath(
-                    CndPathUtilitities.naturalize(baseDir),
+                    CndPathUtilitities.naturalizeSlashes(baseDir),
                     itemPath,
                     MakeProjectOptions.getPathMode());
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             return itemPath;
         }
 
@@ -316,15 +312,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            List<String> vector = super.getListData();
-            Object[] arr = vector.toArray();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == o) {
-                    vector.remove(i);
-                    vector.add(i, newS);
-                    break;
-                }
-            }
+            replaceElement(o, newS);
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -59,6 +59,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -1267,7 +1269,7 @@ public final class AntProjectHelper {
      *                 use / or \ as the path separator
      * @return an absolute file corresponding to it
      */
-    public File resolveFile(String filename) {
+    public @NonNull File resolveFile(@NonNull String filename) {
         if (filename == null) {
             throw new NullPointerException("Attempted to pass a null filename to resolveFile"); // NOI18N
         }
@@ -1279,7 +1281,7 @@ public final class AntProjectHelper {
      * @param filename a pathname according to Ant conventions
      * @return a file object it represents, or null if there is no such file object in known filesystems
      */
-    public FileObject resolveFileObject(String filename) {
+    public @CheckForNull FileObject resolveFileObject(@NonNull String filename) {
         if (filename == null) {
             throw new NullPointerException("Must pass a non-null filename"); // NOI18N
         }
@@ -1293,7 +1295,7 @@ public final class AntProjectHelper {
      * @param path an Ant-style abstract path
      * @return an absolute, locally usable path
      */
-    public String resolvePath(String path) {
+    public @NonNull String resolvePath(@NonNull String path) {
         if (path == null) {
             throw new NullPointerException("Must pass a non-null path"); // NOI18N
         }

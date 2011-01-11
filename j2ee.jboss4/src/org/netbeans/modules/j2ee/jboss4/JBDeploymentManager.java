@@ -53,8 +53,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLClassLoader;
-import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -90,6 +90,8 @@ public class JBDeploymentManager implements DeploymentManager {
     private DeploymentManager dm;
     private String realUri;
     private MBeanServerConnection rmiServer;
+    
+    private JBoss5ProfileServiceProxy profileServiceProxy;
 
     private int debuggingPort = 8787;
 
@@ -143,64 +145,81 @@ public class JBDeploymentManager implements DeploymentManager {
 
     public synchronized MBeanServerConnection getRMIServer() {
         if(rmiServer == null) {
-            ClassLoader oldLoader = null;
-
-            try {
-                oldLoader = Thread.currentThread().getContextClassLoader();
-                InstanceProperties ip = this.getInstanceProperties();
-                URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
-                        ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
-                Thread.currentThread().setContextClassLoader(loader);
-
-                JBProperties props = getProperties();
-                Hashtable env = new Hashtable();
-
-                // Sets the jboss naming environment
-                String jnpPort = JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
-                jnpPort  = ( jnpPort != null && jnpPort.trim().length() > 0 ) ? jnpPort.trim() : "1099";
-
-                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
-                env.put(Context.PROVIDER_URL, "jnp://localhost"+ ( jnpPort.length()  > 0 ? (":"  + jnpPort)  : "") );
-                env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
-                env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
-                env.put("jnp.disableDiscovery", Boolean.TRUE);
-
-                final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
-                String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
-
-                File securityConf = new File(props.getRootDir(), "/client/auth.conf");
-                if (securityConf.exists()) {
-                    env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
-                    env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
-                    env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
-                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
-                }
-
-                // Gets naming context
-                InitialContext ctx = new InitialContext(env);
-
-                //restore java.security.auth.login.config system property
-                if (oldAuthConf != null) {
-                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
-                } else {
-                    System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
-                }
-
-                // Lookup RMI Adaptor
-                rmiServer = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
-            } catch (NameNotFoundException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (NamingException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } catch (Exception ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            } finally {
-                if (oldLoader != null)
-                    Thread.currentThread().setContextClassLoader(oldLoader);
-            }
+            init();
         }
 
         return rmiServer;
+    }
+    
+    public synchronized JBoss5ProfileServiceProxy getProfileService() {
+        if(profileServiceProxy == null) {
+            init();
+        }
+
+        return profileServiceProxy;
+    }    
+    
+    private void init() {
+        ClassLoader oldLoader = null;
+
+        try {
+            oldLoader = Thread.currentThread().getContextClassLoader();
+            InstanceProperties ip = this.getInstanceProperties();
+            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
+                    ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+            Thread.currentThread().setContextClassLoader(loader);
+
+            JBProperties props = getProperties();
+            Properties env = new Properties();
+
+            // Sets the jboss naming environment
+            String jnpPort = JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+            jnpPort  = ( jnpPort != null && jnpPort.trim().length() > 0 ) ? jnpPort.trim() : "1099";
+
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
+            env.put(Context.PROVIDER_URL, "jnp://localhost"+ ( jnpPort.length()  > 0 ? (":"  + jnpPort)  : "") );
+            env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
+            env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
+            env.put("jnp.disableDiscovery", Boolean.TRUE);
+
+            final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
+            String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+
+            env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
+            env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
+
+            File securityConf = new File(props.getRootDir(), "/client/auth.conf");
+            if (securityConf.exists()) {
+                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
+                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
+            }
+
+            // Gets naming context
+            InitialContext ctx = new InitialContext(env);
+
+            //restore java.security.auth.login.config system property
+            if (oldAuthConf != null) {
+                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
+            } else {
+                System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+            }
+
+            // Lookup RMI Adaptor
+            rmiServer = (MBeanServerConnection) ctx.lookup("/jmx/invoker/RMIAdaptor");
+            Object service = ctx.lookup("ProfileService");
+            if (service != null) {
+                profileServiceProxy = new JBoss5ProfileServiceProxy(service);
+            }
+        } catch (NameNotFoundException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (NamingException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } finally {
+            if (oldLoader != null)
+                Thread.currentThread().setContextClassLoader(oldLoader);
+        }        
     }
 
     public Object invokeMBeanOperation(ObjectName name, String method, Object[] params, String[] signature)

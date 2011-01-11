@@ -535,7 +535,7 @@ public abstract class EditorView extends View {
 
     private void checkBounds(int offset) throws BadLocationException {
         Document doc = getDocument();
-        if (offset < 0 || offset > doc.getLength()) {
+        if (offset < 0 || offset > doc.getLength() + 1) {
             throw new BadLocationException("Invalid offset=" + offset + ", docLen=" + doc.getLength(), offset); // NOI18N
         }
     }

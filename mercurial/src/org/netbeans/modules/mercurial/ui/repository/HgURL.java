@@ -68,7 +68,10 @@ public final class HgURL {
         HTTP("http", true),                                             //NOI18N
         HTTPS("https", true),                                           //NOI18N
         STATIC_HTTP("static-http", true),                               //NOI18N
-        SSH("ssh", true);                                               //NOI18N
+        SSH("ssh", true),                                               //NOI18N
+        SVN_HTTP("svn+http", true),                                     //NOI18N
+        SVN_HTTPS("svn+https", true),                                   //NOI18N
+        SVN_SSH("svn+ssh", true);                                       //NOI18N
 
         private static int longestSchemeName;
 

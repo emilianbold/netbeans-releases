@@ -169,4 +169,8 @@ public class UnitCategory {
 //        fireTableCellUpdated( firstRow-1, COL_GROUP );
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[" + name + "]";
+    }
 }

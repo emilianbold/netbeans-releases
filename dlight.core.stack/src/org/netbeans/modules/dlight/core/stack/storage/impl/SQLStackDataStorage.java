@@ -304,10 +304,15 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             try {
                 while (rs.next()) {
                     Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
                     String funcName = rs.getString(2);
-                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3), rs.getString(6)), metrics));
+                    String fileName = rs.getString(5);
+                    long line_number  = rs.getLong(6);
+                    String createdFullName = funcName +
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
+                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName,
+                            createdFullName, fileName), metrics));
                 }
             } finally {
                 rs.close();
@@ -328,10 +333,15 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             try {
                 while (rs.next()) {
                     Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
                     String funcName = rs.getString(2);
-                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3), rs.getString(6)), metrics));
+                    String fileName = rs.getString(5);
+                    long line_number  = rs.getLong(6);
+                    String createdFullName = funcName + 
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
+                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, 
+                            createdFullName, fileName), metrics));
                 }
             } finally {
                 rs.close();
@@ -350,12 +360,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
             PreparedStatement select = stmtCache.getPreparedStatement(
-                    "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, " //NOI18N
-                    + "SUM(FuncMetricAggr.time_excl) AS time_excl, SourceFiles.source_file " + //NOI18N
+                    "SELECT Func.func_id, Func.func_name, SUM(FuncMetricAggr.time_incl) AS time_incl, " //NOI18N
+                    + "SUM(FuncMetricAggr.time_excl) AS time_excl, SourceFiles.source_file, Func.line_number  " + //NOI18N
                     " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
                     " LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N                    
                     (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
-                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
+                    "GROUP BY Func.func_id, Func.func_name,  SourceFiles.source_file, Func.line_number " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
                 select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
@@ -367,10 +377,15 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             try {
                 while (rs.next()) {
                     Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
                     String name = rs.getString(2);
-                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3), rs.getString(6)), metrics));
+                    String fileName = rs.getString(5);
+                    long line_number  = rs.getLong(6);
+                    String createdFullName = name +
+                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
+                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, 
+                            createdFullName, fileName), metrics));
                 }
             } finally {
                 rs.close();
@@ -460,7 +475,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     private long generateNodeId(long callerId, long funcId, long offset, int lineNumber) {
         synchronized (nodeCache) {
-            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, offset);
+            long lastNodeKey = offset;
+            if (lineNumber != -1){//use ut as a key
+                lastNodeKey = lineNumber;
+            }
+            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, lastNodeKey);
             Long nodeId = nodeCache.get(cacheKey);
             if (nodeId == null) {
                 nodeId = ++nodeIdSequence;
@@ -478,9 +497,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         String funcName = fname.toString();
         String fullFuncName = funcName;
         int source_file_index = -1;
+        int line_number = -1;
         //check if there is a source file name information        
         if (sourceFileInfo != null && sourceFileInfo.getFileName() != null) {
             //funcName = FunctionNameUtils.getFullFunctionName(funcName);
+            line_number = sourceFileInfo.getLine();
             int plusPos = lastIndexOf(funcName, '+'); // NOI18N
             if (0 <= plusPos) {
                 funcName = funcName.substring(0, plusPos);
@@ -521,7 +542,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             Long funcId = funcCache.get(funcName);
             if (funcId == null) {
                 funcId = ++funcIdSequence;
-                AddFunctionRequest cmd = requestsProvider.addFunction(funcId, funcName, source_file_index, fullFuncName);
+                AddFunctionRequest cmd = requestsProvider.addFunction(funcId, funcName, source_file_index, line_number);
                 requestsProcessor.queueRequest(cmd);
                 funcCache.put(funcName, funcId);
             }
@@ -554,8 +575,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         StringBuilder buf = new StringBuilder();
         int size = path.size();
 
-        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
-                + " S.source_file  FROM Node AS N "); //NOI18N
+        buf.append(" SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
+                + " S.source_file, N.line_number  FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
         buf.append(" LEFT JOIN SourceFiles AS S ON F.func_source_file_id = S.id  "); //NOI18N        
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
@@ -572,7 +593,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, S.source_file, N.line_number"); //NOI18N
         return buf.toString();
     }
 
@@ -580,8 +601,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         StringBuilder buf = new StringBuilder();
         int size = path.size();
 
-        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
-                + " S.source_file  FROM Node AS N1 "); //NOI18N
+        buf.append("SELECT F.func_id, F.func_name,  SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
+                + " S.source_file, N1.line_number  FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < size; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
@@ -597,7 +618,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, S.source_file, N1.line_number"); //NOI18N
         return buf.toString();
     }
 
@@ -862,7 +883,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Node.line_number, "  //NOI18N
+                        + "Func.func_name, "//NOI18N
+                        + " SourceFiles.source_file " + // NOI18N
                         "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N
                         "WHERE node_id = ?"); // NOI18N
                 ps.setLong(1, nodeID);
@@ -870,10 +893,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 ResultSet rs = ps.executeQuery();
                 try {
                     if (rs.next()) {
-                        String funcName = rs.getString(5);
-                        String fullFuncName = rs.getString(6);
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, rs.getString(7));
-                        result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
+                        String funcName = rs.getString(6);
+                        long line_number = rs.getLong(5);
+                        String fileName = rs.getString(7);
+                        final long offset = rs.getLong(4);
+                        String fullFuncName = funcName + "+0x" + Long.toHexString(offset) + (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, fileName);
+                        result.add(new FunctionCallImpl(func, offset, new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
                     } else {
                         break;

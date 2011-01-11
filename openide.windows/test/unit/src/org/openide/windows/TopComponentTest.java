@@ -44,6 +44,7 @@
 
 package org.openide.windows;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -66,6 +67,7 @@ import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.io.NbMarshalledObject;
@@ -82,6 +84,22 @@ public class TopComponentTest extends NbTestCase {
     
     public TopComponentTest(String testName) {
         super(testName);
+    }
+    
+    public void testPreferredIDAndIconTakenFromAnnotation() {
+        @TopComponent.Description(
+            preferredID="my.id", iconBase="org/openide/windows/icon.png",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED    
+        )
+        class MyTC extends TopComponent {
+        }
+        TopComponent tc = new MyTC();
+        
+        assertEquals("ID is OK", "my.id", tc.preferredID());
+        Image image = ImageUtilities.loadImage("org/openide/windows/icon.png");
+        assertEquals("Image is OK", image, tc.getIcon());
+        
+        assertEquals("Only opened", TopComponent.PERSISTENCE_ONLY_OPENED, tc.getPersistenceType());
     }
 
     public void testCanTCGarbageCollectWhenActionInMap() {

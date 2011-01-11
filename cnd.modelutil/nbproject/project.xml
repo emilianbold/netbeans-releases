@@ -182,6 +182,7 @@
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
@@ -197,6 +198,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
                 <package>org.netbeans.modules.cnd.modelutil.ui</package>
             </friend-packages>

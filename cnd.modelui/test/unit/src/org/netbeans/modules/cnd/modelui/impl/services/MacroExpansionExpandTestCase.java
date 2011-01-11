@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Tests for expand(...) MacroExpansionDocProviderImpl
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 

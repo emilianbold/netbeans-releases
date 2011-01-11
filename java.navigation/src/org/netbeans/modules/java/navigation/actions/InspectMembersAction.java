@@ -69,8 +69,8 @@ public final class InspectMembersAction extends AbstractNavigationAction {
             final FileObject fileObject = dataObject.getPrimaryFile();
 
             if (fileObject != null && 
-                    "java".equalsIgnoreCase(fileObject.getExt()) && // NOI18N
-                    "text/x-java".equals(fileObject.getMIMEType())) { // NOI18N
+                    (("java".equalsIgnoreCase(fileObject.getExt()) && "text/x-java".equals(fileObject.getMIMEType())) || //NOI18N
+                    "application/x-class-file".equals(fileObject.getMIMEType()))){ // NOI18N
                 JavaMembers.show(fileObject);
                 return;
             }

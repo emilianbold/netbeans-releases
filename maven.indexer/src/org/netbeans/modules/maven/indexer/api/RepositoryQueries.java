@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -118,6 +119,7 @@ public final class RepositoryQueries {
                 toRet.addAll(bq.getRecords(groupId, artifactId, version, rps));
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
 
@@ -152,6 +154,7 @@ public final class RepositoryQueries {
                 toRet.addAll(bq.getVersions(groupId, artifactId, rps));
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
 
@@ -201,14 +204,13 @@ public final class RepositoryQueries {
     }
     
     public static List<NBVersionInfo> findBySHA1(File file, RepositoryInfo... repos) {
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         try {
             String calculateChecksum = RepositoryUtil.calculateSHA1Checksum(file);
             return findBySHA1(calculateChecksum, repos);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return toRet;
+        return Collections.emptyList();
         
     }
 
@@ -224,6 +226,7 @@ public final class RepositoryQueries {
                 }
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
     
@@ -247,6 +250,7 @@ public final class RepositoryQueries {
                 }
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
 
@@ -308,6 +312,7 @@ public final class RepositoryQueries {
                 }
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
     
@@ -372,6 +377,7 @@ public final class RepositoryQueries {
                 }
             }
         }
+        Collections.sort(toRet);
         return toRet;
     }
 

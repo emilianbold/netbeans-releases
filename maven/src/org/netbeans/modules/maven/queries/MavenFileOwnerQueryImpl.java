@@ -168,7 +168,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             repoS += File.separatorChar; // ~/.m2/repository/
         }
         String parentGroupS = parentGroup.getAbsolutePath();
-        assert !parentGroupS.endsWith(File.separator) : parentGroupS;
+        if (parentGroupS.endsWith(File.separator)) {
+            parentGroupS = parentGroupS.substring(0, parentGroupS.length() - 1);
+        }
         if (parentGroupS.startsWith(repoS)) {
             String groupID = parentGroupS.substring(repoS.length()).replace(File.separatorChar, '.'); // org.apache.commons
             String key = groupID + ':' + artifactID; // org.apache.commons:commons-math

@@ -60,8 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -256,8 +254,8 @@ public final class TaskProvider extends PushTaskScanner {
     }
     
     private static final class Work implements Runnable {
-        private FileObject fileOrRoot;
-        private Callback callback;
+        private final FileObject fileOrRoot;
+        private final Callback callback;
 
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
@@ -272,6 +270,7 @@ public final class TaskProvider extends PushTaskScanner {
             return callback;
         }
         
+        @Override
         public void run() {
             FileObject file = getFileOrRoot();
 

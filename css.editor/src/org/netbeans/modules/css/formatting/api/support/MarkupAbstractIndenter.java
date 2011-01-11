@@ -234,7 +234,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     }
 
-    private final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
+    private MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
+        return createMarkupItem(token, openingTag, indentation, false);
+    }
+    
+    private MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation, boolean foreign) {
         String tagName = getTokenName(token);
         if (openingTag) {
             boolean optionalEnd = isClosingTagOptional(getTokenName(token));
@@ -243,20 +247,22 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (optionalEnd && empty != null && !empty.booleanValue()) {
                 children = getTagChildren(tagName);
             }
-            return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
+            return new MarkupItem(tagName, true, indentation, optionalEnd, children, 
+                    empty != null ? empty.booleanValue() : false, false, false, foreign);
         } else {
             Boolean empty = isEmptyTag(tagName);
-            return new MarkupItem(tagName, false, indentation, false, null, empty != null ? empty.booleanValue() : false, false, false);
+            return new MarkupItem(tagName, false, indentation, false, null, 
+                    empty != null ? empty.booleanValue() : false, false, false, foreign);
         }
 
     }
 
     private static MarkupItem createVirtualMarkupItem(String tagName, boolean empty) {
-        return new MarkupItem(tagName, false, -1, false, null, empty, true, false);
+        return new MarkupItem(tagName, false, -1, false, null, empty, true, false, false);
     }
 
     private static MarkupItem createEliminatedMarkupItem(String tagName, boolean openingTag) {
-        return new MarkupItem(tagName, openingTag, -1, false, null, false, false, true);
+        return new MarkupItem(tagName, openingTag, -1, false, null, false, false, true, false);
     }
 
     private boolean moveToOpeningTag(JoinedTokenSequence<T1> tokenSequence) {
@@ -327,7 +333,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 //assert item.openingTag : dumpMoreDiagnosticToResolveIssue162700(fileStack);
                 break;
             }
-            if (!item.empty) {
+            if (!item.empty || item.foreignLanguageTag) {
                 // eliminate opening and closing sequence on one line:
                 IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
                     lineStartOffset);
@@ -417,7 +423,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
 
             if (isOpenTagNameToken(token)) {
-                lineItems.add(createMarkupItem(token, true, getIndentationSize()));
+                boolean foreign = isForeignLanguageStartToken(token, ts);
+                lineItems.add(createMarkupItem(token, true, getIndentationSize(), foreign));
                 setInOpeningTagAttributes(true);
                 lastOpenTagName = getTokenName(token);
             } else if (isTagArgumentToken(token) && getAttributesIndent() == -1) {
@@ -431,7 +438,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 ts.moveIndex(index);
                 ts.moveNext();
             } else if (isCloseTagNameToken(token)) {
-                lineItems.add(createMarkupItem(token, false, getIndentationSize()));
+                boolean foreign = isForeignLanguageEndToken(token, ts);
+                lineItems.add(createMarkupItem(token, false, getIndentationSize(), foreign));
                 String tokenName = getTokenName(token);
                 // unformattable tags can be nested (eg. textarea within pre) so
                 // make sure we close unformattable section only by corresponing tag:
@@ -520,7 +528,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         // there can be multiple virtual closing tags before 'tokenName' one:
                         for (int i=index; i< fileStack.size(); i++) {
                             MarkupItem item = fileStack.get(i);
-                            if (item.empty) {
+                            if (item.empty && !item.foreignLanguageTag) {
                                 continue;
                             }
                             assert !item.processed : item;
@@ -610,9 +618,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         public boolean virtual;
         public boolean empty;
         public boolean eliminated;
+        public boolean foreignLanguageTag;
 
         public MarkupItem(String tagName, boolean openingTag, int indentLevel,
-                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual, boolean eliminated) {
+                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual, 
+                boolean eliminated, boolean foreignLanguageTag) {
             this.tagName = tagName;
             this.openingTag = openingTag;
             this.indentLevel = indentLevel;
@@ -622,6 +632,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             this.empty = empty;
             this.virtual = virtual;
             this.eliminated = eliminated;
+            this.foreignLanguageTag = foreignLanguageTag;
         }
 
         @Override
@@ -634,6 +645,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     "processed="+processed+"," +
                     //"children="+children+"," +
                     "virtual="+virtual+"," +
+                    "foreign="+foreignLanguageTag+"," +
                     "empty="+empty+"]";
         }
 

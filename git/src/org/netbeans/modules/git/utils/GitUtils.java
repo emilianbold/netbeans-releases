@@ -59,6 +59,7 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
@@ -318,7 +319,7 @@ public final class GitUtils {
      * @param ctx
      * @return
      */
-    public static File[] getActionRoots(VCSContext ctx) {
+    public static HashMap.SimpleImmutableEntry<File, File[]> getActionRoots(VCSContext ctx) {
         Set<File> rootsSet = ctx.getRootFiles();
         Map<File, List<File>> map = new HashMap<File, List<File>>();
 
@@ -348,13 +349,16 @@ public final class GitUtils {
             if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
                 File selection = fs.getSelectedFile();
                 List<File> l = map.get(selection);
-                return l.toArray(new File[l.size()]);
+                return new HashMap.SimpleImmutableEntry<File, File[]>(selection, l.toArray(new File[l.size()]));
             } else {
                 return null;
             }
+        } else if (map.isEmpty()) {
+            return null;
         } else {
-            List<File> l = map.get(map.keySet().iterator().next());
-            return l.toArray(new File[l.size()]);
+            File root = map.keySet().iterator().next();
+            List<File> l = map.get(root);
+            return new HashMap.SimpleImmutableEntry<File, File[]>(root, l.toArray(new File[l.size()]));
         }
     }
 
@@ -480,6 +484,15 @@ public final class GitUtils {
             // not found, continue
         }
         return false;
+    }
+
+    /**
+     * Determines if the context has been created in a git view, i.e. it consists of instances of {@link GitStatusNode}
+     * @param context
+     * @return true if the context contains instances of {@link GitStatusNode}
+     */
+    public static boolean isFromInternalView (VCSContext context) {
+        return context.getElements().lookup(GitStatusNode.class) != null;
     }
     
     private GitUtils() {

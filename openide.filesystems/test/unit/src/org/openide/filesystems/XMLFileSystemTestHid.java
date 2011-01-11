@@ -61,7 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
 import org.openide.util.Enumerations;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
@@ -900,7 +899,42 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
         assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
-    }    
+    }
+
+    public void testFileUtilCopyAttributesOnOwnLayer() throws Exception {
+        File f = new File(getWorkDir(), "sample.xml");
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(("<?xml version='1.0' encoding='UTF-8'?>" +
+                "<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.2//EN' 'http://www.netbeans.org/dtds/filesystem-1_2.dtd'>" +
+                "<filesystem>" +
+                "<folder name='Templates'>" +
+                "<folder name='Other'>" +
+                "<file name='special'>" +
+                "  <attr name='ii' methodvalue='" + AttributesTestHidden.class.getName() + ".hello'/>" +
+                "  <attr name='jj' newvalue='" + AttributesTestHidden.Data.class.getName() + "'/>" +
+                "  <attr name='temp' boolvalue='true'/>" +
+                "</file></folder></folder></filesystem>"
+        ).getBytes());
+        fos.close();
+
+        File r = new File(getWorkDir(), "root");
+        r.mkdirs();
+        LocalFileSystem target = new LocalFileSystem();
+        target.setRootDirectory(r);
+
+        FileSystem source = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
+        FileObject template = source.findResource("Templates/Other/special");
+        assertNotNull("template found", template);
+        FileObject foTested = target.getRoot().createData("copiedTemplate");
+        FileUtil.copyAttributes(template, foTested);
+        assertEquals("template copied too", Boolean.TRUE, foTested.getAttribute("temp"));
+        assertEquals("instantiatingIterator called", "Hello ii@copiedTemplate", foTested.getAttribute("ii"));
+        assertEquals("No data instantiated", 0, AttributesTestHidden.Data.cnt);
+        Object newV = foTested.getAttribute("jj");
+        assertNotNull("Value created", newV);
+        assertEquals(AttributesTestHidden.Data.class, newV.getClass());
+        assertEquals("One value instantiated", 1, AttributesTestHidden.Data.cnt);
+    }
 
     private static Image icon;
 
@@ -929,6 +963,30 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     }
     public static Object mapDisplayName(Map map) {
         return map.get("displayName");
+    }
+
+    public  static class Value {
+        private Value() { }
+    }
+    public void testNewValueForNonPublicConstructor() throws Exception {
+        File f = writeFile("layer3.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='v' newvalue='org.openide.filesystems.XMLFileSystemTestHid$Value'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+              
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object v = fo.getAttribute("v");
+        assertNotNull("Attribute found", v);
+        assertEquals("Right type", Value.class, v.getClass());
+        
     }
 
     public void testVariousXMLAttributes() throws Exception {

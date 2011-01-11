@@ -130,7 +130,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         return new NbmWizardIterator(NB_SUITE_ARCH);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
             return new WizardDescriptor.Panel[] {
                 ArchetypeWizards.basicWizardPanel(vg, false, archetype),
@@ -220,6 +220,9 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                     storeNbAppModuleDirInfo(prj);
                 }
             }
+            if ("SNAPSHOT".equals(version)) { // NOI18N
+                addSnapshotRepo(projFile);
+            }
             Templates.setDefinesMainProject(wiz, projects.size() > 1);
             handle.progress(max);
             return projects;
@@ -249,7 +252,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); //NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
             }
@@ -264,7 +267,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     @Override
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(NbmWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+                new Object[] {index + 1, panels.length});
     }
     
     @Override
@@ -320,6 +323,33 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         }
         //TODO report inability to create? or if the file doesn't exist, it was already
         //reported?
+   }
+
+    private static void addSnapshotRepo(File projFile) throws IOException {
+        FileObject prjDir = FileUtil.toFileObject(projFile);
+        if (prjDir != null) {
+            FileObject pom = prjDir.getFileObject("pom.xml");
+            if (pom != null) {
+                Project prj = ProjectManager.getDefault().findProject(prjDir);
+                if (prj == null) {
+                    return;
+                }
+                Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
+                    public @Override void performOperation(POMModel model) {
+                        Repository repo = model.getFactory().createRepository();
+                        repo.setId("netbeans-snapshot"); // NOI18N
+                        repo.setName("NetBeans Snapshots"); // NOI18N
+                        /* Is the following necessary?
+                        RepositoryPolicy policy = model.getFactory().createSnapshotRepositoryPolicy();
+                        policy.setEnabled(true);
+                        repo.setSnapshots(policy);
+                         */
+                        repo.setUrl("http://bits.netbeans.org/netbeans/trunk/maven-snapshot/"); // NOI18N
+                        model.getProject().addRepository(repo);
+                    }
+                }));
+            }
+        }
    }
 
     private static void trimInheritedFromNbmProject(File projFile) throws IOException {

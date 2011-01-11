@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 
 public final class ConsoleWindowAction extends CallableSystemAction {
@@ -64,13 +63,6 @@ public final class ConsoleWindowAction extends CallableSystemAction {
     public String getName() {
 	return Catalog.get("CTL_Cmdio"); // NOI18N
     }
-
-    // interface SystemAction
-    public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-        return debugger != null;
-    }
-
 
     // interface SystemAction
     public HelpCtx getHelpCtx() {

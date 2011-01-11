@@ -55,10 +55,16 @@ import org.openide.util.Utilities;
  */
 public class CndPathUtilitities {
 
+    private static boolean isWindows = Utilities.isWindows();
+
     /**
      * Constructor is private. This class should not be instantiated.
      */
     private CndPathUtilitities() {
+    }
+
+    /*package*/ static void testSetWindows(boolean isWin) {
+        isWindows = isWin;
     }
 
     /** Store the real environment here */
@@ -477,11 +483,17 @@ public class CndPathUtilitities {
         return trimSlashes(dir.trim());
     }
 
+    // keep it for a while since it is used in SolStudio
+    @Deprecated
     public static String normalize(String path) {
+        return normalizeSlashes(path);
+    }
+
+    public static String normalizeSlashes(String path) {
         return path.replaceAll("\\\\", "/"); // NOI18N
     }
 
-    public static String naturalize(String path) {
+    public static String naturalizeSlashes(String path) {
         if (Utilities.isUnix()) {
             return path.replaceAll("\\\\", "/"); // NOI18N
         } else if (Utilities.isWindows()) {
@@ -527,7 +539,7 @@ public class CndPathUtilitities {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
-        } else if (path.indexOf(':') > 0) {
+        } else if (path.indexOf(':') == 1 && isWindows) {
             return true;
         } else {
             return false;

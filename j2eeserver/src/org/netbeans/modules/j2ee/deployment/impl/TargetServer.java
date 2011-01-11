@@ -834,6 +834,10 @@ public class TargetServer {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
+            if (provider.isOnlyCompileOnSaveEnabled()) {
+                // XXXX is this right response? it should not result in any error
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+            }
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
@@ -878,19 +882,21 @@ public class TargetServer {
         }
 
         Set<TargetModule> ret = new HashSet<TargetModule>();
-        for (TargetModule module : modules) {
-            // not my module
-            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
-                    || ! targetNames.contains(module.getTargetName())) {
-                continue;
-            }
+        if (null != modules) {
+            for (TargetModule module : modules) {
+                // not my module
+                if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                        || ! targetNames.contains(module.getTargetName())) {
+                    continue;
+                }
 
-            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
+                TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
 
-            // no longer a deployed module on server
-            if (tmID != null) {
-                module.initDelegate(tmID);
-                ret.add(module);
+                // no longer a deployed module on server
+                if (tmID != null) {
+                    module.initDelegate(tmID);
+                    ret.add(module);
+                }
             }
         }
         return ret.toArray(new TargetModule[ret.size()]);

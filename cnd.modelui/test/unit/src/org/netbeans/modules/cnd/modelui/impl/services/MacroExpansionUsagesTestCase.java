@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Class for MacroExpansionDocProviderImpl tests for usages of macro parameters
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 

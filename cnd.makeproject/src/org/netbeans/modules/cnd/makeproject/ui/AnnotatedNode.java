@@ -85,7 +85,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files == null) {
             return;
         }
-        if (files.size() == 0) {
+        if (files.isEmpty()) {
             return;
         }
         FileObject fo = files.iterator().next();
@@ -115,9 +115,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
     protected final Image annotateIcon(final Image img, final int type) {
         Image annotatedImg = img;
         if (files != null && !files.isEmpty()) {
-            Iterator it = files.iterator();
+            Iterator<FileObject> it = files.iterator();
             try {
-                FileObject fo = (FileObject) it.next();
+                FileObject fo = it.next();
                 if (fo.isValid()) {
                     annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 }
@@ -131,9 +131,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
     protected final String annotateName(final String name) {
         String annotatedName = name;
         if (files != null && !files.isEmpty()) {
-            Iterator it = files.iterator();
+            Iterator<FileObject> it = files.iterator();
             try {
-                FileObject fo = (FileObject) it.next();
+                FileObject fo = it.next();
                 if (fo.isValid()) {
                     annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
                 }
@@ -144,6 +144,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         return annotatedName;
     }
 
+    @Override
     public final void annotationChanged(FileStatusEvent event) {
         if (files == null) {
             return;
@@ -153,9 +154,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
         boolean changed = false;
         if (forceAnnotation || ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange()))) {
-            Iterator it = files.iterator();
+            Iterator<FileObject> it = files.iterator();
             while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
+                FileObject fo = it.next();
                 if (event.hasChanged(fo)) {
                     iconChange |= event.isIconChange();
                     nameChange |= event.isNameChange();
@@ -169,6 +170,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
     }
 
+    @Override
     public final void run() {
         if (forceAnnotation || iconChange) {
             fireIconChange();

@@ -45,6 +45,7 @@
 package org.netbeans.modules.settings.convertors;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
@@ -602,7 +603,9 @@ final class XMLSettingsSupport {
                         }
                     } else {
                         try {
-                            inst = clazz.newInstance();
+                            Constructor<?> c = clazz.getDeclaredConstructor();
+                            c.setAccessible(true);
+                            inst = c.newInstance();
                         } catch (Exception ex) {
                             IOException ioe = new IOException();
                             ioe.initCause(ex);
@@ -665,11 +668,11 @@ final class XMLSettingsSupport {
             try {
                 Object instance;
                 try {
-                    Method method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
+                    Method method = clazz.getDeclaredMethod(targetMethod, new Class[]{FileObject.class});
                     method.setAccessible(true);
                     instance = method.invoke(null, source);
                 } catch (NoSuchMethodException ex) {
-                    Method method = clazz.getMethod(targetMethod);
+                    Method method = clazz.getDeclaredMethod(targetMethod);
                     method.setAccessible(true);
                     instance = method.invoke(null, new Object[0]);
                 }

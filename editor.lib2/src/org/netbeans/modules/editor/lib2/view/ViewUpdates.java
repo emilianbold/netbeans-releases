@@ -138,6 +138,7 @@ public final class ViewUpdates implements DocumentListener {
         int startOffset, int endOffset,
         int modOffset, int offsetDelta, boolean createLocalViews)
     {
+        assert !buildingViews : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
                 paragraphViewIndex, viewFactories, startOffset, endOffset,
                 modOffset, offsetDelta, createLocalViews
@@ -234,10 +235,12 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 // Check if the factories fired any changes
-                int rStartOffset = rebuildStartOffset;
+                int rStartOffset = rebuildStartOffset; // Integer.MAX_VALUE when rebuild not needed
                 int rEndOffset = rebuildEndOffset;
-                boolean rebuildNecessary = isRebuildNecessary();
                 resetRebuildInfo();
+                if (documentView.getViewCount() == 0) {
+                    return; // It would later fail on paragraphViewIndex == -1
+                }
 
                 int insertOffset = evt.getOffset();
                 int insertLength = evt.getLength();
@@ -358,6 +361,9 @@ public final class ViewUpdates implements DocumentListener {
                 int rStartOffset = rebuildStartOffset;
                 int rEndOffset = rebuildEndOffset;
                 resetRebuildInfo();
+                if (documentView.getViewCount() == 0) {
+                    return; // It would later fail on paragraphViewIndex == -1
+                }
 
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
@@ -517,6 +523,8 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             try {
                 documentView.checkDocumentLocked();
+                // Check buildingViews flag since it's possible that asking for a highlight
+                // triggered firing of a highlight change resulting in checkRebuild() call
                 if (!buildingViews && documentView.isActive()) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
@@ -524,7 +532,9 @@ public final class ViewUpdates implements DocumentListener {
                         resetRebuildInfo();
                         int docViewStartOffset = documentView.getStartOffset();
                         int docViewEndOffset = documentView.getEndOffset();
-                        if (rEndOffset <= docViewStartOffset || rStartOffset >= docViewEndOffset) {
+                        if (rEndOffset <= docViewStartOffset || rStartOffset >= docViewEndOffset ||
+                                documentView.getViewCount() == 0)
+                        {
                             // Outside of area covered by document view
                             return;
                         }
@@ -533,7 +543,8 @@ public final class ViewUpdates implements DocumentListener {
 
                         documentView.checkIntegrity();
                         int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
-                        assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex; // NOI18N
+                        assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex + // NOI18N
+                                " for offset=" + rStartOffset; // NOI18N
                         ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
                         // Decide whether create local views - reflect paragraphView length since
                         // a local rebuild inside even a long paragraphView should create local views.
@@ -556,7 +567,6 @@ public final class ViewUpdates implements DocumentListener {
                             LOG.fine("ViewUpdates.checkRebuild-buildViews(): r<" + rStartOffset + "," + rEndOffset + // NOI18N
                                     "> createLocalViews=" + createLocalViews + "\n"); // NOI18N
                         }
-                        resetRebuildInfo();
                         buildViews(paragraphView, paragraphViewIndex,
                                 rStartOffset, rEndOffset,
                                 rEndOffset, 0, createLocalViews);

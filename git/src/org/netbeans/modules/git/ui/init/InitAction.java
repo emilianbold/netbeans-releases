@@ -59,6 +59,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -144,9 +145,8 @@ public class InitAction extends GitAction {
                     client.init(this);
                     Git.getInstance().getFileStatusCache().refreshAllRoots(rootToManage);
                     Git.getInstance().versionedFilesChanged();                       
-                                       
                 } catch (GitException ex) {
-                    LOG.log(Level.WARNING, NAME, ex);
+                    GitClientExceptionHandler.notifyException(ex, true);
                 }
             }            
         };

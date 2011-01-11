@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import java.io.File;
 import java.io.IOException;
 import java.util.WeakHashMap;

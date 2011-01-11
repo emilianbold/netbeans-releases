@@ -48,10 +48,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,15 +61,24 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public final class APTSystemStorage {
     private final Map<String, APTMacroMap> allMacroMaps = new HashMap<String, APTMacroMap>();
-    private final APTIncludePathStorage includesStorage = new APTIncludePathStorage();
+    private final APTIncludePathStorage includesStorage;
     private final static String baseNewName = "#SYSTEM MACRO MAP# "; // NOI18N
-    private final static APTSystemStorage instance = new APTSystemStorage();
+    private final static Map<FileSystem, APTSystemStorage> instances = new WeakHashMap<FileSystem, APTSystemStorage>();
     
-    private APTSystemStorage() {
+    private final FileSystem fileSystem;
+    
+    private APTSystemStorage(FileSystem fs) {
+        this.fileSystem = fs;
+        includesStorage = new APTIncludePathStorage(fs);
     }
     
-    public static APTSystemStorage getDefault() {
-        return instance;
+    public static synchronized APTSystemStorage getInstance(FileSystem fs) {
+        APTSystemStorage storage = instances.get(fs);
+        if (storage == null) {
+            storage = new APTSystemStorage(fs);
+            instances.put(fs, storage);            
+        }
+        return storage;
     }
     
     // it's preferable to use getMacroMap(String configID, List sysMacros)
@@ -112,11 +123,17 @@ public final class APTSystemStorage {
         return includesStorage.get(configID, sysIncludes);
     }   
     
-    public void dispose() {
+    private void disposeImpl() {
         synchronized (allMacroMaps) {
             allMacroMaps.clear();
         }
         includesStorage.dispose();
+    }
+    
+    public synchronized static void dispose() {
+        for (APTSystemStorage storage : instances.values()) {
+            storage.disposeImpl();
+        }
         APTMacroCache.getManager().dispose();
         IncludeDirEntry.disposeCache();
     }

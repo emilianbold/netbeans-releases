@@ -132,12 +132,14 @@ public class StorageAllocator {
     private void deleteDirectory(File path, boolean deleteDir) {
         if( path.exists() ) {
             File[] files = path.listFiles();
-            for(int i=0; i<files.length; i++) {
-                if(files[i].isDirectory()) {
-                    deleteDirectory(files[i], true);
-                } else {
-                    if (!files[i].delete()) {
-                        System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+            if (files != null) {
+                for(int i=0; i<files.length; i++) {
+                    if(files[i].isDirectory()) {
+                        deleteDirectory(files[i], true);
+                    } else {
+                        if (!files[i].delete()) {
+                            System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                        }
                     }
                 }
             }

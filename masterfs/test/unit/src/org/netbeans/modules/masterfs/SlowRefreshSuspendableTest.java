@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupportTest;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
@@ -139,7 +140,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = testFolder.getFileSystem().getRoot().getAttribute("refreshSlow");
+        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 

@@ -47,11 +47,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.fs.WritingQueue;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -70,16 +72,35 @@ import org.openide.util.NbBundle;
         this.out = out;
         this.err = err;
     }
-    
+
     @Override
     public boolean startup(Map<String, String> env2add) {
         try {
-            String hostName = RemoteUtil.getDisplayName(executionEnvironment);
-            if (out != null && WritingQueue.getInstance(executionEnvironment).isBusy()) {
-                out.println(NbBundle.getMessage(getClass(), "FULL_Synchronizing_Message", hostName));
+            // call FileSystemProvider.waitWrites
+            // and print "waiting..." message in the case it does not return within half a second
+
+            final String hostName = RemoteUtil.getDisplayName(executionEnvironment);
+            final Object lock = new Object();
+            final AtomicReference<Boolean> waiting = new AtomicReference<Boolean>(true);
+            if (out != null) {
+                RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            if (waiting.get().booleanValue()) {                                
+                                out.println(NbBundle.getMessage(getClass(), "FULL_Synchronizing_Message", hostName));
+                            }
+                        }
+                    }
+                });
+                task.schedule(500);
             }
             List<String> failedList = new ArrayList<String>();
-            if( WritingQueue.getInstance(executionEnvironment).waitFinished(failedList) ) {
+            boolean written = FileSystemProvider.waitWrites(executionEnvironment, failedList);
+            synchronized (lock) {
+                waiting.set(false);
+            }
+            if( written ) {
                 return true;
             } else {
                 if (err != null) {

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.vmd.componentssupport.options;
 
+import org.netbeans.api.visual.router.RouterFactory;
 import org.openide.util.NbPreferences;
 
 /**
@@ -52,6 +53,7 @@ import org.openide.util.NbPreferences;
 final class ComponentssupportPanel extends javax.swing.JPanel {
 
     private static final String VMD_STRUCTURE_SHOW = "vmd.structure.show"; // NOI18N
+    private static final String VMD_DIRECT_ROUTING = "vmd.direct.routing"; // NOI18N
     private final ComponentssupportOptionsPanelController controller;
 
     ComponentssupportPanel(ComponentssupportOptionsPanelController controller) {
@@ -70,38 +72,44 @@ final class ComponentssupportPanel extends javax.swing.JPanel {
 
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        jCheckBox2 = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ComponentssupportPanel.class, "ComponentssupportPanel.jCheckBox1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ComponentssupportPanel.class, "ComponentssupportPanel.jLabel1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(ComponentssupportPanel.class, "ComponentssupportPanel.jCheckBox2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(8, 8, 8)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(23, 23, 23)
-                        .add(jLabel1))
-                    .add(jCheckBox1))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jCheckBox2)
+                    .add(jCheckBox1)
+                    .add(jLabel1))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jCheckBox1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox2)
+                .add(7, 7, 7)
                 .add(jLabel1)
-                .addContainerGap(123, Short.MAX_VALUE))
+                .addContainerGap(95, Short.MAX_VALUE))
         );
 
         jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentssupportPanel.class, "ComponentssupportPanel.jCheckBox1.text")); // NOI18N
+        jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentssupportPanel.class, "ComponentssupportPanel.jCheckBox2.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
         jCheckBox1.setSelected(NbPreferences.forModule(ComponentssupportPanel.class).getBoolean(VMD_STRUCTURE_SHOW, false));
+        jCheckBox2.setSelected(NbPreferences.forModule(RouterFactory.class).getBoolean(VMD_DIRECT_ROUTING, false));
     }
 
     void store() {
@@ -111,6 +119,7 @@ final class ComponentssupportPanel extends javax.swing.JPanel {
             System.getProperties().setProperty(VMD_STRUCTURE_SHOW, "false"); //NOI18N
         }
         NbPreferences.forModule(ComponentssupportPanel.class).putBoolean(VMD_STRUCTURE_SHOW, jCheckBox1.isSelected());
+        NbPreferences.forModule(RouterFactory.class).putBoolean(VMD_DIRECT_ROUTING, jCheckBox2.isSelected());
     }
 
     boolean valid() {
@@ -119,6 +128,7 @@ final class ComponentssupportPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

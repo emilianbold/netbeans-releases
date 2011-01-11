@@ -61,11 +61,11 @@ public abstract class MultipleRepositoryAction extends GitAction {
     private static final Logger LOG = Logger.getLogger(MultipleRepositoryAction.class.getName());
 
     @Override
-    protected final void performContextAction (Node[] nodes) {
-        final VCSContext context = getCurrentContext(nodes);
+    protected final void performContextAction (final Node[] nodes) {
         Utils.postParallel(new Runnable () {
             @Override
             public void run() {
+                VCSContext context = getCurrentContext(nodes);
                 performAction(context);
             }
         }, 0);

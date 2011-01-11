@@ -62,9 +62,9 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -900,12 +900,18 @@ public class LogReader {
             for(String s : files) {
                 if (relativeFolder == null) {
                     res.add(s);
+                    if (res.size() > 1) {
+                        return res;
+                    }
                 } else {
                     if (subFolder == null) {
                         String path = s;
                         if (path.endsWith(relativeFolder)) {
                             path = path.substring(0,path.length()-relativeFolder.length()-1);
                             res.add(path);
+                            if (res.size() > 1) {
+                                return res;
+                            }
                         }
                     } else {
                         for(String sub : getSubfolders()) {
@@ -915,6 +921,9 @@ public class LogReader {
                                  pathCandidate = pathCandidate.substring(0,j);
                                 if (subFolders.contains(pathCandidate)){
                                     res.add(sub);
+                                    if (res.size() > 1) {
+                                        return res;
+                                    }
                                 }
                             }
                         }
@@ -970,18 +979,20 @@ public class LogReader {
             if (!subFolders.contains(path)){
                 subFolders.add(path);
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isDirectory()) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isDirectory()) {
+                            try {
+                                String canPath = ff[i].getCanonicalPath();
+                                String absPath = ff[i].getAbsolutePath();
+                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                    continue;
+                                }
+                            } catch (IOException ex) {
+                                //Exceptions.printStackTrace(ex);
                             }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
+                            gatherSubFolders(ff[i]);
                         }
-                        gatherSubFolders(ff[i]);
                     }
                 }
             }
@@ -993,14 +1004,16 @@ public class LogReader {
             File d = new File(it);
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        List<String> l = findBase.get(ff[i].getName());
-                        if (l==null){
-                            l = new ArrayList<String>();
-                            findBase.put(ff[i].getName(),l);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            List<String> l = findBase.get(ff[i].getName());
+                            if (l==null){
+                                l = new ArrayList<String>();
+                                findBase.put(ff[i].getName(),l);
+                            }
+                            l.add(d.getAbsolutePath().replace('\\', '/'));
                         }
-                        l.add(d.getAbsolutePath().replace('\\', '/'));
                     }
                 }
             }

@@ -260,11 +260,10 @@ public final class PtyExecutor {
             return cmd;
         }
         List<String> wrapperCmd = new ArrayList<String>();
-        String wrapper = getWrapper();
         if (pgrp != null) {
             wrapperCmd.add(setpgrpCmd());
         }
-        wrapperCmd.add(wrapper);
+        wrapperCmd.add(getWrapper());
         wrapperCmd.add("-pty");
         wrapperCmd.add(pty.slaveName());
         wrapperCmd.addAll(cmd);
@@ -280,7 +279,9 @@ public final class PtyExecutor {
 	    ProcessBuilder pb = new ProcessBuilder(wrappedCmd(program.command(), pty));
 	    pb.directory(program.directory());
 	    pb.environment().putAll(program.environment());
-	    // LATER pb.redirectErrorStream(program.redirectErrorStream());
+	    // LATER
+            pb.redirectErrorStream(true /* LATER program.redirectErrorStream() */);
+            System.out.printf("\nExecuting %s\n", program.command());
 	    process = pb.start();
         } catch (IOException ex) {
             Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
@@ -309,7 +310,7 @@ public final class PtyExecutor {
                     } else if ("ARGS".equals(info)) {
                         System.out.printf("args is \'%s\'\n", line);
                     } else {
-                        System.out.printf("%s\n", line);
+                        System.err.printf("%s\n", line);
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);

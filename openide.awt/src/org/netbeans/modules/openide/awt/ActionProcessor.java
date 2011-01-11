@@ -67,6 +67,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -169,6 +170,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         TypeMirror p2 = type(Presenter.Toolbar.class);
         TypeMirror p3 = type(Presenter.Popup.class);
         TypeMirror caa = type(ContextAwareAction.class);
+        TypeMirror dmc = type(DynamicMenuContent.class);
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
@@ -223,7 +225,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 direct = false;
             } else {
                 TypeMirror type = e.getKind() == ElementKind.CLASS ? e.asType() : ((ExecutableElement) e).getReturnType();
-                direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa);
+                direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa) || isAssignable(type, dmc);
             }
             
             if (direct) {
@@ -277,21 +279,38 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
-            throw new LayerGenerationException("Don't use @ActionReference without @ActionRegistration", e);
+            ActionID id = e.getAnnotation(ActionID.class);
+            if (id != null) {
+                ActionReference ref = e.getAnnotation(ActionReference.class);
+                processReferences(e, ref, id);
+                continue;
+            }
+            throw new LayerGenerationException("Don't use @ActionReference without @ActionID", e);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
             if (e.getKind() != ElementKind.PACKAGE) {
-                throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
-            }
-            ActionReferences refs = e.getAnnotation(ActionReferences.class);
-            for (ActionReference actionReference : refs.value()) {
-                if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
-                    throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                ActionID id = e.getAnnotation(ActionID.class);
+                if (id == null) {
+                    throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
                 }
-                processReferences(e, actionReference, actionReference.id());
+                ActionReferences refs = e.getAnnotation(ActionReferences.class);
+                for (ActionReference actionReference : refs.value()) {
+                    if (!actionReference.id().id().isEmpty() || !actionReference.id().category().isEmpty()) {
+                        throw new LayerGenerationException("Don't specify additional id=@ActionID(...) when using @ActionID on the element", e);
+                    }
+                    processReferences(e, actionReference, id);
+                }
+            } else {
+                ActionReferences refs = e.getAnnotation(ActionReferences.class);
+                for (ActionReference actionReference : refs.value()) {
+                    if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
+                        throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                    }
+                    processReferences(e, actionReference, actionReference.id());
+                }
             }
         }
         return true;

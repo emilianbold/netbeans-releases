@@ -69,7 +69,11 @@ public class StepOverActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-	getDebugger().stepOver();
+        if (inDis()) {
+            getDebugger().stepOverInst();
+        } else {
+            getDebugger().stepOver();
+        }
     }
 
     /* interface NativeActionsProvider */

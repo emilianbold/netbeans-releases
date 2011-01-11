@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
@@ -57,6 +59,7 @@ public class VersionCommand extends SvnCommand {
 
     private List<String> output = new ArrayList<String>();
     private boolean unsupportedVersion = false;
+    private boolean supportedMetadataFormat = false;
     
     @Override
     protected int getCommand() {
@@ -97,6 +100,11 @@ public class VersionCommand extends SvnCommand {
 
             outputProduced = true;
 
+            int pos = string.indexOf(" version ");
+            if (pos > -1) {
+                Subversion.LOG.log(Level.INFO, "Commandline client version: {0}", string.substring(pos + 9));
+            }
+
             if(string.indexOf("version 0.")  > -1 ||
                string.indexOf("version 1.0") > -1 ||
                string.indexOf("version 1.1") > -1 ||
@@ -105,6 +113,9 @@ public class VersionCommand extends SvnCommand {
                string.indexOf("version 1.4") > -1) {
                 unsupportedVersion = true;
                 return false;
+            } else if(string.indexOf("version 1.5")  > -1 
+                    || string.indexOf("version 1.6") > -1) {
+                supportedMetadataFormat = true;
             }
         }
         return outputProduced;
@@ -112,6 +123,10 @@ public class VersionCommand extends SvnCommand {
 
     public boolean isUnsupportedVersion() {
         return unsupportedVersion;
+    }
+
+    public boolean isMetadataFormatSupported() {
+        return supportedMetadataFormat;
     }
 
     public boolean isSupportedJavaHl() {

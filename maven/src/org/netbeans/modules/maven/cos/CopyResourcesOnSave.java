@@ -50,13 +50,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -74,37 +74,22 @@ import org.openide.util.RequestProcessor;
  */
 public class CopyResourcesOnSave extends FileChangeAdapter {
 
-    private static CopyResourcesOnSave instance = new CopyResourcesOnSave();
+    private CopyResourcesOnSave() {}
+
+    private static final CopyResourcesOnSave instance = new CopyResourcesOnSave();
     private static final RequestProcessor RP = new RequestProcessor(CopyResourcesOnSave.class);
     private static final Logger LOG = Logger.getLogger(CopyResourcesOnSave.class.getName());
+    private static final AtomicInteger openedCount = new AtomicInteger();
 
-    private boolean isAdded = false;
-    /** Creates a new instance of CopyOnSaveSupport */
-    private CopyResourcesOnSave() {
-    }
-
-    public static CopyResourcesOnSave getInstance() {
-        return instance;
-    }
-
-    public void checkOpenProjects() {
-        boolean hasAnyMavens = false;
-        for (Project prj : OpenProjects.getDefault().getOpenProjects()) {
-            if (prj.getLookup().lookup(NbMavenProject.class) != null) {
-                hasAnyMavens = true;
-                break;
-            }
+    public static void opened() {
+        if (openedCount.getAndIncrement() == 0) {
+            FileUtil.addFileChangeListener(instance);
         }
-        if (hasAnyMavens) {
-            if (!isAdded) {
-                FileUtil.addFileChangeListener(this);
-                isAdded = true;
-            }
-        } else {
-            if (isAdded) {
-                FileUtil.removeFileChangeListener(this);
-                isAdded = false;
-            }
+    }
+
+    public static void closed() {
+        if (openedCount.decrementAndGet() == 0) {
+            FileUtil.removeFileChangeListener(instance);
         }
     }
 

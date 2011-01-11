@@ -2255,7 +2255,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return null;
     }
     
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin,
+    @Override
+    public Set<String> getApplicableTemplates(Document d, int selectionBegin,
         int selectionEnd) {
 
         // TODO - check the code at the AST path and determine whether it makes sense to
@@ -2265,11 +2266,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean valid = false;
 
         if (selectionEnd != -1) {
-            BaseDocument doc = RubyUtils.getDocument(info);
-            if (doc == null) {
+            if ((d == null) || (! (d instanceof BaseDocument))) {
                 return Collections.emptySet();
             }
-
+            BaseDocument doc = (BaseDocument)d;
             try {
                 doc.readLock();
                 if (selectionBegin == selectionEnd) {

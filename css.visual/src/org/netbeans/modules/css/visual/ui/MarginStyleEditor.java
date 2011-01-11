@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  */
 public class MarginStyleEditor extends StyleEditor {
 
-    MarginDataTable marginDataTable = new MarginDataTable();
+    MarginDataTable marginDataTable;
 
     /** Creates new form FontStyleEditor */
     public MarginStyleEditor() {
@@ -82,6 +82,7 @@ public class MarginStyleEditor extends StyleEditor {
 
     @Override
     protected void lazyInitializePanel() {
+        marginDataTable = new MarginDataTable();
         initComponents();
         marginPanel.add(marginDataTable, BorderLayout.CENTER);
     }

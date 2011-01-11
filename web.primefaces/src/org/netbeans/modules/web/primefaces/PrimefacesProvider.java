@@ -67,9 +67,7 @@ public class PrimefacesProvider implements JsfComponentProvider {
     }
 
     private static String getWelcomeMessageBody() {
-        String body = "    <"+NS_PREFIX+":panel header=\"Hello From\">\n" + //NOI18N
-                      "            <"+NS_PREFIX+":linkButton href=\"http://www.primefaces.org/labs\" value=\"Prime Faces\"/>\n" +    //NOI18N
-                      "        </"+NS_PREFIX+":panel>"; //NOI18N
+        String body = " Hello from <"+NS_PREFIX+":linkButton href=\"http://www.primefaces.org/\" value=\"Prime Faces\"/>\n";    //NOI18N
         return body;
     }
     private static String getNamespace() {

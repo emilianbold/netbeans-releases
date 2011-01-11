@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -208,7 +210,7 @@ public class SelectImpl implements CsmSelectProvider {
             }
         }
         if (res != null) {
-            Iterator<CsmOffsetableDeclaration> iter = UIDCsmConverter.UIDsToDeclarations(res, filter);
+            Iterator<CsmOffsetableDeclaration> iter = UIDCsmConverter.UIDsToDeclarations(res).iterator();
             return iter;
         }
         return null;
@@ -312,6 +314,14 @@ public class SelectImpl implements CsmSelectProvider {
         return file.getDeclarations().isEmpty();
     }
 
+    @Override
+    public Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor nameFilter) {
+        if (csmProject instanceof ProjectBase) {
+            return ((ProjectBase)csmProject).getFilteredFileUIDs(nameFilter);
+        }
+        return UIDCsmConverter.objectsToUIDs(csmProject.getAllFiles()).iterator();
+    }
+    
     private static interface Filter extends CsmFilter, UIDFilter {
     }
     

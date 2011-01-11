@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -96,6 +97,9 @@ final class ViewBuilder {
 
     private final FactoryState[] factoryStates;
 
+    /**
+     * Replace of paragraph views in a document view.
+     */
     private final ViewReplace<DocumentView,ParagraphView> dReplace;
 
     /**
@@ -104,10 +108,16 @@ final class ViewBuilder {
      */
     private ViewReplace<ParagraphView,EditorView> fReplace;
 
+    /**
+     * Actual replace inside current paragraph.
+     */
     private ViewReplace<ParagraphView,EditorView> pReplace;
 
     private boolean viewRemovalFinished;
 
+    /**
+     * List of all paragraph replaces done so far.
+     */
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
 
     private int docViewEndOffset;
@@ -505,11 +515,11 @@ final class ViewBuilder {
     void replaceAndRepaintViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = dReplace.view;
-        JTextComponent textComponent = docView.getTextComponent();
+        final JTextComponent textComponent = docView.getTextComponent();
+        final Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         assert (textComponent != null) : "Null textComponent"; // NOI18N
         boolean docViewHeightChanged = false;
         boolean docViewWidthChanged = false;
-        Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         Rectangle2D.Double docViewBounds = docView.getAllocation();
         TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
         VisualUpdate<?> fUpdate = null;
@@ -595,7 +605,12 @@ final class ViewBuilder {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');
             }
-            ViewUtils.repaint(textComponent, repaintBounds);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ViewUtils.repaint(textComponent, repaintBounds);
+                }
+            });
         }
         if (docViewWidthChanged || docViewHeightChanged) {
             docView.preferenceChanged(null, docViewWidthChanged, docViewHeightChanged);

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 public interface NativeProject {
     /**
@@ -57,6 +58,11 @@ public interface NativeProject {
      */
     public Object getProject();
 
+    /**
+     * File system project sources reside in
+     */
+    public FileSystem getFileSystem();
+    
      /**
      * Returns file path to project root
      * @return file path to project root

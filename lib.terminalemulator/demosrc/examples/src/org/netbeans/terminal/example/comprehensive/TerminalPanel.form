@@ -20,6 +20,20 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="conainerStyleButtonGroup">
     </Component>
+    <Component class="javax.swing.JCheckBox" name="keepCheckBox1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.keepCheckBox1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="keepLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.keepLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -39,6 +53,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="debugLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="hupOnCloseLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="restartableLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="threadLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="excutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Group type="103" alignment="1" groupAlignment="1" max="-2" attributes="0">
                       <Group type="103" alignment="0" groupAlignment="1" attributes="0">
                           <Component id="containerProviderLabel" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -48,11 +68,6 @@
                       <Component id="ioShuttlingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                       <Component id="allowCloseLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="excutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="threadLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="restartableLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="keepLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="hupOnCloseLabel" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -63,16 +78,9 @@
                       <Component id="containerProviderRadioButton_TERM" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="executionRadioButton_RICH" min="-2" max="-2" attributes="0"/>
-                          <Component id="ioProviderRadioButton_DEFAULT" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="ioProviderRadioButton_DEFAULT" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="excutionRadioButton_NATIVE" min="-2" max="-2" attributes="0"/>
-                          <Component id="ioProviderRadioButton_TERM" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="rpRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="ioProviderRadioButton_TERM" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -80,27 +88,35 @@
                           <Component id="ioShuttlingRadioButton_EXTERNAL" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                              <Component id="allowCloseRadioButton_ALWAYS" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="allowCloseRadioButton_DISCONNECTED" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="ioShutlingRadioButton_INTERNAL" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="excutionRadioButton_NATIVE" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="allowCloseRadioButton_ALWAYS" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="allowCloseRadioButton_DISCONNECTED" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="rpRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                   </Group>
-                  <Component id="threadRadioButton_EDT" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="restartableCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="hupOnCloseCheckBox" min="-2" max="-2" attributes="0"/>
-                  <Component id="keepCheckBox" min="-2" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="tabbedRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="multiplexedRadioButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="executionRadioButton_RICH" min="-2" max="-2" attributes="0"/>
+                  <Component id="threadRadioButton_EDT" min="-2" max="-2" attributes="0"/>
+                  <Component id="restartableCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="hupOnCloseCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="debugCheckBox" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="76" max="32767" attributes="0"/>
           </Group>
@@ -144,33 +160,39 @@
                   <Component id="allowCloseRadioButton_DISCONNECTED" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="allowCloseRadioButton_ALWAYS" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="6" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="excutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="executionRadioButton_RICH" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="excutionRadioButton_NATIVE" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="excutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="threadLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="threadRadioButton_EDT" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rpRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="threadLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="restartableLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="restartableCheckBox" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="hupOnCloseLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="hupOnCloseCheckBox" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="keepLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="keepCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="keepLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepCheckBox" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="debugLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="debugCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -431,6 +453,20 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.multiplexedRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="debugLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.debugLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="debugCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.debugCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

@@ -228,6 +228,10 @@ public abstract class TreeView extends JScrollPane {
     transient private int allowedDragActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     
+    /** Quick Search support */
+    transient private boolean allowedQuickSearch = true;
+    transient private KeyAdapter quickSearchKeyAdapter;
+    
     /**
      * Whether the quick search uses prefix or substring. 
      * Defaults to false meaning prefix is used.
@@ -454,6 +458,36 @@ public abstract class TreeView extends JScrollPane {
     }
 
     /**
+     * Get whether the quick search feature enable or not.
+     * Defaults enable (false).
+     * @since 6.33
+     * @return true if quick search feature enabled, false
+     * otherwise.
+     */
+    public boolean isQuickSearchAllowed() {
+        return allowedQuickSearch;
+    }
+    
+    /**
+     * Set whether the quick search feature enable or not.
+     * Defaults enable (false).
+     * @since 6.33
+     * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
+     */
+    public void setQuickSearchAllowed(boolean allowedQuickSearch) {
+        this.allowedQuickSearch = allowedQuickSearch;
+         if (quickSearchKeyAdapter != null && tree != null) {
+            if (allowedQuickSearch) {
+               tree.addKeyListener(quickSearchKeyAdapter);
+            } else {
+               removeSearchField();
+               tree.removeKeyListener(quickSearchKeyAdapter);
+            }
+         }
+    }
+
+    
+    /**
      * Set whether the quick search feature uses substring or prefix
      * matching for the typed characters. Defaults to prefix (false).
      * @since 6.11
@@ -565,9 +599,12 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
-                tree.collapsePath(getTreePath(n));
+                final TreePath path = getTreePath(n);
+                LOG.log(Level.FINE, "collapseNode: {0} {1}", new Object[] { n, path });
+                tree.collapsePath(path);
+                LOG.fine("collapsePath done");
             }
         });
     }
@@ -593,7 +630,10 @@ public abstract class TreeView extends JScrollPane {
             @Override
             public void run() {
                 LOG.log(Level.FINEST, "Just print the variable so it is not GCed: {0}", prepare);
-                tree.expandPath(getTreePath(n));
+                final TreePath p = getTreePath(n);
+                LOG.log(Level.FINE, "expandNode: {0} {1}", new Object[] { n, p });
+                tree.expandPath(p);
+                LOG.fine("expandPath done");
             }
         });
     }
@@ -836,18 +876,19 @@ public abstract class TreeView extends JScrollPane {
     */
     final void synchronizeRootContext() {
         // #151850 cancel editing before changing root node
-        Mutex.EVENT.readAccess(
-                new Runnable() {
-
-                    public void run() {
-                        TreeCellEditor cellEditor = tree.getCellEditor();
-                        if (cellEditor instanceof TreeViewCellEditor) {
-                            ((TreeViewCellEditor) cellEditor).abortTimer();
-                        }
-                        tree.cancelEditing();
-                    }
-                });
-        treeModel.setNode(manager.getRootContext(), visHolder);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TreeCellEditor cellEditor = tree.getCellEditor();
+                if (cellEditor instanceof TreeViewCellEditor) {
+                    ((TreeViewCellEditor) cellEditor).abortTimer();
+                }
+                tree.cancelEditing();
+                final Node rc = manager.getRootContext();
+                LOG.log(Level.FINE, "synchronizeRootContext {0}", rc);
+                treeModel.setNode(rc, visHolder);
+            }
+        });
     }
 
     /** Synchronize the explored context from the manager of this Explorer.
@@ -861,9 +902,11 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
-                showPath(getTreePath(n));
+                final TreePath tp = getTreePath(n);
+                LOG.log(Level.FINE, "synchronizeExploredContext {0} path {1}", new Object[] { n, tp });
+                showPath(tp);
             }
         });
     }
@@ -969,7 +1012,9 @@ public abstract class TreeView extends JScrollPane {
             }
         });
     }
-
+    
+   
+    
     /** Synchronize the selected nodes from the manager of this Explorer.
     * The default implementation does nothing.
     */
@@ -977,18 +1022,27 @@ public abstract class TreeView extends JScrollPane {
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
                 Node[] arr = manager.getSelectedNodes();
                 TreePath[] paths = new TreePath[arr.length];
-
+                final boolean log = LOG.isLoggable(Level.FINE);
+                if (log) {
+                    LOG.fine("synchronizeSelectedNodes");
+                }
                 for (int i = 0; i < arr.length; i++) {
                     paths[i] = getTreePath(arr[i]);
+                    if (log) {
+                        LOG.log(Level.FINE, "paths[{0}] = {1} node: {2}", new Object[]{i, paths[i], arr[i]});
+                    }
                 }
 
                 tree.getSelectionModel().removeTreeSelectionListener(managerListener);
                 showSelection(paths);
                 tree.getSelectionModel().addTreeSelectionListener(managerListener);
+                if (log) {
+                    LOG.fine("synchronizeSelectedNodes done");
+                }
             }
         });
     }
@@ -1632,7 +1686,7 @@ public abstract class TreeView extends JScrollPane {
     }
 
     TreePath[] origSelectionPaths = null;
-    private JPanel searchpanel = null;
+    JPanel searchpanel = null;
     // searchTextField manages focus because it handles VK_TAB key
     private JTextField searchTextField = new JTextField() {
         @Override
@@ -1715,7 +1769,7 @@ public abstract class TreeView extends JScrollPane {
      * Adds the search field to the tree.
      */
     private void displaySearchField() {
-        if( null != searchpanel )
+        if( null != searchpanel || !isQuickSearchAllowed())
             return;
 
         TreeView previousSearchField = lastSearchField.get();
@@ -1971,8 +2025,8 @@ public abstract class TreeView extends JScrollPane {
                 removeKeyListener(keyListeners[i]);
             }
 
-            // Add new key listeners
-            addKeyListener(
+            // create new key listeners
+            quickSearchKeyAdapter = (
                 new KeyAdapter() {
                 @Override
                     public void keyTyped(KeyEvent e) {
@@ -2004,7 +2058,9 @@ public abstract class TreeView extends JScrollPane {
                     }
                 }
             );
-
+            if(isQuickSearchAllowed()){
+                addKeyListener(quickSearchKeyAdapter);
+            }
             // Create a the "multi-event" listener for the text field. Instead of
             // adding separate instances of each needed listener, we're using a
             // class which implements them all. This approach is used in order 
@@ -2014,7 +2070,7 @@ public abstract class TreeView extends JScrollPane {
             searchTextField.addFocusListener(searchFieldListener);
             searchTextField.getDocument().addDocumentListener(searchFieldListener);
         }
-
+        
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
 

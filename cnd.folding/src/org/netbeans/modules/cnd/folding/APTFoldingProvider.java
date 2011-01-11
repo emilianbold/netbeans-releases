@@ -48,6 +48,7 @@ import java.io.Reader;
 import java.util.List;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
+import org.openide.filesystems.FileObject;
 
 /**
  * provider for Code Folding Parser
@@ -63,14 +64,8 @@ public class APTFoldingProvider implements FoldingParser {
     }
 
     @Override
-    public List<CppFoldRecord> parse(String name, Reader source) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(name, source);
-        return res;
-    }
-
-    @Override
-    public List<CppFoldRecord> parse(String name, char[] buf) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(name, buf);
+    public List<CppFoldRecord> parse(FileObject fo, char[] buf) {
+        List<CppFoldRecord> res = APTFoldingParser.parse(fo, buf);
         return res;
     }
 }

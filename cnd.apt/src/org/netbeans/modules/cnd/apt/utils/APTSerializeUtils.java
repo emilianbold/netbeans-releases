@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -240,8 +241,8 @@ public class APTSerializeUtils {
         ((APTIncludeHandlerImpl.StateImpl)state).write(output);
     }
     
-    public static APTIncludeHandler.State readIncludeState(DataInput input) throws IOException {
-        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(input);
+    public static APTIncludeHandler.State readIncludeState(FileSystem fs, DataInput input) throws IOException {
+        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(fs, input);
         return state;
     }    
 
@@ -255,12 +256,12 @@ public class APTSerializeUtils {
         }        
     }
     
-    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
         int handler = input.readInt();
         APTPreprocHandler.State out;
         switch (handler) {
             case PREPROC_STATE_STATE_IMPL:
-                out = new APTPreprocHandlerImpl.StateImpl(input);
+                out = new APTPreprocHandlerImpl.StateImpl(fs, input);
                 break;
             default:
                 throw new IllegalArgumentException("unknown preprocessor state handler" + handler);  //NOI18N

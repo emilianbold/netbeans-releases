@@ -161,6 +161,7 @@ public class CastUtils {
         if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
             child = AstRenderer.skipTemplateSibling(child);
         }
+        child = AstRenderer.getFirstSiblingSkipInline(child);
         child = AstRenderer.getFirstSiblingSkipQualifiers(child);
 	if( child != null && child.getType() == CPPTokenTypes.ID ) {
 	    child = child.getNextSibling();

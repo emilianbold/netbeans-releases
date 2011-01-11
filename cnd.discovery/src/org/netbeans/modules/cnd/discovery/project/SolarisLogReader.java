@@ -643,14 +643,16 @@ public class SolarisLogReader {
             File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        List<String> l = map.get(ff[i].getName());
-                        if (l==null){
-                            l = new ArrayList<String>();
-                            map.put(ff[i].getName(),l);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            List<String> l = map.get(ff[i].getName());
+                            if (l==null){
+                                l = new ArrayList<String>();
+                                map.put(ff[i].getName(),l);
+                            }
+                            l.add(d.getAbsolutePath());
                         }
-                        l.add(d.getAbsolutePath());
                     }
                 }
             }
@@ -667,8 +669,10 @@ public class SolarisLogReader {
             if (!set.contains(path)){
                 set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    gatherSubFolders(ff[i], set);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        gatherSubFolders(ff[i], set);
+                    }
                 }
             }
         }
