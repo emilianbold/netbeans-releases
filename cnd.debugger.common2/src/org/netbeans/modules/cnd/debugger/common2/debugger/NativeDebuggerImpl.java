@@ -886,8 +886,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
                     if (getVisitedLocation() != null) {
                         disStateModel().updateStateModel(getVisitedLocation(), true);
-
-                        openDis();
+			if (getVisitedLocation().pc() != 0)
+			    openDis();
                     }
                 }
             }
